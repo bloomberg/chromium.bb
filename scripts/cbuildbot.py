@@ -543,6 +543,8 @@ def _CreateParser():
                                'in conjunction with --debug, the tree status '
                                'will not be ignored as it usually is in a '
                                '--debug run.')
+  # TODO(nxia): crbug.com/778838
+  # cbuildbot doesn't use pickle files anymore, remove this.
   group.add_remote_option('--mock-slave-status',
                           metavar='MOCK_SLAVE_STATUS_PICKLE_FILE',
                           help='Override the result of the _FetchSlaveStatuses '

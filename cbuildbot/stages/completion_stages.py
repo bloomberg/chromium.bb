@@ -96,58 +96,51 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
+    # TODO(nxia): rename to _build_statuses as it contains local status and
+    # slave statuses for master builds
     self._slave_statuses = {}
+    self._experimental_build_statuses = {}
     self.buildbucket_client = self.GetBuildbucketClient()
 
-  def _GetLocalBuildStatus(self):
-    """Return the status for this build as a dictionary."""
-    status = builder_status_lib.BuilderStatus.GetCompletedStatus(self.success)
-    status_obj = builder_status_lib.BuilderStatus(status, self.message)
-    return {self._bot_id: status_obj}
-
-  def _GetSlaveBuildStatus(self, manager, build_id, db, builder_names,
-                           timeout):
-    """Return the statuses of slave builds.
+  def _WaitForSlavesToComplete(self, manager, build_id, db, builders_array,
+                               timeout):
+    """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
       build_id: The build id of the master build.
       db: An instance of cidb.CIDBConnection.
-      builder_names: A list of builder names (strings) of slave builds.
+      builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
-
-    Returns:
-      A build_config name-> status dictionary of build statuses
-      (See BuildSpecsManager.GetBuildersStatus).
     """
-    return manager.GetBuildersStatus(
+    return manager.WaitForSlavesToComplete(
         build_id,
         db,
-        builder_names,
+        builders_array,
         timeout=timeout)
 
-  def _FetchSlaveStatuses(self):
-    """Fetch and return build status for slaves of this build.
+  def _GetBuilderStatusesFetcher(self):
+    """Construct and return the BuilderStatusesFetcher instance.
 
-    If this build is not a master then return just the status of this build.
+    If this build is a master, wait for slaves to complete or timeout before
+    constructing and returning the BuilderStatusesFetcher instance.
 
     Returns:
-      A dict of build_config name -> builder_status_lib.BuilderStatus objects,
-      for all important slave build configs. Build configs that never started
-      will have a builder_status_lib.BuilderStatus of MISSING.
+      A instance of builder_status_lib.BuilderStatusesFetcher.
     """
     # Wait for slaves if we're a master, in production or mock-production.
     # Otherwise just look at our own status.
-    slave_statuses = self._GetLocalBuildStatus()
+    build_id, db = self._run.GetCIDBHandle()
+    builders_array = None
     if not self._run.config.master:
       # The slave build returns its own status.
       logging.warning('The build is not a master.')
     elif self._run.options.mock_slave_status or not self._run.options.debug:
       # The master build.
       builders = self._GetSlaveConfigs()
-      builder_names = [b.name for b in builders]
+      builders_array = [b.name for b in builders]
       timeout = None
-      build_id, db = self._run.GetCIDBHandle()
+
       if db:
         timeout = db.GetTimeToDeadline(build_id)
         logging.info('Got timeout for build_id %s', build_id)
@@ -166,9 +159,15 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       manager = self._run.attrs.manifest_manager
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
-      slave_statuses.update(self._GetSlaveBuildStatus(
-          manager, build_id, db, builder_names, timeout))
-    return slave_statuses
+        self._WaitForSlavesToComplete(
+            manager, build_id, db, builders_array, timeout)
+
+    builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
+        build_id, db, self.success, self.message, self._run.config,
+        self._run.attrs.metadata, self.buildbucket_client,
+        builders_array=builders_array, dry_run=self._run.options.debug)
+
+    return builder_statuses_fetcher
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
@@ -244,26 +243,16 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def PerformStage(self):
     super(MasterSlaveSyncCompletionStage, self).PerformStage()
 
-    statuses = self._FetchSlaveStatuses()
+    builder_statusess_fetcher = self._GetBuilderStatusesFetcher()
+    self._slave_statuses, self._experimental_build_statuses = (
+        builder_statusess_fetcher.GetBuilderStatuses())
 
-    # Filter out the statuses for builders that are marked experimental through
-    # the tree status.
-    experimental = self._run.attrs.metadata.GetValueWithDefault(
-        constants.METADATA_EXPERIMENTAL_BUILDERS, [])
-    experimental_statuses = {
-        k: v for k, v in statuses.iteritems() if k in experimental
-    }
-    statuses = {
-        k: v for k, v in statuses.iteritems() if k not in experimental
-    }
-
-    self._slave_statuses = statuses
-    no_stat = set(builder for builder, status in statuses.iteritems()
-                  if status.Missing())
-    failing = set(builder for builder, status in statuses.iteritems()
-                  if status.Failed())
-    inflight = set(builder for builder, status in statuses.iteritems()
-                   if status.Inflight())
+    no_stat = builder_status_lib.BuilderStatusesFetcher.GetNostatBuilds(
+        self._slave_statuses)
+    failing = builder_status_lib.BuilderStatusesFetcher.GetFailingBuilds(
+        self._slave_statuses)
+    inflight = builder_status_lib.BuilderStatusesFetcher.GetInflightBuilds(
+        self._slave_statuses)
 
     # If all the failing, inflight and no_stat builders were sanity checkers
     # then ignore the failure.
@@ -278,8 +267,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       fatal = self._IsFailureFatal(failing, set(), set())
 
     # Always annotate unsuccessful builders.
-    self._AnnotateFailingBuilders(failing, inflight, no_stat, statuses,
-                                  experimental_statuses, self_destructed)
+    self._AnnotateFailingBuilders(
+        failing, inflight, no_stat, self._slave_statuses,
+        self._experimental_build_statuses, self_destructed)
 
     if fatal:
       self.HandleFailure(failing, inflight, no_stat, self_destructed)
@@ -892,26 +882,23 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     return not any([x in slave_statuses and slave_statuses[x].Failed() for
                     x in sanity_check_slaves])
 
-  def _GetSlaveBuildStatus(self, manager, build_id, db, builder_names, timeout):
-    """Return the statuses of slave builds.
+  def _WaitForSlavesToComplete(self, manager, build_id, db, builders_array,
+                               timeout):
+    """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
       build_id: The build id of the master build.
       db: An instance of cidb.CIDBConnection.
-      builder_names: A list of builder names (strings) of slave builds.
+      builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
-
-    Returns:
-      A build_config name-> status dictionary of build statuses
-      (See BuildSpecsManager.GetBuildersStatus).
     """
     # CQ master build needs needs validation_pool to keep track of applied
     # changes and change dependencies.
-    return manager.GetBuildersStatus(
+    return manager.WaitForSlavesToComplete(
         build_id,
         db,
-        builder_names,
+        builders_array,
         pool=self.sync_stage.pool,
         timeout=timeout)
 

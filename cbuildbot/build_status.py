@@ -22,6 +22,9 @@ from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
 
+# TODO(nxia): Rename this module to slave_status, since this module is for
+# a master build which has slave builds and there is builder_status_lib for
+# managing the status of an indivudual build.
 class SlaveStatus(object):
   """Keep track of statuses of all slaves from CIDB and Buildbucket(optional).
 

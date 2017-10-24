@@ -289,6 +289,8 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
                      return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
     self.mock_handle_failure = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage, 'HandleFailure')
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher, '__init__',
+                     return_value=None)
 
     self._Prepare()
 
@@ -317,8 +319,8 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
             constants.BUILDER_STATUS_MISSING, None)
     }
 
-    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
-                     '_FetchSlaveStatuses', return_value=statuses)
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
+                     'GetBuilderStatuses', return_value=(statuses, {}))
     mock_annotate = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
         '_AnnotateFailingBuilders')
@@ -491,8 +493,8 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         'build_3': builder_status_lib.BuilderStatus(
             constants.BUILDER_STATUS_FAILED, None)
     }
-    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
-                     '_FetchSlaveStatuses', return_value=statuses)
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
+                     'GetBuilderStatuses', return_value=(statuses, {}))
 
     # Not self-destructed CQ
     with self.assertRaises(completion_stages.ImportantBuilderFailedException):
@@ -521,8 +523,8 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         'build_2': builder_status_lib.BuilderStatus(
             constants.BUILDER_STATUS_MISSING, None)
     }
-    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
-                     '_FetchSlaveStatuses', return_value=statuses)
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
+                     'GetBuilderStatuses', return_value=(statuses, {}))
     stage._run.attrs.metadata.UpdateWithDict(
         {constants.SELF_DESTRUCTED_BUILD: True})
     stage._run.attrs.metadata.UpdateWithDict(
@@ -541,9 +543,9 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         'build_2': builder_status_lib.BuilderStatus(
             constants.BUILDER_STATUS_FAILED, None)
     }
-    statuses = dict(status.items() + experimental_status.items())
-    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
-                     '_FetchSlaveStatuses', return_value=statuses)
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
+                     'GetBuilderStatuses',
+                     return_value=(status, experimental_status))
     mock_annotate = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
         '_AnnotateFailingBuilders')
@@ -614,6 +616,8 @@ class BaseCommitQueueCompletionStageTest(
                      return_value=constants.TREE_OPEN)
     self.PatchObject(relevant_changes.RelevantChanges,
                      'GetPreviouslyPassedSlavesForChanges')
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher, '__init__',
+                     return_value=None)
 
   # pylint: disable=W0221
   def ConstructStage(self, tree_was_open=True):
@@ -662,6 +666,7 @@ class BaseCommitQueueCompletionStageTest(
 
     # Setup builder statuses.
     stage._run.attrs.manifest_manager = mock.MagicMock()
+
     statuses = {}
     for x in failing:
       statuses[x] = builder_status_lib.BuilderStatus(
@@ -669,11 +674,9 @@ class BaseCommitQueueCompletionStageTest(
     for x in inflight:
       statuses[x] = builder_status_lib.BuilderStatus(
           constants.BUILDER_STATUS_INFLIGHT, message=None)
-    if self._run.config.master:
-      self.PatchObject(stage._run.attrs.manifest_manager, 'GetBuildersStatus',
-                       return_value=statuses)
-    else:
-      self.PatchObject(stage, '_GetLocalBuildStatus', return_value=statuses)
+
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
+                     'GetBuilderStatuses', return_value=(statuses, {}))
 
     # Setup DB and provide list of slave stages.
     mock_cidb = mock.MagicMock()

@@ -18,7 +18,6 @@ from xml.dom import minidom
 
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import repository
-from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -575,36 +574,15 @@ class BuildSpecsManager(object):
     return (self._latest_build and
             self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
-  def _FetchCurrentBuildersArray(self, builders_array):
-    """Fetch the current important slave builds.
+  def WaitForSlavesToComplete(self, master_build_id, db, builders_array,
+                              pool=None, timeout=3 * 60,
+                              ignore_timeout_exception=True):
+    """Wait for all slaves to complete or timeout.
 
-    Args:
-      builders_array: A list of slave build configs to check.
-
-    Returns:
-      An updated list of slave build configs for a master build which uses
-      Buildbucket to schedule slaves; or the origin builders_array for other
-      masters.
-    """
-    if (self.config is not None and
-        self.metadata is not None and
-        config_lib.UseBuildbucketScheduler(self.config)):
-      scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
-          self.metadata)
-      return scheduled_buildbucket_info_dict.keys()
-    else:
-      return builders_array
-
-  def GetBuildersStatus(self, master_build_id, db, builders_array, pool=None,
-                        timeout=3 * 60):
-    """Get the statuses of the slave builders of the master.
-
-    This function checks the status of slaves in |builders_array|. It
-    queries CIDB for all builds associated with the |master_build_id|,
-    then filters out builds that are not in |builders_array| (e.g.,
-    slaves that are not important). Any builders in |builders_array| that are
-    marked as experimental through the tree status will also be included in the
-    returned dict.
+    This method checks the statuses of important builds in |builders_array|,
+    waits for the builds to complete or timeout after given |timeout|. Builds
+    marked as experimental through the tree status will not be considered
+    in deciding whether to wait.
 
     Args:
       master_build_id: Master build id to check.
@@ -613,18 +591,16 @@ class BuildSpecsManager(object):
       pool: An instance of ValidationPool.validation_pool used by sync stage
             to apply changes.
       timeout: Number of seconds to wait for the results.
-
-    Returns:
-      A dict mapping build_config names (strings) to
-        builder_status_lib.BuilderStatus instances; or an empty dict if no
-        slaves were scheduled.
+      ignore_timeout_exception: Whether to ignore when the timeout exception is
+        raised in waiting. Default to True.
     """
-    builders_array = self._FetchCurrentBuildersArray(builders_array)
-    logging.info('Getting slave BuilderStatuses for builders array: %s',
+    builders_array = builder_status_lib.FetchCurrentSlaveBuildersArray(
+        self.config, self.metadata, builders_array)
+    logging.info('Waiting for the following builds to complete: %s',
                  builders_array)
 
     if not builders_array:
-      return {}
+      return
 
     start_time = datetime.datetime.now()
 
@@ -647,43 +623,12 @@ class BuildSpecsManager(object):
           timeout,
           period=self.SLEEP_TIMEOUT,
           side_effect_func=_PrintRemainingTime)
-    except timeout_util.TimeoutError:
+    except timeout_util.TimeoutError as e:
       logging.error('Not all builds finished before timeout (%d minutes)'
                     ' reached.', int((timeout / 60) + 0.5))
 
-    # Refetch as the list may get changed in metadata in the waiting loop.
-    builders_array = self._FetchCurrentBuildersArray(builders_array)
-    return self._GetSlaveBuilderStatus(master_build_id, db, builders_array)
-
-  def _GetSlaveBuilderStatus(self, master_build_id, db, builders_array):
-    """Get BuilderStatus for slaves.
-
-    Args:
-      master_build_id: The build id of the master build.
-      db: An instance of cidb.CIDBConnection.
-      builders_array: A list of build configs of the slaves.
-
-    Returns:
-      A dict mapping build configs (strings) to their
-        builder_status_lib.BuilderStatus instances.
-    """
-    slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
-        master_build_id, db, self.config, self.metadata,
-        self.buildbucket_client, builders_array, self.dry_run)
-
-    slave_builder_status_dict = {}
-    for builder in builders_array:
-      logging.info('Creating BuilderStatus for builder %s', builder)
-      builder_status = slave_builder_statuses.GetBuilderStatusForBuild(builder)
-      slave_builder_status_dict[builder] = builder_status
-      message = (builder_status.message.BuildFailureMessageToStr()
-                 if builder_status.message is not None else None)
-      logging.info(
-          'Builder %s BuilderStatus.status %s BuilderStatus.message %s'
-          ' BuilderStatus.dashboard_url %s ' %
-          (builder, builder_status.status, message,
-           builder_status.dashboard_url))
-    return slave_builder_status_dict
+      if not ignore_timeout_exception:
+        raise e
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""

@@ -12,21 +12,15 @@ import os
 import tempfile
 
 from chromite.cbuildbot import build_status
-from chromite.cbuildbot import build_status_unittest
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
-from chromite.lib.const import waterfall
 from chromite.lib import builder_status_lib
-from chromite.lib import buildbucket_lib
-from chromite.lib import build_failure_message
 from chromite.lib import constants
-from chromite.lib import config_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
-from chromite.lib import failure_message_lib_unittest
-from chromite.lib import metadata_lib
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
 
@@ -181,15 +175,14 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      '_InitSlaveInfo')
 
-    self.db_mock = mock.Mock()
+    self.db = mock.Mock()
     self.buildbucket_client_mock = mock.Mock()
 
     self.PatchObject(tree_status, 'GetExperimentalBuilders', return_value=[])
 
   def BuildManager(self, config=None, metadata=None, db=None,
                    buildbucket_client=None):
-    if db is None:
-      db = self.db_mock
+    db = db or self.db
     repo = repository.RepoRepository(
         self.source_repo, self.tempdir, self.branch)
     manager = manifest_version.BuildSpecsManager(
@@ -391,395 +384,25 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                           'platform_version':'1.2.5'}
     self.assertFalse(self.manager.DidLastBuildFail())
 
-  def _GetBuildersStatus(self, builders, status_runs,
-                         experimental_builders=None):
-    """Test a call to BuildSpecsManager.GetBuildersStatus.
-
-    Args:
-      builders: List of builders to get status for.
-      status_runs: List of dictionaries of expected build and status.
-      experimental_builders: List of lists of experimental builders. The length
-          of this list should be one less than len(status_runs).
-    """
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetAllSlaveCIDBStatusInfo',
-                     side_effect=status_runs)
-
-    self.PatchObject(tree_status,
-                     'GetExperimentalBuilders',
-                     side_effect=experimental_builders)
-
-    self.PatchObject(build_status.SlaveStatus,
-                     '_GetUncompletedExperimentalBuildbucketIDs')
-
-    final_status_dict = status_runs[-1]
-    message_mock = mock.Mock()
-    message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
-    build_statuses = {
-        x: builder_status_lib.BuilderStatus(
-            final_status_dict.get(x).status, message_mock) for x in builders
-    }
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetBuilderStatusForBuild',
-                     side_effect=lambda config: build_statuses[config])
-
-    return self.manager.GetBuildersStatus(
-        'builderid', mock.Mock(), builders)
-
-  def testGetBuildersStatusBothFinished(self):
-    """Tests GetBuildersStatus where both builds have finished."""
+  def testWaitForSlavesToCompleteWithEmptyBuildersArray(self):
+    """Test WaitForSlavesToComplete with an empty builders_array."""
     self.manager = self.BuildManager()
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }]
-    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
+    self.manager.WaitForSlavesToComplete(1, self.db, [])
 
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-
-  def testGetBuildersStatusExperimentalBuilder(self):
-    """Tests that we don't wait for an inflight build that's experimental."""
-    metadata = metadata_lib.CBuildbotMetadata()
-    self.manager = self.BuildManager(metadata=metadata)
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }]
-
-    experimental_builders_runs = [
-        [],
-        ['build1'],
-    ]
-    statuses = self._GetBuildersStatus(
-        ['build1', 'build2'], status_runs, experimental_builders_runs)
-
-    self.assertTrue(statuses['build1'].Inflight())
-    self.assertTrue(statuses['build2'].Passed())
-
-  def testGetBuildersStatusLoop(self):
-    """Tests GetBuildersStatus where builds are inflight."""
-    self.manager = self.BuildManager()
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetMissingBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetMissingBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2),
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
-    }]
-    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-
-  def _CreateCanaryMasterManager(self, config=None, metadata=None,
-                                 buildbucket_client=None):
-    if config is None:
-      config = config_lib.BuildConfig(
-          name='master-release', master=True,
-          active_waterfall=waterfall.WATERFALL_INTERNAL)
-
-    if metadata is None:
-      metadata = metadata_lib.CBuildbotMetadata()
-
-    if buildbucket_client is None:
-      buildbucket_client = self.buildbucket_client_mock
-
-    return self.BuildManager(
-        config=config, metadata=metadata,
-        buildbucket_client=buildbucket_client)
-
-  def _GetBuildersStatusWithBuildbucket(self, builders, status_runs,
-                                        buildbucket_info_dicts):
-    """Test a call to BuildSpecsManager.GetBuildersStatus.
-
-    Args:
-      builders: List of builders to get status for.
-      status_runs: List of dictionaries of expected build and status.
-      buildbucket_info_dicts: A list of dict mapping build names to
-                        buildbucket_ids.
-    """
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetAllSlaveCIDBStatusInfo',
-                     side_effect=status_runs)
-    buildbucket_info_dict = {x: None for x in builders}
-    self.PatchObject(buildbucket_lib,
-                     'GetBuildInfoDict',
-                     return_value=buildbucket_info_dict)
-    self.PatchObject(build_status.SlaveStatus,
-                     '_GetUncompletedExperimentalBuildbucketIDs')
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetAllSlaveBuildbucketInfo',
-                     side_effect=buildbucket_info_dicts)
-
-    final_status_dict = status_runs[-1]
-    message_mock = mock.Mock()
-    message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
-    slave_builder_status_dict = {
-        x: builder_status_lib.BuilderStatus(
-            final_status_dict.get(x).status, message_mock)
-        for x in builders
-    }
-    self.PatchObject(manifest_version.BuildSpecsManager,
-                     '_GetSlaveBuilderStatus',
-                     return_value=slave_builder_status_dict)
-
-    return self.manager.GetBuildersStatus(
-        'builderid', mock.Mock(), builders)
-
-  def testGetBuildersStatusBothFinishedWithBuildbucket(self):
-    """Tests GetBuildersStatus where both Buildbucket builds have finished."""
-    self.manager = self._CreateCanaryMasterManager()
-
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2),
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }]
-
-    buildbucket_info_dicts = [{
-        'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetStartedBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetSuccessBuild()
-    }]
-
-    statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, buildbucket_info_dicts)
-
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-
-  def testGetBuildersStatusLoopWithBuildbucket(self):
-    """Tests GetBuildersStatus where both Buildbucket builds have finished."""
-    self.manager = self._CreateCanaryMasterManager()
-    retry_patch = self.PatchObject(build_status.SlaveStatus,
-                                   '_RetryBuilds')
-
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetMissingBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }]
-
-    buildbucket_info_dict = [{
-        'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetMissingBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetMissingBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetStartedBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetSuccessBuild()
-    }]
-
-    statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, buildbucket_info_dict)
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-    self.assertEqual(retry_patch.call_count, 0)
-
-  def testGetBuildersStatusLoopWithBuildbucketRetry(self):
-    """Tests GetBuildersStatus loop with buildbucket retry."""
-    self.manager = self._CreateCanaryMasterManager()
-    retry_patch = self.PatchObject(build_status.SlaveStatus,
-                                   '_RetryBuilds')
-
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=2)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }]
-
-    buildbucket_info_dict = [{
-        'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetStartedBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetFailureBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetStartedBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetSuccessBuild()
-    }]
-
-    statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, buildbucket_info_dict)
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-    self.assertTrue(retry_patch.call_count, 1)
-
-  def testGetBuildersStatusLoopWithBuildbucketRetry_2(self):
-    """Tests GetBuildersStatus loop with buildbucket retry."""
-    self.manager = self._CreateCanaryMasterManager()
-    retry_patch = self.PatchObject(build_status.SlaveStatus,
-                                   '_RetryBuilds')
-
-    status_runs = [{
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=1)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1)
-    }, {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=2)
-    }]
-
-    buildbucket_info_dict = [{
-        'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetFailureBuild()
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetFailureBuild(
-            retry=1)
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetFailureBuild(
-            retry=2)
-    }, {
-        'build1': build_status_unittest.BuildbucketInfos.GetFailureBuild(),
-        'build2': build_status_unittest.BuildbucketInfos.GetFailureBuild(
-            retry=2)
-    }]
-
-    statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, buildbucket_info_dict)
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Failed())
-
-    # build2 cannot be retried for more than retry_limit times.
-    self.assertTrue(retry_patch.call_count,
-                    constants.BUILDBUCKET_BUILD_RETRY_LIMIT)
-
-  def testGetBuildersStatusWithSlaveBuilderStatus(self):
-    """Check syntax for GetBuildersStatus with SlaveBuilderStatus."""
-    self.manager = self.BuildManager()
-    build_status.SlaveStatus.__init__ = mock.Mock(return_value=None)
+  def testWaitForSlavesToComplete(self):
+    """Test WaitForSlavesToComplete."""
     self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
     self.PatchObject(build_status.SlaveStatus, 'ShouldWait', return_value=False)
+    self.manager = self.BuildManager()
+    self.manager.WaitForSlavesToComplete(1, self.db, ['build_1', 'build_2'])
 
-    failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper
-    failure_messages = [failure_msg_helper.GetStageFailureMessage(),
-                        failure_msg_helper.GetBuildScriptFailureMessage()]
-    message = build_failure_message.BuildFailureMessage(
-        'summary', failure_messages, True, 'reason', 'build_2')
-
-    builder_status_1 = builder_status_lib.BuilderStatus('build_1', None)
-    builder_status_2 = builder_status_lib.BuilderStatus('build_2', message)
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetBuilderStatusForBuild',
-                     side_effect=[builder_status_1, builder_status_2])
-    self.manager.GetBuildersStatus(1, mock.Mock(), ['build_1', 'build_2'])
-
-  def testGetBuildersStatusWithoutScheduledSlaves(self):
-    self.manager = self._CreateCanaryMasterManager()
-    self.PatchObject(buildbucket_lib,
-                     'GetBuildInfoDict',
-                     return_value={})
-
-    self.assertEqual(self.manager.GetBuildersStatus(
-        1, mock.Mock(), ['build_1', 'build_2']), {})
-
-  def testGetSlaveBuilderStatus(self):
-    """Test _GetSlaveBuilderStatus."""
-    self.manager = self._CreateCanaryMasterManager()
-    builders = ['build1', 'build2']
-    status_dict = {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2)
-    }
-    message_mock = mock.Mock()
-    message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
-    build_statuses = [
-        builder_status_lib.BuilderStatus(
-            status_dict.get(x).status, message_mock) for x in builders]
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetBuilderStatusForBuild',
-                     side_effect=build_statuses)
-    slave_builder_status_dict = self.manager._GetSlaveBuilderStatus(
-        mock.Mock(), mock.Mock(), builders)
-    self.assertEqual(len(slave_builder_status_dict), 2)
-    self.assertItemsEqual(builders, slave_builder_status_dict.keys())
+  def testWaitForSlavesToCompleteWithTimeout(self):
+    """Test WaitForSlavesToComplete raises timeout."""
+    self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
+    self.PatchObject(build_status.SlaveStatus, 'ShouldWait', return_value=True)
+    self.manager = self.BuildManager()
+    self.assertRaises(
+        timeout_util.TimeoutError,
+        self.manager.WaitForSlavesToComplete,
+        1, self.db, ['build_1', 'build_2'], timeout=1,
+        ignore_timeout_exception=False)
