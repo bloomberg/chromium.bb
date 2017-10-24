@@ -139,6 +139,17 @@ class CORE_EXPORT UseCounter {
   // reporting disabled.
   bool HasRecordedMeasurement(WebFeature) const;
 
+  // Triggers a use counter if a feature, which is currently available in all
+  // frames, would be blocked by the introduction of feature policy. This takes
+  // two counters (which may be the same). It triggers |blockedCrossOrigin| if
+  // the frame is cross-origin relative to the top-level document, and triggers
+  // |blockedSameOrigin| if it is same-origin with the top level, but is
+  // embedded in any way through a cross-origin frame. (A->B->A embedding)
+  static void CountIfFeatureWouldBeBlockedByFeaturePolicy(
+      const LocalFrame&,
+      WebFeature blockedCrossOrigin,
+      WebFeature blockedSameOrigin);
+
   void Trace(blink::Visitor*);
 
  private:

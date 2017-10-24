@@ -5,5 +5,5 @@
 [
     ImplementedAs=NavigatorBattery
 ] partial interface Navigator {
-    [CallWith=ScriptState] Promise getBattery();
+    [CallWith=ScriptState, MeasureAs=BatteryStatusGetBattery] Promise getBattery();
 };

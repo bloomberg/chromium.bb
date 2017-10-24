@@ -4,8 +4,9 @@
 
 #include "modules/battery/NavigatorBattery.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "modules/battery/BatteryManager.h"
 
 namespace blink {
@@ -19,10 +20,23 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
-  if (!battery_manager_) {
-    battery_manager_ =
-        BatteryManager::Create(ExecutionContext::From(script_state));
+  ExecutionContext* context = ExecutionContext::From(script_state);
+
+  // Check to see if this request would be blocked according to the Battery
+  // Status API specification.
+  if (context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (frame) {
+      if (!context->IsSecureContext())
+        UseCounter::Count(frame, WebFeature::kBatteryStatusInsecureOrigin);
+      UseCounter::CountIfFeatureWouldBeBlockedByFeaturePolicy(
+          *frame, WebFeature::kBatteryStatusCrossOrigin,
+          WebFeature::kBatteryStatusSameOriginABA);
+    }
   }
+
+  if (!battery_manager_)
+    battery_manager_ = BatteryManager::Create(context);
   return battery_manager_->StartRequest(script_state);
 }
 
