@@ -309,8 +309,10 @@ def AddSvnToPathOnWin():
   os.environ['PATH'] = svn_dir + os.pathsep + os.environ.get('PATH', '')
 
 
-def AddCMakeToPath():
+def AddCMakeToPath(args):
   """Download CMake and add it to PATH."""
+  if args.use_system_cmake:
+    return
   if sys.platform == 'win32':
     zip_name = 'cmake-3.4.3-win32-x86.zip'
     cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR,
@@ -432,7 +434,7 @@ def UpdateClang(args):
     return 1
 
   DownloadHostGcc(args)
-  AddCMakeToPath()
+  AddCMakeToPath(args)
   AddGnuWinToPath()
 
   DeleteChromeToolsShim()
@@ -820,6 +822,9 @@ def main():
                       help='run tests after building; only for local builds')
   parser.add_argument('--extra-tools', nargs='*', default=[],
                       help='select additional chrome tools to build')
+  parser.add_argument('--use-system-cmake', action='store_true',
+                      help='use the cmake from PATH instead of downloading '
+                      'and using prebuilt cmake binaries')
   parser.add_argument('--without-android', action='store_false',
                       help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android',
