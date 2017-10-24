@@ -677,6 +677,8 @@ registerLoadRequestForURL:(const GURL&)URL
 - (void)forgetNullWKNavigation:(WKNavigation*)navigation;
 
 - (BOOL)isLoaded;
+// Returns YES if the current live view is a web view with an image MIME type.
+- (BOOL)contentIsImage;
 // Extracts the current page's viewport tag information and calls |completion|.
 // If the page has changed before the viewport tag is successfully extracted,
 // |completion| is called with nullptr.
@@ -1963,6 +1965,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (BOOL)isLoaded {
   return _loadPhase == web::PAGE_LOADED;
+}
+
+- (BOOL)contentIsImage {
+  if (!_webView)
+    return NO;
+
+  const std::string image = "image";
+  std::string MIMEType = self.webState->GetContentsMimeType();
+  return MIMEType.compare(0, image.length(), image) == 0;
 }
 
 - (void)didFinishNavigation:(WKNavigation*)navigation {
@@ -4598,7 +4609,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
   _injectedScriptManagers = [[NSMutableSet alloc] init];
-  if ([self contentIsHTML] || self.webState->GetContentsMimeType().empty()) {
+  if ([self contentIsHTML] || [self contentIsImage] ||
+      self.webState->GetContentsMimeType().empty()) {
     // In unit tests MIME type will be empty, because loadHTML:forURL: does not
     // notify web view delegate about received response, so web controller does
     // not get a chance to properly update MIME type.
