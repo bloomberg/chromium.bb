@@ -26,7 +26,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     WebLocalFrame* frame,
     int id,
     WebURLRequest::RequestContext request_context,
-    blink::WebCachePolicy cache_policy,
+    blink::mojom::FetchCacheMode cache_mode,
     const Callback& callback)
     : callback_(callback),
       id_(id),
@@ -43,7 +43,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   if (request_context == WebURLRequest::kRequestContextFavicon)
     fetcher_->SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
 
-  fetcher_->SetCachePolicy(cache_policy);
+  fetcher_->SetCacheMode(cache_mode);
 
   fetcher_->Start(
       frame, request_context, WebURLRequest::kFetchRequestModeNoCORS,

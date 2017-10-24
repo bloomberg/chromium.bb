@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -63,16 +63,16 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   // Sets the cache policy. The cache policy is only used if explicitly set and
   // by default is not set. You can mark a NavigationState as not having a cache
   // state by way of clear_cache_policy_override.
-  void set_cache_policy_override(blink::WebCachePolicy cache_policy) {
+  void set_cache_policy_override(blink::mojom::FetchCacheMode cache_policy) {
     cache_policy_override_ = cache_policy;
     cache_policy_override_set_ = true;
   }
-  blink::WebCachePolicy cache_policy_override() const {
+  blink::mojom::FetchCacheMode cache_policy_override() const {
     return cache_policy_override_;
   }
   void clear_cache_policy_override() {
     cache_policy_override_set_ = false;
-    cache_policy_override_ = blink::WebCachePolicy::kUseProtocolCachePolicy;
+    cache_policy_override_ = blink::mojom::FetchCacheMode::kDefault;
   }
   bool is_cache_policy_override_set() const {
     return cache_policy_override_set_;
@@ -85,7 +85,7 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;
-  blink::WebCachePolicy cache_policy_override_;
+  blink::mojom::FetchCacheMode cache_policy_override_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);
 };

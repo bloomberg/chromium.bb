@@ -32,7 +32,6 @@
 
 #include "platform/PlatformProbeSink.h"
 #include "platform/probe/PlatformTraceEventsAgent.h"
-#include "public/platform/WebCachePolicy.h"
 
 namespace blink {
 
@@ -57,11 +56,11 @@ void FetchContext::DispatchDidChangeResourcePriority(unsigned long,
 void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&,
                                                FetchResourceType) {}
 
-WebCachePolicy FetchContext::ResourceRequestCachePolicy(
+mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(
     const ResourceRequest&,
     Resource::Type,
     FetchParameters::DeferOption defer) const {
-  return WebCachePolicy::kUseProtocolCachePolicy;
+  return mojom::FetchCacheMode::kDefault;
 }
 
 void FetchContext::PrepareRequest(ResourceRequest&, RedirectType) {}

@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 class GURL;
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
 
   virtual void SetServiceWorkerMode(
       blink::WebURLRequest::ServiceWorkerMode service_worker_mode) = 0;
-  virtual void SetCachePolicy(blink::WebCachePolicy policy) = 0;
+  virtual void SetCacheMode(blink::mojom::FetchCacheMode mode) = 0;
 
   // Associate the corresponding WebURLLoaderOptions to the loader. Must be
   // called before Start. Used if the LoaderType is FRAME_ASSOCIATED_LOADER.

@@ -38,7 +38,7 @@
 #include "core/plugins/PluginView.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebCachePolicy.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -302,7 +302,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
       GetDocument().Loader()->LoadType() ==
           kFrameLoadTypeReloadBypassingCache) {
     child_load_type = kFrameLoadTypeReloadBypassingCache;
-    request.SetCachePolicy(WebCachePolicy::kBypassingCache);
+    request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
   }
 
   child_frame->Loader().Load(FrameLoadRequest(&GetDocument(), request),

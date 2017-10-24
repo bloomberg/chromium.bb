@@ -54,10 +54,10 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebAddressSpace.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebClientHintsType.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
@@ -599,7 +599,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
 TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Default case
   ResourceRequest request("http://www.example.com");
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
@@ -607,20 +607,20 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   ResourceRequest post_request("http://www.example.com");
   post_request.SetHTTPMethod(HTTPNames::POST);
   EXPECT_EQ(
-      WebCachePolicy::kValidatingCacheData,
+      mojom::FetchCacheMode::kValidateCache,
       fetch_context->ResourceRequestCachePolicy(
           post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Re-post
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
   EXPECT_EQ(
-      WebCachePolicy::kReturnCacheDataDontLoad,
+      mojom::FetchCacheMode::kOnlyIfCached,
       fetch_context->ResourceRequestCachePolicy(
           post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReload
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
@@ -629,27 +629,27 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   ResourceRequest conditional("http://www.example.com");
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
   EXPECT_EQ(
-      WebCachePolicy::kValidatingCacheData,
+      mojom::FetchCacheMode::kValidateCache,
       fetch_context->ResourceRequestCachePolicy(
           conditional, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache with a conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(
-      WebCachePolicy::kBypassingCache,
+      mojom::FetchCacheMode::kBypassCache,
       fetch_context->ResourceRequestCachePolicy(
           conditional, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache with a post request
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(
-      WebCachePolicy::kBypassingCache,
+      mojom::FetchCacheMode::kBypassCache,
       fetch_context->ResourceRequestCachePolicy(
           post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
@@ -658,19 +658,19 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
 
   // Child frame as part of back/forward
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
-  EXPECT_EQ(WebCachePolicy::kReturnCacheDataElseLoad,
+  EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload bypassing cache
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
@@ -680,7 +680,7 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
   child_frame->Loader().GetDocumentLoader()->SetLoadType(
       kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 }
@@ -693,13 +693,13 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
 
   // Default case
   ResourceRequest request("http://www.example.com/mock");
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReload should not affect sub-resources
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
@@ -707,31 +707,31 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   document->Loader()->SetLoadType(kFrameLoadTypeStandard);
   ResourceRequest conditional("http://www.example.com/mock");
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, Resource::kMock, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache with a conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, Resource::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
-  EXPECT_EQ(WebCachePolicy::kReturnCacheDataElseLoad,
+  EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation with a conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
-  EXPECT_EQ(WebCachePolicy::kReturnCacheDataElseLoad,
+  EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, Resource::kMock, FetchParameters::kNoDefer));
 }
@@ -980,7 +980,7 @@ TEST_F(FrameFetchContextTest, ResourceRequestCachePolicyWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kRaw, FetchParameters::kNoDefer));
 }

@@ -113,8 +113,8 @@ void LoadHTMLString(WebLocalFrame* frame,
 void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
                      WebHistoryLoadType load_type,
-                     WebCachePolicy cache_policy) {
-  WebURLRequest request = frame->RequestFromHistoryItem(item, cache_policy);
+                     mojom::FetchCacheMode cache_mode) {
+  WebURLRequest request = frame->RequestFromHistoryItem(item, cache_mode);
   frame->Load(request, WebFrameLoadType::kBackForward, item);
   PumpPendingRequestsForFrameToLoad(frame);
 }

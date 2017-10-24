@@ -13,11 +13,11 @@
 #include "WebHistoryItem.h"
 #include "WebImeTextSpan.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/scheduler/single_thread_task_runner.h"
 #include "public/platform/site_engagement.mojom-shared.h"
 #include "public/web/WebSandboxFlags.h"
@@ -180,7 +180,7 @@ class WebLocalFrame : public WebFrame {
 
   // Returns a WebURLRequest corresponding to the load of the WebHistoryItem.
   virtual WebURLRequest RequestFromHistoryItem(const WebHistoryItem&,
-                                               WebCachePolicy) const = 0;
+                                               mojom::FetchCacheMode) const = 0;
 
   // Returns a WebURLRequest corresponding to the reload of the current
   // HistoryItem.

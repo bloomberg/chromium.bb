@@ -2237,15 +2237,15 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
   // Go back, then forward, then back again.
   main_frame_local->Loader().Load(
       FrameLoadRequest(nullptr, item1->GenerateResourceRequest(
-                                    WebCachePolicy::kUseProtocolCachePolicy)),
+                                    mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item1.Get(), kHistorySameDocumentLoad);
   main_frame_local->Loader().Load(
       FrameLoadRequest(nullptr, item2->GenerateResourceRequest(
-                                    WebCachePolicy::kUseProtocolCachePolicy)),
+                                    mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item2.Get(), kHistorySameDocumentLoad);
   main_frame_local->Loader().Load(
       FrameLoadRequest(nullptr, item1->GenerateResourceRequest(
-                                    WebCachePolicy::kUseProtocolCachePolicy)),
+                                    mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item1.Get(), kHistorySameDocumentLoad);
 
   // Click a different anchor
@@ -2259,11 +2259,11 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
   // forward navigation.
   main_frame_local->Loader().Load(
       FrameLoadRequest(nullptr, item1->GenerateResourceRequest(
-                                    WebCachePolicy::kUseProtocolCachePolicy)),
+                                    mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item1.Get(), kHistorySameDocumentLoad);
   main_frame_local->Loader().Load(
       FrameLoadRequest(nullptr, item3->GenerateResourceRequest(
-                                    WebCachePolicy::kUseProtocolCachePolicy)),
+                                    mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item3.Get(), kHistorySameDocumentLoad);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);

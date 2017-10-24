@@ -42,10 +42,10 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebHistoryItem.h"
@@ -100,7 +100,7 @@ void LoadHTMLString(WebLocalFrame*,
 void LoadHistoryItem(WebLocalFrame*,
                      const WebHistoryItem&,
                      WebHistoryLoadType,
-                     WebCachePolicy);
+                     mojom::FetchCacheMode);
 // Same as above, but for WebLocalFrame::Reload().
 void ReloadFrame(WebLocalFrame*);
 void ReloadFrameBypassingCache(WebLocalFrame*);

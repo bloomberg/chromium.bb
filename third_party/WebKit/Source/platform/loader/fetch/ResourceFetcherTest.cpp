@@ -61,10 +61,10 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -222,7 +222,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
 
   ResourceRequest resource_request(url);
-  resource_request.SetCachePolicy(WebCachePolicy::kReturnCacheDataElseLoad);
+  resource_request.SetCacheMode(mojom::FetchCacheMode::kForceCache);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
   FetchParameters fetch_params(resource_request);
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher);
@@ -266,7 +266,7 @@ class RequestSameResourceOnComplete
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
     ResourceFetcher* fetcher2 = ResourceFetcher::Create(context);
     ResourceRequest resource_request2(resource_->Url());
-    resource_request2.SetCachePolicy(WebCachePolicy::kValidatingCacheData);
+    resource_request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
     FetchParameters fetch_params2(resource_request2);
     Resource* resource2 = MockResource::Fetch(fetch_params2, fetcher2);
     EXPECT_EQ(resource_, resource2);
@@ -549,8 +549,8 @@ TEST_F(ResourceFetcherTest, PreloadMatchWithBypassingCache) {
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   FetchParameters fetch_params_second{ResourceRequest(url)};
-  fetch_params_second.MutableResourceRequest().SetCachePolicy(
-      WebCachePolicy::kBypassingCache);
+  fetch_params_second.MutableResourceRequest().SetCacheMode(
+      mojom::FetchCacheMode::kBypassCache);
   Resource* second_resource = MockResource::Fetch(fetch_params_second, fetcher);
   EXPECT_EQ(resource, second_resource);
   EXPECT_FALSE(resource->IsLinkPreload());
@@ -571,8 +571,8 @@ TEST_F(ResourceFetcherTest, CrossFramePreloadMatchIsNotAllowed) {
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   FetchParameters fetch_params_second{ResourceRequest(url)};
-  fetch_params_second.MutableResourceRequest().SetCachePolicy(
-      WebCachePolicy::kBypassingCache);
+  fetch_params_second.MutableResourceRequest().SetCacheMode(
+      mojom::FetchCacheMode::kBypassCache);
   Resource* second_resource =
       MockResource::Fetch(fetch_params_second, fetcher2);
 

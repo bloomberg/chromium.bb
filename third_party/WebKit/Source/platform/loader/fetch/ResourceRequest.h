@@ -39,8 +39,8 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebAddressSpace.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -100,8 +100,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   void RemoveUserAndPassFromURL();
 
-  WebCachePolicy GetCachePolicy() const;
-  void SetCachePolicy(WebCachePolicy);
+  mojom::FetchCacheMode GetCacheMode() const;
+  void SetCacheMode(mojom::FetchCacheMode);
 
   double TimeoutInterval() const;  // May return 0 when using platform default.
   void SetTimeoutInterval(double);
@@ -358,7 +358,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
-  WebCachePolicy cache_policy_;
+  mojom::FetchCacheMode cache_mode_;
   WebURLRequest::ServiceWorkerMode service_worker_mode_;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
@@ -406,7 +406,7 @@ struct CrossThreadResourceRequestData {
   CrossThreadResourceRequestData() {}
   KURL url_;
 
-  WebCachePolicy cache_policy_;
+  mojom::FetchCacheMode cache_mode_;
   double timeout_interval_;
   KURL site_for_cookies_;
   RefPtr<SecurityOrigin> requestor_origin_;

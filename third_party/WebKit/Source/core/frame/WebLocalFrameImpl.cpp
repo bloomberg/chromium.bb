@@ -1982,10 +1982,10 @@ bool WebLocalFrameImpl::DispatchBeforeUnloadEvent(bool is_reload) {
 
 WebURLRequest WebLocalFrameImpl::RequestFromHistoryItem(
     const WebHistoryItem& item,
-    WebCachePolicy cache_policy) const {
+    mojom::FetchCacheMode cache_mode) const {
   HistoryItem* history_item = item;
   return WrappedResourceRequest(
-      history_item->GenerateResourceRequest(cache_policy));
+      history_item->GenerateResourceRequest(cache_mode));
 }
 
 WebURLRequest WebLocalFrameImpl::RequestForReload(

@@ -45,9 +45,9 @@
 #include "platform/wtf/Noncopyable.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -97,7 +97,7 @@ class PLATFORM_EXPORT FetchContext
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
   // intervention.
-  virtual WebCachePolicy ResourceRequestCachePolicy(
+  virtual mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
       Resource::Type,
       FetchParameters::DeferOption) const;

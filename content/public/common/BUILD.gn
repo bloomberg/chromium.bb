@@ -277,6 +277,7 @@ source_set("common_sources") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/WebKit/public:mojo_bindings",
     "//ui/accessibility",
     "//ui/surface",
     "//url/ipc:url_ipc",

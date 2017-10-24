@@ -151,10 +151,10 @@ EncodedFormData* HistoryItem::FormData() {
 }
 
 ResourceRequest HistoryItem::GenerateResourceRequest(
-    WebCachePolicy cache_policy) {
+    mojom::FetchCacheMode cache_mode) {
   ResourceRequest request(url_string_);
   request.SetHTTPReferrer(referrer_);
-  request.SetCachePolicy(cache_policy);
+  request.SetCacheMode(cache_mode);
   if (form_data_) {
     request.SetHTTPMethod(HTTPNames::POST);
     request.SetHTTPBody(form_data_);

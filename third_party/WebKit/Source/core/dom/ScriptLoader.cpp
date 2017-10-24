@@ -62,7 +62,6 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringHash.h"
-#include "public/platform/WebCachePolicy.h"
 
 namespace blink {
 
