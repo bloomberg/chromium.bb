@@ -1,3 +1,4 @@
+MockContentSettingsClient: allowScriptFromSource(http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/permissionclient/resources/boston.gif): true
 MockContentSettingsClient: allowImage(http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/permissionclient/resources/boston.gif): true
 MockContentSettingsClient: allowImage(http://127.0.0.1:8000/permissionclient/resources/boston.gif): true
 This test checks that all URLs in a redirect chain are passed to the PermissionClient.

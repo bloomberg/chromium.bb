@@ -7,14 +7,21 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
+
 class GURL;
 
 namespace content {
 class BrowserContext;
 }
 
+namespace content_settings {
+class CookieSettings;
+}
+
 namespace net {
 class HttpRequestHeaders;
+class URLRequest;
 }
 
 namespace client_hints {
@@ -25,6 +32,11 @@ std::unique_ptr<net::HttpRequestHeaders>
 GetAdditionalNavigationRequestClientHintsHeaders(
     content::BrowserContext* context,
     const GURL& url);
+
+// Called before |request| goes on the network.
+void RequestBeginning(
+    net::URLRequest* request,
+    scoped_refptr<content_settings::CookieSettings> cookie_settings);
 
 }  // namespace client_hints
 

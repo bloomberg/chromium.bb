@@ -9,15 +9,28 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/client_hints/client_hints.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/origin_util.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request.h"
 #include "third_party/WebKit/common/client_hints/client_hints.h"
 #include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
 #include "third_party/WebKit/public/platform/WebClientHintsType.h"
 #include "url/gurl.h"
+
+namespace {
+
+bool IsJavaScriptAllowed(Profile* profile, const GURL& url) {
+  return HostContentSettingsMapFactory::GetForProfile(profile)
+             ->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                 std::string()) == CONTENT_SETTING_ALLOW;
+}
+
+}  // namespace
 
 namespace client_hints {
 
@@ -34,6 +47,12 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   Profile* profile = Profile::FromBrowserContext(context);
   if (!profile)
     return nullptr;
+
+  // Check if |url| is allowed to run JavaScript. If not, client hints are not
+  // attached to the requests that initiate on the browser side.
+  if (!IsJavaScriptAllowed(profile, url)) {
+    return nullptr;
+  }
 
   ContentSettingsForOneType client_hints_host_settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
@@ -73,6 +92,25 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   // the client hints headers if the request is redirected with a change in
   // scheme or a change in the origin.
   return additional_headers;
+}
+
+void RequestBeginning(
+    net::URLRequest* request,
+    scoped_refptr<content_settings::CookieSettings> cookie_settings) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (!cookie_settings)
+    return;
+
+  if (cookie_settings->IsCookieAccessAllowed(request->url(),
+                                             request->site_for_cookies())) {
+    return;
+  }
+
+  // If |primary_url| is disallowed from storing cookies, then client hints are
+  // not attached to the requests sent to |primary_url|.
+  for (size_t i = 0; i < blink::kClientHintsHeaderMappingCount; ++i)
+    request->RemoveRequestHeaderByName(blink::kClientHintsHeaderMapping[i]);
 }
 
 }  // namespace client_hints
