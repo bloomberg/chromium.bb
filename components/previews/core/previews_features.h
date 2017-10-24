@@ -15,6 +15,7 @@ extern const base::Feature kClientLoFi;
 extern const base::Feature kNoScriptPreviews;
 extern const base::Feature kStalePreviewsTimestamp;
 extern const base::Feature kAMPRedirection;
+extern const base::Feature kOptimizationHints;
 
 }  // namespace features
 }  // namespace previews
