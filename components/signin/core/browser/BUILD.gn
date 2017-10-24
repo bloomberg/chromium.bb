@@ -196,6 +196,7 @@ source_set("unit_tests") {
     "//components/content_settings/core/browser",
     "//components/os_crypt:test_support",
     "//components/pref_registry:pref_registry",
+    "//components/prefs",
     "//components/signin/core/common",
     "//components/signin/core/common:signin_features",
     "//components/sync_preferences:test_support",
