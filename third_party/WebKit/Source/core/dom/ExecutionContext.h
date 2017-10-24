@@ -194,6 +194,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType);
+
  protected:
   ExecutionContext();
   virtual ~ExecutionContext();

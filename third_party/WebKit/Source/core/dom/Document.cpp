@@ -7161,6 +7161,16 @@ service_manager::InterfaceProvider* Document::GetInterfaceProvider() {
   return &GetFrame()->GetInterfaceProvider();
 }
 
+scoped_refptr<WebTaskRunner> Document::GetTaskRunner(TaskType type) {
+  if (ContextDocument() && ContextDocument()->GetFrame())
+    return ContextDocument()->GetFrame()->FrameScheduler()->GetTaskRunner(type);
+  // In most cases, ContextDocument() will get us to a relevant Frame. In some
+  // cases, though, there isn't a good candidate (most commonly when either the
+  // passed-in document or ContextDocument() used to be attached to a Frame but
+  // has since been detached).
+  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+}
+
 void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(imports_controller_);
   visitor->Trace(doc_type_);
