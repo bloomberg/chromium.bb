@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/common/media_stream_request.h"
 
@@ -39,22 +40,29 @@ class MediaStreamDevicesController {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback);
 
+  static void RequestAndroidPermissionsIfNeeded(
+      content::WebContents* web_contents,
+      std::unique_ptr<MediaStreamDevicesController> controller,
+      bool did_prompt_for_audio,
+      bool did_prompt_for_video,
+      const std::vector<ContentSetting>& responses);
+
+#if defined(OS_ANDROID)
+  // Called when the Android OS-level prompt is answered.
+  static void AndroidOSPromptAnswered(
+      std::unique_ptr<MediaStreamDevicesController> controller,
+      std::vector<ContentSetting> responses,
+      bool android_prompt_granted);
+#endif  // defined(OS_ANDROID)
+
   // Registers the prefs backing the audio and video policies.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   ~MediaStreamDevicesController();
 
-  bool IsAskingForAudio() const;
-  bool IsAskingForVideo() const;
-
   // Called when a permission prompt is answered through the PermissionManager.
   void PromptAnsweredGroupedRequest(
       const std::vector<ContentSetting>& responses);
-
-#if defined(OS_ANDROID)
-  // Called when the Android OS-level prompt is answered.
-  void AndroidOSPromptAnswered(bool allowed);
-#endif  // defined(OS_ANDROID)
 
   // Called when the request is finished and no prompt is required.
   void RequestFinishedNoPrompt();
@@ -68,8 +76,11 @@ class MediaStreamDevicesController {
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
 
-  bool IsAllowedForAudio() const;
-  bool IsAllowedForVideo() const;
+  // Returns true if audio/video should be requested through the
+  // PermissionManager. We won't try to request permission if the request is
+  // already blocked for some other reason, e.g. there are no devices available.
+  bool ShouldRequestAudio() const;
+  bool ShouldRequestVideo() const;
 
   // Returns a list of devices available for the request for the given
   // audio/video permission settings.
