@@ -2495,6 +2495,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
     service_manager::switches::kDisableInProcessStackTraces,
+    service_manager::switches::kDisableSeccompFilterSandbox,
     switches::kAgcStartupMinVolume,
     switches::kAecRefinedAdaptiveFilter,
     switches::kAllowLoopbackInPeerConnection,
@@ -2533,7 +2534,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisablePinch,
     switches::kDisableRGBA4444Textures,
     switches::kDisableRTCSmoothnessAlgorithm,
-    switches::kDisableSeccompFilterSandbox,
     switches::kDisableSharedWorkers,
     switches::kDisableSkiaRuntimeOpts,
     switches::kDisableSmoothScrolling,

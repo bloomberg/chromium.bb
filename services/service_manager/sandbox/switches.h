@@ -28,9 +28,14 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProfilingSandbox[];
 
 // Flags owned by the service manager sandbox.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowNoSandboxJob[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowSandboxDebugging[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableSeccompFilterSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableSetuidSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableWin32kLockDown[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxAllowSysVShm[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxFailuresFatal[];
 
 // Flags spied upon from other layers.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuProcess[];

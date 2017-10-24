@@ -66,6 +66,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
@@ -111,13 +112,15 @@ namespace {
 
 // Command-line switches to propagate to the GPU process.
 static const char* const kSwitchNames[] = {
+    service_manager::switches::kDisableSeccompFilterSandbox,
+    service_manager::switches::kGpuSandboxAllowSysVShm,
+    service_manager::switches::kGpuSandboxFailuresFatal,
     switches::kDisableBreakpad,
     switches::kDisableGpuRasterization,
     switches::kDisableGpuSandbox,
     switches::kDisableGpuWatchdog,
     switches::kDisableGLExtensions,
     switches::kDisableLogging,
-    switches::kDisableSeccompFilterSandbox,
     switches::kDisableShaderNameHashing,
 #if BUILDFLAG(ENABLE_WEBRTC)
     switches::kDisableWebRtcHWEncoding,
@@ -130,10 +133,8 @@ static const char* const kSwitchNames[] = {
     switches::kEnableLogging,
     switches::kEnableOOPRasterization,
     switches::kEnableViz,
-    switches::kGpuStartupDialog,
-    switches::kGpuSandboxAllowSysVShm,
-    switches::kGpuSandboxFailuresFatal,
     switches::kGpuSandboxStartEarly,
+    switches::kGpuStartupDialog,
     switches::kHeadless,
     switches::kLoggingLevel,
     switches::kEnableLowEndDeviceMode,

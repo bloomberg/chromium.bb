@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/safe_sprintf.h"
-#include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 
@@ -53,9 +53,8 @@ void InstallCrashTestHandler() {
 }
 
 bool IsSandboxDebuggingEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kAllowSandboxDebugging);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      service_manager::switches::kAllowSandboxDebugging);
 }
 
 }  // namespace

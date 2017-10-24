@@ -16,10 +16,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/sandbox_features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 
@@ -174,7 +174,7 @@ std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
     if (IsArchitectureArm()) {
       return std::make_unique<CrosArmGpuProcessPolicy>(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kGpuSandboxAllowSysVShm));
+              service_manager::switches::kGpuSandboxAllowSysVShm));
     }
     if (use_amd_specific_policies)
       return std::make_unique<CrosAmdGpuProcessPolicy>();
@@ -233,8 +233,9 @@ bool SandboxSeccompBPF::IsSeccompBPFDesired() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kNoSandbox) &&
-         !command_line.HasSwitch(switches::kDisableSeccompFilterSandbox);
+  return !command_line.HasSwitch(service_manager::switches::kNoSandbox) &&
+         !command_line.HasSwitch(
+             service_manager::switches::kDisableSeccompFilterSandbox);
 #endif  // USE_SECCOMP_BPF
   return false;
 }

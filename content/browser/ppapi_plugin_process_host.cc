@@ -384,7 +384,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 
   if (!is_broker_) {
     static const char* const kPluginForwardSwitches[] = {
-      switches::kDisableSeccompFilterSandbox,
+      service_manager::switches::kDisableSeccompFilterSandbox,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif
