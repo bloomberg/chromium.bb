@@ -120,13 +120,13 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer_process_type.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -197,7 +197,6 @@ using autofill::PasswordGenerationAgent;
 using base::ASCIIToUTF16;
 using base::UserMetricsAction;
 using blink::WebCache;
-using blink::WebCachePolicy;
 using blink::WebConsoleMessage;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -212,6 +211,7 @@ using blink::WebURLError;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebVector;
+using blink::mojom::FetchCacheMode;
 using content::PluginInstanceThrottler;
 using content::RenderFrame;
 using content::RenderThread;
@@ -1188,7 +1188,7 @@ void ChromeContentRendererClient::GetNavigationErrorStringsInternal(
     base::string16* error_description) {
   bool is_post = failed_request.HttpMethod().Ascii() == "POST";
   bool is_ignoring_cache =
-      failed_request.GetCachePolicy() == WebCachePolicy::kBypassingCache;
+      failed_request.GetCacheMode() == FetchCacheMode::kBypassCache;
   if (error_html) {
     NetErrorHelper::Get(render_frame)
         ->GetErrorHTML(error, is_post, is_ignoring_cache, error_html);

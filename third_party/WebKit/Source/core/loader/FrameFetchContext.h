@@ -76,7 +76,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
-  WebCachePolicy ResourceRequestCachePolicy(
+  mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
       Resource::Type,
       FetchParameters::DeferOption) const override;

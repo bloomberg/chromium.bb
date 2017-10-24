@@ -142,7 +142,6 @@ source_set("blink_headers") {
     "platform/WebBlobRegistry.h",
     "platform/WebBrowserControlsState.h",
     "platform/WebCache.h",
-    "platform/WebCachePolicy.h",
     "platform/WebCallbacks.h",
     "platform/WebCanvas.h",
     "platform/WebCanvasCaptureHandler.h",

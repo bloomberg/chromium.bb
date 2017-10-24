@@ -26,14 +26,14 @@
 #include "third_party/WebKit/common/blob/size_getter.mojom.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebMixedContent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
-using blink::WebCachePolicy;
+using blink::mojom::FetchCacheMode;
 using blink::WebData;
 using blink::WebHTTPBody;
 using blink::WebString;
@@ -316,25 +316,28 @@ std::string GetWebURLRequestHeadersAsString(
 int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
   int load_flags = net::LOAD_NORMAL;
   GURL url = request.Url();
-  switch (request.GetCachePolicy()) {
-    case WebCachePolicy::kValidatingCacheData:
+  switch (request.GetCacheMode()) {
+    case FetchCacheMode::kNoStore:
+      load_flags |= net::LOAD_DISABLE_CACHE;
+      break;
+    case FetchCacheMode::kValidateCache:
       load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
-    case WebCachePolicy::kBypassingCache:
+    case FetchCacheMode::kBypassCache:
       load_flags |= net::LOAD_BYPASS_CACHE;
       break;
-    case WebCachePolicy::kReturnCacheDataElseLoad:
+    case FetchCacheMode::kForceCache:
       load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
       break;
-    case WebCachePolicy::kReturnCacheDataDontLoad:
+    case FetchCacheMode::kOnlyIfCached:
       load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
       break;
-    case WebCachePolicy::kReturnCacheDataIfValid:
+    case FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
       load_flags |= net::LOAD_ONLY_FROM_CACHE;
       break;
-    case WebCachePolicy::kUseProtocolCachePolicy:
+    case FetchCacheMode::kDefault:
       break;
-    case WebCachePolicy::kBypassCacheLoadOnlyFromCache:
+    case FetchCacheMode::kUnspecifiedForceCacheMiss:
       load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE;
       break;
   }

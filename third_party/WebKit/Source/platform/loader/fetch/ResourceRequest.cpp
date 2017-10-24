@@ -33,7 +33,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAddressSpace.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -58,7 +57,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       use_stream_on_response_(false),
       keepalive_(false),
       should_reset_app_cache_(false),
-      cache_policy_(WebCachePolicy::kUseProtocolCachePolicy),
+      cache_mode_(mojom::FetchCacheMode::kDefault),
       service_worker_mode_(WebURLRequest::ServiceWorkerMode::kAll),
       priority_(kResourceLoadPriorityLowest),
       intra_priority_value_(0),
@@ -102,7 +101,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetDownloadToFile(data->download_to_file_);
   SetUseStreamOnResponse(data->use_stream_on_response_);
   SetKeepalive(data->keepalive_);
-  SetCachePolicy(data->cache_policy_);
+  SetCacheMode(data->cache_mode_);
   SetServiceWorkerMode(data->service_worker_mode_);
   SetShouldResetAppCache(data->should_reset_app_cache_);
   SetRequestorID(data->requestor_id_);
@@ -153,7 +152,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->download_to_file_ = download_to_file_;
   data->use_stream_on_response_ = use_stream_on_response_;
   data->keepalive_ = keepalive_;
-  data->cache_policy_ = GetCachePolicy();
+  data->cache_mode_ = GetCacheMode();
   data->service_worker_mode_ = service_worker_mode_;
   data->should_reset_app_cache_ = should_reset_app_cache_;
   data->requestor_id_ = requestor_id_;
@@ -197,12 +196,12 @@ void ResourceRequest::RemoveUserAndPassFromURL() {
   url_.SetPass(String());
 }
 
-WebCachePolicy ResourceRequest::GetCachePolicy() const {
-  return cache_policy_;
+mojom::FetchCacheMode ResourceRequest::GetCacheMode() const {
+  return cache_mode_;
 }
 
-void ResourceRequest::SetCachePolicy(WebCachePolicy cache_policy) {
-  cache_policy_ = cache_policy;
+void ResourceRequest::SetCacheMode(mojom::FetchCacheMode cache_mode) {
+  cache_mode_ = cache_mode;
 }
 
 double ResourceRequest::TimeoutInterval() const {

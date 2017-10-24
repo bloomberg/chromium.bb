@@ -55,7 +55,6 @@
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
@@ -1013,7 +1012,7 @@ String Resource::GetMemoryDumpName() const {
 }
 
 void Resource::SetCachePolicyBypassingCache() {
-  resource_request_.SetCachePolicy(WebCachePolicy::kBypassingCache);
+  resource_request_.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
 }
 
 void Resource::SetPreviewsState(WebURLRequest::PreviewsState previews_state) {

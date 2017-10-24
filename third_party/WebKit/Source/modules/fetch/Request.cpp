@@ -665,6 +665,10 @@ String Request::cache() const {
       return "force-cache";
     case mojom::FetchCacheMode::kOnlyIfCached:
       return "only-if-cached";
+    case mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
+    case mojom::FetchCacheMode::kUnspecifiedForceCacheMiss:
+      NOTREACHED();
+      break;
   }
   NOTREACHED();
   return "";

@@ -135,12 +135,12 @@ void AssociatedResourceFetcherImpl::SetServiceWorkerMode(
   request_.SetServiceWorkerMode(service_worker_mode);
 }
 
-void AssociatedResourceFetcherImpl::SetCachePolicy(
-    blink::WebCachePolicy policy) {
+void AssociatedResourceFetcherImpl::SetCacheMode(
+    blink::mojom::FetchCacheMode mode) {
   DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
-  request_.SetCachePolicy(policy);
+  request_.SetCacheMode(mode);
 }
 
 void AssociatedResourceFetcherImpl::SetLoaderOptions(

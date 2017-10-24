@@ -17,8 +17,8 @@
 #include "platform/loader/testing/MockResourceClient.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -62,7 +62,7 @@ TEST_F(FontResourceTest,
 
   // Revalidate the resource.
   ResourceRequest request2(url);
-  request2.SetCachePolicy(WebCachePolicy::kValidatingCacheData);
+  request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
   FetchParameters fetch_params2(request2);
   Resource* resource2 = FontResource::Fetch(fetch_params2, fetcher);
   ASSERT_TRUE(resource2);
@@ -72,7 +72,7 @@ TEST_F(FontResourceTest,
 
   // Fetch the same resource again before actual load operation starts.
   ResourceRequest request3(url);
-  request3.SetCachePolicy(WebCachePolicy::kValidatingCacheData);
+  request3.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
   FetchParameters fetch_params3(request3);
   Resource* resource3 = FontResource::Fetch(fetch_params3, fetcher);
   ASSERT_TRUE(resource3);

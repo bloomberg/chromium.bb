@@ -15,14 +15,13 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/url_constants.h"
 
-using blink::WebCachePolicy;
 using blink::WebFrame;
 using blink::WebURLRequest;
 
@@ -94,8 +93,8 @@ bool ImageDownloaderBase::FetchImage(const GURL& image_url,
           image_url, frame, 0,
           is_favicon ? WebURLRequest::kRequestContextFavicon
                      : WebURLRequest::kRequestContextImage,
-          bypass_cache ? WebCachePolicy::kBypassingCache
-                       : WebCachePolicy::kUseProtocolCachePolicy,
+          bypass_cache ? blink::mojom::FetchCacheMode::kBypassCache
+                       : blink::mojom::FetchCacheMode::kDefault,
           base::Bind(&ImageDownloaderBase::DidFetchImage,
                      base::Unretained(this), callback)));
   return true;

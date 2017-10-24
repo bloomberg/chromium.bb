@@ -252,7 +252,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SendPings(const WebURL& destination_url) override;
   bool DispatchBeforeUnloadEvent(bool) override;
   WebURLRequest RequestFromHistoryItem(const WebHistoryItem&,
-                                       WebCachePolicy) const override;
+                                       mojom::FetchCacheMode) const override;
   WebURLRequest RequestForReload(WebFrameLoadType,
                                  const WebURL&) const override;
   void Load(const WebURLRequest&,

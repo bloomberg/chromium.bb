@@ -46,7 +46,6 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCORS.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
@@ -135,7 +134,8 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
     // Override cache policy for cache-aware loading. If this request fails, a
     // reload with original request will be triggered in DidFail().
     ResourceRequest cache_aware_request(request);
-    cache_aware_request.SetCachePolicy(WebCachePolicy::kReturnCacheDataIfValid);
+    cache_aware_request.SetCacheMode(
+        mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict);
     loader_->LoadAsynchronously(WrappedResourceRequest(cache_aware_request),
                                 this);
     return;
@@ -739,7 +739,7 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
     return;
 
   // Don't activate if cache policy is explicitly set.
-  if (request.GetCachePolicy() != WebCachePolicy::kUseProtocolCachePolicy)
+  if (request.GetCacheMode() != mojom::FetchCacheMode::kDefault)
     return;
 
   // Don't activate if the page is controlled by service worker.

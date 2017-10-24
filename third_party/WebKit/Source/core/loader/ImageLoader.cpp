@@ -51,9 +51,9 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebClientHintsType.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -390,7 +390,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     resource_loader_options.initiator_info.name = GetElement()->localName();
     ResourceRequest resource_request(url);
     if (update_behavior == kUpdateForcedReload) {
-      resource_request.SetCachePolicy(WebCachePolicy::kBypassingCache);
+      resource_request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
       resource_request.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
     }
 

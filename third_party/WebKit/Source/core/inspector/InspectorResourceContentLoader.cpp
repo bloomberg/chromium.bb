@@ -20,8 +20,8 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -115,11 +115,11 @@ void InspectorResourceContentLoader::Start() {
     HistoryItem* item =
         document->Loader() ? document->Loader()->GetHistoryItem() : nullptr;
     if (item) {
-      resource_request = item->GenerateResourceRequest(
-          WebCachePolicy::kReturnCacheDataDontLoad);
+      resource_request =
+          item->GenerateResourceRequest(mojom::FetchCacheMode::kOnlyIfCached);
     } else {
       resource_request = ResourceRequest(document->Url());
-      resource_request.SetCachePolicy(WebCachePolicy::kReturnCacheDataDontLoad);
+      resource_request.SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
     }
     resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
 

@@ -53,10 +53,10 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -189,12 +189,13 @@ void ReceiveResponse(ImageResource* image_resource,
   image_resource->FinishForTest();
 }
 
-void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
-                                            ImageResource* image_resource,
-                                            ImageResourceContent* content,
-                                            MockImageResourceObserver* observer,
-                                            WebCachePolicy policy_for_reload,
-                                            bool placeholder_before_reload) {
+void TestThatReloadIsStartedThenServeReload(
+    const KURL& test_url,
+    ImageResource* image_resource,
+    ImageResourceContent* content,
+    MockImageResourceObserver* observer,
+    mojom::FetchCacheMode cache_mode_for_reload,
+    bool placeholder_before_reload) {
   const char* data = reinterpret_cast<const char*>(kJpegImage2);
   constexpr size_t kDataLength = sizeof(kJpegImage2);
   constexpr int kImageWidth = 50;
@@ -207,8 +208,8 @@ void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
   EXPECT_EQ(placeholder_before_reload, image_resource->ShouldShowPlaceholder());
   EXPECT_EQ(g_null_atom,
             image_resource->GetResourceRequest().HttpHeaderField("range"));
-  EXPECT_EQ(policy_for_reload,
-            image_resource->GetResourceRequest().GetCachePolicy());
+  EXPECT_EQ(cache_mode_for_reload,
+            image_resource->GetResourceRequest().GetCacheMode());
   EXPECT_EQ(content, image_resource->GetContent());
   EXPECT_FALSE(content->HasImage());
 
@@ -683,7 +684,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   EXPECT_EQ(3, observer->ImageChangedCount());
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 }
 
 TEST_P(ImageResourceReloadTest,
@@ -730,7 +731,7 @@ TEST_P(ImageResourceReloadTest,
   EXPECT_EQ(3, observer->ImageChangedCount());
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 }
 
 TEST_P(ImageResourceReloadTest,
@@ -816,7 +817,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, content, observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 
   GetMemoryCache()->Remove(image_resource);
 }
@@ -850,7 +851,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderBeforeResponse) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 }
 
 TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderDuringResponse) {
@@ -901,7 +902,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderDuringResponse) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 }
 
 TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
@@ -925,7 +926,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 }
 
 TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
@@ -1492,7 +1493,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, false);
+      mojom::FetchCacheMode::kBypassCache, false);
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
@@ -1534,7 +1535,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache, true);
+      mojom::FetchCacheMode::kBypassCache, true);
 
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsBitmapImage());
   EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
@@ -1603,7 +1604,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
 
     TestThatReloadIsStartedThenServeReload(
         test_url, image_resource, image_resource->GetContent(), observer.get(),
-        WebCachePolicy::kBypassingCache, test.placeholder_before_reload);
+        mojom::FetchCacheMode::kBypassCache, test.placeholder_before_reload);
 
     EXPECT_EQ(test.expected_reload_previews_state,
               image_resource->GetResourceRequest().GetPreviewsState());
@@ -1833,7 +1834,7 @@ TEST(ImageResourceTest,
     // error, so the full original image should be loading.
     TestThatReloadIsStartedThenServeReload(
         test_url, image_resource, image_resource->GetContent(), observer.get(),
-        WebCachePolicy::kBypassingCache, false);
+        mojom::FetchCacheMode::kBypassCache, false);
   }
 }
 

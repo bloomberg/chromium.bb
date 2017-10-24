@@ -57,7 +57,7 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCachePolicy.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -177,8 +177,8 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
     request.SetReplacesCurrentItem(ReplacesCurrentItem());
     if (EqualIgnoringFragmentIdentifier(frame->GetDocument()->Url(),
                                         request.GetResourceRequest().Url())) {
-      request.GetResourceRequest().SetCachePolicy(
-          WebCachePolicy::kValidatingCacheData);
+      request.GetResourceRequest().SetCacheMode(
+          mojom::FetchCacheMode::kValidateCache);
     }
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
     MaybeLogScheduledNavigationClobber(

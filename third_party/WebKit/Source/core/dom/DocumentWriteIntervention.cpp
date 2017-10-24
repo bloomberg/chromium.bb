@@ -12,8 +12,8 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/network/NetworkUtils.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebEffectiveConnectionType.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -156,7 +156,7 @@ bool MaybeDisallowFetchForDocWrittenScript(ResourceRequest& request,
     return false;
   }
 
-  request.SetCachePolicy(WebCachePolicy::kReturnCacheDataDontLoad);
+  request.SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
   return true;
 }
 

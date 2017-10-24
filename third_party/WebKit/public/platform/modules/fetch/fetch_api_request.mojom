@@ -103,6 +103,12 @@ enum FetchCacheMode {
   // request, not paying attention to staleness. If there was no response, it
   // returns a network error.
   kOnlyIfCached,
+
+  // Unspecified ones
+  // Similar to ONLY_IF_CACHED, but checks freshness strictly.
+  kUnspecifiedOnlyIfCachedStrict,
+  // Used by devtools to trigger a request which ends up in CACHE_MISS.
+  kUnspecifiedForceCacheMiss,
 };
 
 // The redirect mode indicating how redirects should be handled.

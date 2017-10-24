@@ -35,7 +35,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -138,12 +137,12 @@ void WebURLRequest::SetAllowStoredCredentials(bool allow_stored_credentials) {
   resource_request_->SetAllowStoredCredentials(allow_stored_credentials);
 }
 
-WebCachePolicy WebURLRequest::GetCachePolicy() const {
-  return resource_request_->GetCachePolicy();
+mojom::FetchCacheMode WebURLRequest::GetCacheMode() const {
+  return resource_request_->GetCacheMode();
 }
 
-void WebURLRequest::SetCachePolicy(WebCachePolicy cache_policy) {
-  resource_request_->SetCachePolicy(cache_policy);
+void WebURLRequest::SetCacheMode(mojom::FetchCacheMode cache_mode) {
+  resource_request_->SetCacheMode(cache_mode);
 }
 
 WebString WebURLRequest::HttpMethod() const {

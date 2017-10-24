@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -38,7 +38,7 @@ class MultiResolutionImageResourceFetcher {
       blink::WebLocalFrame* frame,
       int id,
       blink::WebURLRequest::RequestContext request_context,
-      blink::WebCachePolicy cache_policy,
+      blink::mojom::FetchCacheMode cache_mode,
       const Callback& callback);
 
   virtual ~MultiResolutionImageResourceFetcher();

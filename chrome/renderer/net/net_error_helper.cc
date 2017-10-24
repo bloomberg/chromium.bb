@@ -37,11 +37,11 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -350,7 +350,7 @@ void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
             web_frame->GetDocumentLoader()->GetRequest().HttpMethod().Ascii());
 
   blink::WebURLRequest request(page_url);
-  request.SetCachePolicy(blink::WebCachePolicy::kReturnCacheDataDontLoad);
+  request.SetCacheMode(blink::mojom::FetchCacheMode::kOnlyIfCached);
   web_frame->LoadRequest(request);
 }
 

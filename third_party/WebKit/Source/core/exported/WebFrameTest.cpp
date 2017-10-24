@@ -123,7 +123,6 @@
 #include "platform/wtf/dtoa/utils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCache.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebFloatRect.h"
@@ -135,6 +134,7 @@
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebContextMenuData.h"
 #include "public/web/WebDeviceEmulationParams.h"
@@ -6555,7 +6555,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
       URLTestHelpers::ToKURL(error_url), response, error);
   FrameTestHelpers::LoadHistoryItem(frame, error_history_item,
                                     kWebHistoryDifferentDocumentLoad,
-                                    WebCachePolicy::kUseProtocolCachePolicy);
+                                    mojom::FetchCacheMode::kDefault);
   WebString text = WebFrameContentDumper::DumpWebViewAsText(
       web_view_helper.WebView(), std::numeric_limits<size_t>::max());
   EXPECT_EQ("This should appear", text.Utf8());
@@ -7359,13 +7359,13 @@ TEST_P(ParameterizedWebFrameTest, BackToReload) {
 
   FrameTestHelpers::LoadHistoryItem(frame, WebHistoryItem(first_item.Get()),
                                     kWebHistoryDifferentDocumentLoad,
-                                    WebCachePolicy::kUseProtocolCachePolicy);
+                                    mojom::FetchCacheMode::kDefault);
   EXPECT_EQ(first_item.Get(),
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
 
   FrameTestHelpers::ReloadFrame(frame);
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
+            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
 }
 
 TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
@@ -7387,8 +7387,8 @@ TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
   item.Initialize();
   WebURL history_url(ToKURL(base_url_ + "white-1x1.png"));
   item.SetURLString(history_url.GetString());
-  WebURLRequest request = main_frame->RequestFromHistoryItem(
-      item, WebCachePolicy::kUseProtocolCachePolicy);
+  WebURLRequest request =
+      main_frame->RequestFromHistoryItem(item, mojom::FetchCacheMode::kDefault);
   main_frame->Load(request, WebFrameLoadType::kBackForward, item);
 
   FrameTestHelpers::ReloadFrame(child_frame);
@@ -7414,8 +7414,8 @@ TEST_P(ParameterizedWebFrameTest, ReloadPost) {
             frame->GetDocumentLoader()->GetRequest().HttpMethod());
 
   FrameTestHelpers::ReloadFrame(frame);
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
+            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
   EXPECT_EQ(kWebNavigationTypeFormResubmitted,
             frame->GetDocumentLoader()->GetNavigationType());
 }
@@ -7439,22 +7439,22 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload) {
   // Cache policy overrides should take.
   FrameTestHelpers::LoadHistoryItem(frame, WebHistoryItem(first_item),
                                     kWebHistoryDifferentDocumentLoad,
-                                    WebCachePolicy::kValidatingCacheData);
+                                    mojom::FetchCacheMode::kValidateCache);
   EXPECT_EQ(first_item.Get(),
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
+            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
 }
 
 class TestCachePolicyWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestCachePolicyWebFrameClient()
-      : policy_(WebCachePolicy::kUseProtocolCachePolicy),
+      : cache_mode_(mojom::FetchCacheMode::kDefault),
         will_send_request_call_count_(0) {}
   ~TestCachePolicyWebFrameClient() override {}
 
-  WebCachePolicy GetCachePolicy() const { return policy_; }
+  mojom::FetchCacheMode GetCacheMode() const { return cache_mode_; }
   int WillSendRequestCallCount() const { return will_send_request_call_count_; }
   TestCachePolicyWebFrameClient& ChildClient(size_t i) {
     return *child_clients_[i].get();
@@ -7476,12 +7476,12 @@ class TestCachePolicyWebFrameClient
     return CreateLocalChild(*parent, scope, child_ptr);
   }
   void WillSendRequest(WebURLRequest& request) override {
-    policy_ = request.GetCachePolicy();
+    cache_mode_ = request.GetCacheMode();
     will_send_request_call_count_++;
   }
 
  private:
-  WebCachePolicy policy_;
+  mojom::FetchCacheMode cache_mode_;
   Vector<std::unique_ptr<TestCachePolicyWebFrameClient>> child_clients_;
   int will_send_request_call_count_;
 };
@@ -7504,8 +7504,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe) {
   EXPECT_EQ(child_client, child_frame->Client());
   EXPECT_EQ(1u, main_frame->GetFrame()->Tree().ScopedChildCount());
   EXPECT_EQ(1, child_client->WillSendRequestCallCount());
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
-            child_client->GetCachePolicy());
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault, child_client->GetCacheMode());
 
   FrameTestHelpers::ReloadFrame(main_frame);
 
@@ -7525,8 +7524,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe) {
   // Sub-frames should not be forcibly revalidated.
   // TODO(toyoshim): Will consider to revalidate main resources in sub-frames
   // on reloads. Or will do only for bypassingCache.
-  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
-            new_child_client->GetCachePolicy());
+  EXPECT_EQ(mojom::FetchCacheMode::kDefault, new_child_client->GetCacheMode());
 }
 
 class TestSameDocumentWebFrameClient
@@ -7583,8 +7581,7 @@ class TestSameDocumentWithImageWebFrameClient
   void WillSendRequest(WebURLRequest& request) override {
     if (request.GetRequestContext() == WebURLRequest::kRequestContextImage) {
       num_of_image_requests_++;
-      EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
-                request.GetCachePolicy());
+      EXPECT_EQ(mojom::FetchCacheMode::kDefault, request.GetCacheMode());
     }
   }
 
@@ -7718,9 +7715,8 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType) {
 
   ToLocalFrame(web_view_impl->GetPage()->MainFrame())
       ->Loader()
-      .Load(FrameLoadRequest(nullptr,
-                             item->GenerateResourceRequest(
-                                 WebCachePolicy::kUseProtocolCachePolicy)),
+      .Load(FrameLoadRequest(nullptr, item->GenerateResourceRequest(
+                                          mojom::FetchCacheMode::kDefault)),
             kFrameLoadTypeBackForward, item.Get(), kHistorySameDocumentLoad);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
@@ -8759,8 +8755,8 @@ TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache) {
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   FrameTestHelpers::ReloadFrameBypassingCache(frame);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
-            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
+            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
 }
 
 static void NodeImageTestValidation(const IntSize& reference_bitmap_size,

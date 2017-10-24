@@ -36,7 +36,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCachePolicy.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -116,7 +116,7 @@ class CORE_EXPORT HistoryItem final
   void SetFormData(scoped_refptr<EncodedFormData>);
   void SetFormContentType(const AtomicString&);
 
-  ResourceRequest GenerateResourceRequest(WebCachePolicy);
+  ResourceRequest GenerateResourceRequest(mojom::FetchCacheMode);
 
   void Trace(blink::Visitor*);
 

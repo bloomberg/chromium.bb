@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
-#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
 
@@ -31,7 +30,7 @@ class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
   // AssociatedResourceFetcher implementation:
   void SetServiceWorkerMode(
       blink::WebURLRequest::ServiceWorkerMode service_worker_mode) override;
-  void SetCachePolicy(blink::WebCachePolicy policy) override;
+  void SetCacheMode(blink::mojom::FetchCacheMode mode) override;
   void SetLoaderOptions(
       const blink::WebAssociatedURLLoaderOptions& options) override;
   void Start(blink::WebLocalFrame* frame,
