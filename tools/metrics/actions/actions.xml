@@ -10351,6 +10351,14 @@ should be able to be added at any place in this file.
   <description>The user paused a media element from the controls.</description>
 </action>
 
+<action name="Media.Controls.PauseOverlay">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    The user paused a media element from the pause overlay button.
+  </description>
+</action>
+
 <action name="Media.Controls.Play">
   <owner>mlamouri@chromium.org</owner>
   <description>The user played a media element from the controls.</description>
