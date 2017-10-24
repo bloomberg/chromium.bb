@@ -61,7 +61,7 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void CloseAndLockAndDisturb();
   ScriptState* GetScriptState() { return script_state_.get(); }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(consumer_);
     visitor->Trace(loader_);
     UnderlyingSourceBase::Trace(visitor);

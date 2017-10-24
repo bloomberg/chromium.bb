@@ -105,7 +105,7 @@ class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
       : context_(std::move(context)) {
     context_->AttachReader(client);
   }
-  ~ReaderImpl() { context_->DetachReader(); }
+  ~ReaderImpl() override { context_->DetachReader(); }
 
   WebDataConsumerHandle::Result BeginRead(const void** buffer,
                                           Flags flags,

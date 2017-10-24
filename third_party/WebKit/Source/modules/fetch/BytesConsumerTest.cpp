@@ -63,7 +63,8 @@ class FakeBlobBytesConsumer : public BytesConsumer {
     state_ = PublicState::kErrored;
     return Result::kError;
   }
-  scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy policy) {
+  scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
+      BlobSizePolicy policy) override {
     if (state_ != PublicState::kReadableOrWaiting)
       return nullptr;
     DCHECK(blob_handle_);

@@ -53,7 +53,7 @@ class MODULES_EXPORT FetchDataLoader
 
     virtual void DidFetchDataLoadFailed() = 0;
 
-    virtual void Trace(blink::Visitor* visitor) {}
+    void Trace(blink::Visitor* visitor) override {}
   };
 
   static FetchDataLoader* CreateLoaderAsBlobHandle(const String& mime_type);

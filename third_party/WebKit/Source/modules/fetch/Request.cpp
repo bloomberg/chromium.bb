@@ -412,7 +412,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // non-null, run these substeps:"
   if (input_request && input_request->BodyBuffer()) {
     // "Let |dummyStream| be an empty ReadableStream object."
-    auto dummy_stream =
+    auto* dummy_stream =
         new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed());
     // "Set |input|'s request's body to a new body whose stream is
     // |dummyStream|."
