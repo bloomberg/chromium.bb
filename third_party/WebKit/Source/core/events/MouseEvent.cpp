@@ -115,8 +115,8 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
   }
 
   SyntheticEventType synthetic_type = kPositionless;
-  int screen_x = 0;
-  int screen_y = 0;
+  double screen_x = 0;
+  double screen_y = 0;
   if (underlying_event && underlying_event->IsMouseEvent()) {
     synthetic_type = kRealOrIndistinguishable;
     MouseEvent* mouse_event = ToMouseEvent(underlying_event);
@@ -171,7 +171,7 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
                     event.FromTouch())
               : nullptr),
       screen_location_(event.PositionInScreen().x, event.PositionInScreen().y),
-      movement_delta_(FlooredIntPoint(event.MovementInRootFrame())),
+      movement_delta_(event.MovementInRootFrame()),
       position_type_(PositionType::kPosition),
       button_(static_cast<short>(event.button)),
       buttons_(WebInputEventModifiersToButtons(event.GetModifiers())),
@@ -180,8 +180,7 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
                                               : kRealOrIndistinguishable),
       region_(region),
       menu_source_type_(event.menu_source_type) {
-  IntPoint root_frame_coordinates =
-      FlooredIntPoint(event.PositionInRootFrame());
+  FloatPoint root_frame_coordinates = event.PositionInRootFrame();
   InitCoordinatesFromRootFrame(root_frame_coordinates.X(),
                                root_frame_coordinates.Y());
 }
@@ -191,12 +190,12 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
                        bool cancelable,
                        AbstractView* abstract_view,
                        int detail,
-                       int screen_x,
-                       int screen_y,
-                       int window_x,
-                       int window_y,
-                       int movement_x,
-                       int movement_y,
+                       double screen_x,
+                       double screen_y,
+                       double window_x,
+                       double window_y,
+                       double movement_x,
+                       double movement_y,
                        WebInputEvent::Modifiers modifiers,
                        short button,
                        unsigned short buttons,
@@ -259,7 +258,8 @@ void MouseEvent::InitCoordinates(const double client_x, const double client_y) {
   has_cached_relative_position_ = false;
 }
 
-void MouseEvent::InitCoordinatesFromRootFrame(int window_x, int window_y) {
+void MouseEvent::InitCoordinatesFromRootFrame(double window_x,
+                                              double window_y) {
   DoublePoint adjusted_page_location;
   DoubleSize scroll_offset;
 
@@ -269,8 +269,8 @@ void MouseEvent::InitCoordinatesFromRootFrame(int window_x, int window_y) {
   if (frame && HasPosition()) {
     if (LocalFrameView* frame_view = frame->View()) {
       adjusted_page_location =
-          frame_view->RootFrameToContents(IntPoint(window_x, window_y));
-      scroll_offset = frame_view->ScrollOffsetInt();
+          frame_view->RootFrameToContents(FloatPoint(window_x, window_y));
+      scroll_offset = frame_view->GetScrollOffset();
       float scale_factor = 1 / frame->PageZoomFactor();
       if (scale_factor != 1.0f) {
         adjusted_page_location.Scale(scale_factor, scale_factor);
@@ -354,10 +354,10 @@ void MouseEvent::InitMouseEventInternal(
     bool cancelable,
     AbstractView* view,
     int detail,
-    int screen_x,
-    int screen_y,
-    int client_x,
-    int client_y,
+    double screen_x,
+    double screen_y,
+    double client_x,
+    double client_y,
     WebInputEvent::Modifiers modifiers,
     short button,
     EventTarget* related_target,
@@ -366,7 +366,7 @@ void MouseEvent::InitMouseEventInternal(
   InitUIEventInternal(type, can_bubble, cancelable, related_target, view,
                       detail, source_capabilities);
 
-  screen_location_ = IntPoint(screen_x, screen_y);
+  screen_location_ = DoublePoint(screen_x, screen_y);
   button_ = button;
   buttons_ = buttons;
   related_target_ = related_target;

@@ -189,12 +189,12 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              bool cancelable,
              AbstractView*,
              int detail,
-             int screen_x,
-             int screen_y,
-             int window_x,
-             int window_y,
-             int movement_x,
-             int movement_y,
+             double screen_x,
+             double screen_y,
+             double window_x,
+             double window_y,
+             double movement_x,
+             double movement_y,
              WebInputEvent::Modifiers,
              short button,
              unsigned short buttons,
@@ -228,10 +228,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                               bool cancelable,
                               AbstractView*,
                               int detail,
-                              int screen_x,
-                              int screen_y,
-                              int client_x,
-                              int client_y,
+                              double screen_x,
+                              double screen_y,
+                              double client_x,
+                              double client_y,
                               WebInputEvent::Modifiers,
                               short button,
                               EventTarget* related_target,
@@ -239,7 +239,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                               unsigned short buttons = 0);
 
   void InitCoordinates(const double client_x, const double client_y);
-  void InitCoordinatesFromRootFrame(int window_x, int window_y);
+  void InitCoordinatesFromRootFrame(double window_x, double window_y);
 
   void ComputePageLocation();
   void ComputeRelativePosition();
