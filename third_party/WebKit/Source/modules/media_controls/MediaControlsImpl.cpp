@@ -1286,8 +1286,9 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
 
 void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
   // The popup is positioned slightly on the inside of the bottom right corner.
-  static constexpr int kPopupMenuMarginPx = 0;
+  static constexpr int kPopupMenuMarginPx = 4;
   static const char kImportant[] = "important";
+  static const char kPx[] = "px";
 
   DCHECK(MediaElement().getBoundingClientRect());
   DCHECK(GetDocument().domWindow());
@@ -1295,17 +1296,19 @@ void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
 
   DOMRect* bounding_client_rect = MediaElement().getBoundingClientRect();
   DOMVisualViewport* viewport = GetDocument().domWindow()->visualViewport();
-  ;
 
-  int bottom = viewport->height() - bounding_client_rect->y() -
-               bounding_client_rect->height() + kPopupMenuMarginPx;
-  int right = viewport->width() - bounding_client_rect->x() -
-              bounding_client_rect->width() + kPopupMenuMarginPx;
+  WTF::String bottom_str_value = WTF::String::Number(
+      viewport->height() - bounding_client_rect->bottom() + kPopupMenuMarginPx);
+  WTF::String right_str_value = WTF::String::Number(
+      viewport->width() - bounding_client_rect->right() + kPopupMenuMarginPx);
 
-  popup_menu->style()->setProperty("bottom", WTF::String::Number(bottom),
-                                   kImportant, ASSERT_NO_EXCEPTION);
-  popup_menu->style()->setProperty("right", WTF::String::Number(right),
-                                   kImportant, ASSERT_NO_EXCEPTION);
+  bottom_str_value.append(kPx);
+  right_str_value.append(kPx);
+
+  popup_menu->style()->setProperty("bottom", bottom_str_value, kImportant,
+                                   ASSERT_NO_EXCEPTION);
+  popup_menu->style()->setProperty("right", right_str_value, kImportant,
+                                   ASSERT_NO_EXCEPTION);
 }
 
 void MediaControlsImpl::Invalidate(Element* element) {
