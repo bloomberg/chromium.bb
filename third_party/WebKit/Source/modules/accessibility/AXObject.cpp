@@ -2202,14 +2202,6 @@ bool AXObject::OnNativeShowContextMenuAction() {
   return true;
 }
 
-void AXObject::NotifyIfIgnoredValueChanged() {
-  bool is_ignored = AccessibilityIsIgnored();
-  if (LastKnownIsIgnoredValue() != is_ignored) {
-    AxObjectCache().ChildrenChanged(ParentObject());
-    SetLastKnownIsIgnoredValue(is_ignored);
-  }
-}
-
 void AXObject::SelectionChanged() {
   if (AXObject* parent = ParentObjectIfExists())
     parent->SelectionChanged();

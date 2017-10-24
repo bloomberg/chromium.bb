@@ -517,6 +517,23 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
   return obj;
 }
 
+void AXObjectCacheImpl::InvalidateTableSubtree(AXObject* subtree) {
+  if (!subtree)
+    return;
+
+  LayoutObject* layout_object = subtree->GetLayoutObject();
+  if (layout_object) {
+    LayoutObject* layout_child = layout_object->SlowFirstChild();
+    while (layout_child) {
+      InvalidateTableSubtree(Get(layout_child));
+      layout_child = layout_child->NextSibling();
+    }
+  }
+
+  AXID ax_id = subtree->AxObjectID();
+  Remove(ax_id);
+}
+
 void AXObjectCacheImpl::Remove(AXID ax_id) {
   if (!ax_id)
     return;
@@ -862,18 +879,43 @@ void AXObjectCacheImpl::HandleActiveDescendantChanged(Node* node) {
     obj->HandleActiveDescendantChanged();
 }
 
-void AXObjectCacheImpl::HandleAriaRoleChanged(Node* node) {
-  if (AXObject* obj = GetOrCreate(node)) {
-    obj->UpdateAccessibilityRole();
+// Be as safe as possible about changes that could alter the accessibility role,
+// as this may require a different subclass of AXObject.
+// Role changes are disallowed by the spec but we must handle it gracefully, see
+// https://www.w3.org/TR/wai-aria-1.1/#h-roles for more information.
+void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
+  if (!node)
+    return;  // Virtual AOM node.
+
+  // Invalidate the current object and make the parent reconsider its children.
+  if (AXObject* obj = Get(node)) {
+    // Save parent for later use.
+    AXObject* parent = obj->ParentObject();
+
+    // If role changes on a table, invalidate the entire table subtree as many
+    // objects may suddenly need to change, because presentation is inherited
+    // from the table to rows and cells.
+    // TODO(aleventhal) A size change on a select means the children may need to
+    // switch between AXMenuListOption and AXListBoxOption.
+    // For some reason we don't get attribute changes for @size, though.
+    LayoutObject* layout_object = node->GetLayoutObject();
+    if (layout_object && layout_object->IsTable())
+      InvalidateTableSubtree(obj);
+    else
+      Remove(node);
+
+    // Parent object changed children, as the previous AXObject for this node
+    // was destroyed and a different one was created in its place.
+    if (parent)
+      ChildrenChanged(parent, parent->GetNode());
     modification_count_++;
-    obj->NotifyIfIgnoredValueChanged();
   }
 }
 
 void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
                                                Element* element) {
-  if (attr_name == roleAttr)
-    HandleAriaRoleChanged(element);
+  if (attr_name == roleAttr || attr_name == typeAttr || attr_name == sizeAttr)
+    HandlePossibleRoleChange(element);
   else if (attr_name == altAttr || attr_name == titleAttr)
     TextChanged(element);
   else if (attr_name == forAttr && IsHTMLLabelElement(*element))

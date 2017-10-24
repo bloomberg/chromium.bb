@@ -819,10 +819,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void ChildrenChanged() {}
   virtual void HandleActiveDescendantChanged() {}
   virtual void HandleAriaExpandedChanged() {}
-  void NotifyIfIgnoredValueChanged();
   virtual void SelectionChanged();
   virtual void TextChanged() {}
-  virtual void UpdateAccessibilityRole() {}
 
   // Text metrics. Most of these should be deprecated, needs major cleanup.
   virtual VisiblePosition VisiblePositionForIndex(int) const;
