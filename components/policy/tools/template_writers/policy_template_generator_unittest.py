@@ -105,20 +105,35 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         {
           'name': 'Group1', 'type': 'group',
           'caption': '', 'desc': '',
-          'policies': [{'name': 'TAG1', 'type': 'mock', 'supported_on': [],
-                        'caption': '', 'desc': ''}]
+          'policies': ['TAG1'],
         },
         {
           'name': 'Group2', 'type': 'group',
           'caption': '', 'desc': '',
-          'policies': [{'name': 'TAG2', 'type': 'mock', 'supported_on': [],
-                        'caption': '', 'desc': ''}]
+          'policies': ['TAG2',],
         },
         {
           'name': 'Group3', 'type': 'group',
           'caption': '', 'desc': '',
-          'policies': [{'name': 'TAG3', 'type': 'mock', 'supported_on': [],
-                        'caption': '', 'desc': ''}]
+          'policies': ['TAG3'],
+        },
+        {
+          'name': 'TAG1',
+          'type': 'mock',
+          'supported_on': [],
+          'caption': '', 'desc': ''
+        },
+        {
+          'name': 'TAG2',
+          'type': 'mock',
+          'supported_on': [],
+          'caption': '', 'desc': ''
+        },
+        {
+          'name': 'TAG3',
+          'type': 'mock',
+          'supported_on': [],
+          'caption': '', 'desc': ''
         },
       ]
     }
@@ -142,23 +157,21 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           'type': 'group',
           'caption': '',
           'desc': '',
-          'policies': [
-            {'name': 'Group1Policy1', 'type': 'string', 'supported_on': [],
-             'caption': '', 'desc': ''},
-            {'name': 'Group1Policy2', 'type': 'string', 'supported_on': [],
-             'caption': '', 'desc': ''},
-          ]
+          'policies': ['Group1Policy1', 'Group1Policy2'],
         },
         {
           'name': 'Group2',
           'type': 'group',
           'caption': '',
           'desc': '',
-          'policies': [
-            {'name': 'Group2Policy3', 'type': 'string', 'supported_on': [],
-             'caption': '', 'desc': ''},
-          ]
-        }
+          'policies': ['Group2Policy3'],
+        },
+        {'name': 'Group1Policy1', 'type': 'string', 'supported_on': [],
+         'caption': '', 'desc': ''},
+        {'name': 'Group1Policy2', 'type': 'string', 'supported_on': [],
+         'caption': '', 'desc': ''},
+        {'name': 'Group2Policy3', 'type': 'string', 'supported_on': [],
+         'caption': '', 'desc': ''},
       ]
     }
     class LocalMockWriter(mock_writer.MockWriter):
@@ -187,17 +200,16 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           'type': 'group',
           'desc': '',
           'caption': '',
-          'policies': [
-            {
-              'name': 'Policy1',
-              'caption': '1. app_name -- $1',
-              'label': '2. os_name -- $2',
-              'desc': '3. frame_name -- $3',
-              'type': 'string',
-              'supported_on': []
-            },
-          ]
-        }
+          'policies': ['Policy1'],
+        },
+        {
+          'name': 'Policy1',
+          'caption': '1. app_name -- $1',
+          'label': '2. os_name -- $2',
+          'desc': '3. frame_name -- $3',
+          'type': 'string',
+          'supported_on': []
+        },
       ]
     }
     class LocalMockWriter(mock_writer.MockWriter):
@@ -289,50 +301,50 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     # Test that policies are filtered correctly based on their annotations.
     policy_data_mock = {
       'policy_definitions': [
-         {
+        {
           'name': 'Group1',
           'type': 'group',
           'caption': '',
           'desc': '',
-          'policies': [
-            {
-              'name': 'Group1Policy1',
-              'type': 'string',
-              'caption': '',
-              'desc': '',
-              'supported_on': [
-                'chrome.aaa:8-', 'chrome.bbb:8-', 'chrome.ccc:8-'
-              ]
-            },
-            {
-              'name': 'Group1Policy2',
-              'type': 'string',
-              'caption': '',
-              'desc': '',
-              'supported_on': ['chrome.ddd:8-']
-            },
-          ]
-        }, {
+          'policies': ['Group1Policy1', 'Group1Policy2'],
+        },
+        {
           'name': 'Group2',
           'type': 'group',
           'caption': '',
           'desc': '',
-          'policies': [
-            {
-              'name': 'Group2Policy3',
-              'type': 'string',
-              'caption': '',
-              'desc': '',
-              'supported_on': ['chrome.eee:8-']
-            },
-          ]
-        }, {
+          'policies': ['Group2Policy3'],
+        },
+        {
           'name': 'SinglePolicy',
           'type': 'int',
           'caption': '',
           'desc': '',
           'supported_on': ['chrome.eee:8-']
-        }
+        },
+        {
+          'name': 'Group1Policy1',
+          'type': 'string',
+          'caption': '',
+          'desc': '',
+          'supported_on': [
+            'chrome.aaa:8-', 'chrome.bbb:8-', 'chrome.ccc:8-'
+          ]
+        },
+        {
+          'name': 'Group1Policy2',
+          'type': 'string',
+          'caption': '',
+          'desc': '',
+          'supported_on': ['chrome.ddd:8-']
+        },
+        {
+          'name': 'Group2Policy3',
+          'type': 'string',
+          'caption': '',
+          'desc': '',
+          'supported_on': ['chrome.eee:8-']
+        },
       ]
     }
     # This writer accumulates the list of policies it is asked to write.

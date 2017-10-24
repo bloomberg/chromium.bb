@@ -380,21 +380,23 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "type": "group",
               "caption": "",
               "desc": "",
-              "policies": [{
-                "name": "Policy1",
-                "type": "list",
-                "caption": "",
-                "desc": "",
-                "supported_on": ["chrome.win:8-"],
-                "example_value": ["a", "b"]
-              },{
-                "name": "Policy2",
-                "type": "string",
-                "caption": "",
-                "desc": "",
-                "supported_on": ["chrome.win:8-"],
-                "example_value": "c"
-              }],
+              "policies": ["Policy1", "Policy2"],
+            },
+            {
+              "name": "Policy1",
+              "type": "list",
+              "caption": "",
+              "desc": "",
+              "supported_on": ["chrome.win:8-"],
+              "example_value": ["a", "b"]
+            },
+            {
+              "name": "Policy2",
+              "type": "string",
+              "caption": "",
+              "desc": "",
+              "supported_on": ["chrome.win:8-"],
+              "example_value": "c"
             },
           ],
           "placeholders": [],

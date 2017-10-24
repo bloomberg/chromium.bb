@@ -5,7 +5,6 @@
 # If this presubmit check fails or misbehaves, please complain to
 # mnissler@chromium.org, bartfab@chromium.org or atwilson@chromium.org.
 
-import itertools
 import sys
 import xml.dom.minidom
 
@@ -19,11 +18,7 @@ def _GetPolicyTemplates(template_path):
   policies = ( policy
                for policy in template_data['policy_definitions']
                if policy['type'] != 'group' )
-  groups = ( policy['policies']
-             for policy in template_data['policy_definitions']
-             if policy['type'] == 'group' )
-  subpolicies = ( policy for group in groups for policy in group )
-  return list(itertools.chain(policies, subpolicies))
+  return policies
 
 def _CheckPolicyTemplatesSyntax(input_api, output_api):
   local_path = input_api.PresubmitLocalPath()

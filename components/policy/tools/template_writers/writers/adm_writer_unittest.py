@@ -887,15 +887,16 @@ ExternalPolicy_Part="Caption of policy."
           {
             'name': 'NonWinGroup',
             'type': 'group',
-            'policies': [{
-              'name': 'NonWinPolicy',
-              'type': 'list',
-              'supported_on': ['chrome.linux:8-', 'chrome.mac:8-'],
-              'caption': 'Caption of list policy.',
-              'desc': 'Desc of list policy.',
-            }],
+            'policies': ['NonWinPolicy'],
             'caption': 'Group caption.',
             'desc': 'Group description.',
+          },
+          {
+            'name': 'NonWinPolicy',
+            'type': 'list',
+            'supported_on': ['chrome.linux:8-', 'chrome.mac:8-'],
+            'caption': 'Caption of list policy.',
+            'desc': 'Desc of list policy.',
           },
         ],
         'placeholders': [],
@@ -999,22 +1000,24 @@ MainPolicy_Explain="Description of main."''')
             'type': 'group',
             'desc': 'Description of group.',
             'caption': 'Caption of group.',
-            'policies': [{
-              'name': 'Policy1',
-              'type': 'list',
-              'supported_on': ['chrome.win:8-'],
-              'features': { 'can_be_recommended': True },
-              'caption': 'Caption of policy1.',
-              'desc': """Description of policy1.
+            'policies': ['Policy1', 'Policy2'],
+          },
+          {
+            'name': 'Policy1',
+            'type': 'list',
+            'supported_on': ['chrome.win:8-'],
+            'features': { 'can_be_recommended': True },
+            'caption': 'Caption of policy1.',
+            'desc': """Description of policy1.
 With a newline."""
-            },{
-              'name': 'Policy2',
-              'type': 'string',
-              'supported_on': ['chrome.win:8-'],
-              'caption': 'Caption of policy2.',
-              'desc': """Description of policy2.
+          },
+          {
+            'name': 'Policy2',
+            'type': 'string',
+            'supported_on': ['chrome.win:8-'],
+            'caption': 'Caption of policy2.',
+            'desc': """Description of policy2.
 With a newline."""
-            }],
           },
         ],
         'placeholders': [],
