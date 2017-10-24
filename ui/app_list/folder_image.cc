@@ -86,7 +86,7 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   bubble_center.Offset(0, -kFolderBubbleOffsetY);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(FolderImage::GetFolderBubbleSkColor());
+  flags.setColor(kFolderBubbleColor);
   canvas->DrawCircle(bubble_center, kFolderBubbleRadius, flags);
 
   if (icons_.size() == 0)
@@ -164,12 +164,6 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
   top_icon_bounds.push_back(bottom_right);
 
   return top_icon_bounds;
-}
-
-// static
-SkColor FolderImage::GetFolderBubbleSkColor() {
-  return features::IsFullscreenAppListEnabled() ? kFolderBubbleColorFullScreen
-                                                : kFolderBubbleColor;
 }
 
 gfx::Rect FolderImage::GetTargetIconRectInFolderForItem(
