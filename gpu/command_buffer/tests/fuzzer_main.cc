@@ -125,6 +125,7 @@ class CommandBufferSetup {
     CHECK(gl::init::InitializeGLOneOffImplementation(
         gl::kGLImplementationSwiftShaderGL, false, false, false, true));
 #endif
+    discardable_manager_ = std::make_unique<ServiceDiscardableManager>();
 
 #if !defined(GPU_FUZZER_USE_STUB)
     surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size());
@@ -152,7 +153,7 @@ class CommandBufferSetup {
         &translator_cache_, &completeness_cache_, feature_info,
         true /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
-        GpuFeatureInfo(), &discardable_manager_);
+        GpuFeatureInfo(), discardable_manager_.get());
     command_buffer_.reset(new CommandBufferDirect(
         context_group->transfer_buffer_manager(), &sync_point_manager_));
 
@@ -270,7 +271,7 @@ class CommandBufferSetup {
   scoped_refptr<gl::GLShareGroup> share_group_;
   SyncPointManager sync_point_manager_;
   gles2::ImageManager image_manager_;
-  ServiceDiscardableManager discardable_manager_;
+  std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
 
   bool recreate_context_ = false;
   scoped_refptr<gl::GLSurface> surface_;
