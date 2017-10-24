@@ -135,6 +135,9 @@ used when committed.
     features in Chromium
 *   [Adding a new feature flag in chrome://flags](how_to_add_your_feature_flag.md) - Quick
     guide to add a new feature flag to experiment your feature.
+*   [Guidelines for considering branch dates in project planning](release_branch_guidance.md) -
+    What to do (and not to do) around branch dates when scheduling your project
+    work.
 
 ### Testing
 *   [Running and Debugging Layout Tests](testing/layout_tests.md)
