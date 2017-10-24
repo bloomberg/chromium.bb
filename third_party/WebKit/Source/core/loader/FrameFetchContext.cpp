@@ -786,9 +786,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
-  if (!RuntimeEnabledFeatures::ClientHintsEnabled())
-    return;
-
   WebEnabledClientHints enabled_hints;
   if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled() &&
       GetContentSettingsClient()) {

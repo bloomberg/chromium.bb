@@ -158,10 +158,6 @@
       status: "experimental",
     },
     {
-      name: "ClientHints",
-      status: "stable",
-    },
-    {
       name: "ClientHintsPersistent",
       status: "experimental",
     },
