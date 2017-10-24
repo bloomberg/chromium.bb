@@ -82,7 +82,7 @@ class Speedometer2Measurement(legacy_page_test.LegacyPageTest):
               key=suite_name), important=False))
 
 
-@benchmark.Owner(emails=['verwaest@chromium.org, mvstanton@chromium.org'])
+@benchmark.Owner(emails=['hablich@chromium.org'])
 class Speedometer2(perf_benchmark.PerfBenchmark):
   test = Speedometer2Measurement
 

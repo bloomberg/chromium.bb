@@ -95,7 +95,7 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
     keychain_metric.KeychainMetric().AddResults(tab, results)
 
 
-@benchmark.Owner(emails=['bmeurer@chromium.org', 'mvstanton@chromium.org'])
+@benchmark.Owner(emails=['hablich@chromium.org'])
 class Speedometer(perf_benchmark.PerfBenchmark):
   test = SpeedometerMeasurement
 
