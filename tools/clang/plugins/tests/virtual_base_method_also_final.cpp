@@ -7,11 +7,12 @@
 
 class A {
  public:
-  VIRTUAL void F() final {}
+  virtual void F() final {}
   // Make sure an out-of-place virtual doesn't cause an incorrect fixit removal
   // to be emitted.
-  void VIRTUAL G() final {}
-  // Make sure a fixit removal isn't generated for macros that expand to more
-  // than just 'virtual'.
-  VIRTUAL_VOID H() final {}
+  void virtual G() final {}
+  // Don't emit any fixits for virtual from macros.
+  VIRTUAL void H() final {}
+  void VIRTUAL I() final {}
+  VIRTUAL_VOID J() final {}
 };

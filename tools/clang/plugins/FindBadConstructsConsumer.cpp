@@ -31,27 +31,6 @@ bool IsGtestTestFixture(const CXXRecordDecl* decl) {
   return decl->getQualifiedNameAsString() == "testing::Test";
 }
 
-// Generates a fixit hint to remove the 'virtual' keyword.
-// Unfortunately, there doesn't seem to be a good way to determine the source
-// location of the 'virtual' keyword. It's available in Declarator, but that
-// isn't accessible from the AST. So instead, make an educated guess that the
-// first token is probably the virtual keyword. Strictly speaking, this doesn't
-// have to be true, but it probably will be.
-// TODO(dcheng): Add a warning to force virtual to always appear first ;-)
-FixItHint FixItRemovalForVirtual(const SourceManager& manager,
-                                 const LangOptions& lang_opts,
-                                 const CXXMethodDecl* method) {
-  SourceRange range(method->getLocStart());
-  // Get the spelling loc just in case it was expanded from a macro.
-  SourceRange spelling_range(manager.getSpellingLoc(range.getBegin()));
-  // Sanity check that the text looks like virtual.
-  StringRef text = clang::Lexer::getSourceText(
-      CharSourceRange::getTokenRange(spelling_range), manager, lang_opts);
-  if (text.trim() != "virtual")
-    return FixItHint();
-  return FixItHint::CreateRemoval(range);
-}
-
 bool IsPodOrTemplateType(const CXXRecordDecl& record) {
   return record.isPOD() ||
          record.getDescribedClassTemplate() ||
@@ -114,6 +93,8 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
       "'final'.");
   diag_redundant_virtual_specifier_ = diagnostic().getCustomDiagID(
       getErrorLevel(), "[chromium-style] %0 is redundant; %1 implies %0.");
+  diag_will_be_redundant_virtual_specifier_ = diagnostic().getCustomDiagID(
+      getErrorLevel(), "[chromium-style] %0 will be redundant; %1 implies %0.");
   // http://llvm.org/bugs/show_bug.cgi?id=21051 has been filed to make this a
   // Clang warning.
   diag_base_method_virtual_and_final_ = diagnostic().getCustomDiagID(
@@ -551,69 +532,21 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   SourceManager& manager = instance().getSourceManager();
   const LangOptions& lang_opts = instance().getLangOpts();
 
+  // Grab the stream of tokens from the beginning of the method
+  bool remove_virtual = false;
+  bool add_override = false;
+
   // Complain if a method is annotated virtual && (override || final).
-  if (has_virtual && (override_attr || final_attr)) {
-    // ... but only if virtual does not originate in a macro from a banned file.
-    // Note this is just an educated guess: the assumption here is that any
-    // macro for declaring methods will probably be at the start of the method's
-    // source range.
-    ReportIfSpellingLocNotIgnored(method->getLocStart(),
-                                  diag_redundant_virtual_specifier_)
-        << "'virtual'"
-        << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
-        << FixItRemovalForVirtual(manager, lang_opts, method);
-  }
+  if (has_virtual && (override_attr || final_attr))
+    remove_virtual = true;
 
   // Complain if a method is an override and is not annotated with override or
   // final.
   if (is_override && !override_attr && !final_attr) {
-    SourceRange range = method->getSourceRange();
-    SourceLocation loc;
-    if (method->hasInlineBody()) {
-      loc = method->getBody()->getSourceRange().getBegin();
-    } else {
-      loc = Lexer::getLocForEndOfToken(manager.getSpellingLoc(range.getEnd()),
-                                       0, manager, lang_opts);
-      // The original code used the ending source loc of TypeSourceInfo's
-      // TypeLoc. Unfortunately, this breaks down in the presence of attributes.
-      // Attributes often appear at the end of a TypeLoc, e.g.
-      //   virtual ULONG __stdcall AddRef()
-      // has a TypeSourceInfo that looks something like:
-      //   ULONG AddRef() __attribute(stdcall)
-      // so a fix-it insertion would be generated to insert 'override' after
-      // __stdcall in the code as written.
-      // While using the spelling loc of the CXXMethodDecl fixes attribute
-      // handling, it breaks handling of "= 0" and similar constructs.. To work
-      // around this, scan backwards in the source text for a '=' or ')' token
-      // and adjust the location as needed...
-      for (SourceLocation l = loc.getLocWithOffset(-1);
-           l != manager.getLocForStartOfFile(manager.getFileID(loc));
-           l = l.getLocWithOffset(-1)) {
-        l = Lexer::GetBeginningOfToken(l, manager, lang_opts);
-        Token token;
-        // getRawToken() returns *true* on failure. In that case, just give up
-        // and don't bother generating a possibly incorrect fix-it.
-        if (Lexer::getRawToken(l, token, manager, lang_opts, true)) {
-          loc = SourceLocation();
-          break;
-        }
-        if (token.is(tok::r_paren)) {
-          break;
-        } else if (token.is(tok::equal)) {
-          loc = l;
-          break;
-        }
-      }
-    }
-    // Again, only emit the warning if it doesn't originate from a macro in
-    // a system header.
-    if (loc.isValid()) {
-      ReportIfSpellingLocNotIgnored(loc, diag_method_requires_override_)
-          << FixItHint::CreateInsertion(loc, " override");
-    } else {
-      ReportIfSpellingLocNotIgnored(range.getBegin(),
-                                    diag_method_requires_override_);
-    }
+    add_override = true;
+    // Also remove the virtual in the same fixit if currently present.
+    if (has_virtual)
+      remove_virtual = true;
   }
 
   if (final_attr && override_attr) {
@@ -623,11 +556,69 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
         << FixItHint::CreateRemoval(override_attr->getRange());
   }
 
-  if (final_attr && !is_override) {
-    ReportIfSpellingLocNotIgnored(method->getLocStart(),
-                                  diag_base_method_virtual_and_final_)
-        << FixItRemovalForVirtual(manager, lang_opts, method)
-        << FixItHint::CreateRemoval(final_attr->getRange());
+  if (!remove_virtual && !add_override)
+    return;
+
+  // Deletion of virtual and insertion of override are tricky. The AST does not
+  // expose the location of `virtual` or `=`: the former is useful when trying
+  // to remove `virtual, while the latter is useful when trying to insert
+  // `override`. Iterate over the tokens from |method->getLocStart()| until:
+  // 1. A `{` not nested inside parentheses is found or
+  // 2. A `=` not nested inside parentheses is found or
+  // 3. A `;` not nested inside parentheses is found or
+  // 4. The end of the file is found.
+  SourceLocation virtual_loc;
+  SourceLocation override_insertion_loc;
+  // Attempt to set up the lexer in raw mode.
+  std::pair<FileID, unsigned> decomposed_start =
+      manager.getDecomposedLoc(method->getLocStart());
+  bool invalid = false;
+  StringRef buffer = manager.getBufferData(decomposed_start.first, &invalid);
+  if (!invalid) {
+    int nested_parentheses = 0;
+    Lexer lexer(manager.getLocForStartOfFile(decomposed_start.first), lang_opts,
+                buffer.begin(), buffer.begin() + decomposed_start.second,
+                buffer.end());
+    Token token;
+    while (!lexer.LexFromRawLexer(token)) {
+      // Found '=', ';', or '{'. No need to scan any further, since an override
+      // fixit hint won't be inserted after any of these tokens.
+      if ((token.is(tok::equal) || token.is(tok::semi) ||
+           token.is(tok::l_brace)) &&
+          nested_parentheses == 0) {
+        override_insertion_loc = token.getLocation();
+        break;
+      }
+      if (token.is(tok::l_paren)) {
+        ++nested_parentheses;
+      } else if (token.is(tok::r_paren)) {
+        --nested_parentheses;
+      } else if (token.is(tok::raw_identifier)) {
+        // TODO(dcheng): Unclear if this needs to check for nested parentheses
+        // as well?
+        if (token.getRawIdentifier() == "virtual")
+          virtual_loc = token.getLocation();
+      }
+    }
+  }
+
+  if (add_override && override_insertion_loc.isValid()) {
+    ReportIfSpellingLocNotIgnored(override_insertion_loc,
+                                  diag_method_requires_override_)
+        << FixItHint::CreateInsertion(override_insertion_loc, " override");
+  }
+  if (remove_virtual && virtual_loc.isValid()) {
+    ReportIfSpellingLocNotIgnored(
+        virtual_loc, add_override ? diag_will_be_redundant_virtual_specifier_
+                                  : diag_redundant_virtual_specifier_)
+        << "'virtual'"
+        // Slightly subtle: the else case handles both the currently and the
+        // will be redundant case for override. Doing the check this way also
+        // lets the plugin prioritize keeping 'final' over 'override' when both
+        // are present.
+        << (final_attr ? "'final'" : "'override'")
+        << FixItHint::CreateRemoval(
+               CharSourceRange::getTokenRange(SourceRange(virtual_loc)));
   }
 }
 
