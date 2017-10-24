@@ -1,5 +1,4 @@
 include_rules = [
-  "+content/public/android/java",
   "+components/autofill/android/java",
   "+components/background_task_scheduler/android/java",
   "+components/minidump_uploader/android/java",
@@ -8,6 +7,22 @@ include_rules = [
   "+components/safe_browsing/android/java",
   "+components/web_contents_delegate_android/java",
   "+components/variations/android/java",
+
+  "-content/public/android/java",
+  "+content/public/android/java/src/org/chromium/content_public",
+  "!content/public/android/java/src/org/chromium/content/browser/AppWebMessagePort.java",
+  "!content/public/android/java/src/org/chromium/content/browser/BrowserStartupController.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ChildProcessCreationParams.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentVideoViewEmbedder.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentViewStatics.java",
+  "!content/public/android/java/src/org/chromium/content/browser/PositionObserver.java",
+  "!content/public/android/java/src/org/chromium/content/browser/RenderCoordinates.java",
+  "!content/public/android/java/src/org/chromium/content/browser/SmartClipProvider.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ViewPositionObserver.java",
+  "!content/public/android/java/src/org/chromium/content/browser/input/HandleViewResources.java",
+
   "+device/gamepad/android/java",
   "+media/base/android/java",
 ]
