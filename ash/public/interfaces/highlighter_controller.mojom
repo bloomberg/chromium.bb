@@ -12,6 +12,9 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 interface HighlighterController {
   // Sets the client interface.
   SetClient(HighlighterControllerClient client);
+
+  // Exits the highlighter mode if it is currently enabled.
+  ExitHighlighterMode();
 };
 
 // Interface for ash to notify the client (e.g. Chrome) about the highlighter

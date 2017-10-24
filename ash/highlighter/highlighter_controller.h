@@ -44,6 +44,7 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController,
 
   // mojom::HighlighterController:
   void SetClient(mojom::HighlighterControllerClientPtr client) override;
+  void ExitHighlighterMode() override;
 
  private:
   friend class HighlighterControllerTestApi;

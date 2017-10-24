@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -43,12 +45,11 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
 
   void CallHandleSelection(const gfx::Rect& rect) {
     client_->HandleSelection(rect);
-    client_.FlushForTesting();
   }
 
   void CallHandleEnabledStateChange(bool enabled) {
+    is_enabled_ = enabled;
     client_->HandleEnabledStateChange(enabled);
-    client_.FlushForTesting();
   }
 
   bool client_attached() const { return static_cast<bool>(client_); }
@@ -63,6 +64,15 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
         base::Bind(&TestHighlighterController::OnClientConnectionLost,
                    base::Unretained(this)));
   }
+
+  void ExitHighlighterMode() override {
+    // simulate exiting current session.
+    CallHandleEnabledStateChange(false);
+  }
+
+  void FlushMojo() { client_.FlushForTesting(); }
+
+  bool is_enabled() { return is_enabled_; }
 
   // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
@@ -83,6 +93,7 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   ash::mojom::HighlighterControllerClientPtr client_;
+  bool is_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestHighlighterController);
 };
@@ -221,18 +232,21 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
 
   // Enabled state should propagate to the framework instance.
   highlighter_controller()->CallHandleEnabledStateChange(true);
+  highlighter_controller()->FlushMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_TRUE(framework_instance()->metalayer_visible());
 
   // Disabled state should propagate to the framework instance.
   framework_instance()->ResetCounters();
   highlighter_controller()->CallHandleEnabledStateChange(false);
+  highlighter_controller()->FlushMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_FALSE(framework_instance()->metalayer_visible());
 
   // Enable the state again.
   framework_instance()->ResetCounters();
   highlighter_controller()->CallHandleEnabledStateChange(true);
+  highlighter_controller()->FlushMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_TRUE(framework_instance()->metalayer_visible());
 
@@ -241,6 +255,7 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
   const gfx::Rect selection(100, 200, 300, 400);
   highlighter_controller()->CallHandleSelection(selection);
   highlighter_controller()->CallHandleEnabledStateChange(false);
+  highlighter_controller()->FlushMojo();
   // Neither the selected region nor the state update should reach the
   // framework instance yet.
   EXPECT_EQ(0u, framework_instance()->start_session_for_region_count());
@@ -273,8 +288,28 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
   // State update should reach the client normally.
   framework_instance()->ResetCounters();
   highlighter_controller()->CallHandleEnabledStateChange(true);
+  highlighter_controller()->FlushMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_TRUE(framework_instance()->metalayer_visible());
+}
+
+TEST_F(ArcVoiceInteractionFrameworkServiceTest,
+       ExitVoiceInteractionAlsoExitHighlighter) {
+  highlighter_controller()->CallHandleEnabledStateChange(true);
+
+  framework_service()->ToggleSessionFromUserInteraction();
+  framework_instance()->FlushMojoForTesting();
+  FlushHighlighterControllerMojo();
+  EXPECT_EQ(ash::VoiceInteractionState::RUNNING,
+            framework_service()->GetStateForTesting());
+
+  framework_service()->ToggleSessionFromUserInteraction();
+  framework_instance()->FlushMojoForTesting();
+  FlushHighlighterControllerMojo();
+  EXPECT_EQ(ash::VoiceInteractionState::STOPPED,
+            framework_service()->GetStateForTesting());
+
+  EXPECT_FALSE(highlighter_controller()->is_enabled());
 }
 
 }  // namespace arc
