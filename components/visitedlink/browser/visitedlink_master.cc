@@ -929,7 +929,7 @@ void VisitedLinkMaster::FreeURLTable() {
     return;
   PostIOTask(FROM_HERE, base::Bind(&AsyncClose, file_));
   // AsyncClose() will close the file and free the memory pointed by |file_|.
-  file_ = NULL;
+  file_ = nullptr;
 }
 
 bool VisitedLinkMaster::ResizeTableIfNecessary() {
@@ -1084,7 +1084,7 @@ void VisitedLinkMaster::OnTableRebuildComplete(
         WriteFullTable();
     }
   }
-  table_builder_ = NULL;  // Will release our reference to the builder.
+  table_builder_ = nullptr;  // Will release our reference to the builder.
 
   // Notify the unit test that the rebuild is complete (will be NULL in prod.)
   if (!rebuild_complete_task_.is_null()) {
@@ -1158,7 +1158,7 @@ VisitedLinkMaster::TableBuilder::TableBuilder(
 // TODO(brettw): Do we want to try to cancel the request if this happens? It
 // could delay shutdown if there are a lot of URLs.
 void VisitedLinkMaster::TableBuilder::DisownMaster() {
-  master_ = NULL;
+  master_ = nullptr;
 }
 
 void VisitedLinkMaster::TableBuilder::OnURL(const GURL& url) {

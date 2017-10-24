@@ -124,7 +124,7 @@ void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {
 void DomDistillerHandler::OnArticleAdded(bool article_available) {
   // TODO(nyquist): Update this function.
   if (article_available) {
-    HandleRequestEntries(NULL);
+    HandleRequestEntries(nullptr);
   } else {
     web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onArticleAddFailed");
   }

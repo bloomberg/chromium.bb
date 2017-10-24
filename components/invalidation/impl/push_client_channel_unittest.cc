@@ -28,7 +28,7 @@ class PushClientChannelTest
     push_client_channel_.SetMessageReceiver(
         invalidation::NewPermanentCallback(
             this, &PushClientChannelTest::OnIncomingMessage));
-    push_client_channel_.SetSystemResources(NULL);
+    push_client_channel_.SetSystemResources(nullptr);
   }
 
   ~PushClientChannelTest() override {
@@ -182,7 +182,7 @@ TEST_F(PushClientChannelTest, OnIncomingMessage) {
 // Simulate an incoming notification with no receiver. It should be dropped by
 // the channel.
 TEST_F(PushClientChannelTest, OnIncomingMessageNoReceiver) {
-  push_client_channel_.SetMessageReceiver(NULL);
+  push_client_channel_.SetMessageReceiver(nullptr);
 
   notifier::Notification notification;
   notification.data = PushClientChannel::EncodeMessageForTest(

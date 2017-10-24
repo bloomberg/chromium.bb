@@ -282,7 +282,7 @@ void ShortcutsProviderTest::SetUp() {
 }
 
 void ShortcutsProviderTest::TearDown() {
-  provider_ = NULL;
+  provider_ = nullptr;
 }
 
 int ShortcutsProviderTest::CalculateScore(

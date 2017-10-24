@@ -48,7 +48,7 @@ void PluginPlaceholderBase::ShowContextMenu(const blink::WebMouseEvent& event) {
 }
 
 void PluginPlaceholderBase::PluginDestroyed() {
-  plugin_ = NULL;
+  plugin_ = nullptr;
 }
 
 v8::Local<v8::Object> PluginPlaceholderBase::GetV8ScriptableObject(

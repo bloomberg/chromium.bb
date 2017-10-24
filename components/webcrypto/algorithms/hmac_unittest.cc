@@ -387,7 +387,7 @@ TEST_F(WebCryptoHmacTest, ImportJwkInputConsistency) {
                       extractable, usages, &key));
 
   // Pass: JWK alg missing but input algorithm specified: use input value
-  dict.Remove("alg", NULL);
+  dict.Remove("alg", nullptr);
   EXPECT_EQ(Status::Success(),
             ImportKeyJwkFromDict(dict,
                                  CreateHmacImportAlgorithmNoLength(
@@ -540,7 +540,7 @@ TEST_F(WebCryptoHmacTest, ImportRawKeyWithZeroLength) {
 // Import a huge hmac key (UINT_MAX bytes). This will fail before actually
 // reading the bytes, as the key is too large.
 TEST_F(WebCryptoHmacTest, ImportRawKeyTooLarge) {
-  CryptoData big_data(NULL, UINT_MAX);  // Invalid data of big length.
+  CryptoData big_data(nullptr, UINT_MAX);  // Invalid data of big length.
 
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorDataTooLarge(),

@@ -48,7 +48,7 @@ RegistrationInfo::~RegistrationInfo() {
 const GCMRegistrationInfo* GCMRegistrationInfo::FromRegistrationInfo(
     const RegistrationInfo* registration_info) {
   if (!registration_info || registration_info->GetType() != GCM_REGISTRATION)
-    return NULL;
+    return nullptr;
   return static_cast<const GCMRegistrationInfo*>(registration_info);
 }
 
@@ -56,7 +56,7 @@ const GCMRegistrationInfo* GCMRegistrationInfo::FromRegistrationInfo(
 GCMRegistrationInfo* GCMRegistrationInfo::FromRegistrationInfo(
     RegistrationInfo* registration_info) {
   if (!registration_info || registration_info->GetType() != GCM_REGISTRATION)
-    return NULL;
+    return nullptr;
   return static_cast<GCMRegistrationInfo*>(registration_info);
 }
 
@@ -135,7 +135,7 @@ bool GCMRegistrationInfo::Deserialize(
 const InstanceIDTokenInfo* InstanceIDTokenInfo::FromRegistrationInfo(
     const RegistrationInfo* registration_info) {
   if (!registration_info || registration_info->GetType() != INSTANCE_ID_TOKEN)
-    return NULL;
+    return nullptr;
   return static_cast<const InstanceIDTokenInfo*>(registration_info);
 }
 
@@ -143,7 +143,7 @@ const InstanceIDTokenInfo* InstanceIDTokenInfo::FromRegistrationInfo(
 InstanceIDTokenInfo* InstanceIDTokenInfo::FromRegistrationInfo(
     RegistrationInfo* registration_info) {
   if (!registration_info || registration_info->GetType() != INSTANCE_ID_TOKEN)
-    return NULL;
+    return nullptr;
   return static_cast<InstanceIDTokenInfo*>(registration_info);
 }
 
@@ -231,7 +231,7 @@ bool RegistrationInfoComparer::operator()(
   // !iid_a && iid_b => true.
   // This makes GCM record is sorted before InstanceID record.
   if (!iid_a)
-    return iid_b != NULL;
+    return iid_b != nullptr;
 
   // iid_a && !iid_b => false.
   if (!iid_b)

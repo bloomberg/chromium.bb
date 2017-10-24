@@ -36,7 +36,7 @@ class TestService : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override {
     ADD_FAILURE() << "This isn't part of the tests!";
-    return NULL;
+    return nullptr;
   }
 
   void BrowserContextShutdown(content::BrowserContext* context) override {
@@ -52,7 +52,7 @@ class TestService : public BrowserContextKeyedServiceFactory {
 TEST_F(BrowserContextDependencyManagerUnittests, SingleCase) {
   TestService service("service", shutdown_order(), manager());
 
-  manager()->DestroyBrowserContextServices(NULL);
+  manager()->DestroyBrowserContextServices(nullptr);
 
   ASSERT_EQ(1U, shutdown_order()->size());
   EXPECT_STREQ("service", (*shutdown_order())[0].c_str());
@@ -64,7 +64,7 @@ TEST_F(BrowserContextDependencyManagerUnittests, SimpleDependency) {
   TestService child("child", shutdown_order(), manager());
   DependOn(&child, &parent);
 
-  manager()->DestroyBrowserContextServices(NULL);
+  manager()->DestroyBrowserContextServices(nullptr);
 
   ASSERT_EQ(2U, shutdown_order()->size());
   EXPECT_STREQ("child", (*shutdown_order())[0].c_str());
@@ -79,7 +79,7 @@ TEST_F(BrowserContextDependencyManagerUnittests, TwoChildrenOneParent) {
   DependOn(&child1, &parent);
   DependOn(&child2, &parent);
 
-  manager()->DestroyBrowserContextServices(NULL);
+  manager()->DestroyBrowserContextServices(nullptr);
 
   ASSERT_EQ(3U, shutdown_order()->size());
   EXPECT_STREQ("child2", (*shutdown_order())[0].c_str());
@@ -102,7 +102,7 @@ TEST_F(BrowserContextDependencyManagerUnittests, MConfiguration) {
   TestService child_of_2("child_of_2", shutdown_order(), manager());
   DependOn(&child_of_2, &parent2);
 
-  manager()->DestroyBrowserContextServices(NULL);
+  manager()->DestroyBrowserContextServices(nullptr);
 
   ASSERT_EQ(5U, shutdown_order()->size());
   EXPECT_STREQ("child_of_2", (*shutdown_order())[0].c_str());
@@ -126,7 +126,7 @@ TEST_F(BrowserContextDependencyManagerUnittests, DiamondConfiguration) {
   DependOn(&bottom, &middle_row_1);
   DependOn(&bottom, &middle_row_2);
 
-  manager()->DestroyBrowserContextServices(NULL);
+  manager()->DestroyBrowserContextServices(nullptr);
 
   ASSERT_EQ(4U, shutdown_order()->size());
   EXPECT_STREQ("bottom", (*shutdown_order())[0].c_str());
@@ -159,7 +159,7 @@ TEST_F(BrowserContextDependencyManagerUnittests, ComplexGraph) {
   DependOn(&bottom, &specialized_service);
   DependOn(&bottom, &other_intermediary);
 
-  manager()->DestroyBrowserContextServices(NULL);
+  manager()->DestroyBrowserContextServices(nullptr);
 
   ASSERT_EQ(6U, shutdown_order()->size());
   EXPECT_STREQ("bottom", (*shutdown_order())[0].c_str());

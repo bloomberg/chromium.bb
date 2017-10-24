@@ -113,9 +113,9 @@ BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
       loaded_(false),
       root_(GURL()),
-      bookmark_bar_node_(NULL),
-      other_node_(NULL),
-      mobile_node_(NULL),
+      bookmark_bar_node_(nullptr),
+      other_node_(nullptr),
+      mobile_node_(nullptr),
       next_node_id_(1),
       observers_(
           base::ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
@@ -536,7 +536,7 @@ const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
       return nodes[i];
   }
 
-  return NULL;
+  return nullptr;
 }
 
 bool BookmarkModel::HasBookmarks() {
@@ -557,7 +557,7 @@ bool BookmarkModel::IsBookmarked(const GURL& url) {
 void BookmarkModel::GetBookmarks(
     std::vector<BookmarkModel::URLAndTitle>* bookmarks) {
   base::AutoLock url_lock(url_lock_);
-  const GURL* last_url = NULL;
+  const GURL* last_url = nullptr;
   for (NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.begin();
        i != nodes_ordered_by_url_set_.end(); ++i) {
     const GURL* url = &((*i)->url());
@@ -579,7 +579,7 @@ void BookmarkModel::BlockTillLoaded() {
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
                                              int index,
                                              const base::string16& title) {
-  return AddFolderWithMetaInfo(parent, index, title, NULL);
+  return AddFolderWithMetaInfo(parent, index, title, nullptr);
 }
 const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
     const BookmarkNode* parent,
@@ -589,7 +589,7 @@ const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
   if (!loaded_ || is_root_node(parent) || !IsValidIndex(parent, index, true)) {
     // Can't add to the root.
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   std::unique_ptr<BookmarkNode> new_node =
@@ -608,13 +608,8 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           int index,
                                           const base::string16& title,
                                           const GURL& url) {
-  return AddURLWithCreationTimeAndMetaInfo(
-      parent,
-      index,
-      title,
-      url,
-      Time::Now(),
-      NULL);
+  return AddURLWithCreationTimeAndMetaInfo(parent, index, title, url,
+                                           Time::Now(), nullptr);
 }
 
 const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
@@ -627,7 +622,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
   if (!loaded_ || !url.is_valid() || is_root_node(parent) ||
       !IsValidIndex(parent, index, true)) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   // Syncing may result in dates newer than the last modified date.
@@ -659,7 +654,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   UErrorCode error = U_ZERO_ERROR;
   std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
   if (U_FAILURE(error))
-    collator.reset(NULL);
+    collator.reset(nullptr);
   BookmarkNode* mutable_parent = AsMutable(parent);
   std::sort(mutable_parent->children().begin(),
             mutable_parent->children().end(),
@@ -760,7 +755,7 @@ const BookmarkPermanentNode* BookmarkModel::PermanentNode(
       return mobile_node_;
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 

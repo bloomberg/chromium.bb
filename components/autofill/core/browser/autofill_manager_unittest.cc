@@ -178,7 +178,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       if (!profile->guid().compare(guid))
         return profile;
     }
-    return NULL;
+    return nullptr;
   }
 
   CreditCard* GetCreditCardWithGUID(const char* guid) {
@@ -186,7 +186,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       if (!card->guid().compare(guid))
         return card;
     }
-    return NULL;
+    return nullptr;
   }
 
   void AddProfile(const AutofillProfile& profile) override {
@@ -913,8 +913,8 @@ class AutofillManagerTest : public testing::Test {
 
     // Remove the AutofillWebDataService so TestPersonalDataManager does not
     // need to care about removing self as an observer in destruction.
-    personal_data_.set_database(scoped_refptr<AutofillWebDataService>(NULL));
-    personal_data_.SetPrefService(NULL);
+    personal_data_.set_database(scoped_refptr<AutofillWebDataService>(nullptr));
+    personal_data_.SetPrefService(nullptr);
     personal_data_.ClearCreditCards();
 
     request_context_ = nullptr;
@@ -3331,7 +3331,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   // We should be able to fill prefix and suffix fields for US numbers.
   AutofillProfile* work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
-  ASSERT_TRUE(work_profile != NULL);
+  ASSERT_TRUE(work_profile != nullptr);
   work_profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                            ASCIIToUTF16("16505554567"));
 
@@ -3523,7 +3523,7 @@ TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
 TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   TestAutofillClient client;
   autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
   autofill_manager_->set_autofill_enabled(false);
 
   // Set up our form data.
@@ -3540,7 +3540,7 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   TestAutofillClient client;
   autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -3564,7 +3564,7 @@ TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete) {
   TestAutofillClient client;
   autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -3636,7 +3636,7 @@ TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete) {
   TestAutofillClient client;
   autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -3662,7 +3662,7 @@ TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete) {
   TestAutofillClient client;
   autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -3708,7 +3708,7 @@ TEST_F(
 TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   TestAutofillClient client;
   autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 

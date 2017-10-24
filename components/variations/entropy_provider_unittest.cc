@@ -196,10 +196,10 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial(
           "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
       base::FieldTrialList::FactoryGetFieldTrial(
           "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
   };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
@@ -226,10 +226,10 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial(
           "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
       base::FieldTrialList::FactoryGetFieldTrial(
           "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
   };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
@@ -253,10 +253,10 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
   };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
@@ -280,10 +280,10 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedSHA1) {
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL, NULL),
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
   };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {

@@ -670,7 +670,7 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
     hovered_rect_f.Inset(gfx::InsetsF(-1));
     DrawRectGuideLinesOnCanvas(screen_bounds, hovered_rect_f, flags, canvas);
     // Draw |hovered_rect_f| bounds.
-    flags.setPathEffect(0);
+    flags.setPathEffect(nullptr);
     canvas->DrawRect(hovered_rect_f, flags);
 
     // Display size of the rectangle after mouse click.
@@ -680,7 +680,7 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
     }
     return;
   }
-  flags.setPathEffect(0);
+  flags.setPathEffect(nullptr);
   flags.setColor(SK_ColorBLUE);
 
   gfx::RectF pinned_rect_f(pinned_rect_);
@@ -693,7 +693,7 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   canvas->DrawRect(hovered_rect_f, flags);
 
   // Draw distances in red colour.
-  flags.setPathEffect(0);
+  flags.setPathEffect(nullptr);
   flags.setColor(SK_ColorRED);
 
   // Make sure |pinned_rect_f| stays on the right or below of |hovered_rect_f|.

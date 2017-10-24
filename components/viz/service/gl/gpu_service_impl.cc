@@ -552,7 +552,7 @@ void GpuServiceImpl::Crash() {
   DCHECK(io_runner_->BelongsToCurrentThread());
   DVLOG(1) << "GPU: Simulating GPU crash";
   // Good bye, cruel world.
-  volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
+  volatile int* it_s_the_end_of_the_world_as_we_know_it = nullptr;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
 

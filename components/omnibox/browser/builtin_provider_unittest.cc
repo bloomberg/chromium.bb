@@ -86,14 +86,14 @@ class BuiltinProviderTest : public testing::Test {
     const GURL output[3];
   };
 
-  BuiltinProviderTest() : provider_(NULL) {}
+  BuiltinProviderTest() : provider_(nullptr) {}
   ~BuiltinProviderTest() override {}
 
   void SetUp() override {
     client_.reset(new FakeAutocompleteProviderClient());
     provider_ = new BuiltinProvider(client_.get());
   }
-  void TearDown() override { provider_ = NULL; }
+  void TearDown() override { provider_ = nullptr; }
 
   void RunTest(const TestData cases[], size_t num_cases) {
     ACMatches matches;

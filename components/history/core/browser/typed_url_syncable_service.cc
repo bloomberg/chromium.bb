@@ -194,8 +194,8 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
 
   if (!merge_result.error().IsSet()) {
-    WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls, NULL,
-                          &new_synced_visits, NULL);
+    WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls, nullptr,
+                          &new_synced_visits, nullptr);
   }
 
   history_backend_observer_.Add(history_backend_);

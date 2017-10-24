@@ -90,8 +90,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op = new DeltaUpdateOpCreate();
-  op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(), NULL,
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+  op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
+          nullptr, base::Bind(&TestCallback::Set, base::Unretained(&callback)));
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
@@ -149,7 +149,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op =
-      CreateDeltaUpdateOp("courgette", NULL /* out_of_process_patcher */);
+      CreateDeltaUpdateOp("courgette", nullptr /* out_of_process_patcher */);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::Bind(&TestCallback::Set, base::Unretained(&callback)));
@@ -182,7 +182,7 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op =
-      CreateDeltaUpdateOp("bsdiff", NULL /* out_of_process_patcher */);
+      CreateDeltaUpdateOp("bsdiff", nullptr /* out_of_process_patcher */);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::Bind(&TestCallback::Set, base::Unretained(&callback)));

@@ -251,8 +251,8 @@ AutofillManager::AutofillManager(
       found_value_in_cvc_field_(false),
       found_cvc_value_in_non_cvc_field_(false),
       enable_ablation_logging_(false),
-      external_delegate_(NULL),
-      test_delegate_(NULL),
+      external_delegate_(nullptr),
+      test_delegate_(nullptr),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
@@ -540,8 +540,8 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
   if (test_delegate_)
     test_delegate_->OnTextFieldChanged();
 
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
@@ -590,8 +590,8 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   // Need to refresh models before using the form_event_loggers.
   bool is_autofill_possible = RefreshDataModels();
 
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   bool got_autofillable_form =
       GetCachedFormAndField(form, field, &form_structure, &autofill_field) &&
       // Don't send suggestions or track forms that should not be parsed.
@@ -772,8 +772,8 @@ void AutofillManager::FillOrPreviewCreditCardForm(
     const FormData& form,
     const FormFieldData& field,
     const CreditCard& credit_card) {
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL) {
@@ -807,8 +807,8 @@ void AutofillManager::FillOrPreviewProfileForm(
     const FormData& form,
     const FormFieldData& field,
     const AutofillProfile& profile) {
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
@@ -877,7 +877,7 @@ void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
 
   UpdatePendingForm(form);
 
-  FormStructure* form_structure = NULL;
+  FormStructure* form_structure = nullptr;
   std::set<FormType> form_types;
   // Find the FormStructure that corresponds to |form|. Use default form type if
   // form is not present in our cache, which will happen rarely.
@@ -900,8 +900,8 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup,
                                          const FormFieldData& field) {
   if (test_delegate_)
     test_delegate_->DidShowSuggestions();
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
@@ -1677,8 +1677,8 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       user_did_edit_autofilled_field_(false),
       unmasking_query_id_(-1),
       enable_ablation_logging_(false),
-      external_delegate_(NULL),
-      test_delegate_(NULL),
+      external_delegate_(nullptr),
+      test_delegate_(nullptr),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
@@ -1741,7 +1741,7 @@ bool AutofillManager::GetProfile(int unique_id,
   std::string credit_card_id;
   std::string profile_id;
   SplitFrontendID(unique_id, &credit_card_id, &profile_id);
-  *profile = NULL;
+  *profile = nullptr;
   if (base::IsValidGUID(profile_id))
     *profile = personal_data_->GetProfileByGUID(profile_id);
   return !!*profile;
@@ -1753,7 +1753,7 @@ bool AutofillManager::GetCreditCard(int unique_id,
   std::string credit_card_id;
   std::string profile_id;
   SplitFrontendID(unique_id, &credit_card_id, &profile_id);
-  *credit_card = NULL;
+  *credit_card = nullptr;
   if (base::IsValidGUID(credit_card_id))
     *credit_card = personal_data_->GetCreditCardByGUID(credit_card_id);
   return !!*credit_card;
@@ -1767,8 +1767,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
     const AutofillDataModel& data_model,
     bool is_credit_card,
     const base::string16& cvc) {
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
   FillOrPreviewDataModelForm(action, query_id, form, field, data_model,
@@ -1926,7 +1926,7 @@ bool AutofillManager::FindCachedForm(const FormData& form,
   // forms might appear toward the beginning of the list.  The communication
   // protocol with the crowdsourcing server does not permit us to discard the
   // original versions of the forms.
-  *form_structure = NULL;
+  *form_structure = nullptr;
   const auto& form_signature = autofill::CalculateFormSignature(form);
   for (auto& cur_form : base::Reversed(form_structures_)) {
     if (cur_form->form_signature() == form_signature || *cur_form == form) {
@@ -1969,7 +1969,7 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
     return false;
 
   // Find the AutofillField that corresponds to |field|.
-  *autofill_field = NULL;
+  *autofill_field = nullptr;
   for (const auto& current : **form_structure) {
     if (current->SameFieldAs(field)) {
       *autofill_field = current.get();
@@ -1980,21 +1980,21 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   // Even though we always update the cache, the field might not exist if the
   // website disables autocomplete while the user is interacting with the form.
   // See http://crbug.com/160476
-  return *autofill_field != NULL;
+  return *autofill_field != nullptr;
 }
 
 AutofillField* AutofillManager::GetAutofillField(const FormData& form,
                                                  const FormFieldData& field) {
   if (!personal_data_)
-    return NULL;
+    return nullptr;
 
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
-    return NULL;
+    return nullptr;
 
   if (!form_structure->IsAutofillable())
-    return NULL;
+    return nullptr;
 
   return autofill_field;
 }

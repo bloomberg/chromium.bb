@@ -95,7 +95,7 @@ TEST_F(OverlayUserPrefStoreTest, Observer) {
 }
 
 TEST_F(OverlayUserPrefStoreTest, GetAndSet) {
-  const Value* value = NULL;
+  const Value* value = nullptr;
   EXPECT_FALSE(overlay_->GetValue(overlay_key, &value));
   EXPECT_FALSE(underlay_->GetValue(overlay_key, &value));
 
@@ -134,19 +134,19 @@ TEST_F(OverlayUserPrefStoreTest, ModifyDictionaries) {
   underlay_->SetValue(overlay_key, base::MakeUnique<DictionaryValue>(),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
-  Value* modify = NULL;
+  Value* modify = nullptr;
   EXPECT_TRUE(overlay_->GetMutableValue(overlay_key, &modify));
   ASSERT_TRUE(modify);
   ASSERT_TRUE(modify->IsType(Value::Type::DICTIONARY));
   static_cast<DictionaryValue*>(modify)->SetInteger(overlay_key, 42);
 
-  Value* original_in_underlay = NULL;
+  Value* original_in_underlay = nullptr;
   EXPECT_TRUE(underlay_->GetMutableValue(overlay_key, &original_in_underlay));
   ASSERT_TRUE(original_in_underlay);
   ASSERT_TRUE(original_in_underlay->IsType(Value::Type::DICTIONARY));
   EXPECT_TRUE(static_cast<DictionaryValue*>(original_in_underlay)->empty());
 
-  Value* modified = NULL;
+  Value* modified = nullptr;
   EXPECT_TRUE(overlay_->GetMutableValue(overlay_key, &modified));
   ASSERT_TRUE(modified);
   ASSERT_TRUE(modified->IsType(Value::Type::DICTIONARY));
@@ -158,7 +158,7 @@ TEST_F(OverlayUserPrefStoreTest, GlobalPref) {
   PrefStoreObserverMock obs;
   overlay_->AddObserver(&obs);
 
-  const Value* value = NULL;
+  const Value* value = nullptr;
 
   // Check that underlay first value is reported.
   underlay_->SetValue(regular_key, base::MakeUnique<Value>(42),

@@ -1009,7 +1009,7 @@ base::string16 FormStructure::GetUniqueValue(HtmlFieldType type) const {
 const AutofillField* FormStructure::field(size_t index) const {
   if (index >= fields_.size()) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   return fields_[index].get();

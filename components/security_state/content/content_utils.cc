@@ -199,10 +199,10 @@ void ExplainConnectionSecurity(
                                &is_tls13, cipher_suite);
   base::string16 protocol_name = base::ASCIIToUTF16(protocol);
   const base::string16 cipher_name =
-      (mac == NULL) ? base::ASCIIToUTF16(cipher)
-                    : l10n_util::GetStringFUTF16(IDS_CIPHER_WITH_MAC,
-                                                 base::ASCIIToUTF16(cipher),
-                                                 base::ASCIIToUTF16(mac));
+      (mac == nullptr) ? base::ASCIIToUTF16(cipher)
+                       : l10n_util::GetStringFUTF16(IDS_CIPHER_WITH_MAC,
+                                                    base::ASCIIToUTF16(cipher),
+                                                    base::ASCIIToUTF16(mac));
 
   // Include the key exchange group (previously known as curve) if specified.
   base::string16 key_exchange_name;

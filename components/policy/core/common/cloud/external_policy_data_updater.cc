@@ -215,7 +215,7 @@ void ExternalPolicyDataUpdater::FetchJob::OnFetchFinished(
     ExternalPolicyDataFetcher::Result result,
     std::unique_ptr<std::string> data) {
   // The fetch job in the |external_policy_data_fetcher_| is finished.
-  fetch_job_ = NULL;
+  fetch_job_ = nullptr;
 
   switch (result) {
     case ExternalPolicyDataFetcher::CONNECTION_INTERRUPTED:
@@ -237,7 +237,7 @@ void ExternalPolicyDataUpdater::FetchJob::OnFetchFinished(
       // Client error. This is unlikely to go away. Try again later, and give up
       // retrying after 3 attempts.
       LOG(WARNING) << "Failed to fetch the data due to a client HTTP error.";
-      OnFailed(limited_retries_remaining_ ? &retry_later_entry_ : NULL);
+      OnFailed(limited_retries_remaining_ ? &retry_later_entry_ : nullptr);
       if (limited_retries_remaining_)
         --limited_retries_remaining_;
       return;

@@ -52,7 +52,7 @@ bool DomDistillerModel::GetKeyById(const std::string& entry_id,
   if (it == entry_id_to_key_map_.end()) {
     return false;
   }
-  if (key != NULL) {
+  if (key != nullptr) {
     *key = it->second;
   }
   return true;
@@ -63,14 +63,14 @@ bool DomDistillerModel::GetKeyByUrl(const GURL& url, KeyType* key) const {
   if (it == url_to_key_map_.end()) {
     return false;
   }
-  if (key != NULL) {
+  if (key != nullptr) {
     *key = it->second;
   }
   return true;
 }
 
 void DomDistillerModel::GetEntryByKey(KeyType key, ArticleEntry* entry) const {
-  if (entry != NULL) {
+  if (entry != nullptr) {
     EntryMap::const_iterator it = entries_.find(key);
     DCHECK(it != entries_.end());
     *entry = it->second;
@@ -113,7 +113,7 @@ void DomDistillerModel::CalculateChangesForMerge(
     DCHECK(insert_result.second);
 
     SyncChange::SyncChangeType change_type = SyncChange::ACTION_ADD;
-    if (GetEntryById(entry_id, NULL)) {
+    if (GetEntryById(entry_id, nullptr)) {
       change_type = SyncChange::ACTION_UPDATE;
     }
     changes_to_apply->push_back(SyncChange(FROM_HERE, change_type, *it));
@@ -145,7 +145,7 @@ void DomDistillerModel::ApplyChangesToModel(
 void DomDistillerModel::AddEntry(const ArticleEntry& entry) {
   const std::string& entry_id = entry.entry_id();
   KeyType key = next_key_++;
-  DCHECK(!GetKeyById(entry_id, NULL));
+  DCHECK(!GetKeyById(entry_id, nullptr));
   entries_.insert(std::make_pair(key, entry));
   entry_id_to_key_map_.insert(std::make_pair(entry_id, key));
   for (int i = 0; i < entry.pages_size(); ++i) {

@@ -65,7 +65,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     db_manager_ = new TestSafeBrowsingDatabaseManager();
-    db_manager_->StartOnIOThread(NULL, GetTestV4ProtocolConfig());
+    db_manager_->StartOnIOThread(nullptr, GetTestV4ProtocolConfig());
   }
 
   void TearDown() override {

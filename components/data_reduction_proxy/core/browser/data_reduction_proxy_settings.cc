@@ -52,7 +52,7 @@ DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
       data_reduction_proxy_enabled_pref_name_(),
-      prefs_(NULL),
+      prefs_(nullptr),
       config_(nullptr),
       clock_(new base::DefaultClock()) {}
 

@@ -84,7 +84,7 @@ class InterceptingPrefFilter : public PrefFilter {
   }
   void OnStoreDeletionFromDisk() override {}
 
-  bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }
+  bool has_intercepted_prefs() const { return intercepted_prefs_ != nullptr; }
 
   // Finalize an intercepted read, handing |intercepted_prefs_| back to its
   // JsonPrefStore.
@@ -364,7 +364,7 @@ TEST_P(JsonPrefStoreTest, PreserveEmptyValues) {
   ASSERT_FALSE(pref_store->ReadOnly());
 
   // Check values.
-  const Value* result = NULL;
+  const Value* result = nullptr;
   EXPECT_TRUE(pref_store->GetValue("list", &result));
   EXPECT_TRUE(ListValue().Equals(result));
   EXPECT_TRUE(pref_store->GetValue("dict", &result));
@@ -386,7 +386,7 @@ TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
   pref_store->RemoveValue("dict.key",
                           WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
-  const base::Value* retrieved_dict = NULL;
+  const base::Value* retrieved_dict = nullptr;
   bool has_dict = pref_store->GetValue("dict", &retrieved_dict);
   EXPECT_FALSE(has_dict);
 }
@@ -432,13 +432,13 @@ TEST_P(JsonPrefStoreTest, ReadWithInterceptor) {
   // returns.
   EXPECT_TRUE(raw_intercepting_pref_filter_->has_intercepted_prefs());
   EXPECT_FALSE(pref_store->IsInitializationComplete());
-  EXPECT_FALSE(pref_store->GetValue(kHomePage, NULL));
+  EXPECT_FALSE(pref_store->GetValue(kHomePage, nullptr));
 
   raw_intercepting_pref_filter_->ReleasePrefs();
 
   EXPECT_FALSE(raw_intercepting_pref_filter_->has_intercepted_prefs());
   EXPECT_TRUE(pref_store->IsInitializationComplete());
-  EXPECT_TRUE(pref_store->GetValue(kHomePage, NULL));
+  EXPECT_TRUE(pref_store->GetValue(kHomePage, nullptr));
 
   // The JSON file looks like this:
   // {
@@ -484,7 +484,7 @@ TEST_P(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
     EXPECT_FALSE(pref_store->ReadOnly());
     EXPECT_TRUE(raw_intercepting_pref_filter_->has_intercepted_prefs());
     EXPECT_FALSE(pref_store->IsInitializationComplete());
-    EXPECT_FALSE(pref_store->GetValue(kHomePage, NULL));
+    EXPECT_FALSE(pref_store->GetValue(kHomePage, nullptr));
   }
 
   {
@@ -497,7 +497,7 @@ TEST_P(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
     EXPECT_FALSE(pref_store->ReadOnly());
     EXPECT_FALSE(raw_intercepting_pref_filter_->has_intercepted_prefs());
     EXPECT_TRUE(pref_store->IsInitializationComplete());
-    EXPECT_TRUE(pref_store->GetValue(kHomePage, NULL));
+    EXPECT_TRUE(pref_store->GetValue(kHomePage, nullptr));
   }
 
   pref_store->RemoveObserver(&mock_observer);

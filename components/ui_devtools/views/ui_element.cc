@@ -112,7 +112,7 @@ UIElement::UIElement(const UIElementType type,
                      UIElementDelegate* delegate,
                      UIElement* parent)
     : node_id_(++node_ids), type_(type), parent_(parent), delegate_(delegate) {
-  delegate_->OnUIElementAdded(0, this);
+  delegate_->OnUIElementAdded(nullptr, this);
 }
 
 }  // namespace ui_devtools

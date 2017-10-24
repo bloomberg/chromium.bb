@@ -82,7 +82,7 @@ void GLHelperReadbackSupport::GetAdditionalFormat(GLenum format,
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   gl_->TexImage2D(GL_TEXTURE_2D, 0, format, kTestSize, kTestSize, 0, format,
-                  type, NULL);
+                  type, nullptr);
   ScopedFramebuffer dst_framebuffer(gl_);
   ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
                                                              dst_framebuffer);

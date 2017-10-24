@@ -22,9 +22,8 @@ InfoBarContainer::Delegate::~Delegate() {
 
 InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
-      infobar_manager_(NULL),
-      ignore_infobar_state_changed_(false) {
-}
+      infobar_manager_(nullptr),
+      ignore_infobar_state_changed_(false) {}
 
 InfoBarContainer::~InfoBarContainer() {
   // RemoveAllInfoBarsForDestruction() should have already cleared our infobars.
@@ -101,7 +100,7 @@ void InfoBarContainer::OnInfoBarStateChanged(bool is_animating) {
 }
 
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
-  infobar->set_container(NULL);
+  infobar->set_container(nullptr);
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), infobar));
   DCHECK(i != infobars_.end());
   PlatformSpecificRemoveInfoBar(infobar);
@@ -114,8 +113,8 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
   // delegate_->InfoBarContainerStateChanged().  This is important because at
   // this point |delegate_| may be shutting down, and it's at best unimportant
   // and at worst disastrous to call that.
-  delegate_ = NULL;
-  ChangeInfoBarManager(NULL);
+  delegate_ = nullptr;
+  ChangeInfoBarManager(nullptr);
 }
 
 void InfoBarContainer::OnInfoBarAdded(InfoBar* infobar) {
@@ -142,7 +141,7 @@ void InfoBarContainer::OnInfoBarReplaced(InfoBar* old_infobar,
 void InfoBarContainer::OnManagerShuttingDown(InfoBarManager* manager) {
   DCHECK_EQ(infobar_manager_, manager);
   infobar_manager_->RemoveObserver(this);
-  infobar_manager_ = NULL;
+  infobar_manager_ = nullptr;
 }
 
 void InfoBarContainer::AddInfoBar(InfoBar* infobar,

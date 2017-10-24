@@ -65,7 +65,7 @@ void TranslateScript::Request(const RequestCallback& callback) {
   DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
   callback_list_.push_back(callback);
 
-  if (fetcher_.get() != NULL) {
+  if (fetcher_.get() != nullptr) {
     // If there is already a request in progress, do nothing. |callback| will be
     // run on completion.
     return;

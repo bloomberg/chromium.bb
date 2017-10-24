@@ -225,8 +225,8 @@ void ShortcutsBackend::InitInternal() {
 void ShortcutsBackend::InitCompleted() {
   temp_guid_map_->swap(guid_map_);
   temp_shortcuts_map_->swap(shortcuts_map_);
-  temp_shortcuts_map_.reset(NULL);
-  temp_guid_map_.reset(NULL);
+  temp_shortcuts_map_.reset(nullptr);
+  temp_guid_map_.reset(nullptr);
   UMA_HISTOGRAM_COUNTS_10000("ShortcutsProvider.DatabaseSize",
                              shortcuts_map_.size());
   current_state_ = INITIALIZED;

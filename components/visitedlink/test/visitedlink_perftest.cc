@@ -113,8 +113,8 @@ class VisitedLink : public testing::Test {
 // useful to make another set of tests to test these things in isolation.
 TEST_F(VisitedLink, TestAddAndQuery) {
   // init
-  VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
-                           NULL, true, true, db_path_, 0);
+  VisitedLinkMaster master(new DummyVisitedLinkEventListener(), nullptr, true,
+                           true, db_path_, 0);
   ASSERT_TRUE(master.Init());
   content::RunAllTasksUntilIdle();
 
@@ -145,8 +145,8 @@ TEST_F(VisitedLink, TestLoad) {
   {
     TimeLogger table_initialization_timer("Table_initialization");
 
-    VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
-                             NULL, true, true, db_path_, 0);
+    VisitedLinkMaster master(new DummyVisitedLinkEventListener(), nullptr, true,
+                             true, db_path_, 0);
 
     // time init with empty table
     TimeLogger initTimer("Empty_visited_link_init");
@@ -184,12 +184,8 @@ TEST_F(VisitedLink, TestLoad) {
     {
       base::ElapsedTimer cold_timer;
 
-      VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
-                               NULL,
-                               true,
-                               true,
-                               db_path_,
-                               0);
+      VisitedLinkMaster master(new DummyVisitedLinkEventListener(), nullptr,
+                               true, true, db_path_, 0);
       bool success = master.Init();
       content::RunAllTasksUntilIdle();
       TimeDelta elapsed = cold_timer.Elapsed();
@@ -202,12 +198,8 @@ TEST_F(VisitedLink, TestLoad) {
     {
       base::ElapsedTimer hot_timer;
 
-      VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
-                               NULL,
-                               true,
-                               true,
-                               db_path_,
-                               0);
+      VisitedLinkMaster master(new DummyVisitedLinkEventListener(), nullptr,
+                               true, true, db_path_, 0);
       bool success = master.Init();
       content::RunAllTasksUntilIdle();
       TimeDelta elapsed = hot_timer.Elapsed();

@@ -10,7 +10,7 @@ TestWebContentsModalDialogManagerDelegate::
     TestWebContentsModalDialogManagerDelegate()
     : web_contents_visible_(true),
       web_contents_blocked_(false),
-      web_contents_modal_dialog_host_(NULL) {}
+      web_contents_modal_dialog_host_(nullptr) {}
 
 void TestWebContentsModalDialogManagerDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents,

@@ -174,7 +174,7 @@ class TranslateManagerTest : public ::testing::Test {
 
   void TurnOnTranslateByULP() {
     scoped_refptr<base::FieldTrial> trial(
-        CreateFieldTrial(kTrialName, 100, "Enabled", NULL));
+        CreateFieldTrial(kTrialName, 100, "Enabled", nullptr));
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->RegisterFieldTrialOverride(
         translate::kTranslateLanguageByULP.name,

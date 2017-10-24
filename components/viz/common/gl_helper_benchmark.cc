@@ -85,9 +85,9 @@ class GLHelperBenchmark : public testing::Test {
   }
 
   void TearDown() override {
-    helper_scaling_.reset(NULL);
-    helper_.reset(NULL);
-    context_.reset(NULL);
+    helper_scaling_.reset(nullptr);
+    helper_.reset(nullptr);
+    context_.reset(nullptr);
   }
 
   void LoadPngFileToSkBitmap(const base::FilePath& filename, SkBitmap* bitmap) {
@@ -151,7 +151,8 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
         gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         gl_->BindTexture(GL_TEXTURE_2D, dst_texture);
         gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dst_size.width(),
-                        dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                        dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                        nullptr);
         gl_->BindTexture(GL_TEXTURE_2D, src_texture);
         gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
                         src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,

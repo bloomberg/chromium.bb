@@ -130,7 +130,7 @@ class GCMNetworkChannelTest
       public SyncNetworkChannel::Observer {
  public:
   GCMNetworkChannelTest()
-      : delegate_(NULL),
+      : delegate_(nullptr),
         url_fetchers_created_count_(0),
         last_invalidator_state_(TRANSIENT_INVALIDATION_ERROR) {}
 
@@ -149,9 +149,9 @@ class GCMNetworkChannelTest
     gcm_network_channel_->SetMessageReceiver(
         invalidation::NewPermanentCallback(
             this, &GCMNetworkChannelTest::OnIncomingMessage));
-    url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(NULL,
-        base::Bind(&GCMNetworkChannelTest::CreateURLFetcher,
-            base::Unretained(this))));
+    url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(
+        nullptr, base::Bind(&GCMNetworkChannelTest::CreateURLFetcher,
+                            base::Unretained(this))));
   }
 
   void TearDown() override { gcm_network_channel_->RemoveObserver(this); }

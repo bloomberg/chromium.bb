@@ -15,7 +15,7 @@ FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
     const std::string& source,
     SigninClient* client)
     : GaiaCookieManagerService(token_service, source, client),
-      url_fetcher_factory_(NULL) {}
+      url_fetcher_factory_(nullptr) {}
 
 void FakeGaiaCookieManagerService::Init(
     net::FakeURLFetcherFactory* url_fetcher_factory) {

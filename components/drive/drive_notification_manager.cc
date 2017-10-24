@@ -50,7 +50,7 @@ void DriveNotificationManager::Shutdown() {
   // purpose.  See the class comment on the InvalidationService interface for
   // more information.
   invalidation_service_->UnregisterInvalidationHandler(this);
-  invalidation_service_ = NULL;
+  invalidation_service_ = nullptr;
 }
 
 void DriveNotificationManager::OnInvalidatorStateChange(

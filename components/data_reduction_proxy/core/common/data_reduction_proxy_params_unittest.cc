@@ -195,7 +195,7 @@ TEST_F(DataReductionProxyParamsTest, AreServerExperimentsEnabled) {
           "DataReductionProxyServerExperiments", test.trial_group_value));
     }
 
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     if (test.disable_flag_set) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyServerExperimentsDisabled, "");
@@ -402,7 +402,7 @@ TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
 
   for (const auto& test : tests) {
     // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     if (!test.flag_value.empty()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyConfigURL, test.flag_value);
@@ -428,7 +428,7 @@ TEST_F(DataReductionProxyParamsTest, SecureProxyURL) {
 
   for (const auto& test : tests) {
     // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     if (!test.flag_value.empty()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxySecureProxyCheckURL, test.flag_value);

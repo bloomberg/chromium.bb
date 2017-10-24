@@ -52,7 +52,7 @@ class ConfigurationPolicyPrefStoreListTest
 };
 
 TEST_F(ConfigurationPolicyPrefStoreListTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPref, nullptr));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
@@ -63,7 +63,7 @@ TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, in_value->CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
   EXPECT_TRUE(in_value->Equals(value));
@@ -80,7 +80,7 @@ class ConfigurationPolicyPrefStoreStringTest
 };
 
 TEST_F(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPref, nullptr));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
@@ -89,7 +89,7 @@ TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
              POLICY_SOURCE_CLOUD,
              base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
   EXPECT_TRUE(base::Value("http://chromium.org").Equals(value));
@@ -106,7 +106,7 @@ class ConfigurationPolicyPrefStoreBooleanTest
 };
 
 TEST_F(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPref, nullptr));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
@@ -115,7 +115,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
              POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
              nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
   bool boolean_value = true;
@@ -126,7 +126,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policy);
-  value = NULL;
+  value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   boolean_value = false;
   result = value->GetAsBoolean(&boolean_value);
@@ -145,7 +145,7 @@ class ConfigurationPolicyPrefStoreIntegerTest
 };
 
 TEST_F(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPref, nullptr));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
@@ -153,7 +153,7 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value(2).Equals(value));
 }
@@ -179,8 +179,8 @@ class ConfigurationPolicyPrefStoreRefreshTest
 };
 
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
-  const base::Value* value = NULL;
-  EXPECT_FALSE(store_->GetValue(kTestPolicy, NULL));
+  const base::Value* value = nullptr;
+  EXPECT_FALSE(store_->GetValue(kTestPolicy, nullptr));
 
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -197,7 +197,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   policy.Erase(kTestPolicy);
   UpdateProviderPolicy(policy);
   observer_.VerifyAndResetChangedKey(kTestPref);
-  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPref, nullptr));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {

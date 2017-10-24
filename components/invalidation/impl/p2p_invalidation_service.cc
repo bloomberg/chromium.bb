@@ -74,7 +74,7 @@ std::string P2PInvalidationService::GetInvalidatorClientId() const {
 }
 
 InvalidationLogger* P2PInvalidationService::GetInvalidationLogger() {
-  return NULL;
+  return nullptr;
 }
 
 void P2PInvalidationService::RequestDetailedStatus(

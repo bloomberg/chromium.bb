@@ -349,8 +349,8 @@ bool ZeroSuggestProvider::StoreSuggestionResponse(
 
   // If we received an empty result list, we should update the display, as it
   // may be showing cached results that should not be shown.
-  const base::ListValue* root_list = NULL;
-  const base::ListValue* results_list = NULL;
+  const base::ListValue* root_list = nullptr;
+  const base::ListValue* results_list = nullptr;
   if (parsed_data.GetAsList(&root_list) &&
       root_list->GetList(1, &results_list) &&
       results_list->empty())
@@ -423,7 +423,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   // Fail if we can't set the clickthrough URL for query suggestions.
-  if (default_provider == NULL ||
+  if (default_provider == nullptr ||
       !default_provider->SupportsReplacement(
           template_url_service->search_terms_data()))
     return;

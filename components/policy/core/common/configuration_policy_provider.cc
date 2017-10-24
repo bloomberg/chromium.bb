@@ -13,8 +13,7 @@ namespace policy {
 ConfigurationPolicyProvider::Observer::~Observer() {}
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider()
-    : initialized_(false),
-      schema_registry_(NULL) {}
+    : initialized_(false), schema_registry_(nullptr) {}
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
   DCHECK(!initialized_);
@@ -32,7 +31,7 @@ void ConfigurationPolicyProvider::Shutdown() {
     // Unit tests don't initialize the BrowserPolicyConnector but call
     // shutdown; handle that.
     schema_registry_->RemoveObserver(this);
-    schema_registry_ = NULL;
+    schema_registry_ = nullptr;
   }
 }
 

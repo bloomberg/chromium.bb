@@ -288,7 +288,7 @@ void DefaultProvider::ShutdownOnUIThread() {
   DCHECK(prefs_);
   RemoveAllObservers();
   pref_change_registrar_.RemoveAll();
-  prefs_ = NULL;
+  prefs_ = nullptr;
 }
 
 void DefaultProvider::ReadDefaultSettings() {

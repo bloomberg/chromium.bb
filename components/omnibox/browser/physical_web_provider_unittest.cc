@@ -76,9 +76,7 @@ class FakeAutocompleteProviderClient
 
 class PhysicalWebProviderTest : public testing::Test {
  protected:
-  PhysicalWebProviderTest() : provider_(NULL) {
-    ResetFieldTrialList();
-  }
+  PhysicalWebProviderTest() : provider_(nullptr) { ResetFieldTrialList(); }
 
   ~PhysicalWebProviderTest() override {}
 
@@ -89,9 +87,7 @@ class PhysicalWebProviderTest : public testing::Test {
     provider_ = PhysicalWebProvider::Create(client_.get(), nullptr);
   }
 
-  void TearDown() override {
-    provider_ = NULL;
-  }
+  void TearDown() override { provider_ = nullptr; }
 
   void ResetFieldTrialList() {
     // Destroy the existing FieldTrialList before creating a new one to avoid a

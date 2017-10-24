@@ -44,8 +44,8 @@ SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
 
   {
     SkCanvas canvas(bitmap);
-    canvas.drawBitmapRect(
-        contents, SkRect::MakeIWH(desired_size, desired_size), NULL);
+    canvas.drawBitmapRect(contents, SkRect::MakeIWH(desired_size, desired_size),
+                          nullptr);
   }
 
   return bitmap;
@@ -177,7 +177,7 @@ class FaviconImageSource : public gfx::ImageSkiaSource {
 
   // gfx::ImageSkiaSource:
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    const gfx::ImageSkiaRep* rep = NULL;
+    const gfx::ImageSkiaRep* rep = nullptr;
     // gfx::ImageSkia passes one of the resource scale factors. The source
     // should return:
     // 1) The ImageSkiaRep with the highest scale if all available

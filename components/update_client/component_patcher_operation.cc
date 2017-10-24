@@ -50,7 +50,7 @@ DeltaUpdateOp* CreateDeltaUpdateOp(
   } else if (operation == "bsdiff" || operation == "courgette") {
     return new DeltaUpdateOpPatch(operation, out_of_process_patcher);
   }
-  return NULL;
+  return nullptr;
 }
 
 DeltaUpdateOp::DeltaUpdateOp() {

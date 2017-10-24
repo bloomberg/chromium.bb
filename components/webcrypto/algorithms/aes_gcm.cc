@@ -30,7 +30,7 @@ const EVP_AEAD* GetAesGcmAlgorithmFromKeySize(size_t key_size_bytes) {
     case 32:
       return EVP_aead_aes_256_gcm();
     default:
-      return NULL;
+      return nullptr;
   }
 }
 

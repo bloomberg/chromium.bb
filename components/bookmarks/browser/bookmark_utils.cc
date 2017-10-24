@@ -85,8 +85,8 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 bool DoesBookmarkTextContainWords(const base::string16& text,
                                   const std::vector<base::string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
-    if (!base::i18n::StringSearchIgnoringCaseAndAccents(
-            words[i], text, NULL, NULL)) {
+    if (!base::i18n::StringSearchIgnoringCaseAndAccents(words[i], text, nullptr,
+                                                        nullptr)) {
       return false;
     }
   }
@@ -102,7 +102,7 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
          DoesBookmarkTextContainWords(
              url_formatter::FormatUrl(
                  node->url(), url_formatter::kFormatUrlOmitNothing,
-                 net::UnescapeRule::NORMAL, NULL, NULL, NULL),
+                 net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr),
              words);
 }
 
@@ -135,7 +135,7 @@ const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64_t id) {
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 // Attempts to shorten a URL safely (i.e., by preventing the end of the URL

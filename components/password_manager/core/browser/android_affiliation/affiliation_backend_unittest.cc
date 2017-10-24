@@ -332,7 +332,7 @@ class AffiliationBackendTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(CreateTemporaryFile(&db_path_));
     backend_.reset(new AffiliationBackend(
-        NULL, backend_task_runner_, backend_task_runner_->GetMockClock(),
+        nullptr, backend_task_runner_, backend_task_runner_->GetMockClock(),
         backend_task_runner_->GetMockTickClock()));
     backend_->Initialize(db_path());
     auto mock_fetch_throttler =

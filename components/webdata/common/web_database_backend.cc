@@ -44,7 +44,7 @@ void WebDatabaseBackend::InitDatabase() {
 void WebDatabaseBackend::ShutdownDatabase() {
   if (db_ && init_status_ == sql::INIT_OK)
     db_->CommitTransaction();
-  db_.reset(NULL);
+  db_.reset(nullptr);
   init_complete_ = true;  // Ensures the init sequence is not re-run.
   init_status_ = sql::INIT_FAILURE;
 }

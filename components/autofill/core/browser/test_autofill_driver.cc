@@ -8,7 +8,7 @@
 
 namespace autofill {
 
-TestAutofillDriver::TestAutofillDriver() : url_request_context_(NULL) {}
+TestAutofillDriver::TestAutofillDriver() : url_request_context_(nullptr) {}
 
 TestAutofillDriver::~TestAutofillDriver() {}
 

@@ -23,7 +23,7 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Default) {
   AutofillCreditCardPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
   EXPECT_FALSE(
-      prefs.GetValue(autofill::prefs::kAutofillCreditCardEnabled, NULL));
+      prefs.GetValue(autofill::prefs::kAutofillCreditCardEnabled, nullptr));
 }
 
 TEST_F(AutofillCreditCardPolicyHandlerTest, Enabled) {
@@ -37,7 +37,7 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Enabled) {
 
   // Enabling Autofill for credit cards should not set the prefs.
   EXPECT_FALSE(
-      prefs.GetValue(autofill::prefs::kAutofillCreditCardEnabled, NULL));
+      prefs.GetValue(autofill::prefs::kAutofillCreditCardEnabled, nullptr));
 }
 
 TEST_F(AutofillCreditCardPolicyHandlerTest, Disabled) {
@@ -50,7 +50,7 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Disabled) {
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Disabling Autofill should switch the prefs to managed.
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(
       prefs.GetValue(autofill::prefs::kAutofillCreditCardEnabled, &value));
   ASSERT_TRUE(value);

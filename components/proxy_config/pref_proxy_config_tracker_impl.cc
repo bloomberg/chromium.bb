@@ -129,7 +129,7 @@ PrefProxyConfigTrackerImpl::PrefProxyConfigTrackerImpl(
     PrefService* pref_service,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : pref_service_(pref_service),
-      proxy_config_service_impl_(NULL),
+      proxy_config_service_impl_(nullptr),
       io_task_runner_(io_task_runner) {
   pref_config_state_ = ReadPrefConfig(pref_service_, &pref_config_);
   active_config_state_ = pref_config_state_;
@@ -142,7 +142,7 @@ PrefProxyConfigTrackerImpl::PrefProxyConfigTrackerImpl(
 }
 
 PrefProxyConfigTrackerImpl::~PrefProxyConfigTrackerImpl() {
-  DCHECK(pref_service_ == NULL);
+  DCHECK(pref_service_ == nullptr);
 }
 
 std::unique_ptr<net::ProxyConfigService>
@@ -161,8 +161,8 @@ void PrefProxyConfigTrackerImpl::DetachFromPrefService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Stop notifications.
   proxy_prefs_.RemoveAll();
-  pref_service_ = NULL;
-  proxy_config_service_impl_ = NULL;
+  pref_service_ = nullptr;
+  proxy_config_service_impl_ = nullptr;
 }
 
 // static

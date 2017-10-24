@@ -125,8 +125,8 @@ void HistoryQuickProvider::DoAutocomplete() {
         // the URL-what-you-typed match are on the same host (i.e., aren't
         // from a longer internet hostname for which the omnibox input is
         // a prefix).
-        if (url_db->GetRowForURL(
-            autocomplete_input_.canonicalized_url(), NULL) != 0) {
+        if (url_db->GetRowForURL(autocomplete_input_.canonicalized_url(),
+                                 nullptr) != 0) {
           // We visited this URL before.
           will_have_url_what_you_typed_match_first = true;
           // HistoryURLProvider gives visited what-you-typed URLs a high score.

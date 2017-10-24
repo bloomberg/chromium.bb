@@ -31,7 +31,7 @@ void HistoryUnitTestBase::ExecuteSQLScript(const base::FilePath& sql_path,
   sql_time.push_back(base::StringPrintf("%" PRId64, now));  // last_visit_time
   sql_time.push_back(base::StringPrintf("%" PRId64, now));  // visit_time
   sql_time.push_back(base::StringPrintf("%" PRId64, now));  // time_slot
-  sql = base::ReplaceStringPlaceholders(sql, sql_time, NULL);
+  sql = base::ReplaceStringPlaceholders(sql, sql_time, nullptr);
 
   sql::Connection connection;
   ASSERT_TRUE(connection.Open(db_path));

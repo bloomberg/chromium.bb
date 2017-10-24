@@ -133,7 +133,7 @@ TEST_F(DomDistillerViewerTest, TestCreatingInvalidViewRequest) {
 }
 
 DistilledPagePrefs* TestDomDistillerService::GetDistilledPagePrefs() {
-  return NULL;
+  return nullptr;
 }
 
 TEST_F(DomDistillerViewerTest, TestGetDistilledPageThemeJsOutput) {

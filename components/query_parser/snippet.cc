@@ -227,7 +227,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
   const size_t kSnippetMaxLength = 200;
   const base::string16 kEllipsis = base::ASCIIToUTF16(" ... ");
 
-  UText* document_utext = NULL;
+  UText* document_utext = nullptr;
   UErrorCode status = U_ZERO_ERROR;
   document_utext = utext_openUTF8(document_utext, document.data(),
                                   document.size(), &status);

@@ -38,7 +38,7 @@ NativeWebContentsModalDialogManagerViews::
         SingleWebContentsDialogManagerDelegate* native_delegate)
     : native_delegate_(native_delegate),
       dialog_(dialog),
-      host_(NULL),
+      host_(nullptr),
       host_destroying_(false) {
   ManageDialog();
 }
@@ -150,7 +150,7 @@ void NativeWebContentsModalDialogManagerViews::OnPositionRequiresUpdate() {
 
 void NativeWebContentsModalDialogManagerViews::OnHostDestroying() {
   host_->RemoveObserver(this);
-  host_ = NULL;
+  host_ = nullptr;
   host_destroying_ = true;
 }
 

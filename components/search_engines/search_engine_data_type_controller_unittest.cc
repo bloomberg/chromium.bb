@@ -114,7 +114,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
 
   // Send the notification that the TemplateURLService has started.
   PreloadTemplateURLService();
-  EXPECT_EQ(NULL, search_engine_dtc_.GetSubscriptionForTesting());
+  EXPECT_EQ(nullptr, search_engine_dtc_.GetSubscriptionForTesting());
   EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED,
             search_engine_dtc_.state());
 
@@ -172,7 +172,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StopBeforeLoaded) {
             search_engine_dtc_.state());
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_.Stop();
-  EXPECT_EQ(NULL, search_engine_dtc_.GetSubscriptionForTesting());
+  EXPECT_EQ(nullptr, search_engine_dtc_.GetSubscriptionForTesting());
   EXPECT_EQ(syncer::DataTypeController::NOT_RUNNING,
             search_engine_dtc_.state());
   EXPECT_FALSE(syncable_service_.syncing());

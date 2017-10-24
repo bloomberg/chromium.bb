@@ -98,12 +98,12 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
 
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
       pref_notifier,
-      pref_value_store_->CloneAndSpecialize(NULL,  // managed
-                                            NULL,  // supervised_user
+      pref_value_store_->CloneAndSpecialize(nullptr,  // managed
+                                            nullptr,  // supervised_user
                                             incognito_extension_pref_store,
-                                            NULL,  // command_line_prefs
+                                            nullptr,  // command_line_prefs
                                             incognito_pref_store.get(),
-                                            NULL,  // recommended
+                                            nullptr,  // recommended
                                             forked_registry->defaults().get(),
                                             pref_notifier, std::move(delegate)),
       incognito_pref_store.get(), forked_registry.get(),
@@ -141,7 +141,7 @@ syncer::SyncableService* PrefServiceSyncable::GetSyncableService(
     return &priority_pref_sync_associator_;
   } else {
     NOTREACHED() << "invalid model type: " << type;
-    return NULL;
+    return nullptr;
   }
 }
 

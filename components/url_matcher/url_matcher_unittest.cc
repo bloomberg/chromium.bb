@@ -122,10 +122,10 @@ TEST(URLMatcherConditionTest, Comparison) {
        URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX, &p1)},
       {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p1),
        URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p2)},
-      {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, NULL),
+      {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, nullptr),
        URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p2)},
       {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p1),
-       URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX, NULL)},
+       URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX, nullptr)},
   };
   for (size_t i = 0; i < arraysize(test_smaller); ++i) {
     EXPECT_TRUE(test_smaller[i][0] < test_smaller[i][1])
@@ -136,8 +136,8 @@ TEST(URLMatcherConditionTest, Comparison) {
   URLMatcherCondition test_equal[][2] = {
       {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p1),
        URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p1)},
-      {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, NULL),
-       URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, NULL)},
+      {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, nullptr),
+       URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, nullptr)},
   };
   for (size_t i = 0; i < arraysize(test_equal); ++i) {
     EXPECT_FALSE(test_equal[i][0] < test_equal[i][1])

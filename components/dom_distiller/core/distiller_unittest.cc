@@ -225,7 +225,7 @@ using test::MockDistillerPageFactory;
 class TestDistillerURLFetcher : public DistillerURLFetcher {
  public:
   explicit TestDistillerURLFetcher(bool delay_fetch)
-      : DistillerURLFetcher(NULL), delay_fetch_(delay_fetch) {
+      : DistillerURLFetcher(nullptr), delay_fetch_(delay_fetch) {
     responses_[kImageURLs[0]] = string(kImageData[0]);
     responses_[kImageURLs[1]] = string(kImageData[1]);
   }
@@ -256,7 +256,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
 
 class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
  public:
-  TestDistillerURLFetcherFactory() : DistillerURLFetcherFactory(NULL) {}
+  TestDistillerURLFetcherFactory() : DistillerURLFetcherFactory(nullptr) {}
 
   ~TestDistillerURLFetcherFactory() override {}
   DistillerURLFetcher* CreateDistillerURLFetcher() const override {
@@ -266,7 +266,7 @@ class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
 
 class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
  public:
-  MockDistillerURLFetcherFactory() : DistillerURLFetcherFactory(NULL) {}
+  MockDistillerURLFetcherFactory() : DistillerURLFetcherFactory(nullptr) {}
   virtual ~MockDistillerURLFetcherFactory() {}
 
   MOCK_CONST_METHOD0(CreateDistillerURLFetcher, DistillerURLFetcher*());
@@ -744,7 +744,7 @@ TEST_F(DistillerTest, CancelWithDelayedJSCallback) {
   base::MessageLoopForUI loop;
   std::unique_ptr<base::Value> distilled_value =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), "");
-  MockDistillerPage* distiller_page = NULL;
+  MockDistillerPage* distiller_page = nullptr;
   distiller_.reset(
       new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL,

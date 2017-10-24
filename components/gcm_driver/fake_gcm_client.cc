@@ -60,14 +60,13 @@ std::string FakeGCMClient::GenerateInstanceIDToken(
 FakeGCMClient::FakeGCMClient(
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread)
-    : delegate_(NULL),
+    : delegate_(nullptr),
       started_(false),
       start_mode_(DELAYED_START),
       start_mode_overridding_(RESPECT_START_MODE),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 FakeGCMClient::~FakeGCMClient() {
 }

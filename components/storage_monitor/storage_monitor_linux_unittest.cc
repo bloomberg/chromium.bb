@@ -220,8 +220,8 @@ class StorageMonitorLinuxTest : public testing::Test {
   // Simplied version of OverwriteMtabAndRunLoop() that just deletes all the
   // entries in the mtab file.
   void WriteEmptyMtabAndRunLoop() {
-    OverwriteMtabAndRunLoop(NULL,  // No data.
-                            0);    // No data length.
+    OverwriteMtabAndRunLoop(nullptr,  // No data.
+                            0);       // No data length.
   }
 
   // Create a directory named |dir| relative to the test directory.

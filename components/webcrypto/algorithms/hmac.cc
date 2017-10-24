@@ -77,7 +77,7 @@ const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash) {
     case blink::kWebCryptoAlgorithmIdSha512:
       return "HS512";
     default:
-      return NULL;
+      return nullptr;
   }
 }
 

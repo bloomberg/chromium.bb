@@ -43,7 +43,7 @@ static const uint32_t kMaxDomNodes = 500;
 namespace safe_browsing {
 
 // static
-ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
+ThreatDetailsFactory* ThreatDetails::factory_ = nullptr;
 
 namespace {
 
@@ -520,17 +520,17 @@ void ThreatDetails::StartCollection() {
       report_->set_referrer_url(referrer_url.spec());
 
     // Add the nodes, starting from the page url.
-    AddUrl(page_url, GURL(), std::string(), NULL);
+    AddUrl(page_url, GURL(), std::string(), nullptr);
   }
 
   // Add the resource_url and its original url, if non-empty and different.
   if (!resource_.original_url.is_empty() &&
       resource_.url != resource_.original_url) {
     // Add original_url, as the parent of resource_url.
-    AddUrl(resource_.original_url, GURL(), std::string(), NULL);
-    AddUrl(resource_.url, resource_.original_url, std::string(), NULL);
+    AddUrl(resource_.original_url, GURL(), std::string(), nullptr);
+    AddUrl(resource_.url, resource_.original_url, std::string(), nullptr);
   } else {
-    AddUrl(resource_.url, GURL(), std::string(), NULL);
+    AddUrl(resource_.url, GURL(), std::string(), nullptr);
   }
 
   // Add the redirect urls, if non-empty. The redirect urls do not include the
@@ -544,13 +544,13 @@ void ThreatDetails::StartCollection() {
 
   // Set the previous redirect url as the parent of the next one
   for (size_t i = 0; i < resource_.redirect_urls.size(); ++i) {
-    AddUrl(resource_.redirect_urls[i], parent_url, std::string(), NULL);
+    AddUrl(resource_.redirect_urls[i], parent_url, std::string(), nullptr);
     parent_url = resource_.redirect_urls[i];
   }
 
   // Add the referrer url.
   if (!referrer_url.is_empty())
-    AddUrl(referrer_url, GURL(), std::string(), NULL);
+    AddUrl(referrer_url, GURL(), std::string(), nullptr);
 
   if (!resource_.IsMainPageLoadBlocked()) {
     // Get URLs of frames, scripts etc from the DOM.
@@ -695,7 +695,7 @@ void ThreatDetails::OnRedirectionCollectionReady() {
 void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (size_t i = 0; i < urls.size() - 1; ++i) {
-    AddUrl(urls[i], urls[i + 1], std::string(), NULL);
+    AddUrl(urls[i], urls[i + 1], std::string(), nullptr);
   }
 }
 

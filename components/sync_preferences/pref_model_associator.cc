@@ -60,7 +60,7 @@ PrefModelAssociator::PrefModelAssociator(
     syncer::ModelType type)
     : models_associated_(false),
       processing_syncer_changes_(false),
-      pref_service_(NULL),
+      pref_service_(nullptr),
       type_(type),
       client_(client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -69,7 +69,7 @@ PrefModelAssociator::PrefModelAssociator(
 
 PrefModelAssociator::~PrefModelAssociator() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_ = NULL;
+  pref_service_ = nullptr;
 
   synced_pref_observers_.clear();
 }
@@ -413,7 +413,7 @@ base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
     std::string err =
         "Failed to deserialize preference value: " + reader.GetErrorMessage();
     LOG(ERROR) << err;
-    return NULL;
+    return nullptr;
   }
   return value.release();
 }
@@ -512,7 +512,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
 }
 
 void PrefModelAssociator::SetPrefService(PrefServiceSyncable* pref_service) {
-  DCHECK(pref_service_ == NULL);
+  DCHECK(pref_service_ == nullptr);
   pref_service_ = pref_service;
 }
 

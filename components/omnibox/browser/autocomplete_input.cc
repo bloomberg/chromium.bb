@@ -464,7 +464,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     url::Component* host) {
   url::Parsed parts;
   base::string16 scheme_str;
-  Parse(text, std::string(), scheme_classifier, &parts, &scheme_str, NULL);
+  Parse(text, std::string(), scheme_classifier, &parts, &scheme_str, nullptr);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -478,7 +478,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     base::string16 real_url(text.substr(after_scheme_and_colon));
     url::Parsed real_parts;
     AutocompleteInput::Parse(real_url, std::string(), scheme_classifier,
-                             &real_parts, NULL, NULL);
+                             &real_parts, nullptr, nullptr);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url::Component(
@@ -508,11 +508,13 @@ base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
   if (!url_formatter::CanStripTrailingSlash(url))
     return formatted_url;
   const base::string16 url_with_path(formatted_url + base::char16('/'));
-  return (AutocompleteInput::Parse(formatted_url, std::string(),
-                                   scheme_classifier, NULL, NULL, NULL) ==
-          AutocompleteInput::Parse(url_with_path, std::string(),
-                                   scheme_classifier, NULL, NULL, NULL)) ?
-      formatted_url : url_with_path;
+  return (AutocompleteInput::Parse(
+              formatted_url, std::string(), scheme_classifier, nullptr, nullptr,
+              nullptr) == AutocompleteInput::Parse(url_with_path, std::string(),
+                                                   scheme_classifier, nullptr,
+                                                   nullptr, nullptr))
+             ? formatted_url
+             : url_with_path;
 }
 
 // static
@@ -542,7 +544,7 @@ bool AutocompleteInput::HasHTTPScheme(const base::string16& input) {
   if (url::FindAndCompareScheme(utf8_input, kViewSourceScheme, &scheme)) {
     utf8_input.erase(0, scheme.end() + 1);
   }
-  return url::FindAndCompareScheme(utf8_input, url::kHttpScheme, NULL);
+  return url::FindAndCompareScheme(utf8_input, url::kHttpScheme, nullptr);
 }
 
 void AutocompleteInput::UpdateText(const base::string16& text,

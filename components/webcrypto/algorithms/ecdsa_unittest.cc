@@ -115,7 +115,7 @@ TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
   // public key (WebCrypto doesn't provide a mechanism for importing a public
   // key given a private key).
   std::unique_ptr<base::DictionaryValue> key_jwk_copy(key_jwk->DeepCopy());
-  key_jwk_copy->Remove("d", NULL);
+  key_jwk_copy->Remove("d", nullptr);
   blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(*key_jwk_copy.get(),
@@ -221,7 +221,7 @@ blink::WebCryptoKeyUsageMask GetExpectedUsagesForKeyImport(
       return kPrivateUsages;
       break;
     case blink::kWebCryptoKeyFormatJwk: {
-      const base::DictionaryValue* key = NULL;
+      const base::DictionaryValue* key = nullptr;
       if (!test->GetDictionary("key", &key))
         ADD_FAILURE() << "Missing key property";
       return key->HasKey("d") ? kPrivateUsages : kPublicUsages;

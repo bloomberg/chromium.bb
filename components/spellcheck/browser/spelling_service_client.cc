@@ -236,14 +236,14 @@ bool SpellingServiceClient::ParseResponse(
     return false;
 
   // Check for errors from spelling service.
-  base::DictionaryValue* error = NULL;
+  base::DictionaryValue* error = nullptr;
   if (value->GetDictionary(kErrorPath, &error))
     return false;
 
   // Retrieve the array of Misspelling objects. When the input text does not
   // have misspelled words, it returns an empty JSON. (In this case, its HTTP
   // status is 200.) We just return true for this case.
-  base::ListValue* misspellings = NULL;
+  base::ListValue* misspellings = nullptr;
   if (!value->GetList(kMisspellingsPath, &misspellings))
     return true;
 
@@ -251,20 +251,20 @@ bool SpellingServiceClient::ParseResponse(
     // Retrieve the i-th misspelling region and put it to the given vector. When
     // the Spelling service sends two or more suggestions, we read only the
     // first one because SpellCheckResult can store only one suggestion.
-    base::DictionaryValue* misspelling = NULL;
+    base::DictionaryValue* misspelling = nullptr;
     if (!misspellings->GetDictionary(i, &misspelling))
       return false;
 
     int start = 0;
     int length = 0;
-    base::ListValue* suggestions = NULL;
+    base::ListValue* suggestions = nullptr;
     if (!misspelling->GetInteger("charStart", &start) ||
         !misspelling->GetInteger("charLength", &length) ||
         !misspelling->GetList("suggestions", &suggestions)) {
       return false;
     }
 
-    base::DictionaryValue* suggestion = NULL;
+    base::DictionaryValue* suggestion = nullptr;
     base::string16 replacement;
     if (!suggestions->GetDictionary(0, &suggestion) ||
         !suggestion->GetString("suggestion", &replacement)) {

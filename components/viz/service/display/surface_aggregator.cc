@@ -1105,7 +1105,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   if (dest_pass_list_->empty())
     return {};
 
-  dest_pass_list_ = NULL;
+  dest_pass_list_ = nullptr;
   ProcessAddedAndRemovedSurfaces();
   contained_surfaces_.swap(previous_contained_surfaces_);
   contained_surfaces_.clear();

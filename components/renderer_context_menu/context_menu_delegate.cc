@@ -39,5 +39,5 @@ ContextMenuDelegate* ContextMenuDelegate::FromWebContents(
   ContextMenuDelegateUserData* user_data =
       static_cast<ContextMenuDelegateUserData*>(
           web_contents->GetUserData(&kMenuDelegateUserDataKey));
-  return user_data ? user_data->menu_delegate() : NULL;
+  return user_data ? user_data->menu_delegate() : nullptr;
 }

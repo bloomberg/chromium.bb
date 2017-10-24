@@ -114,7 +114,7 @@ std::string P2PNotificationData::ToString() const {
 
 bool P2PNotificationData::ResetFromString(const std::string& str) {
   std::unique_ptr<base::Value> data_value = base::JSONReader::Read(str);
-  const base::DictionaryValue* data_dict = NULL;
+  const base::DictionaryValue* data_dict = nullptr;
   if (!data_value.get() || !data_value->GetAsDictionary(&data_dict)) {
     LOG(WARNING) << "Could not parse " << str << " as a dictionary";
     return false;
@@ -128,7 +128,7 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
                  << kNotificationTypeKey;
   }
   target_ = P2PNotificationTargetFromString(target_str);
-  const base::ListValue* invalidation_map_list = NULL;
+  const base::ListValue* invalidation_map_list = nullptr;
   if (!data_dict->GetList(kInvalidationsKey, &invalidation_map_list) ||
       !invalidation_map_.ResetFromValue(*invalidation_map_list)) {
     LOG(WARNING) << "Could not parse " << kInvalidationsKey;

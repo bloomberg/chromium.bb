@@ -30,14 +30,15 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
   const base::FilePath commands =
       unpack_path.Append(FILE_PATH_LITERAL("commands.json"));
   if (!base::PathExists(commands))
-    return NULL;
+    return nullptr;
 
   JSONFileValueDeserializer deserializer(commands);
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root =
+      deserializer.Deserialize(nullptr, nullptr);
 
   return (root.get() && root->IsType(base::Value::Type::LIST))
              ? static_cast<base::ListValue*>(root.release())
-             : NULL;
+             : nullptr;
 }
 
 }  // namespace
@@ -109,7 +110,7 @@ void ComponentPatcher::DonePatchingFile(UnpackerError error,
 }
 
 void ComponentPatcher::DonePatching(UnpackerError error, int extended_error) {
-  current_operation_ = NULL;
+  current_operation_ = nullptr;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback_, error, extended_error));
   callback_.Reset();

@@ -248,7 +248,7 @@ void OnResolveProxyHandler(
     net::ProxyInfo* result) {
   DCHECK(result->is_empty() || result->is_direct() ||
          !data_reduction_proxy_config.IsDataReductionProxy(
-             result->proxy_server(), NULL));
+             result->proxy_server(), nullptr));
 
   if (!util::EligibleForDataReductionProxy(*result, url, method))
     return;

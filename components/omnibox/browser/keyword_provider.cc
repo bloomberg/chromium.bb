@@ -73,7 +73,7 @@ ScopedEndExtensionKeywordMode::~ScopedEndExtensionKeywordMode() {
 }
 
 void ScopedEndExtensionKeywordMode::StayInKeywordMode() {
-  delegate_ = NULL;
+  delegate_ = nullptr;
 }
 
 }  // namespace
@@ -98,7 +98,7 @@ base::string16 KeywordProvider::SplitKeywordFromInput(
     return input;  // Only one token provided.
 
   // Set |remaining_input| to everything after the first token.
-  DCHECK(remaining_input != NULL);
+  DCHECK(remaining_input != nullptr);
   const size_t remaining_start = trim_leading_whitespace ?
       input.find_first_not_of(base::kWhitespaceUTF16, first_white) :
       first_white + 1;
@@ -130,11 +130,11 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
     TemplateURLService* model,
     AutocompleteInput* input) {
   if (!input->allow_exact_keyword_match())
-    return NULL;
+    return nullptr;
 
   base::string16 keyword, remaining_input;
   if (!ExtractKeywordFromInput(*input, model, &keyword, &remaining_input))
-    return NULL;
+    return nullptr;
 
   DCHECK(model);
   const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
@@ -167,7 +167,7 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
     return template_url;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 base::string16 KeywordProvider::GetKeywordForText(

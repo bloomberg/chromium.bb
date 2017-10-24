@@ -377,7 +377,7 @@ AccountMapping* GCMAccountMapper::FindMappingByAccountId(
       return &*iter;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 GCMAccountMapper::AccountMappings::iterator

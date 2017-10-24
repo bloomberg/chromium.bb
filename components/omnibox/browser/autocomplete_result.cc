@@ -154,14 +154,12 @@ void AutocompleteResult::SortAndCull(
 
   if (default_match_ != matches_.end()) {
     const base::string16 debug_info =
-        base::ASCIIToUTF16("fill_into_edit=") +
-        default_match_->fill_into_edit +
+        base::ASCIIToUTF16("fill_into_edit=") + default_match_->fill_into_edit +
         base::ASCIIToUTF16(", provider=") +
-        ((default_match_->provider != NULL)
-            ? base::ASCIIToUTF16(default_match_->provider->GetName())
-            : base::string16()) +
-        base::ASCIIToUTF16(", input=") +
-        input.text();
+        ((default_match_->provider != nullptr)
+             ? base::ASCIIToUTF16(default_match_->provider->GetName())
+             : base::string16()) +
+        base::ASCIIToUTF16(", input=") + input.text();
 
     // We should only get here with an empty omnibox for automatic suggestions
     // on focus on the NTP; in these cases hitting enter should do nothing, so

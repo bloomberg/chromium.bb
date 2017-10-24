@@ -163,7 +163,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     Map::const_iterator it = invalidations_.find(id);
     if (it == invalidations_.end()) {
       ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
-      return 0;
+      return nullptr;
     } else {
       return it->second.back().payload();
     }
@@ -266,7 +266,7 @@ class SyncInvalidationListenerTest : public testing::Test {
         kExtensionsId_(kChromeSyncSourceId, "EXTENSION"),
         kAppsId_(kChromeSyncSourceId, "APP"),
         fake_push_client_(new notifier::FakePushClient()),
-        fake_invalidation_client_(NULL),
+        fake_invalidation_client_(nullptr),
         listener_(base::WrapUnique(
             new PushClientChannel(base::WrapUnique(fake_push_client_)))),
         fake_delegate_(&listener_) {}
@@ -288,7 +288,7 @@ class SyncInvalidationListenerTest : public testing::Test {
   }
 
   void StartClient() {
-    fake_invalidation_client_ = NULL;
+    fake_invalidation_client_ = nullptr;
     listener_.Start(
         base::Bind(&CreateFakeInvalidationClient, &fake_invalidation_client_),
         kClientId, kClientInfo, kState, fake_tracker_.GetSavedInvalidations(),
@@ -305,7 +305,7 @@ class SyncInvalidationListenerTest : public testing::Test {
     // schedule any tasks, so it's both necessary and sufficient to
     // drain the task queue before calling it.
     FlushPendingWrites();
-    fake_invalidation_client_ = NULL;
+    fake_invalidation_client_ = nullptr;
     listener_.StopForTest();
   }
 
@@ -476,7 +476,7 @@ TEST_F(SyncInvalidationListenerTest, WriteState) {
 TEST_F(SyncInvalidationListenerTest, InvalidateNoPayload) {
   const ObjectId& id = kBookmarksId_;
 
-  FireInvalidate(id, kVersion1, NULL);
+  FireInvalidate(id, kVersion1, nullptr);
 
   ASSERT_EQ(1U, GetInvalidationCount(id));
   ASSERT_FALSE(IsUnknownVersion(id));
@@ -622,7 +622,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidateAll) {
 
 // Test a simple scenario for multiple IDs.
 TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
-  FireInvalidate(kBookmarksId_, 3, NULL);
+  FireInvalidate(kBookmarksId_, 3, nullptr);
 
   ASSERT_EQ(1U, GetInvalidationCount(kBookmarksId_));
   ASSERT_FALSE(IsUnknownVersion(kBookmarksId_));
@@ -630,7 +630,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
   EXPECT_EQ("", GetPayload(kBookmarksId_));
 
   // kExtensionId is not registered, so the invalidation should not get through.
-  FireInvalidate(kExtensionsId_, 2, NULL);
+  FireInvalidate(kExtensionsId_, 2, nullptr);
   ASSERT_EQ(0U, GetInvalidationCount(kExtensionsId_));
 }
 

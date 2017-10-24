@@ -82,7 +82,7 @@ void WebDatabaseService::ShutdownDatabase() {
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  return web_db_backend_.get() ? web_db_backend_->database() : NULL;
+  return web_db_backend_.get() ? web_db_backend_->database() : nullptr;
 }
 
 scoped_refptr<WebDatabaseBackend> WebDatabaseService::GetBackend() const {

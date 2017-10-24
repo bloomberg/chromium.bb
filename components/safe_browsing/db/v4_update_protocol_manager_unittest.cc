@@ -68,7 +68,7 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
       bool disable_auto_update = false,
       ExtendedReportingLevel erl = SBER_LEVEL_OFF) {
     return V4UpdateProtocolManager::Create(
-        NULL, GetTestV4ProtocolConfig(disable_auto_update),
+        nullptr, GetTestV4ProtocolConfig(disable_auto_update),
         base::Bind(&V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
                    base::Unretained(this), expected_lurs),
         base::Bind(&V4UpdateProtocolManagerTest::GetExtendedReportingLevel,

@@ -584,7 +584,7 @@ TEST_F(AutofillProfileSyncableServiceTest, AutofillProfileDeleted) {
   TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
   autofill_syncable_service_.set_sync_processor(sync_change_processor);
 
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, NULL);
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, nullptr);
   autofill_syncable_service_.AutofillProfileChanged(change);
 
   ASSERT_EQ(1U, sync_change_processor->changes().size());

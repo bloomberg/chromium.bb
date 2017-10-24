@@ -123,25 +123,24 @@ bool StorageInfo::CrackDeviceId(const std::string& device_id,
 // static
 bool StorageInfo::IsMediaDevice(const std::string& device_id) {
   Type type;
-  return CrackDeviceId(device_id, &type, NULL) &&
-      (type == REMOVABLE_MASS_STORAGE_WITH_DCIM || type == MTP_OR_PTP ||
-       type == MAC_IMAGE_CAPTURE);
+  return CrackDeviceId(device_id, &type, nullptr) &&
+         (type == REMOVABLE_MASS_STORAGE_WITH_DCIM || type == MTP_OR_PTP ||
+          type == MAC_IMAGE_CAPTURE);
 }
 
 // static
 bool StorageInfo::IsRemovableDevice(const std::string& device_id) {
   Type type;
-  return CrackDeviceId(device_id, &type, NULL) &&
+  return CrackDeviceId(device_id, &type, nullptr) &&
          (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-          type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
-          type == MTP_OR_PTP ||
+          type == REMOVABLE_MASS_STORAGE_NO_DCIM || type == MTP_OR_PTP ||
           type == MAC_IMAGE_CAPTURE);
 }
 
 // static
 bool StorageInfo::IsMassStorageDevice(const std::string& device_id) {
   Type type;
-  return CrackDeviceId(device_id, &type, NULL) &&
+  return CrackDeviceId(device_id, &type, nullptr) &&
          (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
           type == REMOVABLE_MASS_STORAGE_NO_DCIM || type == FIXED_MASS_STORAGE);
 }
@@ -149,7 +148,7 @@ bool StorageInfo::IsMassStorageDevice(const std::string& device_id) {
 // static
 bool StorageInfo::IsMTPDevice(const std::string& device_id) {
   Type type;
-  return CrackDeviceId(device_id, &type, NULL) && type == MTP_OR_PTP;
+  return CrackDeviceId(device_id, &type, nullptr) && type == MTP_OR_PTP;
 }
 
 base::string16 StorageInfo::GetDisplayName(bool with_size) const {

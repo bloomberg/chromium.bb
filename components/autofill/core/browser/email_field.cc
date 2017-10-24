@@ -19,7 +19,7 @@ std::unique_ptr<FormField> EmailField::Parse(AutofillScanner* scanner) {
     return base::WrapUnique(new EmailField(field));
   }
 
-  return NULL;
+  return nullptr;
 }
 
 EmailField::EmailField(const AutofillField* field) : field_(field) {

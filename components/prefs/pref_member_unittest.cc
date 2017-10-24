@@ -226,7 +226,7 @@ TEST_F(PrefMemberTest, BasicGetAndSet) {
   EXPECT_EQ(expected_vector, *string_list);
 
   // Try removing through the pref.
-  expected_list.Remove(0, NULL);
+  expected_list.Remove(0, nullptr);
   expected_vector.erase(expected_vector.begin());
   prefs.Set(kStringListPref, expected_list);
 

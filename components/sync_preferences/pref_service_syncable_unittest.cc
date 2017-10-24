@@ -102,8 +102,8 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
 class PrefServiceSyncableTest : public testing::Test {
  public:
   PrefServiceSyncableTest()
-      : pref_sync_service_(NULL),
-        test_processor_(NULL),
+      : pref_sync_service_(nullptr),
+        test_processor_(nullptr),
         next_pref_remote_sync_node_id_(0) {}
 
   void SetUp() override {
@@ -169,7 +169,7 @@ class PrefServiceSyncableTest : public testing::Test {
   }
 
   void InitWithNoSyncData() {
-    InitWithSyncDataTakeOutput(syncer::SyncDataList(), NULL);
+    InitWithSyncDataTakeOutput(syncer::SyncDataList(), nullptr);
   }
 
   const base::Value& GetPreferenceValue(const std::string& name) {

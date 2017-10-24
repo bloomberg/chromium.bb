@@ -16,16 +16,16 @@
 namespace infobars {
 
 InfoBar::InfoBar(std::unique_ptr<InfoBarDelegate> delegate)
-    : owner_(NULL),
+    : owner_(nullptr),
       delegate_(std::move(delegate)),
-      container_(NULL),
+      container_(nullptr),
       animation_(this),
       arrow_height_(0),
       arrow_target_height_(0),
       arrow_half_width_(0),
       bar_height_(0),
       bar_target_height_(-1) {
-  DCHECK(delegate_ != NULL);
+  DCHECK(delegate_ != nullptr);
   animation_.SetTweenType(gfx::Tween::LINEAR);
   delegate_->set_infobar(this);
 }
@@ -86,7 +86,7 @@ void InfoBar::SetArrowTargetHeight(int height) {
 }
 
 void InfoBar::CloseSoon() {
-  owner_ = NULL;
+  owner_ = nullptr;
   PlatformSpecificOnCloseSoon();
   MaybeDelete();
 }

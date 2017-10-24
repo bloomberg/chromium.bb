@@ -767,7 +767,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   if (!WebFormElementToFormData(
           web_form, blink::WebFormControlElement(),
           field_value_and_properties_map, form_util::EXTRACT_NONE,
-          &password_form->form_data, NULL /* FormFieldData */)) {
+          &password_form->form_data, nullptr /* FormFieldData */)) {
     return std::unique_ptr<PasswordForm>();
   }
 

@@ -50,7 +50,7 @@ OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* overlay,
 }
 
 bool OverlayUserPrefStore::IsSetInOverlay(const std::string& key) const {
-  return overlay_->GetValue(key, NULL);
+  return overlay_->GetValue(key, nullptr);
 }
 
 void OverlayUserPrefStore::AddObserver(PrefStore::Observer* observer) {
@@ -74,7 +74,7 @@ bool OverlayUserPrefStore::GetValue(const std::string& key,
                                     const base::Value** result) const {
   // If the |key| shall NOT be stored in the overlay store, there must not
   // be an entry.
-  DCHECK(ShallBeStoredInOverlay(key) || !overlay_->GetValue(key, NULL));
+  DCHECK(ShallBeStoredInOverlay(key) || !overlay_->GetValue(key, nullptr));
 
   if (overlay_->GetValue(key, result))
     return true;
@@ -104,7 +104,7 @@ bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
     return true;
 
   // Try to create copy of underlay if the overlay does not contain a value.
-  base::Value* underlay_value = NULL;
+  base::Value* underlay_value = nullptr;
   if (!underlay_->GetMutableValue(key, &underlay_value))
     return false;
 
@@ -211,7 +211,7 @@ void OverlayUserPrefStore::OnPrefValueChanged(bool overlay,
   if (overlay) {
     ReportValueChanged(key, DEFAULT_PREF_WRITE_FLAGS);
   } else {
-    if (!overlay_->GetValue(key, NULL))
+    if (!overlay_->GetValue(key, nullptr))
       ReportValueChanged(key, DEFAULT_PREF_WRITE_FLAGS);
   }
 }

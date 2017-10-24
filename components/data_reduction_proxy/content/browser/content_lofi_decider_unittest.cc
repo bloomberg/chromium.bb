@@ -102,7 +102,7 @@ class ContentLoFiDeciderTest : public testing::Test {
                                      content::ResourceType resource_type,
                                      content::PreviewsState previews_state) {
     content::ResourceRequestInfo::AllocateForTesting(
-        request, resource_type, NULL, -1, -1, -1,
+        request, resource_type, nullptr, -1, -1, -1,
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
         false,  // allow_download
         false,  // is_async

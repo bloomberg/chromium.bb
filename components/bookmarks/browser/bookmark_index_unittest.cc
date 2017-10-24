@@ -458,7 +458,7 @@ TEST_F(BookmarkIndexTest, Remove) {
 
   // Remove the node and make sure we don't get back any results.
   model_->Remove(model_->other_node()->GetChild(0));
-  ExpectMatches("A", NULL, 0U);
+  ExpectMatches("A", nullptr, 0U);
 }
 
 // Makes sure index is updated when a node's title is changed.

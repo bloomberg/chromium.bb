@@ -62,7 +62,7 @@ void WebDataServiceBase::RegisterDBLoadedCallback(
 
 WebDatabase* WebDataServiceBase::GetDatabase() {
   if (!wdbs_.get())
-    return NULL;
+    return nullptr;
   return wdbs_->GetDatabaseOnDB();
 }
 

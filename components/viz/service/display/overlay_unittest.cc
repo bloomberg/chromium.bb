@@ -525,10 +525,10 @@ TEST(OverlayTest, NoOverlaysByDefault) {
   scoped_refptr<cc::TestContextProvider> provider =
       cc::TestContextProvider::Create();
   OverlayOutputSurface<OverlayCandidateValidator> output_surface(provider);
-  EXPECT_EQ(NULL, output_surface.GetOverlayCandidateValidator());
+  EXPECT_EQ(nullptr, output_surface.GetOverlayCandidateValidator());
 
   output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
-  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != NULL);
+  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != nullptr);
 }
 
 TEST(OverlayTest, OverlaysProcessorHasStrategy) {
@@ -2305,7 +2305,7 @@ class OverlayInfoRendererGL : public GLRenderer {
   OverlayInfoRendererGL(const RendererSettings* settings,
                         OutputSurface* output_surface,
                         cc::DisplayResourceProvider* resource_provider)
-      : GLRenderer(settings, output_surface, resource_provider, NULL),
+      : GLRenderer(settings, output_surface, resource_provider, nullptr),
         expect_overlays_(false) {}
 
   MOCK_METHOD2(DoDrawQuad,

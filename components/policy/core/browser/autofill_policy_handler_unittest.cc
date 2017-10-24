@@ -22,7 +22,7 @@ TEST_F(AutofillPolicyHandlerTest, Default) {
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
-  EXPECT_FALSE(prefs.GetValue(autofill::prefs::kAutofillEnabled, NULL));
+  EXPECT_FALSE(prefs.GetValue(autofill::prefs::kAutofillEnabled, nullptr));
 }
 
 TEST_F(AutofillPolicyHandlerTest, Enabled) {
@@ -34,7 +34,7 @@ TEST_F(AutofillPolicyHandlerTest, Enabled) {
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Enabling Autofill should not set the pref.
-  EXPECT_FALSE(prefs.GetValue(autofill::prefs::kAutofillEnabled, NULL));
+  EXPECT_FALSE(prefs.GetValue(autofill::prefs::kAutofillEnabled, nullptr));
 }
 
 TEST_F(AutofillPolicyHandlerTest, Disabled) {
@@ -47,7 +47,7 @@ TEST_F(AutofillPolicyHandlerTest, Disabled) {
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Disabling Autofill should switch the pref to managed.
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(prefs.GetValue(autofill::prefs::kAutofillEnabled, &value));
   ASSERT_TRUE(value);
   bool autofill_enabled = true;

@@ -38,7 +38,7 @@ void SharedBitmapAllocationNotifierImpl::DidAllocateSharedBitmap(
   base::SharedMemoryHandle memory_handle;
   size_t size;
   MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(buffer), &memory_handle, &size, NULL);
+      std::move(buffer), &memory_handle, &size, nullptr);
   DCHECK_EQ(result, MOJO_RESULT_OK);
   this->ChildAllocatedSharedBitmap(size, memory_handle, id);
   last_sequence_number_++;

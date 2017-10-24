@@ -22,12 +22,12 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {
 }  // namespace
 
 PrefServiceFactory::PrefServiceFactory()
-    : managed_prefs_(NULL),
-      supervised_user_prefs_(NULL),
-      extension_prefs_(NULL),
-      command_line_prefs_(NULL),
-      user_prefs_(NULL),
-      recommended_prefs_(NULL),
+    : managed_prefs_(nullptr),
+      supervised_user_prefs_(nullptr),
+      extension_prefs_(nullptr),
+      command_line_prefs_(nullptr),
+      user_prefs_(nullptr),
+      recommended_prefs_(nullptr),
       read_error_callback_(base::Bind(&DoNothingHandleReadError)),
       async_(false) {}
 

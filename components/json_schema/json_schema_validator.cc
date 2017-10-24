@@ -62,8 +62,8 @@ bool CompareToString(const ExpectedType& entry, const std::string& key) {
 // If |value| is a dictionary, returns the "name" attribute of |value| or NULL
 // if |value| does not contain a "name" attribute. Otherwise, returns |value|.
 const base::Value* ExtractNameFromDictionary(const base::Value* value) {
-  const base::DictionaryValue* value_dict = NULL;
-  const base::Value* name_value = NULL;
+  const base::DictionaryValue* value_dict = nullptr;
+  const base::Value* name_value = nullptr;
   if (value->GetAsDictionary(&value_dict)) {
     value_dict->Get("name", &name_value);
     return name_value;
@@ -100,8 +100,8 @@ bool IsValidSchema(const base::DictionaryValue* dict,
   };
 
   bool has_type_or_ref = false;
-  const base::ListValue* list_value = NULL;
-  const base::DictionaryValue* dictionary_value = NULL;
+  const base::ListValue* list_value = nullptr;
+  const base::DictionaryValue* dictionary_value = nullptr;
   std::string string_value;
 
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
@@ -240,7 +240,7 @@ bool IsValidSchema(const base::DictionaryValue* dict,
     if (it.key() == schema::kEnum) {
       it.value().GetAsList(&list_value);
       for (size_t i = 0; i < list_value->GetSize(); ++i) {
-        const base::Value* value = NULL;
+        const base::Value* value = nullptr;
         list_value->Get(i, &value);
         // Sometimes the enum declaration is a dictionary with the enum value
         // under "name".
@@ -402,11 +402,11 @@ std::unique_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
     int validator_options,
     std::string* error) {
   base::JSONParserOptions json_options = base::JSON_PARSE_RFC;
-  std::unique_ptr<base::Value> json =
-      base::JSONReader::ReadAndReturnError(schema, json_options, NULL, error);
+  std::unique_ptr<base::Value> json = base::JSONReader::ReadAndReturnError(
+      schema, json_options, nullptr, error);
   if (!json)
     return std::unique_ptr<base::DictionaryValue>();
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   if (!json->GetAsDictionary(&dict)) {
     *error = "Schema must be a JSON object";
     return std::unique_ptr<base::DictionaryValue>();
@@ -428,7 +428,7 @@ JSONSchemaValidator::JSONSchemaValidator(base::DictionaryValue* schema,
     return;
 
   for (size_t i = 0; i < types->GetSize(); ++i) {
-    base::DictionaryValue* type = NULL;
+    base::DictionaryValue* type = nullptr;
     CHECK(types->GetDictionary(i, &type));
 
     std::string id;
@@ -476,7 +476,7 @@ void JSONSchemaValidator::Validate(const base::Value* instance,
 
   // If the schema has a choices property, the instance must validate against at
   // least one of the items in that array.
-  const base::ListValue* choices = NULL;
+  const base::ListValue* choices = nullptr;
   if (schema->GetList(schema::kChoices, &choices)) {
     ValidateChoices(instance, choices, path);
     return;
@@ -484,7 +484,7 @@ void JSONSchemaValidator::Validate(const base::Value* instance,
 
   // If the schema has an enum property, the instance must be one of those
   // values.
-  const base::ListValue* enumeration = NULL;
+  const base::ListValue* enumeration = nullptr;
   if (schema->GetList(schema::kEnum, &enumeration)) {
     ValidateEnum(instance, enumeration, path);
     return;
@@ -524,7 +524,7 @@ void JSONSchemaValidator::ValidateChoices(const base::Value* instance,
   size_t original_num_errors = errors_.size();
 
   for (size_t i = 0; i < choices->GetSize(); ++i) {
-    const base::DictionaryValue* choice = NULL;
+    const base::DictionaryValue* choice = nullptr;
     CHECK(choices->GetDictionary(i, &choice));
 
     Validate(instance, choice, path);
@@ -545,7 +545,7 @@ void JSONSchemaValidator::ValidateEnum(const base::Value* instance,
                                        const base::ListValue* choices,
                                        const std::string& path) {
   for (size_t i = 0; i < choices->GetSize(); ++i) {
-    const base::Value* choice = NULL;
+    const base::Value* choice = nullptr;
     CHECK(choices->Get(i, &choice));
     // Sometimes the enum declaration is a dictionary with the enum value under
     // "name".
@@ -581,15 +581,15 @@ void JSONSchemaValidator::ValidateEnum(const base::Value* instance,
 void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
                                          const base::DictionaryValue* schema,
                                          const std::string& path) {
-  const base::DictionaryValue* properties = NULL;
+  const base::DictionaryValue* properties = nullptr;
   if (schema->GetDictionary(schema::kProperties, &properties)) {
     for (base::DictionaryValue::Iterator it(*properties); !it.IsAtEnd();
          it.Advance()) {
       std::string prop_path = path.empty() ? it.key() : (path + "." + it.key());
-      const base::DictionaryValue* prop_schema = NULL;
+      const base::DictionaryValue* prop_schema = nullptr;
       CHECK(it.value().GetAsDictionary(&prop_schema));
 
-      const base::Value* prop_value = NULL;
+      const base::Value* prop_value = nullptr;
       if (instance->Get(it.key(), &prop_value)) {
         Validate(prop_value, prop_schema, prop_path);
       } else {
@@ -604,11 +604,11 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
     }
   }
 
-  const base::DictionaryValue* additional_properties_schema = NULL;
+  const base::DictionaryValue* additional_properties_schema = nullptr;
   bool allow_any_additional_properties =
       SchemaAllowsAnyAdditionalItems(schema, &additional_properties_schema);
 
-  const base::DictionaryValue* pattern_properties = NULL;
+  const base::DictionaryValue* pattern_properties = nullptr;
   std::vector<std::unique_ptr<re2::RE2>> pattern_properties_pattern;
   std::vector<const base::DictionaryValue*> pattern_properties_schema;
 
@@ -625,7 +625,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
                       kInvalidRegex, it.key(), prop_pattern->error())));
         continue;
       }
-      const base::DictionaryValue* prop_schema = NULL;
+      const base::DictionaryValue* prop_schema = nullptr;
       CHECK(it.value().GetAsDictionary(&prop_schema));
       pattern_properties_pattern.push_back(std::move(prop_pattern));
       pattern_properties_schema.push_back(prop_schema);
@@ -662,7 +662,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
 void JSONSchemaValidator::ValidateArray(const base::ListValue* instance,
                                         const base::DictionaryValue* schema,
                                         const std::string& path) {
-  const base::DictionaryValue* single_type = NULL;
+  const base::DictionaryValue* single_type = nullptr;
   size_t instance_size = instance->GetSize();
   if (schema->GetDictionary(schema::kItems, &single_type)) {
     int min_items = 0;
@@ -686,7 +686,7 @@ void JSONSchemaValidator::ValidateArray(const base::ListValue* instance,
     // If the items property is a single schema, each item in the array must
     // validate against that schema.
     for (size_t i = 0; i < instance_size; ++i) {
-      const base::Value* item = NULL;
+      const base::Value* item = nullptr;
       CHECK(instance->Get(i, &item));
       std::string i_str = base::Uint64ToString(i);
       std::string item_path = path.empty() ? i_str : (path + "." + i_str);
@@ -704,16 +704,16 @@ void JSONSchemaValidator::ValidateArray(const base::ListValue* instance,
 void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
                                         const base::DictionaryValue* schema,
                                         const std::string& path) {
-  const base::ListValue* tuple_type = NULL;
+  const base::ListValue* tuple_type = nullptr;
   schema->GetList(schema::kItems, &tuple_type);
   size_t tuple_size = tuple_type ? tuple_type->GetSize() : 0;
   if (tuple_type) {
     for (size_t i = 0; i < tuple_size; ++i) {
       std::string i_str = base::Uint64ToString(i);
       std::string item_path = path.empty() ? i_str : (path + "." + i_str);
-      const base::DictionaryValue* item_schema = NULL;
+      const base::DictionaryValue* item_schema = nullptr;
       CHECK(tuple_type->GetDictionary(i, &item_schema));
-      const base::Value* item_value = NULL;
+      const base::Value* item_value = nullptr;
       instance->Get(i, &item_value);
       if (item_value && item_value->type() != base::Value::Type::NONE) {
         Validate(item_value, item_schema, item_path);
@@ -728,7 +728,7 @@ void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
     }
   }
 
-  const base::DictionaryValue* additional_properties_schema = NULL;
+  const base::DictionaryValue* additional_properties_schema = nullptr;
   if (SchemaAllowsAnyAdditionalItems(schema, &additional_properties_schema))
     return;
 
@@ -739,7 +739,7 @@ void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
     for (size_t i = tuple_size; i < instance_size; ++i) {
       std::string i_str = base::Uint64ToString(i);
       std::string item_path = path.empty() ? i_str : (path + "." + i_str);
-      const base::Value* item_value = NULL;
+      const base::Value* item_value = nullptr;
       CHECK(instance->Get(i, &item_value));
       Validate(item_value, additional_properties_schema, item_path);
     }

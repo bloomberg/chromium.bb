@@ -116,12 +116,12 @@ void OmniboxFieldTrialTest::VerifySuggestPollingStrategy(
     int expected_delay_ms) {
   ResetFieldTrialList();
   std::map<std::string, std::string> params;
-  if (from_last_keystroke_rule_value != NULL) {
+  if (from_last_keystroke_rule_value != nullptr) {
     params[std::string(
         OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule)] =
         from_last_keystroke_rule_value;
   }
-  if (polling_delay_ms_rule_value != NULL) {
+  if (polling_delay_ms_rule_value != nullptr) {
     params[std::string(
         OmniboxFieldTrial::kSuggestPollingDelayMsRule)] =
         polling_delay_ms_rule_value;
@@ -512,13 +512,13 @@ TEST_F(OmniboxFieldTrialTest, GetSuggestPollingStrategy) {
 
   // Default values.
   VerifySuggestPollingStrategy(
-      NULL, NULL, false,
+      nullptr, nullptr, false,
       OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
 
   // Valid params.
   VerifySuggestPollingStrategy("true", "50", true, 50);
-  VerifySuggestPollingStrategy(NULL, "35", false, 35);
+  VerifySuggestPollingStrategy(nullptr, "35", false, 35);
   VerifySuggestPollingStrategy(
-      "true", NULL, true,
+      "true", nullptr, true,
       OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
 }

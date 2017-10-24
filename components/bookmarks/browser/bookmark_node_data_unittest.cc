@@ -139,7 +139,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   base::ScopedTempDir other_profile_dir;
   EXPECT_TRUE(other_profile_dir.CreateUniqueTempDir());
   EXPECT_TRUE(read_data.GetFirstNode(model(), other_profile_dir.GetPath()) ==
-              NULL);
+              nullptr);
 
   // Writing should also put the URL and title on the clipboard.
   GURL read_url;
@@ -188,7 +188,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   base::ScopedTempDir other_profile_dir;
   EXPECT_TRUE(other_profile_dir.CreateUniqueTempDir());
   EXPECT_TRUE(read_data.GetFirstNode(model(), other_profile_dir.GetPath()) ==
-              NULL);
+              nullptr);
 }
 
 // Tests reading/writing a folder with children.
@@ -275,7 +275,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
 
   // Asking for the first node should return NULL with more than one element
   // present.
-  EXPECT_TRUE(read_data.GetFirstNode(model(), GetProfilePath()) == NULL);
+  EXPECT_TRUE(read_data.GetFirstNode(model(), GetProfilePath()) == nullptr);
 }
 
 TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {

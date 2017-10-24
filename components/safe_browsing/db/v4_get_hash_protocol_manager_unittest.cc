@@ -74,7 +74,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
          ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING),
          ListIdentifier(CHROME_PLATFORM, URL, POTENTIALLY_HARMFUL_APPLICATION),
          ListIdentifier(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER)});
-    return V4GetHashProtocolManager::Create(NULL, stores_to_check,
+    return V4GetHashProtocolManager::Create(nullptr, stores_to_check,
                                             GetTestV4ProtocolConfig());
   }
 

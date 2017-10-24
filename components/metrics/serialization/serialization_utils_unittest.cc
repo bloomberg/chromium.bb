@@ -84,7 +84,7 @@ TEST_F(SerializationUtilsTest, IllegalNameAreFilteredTest) {
 TEST_F(SerializationUtilsTest, BadInputIsCaughtTest) {
   std::string input(
       base::StringPrintf("sparsehistogram%cname foo%c", '\0', '\0'));
-  EXPECT_EQ(NULL, MetricSample::ParseSparseHistogram(input).get());
+  EXPECT_EQ(nullptr, MetricSample::ParseSparseHistogram(input).get());
 }
 
 TEST_F(SerializationUtilsTest, MessageSeparatedByZero) {

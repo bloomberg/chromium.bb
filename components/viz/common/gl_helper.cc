@@ -59,7 +59,7 @@ class TextureHolder {
       : texture_(gl), size_(size) {
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, texture_);
     gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
-                   GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                   GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   }
 
   GLuint texture() const { return texture_.id(); }
@@ -418,7 +418,7 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
       type = GL_UNSIGNED_SHORT_5_6_5;
     }
     gl_->TexImage2D(GL_TEXTURE_2D, 0, format, dst_size.width(),
-                    dst_size.height(), 0, format, type, NULL);
+                    dst_size.height(), 0, format, type, nullptr);
   }
 
   const std::unique_ptr<ScalerInterface> scaler = helper_->CreateScaler(
@@ -445,7 +445,7 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
     gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, encoded_texture_size->width(),
                     encoded_texture_size->height(), 0, GL_RGBA,
-                    GL_UNSIGNED_BYTE, NULL);
+                    GL_UNSIGNED_BYTE, nullptr);
   }
 
   helper_->InitScalerImpl();
@@ -475,13 +475,14 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
   gl_->GenBuffers(1, &request->buffer);
   gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, request->buffer);
   gl_->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                  bytes_per_pixel * dst_size.GetArea(), NULL, GL_STREAM_READ);
+                  bytes_per_pixel * dst_size.GetArea(), nullptr,
+                  GL_STREAM_READ);
 
   request->query = 0u;
   gl_->GenQueriesEXT(1, &request->query);
   gl_->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, request->query);
   gl_->ReadPixels(0, 0, dst_size.width(), dst_size.height(), format, type,
-                  NULL);
+                  nullptr);
   gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
   context_support_->SignalQuery(
@@ -901,7 +902,7 @@ GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
 void GLHelper::ResizeTexture(GLuint texture, const gfx::Size& size) {
   ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
   gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.width(), size.height(), 0,
-                  GL_RGB, GL_UNSIGNED_BYTE, NULL);
+                  GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 }
 
 void GLHelper::CopyTextureSubImage(GLuint texture, const gfx::Rect& rect) {

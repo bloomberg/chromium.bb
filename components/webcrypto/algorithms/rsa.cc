@@ -213,8 +213,8 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                           blink::WebCryptoKey* key) {
   bssl::UniquePtr<RSA> rsa(RSA_new());
 
-  rsa->n = BN_bin2bn(n.bytes(), n.byte_length(), NULL);
-  rsa->e = BN_bin2bn(e.bytes(), e.byte_length(), NULL);
+  rsa->n = BN_bin2bn(n.bytes(), n.byte_length(), nullptr);
+  rsa->e = BN_bin2bn(e.bytes(), e.byte_length(), nullptr);
 
   if (!rsa->n || !rsa->e)
     return Status::OperationError();
@@ -297,7 +297,7 @@ Status RsaHashedAlgorithm::GenerateKey(
   }
 
   if (!RSA_generate_key_ex(rsa_private_key.get(), modulus_length_bits, bn.get(),
-                           NULL)) {
+                           nullptr)) {
     return Status::OperationError();
   }
 

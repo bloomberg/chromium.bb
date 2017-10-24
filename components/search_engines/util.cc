@@ -144,7 +144,7 @@ TemplateURL* GetTemplateURLByID(
       return *i;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 TemplateURL* FindURLByPrepopulateID(
@@ -155,7 +155,7 @@ TemplateURL* FindURLByPrepopulateID(
     if ((*i)->prepopulate_id() == prepopulate_id)
       return *i;
   }
-  return NULL;
+  return nullptr;
 }
 
 void MergeIntoPrepopulatedEngineData(const TemplateURL* original_turl,

@@ -80,7 +80,7 @@ class BspTreePerfTest : public cc::LayerTreeTest {
     std::vector<std::unique_ptr<DrawPolygon>> polygon_list;
     for (auto it = base_list.begin(); it != base_list.end(); ++it) {
       DrawPolygon* draw_polygon = new DrawPolygon(
-          NULL, gfx::RectF(gfx::SizeF((*it)->bounds())),
+          nullptr, gfx::RectF(gfx::SizeF((*it)->bounds())),
           (*it)->draw_properties().target_space_transform, polygon_counter++);
       polygon_list.push_back(std::unique_ptr<DrawPolygon>(draw_polygon));
     }

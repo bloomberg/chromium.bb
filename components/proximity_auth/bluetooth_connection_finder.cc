@@ -156,7 +156,7 @@ void BluetoothConnectionFinder::UnregisterAsObserver() {
 
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+    adapter_ = nullptr;
   }
 }
 

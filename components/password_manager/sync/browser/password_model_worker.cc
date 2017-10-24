@@ -42,7 +42,7 @@ void PasswordModelWorker::RequestStop() {
   ModelSafeWorker::RequestStop();
 
   base::AutoLock lock(password_store_lock_);
-  password_store_ = NULL;
+  password_store_ = nullptr;
 }
 
 }  // namespace browser_sync

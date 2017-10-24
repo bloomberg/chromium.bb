@@ -690,7 +690,7 @@ sql::Connection* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   db->set_cache_size(32);
 
   if (!db->Open(db_name))
-    return NULL;
+    return nullptr;
   return db.release();
 }
 

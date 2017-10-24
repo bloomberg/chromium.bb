@@ -165,9 +165,9 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       base::string16(), base::string16(), nullptr, std::string(), std::string(),
       from_keyword_provider, 0, false, false, base::string16());
   suggest_result.set_received_after_last_keystroke(false);
-  return CreateSearchSuggestion(
-      NULL, AutocompleteInput(), from_keyword_provider, suggest_result,
-      template_url, search_terms_data, 0, false);
+  return CreateSearchSuggestion(nullptr, AutocompleteInput(),
+                                from_keyword_provider, suggest_result,
+                                template_url, search_terms_data, 0, false);
 }
 
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -184,7 +184,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
       match.GetTemplateURL(client_->GetTemplateURLService(), false);
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
-  if (template_url != NULL) {
+  if (template_url != nullptr) {
     client_->DeleteMatchingURLsForKeywordFromHistory(template_url->id(),
                                                      match.contents);
   }
@@ -369,7 +369,7 @@ bool BaseSearchProvider::CanSendURL(
 
   // Only make the request if we know that the provider supports sending zero
   // suggest. (currently only the prepopulated Google provider).
-  if (template_url == NULL ||
+  if (template_url == nullptr ||
       !template_url->SupportsReplacement(search_terms_data) ||
       template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
     return false;

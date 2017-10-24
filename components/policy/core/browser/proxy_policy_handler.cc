@@ -218,16 +218,16 @@ const base::Value* ProxyPolicyHandler::GetProxyPolicyValue(
   const base::Value* value = policies.GetValue(key::kProxySettings);
   const base::DictionaryValue* settings;
   if (!value || !value->GetAsDictionary(&settings))
-    return NULL;
+    return nullptr;
 
-  const base::Value* policy_value = NULL;
+  const base::Value* policy_value = nullptr;
   std::string tmp;
   if (!settings->Get(policy_name, &policy_value) ||
       policy_value->IsType(base::Value::Type::NONE) ||
       (policy_value->IsType(base::Value::Type::STRING) &&
        policy_value->GetAsString(&tmp) &&
        tmp.empty())) {
-    return NULL;
+    return nullptr;
   }
   return policy_value;
 }

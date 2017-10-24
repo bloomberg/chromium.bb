@@ -69,7 +69,7 @@ const Study_Experiment* FindExperiment(const Study& study,
     if (study.experiment(i).name() == experiment_name)
       return &study.experiment(i);
   }
-  return NULL;
+  return nullptr;
 }
 
 // Checks whether experiment params set for |experiment| on |study| are exactly

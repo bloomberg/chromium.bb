@@ -307,11 +307,11 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   IdMap id_map;
   ReferenceList reference_list;
   if (!storage->Parse(schema, &root_index, &id_map, &reference_list, error))
-    return NULL;
+    return nullptr;
 
   if (root_index == kInvalid) {
     *error = "The main schema can't have a $ref";
-    return NULL;
+    return nullptr;
   }
 
   // None of this should ever happen without having been already detected.
@@ -327,11 +327,11 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
       sizes.string_enums != storage->string_enums_.size()) {
     *error = "Failed to parse the schema due to a Chrome bug. Please file a "
              "new issue at http://crbug.com";
-    return NULL;
+    return nullptr;
   }
 
   if (!ResolveReferences(id_map, reference_list, error))
-    return NULL;
+    return nullptr;
 
   SchemaData* data = &storage->schema_data_;
   data->schema_nodes = storage->schema_nodes_.data();
@@ -376,17 +376,17 @@ void Schema::InternalStorage::DetermineStorageSizes(
   sizes->schema_nodes++;
 
   if (type == base::Value::Type::LIST) {
-    const base::DictionaryValue* items = NULL;
+    const base::DictionaryValue* items = nullptr;
     if (schema.GetDictionary(schema::kItems, &items))
       DetermineStorageSizes(*items, sizes);
   } else if (type == base::Value::Type::DICTIONARY) {
     sizes->properties_nodes++;
 
-    const base::DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = nullptr;
     if (schema.GetDictionary(schema::kAdditionalProperties, &dict))
       DetermineStorageSizes(*dict, sizes);
 
-    const base::DictionaryValue* properties = NULL;
+    const base::DictionaryValue* properties = nullptr;
     if (schema.GetDictionary(schema::kProperties, &properties)) {
       for (base::DictionaryValue::Iterator it(*properties);
            !it.IsAtEnd(); it.Advance()) {
@@ -398,7 +398,7 @@ void Schema::InternalStorage::DetermineStorageSizes(
       }
     }
 
-    const base::DictionaryValue* pattern_properties = NULL;
+    const base::DictionaryValue* pattern_properties = nullptr;
     if (schema.GetDictionary(schema::kPatternProperties, &pattern_properties)) {
       for (base::DictionaryValue::Iterator it(*pattern_properties);
            !it.IsAtEnd(); it.Advance()) {
@@ -409,7 +409,7 @@ void Schema::InternalStorage::DetermineStorageSizes(
       }
     }
   } else if (schema.HasKey(schema::kEnum)) {
-    const base::ListValue* possible_values = NULL;
+    const base::ListValue* possible_values = nullptr;
     if (schema.GetList(schema::kEnum, &possible_values)) {
       if (type == base::Value::Type::INTEGER) {
         sizes->int_enums += possible_values->GetSize();
@@ -509,7 +509,7 @@ bool Schema::InternalStorage::ParseDictionary(
   properties_nodes_[extra].additional = kInvalid;
   schema_node->extra = extra;
 
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (schema.GetDictionary(schema::kAdditionalProperties, &dict)) {
     if (!Parse(*dict, &properties_nodes_[extra].additional,
                id_map, reference_list, error)) {
@@ -519,7 +519,7 @@ bool Schema::InternalStorage::ParseDictionary(
 
   properties_nodes_[extra].begin = static_cast<int>(property_nodes_.size());
 
-  const base::DictionaryValue* properties = NULL;
+  const base::DictionaryValue* properties = nullptr;
   if (schema.GetDictionary(schema::kProperties, &properties)) {
     // This and below reserves nodes for all of the |properties|, and makes sure
     // they are contiguous. Recursive calls to Parse() will append after these
@@ -529,14 +529,14 @@ bool Schema::InternalStorage::ParseDictionary(
 
   properties_nodes_[extra].end = static_cast<int>(property_nodes_.size());
 
-  const base::DictionaryValue* pattern_properties = NULL;
+  const base::DictionaryValue* pattern_properties = nullptr;
   if (schema.GetDictionary(schema::kPatternProperties, &pattern_properties))
     property_nodes_.resize(property_nodes_.size() + pattern_properties->size());
 
   properties_nodes_[extra].pattern_end =
       static_cast<int>(property_nodes_.size());
 
-  if (properties != NULL) {
+  if (properties != nullptr) {
     int base_index = properties_nodes_[extra].begin;
     int index = base_index;
 
@@ -554,7 +554,7 @@ bool Schema::InternalStorage::ParseDictionary(
     CHECK_EQ(static_cast<int>(properties->size()), index - base_index);
   }
 
-  if (pattern_properties != NULL) {
+  if (pattern_properties != nullptr) {
     int base_index = properties_nodes_[extra].end;
     int index = base_index;
 
@@ -591,7 +591,7 @@ bool Schema::InternalStorage::ParseList(const base::DictionaryValue& schema,
                                         IdMap* id_map,
                                         ReferenceList* reference_list,
                                         std::string* error) {
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (!schema.GetDictionary(schema::kItems, &dict)) {
     *error = "Arrays must declare a single schema for their items.";
     return false;
@@ -603,7 +603,7 @@ bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
                                         base::Value::Type type,
                                         SchemaNode* schema_node,
                                         std::string* error) {
-  const base::ListValue *possible_values = NULL;
+  const base::ListValue* possible_values = nullptr;
   if (!schema.GetList(schema::kEnum, &possible_values)) {
     *error = "Enum attribute must be a list value";
     return false;
@@ -750,7 +750,7 @@ Schema Schema::Iterator::schema() const {
   return Schema(storage_, storage_->schema(it_->schema));
 }
 
-Schema::Schema() : node_(NULL) {}
+Schema::Schema() : node_(nullptr) {}
 
 Schema::Schema(const scoped_refptr<const InternalStorage>& storage,
                const SchemaNode* node)
@@ -795,8 +795,8 @@ bool Schema::Validate(const base::Value& value,
     return false;
   }
 
-  const base::DictionaryValue* dict = NULL;
-  const base::ListValue* list = NULL;
+  const base::DictionaryValue* dict = nullptr;
+  const base::ListValue* list = nullptr;
   int int_value;
   std::string str_value;
   if (value.GetAsDictionary(&dict)) {
@@ -874,8 +874,8 @@ bool Schema::Normalize(base::Value* value,
     return false;
   }
 
-  base::DictionaryValue* dict = NULL;
-  base::ListValue* list = NULL;
+  base::DictionaryValue* dict = nullptr;
+  base::ListValue* list = nullptr;
   if (value->GetAsDictionary(&dict)) {
     std::vector<std::string> drop_list;  // Contains the keys to drop.
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
@@ -891,7 +891,7 @@ bool Schema::Normalize(base::Value* value,
       } else {
         for (SchemaList::iterator subschema = schema_list.begin();
              subschema != schema_list.end(); ++subschema) {
-          base::Value* sub_value = NULL;
+          base::Value* sub_value = nullptr;
           dict->GetWithoutPathExpansion(it.key(), &sub_value);
           if (!subschema->Normalize(sub_value,
                                     StrategyForNextLevel(strategy),
@@ -915,13 +915,13 @@ bool Schema::Normalize(base::Value* value,
     for (std::vector<std::string>::const_iterator it = drop_list.begin();
          it != drop_list.end();
          ++it) {
-      dict->RemoveWithoutPathExpansion(*it, NULL);
+      dict->RemoveWithoutPathExpansion(*it, nullptr);
     }
     return true;
   } else if (value->GetAsList(&list)) {
     std::vector<size_t> drop_list;  // Contains the indexes to drop.
     for (size_t index = 0; index < list->GetSize(); index++) {
-      base::Value* sub_value = NULL;
+      base::Value* sub_value = nullptr;
       list->Get(index, &sub_value);
       if (!sub_value || !GetItems().Normalize(sub_value,
                                               StrategyForNextLevel(strategy),
@@ -940,7 +940,7 @@ bool Schema::Normalize(base::Value* value,
       *changed = true;
     for (std::vector<size_t>::reverse_iterator it = drop_list.rbegin();
          it != drop_list.rend(); ++it) {
-      list->Remove(*it, NULL);
+      list->Remove(*it, nullptr);
     }
     return true;
   }

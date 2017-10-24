@@ -558,7 +558,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     const std::string& app_locale,
     std::vector<base::string16>* labels) {
   const size_t kMinimalFieldsShown = 2;
-  CreateInferredLabels(profiles, NULL, UNKNOWN_TYPE, kMinimalFieldsShown,
+  CreateInferredLabels(profiles, nullptr, UNKNOWN_TYPE, kMinimalFieldsShown,
                        app_locale, labels);
   DCHECK_EQ(profiles.size(), labels->size());
 }
@@ -921,11 +921,11 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
     case PASSWORD_FIELD:
     case USERNAME_FIELD:
     case TRANSACTION:
-        return NULL;
+      return nullptr;
   }
 
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {

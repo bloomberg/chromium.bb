@@ -37,7 +37,7 @@ namespace bookmarks {
 
 class ManagedBookmarksTrackerTest : public testing::Test {
  public:
-  ManagedBookmarksTrackerTest() : managed_node_(NULL) {}
+  ManagedBookmarksTrackerTest() : managed_node_(nullptr) {}
   ~ManagedBookmarksTrackerTest() override {}
 
   void SetUp() override {
@@ -146,13 +146,13 @@ class ManagedBookmarksTrackerTest : public testing::Test {
       return false;
 
     if (node->is_folder()) {
-      const base::ListValue* children = NULL;
+      const base::ListValue* children = nullptr;
       if (!dict->GetList("children", &children) ||
           node->child_count() != static_cast<int>(children->GetSize())) {
         return false;
       }
       for (int i = 0; i < node->child_count(); ++i) {
-        const base::DictionaryValue* child = NULL;
+        const base::DictionaryValue* child = nullptr;
         if (!children->GetDictionary(i, &child) ||
             !NodeMatchesValue(node->GetChild(i), child)) {
           return false;
@@ -242,7 +242,7 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveNode) {
 
   // Remove the Folder.
   std::unique_ptr<base::ListValue> updated(CreateTestTree());
-  ASSERT_TRUE(updated->Remove(1, NULL));
+  ASSERT_TRUE(updated->Remove(1, nullptr));
 
   const BookmarkNode* parent = managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_.get(), parent, 1, _, _));

@@ -152,8 +152,9 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
                      &updated_synced_urls);
   }
 
-  base::Optional<ModelError> error = WriteToHistoryBackend(
-      &new_synced_urls, &updated_synced_urls, NULL, &new_synced_visits, NULL);
+  base::Optional<ModelError> error =
+      WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls, nullptr,
+                            &new_synced_visits, nullptr);
   if (error)
     return error;
 

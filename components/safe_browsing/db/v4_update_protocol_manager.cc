@@ -117,7 +117,7 @@ class V4UpdateProtocolManagerFactoryImpl
 // V4UpdateProtocolManager implementation --------------------------------
 
 // static
-V4UpdateProtocolManagerFactory* V4UpdateProtocolManager::factory_ = NULL;
+V4UpdateProtocolManagerFactory* V4UpdateProtocolManager::factory_ = nullptr;
 
 // static
 std::unique_ptr<V4UpdateProtocolManager> V4UpdateProtocolManager::Create(

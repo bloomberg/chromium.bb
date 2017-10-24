@@ -70,7 +70,7 @@ class TiclInvalidationServiceTestDelegate {
         "TestUserAgent",
         base::MakeUnique<FakeIdentityProvider>(&token_service_),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
-        gcm_driver_.get(), NULL));
+        gcm_driver_.get(), nullptr));
   }
 
   void InitializeInvalidationService() {

@@ -82,7 +82,7 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
 
   ~TestVariationsFieldTrialCreator() override {
     delete client_;
-    client_ = 0;
+    client_ = nullptr;
   }
 
   bool StoreSeed(const std::string& seed_data,

@@ -45,14 +45,14 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
   JSONFileValueDeserializer reader(file_path);
   std::string error_message;
   std::unique_ptr<base::Value> root_value(
-      reader.Deserialize(NULL, &error_message));
+      reader.Deserialize(nullptr, &error_message));
   if (!root_value) {
     LOG(WARNING) << "Failed to parse " << file_path.value() << " as JSON."
                  << " error = " << error_message;
     return std::string();
   }
 
-  base::DictionaryValue* dictionary_value = NULL;
+  base::DictionaryValue* dictionary_value = nullptr;
   std::string result;
   if (!root_value->GetAsDictionary(&dictionary_value) ||
       !dictionary_value->GetString(key, &result)) {

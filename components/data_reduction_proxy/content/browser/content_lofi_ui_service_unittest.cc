@@ -72,7 +72,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
                               delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), content::RESOURCE_TYPE_SUB_FRAME, NULL,
+        request.get(), content::RESOURCE_TYPE_SUB_FRAME, nullptr,
         web_contents()->GetMainFrame()->GetProcess()->GetID(), -1,
         web_contents()->GetMainFrame()->GetRoutingID(),
         /*is_main_frame=*/false,

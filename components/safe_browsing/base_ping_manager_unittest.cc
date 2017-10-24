@@ -49,7 +49,7 @@ class BasePingManagerTest : public testing::Test {
     SafeBrowsingProtocolConfig config;
     config.client_name = kClient;
     config.url_prefix = kUrlPrefix;
-    ping_manager_.reset(new BasePingManager(NULL, config));
+    ping_manager_.reset(new BasePingManager(nullptr, config));
     ping_manager_->version_ = kAppVer;
     ping_manager_->net_log_ = net_log_with_source_;
   }

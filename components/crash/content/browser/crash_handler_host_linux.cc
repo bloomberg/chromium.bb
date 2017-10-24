@@ -162,7 +162,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   //
   // The message sender is in components/crash/content/app/breakpad_linux.cc.
 
-  struct msghdr msg = {0};
+  struct msghdr msg = {nullptr};
   struct iovec iov[kCrashIovSize];
 
   auto crash_context = base::MakeUnique<char[]>(kCrashContextSize);
@@ -463,7 +463,7 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Send the done signal to the process: it can exit now.
-  struct msghdr msg = {0};
+  struct msghdr msg = {nullptr};
   struct iovec done_iov;
   done_iov.iov_base = const_cast<char*>("\x42");
   done_iov.iov_len = 1;

@@ -97,7 +97,7 @@ class GetURLTask : public history::HistoryDBTask {
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
-    *result_storage_ = backend->GetURL(url_, NULL);
+    *result_storage_ = backend->GetURL(url_, nullptr);
     return true;
   }
 

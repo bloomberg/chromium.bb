@@ -193,7 +193,8 @@ base::string16 NormalizePhoneNumber(const base::string16& value,
   }
 
   base::string16 normalized_number;
-  FormatValidatedNumber(phone_number, country_code, NULL, &normalized_number);
+  FormatValidatedNumber(phone_number, country_code, nullptr,
+                        &normalized_number);
   return normalized_number;
 }
 
@@ -214,7 +215,7 @@ bool ConstructPhoneNumber(const base::string16& country_code,
     return false;
   }
 
-  FormatValidatedNumber(phone_number, country_code, whole_number, NULL);
+  FormatValidatedNumber(phone_number, country_code, whole_number, nullptr);
   return true;
 }
 
@@ -335,7 +336,7 @@ const base::string16& PhoneObject::GetFormattedNumber() const {
 base::string16 PhoneObject::GetNationallyFormattedNumber() const {
   base::string16 formatted = whole_number_;
   if (i18n_number_)
-    FormatValidatedNumber(*i18n_number_, base::string16(), &formatted, NULL);
+    FormatValidatedNumber(*i18n_number_, base::string16(), &formatted, nullptr);
 
   return formatted;
 }

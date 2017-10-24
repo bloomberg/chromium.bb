@@ -66,7 +66,7 @@ BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
 
   if (adapter_) {
     adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+    adapter_ = nullptr;
   }
 }
 

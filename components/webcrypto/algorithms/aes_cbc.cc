@@ -31,7 +31,7 @@ const EVP_CIPHER* GetAESCipherByKeyLength(size_t key_length_bytes) {
     case 32:
       return EVP_aes_256_cbc();
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -68,7 +68,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt cipher_operation,
   DCHECK(cipher);
 
   bssl::ScopedEVP_CIPHER_CTX context;
-  if (!EVP_CipherInit_ex(context.get(), cipher, NULL, &raw_key[0],
+  if (!EVP_CipherInit_ex(context.get(), cipher, nullptr, &raw_key[0],
                          params->Iv().Data(), cipher_operation)) {
     return Status::OperationError();
   }

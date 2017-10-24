@@ -48,7 +48,7 @@ const base::Feature kTranslateLanguageByULP{"TranslateLanguageByULP",
 namespace {
 
 // Callbacks for translate errors.
-TranslateManager::TranslateErrorCallbackList* g_callback_list_ = NULL;
+TranslateManager::TranslateErrorCallbackList* g_callback_list_ = nullptr;
 
 const char kReportLanguageDetectionErrorURL[] =
     "https://translate.google.com/translate_error?client=cr&action=langidc";
@@ -360,7 +360,7 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
       TranslateErrors::NONE, triggered_from_menu);
 
   TranslateScript* script = TranslateDownloadManager::GetInstance()->script();
-  DCHECK(script != NULL);
+  DCHECK(script != nullptr);
 
   const std::string& script_data = script->data();
   if (!script_data.empty()) {

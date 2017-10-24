@@ -288,7 +288,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
@@ -327,7 +327,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
@@ -371,7 +371,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
@@ -409,7 +409,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
@@ -443,7 +443,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
@@ -464,13 +464,13 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
                        "", "Dis", "CA", "91222", "US", "12345678910");
   std::vector<base::string16> labels;
   // Two fields at least - no filter.
-  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                         UNKNOWN_TYPE, 2, "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St."), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
 
   // Three fields at least - no filter.
-  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                         UNKNOWN_TYPE, 3, "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., Elysium"),
             labels[0]);
@@ -545,7 +545,7 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   EXPECT_EQ(base::string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
 
   // No suggested fields, but non-unknown excluded field.
-  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                         NAME_FULL, 1, "en-US", &labels);
   EXPECT_EQ(base::string16(ASCIIToUTF16("666 Erebus St.")), labels[0]);
   EXPECT_EQ(base::string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
@@ -634,7 +634,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
                        "");
 
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                         UNKNOWN_TYPE, 3, "en-US", &labels);
   ASSERT_EQ(3U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
@@ -644,7 +644,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   // A field must have a non-empty value for each profile to be considered a
   // distinguishing field.
   profiles[1]->SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("88 Nowhere Ave."));
-  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                         UNKNOWN_TYPE, 1, "en-US", &labels);
   ASSERT_EQ(3U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
@@ -682,12 +682,13 @@ TEST(AutofillProfileTest, IsSubsetOf) {
       new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   b.reset(
       new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
-      "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      NULL);
-  test::SetProfileInfo(b.get(), "Thomas", NULL, "Jefferson",
-      "declaration_guy@gmail.com", "United States Government", "Monticello",
-      NULL, "Charlottesville", "Virginia", "22902", NULL, NULL);
+  test::SetProfileInfo(a.get(), "Thomas", nullptr, "Jefferson",
+                       "declaration_guy@gmail.com", nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr);
+  test::SetProfileInfo(b.get(), "Thomas", nullptr, "Jefferson",
+                       "declaration_guy@gmail.com", "United States Government",
+                       "Monticello", nullptr, "Charlottesville", "Virginia",
+                       "22902", nullptr, nullptr);
   EXPECT_TRUE(a->IsSubsetOf(*b, "en-US"));
 
   // |b| is not a subset of |a|.
@@ -701,12 +702,12 @@ TEST(AutofillProfileTest, IsSubsetOf) {
       new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   b.reset(
       new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
-      "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      NULL);
-  test::SetProfileInfo(a.get(), "Thomas", NULL, "Adams",
-      "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      NULL);
+  test::SetProfileInfo(a.get(), "Thomas", nullptr, "Jefferson",
+                       "declaration_guy@gmail.com", nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr);
+  test::SetProfileInfo(a.get(), "Thomas", nullptr, "Adams",
+                       "declaration_guy@gmail.com", nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr);
   EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
 }
 
@@ -843,29 +844,31 @@ TEST(AutofillProfileTest, Compare) {
   EXPECT_EQ(0, a.Compare(b));
 
   // Different values produce non-zero results.
-  test::SetProfileInfo(&a, "Jimmy", NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  test::SetProfileInfo(&b, "Ringo", NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  test::SetProfileInfo(&a, "Jimmy", nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+  test::SetProfileInfo(&b, "Ringo", nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
 
   // Phone numbers are compared by the full number, including the area code.
   // This is a regression test for http://crbug.com/163024
-  test::SetProfileInfo(&a, NULL, NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, "650.555.4321");
-  test::SetProfileInfo(&b, NULL, NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, "408.555.4321");
+  test::SetProfileInfo(&a, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr,
+                       "650.555.4321");
+  test::SetProfileInfo(&b, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr,
+                       "408.555.4321");
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
 
   // Addresses are compared in full. Regression test for http://crbug.com/375545
-  test::SetProfileInfo(&a, "John", NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  test::SetProfileInfo(&a, "John", nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   a.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
                ASCIIToUTF16("line one\nline two"));
-  test::SetProfileInfo(&b, "John", NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  test::SetProfileInfo(&b, "John", nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   b.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
                ASCIIToUTF16("line one\nline two\nline three"));
   EXPECT_GT(0, a.Compare(b));

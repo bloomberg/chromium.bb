@@ -487,7 +487,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "19482937549");
 
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
@@ -872,7 +872,7 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
 
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "19482937549");
 
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
@@ -1031,7 +1031,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "19482937549");
 
   // Add the test profiles to the database.
@@ -1113,9 +1113,10 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1343,9 +1344,9 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington", NULL, NULL,
-                       "21 Laussat St", NULL, "San Francisco", "California",
-                       "94102", NULL, "(650) 555-0000");
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington", nullptr,
+                       nullptr, "21 Laussat St", nullptr, "San Francisco",
+                       "California", "94102", nullptr, "(650) 555-0000");
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1381,9 +1382,10 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MultilineAddress) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", "Apt. #42",
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St",
+                       "Apt. #42", "San Francisco", "California", "94102",
+                       nullptr, nullptr);
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1419,9 +1421,10 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -1453,9 +1456,9 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected2, "John", NULL, "Adams", "second@gmail.com",
-                       NULL, "22 Laussat St", NULL, "San Francisco",
-                       "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
+                       nullptr, "22 Laussat St", nullptr, "San Francisco",
+                       "California", "94102", nullptr, nullptr);
   std::vector<AutofillProfile*> profiles;
   profiles.push_back(&expected);
   profiles.push_back(&expected2);
@@ -1511,13 +1514,14 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
   AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected2, "John", NULL, "Adams", "second@gmail.com",
-                       NULL, "22 Laussat St", NULL, "San Francisco",
-                       "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
+                       nullptr, "22 Laussat St", nullptr, "San Francisco",
+                       "California", "94102", nullptr, nullptr);
 
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results.size());
@@ -1583,9 +1587,10 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
 
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
@@ -1665,13 +1670,14 @@ TEST_F(PersonalDataManagerTest,
 
   // Only two are saved.
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
   AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected2, "John", NULL, "Adams", "second@gmail.com",
-                       NULL, "22 Laussat St", NULL, "San Francisco",
-                       "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
+                       nullptr, "22 Laussat St", nullptr, "San Francisco",
+                       "California", "94102", nullptr, nullptr);
 
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results.size());
@@ -1797,9 +1803,9 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington", NULL, NULL,
-                       "190 High Street", NULL, "Philadelphia", "Pennsylvania",
-                       "19106", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington", nullptr,
+                       nullptr, "190 High Street", nullptr, "Philadelphia",
+                       "Pennsylvania", "19106", nullptr, nullptr);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -1834,9 +1840,10 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected2, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "190 High Street", NULL,
-                       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
+  test::SetProfileInfo(&expected2, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "190 High Street", nullptr,
+                       "Philadelphia", "Pennsylvania", "19106", nullptr,
+                       nullptr);
   expected2.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("George Washington"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -1874,10 +1881,10 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", "Government", "190 High Street",
-                       NULL, "Philadelphia", "Pennsylvania", "19106", NULL,
-                       NULL);
+                       nullptr, "Philadelphia", "Pennsylvania", "19106",
+                       nullptr, nullptr);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -2892,9 +2899,10 @@ TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressOneCreditCard) {
   // Test that the address has been saved.
   AutofillProfile expected_address(base::GenerateGUID(),
                                    "https://www.example.com");
-  test::SetProfileInfo(&expected_address, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected_address, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
   const std::vector<AutofillProfile*>& results_addr =
       personal_data_->GetProfiles();
   ASSERT_EQ(1U, results_addr.size());
@@ -3021,9 +3029,10 @@ TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressCreditCardDisabled) {
   // Test that the address has been saved.
   AutofillProfile expected_address(base::GenerateGUID(),
                                    "https://www.example.com");
-  test::SetProfileInfo(&expected_address, "George", NULL, "Washington",
-                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-                       "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected_address, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", nullptr,
+                       nullptr);
   const std::vector<AutofillProfile*>& results_addr =
       personal_data_->GetProfiles();
   ASSERT_EQ(1U, results_addr.size());
@@ -3115,8 +3124,8 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
   // Test with one profile stored.
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0, "Marion", NULL, "Morrison",
-                       "johnwayne@me.xyz", NULL, "123 Zoo St.", NULL,
+  test::SetProfileInfo(&profile0, "Marion", nullptr, "Morrison",
+                       "johnwayne@me.xyz", nullptr, "123 Zoo St.", nullptr,
                        "Hollywood", "CA", "91601", "US", "14155678910");
 
   personal_data_->AddProfile(profile0);
@@ -3146,7 +3155,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Test with multiple profiles stored.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "16502937549");
 
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");

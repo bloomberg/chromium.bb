@@ -95,7 +95,7 @@ bool MediaStorageUtil::HasDcim(const base::FilePath& mount_point) {
 bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
                                            const base::FilePath& path) {
   StorageInfo::Type type;
-  if (!StorageInfo::CrackDeviceId(device_id, &type, NULL))
+  if (!StorageInfo::CrackDeviceId(device_id, &type, nullptr))
     return false;
 
   if (type == StorageInfo::MAC_IMAGE_CAPTURE)

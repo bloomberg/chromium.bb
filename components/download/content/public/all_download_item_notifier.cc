@@ -44,7 +44,7 @@ void AllDownloadItemNotifier::ManagerGoingDown(
   DCHECK_EQ(manager_, manager);
   observer_->OnManagerGoingDown(manager);
   manager_->RemoveObserver(this);
-  manager_ = NULL;
+  manager_ = nullptr;
 }
 
 void AllDownloadItemNotifier::OnDownloadCreated(

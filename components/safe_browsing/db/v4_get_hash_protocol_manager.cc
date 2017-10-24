@@ -209,7 +209,7 @@ bool FullHashInfo::operator!=(const FullHashInfo& other) const {
 // V4GetHashProtocolManager implementation --------------------------------
 
 // static
-V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = NULL;
+V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = nullptr;
 
 // static
 std::unique_ptr<V4GetHashProtocolManager> V4GetHashProtocolManager::Create(

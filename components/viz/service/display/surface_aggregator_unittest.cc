@@ -104,7 +104,7 @@ class SurfaceAggregatorTest : public testing::Test {
                                                     kArbitraryRootFrameSinkId,
                                                     kRootIsRoot,
                                                     kNeedsSyncPoints)),
-        aggregator_(manager_.surface_manager(), NULL, use_damage_rect) {
+        aggregator_(manager_.surface_manager(), nullptr, use_damage_rect) {
     manager_.surface_manager()->AddObserver(&observer_);
   }
 
@@ -2398,8 +2398,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
 
-  SubmitCompositorFrameWithResources(NULL, 0u, true, SurfaceId(), support.get(),
-                                     surface_id);
+  SubmitCompositorFrameWithResources(nullptr, 0u, true, SurfaceId(),
+                                     support.get(), surface_id);
 
   frame = aggregator_->Aggregate(surface_id);
 
@@ -2438,8 +2438,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
 
   // Submitting a CompositorFrame to |surface_id2| should cause the surface
   // associated with |surface_id1| to get garbage collected.
-  SubmitCompositorFrameWithResources(NULL, 0u, true, SurfaceId(), support.get(),
-                                     surface_id2);
+  SubmitCompositorFrameWithResources(nullptr, 0u, true, SurfaceId(),
+                                     support.get(), surface_id2);
 
   frame = aggregator_->Aggregate(surface_id2);
 
@@ -2476,8 +2476,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
 
-  SubmitCompositorFrameWithResources(NULL, 0, true, SurfaceId(), support.get(),
-                                     surface_id);
+  SubmitCompositorFrameWithResources(nullptr, 0, true, SurfaceId(),
+                                     support.get(), surface_id);
   ASSERT_EQ(1u, client.returned_resources().size());
   EXPECT_EQ(11u, client.returned_resources()[0].id);
 
@@ -2505,8 +2505,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 
   CompositorFrame frame = aggregator_->Aggregate(surface1_id);
 
-  SubmitCompositorFrameWithResources(NULL, 0, true, SurfaceId(), support1.get(),
-                                     surface1_id);
+  SubmitCompositorFrameWithResources(nullptr, 0, true, SurfaceId(),
+                                     support1.get(), surface1_id);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());

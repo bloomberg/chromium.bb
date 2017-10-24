@@ -106,7 +106,7 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
                          base::DictionaryValue* results) {
   auto device_info = std::make_unique<base::DictionaryValue>();
 
-  device_info->SetBoolean(kProfileServiceCreated, profile_service != NULL);
+  device_info->SetBoolean(kProfileServiceCreated, profile_service != nullptr);
   device_info->SetBoolean(kGcmEnabled,
                           gcm::GCMProfileService::IsGCMEnabled(prefs));
   if (stats) {

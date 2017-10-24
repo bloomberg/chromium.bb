@@ -136,7 +136,7 @@ LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
     : version_(0),
       store_birthday_(0),
       persistent_file_(persistent_file),
-      observer_for_tests_(NULL) {
+      observer_for_tests_(nullptr) {
   Init();
 }
 

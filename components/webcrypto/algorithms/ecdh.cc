@@ -111,7 +111,7 @@ class EcdhImplementation : public EcAlgorithm {
     derived_bytes->resize(NumBitsToBytes(length_bits));
 
     int result = ECDH_compute_key(derived_bytes->data(), derived_bytes->size(),
-                                  public_key_point, private_key_ec, 0);
+                                  public_key_point, private_key_ec, nullptr);
     if (result < 0 || static_cast<size_t>(result) != derived_bytes->size())
       return Status::OperationError();
 

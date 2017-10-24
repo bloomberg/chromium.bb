@@ -129,8 +129,8 @@ SkBitmap ResizeBitmapByDownsamplingIfPossible(
       bitmap.eraseARGB(0, 0, 0, 0);
 
     SkCanvas canvas(bitmap);
-    canvas.drawBitmapRect(
-        best_bitmap, SkRect::MakeIWH(desired_size, desired_size), NULL);
+    canvas.drawBitmapRect(best_bitmap,
+                          SkRect::MakeIWH(desired_size, desired_size), nullptr);
     return bitmap;
   }
   return skia::ImageOperations::Resize(best_bitmap,

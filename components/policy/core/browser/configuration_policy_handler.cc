@@ -61,7 +61,7 @@ const char* TypeCheckingPolicyHandler::policy_name() const {
 
 bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   return CheckAndGetValue(policies, errors, &value);
 }
 
@@ -162,7 +162,7 @@ bool IntRangePolicyHandlerBase::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
   const base::Value* value;
   return CheckAndGetValue(policies, errors, &value) &&
-      EnsureInRange(value, NULL, errors);
+         EnsureInRange(value, nullptr, errors);
 }
 
 IntRangePolicyHandlerBase::~IntRangePolicyHandlerBase() {
@@ -223,7 +223,7 @@ bool StringMappingListPolicyHandler::CheckPolicySettings(
     PolicyErrorMap* errors) {
   const base::Value* value;
   return CheckAndGetValue(policies, errors, &value) &&
-      Convert(value, NULL, errors);
+         Convert(value, nullptr, errors);
 }
 
 void StringMappingListPolicyHandler::ApplyPolicySettings(
@@ -233,7 +233,7 @@ void StringMappingListPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  if (value && Convert(value, list.get(), NULL))
+  if (value && Convert(value, list.get(), nullptr))
     prefs->SetValue(pref_path_, std::move(list));
 }
 
@@ -243,7 +243,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
   if (!input)
     return true;
 
-  const base::ListValue* list_value = NULL;
+  const base::ListValue* list_value = nullptr;
   if (!input->GetAsList(&list_value)) {
     NOTREACHED();
     return false;
@@ -310,7 +310,7 @@ void IntRangePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
-  if (value && EnsureInRange(value, &value_in_range, NULL))
+  if (value && EnsureInRange(value, &value_in_range, nullptr))
     prefs->SetInteger(pref_path_, value_in_range);
 }
 
@@ -337,7 +337,7 @@ void IntPercentageToDoublePolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   int percentage;
-  if (value && EnsureInRange(value, &percentage, NULL))
+  if (value && EnsureInRange(value, &percentage, nullptr))
     prefs->SetDouble(pref_path_, static_cast<double>(percentage) / 100.);
 }
 
@@ -414,7 +414,7 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   std::string error_path;
   std::string error;
   bool result =
-      schema_.Normalize(output->get(), strategy_, &error_path, &error, NULL);
+      schema_.Normalize(output->get(), strategy_, &error_path, &error, nullptr);
 
   if (errors && !error.empty()) {
     if (error_path.empty())

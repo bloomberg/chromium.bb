@@ -294,7 +294,7 @@ bool TranslateLanguageList::SetSupportedLanguages(
   std::unique_ptr<base::Value> json_value =
       base::JSONReader::Read(language_list, base::JSON_ALLOW_TRAILING_COMMAS);
 
-  if (json_value == NULL ||
+  if (json_value == nullptr ||
       !json_value->IsType(base::Value::Type::DICTIONARY)) {
     NotifyEvent(__LINE__, "Language list is invalid");
     NOTREACHED();
@@ -305,10 +305,10 @@ bool TranslateLanguageList::SetSupportedLanguages(
   // languages.
   base::DictionaryValue* language_dict =
       static_cast<base::DictionaryValue*>(json_value.get());
-  base::DictionaryValue* target_languages = NULL;
+  base::DictionaryValue* target_languages = nullptr;
   if (!language_dict->GetDictionary(TranslateLanguageList::kTargetLanguagesKey,
                                     &target_languages) ||
-      target_languages == NULL) {
+      target_languages == nullptr) {
     NotifyEvent(__LINE__, "Target languages are not found in the response");
     NOTREACHED();
     return false;

@@ -136,7 +136,7 @@ Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
 Status VerifyUsages(const JwkReader& jwk,
                     blink::WebCryptoKeyUsageMask expected_usages) {
   // JWK "key_ops" (optional) --> usages parameter
-  base::ListValue* jwk_key_ops_value = NULL;
+  base::ListValue* jwk_key_ops_value = nullptr;
   bool has_jwk_key_ops;
   Status status =
       jwk.GetOptionalList("key_ops", &jwk_key_ops_value, &has_jwk_key_ops);
@@ -198,7 +198,7 @@ Status JwkReader::Init(const CryptoData& bytes,
                                 bytes.byte_length());
 
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
-  base::DictionaryValue* dict_value = NULL;
+  base::DictionaryValue* dict_value = nullptr;
 
   if (!value.get() || !value->GetAsDictionary(&dict_value) || !dict_value)
     return Status::ErrorJwkNotDictionary();
@@ -241,7 +241,7 @@ bool JwkReader::HasMember(const std::string& member_name) const {
 
 Status JwkReader::GetString(const std::string& member_name,
                             std::string* result) const {
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   if (!dict_->Get(member_name, &value))
     return Status::ErrorJwkMemberMissing(member_name);
   if (!value->GetAsString(result))
@@ -253,7 +253,7 @@ Status JwkReader::GetOptionalString(const std::string& member_name,
                                     std::string* result,
                                     bool* member_exists) const {
   *member_exists = false;
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   if (!dict_->Get(member_name, &value))
     return Status::Success();
 
@@ -268,7 +268,7 @@ Status JwkReader::GetOptionalList(const std::string& member_name,
                                   base::ListValue** result,
                                   bool* member_exists) const {
   *member_exists = false;
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   if (!dict_->Get(member_name, &value))
     return Status::Success();
 
@@ -319,7 +319,7 @@ Status JwkReader::GetOptionalBool(const std::string& member_name,
                                   bool* result,
                                   bool* member_exists) const {
   *member_exists = false;
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   if (!dict_->Get(member_name, &value))
     return Status::Success();
 

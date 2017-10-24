@@ -475,7 +475,7 @@ PersistentTabRestoreService::Delegate::Delegate(TabRestoreServiceClient* client)
           new BaseSessionService(BaseSessionService::TAB_RESTORE,
                                  client_->GetPathToSaveTo(),
                                  this)),
-      tab_restore_service_helper_(NULL),
+      tab_restore_service_helper_(nullptr),
       entries_to_write_(0),
       entries_written_(0),
       load_state_(NOT_LOADED) {}

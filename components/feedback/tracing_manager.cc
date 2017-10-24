@@ -15,7 +15,7 @@
 namespace {
 
 // Only once trace manager can exist at a time.
-TracingManager* g_tracing_manager = NULL;
+TracingManager* g_tracing_manager = nullptr;
 // Trace IDs start at 1 and increase.
 int g_next_trace_id = 1;
 // Name of the file to store the tracing data as.
@@ -33,7 +33,7 @@ TracingManager::TracingManager()
 
 TracingManager::~TracingManager() {
   DCHECK(g_tracing_manager == this);
-  g_tracing_manager = NULL;
+  g_tracing_manager = nullptr;
 }
 
 int TracingManager::RequestTrace() {

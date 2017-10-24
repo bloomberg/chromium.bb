@@ -228,7 +228,7 @@ class TestHistoryBackend : public HistoryBackend {
 
 class TypedURLSyncBridgeTest : public testing::Test {
  public:
-  TypedURLSyncBridgeTest() : typed_url_sync_bridge_(NULL) {}
+  TypedURLSyncBridgeTest() : typed_url_sync_bridge_(nullptr) {}
   ~TypedURLSyncBridgeTest() override {}
 
   void SetUp() override {

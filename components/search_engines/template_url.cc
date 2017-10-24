@@ -893,8 +893,8 @@ std::string TemplateURLRef::HandleReplacements(
           // See TemplateURLRef::SearchTermsArgs for more details.
           SearchTermsArgs search_terms_args_without_aqs(search_terms_args);
           search_terms_args_without_aqs.assisted_query_stats.clear();
-          GURL base_url(ReplaceSearchTerms(
-              search_terms_args_without_aqs, search_terms_data, NULL));
+          GURL base_url(ReplaceSearchTerms(search_terms_args_without_aqs,
+                                           search_terms_data, nullptr));
           if (base_url.SchemeIsCryptographic()) {
             HandleReplacement(
                 "aqs", search_terms_args.assisted_query_stats, *i, &url);
@@ -1298,7 +1298,8 @@ bool TemplateURL::ExtractSearchTermsFromURL(
     const GURL& url,
     const SearchTermsData& search_terms_data,
     base::string16* search_terms) const {
-  return FindSearchTermsInURL(url, search_terms_data, search_terms, NULL, NULL);
+  return FindSearchTermsInURL(url, search_terms_data, search_terms, nullptr,
+                              nullptr);
 }
 
 bool TemplateURL::IsSearchURL(const GURL& url,
@@ -1398,7 +1399,7 @@ GURL TemplateURL::GenerateSearchURL(
   return GURL(url_ref_->ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(
           base::ASCIIToUTF16("blah.blah.blah.blah.blah")),
-      search_terms_data, NULL));
+      search_terms_data, nullptr));
 }
 
 void TemplateURL::CopyFrom(const TemplateURL& other) {

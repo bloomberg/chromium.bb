@@ -295,7 +295,7 @@ void FakeDriveService::AddApp(const std::string& app_id,
 
   JSONStringValueDeserializer json(app_json);
   std::string error_message;
-  std::unique_ptr<base::Value> value(json.Deserialize(NULL, &error_message));
+  std::unique_ptr<base::Value> value(json.Deserialize(nullptr, &error_message));
   CHECK_EQ(base::Value::Type::DICTIONARY, value->type());
 
   base::ListValue* item_list;
@@ -322,7 +322,7 @@ void FakeDriveService::RemoveAppByProductId(const std::string& product_id) {
     std::string item_product_id;
     if (item->GetStringWithoutPathExpansion(kKeyProductId, &item_product_id) &&
         product_id == item_product_id) {
-      item_list->Remove(i, NULL);
+      item_list->Remove(i, nullptr);
       return;
     }
   }
@@ -488,9 +488,8 @@ CancelCallback FakeDriveService::Search(
   GetChangeListInternal(0,  // start changestamp
                         search_query,
                         std::string(),  // no directory resource id,
-                        0,  // start offset
-                        default_max_results_,
-                        NULL,
+                        0,              // start offset
+                        default_max_results_, nullptr,
                         base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
@@ -509,8 +508,7 @@ CancelCallback FakeDriveService::SearchByTitle(
                         base::StringPrintf("title:'%s'", title.c_str()),
                         directory_resource_id,
                         0,  // start offset
-                        default_max_results_,
-                        NULL,
+                        default_max_results_, nullptr,
                         base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
@@ -576,7 +574,7 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
   }
 
   GetChangeListInternal(start_changestamp, search_query, directory_resource_id,
-                        start_offset, max_results, NULL, callback);
+                        start_offset, max_results, nullptr, callback);
   return CancelCallback();
 }
 
@@ -1419,7 +1417,7 @@ CancelCallback FakeDriveService::UninstallApp(
   }
 
   // Find app_id from app_info_value_ and delete.
-  base::ListValue* items = NULL;
+  base::ListValue* items = nullptr;
   if (!app_info_value_->GetList("items", &items)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -1428,15 +1426,14 @@ CancelCallback FakeDriveService::UninstallApp(
   }
 
   for (size_t i = 0; i < items->GetSize(); ++i) {
-    base::DictionaryValue* item = NULL;
+    base::DictionaryValue* item = nullptr;
     std::string id;
     if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
         id == app_id) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback,
-                     items->Remove(i, NULL) ? google_apis::HTTP_NO_CONTENT
-                                            : google_apis::HTTP_NOT_FOUND));
+          FROM_HERE, base::Bind(callback, items->Remove(i, nullptr)
+                                              ? google_apis::HTTP_NO_CONTENT
+                                              : google_apis::HTTP_NOT_FOUND));
       return CancelCallback();
     }
   }
@@ -1632,7 +1629,7 @@ FakeDriveService::EntryInfo* FakeDriveService::FindEntryByResourceId(
   // Deleted entries don't have FileResource.
   return it != entries_.end() && it->second->change_resource.file()
              ? it->second.get()
-             : NULL;
+             : nullptr;
 }
 
 std::string FakeDriveService::GetNewResourceId() {
@@ -1665,13 +1662,13 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   if (!parent_resource_id.empty() &&
       parent_resource_id != GetRootResourceId() &&
       !entries_.count(parent_resource_id)) {
-    return NULL;
+    return nullptr;
   }
 
   const std::string resource_id =
       given_resource_id.empty() ? GetNewResourceId() : given_resource_id;
   if (entries_.count(resource_id))
-    return NULL;
+    return nullptr;
   GURL upload_url = GURL("https://xxx/upload/" + resource_id);
 
   std::unique_ptr<EntryInfo> new_entry(new EntryInfo);

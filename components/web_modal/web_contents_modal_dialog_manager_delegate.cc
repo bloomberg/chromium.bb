@@ -14,7 +14,7 @@ void WebContentsModalDialogManagerDelegate::SetWebContentsBlocked(
 
 WebContentsModalDialogHost*
     WebContentsModalDialogManagerDelegate::GetWebContentsModalDialogHost() {
-  return NULL;
+  return nullptr;
 }
 
 bool WebContentsModalDialogManagerDelegate::IsWebContentsVisible(

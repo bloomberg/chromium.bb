@@ -271,16 +271,17 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
   TemplateURL url(data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ("http://foo{fhqwhgads}bar", url.url_ref().ParseURL(
-      "http://foo{fhqwhgads}bar", &replacements, NULL, &valid));
+  EXPECT_EQ("http://foo{fhqwhgads}bar",
+            url.url_ref().ParseURL("http://foo{fhqwhgads}bar", &replacements,
+                                   nullptr, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 
   data.prepopulate_id = 123;
   TemplateURL url2(data);
-  EXPECT_EQ("http://foobar", url2.url_ref().ParseURL("http://foo{fhqwhgads}bar",
-                                                     &replacements, NULL,
-                                                     &valid));
+  EXPECT_EQ("http://foobar",
+            url2.url_ref().ParseURL("http://foo{fhqwhgads}bar", &replacements,
+                                    nullptr, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 }
@@ -379,7 +380,8 @@ TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data));
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data));
     GURL result(url.url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(value.terms), search_terms_data, NULL));
+        TemplateURLRef::SearchTermsArgs(value.terms), search_terms_data,
+        nullptr));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(value.output, result.spec());
   }
@@ -907,8 +909,8 @@ TEST_F(TemplateURLTest, ParseURLEmpty) {
   TemplateURL url((TemplateURLData()));
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(std::string(),
-            url.url_ref().ParseURL(std::string(), &replacements, NULL, &valid));
+  EXPECT_EQ(std::string(), url.url_ref().ParseURL(std::string(), &replacements,
+                                                  nullptr, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 }
@@ -919,8 +921,8 @@ TEST_F(TemplateURLTest, ParseURLNoTemplateEnd) {
   TemplateURL url(data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(std::string(), url.url_ref().ParseURL("{", &replacements, NULL,
-                                                  &valid));
+  EXPECT_EQ(std::string(),
+            url.url_ref().ParseURL("{", &replacements, nullptr, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_FALSE(valid);
 }
@@ -931,7 +933,7 @@ TEST_F(TemplateURLTest, ParseURLNoKnownParameters) {
   TemplateURL url(data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ("{}", url.url_ref().ParseURL("{}", &replacements, NULL, &valid));
+  EXPECT_EQ("{}", url.url_ref().ParseURL("{}", &replacements, nullptr, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 }
@@ -942,9 +944,8 @@ TEST_F(TemplateURLTest, ParseURLTwoParameters) {
   TemplateURL url(data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ("{}{}",
-            url.url_ref().ParseURL("{}{{searchTerms}}", &replacements, NULL,
-                                   &valid));
+  EXPECT_EQ("{}{}", url.url_ref().ParseURL("{}{{searchTerms}}", &replacements,
+                                           nullptr, &valid));
   ASSERT_EQ(1U, replacements.size());
   EXPECT_EQ(3U, replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
@@ -957,9 +958,8 @@ TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   TemplateURL url(data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ("{",
-            url.url_ref().ParseURL("{{searchTerms}", &replacements, NULL,
-                                   &valid));
+  EXPECT_EQ("{", url.url_ref().ParseURL("{{searchTerms}", &replacements,
+                                        nullptr, &valid));
   ASSERT_EQ(1U, replacements.size());
   EXPECT_EQ(1U, replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);

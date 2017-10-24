@@ -18,11 +18,11 @@
 namespace viz {
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
-    : widget_(widget), display_(gfx::GetXDisplay()), gc_(NULL) {
+    : widget_(widget), display_(gfx::GetXDisplay()), gc_(nullptr) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  gc_ = XCreateGC(display_, widget_, 0, NULL);
+  gc_ = XCreateGC(display_, widget_, 0, nullptr);
   if (!XGetWindowAttributes(display_, widget_, &attributes_)) {
     LOG(ERROR) << "XGetWindowAttributes failed for window " << widget_;
     return;
@@ -55,7 +55,7 @@ void SoftwareOutputDeviceX11::EndPaint() {
     // conversions.
     Pixmap pixmap =
         XCreatePixmap(display_, widget_, rect.width(), rect.height(), 32);
-    GC gc = XCreateGC(display_, pixmap, 0, NULL);
+    GC gc = XCreateGC(display_, pixmap, 0, nullptr);
     XImage image;
     memset(&image, 0, sizeof(image));
 
@@ -81,11 +81,11 @@ void SoftwareOutputDeviceX11::EndPaint() {
               rect.height());
     XFreeGC(display_, gc);
     Picture picture = XRenderCreatePicture(
-        display_, pixmap, ui::GetRenderARGB32Format(display_), 0, NULL);
+        display_, pixmap, ui::GetRenderARGB32Format(display_), 0, nullptr);
     XRenderPictFormat* pictformat =
         XRenderFindVisualFormat(display_, attributes_.visual);
     Picture dest_picture =
-        XRenderCreatePicture(display_, widget_, pictformat, 0, NULL);
+        XRenderCreatePicture(display_, widget_, pictformat, 0, nullptr);
     XRenderComposite(display_,
                      PictOpSrc,       // op
                      picture,         // src

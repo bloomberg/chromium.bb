@@ -102,7 +102,8 @@ void InMemoryHistoryBackend::OnKeywordSearchTermDeleted(
 void InMemoryHistoryBackend::OnURLVisitedOrModified(const URLRow& url_row) {
   DCHECK(db_);
   DCHECK(url_row.id());
-  if (url_row.typed_count() || db_->GetKeywordSearchTermRow(url_row.id(), NULL))
+  if (url_row.typed_count() ||
+      db_->GetKeywordSearchTermRow(url_row.id(), nullptr))
     db_->InsertOrUpdateURLRowByID(url_row);
   else
     db_->DeleteURLRow(url_row.id());

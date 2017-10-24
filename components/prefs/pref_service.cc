@@ -87,8 +87,8 @@ PrefService::~PrefService() {
 
   // Reset pointers so accesses after destruction reliably crash.
   pref_value_store_.reset();
-  pref_registry_ = NULL;
-  user_pref_store_ = NULL;
+  pref_registry_ = nullptr;
+  user_pref_store_ = nullptr;
   pref_notifier_.reset();
 }
 
@@ -231,9 +231,9 @@ const PrefService::Preference* PrefService::FindPreference(
   PreferenceMap::iterator it = prefs_map_.find(pref_name);
   if (it != prefs_map_.end())
     return &(it->second);
-  const base::Value* default_value = NULL;
+  const base::Value* default_value = nullptr;
   if (!pref_registry_->defaults()->GetValue(pref_name, &default_value))
-    return NULL;
+    return nullptr;
   it = prefs_map_
            .insert(std::make_pair(
                pref_name, Preference(this, pref_name, default_value->type())))
@@ -292,11 +292,11 @@ const base::DictionaryValue* PrefService::GetDictionary(
   const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
-    return NULL;
+    return nullptr;
   }
   if (value->type() != base::Value::Type::DICTIONARY) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   return static_cast<const base::DictionaryValue*>(value);
 }
@@ -308,18 +308,18 @@ const base::Value* PrefService::GetUserPrefValue(
   const Preference* pref = FindPreference(path);
   if (!pref) {
     NOTREACHED() << "Trying to get an unregistered pref: " << path;
-    return NULL;
+    return nullptr;
   }
 
   // Look for an existing preference in the user store. If it doesn't
   // exist, return NULL.
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   if (!user_pref_store_->GetMutableValue(path, &value))
-    return NULL;
+    return nullptr;
 
   if (!value->IsType(pref->GetType())) {
     NOTREACHED() << "Pref value type doesn't match registered type.";
-    return NULL;
+    return nullptr;
   }
 
   return value;
@@ -347,11 +347,11 @@ const base::ListValue* PrefService::GetList(const std::string& path) const {
   const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
-    return NULL;
+    return nullptr;
   }
   if (value->type() != base::Value::Type::LIST) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   return static_cast<const base::ListValue*>(value);
 }
@@ -478,16 +478,16 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
   const Preference* pref = FindPreference(path);
   if (!pref) {
     NOTREACHED() << "Trying to get an unregistered pref: " << path;
-    return NULL;
+    return nullptr;
   }
   if (pref->GetType() != type) {
     NOTREACHED() << "Wrong type for GetMutableValue: " << path;
-    return NULL;
+    return nullptr;
   }
 
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   if (!user_pref_store_->GetMutableValue(path, &value) ||
       !value->IsType(type)) {
     if (type == base::Value::Type::DICTIONARY) {
@@ -570,14 +570,14 @@ const base::Value* PrefService::Preference::GetRecommendedValue() const {
   DCHECK(pref_service_->FindPreference(name_))
       << "Must register pref before getting its value";
 
-  const base::Value* found_value = NULL;
+  const base::Value* found_value = nullptr;
   if (pref_value_store()->GetRecommendedValue(name_, type_, &found_value)) {
     DCHECK(found_value->IsType(type_));
     return found_value;
   }
 
   // The pref has no recommended value.
-  return NULL;
+  return nullptr;
 }
 
 bool PrefService::Preference::IsManaged() const {
@@ -631,9 +631,9 @@ const base::Value* PrefService::GetPreferenceValue(
   CHECK(pref_registry_->defaults());
   CHECK(pref_value_store_);
 
-  const base::Value* default_value = NULL;
+  const base::Value* default_value = nullptr;
   if (pref_registry_->defaults()->GetValue(path, &default_value)) {
-    const base::Value* found_value = NULL;
+    const base::Value* found_value = nullptr;
     base::Value::Type default_type = default_value->type();
     if (pref_value_store_->GetValue(path, default_type, &found_value)) {
       DCHECK(found_value->IsType(default_type));
@@ -644,5 +644,5 @@ const base::Value* PrefService::GetPreferenceValue(
     }
   }
 
-  return NULL;
+  return nullptr;
 }

@@ -276,8 +276,8 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
   // scheme.
   const URLPrefix* prefix =
       URLPrefix::BestURLPrefix(formatted_url_, input_text);
-  size_t match_start = (prefix == NULL) ?
-      formatted_url_.find(input_text) : prefix->prefix.length();
+  size_t match_start = (prefix == nullptr) ? formatted_url_.find(input_text)
+                                           : prefix->prefix.length();
 
   bool match_in_scheme = false;
   bool match_in_subdomain = false;
@@ -390,7 +390,7 @@ std::unique_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
                                              base::JSON_ALLOW_TRAILING_COMMAS);
     int error_code = 0;
     std::unique_ptr<base::Value> data =
-        deserializer.Deserialize(&error_code, NULL);
+        deserializer.Deserialize(&error_code, nullptr);
     if (error_code == 0)
       return data;
   }
@@ -406,15 +406,15 @@ bool SearchSuggestionParser::ParseSuggestResults(
     bool is_keyword_result,
     Results* results) {
   base::string16 query;
-  const base::ListValue* root_list = NULL;
-  const base::ListValue* results_list = NULL;
+  const base::ListValue* root_list = nullptr;
+  const base::ListValue* results_list = nullptr;
 
   if (!root_val.GetAsList(&root_list) || !root_list->GetString(0, &query) ||
       query != input.text() || !root_list->GetList(1, &results_list))
     return false;
 
   // 3rd element: Description list.
-  const base::ListValue* descriptions = NULL;
+  const base::ListValue* descriptions = nullptr;
   root_list->GetList(2, &descriptions);
 
   // 4th element: Disregard the query URL list for now.
@@ -423,11 +423,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
   results->verbatim_relevance = -1;
 
   // 5th element: Optional key-value pairs from the Suggest server.
-  const base::ListValue* types = NULL;
-  const base::ListValue* relevances = NULL;
-  const base::ListValue* suggestion_details = NULL;
-  const base::ListValue* subtype_identifiers = NULL;
-  const base::DictionaryValue* extras = NULL;
+  const base::ListValue* types = nullptr;
+  const base::ListValue* relevances = nullptr;
+  const base::ListValue* suggestion_details = nullptr;
+  const base::ListValue* subtype_identifiers = nullptr;
+  const base::DictionaryValue* extras = nullptr;
   int prefetch_index = -1;
   if (root_list->GetDictionary(4, &extras)) {
     extras->GetList("google:suggesttype", &types);
@@ -435,7 +435,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
     // Discard this list if its size does not match that of the suggestions.
     if (extras->GetList("google:suggestrelevance", &relevances) &&
         (relevances->GetSize() != results_list->GetSize()))
-      relevances = NULL;
+      relevances = nullptr;
     extras->GetInteger("google:verbatimrelevance",
                        &results->verbatim_relevance);
 
@@ -445,18 +445,18 @@ bool SearchSuggestionParser::ParseSuggestResults(
     extras->GetBoolean("google:fieldtrialtriggered",
                        &results->field_trial_triggered);
 
-    const base::DictionaryValue* client_data = NULL;
+    const base::DictionaryValue* client_data = nullptr;
     if (extras->GetDictionary("google:clientdata", &client_data) && client_data)
       client_data->GetInteger("phi", &prefetch_index);
 
     if (extras->GetList("google:suggestdetail", &suggestion_details) &&
         suggestion_details->GetSize() != results_list->GetSize())
-      suggestion_details = NULL;
+      suggestion_details = nullptr;
 
     // Get subtype identifiers.
     if (extras->GetList("google:subtypeid", &subtype_identifiers) &&
         subtype_identifiers->GetSize() != results_list->GetSize()) {
-      subtype_identifiers = NULL;
+      subtype_identifiers = nullptr;
     }
 
     // Store the metadata that came with the response in case we need to pass it
@@ -482,8 +482,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
       continue;
 
     // Apply valid suggested relevance scores; discard invalid lists.
-    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
-      relevances = NULL;
+    if (relevances != nullptr && !relevances->GetInteger(index, &relevance))
+      relevances = nullptr;
     AutocompleteMatchType::Type match_type =
         AutocompleteMatchType::SEARCH_SUGGEST;
     int subtype_identifier = 0;
@@ -492,7 +492,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
     }
     if (types && types->GetString(index, &type))
       match_type = GetAutocompleteMatchType(type);
-    const base::DictionaryValue* suggestion_detail = NULL;
+    const base::DictionaryValue* suggestion_detail = nullptr;
     std::string deletion_url;
 
     if (suggestion_details &&
@@ -506,11 +506,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
                                        std::string()));
       if (url.is_valid()) {
         base::string16 title;
-        if (descriptions != NULL)
+        if (descriptions != nullptr)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
             scheme_classifier, url, match_type, subtype_identifier, title,
-            deletion_url, is_keyword_result, relevance, relevances != NULL,
+            deletion_url, is_keyword_result, relevance, relevances != nullptr,
             input.text()));
       }
     } else {
@@ -546,7 +546,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("q", &suggest_query_params);
 
           // Extract the Answer, if provided.
-          const base::DictionaryValue* answer_json = NULL;
+          const base::DictionaryValue* answer_json = nullptr;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type_str)) {
             bool answer_parsed_successfully = false;
@@ -578,10 +578,10 @@ bool SearchSuggestionParser::ParseSuggestResults(
           subtype_identifier, base::CollapseWhitespace(match_contents, false),
           match_contents_prefix, annotation, answer_contents, answer_type_str,
           std::move(answer), suggest_query_params, deletion_url,
-          is_keyword_result, relevance, relevances != NULL, should_prefetch,
+          is_keyword_result, relevance, relevances != nullptr, should_prefetch,
           trimmed_input));
     }
   }
-  results->relevances_from_server = relevances != NULL;
+  results->relevances_from_server = relevances != nullptr;
   return true;
 }

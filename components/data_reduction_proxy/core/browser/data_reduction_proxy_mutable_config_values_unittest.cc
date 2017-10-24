@@ -117,7 +117,7 @@ TEST_F(DataReductionProxyMutableConfigValuesTest, OverrideDataReductionProxy) {
 
   for (const auto& test : tests) {
     // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     if (test.set_primary) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxy, "http://override-first.net");

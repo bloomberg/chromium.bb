@@ -153,12 +153,12 @@ void ConditionalCacheCountingHelper::DoCountCache(int rv) {
                              base::Unretained(this)));
             }
           }
-          cache_ = NULL;
+          cache_ = nullptr;
         }
         break;
       }
       case CacheState::DONE: {
-        cache_ = NULL;
+        cache_ = nullptr;
         next_cache_state_ = CacheState::NONE;
         // Notify the UI thread that we are done.
         BrowserThread::PostTask(

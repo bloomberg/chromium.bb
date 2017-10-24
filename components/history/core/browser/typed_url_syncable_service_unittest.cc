@@ -213,7 +213,7 @@ class TestHistoryBackend : public HistoryBackend {
 
 class TypedUrlSyncableServiceTest : public testing::Test {
  public:
-  TypedUrlSyncableServiceTest() : typed_url_sync_service_(NULL) {}
+  TypedUrlSyncableServiceTest() : typed_url_sync_service_(nullptr) {}
   ~TypedUrlSyncableServiceTest() override {}
 
   void SetUp() override {

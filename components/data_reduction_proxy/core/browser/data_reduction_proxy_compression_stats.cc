@@ -62,7 +62,7 @@ int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
 void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
   // Remove data for old days from the front.
   while (list->GetSize() > length)
-    list->Remove(0, NULL);
+    list->Remove(0, nullptr);
   // Newly added lists are empty. Add entries to back to fill the window,
   // each initialized to zero.
   while (list->GetSize() < length)
