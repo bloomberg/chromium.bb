@@ -15,7 +15,8 @@
     <style include="settings-shared md-select"></style>
     <div id="details">
       <div id="permissionItem"
-          class$="list-item [[permissionSourceStringClass_(site.source)]]">
+          class$="list-item [[permissionInfoStringClass_(site.source, category,
+                                                         site.setting)]]">
         <div>
           <iron-icon icon="[[icon]]">
           </iron-icon>
@@ -23,9 +24,14 @@
         <div class="middle" id="permissionHeader">
           [[label]]
           <div class="secondary"
-              hidden$="[[!hasPermissionSourceString_(site.source)]]"
-              inner-h-t-m-l="[[permissionSourceString_(
+              hidden$="[[!hasPermissionInfoString_(site.source, category,
+                                                   site.setting)]]"
+              inner-h-t-m-l="[[permissionInfoString_(
                 site.source,
+                category,
+                site.setting,
+                '$i18nPolymer{siteSettingsSourceAdsBlacklist}',
+                '$i18nPolymer{siteSettingsAdsBlockSingular}',
                 '$i18nPolymer{siteSettingsSourceEmbargo}',
                 '$i18nPolymer{siteSettingsSourceInsecureOrigin}',
                 '$i18nPolymer{siteSettingsSourceKillSwitch}',
@@ -41,8 +47,10 @@
           <select id="permission" class="md-select"
               aria-labelledby="permissionHeader"
               on-change="onPermissionSelectionChange_"
-              disabled$="[[!isPermissionUserControlled_(site.source)]]">
-            <option id="default" value$="[[ContentSetting.DEFAULT]]">
+              disabled$="[[!isPermissionUserControlled_(site.source, category,
+                                                        site.setting)]]">
+            <option id="default" value$="[[ContentSetting.DEFAULT]]"
+                hidden$="[[isAdsCategory_(category)]]">
               [[defaultSettingString_(
                   defaultSetting_,
                   '$i18nPolymer{siteSettingsActionAskDefault}',

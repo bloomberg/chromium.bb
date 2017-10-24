@@ -24,7 +24,7 @@ class Profile;
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
+}  // namespace base
 
 namespace extensions {
 class ExtensionRegistry;
@@ -33,8 +33,7 @@ class ExtensionRegistry;
 namespace site_settings {
 
 // Maps from a secondary pattern to a setting.
-typedef std::map<ContentSettingsPattern, ContentSetting>
-    OnePatternSettings;
+typedef std::map<ContentSettingsPattern, ContentSetting> OnePatternSettings;
 // Maps from a primary pattern/source pair to a OnePatternSettings. All the
 // mappings in OnePatternSettings share the given primary pattern and source.
 typedef std::map<std::pair<ContentSettingsPattern, std::string>,
@@ -53,6 +52,8 @@ constexpr char kSource[] = "source";
 constexpr char kGroupTypeUsb[] = "usb-devices";
 
 enum class SiteSettingSource {
+  kAdsBlocked,
+  kAdsFilterBlacklist,
   kDefault,
   kDrmDisabled,
   kEmbargo,
@@ -85,7 +86,8 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
 
 // Helper function to construct a dictionary for a hosted app exception.
 void AddExceptionForHostedApp(const std::string& url_pattern,
-    const extensions::Extension& app, base::ListValue* exceptions);
+                              const extensions::Extension& app,
+                              base::ListValue* exceptions);
 
 // Fills in |exceptions| with Values for the given |type| from |map|.
 // If |filter| is not null then only exceptions with matching primary patterns
@@ -102,10 +104,9 @@ void GetExceptionsFromHostContentSettingsMap(
 // Fills in object saying what the current settings is for the category (such as
 // enabled or blocked) and the source of that setting (such preference, policy,
 // or extension).
-void GetContentCategorySetting(
-    const HostContentSettingsMap* map,
-    ContentSettingsType content_type,
-    base::DictionaryValue* object);
+void GetContentCategorySetting(const HostContentSettingsMap* map,
+                               ContentSettingsType content_type,
+                               base::DictionaryValue* object);
 
 // Retrieves the current setting for a given origin, category pair, the source
 // of that setting, and its display name, which will be different if it's an
@@ -154,11 +155,10 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
 const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name);
 
 // Fills in |exceptions| with Values for the given |chooser_type| from map.
-void GetChooserExceptionsFromProfile(
-    Profile* profile,
-    bool incognito,
-    const ChooserTypeNameEntry& chooser_type,
-    base::ListValue* exceptions);
+void GetChooserExceptionsFromProfile(Profile* profile,
+                                     bool incognito,
+                                     const ChooserTypeNameEntry& chooser_type,
+                                     base::ListValue* exceptions);
 
 }  // namespace site_settings
 

@@ -7,8 +7,10 @@
 #include <functional>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -20,6 +22,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "url/origin.h"
@@ -110,6 +113,8 @@ struct SiteSettingSourceStringMapping {
 };
 
 const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
+    {SiteSettingSource::kAdsBlocked, "ads-blocked"},
+    {SiteSettingSource::kAdsFilterBlacklist, "ads-filter-blacklist"},
     {SiteSettingSource::kDefault, "default"},
     {SiteSettingSource::kDrmDisabled, "drm-disabled"},
     {SiteSettingSource::kEmbargo, "embargo"},
@@ -130,21 +135,24 @@ static_assert(arraysize(kSiteSettingSourceStringMapping) ==
 //    2. Insecure origins (some permissions are denied to insecure origins).
 //    3. Enterprise policy.
 //    4. Extensions.
-//    5. DRM disabled (for CrOS's Protected Content ContentSettingsType only).
-//    6. User-set per-origin setting.
-//    7. Embargo.
-//    8. User-set patterns.
-//    9. User-set global default for a ContentSettingsType.
-//   10. Chrome's built-in default.
+//    5. Activated for ads filtering (for Ads ContentSettingsType only).
+//    6. DRM disabled (for CrOS's Protected Content ContentSettingsType only).
+//    7. User-set ads blocked (for Ads ContentSettingsType only).
+//    8. User-set per-origin setting.
+//    9. Embargo.
+//   10. User-set patterns.
+//   11. User-set global default for a ContentSettingsType.
+//   12. Chrome's built-in default.
 SiteSettingSource CalculateSiteSettingSource(
     Profile* profile,
     const ContentSettingsType content_type,
+    const GURL& origin,
     const content_settings::SettingInfo& info,
-    const PermissionStatusSource permission_status_source) {
-  if (permission_status_source == PermissionStatusSource::KILL_SWITCH)
+    const PermissionResult result) {
+  if (result.source == PermissionStatusSource::KILL_SWITCH)
     return SiteSettingSource::kKillSwitch;  // Source #1.
 
-  if (permission_status_source == PermissionStatusSource::INSECURE_ORIGIN)
+  if (result.source == PermissionStatusSource::INSECURE_ORIGIN)
     return SiteSettingSource::kInsecureOrigin;  // Source #2.
 
   if (info.source == content_settings::SETTING_SOURCE_POLICY ||
@@ -155,27 +163,43 @@ SiteSettingSource CalculateSiteSettingSource(
   if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
     return SiteSettingSource::kExtension;  // Source #4.
 
+  if (content_type == CONTENT_SETTINGS_TYPE_ADS &&
+      base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile);
+    if (map->GetWebsiteSetting(origin, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA,
+                               /*resource_identifier=*/std::string(),
+                               /*setting_info=*/nullptr) != nullptr) {
+      return SiteSettingSource::kAdsFilterBlacklist;  // Source #5.
+    }
+  }
+
   // Protected Content will be blocked if the |kEnableDRM| pref is off.
   if (content_type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
       !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
-    return SiteSettingSource::kDrmDisabled;  // Source #5.
+    return SiteSettingSource::kDrmDisabled;  // Source #6.
+  }
+
+  if (content_type == CONTENT_SETTINGS_TYPE_ADS &&
+      result.content_setting == CONTENT_SETTING_BLOCK) {
+    return SiteSettingSource::kAdsBlocked;  // Source #7.
   }
 
   DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
   if (info.source == content_settings::SETTING_SOURCE_USER) {
-    if (permission_status_source ==
-            PermissionStatusSource::SAFE_BROWSING_BLACKLIST ||
-        permission_status_source ==
-            PermissionStatusSource::MULTIPLE_DISMISSALS ||
-        permission_status_source == PermissionStatusSource::MULTIPLE_IGNORES) {
-      return SiteSettingSource::kEmbargo;  // Source #7.
+    if (result.source == PermissionStatusSource::SAFE_BROWSING_BLACKLIST ||
+        result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
+        result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
+      return SiteSettingSource::kEmbargo;  // Source #9.
     }
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      return SiteSettingSource::kDefault;  // Source #9, #10.
+      return SiteSettingSource::kDefault;  // Source #11, #12.
     }
-    // Source #6, #8. When #6 is the source, |permission_status_source| won't
-    // be set to any of the source #6 enum values, as PermissionManager is
+
+    // Source #8, #10. When #8 is the source, |result.source| won't
+    // be set to any of the source #8 enum values, as PermissionManager is
     // aware of the difference between these two sources internally. The
     // subtlety here should go away when PermissionManager can handle all
     // content settings and all possible sources.
@@ -229,7 +253,8 @@ std::string SiteSettingSourceToString(const SiteSettingSource source) {
 // Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
 // the web extent of a hosted |app|.
 void AddExceptionForHostedApp(const std::string& url_pattern,
-    const extensions::Extension& app, base::ListValue* exceptions) {
+                              const extensions::Extension& app,
+                              base::ListValue* exceptions) {
   std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
 
   std::string setting_string =
@@ -260,9 +285,9 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kDisplayName, display_name);
   exception->SetString(kEmbeddingOrigin,
-                       secondary_pattern == ContentSettingsPattern::Wildcard() ?
-                           std::string() :
-                           secondary_pattern.ToString());
+                       secondary_pattern == ContentSettingsPattern::Wildcard()
+                           ? std::string()
+                           : secondary_pattern.ToString());
 
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
@@ -366,8 +391,7 @@ void GetExceptionsFromHostContentSettingsMap(
   // reverse to show the patterns with the highest precedence (the more specific
   // ones) on the top.
   for (AllPatternsSettings::reverse_iterator i = all_patterns_settings.rbegin();
-       i != all_patterns_settings.rend();
-       ++i) {
+       i != all_patterns_settings.rend(); ++i) {
     const ContentSettingsPattern& primary_pattern = i->first.first;
     const OnePatternSettings& one_settings = i->second;
     const std::string display_name =
@@ -426,10 +450,9 @@ void GetExceptionsFromHostContentSettingsMap(
   }
 }
 
-void GetContentCategorySetting(
-    const HostContentSettingsMap* map,
-    ContentSettingsType content_type,
-    base::DictionaryValue* object) {
+void GetContentCategorySetting(const HostContentSettingsMap* map,
+                               ContentSettingsType content_type,
+                               base::DictionaryValue* object) {
   std::string provider;
   std::string setting = content_settings::ContentSettingToString(
       map->GetDefaultContentSetting(content_type, &provider));
@@ -470,7 +493,7 @@ ContentSetting GetContentSettingForOrigin(
 
   // Retrieve the source of the content setting.
   *source_string = SiteSettingSourceToString(
-      CalculateSiteSettingSource(profile, content_type, info, result.source));
+      CalculateSiteSettingSource(profile, content_type, origin, info, result));
   *display_name = GetDisplayNameForGURL(origin, extension_registry);
 
   return result.content_setting;
@@ -486,10 +509,10 @@ void GetPolicyAllowedUrls(
          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 
   PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
-  const base::ListValue* policy_urls = prefs->GetList(
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-          ? prefs::kAudioCaptureAllowedUrls
-          : prefs::kVideoCaptureAllowedUrls);
+  const base::ListValue* policy_urls =
+      prefs->GetList(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+                         ? prefs::kAudioCaptureAllowedUrls
+                         : prefs::kVideoCaptureAllowedUrls);
 
   // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
   std::vector<ContentSettingsPattern> patterns;
@@ -508,8 +531,8 @@ void GetPolicyAllowedUrls(
 
   // The patterns are shown in the UI in a reverse order defined by
   // |ContentSettingsPattern::operator<|.
-  std::sort(
-      patterns.begin(), patterns.end(), std::greater<ContentSettingsPattern>());
+  std::sort(patterns.begin(), patterns.end(),
+            std::greater<ContentSettingsPattern>());
 
   for (const ContentSettingsPattern& pattern : patterns) {
     std::string display_name =
@@ -556,11 +579,10 @@ std::unique_ptr<base::DictionaryValue> GetChooserExceptionForPage(
   return exception;
 }
 
-void GetChooserExceptionsFromProfile(
-    Profile* profile,
-    bool incognito,
-    const ChooserTypeNameEntry& chooser_type,
-    base::ListValue* exceptions) {
+void GetChooserExceptionsFromProfile(Profile* profile,
+                                     bool incognito,
+                                     const ChooserTypeNameEntry& chooser_type,
+                                     base::ListValue* exceptions) {
   if (incognito) {
     if (!profile->HasOffTheRecordProfile())
       return;
@@ -577,9 +599,9 @@ void GetChooserExceptionsFromProfile(
     DCHECK(found);
     // It is safe for this structure to hold references into |objects| because
     // they are both destroyed at the end of this function.
-    all_origin_objects[make_pair(object->requesting_origin,
-                                 object->source)][object->embedding_origin]
-        .insert(make_pair(name, &object->object));
+    all_origin_objects[make_pair(object->requesting_origin, object->source)]
+                      [object->embedding_origin]
+                          .insert(make_pair(name, &object->object));
   }
 
   // Keep the exceptions sorted by provider so they will be displayed in
@@ -611,18 +633,16 @@ void GetChooserExceptionsFromProfile(
       for (const auto& sorted_objects_entry : sorted_objects) {
         this_provider_exceptions.push_back(GetChooserExceptionForPage(
             requesting_origin, embedding_origin, source, incognito,
-            sorted_objects_entry.first,
-            sorted_objects_entry.second));
+            sorted_objects_entry.first, sorted_objects_entry.second));
       }
     }
 
     if (has_embedded_entries) {
       // Add a "parent" entry that simply acts as a heading for all entries
       // where |requesting_origin| has been embedded.
-      this_provider_exceptions.push_back(
-          GetChooserExceptionForPage(requesting_origin, requesting_origin,
-                                     source, incognito, std::string(),
-                                     nullptr));
+      this_provider_exceptions.push_back(GetChooserExceptionForPage(
+          requesting_origin, requesting_origin, source, incognito,
+          std::string(), nullptr));
 
       // Add the "children" for any embedded settings.
       for (const auto& one_origin_objects_entry : one_origin_objects) {
