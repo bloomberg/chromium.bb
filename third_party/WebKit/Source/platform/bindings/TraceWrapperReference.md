@@ -30,6 +30,8 @@ The following example illustrates these steps:
 #include "platform/bindings/TraceWrapperV8Reference.h"
 
 class SomeDOMObject : public ScriptWrappable {          // (1)
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   virtual void TraceWrappers(
       const ScriptWrappableVisitor*) const;             // (4)
@@ -91,6 +93,8 @@ adjust a given class `SomeDOMObject` to participate in wrapper tracing.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
   // ...
  private:
   Member<OtherWrappable /* extending ScriptWrappable */> other_wrappable_;
@@ -105,6 +109,8 @@ other *wrappers* in V8.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
@@ -138,6 +144,8 @@ The write barrier will check for the problem case above and make sure
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
@@ -163,6 +171,8 @@ following.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   // ...
   void AppendNewValue(OtherWrappable* newValue);
@@ -235,6 +245,8 @@ system that all barriers will be done manually.
 
 ```c++
 class ManualWrappable : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   void setNew(OtherWrappable* newValue) {
     other_wrappable_ = newValue;
