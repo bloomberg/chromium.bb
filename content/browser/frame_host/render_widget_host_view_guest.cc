@@ -359,7 +359,7 @@ void RenderWidgetHostViewGuest::SetNeedsBeginFrames(bool needs_begin_frames) {
 
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewGuest::GetTouchSelectionControllerClientManager() {
-  RenderWidgetHostView* root_view = GetOwnerRenderWidgetHostView();
+  RenderWidgetHostView* root_view = GetRootView(this);
   if (!root_view)
     return nullptr;
 
