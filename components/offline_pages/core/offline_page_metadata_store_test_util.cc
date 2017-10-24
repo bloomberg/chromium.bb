@@ -31,7 +31,7 @@ int64_t GetPageCountSync(sql::Connection* db) {
 
 OfflinePageMetadataStoreTestUtil::OfflinePageMetadataStoreTestUtil(
     scoped_refptr<base::TestSimpleTaskRunner> task_runner)
-    : task_runner_(task_runner) {}
+    : task_runner_(task_runner), store_ptr_(nullptr) {}
 
 OfflinePageMetadataStoreTestUtil::~OfflinePageMetadataStoreTestUtil() {}
 
@@ -43,14 +43,17 @@ void OfflinePageMetadataStoreTestUtil::BuildStore() {
 
   store_.reset(
       new OfflinePageMetadataStoreSQL(task_runner_, temp_directory_.GetPath()));
+  store_ptr_ = store_.get();
 }
 
 void OfflinePageMetadataStoreTestUtil::BuildStoreInMemory() {
   store_.reset(new OfflinePageMetadataStoreSQL(task_runner_));
+  store_ptr_ = store_.get();
 }
 
 void OfflinePageMetadataStoreTestUtil::DeleteStore() {
   store_.reset();
+  store_ptr_ = nullptr;
   task_runner_->RunUntilIdle();
 }
 
@@ -73,7 +76,7 @@ void OfflinePageMetadataStoreTestUtil::InsertItem(const OfflinePageItem& page) {
 
 int64_t OfflinePageMetadataStoreTestUtil::GetPageCount() {
   int64_t count = 0;
-  store_->Execute(
+  store()->Execute(
       base::BindOnce(&GetPageCountSync),
       base::BindOnce(
           [](int64_t* out_count, int64_t cb_count) { *out_count = cb_count; },

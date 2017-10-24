@@ -72,7 +72,8 @@ class CreateArchiveTask : public Task {
 
  private:
   void CreateArchive();
-  void InformCreateArchiveFailed(OfflinePageArchiver::ArchiverResult result);
+  void InformCreateArchiveFailed(OfflinePageArchiver::ArchiverResult result,
+                                 const OfflinePageItem& proposed_page);
 
   // The directory to save the archive.
   base::FilePath archives_dir_;

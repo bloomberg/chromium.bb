@@ -75,6 +75,9 @@ class OfflinePageModel : public base::SupportsUserData {
 
   // Information about a deleted page.
   struct DeletedPageInfo {
+    DeletedPageInfo();
+    DeletedPageInfo(const DeletedPageInfo& other);
+    ~DeletedPageInfo();
     DeletedPageInfo(int64_t offline_id,
                     const ClientId& client_id,
                     const std::string& request_origin);
@@ -145,39 +148,23 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                                       const DeletePageCallback& callback) = 0;
 
-  // Retrieves all pages associated with any of |client_ids|.
-  virtual void GetPagesByClientIds(
-      const std::vector<ClientId>& client_ids,
-      const MultipleOfflinePageItemCallback& callback) = 0;
-
-  // Retrieves all pages associated with the |request_origin|.
-  virtual void GetPagesByRequestOrigin(
-      const std::string& request_origin,
-      const MultipleOfflinePageItemCallback& callback) = 0;
-
   // Deletes cached offline pages matching the URL predicate.
   virtual void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) = 0;
 
-  // Returns via callback all GURLs in |urls| that are equal to the online URL
-  // of any offline page.
-  virtual void CheckPagesExistOffline(
-      const std::set<GURL>& urls,
-      const CheckPagesExistOfflineCallback& callback) = 0;
-
   // Gets all offline pages.
   virtual void GetAllPages(const MultipleOfflinePageItemCallback& callback) = 0;
-
-  // Gets all offline ids where the offline page has the matching client id.
-  virtual void GetOfflineIdsForClientId(
-      const ClientId& client_id,
-      const MultipleOfflineIdCallback& callback) = 0;
 
   // Returns zero or one offline pages associated with a specified |offline_id|.
   virtual void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) = 0;
+
+  // Retrieves all pages associated with any of |client_ids|.
+  virtual void GetPagesByClientIds(
+      const std::vector<ClientId>& client_ids,
+      const MultipleOfflinePageItemCallback& callback) = 0;
 
   // Returns the offline pages that are related to |url|. |url_search_mode|
   // controls how the url match is done. See URLSearchMode for more details.
@@ -186,18 +173,34 @@ class OfflinePageModel : public base::SupportsUserData {
       URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) = 0;
 
-  // Returns the offline pages that are removed when cache is reset.
-  virtual void GetPagesRemovedOnCacheReset(
-      const MultipleOfflinePageItemCallback& callback) = 0;
-
   // Returns the offline pages that belong in |name_space|.
   virtual void GetPagesByNamespace(
       const std::string& name_space,
       const MultipleOfflinePageItemCallback& callback) = 0;
 
+  // Returns the offline pages that are removed when cache is reset.
+  virtual void GetPagesRemovedOnCacheReset(
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
   // Returns the offline pages that are visible in download manager UI.
   virtual void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) = 0;
+
+  // Retrieves all pages associated with the |request_origin|.
+  virtual void GetPagesByRequestOrigin(
+      const std::string& request_origin,
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
+  // Returns via callback all GURLs in |urls| that are equal to the online URL
+  // of any offline page.
+  virtual void CheckPagesExistOffline(
+      const std::set<GURL>& urls,
+      const CheckPagesExistOfflineCallback& callback) = 0;
+
+  // Gets all offline ids where the offline page has the matching client id.
+  virtual void GetOfflineIdsForClientId(
+      const ClientId& client_id,
+      const MultipleOfflineIdCallback& callback) = 0;
 
   // Returns the policy controller.
   virtual ClientPolicyController* GetPolicyController() = 0;
