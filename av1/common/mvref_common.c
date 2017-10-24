@@ -1659,7 +1659,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
   if (alt_frame_index < cur_frame_index) return;
 
-  int ref_stamp = 0;
+  int ref_stamp = 2;
 
   // ======================
   // Process last frame
@@ -1789,20 +1789,20 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
       }
     }
 
-    ++ref_stamp;
+    --ref_stamp;
   }
 
   if (bwd_frame_index > cur_frame_index) {
     motion_field_projection(cm, BWDREF_FRAME, ref_stamp);
-    ++ref_stamp;
+    --ref_stamp;
   }
 
   if (alt2_frame_index > cur_frame_index) {
     motion_field_projection(cm, ALTREF2_FRAME, ref_stamp);
-    ++ref_stamp;
+    --ref_stamp;
   }
 
-  if (alt_frame_index > cur_frame_index && ref_stamp <= 2)
+  if (alt_frame_index > cur_frame_index && ref_stamp >= 0)
     motion_field_projection(cm, ALTREF_FRAME, 2);
 }
 #endif  // CONFIG_MFMV
