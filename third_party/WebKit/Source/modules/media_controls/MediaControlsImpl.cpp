@@ -56,9 +56,11 @@
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
 #include "modules/media_controls/MediaDownloadInProductHelpManager.h"
+#include "modules/media_controls/elements/MediaControlButtonPanelElement.h"
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
+#include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "modules/media_controls/elements/MediaControlFullscreenButtonElement.h"
 #include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
 #include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
@@ -367,8 +369,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 // |    (-webkit-media-controls-overlay-enclosure)
 // | +-MediaControlOverlayPlayButtonElement
 // | |    (-webkit-media-controls-overlay-play-button)
-// | | {if mediaControlsOverlayPlayButtonEnabled or
-// | |  if ModernMediaControls is enabled}
+// | | {if mediaControlsOverlayPlayButtonEnabled}
 // | \-MediaControlCastButtonElement
 // |     (-internal-media-controls-overlay-cast-button)
 // \-MediaControlPanelEnclosureElement
@@ -377,14 +378,21 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |    (-webkit-media-controls-panel)
 //     |  {if ModernMediaControlsEnabled, otherwise
 //     |   contents are directly attached to parent.
-//     +-HTMLDivElement
+//     +-MediaControlOverlayPlayButtonElement
+//     |  (-webkit-media-controls-overlay-play-button)
+//     |  {if ModernMediaControlsEnabled}
+//     +-MediaControlButtonPanelElement
 //     |  |  (-internal-media-controls-button-panel)
+//     |  |  <video> only, otherwise children are directly attached to parent
 //     |  +-MediaControlPlayButtonElement
 //     |  |   (-webkit-media-controls-play-button)
 //     |  +-MediaControlCurrentTimeDisplayElement
 //     |  |    (-webkit-media-controls-current-time-display)
 //     |  +-MediaControlRemainingTimeDisplayElement
 //     |  |    (-webkit-media-controls-time-remaining-display)
+//     |  +-HTMLDivElement
+//     |  |    (-internal-media-controls-button-spacer)
+//     |  |    {if ModernMediaControls is enabled and is video element}
 //     |  +-MediaControlMuteButtonElement
 //     |  |    (-webkit-media-controls-mute-button)
 //     |  +-MediaControlVolumeSliderElement
@@ -416,7 +424,9 @@ void MediaControlsImpl::InitializeControls() {
   if (RuntimeEnabledFeatures::MediaControlsOverlayPlayButtonEnabled() ||
       IsModern()) {
     overlay_play_button_ = new MediaControlOverlayPlayButtonElement(*this);
-    overlay_enclosure_->AppendChild(overlay_play_button_);
+
+    if (!IsModern())
+      overlay_enclosure_->AppendChild(overlay_play_button_);
   }
 
   overlay_cast_button_ = new MediaControlCastButtonElement(*this, true);
@@ -433,10 +443,10 @@ void MediaControlsImpl::InitializeControls() {
   // If using the modern media controls, the buttons should belong to a
   // seperate button panel. This is because they are displayed in two lines.
   Element* button_panel = panel_;
-  if (IsModern()) {
-    media_button_panel_ = HTMLDivElement::Create(GetDocument());
-    media_button_panel_->SetShadowPseudoId(
-        "-internal-media-controls-button-panel");
+  if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+    panel_->AppendChild(overlay_play_button_);
+
+    media_button_panel_ = new MediaControlButtonPanelElement(*this);
     panel_->AppendChild(media_button_panel_);
     button_panel = media_button_panel_;
   }
@@ -450,6 +460,11 @@ void MediaControlsImpl::InitializeControls() {
 
   duration_display_ = new MediaControlRemainingTimeDisplayElement(*this);
   button_panel->AppendChild(duration_display_);
+
+  if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+    MediaControlElementsHelper::CreateDiv(
+        "-internal-media-controls-button-spacer", button_panel);
+  }
 
   timeline_ = new MediaControlTimelineElement(*this);
   panel_->AppendChild(timeline_);
