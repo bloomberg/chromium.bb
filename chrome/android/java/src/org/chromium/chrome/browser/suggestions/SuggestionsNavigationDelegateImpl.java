@@ -213,12 +213,13 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     }
 
     private void saveUrlForOffline(String url) {
+        OfflinePageBridge offlinePageBridge =
+                SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(mProfile);
         if (mHost.getActiveTab() != null) {
-            OfflinePageBridge.getForProfile(mProfile).scheduleDownload(
-                    mHost.getActiveTab().getWebContents(),
+            offlinePageBridge.scheduleDownload(mHost.getActiveTab().getWebContents(),
                     OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, url, DownloadUiActionFlags.ALL);
         } else {
-            OfflinePageBridge.getForProfile(mProfile).savePageLater(
+            offlinePageBridge.savePageLater(
                     url, OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, true /* userRequested */);
         }
     }
