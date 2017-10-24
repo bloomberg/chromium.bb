@@ -615,7 +615,7 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
   }
 
   if (default_network) {
-    std::string ip_address = default_network->ip_address();
+    std::string ip_address = default_network->GetIpAddress();
     if (!ip_address.empty()) {
       address_items.push_back(MenuItem(
           ui::MenuModel::TYPE_COMMAND, base::ASCIIToUTF16(ip_address),

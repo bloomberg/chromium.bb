@@ -124,11 +124,14 @@ void InsertBestBindAddressChromeOS(const chromeos::NetworkTypePattern& type,
   const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
                                             ->network_state_handler()
                                             ->ConnectedNetworkByType(type);
+  if (!state)
+    return;
+  std::string state_ip_address = state->GetIpAddress();
   IPAddress bind_ip_address;
-  if (state && bind_ip_address.AssignFromIPLiteral(state->ip_address()) &&
+  if (bind_ip_address.AssignFromIPLiteral(state_ip_address) &&
       bind_ip_address.IsIPv4()) {
     VLOG(2) << "Found " << state->type() << ", " << state->name() << ": "
-            << state->ip_address();
+            << state_ip_address;
     bind_address_list->push_back(bind_ip_address);
   }
 }

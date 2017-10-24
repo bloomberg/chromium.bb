@@ -966,11 +966,13 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
     if (!state->device_path().empty())
       proto_state->set_device_path(state->device_path());
 
-    if (!state->ip_address().empty())
-      proto_state->set_ip_address(state->ip_address());
+    std::string ip_address = state->GetIpAddress();
+    if (!ip_address.empty())
+      proto_state->set_ip_address(ip_address);
 
-    if (!state->gateway().empty())
-      proto_state->set_gateway(state->gateway());
+    std::string gateway = state->GetGateway();
+    if (!gateway.empty())
+      proto_state->set_gateway(gateway);
   }
   return anything_reported;
 }
