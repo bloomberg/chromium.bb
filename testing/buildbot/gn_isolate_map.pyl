@@ -1032,6 +1032,16 @@
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
   },
+  "command_buffer_perftests": {
+    "label": "//gpu:command_buffer_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "command_buffer_perftests",
+      "--adb-path",
+      "src/third_party/android_tools/sdk/platform-tools/adb",
+    ],
+  },
   "angle_perftests": {
     "label": "//chrome/test:angle_perftests",
     "type": "script",
