@@ -17,8 +17,8 @@
 
 #if defined(SAFE_BROWSING_CSD)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
-#include "chrome/common/safe_browsing/phishing_detector.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
+#include "content/public/common/associated_interface_provider.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver);
@@ -79,8 +79,8 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
   }
 
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  chrome::mojom::PhishingDetectorPtr client;
-  rfh->GetRemoteInterfaces()->GetInterface(&client);
+  chrome::mojom::ChromeRenderFrameAssociatedPtr client;
+  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetClientSidePhishingDetection(safe_browsing);
 #endif
 }

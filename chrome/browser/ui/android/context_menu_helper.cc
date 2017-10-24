@@ -15,14 +15,14 @@
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/common/thumbnail_capturer.mojom.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/context_menu_params.h"
 #include "jni/ContextMenuHelper_jni.h"
 #include "jni/ContextMenuParams_jni.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -72,7 +72,7 @@ class ContextMenuHelperImageRequest : public ImageDecoder::ImageRequest {
 };
 
 void OnRetrieveImageForShare(
-    chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
     const base::android::JavaRef<jobject>& jcallback,
     const std::vector<uint8_t>& thumbnail_data,
     const gfx::Size& original_size) {
@@ -80,7 +80,7 @@ void OnRetrieveImageForShare(
 }
 
 void OnRetrieveImageForContextMenu(
-    chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
     const base::android::JavaRef<jobject>& jcallback,
     const std::vector<uint8_t>& thumbnail_data,
     const gfx::Size& original_size) {
@@ -219,13 +219,14 @@ void ContextMenuHelper::RetrieveImageInternal(
   if (!render_frame_host)
     return;
 
-  chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer;
-  render_frame_host->GetRemoteInterfaces()->GetInterface(&thumbnail_capturer);
+  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &chrome_render_frame);
   // Bind the InterfacePtr into the callback so that it's kept alive
   // until there's either a connection error or a response.
-  auto* thumbnail_capturer_proxy = thumbnail_capturer.get();
+  auto* thumbnail_capturer_proxy = chrome_render_frame.get();
   thumbnail_capturer_proxy->RequestThumbnailForContextNode(
       0, gfx::Size(max_dimen_px, max_dimen_px), chrome::mojom::ImageFormat::PNG,
-      base::Bind(retrieve_callback, base::Passed(&thumbnail_capturer),
+      base::Bind(retrieve_callback, base::Passed(&chrome_render_frame),
                  base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }

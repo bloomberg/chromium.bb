@@ -12,7 +12,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/common/thumbnail_capturer.mojom.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/context_menu_params.h"
 
@@ -26,7 +26,7 @@ class ContextMenuHelper
     : public content::WebContentsUserData<ContextMenuHelper> {
  protected:
   using ImageRetrieveCallback = base::Callback<void(
-      chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer_ptr,
+      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame_ptr,
       const base::android::JavaRef<jobject>& jcallback,
       const std::vector<uint8_t>& thumbnail_data,
       const gfx::Size& max_dimen_px)>;

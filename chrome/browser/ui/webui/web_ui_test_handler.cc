@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/web_ui_tester.mojom.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -36,10 +36,10 @@ WebUITestHandler::WebUITestHandler()
 void WebUITestHandler::PreloadJavaScript(const base::string16& js_text,
                                          RenderViewHost* preload_host) {
   DCHECK(preload_host);
-  chrome::mojom::WebUITesterAssociatedPtr web_ui_tester;
+  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
   preload_host->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &web_ui_tester);
-  web_ui_tester->ExecuteWebUIJavaScript(js_text);
+      &chrome_render_frame);
+  chrome_render_frame->ExecuteWebUIJavaScript(js_text);
 }
 
 void WebUITestHandler::RunJavaScript(const base::string16& js_text) {
