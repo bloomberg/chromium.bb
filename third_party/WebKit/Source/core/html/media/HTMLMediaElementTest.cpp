@@ -17,7 +17,7 @@ enum class MediaTestParam { kAudio, kVideo };
 
 class HTMLMediaElementTest : public ::testing::TestWithParam<MediaTestParam> {
  protected:
-  void SetUp() {
+  void SetUp() override {
     dummy_page_holder_ = DummyPageHolder::Create();
 
     if (GetParam() == MediaTestParam::kAudio)

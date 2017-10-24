@@ -19,7 +19,7 @@ class MediaRemotingExitButtonElement final : public HTMLDivElement {
   void OnHidden();
   HTMLVideoElement& GetVideoElement() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class MouseEventsListener;

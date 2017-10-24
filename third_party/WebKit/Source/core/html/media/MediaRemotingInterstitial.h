@@ -47,7 +47,7 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
 
   HTMLVideoElement& GetVideoElement() const { return *video_element_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // Node override.

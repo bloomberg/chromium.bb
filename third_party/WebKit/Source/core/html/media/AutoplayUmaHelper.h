@@ -69,7 +69,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
  public:
   static AutoplayUmaHelper* Create(HTMLMediaElement*);
 
-  ~AutoplayUmaHelper();
+  ~AutoplayUmaHelper() override;
 
   bool operator==(const EventListener&) const override;
 
@@ -87,7 +87,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   bool HasSource() const { return !sources_.empty(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class MockAutoplayUmaHelper;
