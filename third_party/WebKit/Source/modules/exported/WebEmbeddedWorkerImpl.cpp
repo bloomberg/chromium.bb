@@ -199,19 +199,17 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
   StartWorkerThread();
 }
 
-void WebEmbeddedWorkerImpl::AttachDevTools(const WebString& host_id,
-                                           int session_id) {
+void WebEmbeddedWorkerImpl::AttachDevTools(int session_id) {
   WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
-    devtools_agent->Attach(host_id, session_id);
+    devtools_agent->Attach(session_id);
 }
 
-void WebEmbeddedWorkerImpl::ReattachDevTools(const WebString& host_id,
-                                             int session_id,
+void WebEmbeddedWorkerImpl::ReattachDevTools(int session_id,
                                              const WebString& saved_state) {
   WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
-    devtools_agent->Reattach(host_id, session_id, saved_state);
+    devtools_agent->Reattach(session_id, saved_state);
   ResumeStartup();
 }
 

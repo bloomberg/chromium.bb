@@ -9,13 +9,14 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 class LocalFrame;
 
 class CORE_EXPORT InspectedFrames final
-    : public GarbageCollected<InspectedFrames> {
+    : public GarbageCollectedFinalized<InspectedFrames> {
   WTF_MAKE_NONCOPYABLE(InspectedFrames);
 
  public:
@@ -37,11 +38,10 @@ class CORE_EXPORT InspectedFrames final
     Member<LocalFrame> current_;
   };
 
-  static InspectedFrames* Create(LocalFrame* root) {
-    return new InspectedFrames(root);
-  }
+  InspectedFrames(LocalFrame*, const String& instrumentation_token);
 
   LocalFrame* Root() { return root_; }
+  const String& InstrumentationToken() const { return instrumentation_token_; }
   bool Contains(LocalFrame*) const;
   LocalFrame* FrameWithSecurityOrigin(const String& origin_raw_string);
   Iterator begin();
@@ -50,9 +50,8 @@ class CORE_EXPORT InspectedFrames final
   virtual void Trace(blink::Visitor*);
 
  private:
-  explicit InspectedFrames(LocalFrame*);
-
   Member<LocalFrame> root_;
+  String instrumentation_token_;
 };
 
 }  // namespace blink

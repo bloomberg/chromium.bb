@@ -419,8 +419,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
   void Attach() {
     notifications_ = std::vector<std::string>();
     expecting_pause_ = false;
-    std::string host_id = "host_id";
-    agent()->OnAttach(host_id, 17);
+    agent()->OnAttach(17);
     agent()->send_protocol_message_callback_for_test_ = base::Bind(
        &DevToolsAgentTest::OnDevToolsMessage, base::Unretained(this));
   }

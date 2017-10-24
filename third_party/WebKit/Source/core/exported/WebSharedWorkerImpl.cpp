@@ -362,19 +362,17 @@ void WebSharedWorkerImpl::PauseWorkerContextOnStart() {
   pause_worker_context_on_start_ = true;
 }
 
-void WebSharedWorkerImpl::AttachDevTools(const WebString& host_id,
-                                         int session_id) {
+void WebSharedWorkerImpl::AttachDevTools(int session_id) {
   WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
-    devtools_agent->Attach(host_id, session_id);
+    devtools_agent->Attach(session_id);
 }
 
-void WebSharedWorkerImpl::ReattachDevTools(const WebString& host_id,
-                                           int session_id,
+void WebSharedWorkerImpl::ReattachDevTools(int session_id,
                                            const WebString& saved_state) {
   WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
-    devtools_agent->Reattach(host_id, session_id, saved_state);
+    devtools_agent->Reattach(session_id, saved_state);
   ResumeStartup();
 }
 

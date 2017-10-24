@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptString.h"
 #include "core/CoreExport.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/protocol/Network.h"
@@ -49,7 +50,6 @@ class ExecutionContext;
 struct FetchInitiatorInfo;
 class LocalFrame;
 class HTTPHeaderMap;
-class InspectedFrames;
 class KURL;
 class NetworkResourcesData;
 class Resource;
@@ -65,20 +65,13 @@ class WorkerGlobalScope;
 class CORE_EXPORT InspectorNetworkAgent final
     : public InspectorBaseAgent<protocol::Network::Metainfo> {
  public:
-  static InspectorNetworkAgent* Create(InspectedFrames* inspected_frames) {
-    return new InspectorNetworkAgent(inspected_frames, nullptr);
-  }
-  static InspectorNetworkAgent* CreateForWorker(
-      WorkerGlobalScope* worker_global_scope) {
-    // TODO(horo): Extract the logc for frames and for workers into different
-    // classes.
-    return new InspectorNetworkAgent(nullptr, worker_global_scope);
-  }
-
-  void Restore() override;
-
+  // TODO(horo): Extract the logic for frames and for workers into different
+  // classes.
+  InspectorNetworkAgent(InspectedFrames*, WorkerGlobalScope*);
   ~InspectorNetworkAgent() override;
   void Trace(blink::Visitor*) override;
+
+  void Restore() override;
 
   // Probes.
   void DidBlockRequest(ExecutionContext*,
@@ -231,7 +224,6 @@ class CORE_EXPORT InspectorNetworkAgent final
       std::unique_ptr<protocol::Array<String>>* certificate) override;
 
   // Called from other agents.
-  void SetHostId(const String&);
   protocol::Response GetResponseBody(const String& request_id,
                                      String* content,
                                      bool* base64_encoded);
@@ -242,8 +234,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   bool CacheDisabled();
 
  private:
-  explicit InspectorNetworkAgent(InspectedFrames*, WorkerGlobalScope*);
-
   void Enable(int total_buffer_size, int resource_buffer_size);
   void WillSendRequestInternal(ExecutionContext*,
                                unsigned long identifier,
@@ -270,7 +260,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   Member<InspectedFrames> inspected_frames_;
   // This is null while inspecting frames.
   Member<WorkerGlobalScope> worker_global_scope_;
-  String host_id_;
   Member<NetworkResourcesData> resources_data_;
 
   typedef HashMap<ThreadableLoaderClient*, unsigned long>

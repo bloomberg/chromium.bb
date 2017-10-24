@@ -235,16 +235,13 @@ void DevToolsAgent::SendChunkedProtocolMessage(IPC::Sender* sender,
   }
 }
 
-void DevToolsAgent::OnAttach(const std::string& host_id, int session_id) {
-  GetWebAgent()->Attach(WebString::FromUTF8(host_id), session_id);
+void DevToolsAgent::OnAttach(int session_id) {
+  GetWebAgent()->Attach(session_id);
   session_ids_.insert(session_id);
 }
 
-void DevToolsAgent::OnReattach(const std::string& host_id,
-                               int session_id,
-                               const std::string& agent_state) {
-  GetWebAgent()->Reattach(WebString::FromUTF8(host_id), session_id,
-                          WebString::FromUTF8(agent_state));
+void DevToolsAgent::OnReattach(int session_id, const std::string& agent_state) {
+  GetWebAgent()->Reattach(session_id, WebString::FromUTF8(agent_state));
   session_ids_.insert(session_id);
 }
 

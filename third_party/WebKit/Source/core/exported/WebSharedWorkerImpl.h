@@ -98,10 +98,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void TerminateWorkerContext() override;
 
   void PauseWorkerContextOnStart() override;
-  void AttachDevTools(const WebString& host_id, int session_id) override;
-  void ReattachDevTools(const WebString& host_id,
-                        int sesion_id,
-                        const WebString& saved_state) override;
+  void AttachDevTools(int session_id) override;
+  void ReattachDevTools(int sesion_id, const WebString& saved_state) override;
   void DetachDevTools(int session_id) override;
   void DispatchDevToolsMessage(int session_id,
                                int call_id,

@@ -80,14 +80,11 @@ IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DispatchOnInspectorFrontend,
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
 // Tells agent that there is a client host connected to it.
-IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_Attach,
-                    std::string /* host_id */,
-                    int /* session_id */)
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Attach, int /* session_id */)
 
 // Tells agent that a client host was disconnected from another agent and
 // connected to this one.
-IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_Reattach,
-                    std::string /* host_id */,
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_Reattach,
                     int /* session_id */,
                     std::string /* agent_state */)
 

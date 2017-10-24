@@ -70,10 +70,8 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void StartWorkerContext(const WebEmbeddedWorkerStartData&) override;
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
-  void AttachDevTools(const WebString& host_id, int session_id) override;
-  void ReattachDevTools(const WebString& host_id,
-                        int session_id,
-                        const WebString& saved_state) override;
+  void AttachDevTools(int session_id) override;
+  void ReattachDevTools(int session_id, const WebString& saved_state) override;
   void DetachDevTools(int session_id) override;
   void DispatchDevToolsMessage(int session_id,
                                int call_id,

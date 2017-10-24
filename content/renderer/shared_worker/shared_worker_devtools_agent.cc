@@ -79,16 +79,13 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
   }
 }
 
-void SharedWorkerDevToolsAgent::OnAttach(const std::string& host_id,
-                                         int session_id) {
-  webworker_->AttachDevTools(WebString::FromUTF8(host_id), session_id);
+void SharedWorkerDevToolsAgent::OnAttach(int session_id) {
+  webworker_->AttachDevTools(session_id);
 }
 
-void SharedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
-                                           int session_id,
+void SharedWorkerDevToolsAgent::OnReattach(int session_id,
                                            const std::string& state) {
-  webworker_->ReattachDevTools(WebString::FromUTF8(host_id), session_id,
-                               WebString::FromUTF8(state));
+  webworker_->ReattachDevTools(session_id, WebString::FromUTF8(state));
 }
 
 void SharedWorkerDevToolsAgent::OnDetach(int session_id) {

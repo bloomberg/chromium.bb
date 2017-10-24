@@ -131,10 +131,6 @@ Response InspectorWorkerAgent::sendMessageToTarget(const String& message,
   return Response::Error("Session id must be specified");
 }
 
-void InspectorWorkerAgent::SetHostId(const String& host_id) {
-  host_id_ = host_id;
-}
-
 void InspectorWorkerAgent::SetTracingSessionId(
     const String& tracing_session_id) {
   tracing_session_id_ = tracing_session_id;
@@ -234,7 +230,8 @@ void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
   session_id_to_connection_.Set(session_id, connection);
   connection_to_session_id_.Set(connection, session_id);
 
-  proxy->ConnectToInspector(connection, host_id_, this);
+  proxy->ConnectToInspector(connection,
+                            inspected_frames_->InstrumentationToken(), this);
   DCHECK(GetFrontend());
   AttachedSessionIds()->setBoolean(session_id, true);
   GetFrontend()->attachedToTarget(session_id,

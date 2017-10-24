@@ -726,10 +726,10 @@ void InspectorNetworkAgent::WillSendRequest(
   WillSendRequestInternal(execution_context, identifier, loader, request,
                           redirect_response, initiator_info, type);
 
-  if (!host_id_.IsEmpty()) {
+  if (!inspected_frames_->InstrumentationToken().IsEmpty()) {
     request.AddHTTPHeaderField(
         HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
-        AtomicString(host_id_));
+        AtomicString(inspected_frames_->InstrumentationToken()));
   }
 }
 
@@ -1313,7 +1313,6 @@ void InspectorNetworkAgent::GetResponseBodyBlob(
     client->Start(worker_global_scope_);
     return;
   }
-  DCHECK(inspected_frames_);
   LocalFrame* frame = IdentifiersFactory::FrameById(inspected_frames_,
                                                     resource_data->FrameId());
   Document* document = frame->GetDocument();
@@ -1457,7 +1456,6 @@ Response InspectorNetworkAgent::getCertificate(
 
 void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
                                           DocumentLoader* loader) {
-  DCHECK(inspected_frames_);
   DCHECK(IsMainThread());
   if (loader->GetFrame() != inspected_frames_->Root())
     return;
@@ -1502,10 +1500,6 @@ void InspectorNetworkAgent::FrameClearedScheduledClientNavigation(
   frames_with_scheduled_client_navigation_.erase(frame_id);
   if (!frames_with_scheduled_navigation_.Contains(frame_id))
     frame_navigation_initiator_map_.erase(frame_id);
-}
-
-void InspectorNetworkAgent::SetHostId(const String& host_id) {
-  host_id_ = host_id;
 }
 
 Response InspectorNetworkAgent::GetResponseBody(const String& request_id,
@@ -1591,14 +1585,15 @@ InspectorNetworkAgent::InspectorNetworkAgent(
                                        g_maximum_resource_buffer_size)),
       pending_request_(nullptr),
       remove_finished_replay_xhr_timer_(
-          inspected_frames ? TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
-                                                   inspected_frames->Root())
-                           : TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
-                                                   worker_global_scope),
+          worker_global_scope_
+              ? TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
+                                      worker_global_scope)
+              : TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
+                                      inspected_frames->Root()),
           this,
           &InspectorNetworkAgent::RemoveFinishedReplayXHRFired) {
-  DCHECK((IsMainThread() && inspected_frames_ && !worker_global_scope_) ||
-         (!IsMainThread() && !inspected_frames_ && worker_global_scope_));
+  DCHECK((IsMainThread() && !worker_global_scope_) ||
+         (!IsMainThread() && worker_global_scope_));
 }
 
 void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {
