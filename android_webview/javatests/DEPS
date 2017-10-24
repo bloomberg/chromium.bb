@@ -6,8 +6,18 @@ include_rules = [
   "+components/policy/android/javatests",
   "+components/safe_browsing/android/java",
   "+components/variations/android/java",
-  "+content/public/android/java",
+
   "+content/public/test/android/javatests",
+  "-content/public/android/java",
+  "+content/public/android/java/src/org/chromium/content_public",
+  "!content/public/android/java/src/org/chromium/content/browser/AppWebMessagePort.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentVideoView.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentViewStatics.java",
+  "!content/public/android/java/src/org/chromium/content/browser/RenderCoordinates.java",
+  "!content/public/android/java/src/org/chromium/content/browser/input/ImeAdapter.java",
+  "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+
   "+device/geolocation/android/java",
   "+device/geolocation/android/javatests",
 ]

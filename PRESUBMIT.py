@@ -841,6 +841,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
         input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
     import checkdeps
     from cpp_checker import CppChecker
+    from java_checker import JavaChecker
     from proto_checker import ProtoChecker
     from rules import Rule
   finally:
@@ -849,6 +850,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
 
   added_includes = []
   added_imports = []
+  added_java_imports = []
   for f in input_api.AffectedFiles():
     if CppChecker.IsCppFile(f.LocalPath()):
       changed_lines = [line for line_num, line in f.ChangedContents()]
@@ -856,6 +858,9 @@ def _CheckUnwantedDependencies(input_api, output_api):
     elif ProtoChecker.IsProtoFile(f.LocalPath()):
       changed_lines = [line for line_num, line in f.ChangedContents()]
       added_imports.append([f.LocalPath(), changed_lines])
+    elif JavaChecker.IsJavaFile(f.LocalPath()):
+      changed_lines = [line for line_num, line in f.ChangedContents()]
+      added_java_imports.append([f.LocalPath(), changed_lines])
 
   deps_checker = checkdeps.DepsChecker(input_api.PresubmitLocalPath())
 
@@ -875,6 +880,16 @@ def _CheckUnwantedDependencies(input_api, output_api):
 
   for path, rule_type, rule_description in deps_checker.CheckAddedProtoImports(
       added_imports):
+    description_with_path = '%s\n    %s' % (path, rule_description)
+    if rule_type == Rule.DISALLOW:
+      error_descriptions.append(description_with_path)
+      error_subjects.add("imports")
+    else:
+      warning_descriptions.append(description_with_path)
+      warning_subjects.add("imports")
+
+  for path, rule_type, rule_description in deps_checker.CheckAddedJavaImports(
+      added_java_imports):
     description_with_path = '%s\n    %s' % (path, rule_description)
     if rule_type == Rule.DISALLOW:
       error_descriptions.append(description_with_path)

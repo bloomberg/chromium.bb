@@ -16,7 +16,18 @@ include_rules = [
   # javatests.
   "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
   "+components/web_restrictions",
-  "+content/public/android/java",
+
+  "-content/public/android/java",
+  "+content/public/android/java/src/org/chromium/content_public",
+  "!content/public/android/java/src/org/chromium/content/browser/BindingManager.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java",
+  "!content/public/android/java/src/org/chromium/content/browser/ContentView.java",
+  "!content/public/android/java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java",
+  "!content/public/android/java/src/org/chromium/content/browser/input/ChromiumBaseInputConnection.java",
+  "!content/public/android/java/src/org/chromium/content/browser/SelectionPopupController.java",
+  "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+
   "+device/geolocation/android/java",
   "+device/geolocation/android/javatests",
 ]
