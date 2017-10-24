@@ -11,13 +11,14 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/modules/v8/V8AudioParamDescriptor.h"
-#include "core/typed_arrays/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
+#include "core/typed_arrays/DOMTypedArray.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioParamDescriptor.h"
 #include "modules/webaudio/AudioWorkletProcessor.h"
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
+#include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/bindings/V8BindingMacros.h"
@@ -27,30 +28,18 @@
 namespace blink {
 
 AudioWorkletGlobalScope* AudioWorkletGlobalScope::Create(
-    const KURL& url,
-    const String& user_agent,
-    scoped_refptr<SecurityOrigin> document_security_origin,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerThread* thread,
-    WorkerClients* worker_clients) {
-  return new AudioWorkletGlobalScope(url, user_agent,
-                                     std::move(document_security_origin),
-                                     isolate, thread, worker_clients);
+    WorkerThread* thread) {
+  return new AudioWorkletGlobalScope(std::move(creation_params), isolate,
+                                     thread);
 }
 
 AudioWorkletGlobalScope::AudioWorkletGlobalScope(
-    const KURL& url,
-    const String& user_agent,
-    scoped_refptr<SecurityOrigin> document_security_origin,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerThread* thread,
-    WorkerClients* worker_clients)
-    : ThreadedWorkletGlobalScope(url,
-                                 user_agent,
-                                 std::move(document_security_origin),
-                                 isolate,
-                                 thread,
-                                 worker_clients) {}
+    WorkerThread* thread)
+    : ThreadedWorkletGlobalScope(std::move(creation_params), isolate, thread) {}
 
 AudioWorkletGlobalScope::~AudioWorkletGlobalScope() {}
 

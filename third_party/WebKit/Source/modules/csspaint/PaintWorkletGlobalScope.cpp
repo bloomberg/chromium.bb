@@ -14,6 +14,8 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/csspaint/CSSPaintWorklet.h"
@@ -169,14 +171,13 @@ bool ParsePaintFunction(v8::Isolate* isolate,
 // static
 PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     LocalFrame* frame,
-    const KURL& url,
-    const String& user_agent,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
     size_t global_scope_number) {
   auto* global_scope =
-      new PaintWorkletGlobalScope(frame, url, user_agent, isolate,
+      new PaintWorkletGlobalScope(frame, std::move(creation_params), isolate,
                                   reporting_proxy, pending_generator_registry);
   String context_name("PaintWorklet #");
   context_name.append(String::Number(global_scope_number));
@@ -189,14 +190,12 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     LocalFrame* frame,
-    const KURL& url,
-    const String& user_agent,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry)
     : MainThreadWorkletGlobalScope(frame,
-                                   url,
-                                   user_agent,
+                                   std::move(creation_params),
                                    isolate,
                                    reporting_proxy),
       pending_generator_registry_(pending_generator_registry) {}

@@ -7,6 +7,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/weborigin/KURL.h"
@@ -18,17 +19,11 @@
 namespace blink {
 
 ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
-    const KURL& url,
-    const String& user_agent,
-    scoped_refptr<SecurityOrigin> document_security_origin,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerThread* thread,
-    WorkerClients* worker_clients)
-    : WorkletGlobalScope(url,
-                         user_agent,
-                         std::move(document_security_origin),
+    WorkerThread* thread)
+    : WorkletGlobalScope(std::move(creation_params),
                          isolate,
-                         worker_clients,
                          thread->GetWorkerReportingProxy()),
       thread_(thread) {}
 

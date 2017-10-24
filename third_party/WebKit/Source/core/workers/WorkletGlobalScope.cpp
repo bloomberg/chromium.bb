@@ -13,6 +13,7 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/probe/CoreProbes.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkletModuleResponsesMap.h"
 #include "core/workers/WorkletModuleTreeClient.h"
@@ -25,16 +26,15 @@ namespace blink {
 // algorithm:
 // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
 WorkletGlobalScope::WorkletGlobalScope(
-    const KURL& url,
-    const String& user_agent,
-    scoped_refptr<SecurityOrigin> document_security_origin,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerClients* worker_clients,
     WorkerReportingProxy& reporting_proxy)
-    : WorkerOrWorkletGlobalScope(isolate, worker_clients, reporting_proxy),
-      url_(url),
-      user_agent_(user_agent),
-      document_security_origin_(document_security_origin) {
+    : WorkerOrWorkletGlobalScope(isolate,
+                                 creation_params->worker_clients,
+                                 reporting_proxy),
+      url_(creation_params->script_url),
+      user_agent_(creation_params->user_agent),
+      document_security_origin_(creation_params->starter_origin) {
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.
 

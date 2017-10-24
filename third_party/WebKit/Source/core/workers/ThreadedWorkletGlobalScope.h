@@ -11,6 +11,7 @@
 namespace blink {
 
 class WorkerThread;
+struct GlobalScopeCreationParams;
 
 class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
  public:
@@ -26,13 +27,9 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
   WorkerThread* GetThread() const { return thread_; }
 
  protected:
-  ThreadedWorkletGlobalScope(
-      const KURL&,
-      const String& user_agent,
-      scoped_refptr<SecurityOrigin> document_security_origin,
-      v8::Isolate*,
-      WorkerThread*,
-      WorkerClients*);
+  ThreadedWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                             v8::Isolate*,
+                             WorkerThread*);
 
  private:
   friend class ThreadedWorkletThreadForTest;

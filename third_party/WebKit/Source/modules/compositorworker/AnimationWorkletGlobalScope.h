@@ -16,7 +16,6 @@
 namespace blink {
 
 class ExceptionState;
-class WorkerClients;
 
 // Represents the animation worklet global scope and implements all methods that
 // the global scope exposes to user script (See
@@ -33,12 +32,9 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
 
  public:
   static AnimationWorkletGlobalScope* Create(
-      const KURL&,
-      const String& user_agent,
-      scoped_refptr<SecurityOrigin> document_security_origin,
+      std::unique_ptr<GlobalScopeCreationParams>,
       v8::Isolate*,
-      WorkerThread*,
-      WorkerClients*);
+      WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
@@ -59,13 +55,9 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
-  AnimationWorkletGlobalScope(
-      const KURL&,
-      const String& user_agent,
-      scoped_refptr<SecurityOrigin> document_security_origin,
-      v8::Isolate*,
-      WorkerThread*,
-      WorkerClients*);
+  AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                              v8::Isolate*,
+                              WorkerThread*);
 
   Animator* GetAnimatorFor(int player_id, const String& name);
   typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>

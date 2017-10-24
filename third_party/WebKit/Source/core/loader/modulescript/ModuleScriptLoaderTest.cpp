@@ -15,8 +15,10 @@
 #include "core/loader/modulescript/ModuleScriptLoaderClient.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
 #include "core/loader/modulescript/WorkletModuleScriptFetcher.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/testing/DummyModulator.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/MainThreadWorkletReportingProxy.h"
 #include "platform/heap/Handle.h"
@@ -173,10 +175,18 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
   reporting_proxy_ =
-      WTF::MakeUnique<MainThreadWorkletReportingProxy>(&GetDocument());
+      std::make_unique<MainThreadWorkletReportingProxy>(&GetDocument());
+  auto creation_params = std::make_unique<GlobalScopeCreationParams>(
+      GetDocument().Url(), GetDocument().UserAgent(),
+      String() /* source_code */, nullptr /* cached_meta_data */,
+      nullptr /* content_security_policy_parsed_headers */,
+      String() /* referrer_policy */, GetDocument().GetSecurityOrigin(),
+      nullptr /* worker_clients */, GetDocument().AddressSpace(),
+      OriginTrialContext::GetTokens(&GetDocument()).get(),
+      nullptr /* worker_settings */, kV8CacheOptionsDefault);
   global_scope_ = new MainThreadWorkletGlobalScope(
-      &GetFrame(), KURL("https://example.test/worklet.js"), "fake user agent",
-      ToIsolate(&GetDocument()), *reporting_proxy_);
+      &GetFrame(), std::move(creation_params), ToIsolate(&GetDocument()),
+      *reporting_proxy_);
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
   modulator_ = new ModuleScriptLoaderTestModulator(
       global_scope_->ScriptController()->GetScriptState(),
