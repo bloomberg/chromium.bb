@@ -559,7 +559,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
     return;
   }
 
-  ToggleTouchEventLogging(false);
+  ToggleTouchEventLogging(!show_keyboard);
 
   switch (state_) {
     case KeyboardControllerState::INITIAL:
