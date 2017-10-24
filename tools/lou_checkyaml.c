@@ -485,15 +485,13 @@ read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 		} else if (!strcmp(option_name, "typeform")) {
 			yaml_event_delete(&event);
 			*typeform = read_typeforms(parser, wordLen);
-
-			// FIXME: Comparisons should be truly case insensitive, but apparently no standard function for that.
-		} else if (!strcmp(option_name, "inPos") || !strcmp(option_name, "inpos")) {
+		} else if (!strcmp(option_name, "inputPos")) {
 			yaml_event_delete(&event);
 			*inPos = read_inPos(parser, translationLen);
-		} else if (!strcmp(option_name, "outPos") || !strcmp(option_name, "outpos")) {
+		} else if (!strcmp(option_name, "outputPos")) {
 			yaml_event_delete(&event);
 			*outPos = read_outPos(parser, wordLen);
-		} else if (!strcmp(option_name, "cursorPos") || !strcmp(option_name, "cursorpos")) {
+		} else if (!strcmp(option_name, "cursorPos")) {
 			yaml_event_delete(&event);
 			*cursorPos = read_cursorPos(parser, wordLen);
 		} else {
