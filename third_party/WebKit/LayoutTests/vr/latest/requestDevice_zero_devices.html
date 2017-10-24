@@ -11,22 +11,17 @@ let fakeDisplays = fakeVRDisplays();
 
 vr_test( (t) => {
   return navigator.vr.requestDevice().then( (device) => {
-
-    device.supportsSession().then( () => {
-      t.step( () => {
-        assert_unreached("supportsSession unexpectedly allowed non-exclusive session without an output context");
-      });
-    }).catch( () => {
-      // Expected result, test is finished.
-      t.done();
-    });
-
+    t.step( () => {
+      assert_true(device == null);
+    }, "requestDevice returned correct results");
   }, (err) => {
     t.step( () => {
       assert_unreached("requestDevice rejected");
     });
+  }).then( () => {
+    t.done();
   });
-}, [fakeDisplays["Pixel"]],
-"supportsSession properly identifies supported non-exclusive sessions");
+}, [],
+"navigator.vr.requestDevice properly returns zero devices");
 
 </script>
