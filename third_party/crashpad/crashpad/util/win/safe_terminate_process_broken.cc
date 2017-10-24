@@ -14,15 +14,21 @@
 
 #include "util/win/safe_terminate_process.h"
 
+#include "base/logging.h"
+
 #if defined(ARCH_CPU_X86)
+
 namespace crashpad {
 
 bool SafeTerminateProcess(HANDLE process, UINT exit_code) {
   // Third-party software that hooks TerminateProcess() incorrectly has been
-  // encountered in the wild.  This version of SafeTerminateProcess() lacks
+  // encountered in the wild. This version of SafeTerminateProcess() lacks
   // protection against that, so don't use it in production.
+  LOG(WARNING)
+      << "Don't use this! For cross builds only. See https://crbug.com/777924.";
   return TerminateProcess(process, exit_code) != FALSE;
 }
 
 }  // namespace crashpad
+
 #endif  // defined(ARCH_CPU_X86)

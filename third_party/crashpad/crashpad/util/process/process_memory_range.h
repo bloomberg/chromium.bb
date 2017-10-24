@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CRASHPAD_UTIL_LINUX_PROCESS_MEMORY_RANGE_H_
-#define CRASHPAD_UTIL_LINUX_PROCESS_MEMORY_RANGE_H_
+#ifndef CRASHPAD_UTIL_PROCESS_PROCESS_MEMORY_RANGE_H_
+#define CRASHPAD_UTIL_PROCESS_PROCESS_MEMORY_RANGE_H_
 
 #include <sys/types.h>
 
 #include <string>
 
 #include "base/macros.h"
-#include "util/linux/address_types.h"
-#include "util/linux/checked_linux_address_range.h"
-#include "util/linux/process_memory.h"
+#include "util/misc/address_types.h"
 #include "util/misc/initialization_state_dcheck.h"
+#include "util/numeric/checked_vm_address_range.h"
+#include "util/process/process_memory.h"
 
 namespace crashpad {
 
@@ -45,8 +45,8 @@ class ProcessMemoryRange {
   //! \return `true` on success. `false` on failure with a message logged.
   bool Initialize(const ProcessMemory* memory,
                   bool is_64_bit,
-                  LinuxVMAddress base,
-                  LinuxVMSize size);
+                  VMAddress base,
+                  VMSize size);
 
   //! \brief Initializes this object with the maximum range for the address
   //!     space.
@@ -71,10 +71,10 @@ class ProcessMemoryRange {
   bool Is64Bit() const { return range_.Is64Bit(); }
 
   //! \brief Returns the base address of the range.
-  LinuxVMAddress Base() const { return range_.Base(); }
+  VMAddress Base() const { return range_.Base(); }
 
   //! \brief Returns the size of the range.
-  LinuxVMSize Size() const { return range_.Size(); }
+  VMSize Size() const { return range_.Size(); }
 
   //! \brief Shrinks the range to the new base and size.
   //!
@@ -83,7 +83,7 @@ class ProcessMemoryRange {
   //! \param[in] base The new base of the range.
   //! \param[in] size The new size of the range.
   //! \return `true` on success. `false` on failure with a message logged.
-  bool RestrictRange(LinuxVMAddress base, LinuxVMSize size);
+  bool RestrictRange(VMAddress base, VMSize size);
 
   //! \brief Copies memory from the target process into a caller-provided buffer
   //!     in the current process.
@@ -97,7 +97,7 @@ class ProcessMemoryRange {
   //!
   //! \return `true` on success, with \a buffer filled appropriately. `false` on
   //!     failure, with a message logged.
-  bool Read(LinuxVMAddress address, size_t size, void* buffer) const;
+  bool Read(VMAddress address, size_t size, void* buffer) const;
 
   //! \brief Reads a `NUL`-terminated C string from the target process into a
   //!     string in the current process.
@@ -112,13 +112,13 @@ class ProcessMemoryRange {
   //!     failure, with a message logged. Failures can occur, for example, when
   //!     a `NUL` terminator is not found within \a size bytes, or when
   //!     encountering unmapped or unreadable pages.
-  bool ReadCStringSizeLimited(LinuxVMAddress address,
+  bool ReadCStringSizeLimited(VMAddress address,
                               size_t size,
                               std::string* string) const;
 
  private:
   const ProcessMemory* memory_;  // weak
-  CheckedLinuxAddressRange range_;
+  CheckedVMAddressRange range_;
   InitializationStateDcheck initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryRange);
@@ -126,4 +126,4 @@ class ProcessMemoryRange {
 
 }  // namespace crashpad
 
-#endif  // CRASHPAD_UTIL_LINUX_PROCESS_MEMORY_RANGE_H_
+#endif  // CRASHPAD_UTIL_PROCESS_PROCESS_MEMORY_RANGE_H_

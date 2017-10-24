@@ -19,8 +19,7 @@
 
 // Declarations that the system headers should provide but don’t.
 
-struct _CLIENT_ID;
-typedef _CLIENT_ID CLIENT_ID;
+extern "C" {
 
 NTSTATUS NTAPI NtCreateThreadEx(PHANDLE ThreadHandle,
                                 ACCESS_MASK DesiredAccess,
@@ -46,6 +45,8 @@ NTSTATUS NTAPI NtResumeProcess(HANDLE);
 VOID NTAPI RtlGetUnloadEventTraceEx(PULONG* ElementSize,
                                     PULONG* ElementCount,
                                     PVOID* EventTrace);
+
+}  // extern "C"
 
 namespace crashpad {
 

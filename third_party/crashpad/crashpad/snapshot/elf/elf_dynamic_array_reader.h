@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CRASHPAD_SNAPSHOT_LINUX_ELF_DYNAMIC_ARRAY_READER_H_
-#define CRASHPAD_SNAPSHOT_LINUX_ELF_DYNAMIC_ARRAY_READER_H_
+#ifndef CRASHPAD_SNAPSHOT_ELF_ELF_DYNAMIC_ARRAY_READER_H_
+#define CRASHPAD_SNAPSHOT_ELF_ELF_DYNAMIC_ARRAY_READER_H_
 
 #include <stdint.h>
 
@@ -21,9 +21,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "util/linux/address_types.h"
-#include "util/linux/process_memory_range.h"
+#include "util/misc/address_types.h"
 #include "util/misc/reinterpret_bytes.h"
+#include "util/process/process_memory_range.h"
 
 namespace crashpad {
 
@@ -43,8 +43,8 @@ class ElfDynamicArrayReader {
   //!     the ELF dynamic table is loaded.
   //! \param[in] size The maximum number of bytes to read.
   bool Initialize(const ProcessMemoryRange& memory,
-                  LinuxVMAddress address,
-                  LinuxVMSize size);
+                  VMAddress address,
+                  VMSize size);
 
   //! \brief Retrieve a value from the array.
   //!
@@ -70,4 +70,4 @@ class ElfDynamicArrayReader {
 
 }  // namespace crashpad
 
-#endif  // CRASHPAD_SNAPSHOT_LINUX_ELF_DYNAMIC_ARRAY_READER_H_
+#endif  // CRASHPAD_SNAPSHOT_ELF_ELF_DYNAMIC_ARRAY_READER_H_

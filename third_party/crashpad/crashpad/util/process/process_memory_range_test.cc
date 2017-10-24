@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/linux/process_memory_range.h"
+#include "util/process/process_memory_range.h"
 
 #include <unistd.h>
 
@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "util/misc/from_pointer_cast.h"
+#include "util/process/process_memory_linux.h"
 
 namespace crashpad {
 namespace test {
@@ -40,7 +41,7 @@ TEST(ProcessMemoryRange, Basic) {
   constexpr bool is_64_bit = false;
 #endif  // ARCH_CPU_64_BITS
 
-  ProcessMemory memory;
+  ProcessMemoryLinux memory;
   ASSERT_TRUE(memory.Initialize(pid));
 
   ProcessMemoryRange range;
@@ -48,7 +49,7 @@ TEST(ProcessMemoryRange, Basic) {
   EXPECT_EQ(range.Is64Bit(), is_64_bit);
 
   // Both strings are accessible within the object's range.
-  auto object_addr = FromPointerCast<LinuxVMAddress>(&kTestObject);
+  auto object_addr = FromPointerCast<VMAddress>(&kTestObject);
   EXPECT_TRUE(range.RestrictRange(object_addr, sizeof(kTestObject)));
 
   TestObject object;
@@ -56,8 +57,8 @@ TEST(ProcessMemoryRange, Basic) {
   EXPECT_EQ(memcmp(&object, &kTestObject, sizeof(object)), 0);
 
   std::string string;
-  auto string1_addr = FromPointerCast<LinuxVMAddress>(kTestObject.string1);
-  auto string2_addr = FromPointerCast<LinuxVMAddress>(kTestObject.string2);
+  auto string1_addr = FromPointerCast<VMAddress>(kTestObject.string1);
+  auto string2_addr = FromPointerCast<VMAddress>(kTestObject.string2);
   ASSERT_TRUE(range.ReadCStringSizeLimited(
       string1_addr, arraysize(kTestObject.string1), &string));
   EXPECT_STREQ(string.c_str(), kTestObject.string1);
