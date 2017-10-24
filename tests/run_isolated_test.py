@@ -272,6 +272,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         None,
         None,
         run_isolated.noop_install_packages,
+        False,
         False)
     self.assertEqual(0, ret)
     return make_tree_call
@@ -794,6 +795,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           None,
           None,
           run_isolated.noop_install_packages,
+          False,
           False)
       self.assertEqual(0, ret)
 
@@ -883,6 +885,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           None,
           None,
           run_isolated.noop_install_packages,
+          False,
           False)
       self.assertEqual(0, ret)
 

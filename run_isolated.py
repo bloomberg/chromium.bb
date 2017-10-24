@@ -491,7 +491,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 def map_and_run(
     command, isolated_hash, storage, isolate_cache, outputs,
     install_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
-    bot_file, switch_to_account, install_packages_fn, use_symlinks,
+    bot_file, switch_to_account, install_packages_fn, use_symlinks, raw_cmd,
     constant_run_path):
   """Runs a command with optional isolated input/output.
 
@@ -575,7 +575,7 @@ def map_and_run(
         change_tree_read_only(run_dir, bundle.read_only)
         cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
         # Inject the command
-        if bundle.command:
+        if not raw_cmd and bundle.command:
           command = bundle.command + command
 
       if not command:
@@ -672,7 +672,7 @@ def run_tha_test(
     command, isolated_hash, storage, isolate_cache, outputs,
     install_named_caches, leak_temp_dir, result_json, root_dir, hard_timeout,
     grace_period, bot_file, switch_to_account, install_packages_fn,
-    use_symlinks):
+    use_symlinks, raw_cmd):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -718,6 +718,7 @@ def run_tha_test(
     install_packages_fn: context manager dir => CipdInfo, see
                          install_client_and_packages.
     use_symlinks: create tree with symlinks instead of hardlinks.
+    raw_cmd: ignore the command in the isolated file.
 
   Returns:
     Process exit code that should be used.
@@ -737,7 +738,8 @@ def run_tha_test(
   result = map_and_run(
       command, isolated_hash, storage, isolate_cache, outputs,
       install_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
-      bot_file, switch_to_account, install_packages_fn, use_symlinks, True)
+      bot_file, switch_to_account, install_packages_fn, use_symlinks, raw_cmd,
+      True)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -974,6 +976,10 @@ def create_option_parser():
       '--grace-period', type='float',
       help='Grace period between SIGTERM and SIGKILL')
   parser.add_option(
+      '--raw-cmd', action='store_true',
+      help='Ignore the isolated command, use the one supplied at the command '
+           'line')
+  parser.add_option(
       '--bot-file',
       help='Path to a file describing the state of the host. The content is '
            'defined by on_before_task() in bot_config.')
@@ -1155,7 +1161,8 @@ def main(args):
             options.bot_file,
             options.switch_to_account,
             install_packages_fn,
-            options.use_symlinks)
+            options.use_symlinks,
+            options.raw_cmd)
     return run_tha_test(
         args,
         options.isolated,
@@ -1171,7 +1178,8 @@ def main(args):
         options.bot_file,
         options.switch_to_account,
         install_packages_fn,
-        options.use_symlinks)
+        options.use_symlinks,
+        options.raw_cmd)
   except (cipd.Error, named_cache.Error) as ex:
     print >> sys.stderr, ex.message
     return 1
