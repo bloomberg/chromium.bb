@@ -22,6 +22,9 @@ extern "C" {
 #define SEG_TREE_PROBS (MAX_SEGMENTS - 1)
 
 #define PREDICTION_PROBS 3
+#if CONFIG_Q_SEGMENTATION
+#define Q_SEGMENT_CDF_COUNT 3
+#endif
 
 #if CONFIG_LOOPFILTER_LEVEL
 typedef enum {
@@ -57,6 +60,10 @@ typedef enum {
 
 struct segmentation {
   uint8_t enabled;
+#if CONFIG_Q_SEGMENTATION
+  uint8_t q_lvls;
+  int16_t q_delta[MAX_SEGMENTS];
+#endif
   uint8_t update_map;
   uint8_t update_data;
   uint8_t temporal_update;
@@ -71,6 +78,13 @@ struct segmentation_probs {
   aom_prob pred_probs[PREDICTION_PROBS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob pred_cdf[PREDICTION_PROBS][CDF_SIZE(2)];
+#if CONFIG_Q_SEGMENTATION
+  aom_cdf_prob q_seg_cdf[Q_SEGMENT_CDF_COUNT][CDF_SIZE(MAX_SEGMENTS)];
+#endif
+#else
+#if CONFIG_Q_SEGMENTATION
+  aom_prob q_seg_cdf[Q_SEGMENT_CDF_COUNT][CDF_SIZE(MAX_SEGMENTS)];
+#endif
 #endif
 };
 

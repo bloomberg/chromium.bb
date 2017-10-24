@@ -99,7 +99,11 @@ struct AV1Common;
 void av1_frame_init_quantizer(struct AV1_COMP *cpi);
 
 void av1_init_plane_quantizers(const struct AV1_COMP *cpi, MACROBLOCK *x,
+#if CONFIG_Q_SEGMENTATION
+                               int segment_id, int q_segment_id);
+#else
                                int segment_id);
+#endif
 
 void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
                          int uv_dc_delta_q, int uv_ac_delta_q,

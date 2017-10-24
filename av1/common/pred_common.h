@@ -20,6 +20,38 @@
 extern "C" {
 #endif
 
+#if CONFIG_Q_SEGMENTATION
+/* Picks CDFs based on number of matching segment IDs */
+static INLINE int pick_q_seg_cdf(int prev_ul, int prev_u, int prev_l) {
+  if ((prev_ul == prev_u) && (prev_ul == prev_l))
+    return 2;
+  else if ((prev_ul == prev_u) || (prev_ul == prev_l) || (prev_u == prev_l))
+    return 1;
+  else
+    return 0;
+}
+
+static INLINE int pick_q_seg_pred(int prev_ul, int prev_u, int prev_l) {
+  /* If 2 or more are identical returns that as predictor, otherwise prev_l */
+  return (prev_ul == prev_u) ? prev_u : prev_l;
+}
+
+static INLINE void set_q_segment_id(const AV1_COMMON *const cm,
+                                    uint8_t *segment_ids, BLOCK_SIZE bsize,
+                                    int mi_row, int mi_col, int segment_id) {
+  const int mi_offset = mi_row * cm->mi_cols + mi_col;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+  const int xmis = AOMMIN(cm->mi_cols - mi_col, bw);
+  const int ymis = AOMMIN(cm->mi_rows - mi_row, bh);
+  int x, y;
+
+  for (y = 0; y < ymis; ++y)
+    for (x = 0; x < xmis; ++x)
+      segment_ids[mi_offset + y * cm->mi_cols + x] = segment_id;
+}
+#endif
+
 static INLINE int get_segment_id(const AV1_COMMON *const cm,
                                  const uint8_t *segment_ids, BLOCK_SIZE bsize,
                                  int mi_row, int mi_col) {

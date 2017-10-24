@@ -350,6 +350,82 @@ static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
   return aom_read_symbol(r, segp->tree_cdf, MAX_SEGMENTS, ACCT_STR);
 }
 
+#if CONFIG_Q_SEGMENTATION
+static int neg_deinterleave(int diff, int ref, int max) {
+  if (!ref) return diff;
+  if (ref >= (max - 1)) return max - diff - 1;
+  if (2 * ref < max) {
+    if (diff <= 2 * ref) {
+      if (diff & 1)
+        return ref + ((diff + 1) >> 1);
+      else
+        return ref - (diff >> 1);
+    }
+    return diff;
+  } else {
+    if (diff <= 2 * (max - ref - 1)) {
+      if (diff & 1)
+        return ref + ((diff + 1) >> 1);
+      else
+        return ref - (diff >> 1);
+    }
+    return max - (diff + 1);
+  }
+}
+
+static int read_q_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                             int mi_row, int mi_col, aom_reader *r) {
+  struct segmentation *const seg = &cm->seg;
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  struct segmentation_probs *const segp = &ec_ctx->seg;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  int prev_ul = 0; /* Top left segment_id */
+  int prev_l = 0;  /* Current left segment_id */
+  int prev_u = 0;  /* Current top segment_id */
+
+  if (!seg->q_lvls) return 0;
+
+  MODE_INFO *const mi = cm->mi + mi_row * cm->mi_stride + mi_col;
+  int tinfo = mi->mbmi.boundary_info;
+  int above = (!(tinfo & TILE_ABOVE_BOUNDARY)) && ((mi_row - 1) >= 0);
+  int left = (!(tinfo & TILE_LEFT_BOUNDARY)) && ((mi_col - 1) >= 0);
+
+  if (above && left)
+    prev_ul =
+        get_segment_id(cm, cm->q_seg_map, BLOCK_4X4, mi_row - 1, mi_col - 1);
+
+  if (above)
+    prev_u = get_segment_id(cm, cm->q_seg_map, BLOCK_4X4, mi_row - 1, mi_col);
+
+  if (left)
+    prev_l = get_segment_id(cm, cm->q_seg_map, BLOCK_4X4, mi_row, mi_col - 1);
+
+  int cdf_num = pick_q_seg_cdf(prev_ul, prev_u, prev_l);
+  int pred = pick_q_seg_pred(prev_ul, prev_u, prev_l);
+
+  if (mbmi->skip) {
+    set_q_segment_id(cm, cm->q_seg_map, mbmi->sb_type, mi_row, mi_col, pred);
+    return 0;
+  }
+
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob *pred_cdf = segp->q_seg_cdf[cdf_num];
+  int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
+#else
+  const aom_prob pred_cdf = segp->q_seg_cdf[cdf_num];
+  int coded_id = aom_read(r, pred_cdf, ACCT_STR);
+#endif
+
+  int segment_id = neg_deinterleave(coded_id, pred, seg->q_lvls);
+
+  assert(segment_id >= 0 && segment_id < seg->q_lvls);
+  set_q_segment_id(cm, cm->q_seg_map, mbmi->sb_type, mi_row, mi_col,
+                   segment_id);
+
+  return segment_id;
+}
+#endif
+
 static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
                                MB_MODE_INFO *mbmi, FRAME_COUNTS *counts,
                                TX_SIZE tx_size, int depth, int blk_row,
@@ -1086,6 +1162,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->segment_id = read_intra_segment_id(cm, xd, mi_offset, x_mis, y_mis, r);
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+#if CONFIG_Q_SEGMENTATION
+  mbmi->q_segment_id = read_q_segment_id(cm, xd, mi_row, mi_col, r);
+#endif
 
   if (cm->delta_q_present_flag) {
     xd->current_qindex =
@@ -2524,6 +2603,9 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   if (mbmi->skip_mode) {
     mbmi->skip = 1;
+#if CONFIG_Q_SEGMENTATION
+    mbmi->q_segment_id = read_q_segment_id(cm, xd, mi_row, mi_col, r);
+#endif
 
     if (cm->delta_q_present_flag) {
       xd->current_qindex = xd->prev_qindex;
@@ -2547,6 +2629,9 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   } else {
 #endif  // CONFIG_EXT_SKIP
     mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+#if CONFIG_Q_SEGMENTATION
+    mbmi->q_segment_id = read_q_segment_id(cm, xd, mi_row, mi_col, r);
+#endif
 
     if (cm->delta_q_present_flag) {
       xd->current_qindex =

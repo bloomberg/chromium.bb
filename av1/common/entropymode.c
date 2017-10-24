@@ -1746,6 +1746,21 @@ static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
   AOM_CDF8(4096, 8192, 12288, 16384, 20480, 24576, 28672)
 };
 
+#if CONFIG_Q_SEGMENTATION
+static const aom_cdf_prob
+    default_q_seg_tree_cdf[Q_SEGMENT_CDF_COUNT][CDF_SIZE(MAX_SEGMENTS)] = {
+      {
+          AOM_CDF8(5622, 7893, 16093, 18233, 27809, 28373, 32533),
+      },
+      {
+          AOM_CDF8(14274, 18230, 22557, 24935, 29980, 30851, 32344),
+      },
+      {
+          AOM_CDF8(27527, 28487, 28723, 28890, 32397, 32647, 32679),
+      },
+    };
+#endif
+
 static const aom_cdf_prob
     default_tx_size_cdf[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][CDF_SIZE(MAX_TX_DEPTH +
                                                                  1)] = {
@@ -3521,6 +3536,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->skip_probs, default_skip_probs);
 #endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
+#if CONFIG_Q_SEGMENTATION
+  for (int i = 0; i < Q_SEGMENT_CDF_COUNT; i++)
+    av1_copy(fc->seg.q_seg_cdf[i], default_q_seg_tree_cdf[i]);
+#endif
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);

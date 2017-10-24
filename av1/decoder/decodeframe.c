@@ -488,7 +488,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     for (i = 0; i < MAX_SEGMENTS; i++) {
 #if CONFIG_EXT_DELTA_Q
       const int current_qindex =
+#if CONFIG_Q_SEGMENTATION
+          av1_get_qindex(&cm->seg, i, i, xd->current_qindex);
+#else
           av1_get_qindex(&cm->seg, i, xd->current_qindex);
+#endif
 #else
       const int current_qindex = xd->current_qindex;
 #endif  // CONFIG_EXT_DELTA_Q
@@ -1107,6 +1111,31 @@ static void setup_segmentation(AV1_COMMON *const cm,
   }
 }
 
+#if CONFIG_Q_SEGMENTATION
+static void setup_q_segmentation(AV1_COMMON *const cm,
+                                 struct aom_read_bit_buffer *rb) {
+  int i;
+  struct segmentation *const seg = &cm->seg;
+
+  for (i = 0; i < MAX_SEGMENTS; i++) {
+    if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
+      seg->q_lvls = 0;
+      return;
+    }
+  }
+
+  if (!aom_rb_read_bit(rb)) return;
+
+  seg->q_lvls = decode_unsigned_max(rb, MAX_SEGMENTS);
+
+  for (i = 0; i < seg->q_lvls; i++) {
+    int val = decode_unsigned_max(rb, MAXQ);
+    val *= 1 - 2 * aom_rb_read_bit(rb);
+    seg->q_delta[i] = val;
+  }
+}
+#endif
+
 #if CONFIG_LOOP_RESTORATION
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
@@ -1367,7 +1396,11 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
   // remaining are don't cares.
   const int max_segments = cm->seg.enabled ? MAX_SEGMENTS : 1;
   for (int i = 0; i < max_segments; ++i) {
+#if CONFIG_Q_SEGMENTATION
+    const int qindex = av1_get_qindex(&cm->seg, i, i, cm->base_qindex);
+#else
     const int qindex = av1_get_qindex(&cm->seg, i, cm->base_qindex);
+#endif
     cm->y_dequant_QTX[i][0] = dequant_Q3_to_QTX(
         av1_dc_quant(qindex, cm->y_dc_delta_q, cm->bit_depth), cm->bit_depth);
     cm->y_dequant_QTX[i][1] = dequant_Q3_to_QTX(
@@ -3141,6 +3174,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_Q_ADAPT_PROBS
 
   setup_segmentation(cm, rb);
+#if CONFIG_Q_SEGMENTATION
+  setup_q_segmentation(cm, rb);
+#endif
 
   {
     int delta_q_allowed = 1;
@@ -3151,6 +3187,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
         segment_quantizer_active = 1;
       }
+#if CONFIG_Q_SEGMENTATION
+      if (seg->q_lvls) segment_quantizer_active = 1;
+#endif
     }
     delta_q_allowed = !segment_quantizer_active;
 #endif
@@ -3191,7 +3230,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {
     const int qindex = cm->seg.enabled
+#if CONFIG_Q_SEGMENTATION
+                           ? av1_get_qindex(&cm->seg, i, i, cm->base_qindex)
+#else
                            ? av1_get_qindex(&cm->seg, i, cm->base_qindex)
+#endif
                            : cm->base_qindex;
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
                       cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
