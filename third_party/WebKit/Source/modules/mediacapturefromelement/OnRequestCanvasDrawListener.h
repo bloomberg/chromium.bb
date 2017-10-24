@@ -19,12 +19,12 @@ class OnRequestCanvasDrawListener final
   USING_GARBAGE_COLLECTED_MIXIN(OnRequestCanvasDrawListener);
 
  public:
-  ~OnRequestCanvasDrawListener();
+  ~OnRequestCanvasDrawListener() override;
   static OnRequestCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>);
   void SendNewFrame(sk_sp<SkImage>) override;
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
  private:
   OnRequestCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);

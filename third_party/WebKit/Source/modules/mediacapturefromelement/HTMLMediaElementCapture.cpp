@@ -31,7 +31,7 @@ class MediaElementEventListener final : public EventListener {
   MediaElementEventListener(HTMLMediaElement*, MediaStream*);
   void UpdateSources(ExecutionContext*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // EventListener implementation.
