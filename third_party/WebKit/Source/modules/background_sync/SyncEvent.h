@@ -36,7 +36,7 @@ class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
   String tag();
   bool lastChance();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
