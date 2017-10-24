@@ -82,6 +82,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
       l10n_util::GetNSString(IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
   addButtonItem.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
                                           [[MDCPalette greyPalette] tint400]);
+  addButtonItem.cellType = PaymentsTextCellTypeCallToAction;
   return addButtonItem;
 }
 

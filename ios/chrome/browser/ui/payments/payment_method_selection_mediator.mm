@@ -94,6 +94,7 @@ using ::payment_request_util::
   addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD);
   addButtonItem.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
                                           [[MDCPalette greyPalette] tint400]);
+  addButtonItem.cellType = PaymentsTextCellTypeCallToAction;
   return addButtonItem;
 }
 
