@@ -1418,7 +1418,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     // to prevent unintended state transitions.
     Resource::RevalidationStartForbiddenScope
         revalidation_start_forbidden_scope(resource);
-    ScriptForbiddenIfMainThreadScope script_forbidden_scope;
+    ScriptForbiddenScope script_forbidden_scope;
 
     if (!Context().ShouldLoadNewResource(resource->GetType()) &&
         IsMainThread()) {
