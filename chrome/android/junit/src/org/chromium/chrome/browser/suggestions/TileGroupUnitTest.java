@@ -289,8 +289,8 @@ public class TileGroupUnitTest {
         assertThat(((TileView) layout.getChildAt(1)).getUrl(), is(URLS[1]));
     }
 
-    /** Check for https://crbug.com/703628: handle duplicated URLs by crashing. */
-    @Test(expected = IllegalStateException.class)
+    /** Check for https://crbug.com/703628: don't crash on duplicated URLs. */
+    @Test
     public void testRenderTileViewWithDuplicatedUrl() {
         SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
         when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
@@ -303,7 +303,7 @@ public class TileGroupUnitTest {
         // Initialise the internal list of tiles
         mMostVisitedSites.setTileSuggestions(URLS[0], URLS[1], URLS[0]);
 
-        // Render them to the layout. The duplicated URL should trigger the exception.
+        // Render them to the layout. The duplicated URL should not trigger an exception.
         tileGrid.refreshData();
     }
 

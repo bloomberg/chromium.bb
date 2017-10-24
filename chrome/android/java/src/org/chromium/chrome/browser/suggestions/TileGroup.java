@@ -346,9 +346,8 @@ public class TileGroup implements MostVisitedSites.Observer {
                 newSites.append(suggestion.sectionType, sectionTiles);
             }
 
-            // TODO(dgn): Do we know if it still ever happens? Remove or replace with an assert if
-            // it never gets hit. See https://crbug.com/703628
-            if (findTile(suggestion.url, sectionTiles) != null) throw new IllegalStateException();
+            // This is not supposed to happen but does. See https://crbug.com/703628
+            if (findTile(suggestion.url, sectionTiles) != null) continue;
 
             sectionTiles.add(tile);
         }
