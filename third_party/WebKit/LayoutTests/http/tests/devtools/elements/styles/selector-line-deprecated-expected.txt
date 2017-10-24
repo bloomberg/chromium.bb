@@ -1,6 +1,5 @@
 Tests that selector line is computed correctly regardless of its start column. Bug 110732.
 
-Text
 [expanded] 
 element.style { ()
 
@@ -9,7 +8,7 @@ element.style { ()
     color: green;
 
 [expanded] 
-#inspected { (selector-line-d…recated.html:5 -> selector-line-deprecated.html:5:2)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: green;
 
 [expanded] 

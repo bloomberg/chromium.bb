@@ -1,10 +1,24 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that style updates are throttled during DOM traversal. Bug 77643.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that style updates are throttled during DOM traversal. <a href="https://bugs.webkit.org/show_bug.cgi?id=77643">Bug 77643</a>.
+      </p>
+
+
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div id="inspected"></div>
+    `);
+
   var updateCount = 0;
   var keydownCount = 5;
 
@@ -29,22 +43,4 @@ function test() {
   function sniffUpdate() {
     ++updateCount;
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that style updates are throttled during DOM traversal. <a href="https://bugs.webkit.org/show_bug.cgi?id=77643">Bug 77643</a>.
-</p>
-
-<div></div>
-<div></div>
-<div></div>
-<div></div>
-<div></div>
-<div id="inspected"></div>
-
-</body>
-</html>
+})();

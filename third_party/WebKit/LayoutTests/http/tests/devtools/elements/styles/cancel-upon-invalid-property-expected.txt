@@ -1,11 +1,10 @@
 Verifies that entering poor property value restores original text.
 
-Text
 [expanded] 
 element.style { ()
 
 [expanded] 
-#inspected { (cancel-upon-inv…roperty.html:6 -> cancel-upon-invalid-property.html:6:13)
+#inspected { (<style>…</style>)
     color: blue;
 
 [expanded] 
@@ -16,7 +15,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#inspected { (cancel-upon-inv…roperty.html:6 -> cancel-upon-invalid-property.html:6:13)
+#inspected { (<style>…</style>)
     color: blue;
     : ;
 

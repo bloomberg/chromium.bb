@@ -1,6 +1,5 @@
 Tests that URLs are linked to and completed correctly. Bugs 51663, 53171, 62643, 72373, 79905
 
-
 URLs completed:
 http://example.com/
 http://example.com/moo

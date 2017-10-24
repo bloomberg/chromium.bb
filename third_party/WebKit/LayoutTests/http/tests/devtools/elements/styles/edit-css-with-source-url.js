@@ -1,17 +1,22 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/isolated-filesystem-test.js"></script>
-<style>#inspected {
-    color: red;
-}
-/*# sourceURL=http://localhost:8000/inspector/elements/styles/foo.css */
-</style>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(`Tests file system project mappings.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>#inspected {
+          color: red;
+      }
+      /*# sourceURL=http://localhost:8000/inspector/elements/styles/foo.css */
+      </style>
+      <div id="inspected"></div>
+    `);
+
   TestRunner.markStep('testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile');
 
   var uiSourceCode = await TestRunner.waitForUISourceCode('foo.css');
@@ -46,11 +51,4 @@ async function test() {
     TestRunner.addResult(uiSourceCode.workingCopy());
     TestRunner.completeTest();
   }
-};
-</script>
-</head>
-<body onload="runTest()">
-<div id="inspected"></div>
-<p>Tests file system project mappings.</p>
-</body>
-</html>
+})();

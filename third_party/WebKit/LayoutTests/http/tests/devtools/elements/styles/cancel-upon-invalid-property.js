@@ -1,15 +1,20 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<style>
-#inspected {
-    color: blue;
-}
-</style>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verifies that entering poor property value restores original text.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #inspected {
+          color: blue;
+      }
+      </style>
+      <div id="inspected">Text</div>
+    `);
+
   var treeElement;
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', editProperty);
 
@@ -38,17 +43,4 @@ function test() {
     ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Verifies that entering poor property value restores original text.
-</p>
-
-<div id="inspected">Text</div>
-
-</body>
-</html>
+})();

@@ -52,28 +52,9 @@ followed by selector
     red;
 }
 </style>
-
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
-
-function test() {
-  ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
-
-  function step1() {
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-    TestRunner.completeTest();
-  }
-}
-
-</script>
 </head>
 
-<body onload="runTest()">
-<p>
-Tests that proper source lines are reported for the parsed styles.
-</p>
-
+<body>
 <div id="main"></div>
 
 </body>
