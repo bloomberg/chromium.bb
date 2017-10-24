@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "remoting/base/constants.h"
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -18,7 +19,6 @@ namespace {
 // Number of samples used to estimate processing time for the next frame.
 const int kStatsWindow = 5;
 
-const int kTargetFrameRate = 30;
 constexpr base::TimeDelta kTargetFrameInterval =
     base::TimeDelta::FromMilliseconds(1000 / kTargetFrameRate);
 

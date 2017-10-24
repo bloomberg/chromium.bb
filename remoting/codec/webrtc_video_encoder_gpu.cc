@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
+#include "remoting/base/constants.h"
 #include "third_party/libyuv/include/libyuv/convert_from_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -195,7 +196,7 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
   // TODO(zijiehe): implement some logical way to set an initial bitrate.
   // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
   // per second.
-  uint32_t initial_bitrate = 30 * 1024 * 1024 * 8;
+  uint32_t initial_bitrate = kTargetFrameRate * 1024 * 1024 * 8;
   gpu::GpuPreferences gpu_preferences;
 
   video_encode_accelerator_ =
