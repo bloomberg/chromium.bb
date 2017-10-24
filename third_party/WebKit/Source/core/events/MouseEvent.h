@@ -132,24 +132,20 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   // Note that these values are adjusted to counter the effects of zoom, so that
   // values exposed via DOM APIs are invariant under zooming.
-  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
-  // fractional coordinates. See crbug.com/655786.
-  double screenX() const {
-    return IsPointerEvent() ? screen_location_.X()
-                            : static_cast<int>(screen_location_.X());
+  // TODO(eirage): remove coordinates getter override when mouse event is
+  // fractional;
+  virtual double screenX() const {
+    return static_cast<int>(screen_location_.X());
   }
-  double screenY() const {
-    return IsPointerEvent() ? screen_location_.Y()
-                            : static_cast<int>(screen_location_.Y());
+  virtual double screenY() const {
+    return static_cast<int>(screen_location_.Y());
   }
 
-  double clientX() const {
-    return IsPointerEvent() ? client_location_.X()
-                            : static_cast<int>(client_location_.X());
+  virtual double clientX() const {
+    return static_cast<int>(client_location_.X());
   }
-  double clientY() const {
-    return IsPointerEvent() ? client_location_.Y()
-                            : static_cast<int>(client_location_.Y());
+  virtual double clientY() const {
+    return static_cast<int>(client_location_.Y());
   }
 
   int movementX() const { return movement_delta_.X(); }
@@ -161,14 +157,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   int offsetX();
   int offsetY();
 
-  double pageX() const {
-    return IsPointerEvent() ? page_location_.X()
-                            : static_cast<int>(page_location_.X());
-  }
-  double pageY() const {
-    return IsPointerEvent() ? page_location_.Y()
-                            : static_cast<int>(page_location_.Y());
-  }
+  virtual double pageX() const { return static_cast<int>(page_location_.X()); }
+  virtual double pageY() const { return static_cast<int>(page_location_.Y()); }
 
   double x() const { return clientX(); }
   double y() const { return clientY(); }
@@ -225,6 +215,12 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   void ReceivedTarget() override;
 
+  // TODO(eirage): Move these coordinates to private when MouseEvent is
+  // fractional.
+  DoublePoint screen_location_;
+  DoublePoint client_location_;
+  DoublePoint page_location_;
+
  private:
   friend class MouseEventDispatchMediator;
   void InitMouseEventInternal(const AtomicString& type,
@@ -248,11 +244,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   void ComputePageLocation();
   void ComputeRelativePosition();
 
-  DoublePoint screen_location_;
-  DoublePoint client_location_;
   DoublePoint movement_delta_;
 
-  DoublePoint page_location_;
   DoublePoint layer_location_;
   DoublePoint offset_location_;
   DoublePoint absolute_location_;

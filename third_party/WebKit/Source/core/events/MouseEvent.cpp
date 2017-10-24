@@ -39,17 +39,17 @@ namespace blink {
 
 namespace {
 
-LayoutSize ContentsScrollOffset(AbstractView* abstract_view) {
+DoubleSize ContentsScrollOffset(AbstractView* abstract_view) {
   if (!abstract_view || !abstract_view->IsLocalDOMWindow())
-    return LayoutSize();
+    return DoubleSize();
   LocalFrame* frame = ToLocalDOMWindow(abstract_view)->GetFrame();
   if (!frame)
-    return LayoutSize();
+    return DoubleSize();
   LocalFrameView* frame_view = frame->View();
   if (!frame_view)
-    return LayoutSize();
+    return DoubleSize();
   float scale_factor = frame->PageZoomFactor();
-  return LayoutSize(frame_view->ScrollX() / scale_factor,
+  return DoubleSize(frame_view->ScrollX() / scale_factor,
                     frame_view->ScrollY() / scale_factor);
 }
 
@@ -250,7 +250,7 @@ void MouseEvent::InitCoordinates(const double client_x, const double client_y) {
   // Set up initial values for coordinates.
   // Correct values are computed lazily, see computeRelativePosition.
   client_location_ = DoublePoint(client_x, client_y);
-  page_location_ = client_location_ + DoubleSize(ContentsScrollOffset(view()));
+  page_location_ = client_location_ + ContentsScrollOffset(view());
 
   layer_location_ = page_location_;
   offset_location_ = page_location_;

@@ -28,8 +28,8 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
 
 WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     blink::WebInputEvent::Type type,
-    int window_x,
-    int window_y,
+    float window_x,
+    float window_y,
     int modifiers,
     blink::WebPointerProperties::PointerType pointer_type) {
   DCHECK(WebInputEvent::IsMouseEventType(type));
