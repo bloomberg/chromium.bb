@@ -57,7 +57,9 @@ class CORE_EXPORT StyleSheetResourceClient : public ResourceClient {
   // other than CSSStyleSheetResources.
   virtual void DidAppendFirstData(const CSSStyleSheetResource*) {}
 
-  void Trace(blink::Visitor* visitor) { ResourceClient::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    ResourceClient::Trace(visitor);
+  }
 };
 
 }  // namespace blink

@@ -59,7 +59,7 @@ class CORE_EXPORT MultipartImageResourceParser final
     virtual ~Client() = default;
     virtual void OnePartInMultipartReceived(const ResourceResponse&) = 0;
     virtual void MultipartDataReceived(const char* bytes, size_t) = 0;
-    virtual void Trace(blink::Visitor* visitor) {}
+    void Trace(blink::Visitor* visitor) override {}
   };
 
   MultipartImageResourceParser(const ResourceResponse&,

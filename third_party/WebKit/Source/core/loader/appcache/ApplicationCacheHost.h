@@ -56,7 +56,7 @@ class CORE_EXPORT ApplicationCacheHost final
     return new ApplicationCacheHost(loader);
   }
 
-  virtual ~ApplicationCacheHost();
+  ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();
 
   // The Status numeric values are specified in the HTML5 spec.

@@ -30,7 +30,7 @@ class NullImageResourceInfo final
  public:
   NullImageResourceInfo() {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     ImageResourceInfo::Trace(visitor);
   }
 

@@ -34,7 +34,7 @@ class MockLinkLoaderClient final
     return new MockLinkLoaderClient(should_load);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     LinkLoaderClient::Trace(visitor);
   }
 

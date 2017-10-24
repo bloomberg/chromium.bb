@@ -75,7 +75,7 @@ class ImageResource::ImageResourceInfoImpl final
   ImageResourceInfoImpl(ImageResource* resource) : resource_(resource) {
     DCHECK(resource_);
   }
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(resource_);
     ImageResourceInfo::Trace(visitor);
   }

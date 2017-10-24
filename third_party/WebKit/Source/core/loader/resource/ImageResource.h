@@ -72,7 +72,7 @@ class CORE_EXPORT ImageResource final
   const ImageResourceContent* GetContent() const;
 
   void ReloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
-                                      ReloadLoFiOrPlaceholderPolicy);
+                                      ReloadLoFiOrPlaceholderPolicy) override;
 
   void DidAddClient(ResourceClient*) override;
 
@@ -100,7 +100,7 @@ class CORE_EXPORT ImageResource final
 
   bool ShouldShowPlaceholder() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   enum class MultipartParsingState : uint8_t {
