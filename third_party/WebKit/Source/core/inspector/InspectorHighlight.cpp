@@ -110,7 +110,7 @@ class ShapePathBuilder : public PathBuilder {
   }
 
  protected:
-  virtual FloatPoint TranslatePoint(const FloatPoint& point) {
+  FloatPoint TranslatePoint(const FloatPoint& point) override {
     FloatPoint layout_object_point =
         shape_outside_info_.ShapeToLayoutObjectPoint(point);
     return view_->ContentsToViewport(

@@ -134,7 +134,7 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
                                      InspectorResourceContainer*);
 
   ~InspectorStyleSheet() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   String FinalURL();
   bool SetText(const String&, ExceptionState&) override;
@@ -261,7 +261,7 @@ class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
   CSSStyleDeclaration* InlineStyle();
   CSSRuleSourceData* RuleSourceData();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) override;

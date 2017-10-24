@@ -107,7 +107,7 @@ class CORE_EXPORT InspectorCSSAgent final
                                             HeapVector<Member<CSSStyleSheet>>&);
 
   ~InspectorCSSAgent() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void ForcePseudoState(Element*, CSSSelector::PseudoType, bool* result);
   void DidCommitLoadForLocalFrame(LocalFrame*) override;

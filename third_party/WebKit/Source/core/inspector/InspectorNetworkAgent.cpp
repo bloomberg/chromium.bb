@@ -170,15 +170,16 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     loader_->Start(execution_context, blob_);
   }
 
-  virtual void DidStartLoading() {}
+  void DidStartLoading() override {}
 
-  virtual void DidReceiveDataForClient(const char* data, unsigned data_length) {
+  void DidReceiveDataForClient(const char* data,
+                               unsigned data_length) override {
     if (!data_length)
       return;
     raw_data_->Append(data, data_length);
   }
 
-  virtual void DidFinishLoading() {
+  void DidFinishLoading() override {
     String result;
     bool base64_encoded;
     if (InspectorPageAgent::SharedBufferContent(raw_data_, mime_type_,
@@ -190,7 +191,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     Dispose();
   }
 
-  virtual void DidFail(FileError::ErrorCode) {
+  void DidFail(FileError::ErrorCode) override {
     callback_->sendFailure(Response::Error("Couldn't read BLOB"));
     Dispose();
   }
