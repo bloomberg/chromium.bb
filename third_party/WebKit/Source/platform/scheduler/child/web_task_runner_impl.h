@@ -20,7 +20,8 @@ class TaskQueue;
 
 class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
  public:
-  static RefPtr<WebTaskRunnerImpl> Create(scoped_refptr<TaskQueue> task_queue);
+  static scoped_refptr<WebTaskRunnerImpl> Create(
+      scoped_refptr<TaskQueue> task_queue);
 
   // WebTaskRunner implementation:
   bool RunsTasksInCurrentSequence() override;

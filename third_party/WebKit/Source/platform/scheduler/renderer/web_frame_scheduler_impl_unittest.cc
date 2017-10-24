@@ -95,15 +95,16 @@ class MockThrottlingObserver final : public WebFrameScheduler::Observer {
   size_t stopped_count_;
 };
 
-void RunRepeatingTask(RefPtr<WebTaskRunner> task_runner, int* run_count);
+void RunRepeatingTask(scoped_refptr<WebTaskRunner> task_runner, int* run_count);
 
-WTF::Closure MakeRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner,
+WTF::Closure MakeRepeatingTask(scoped_refptr<blink::WebTaskRunner> task_runner,
                                int* run_count) {
   return WTF::Bind(&RunRepeatingTask, WTF::Passed(std::move(task_runner)),
                    WTF::Unretained(run_count));
 }
 
-void RunRepeatingTask(RefPtr<WebTaskRunner> task_runner, int* run_count) {
+void RunRepeatingTask(scoped_refptr<WebTaskRunner> task_runner,
+                      int* run_count) {
   ++*run_count;
 
   WebTaskRunner* task_runner_ptr = task_runner.get();

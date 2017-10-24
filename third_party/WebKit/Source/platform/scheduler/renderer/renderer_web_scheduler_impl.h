@@ -30,7 +30,7 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
 
  private:
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
-  RefPtr<WebTaskRunnerImpl> compositor_task_runner_;
+  scoped_refptr<WebTaskRunnerImpl> compositor_task_runner_;
 };
 
 }  // namespace scheduler

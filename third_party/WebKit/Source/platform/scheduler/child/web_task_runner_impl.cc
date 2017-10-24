@@ -16,7 +16,7 @@
 namespace blink {
 namespace scheduler {
 
-RefPtr<WebTaskRunnerImpl> WebTaskRunnerImpl::Create(
+scoped_refptr<WebTaskRunnerImpl> WebTaskRunnerImpl::Create(
     scoped_refptr<TaskQueue> task_queue) {
   return WTF::AdoptRef(new WebTaskRunnerImpl(std::move(task_queue)));
 }

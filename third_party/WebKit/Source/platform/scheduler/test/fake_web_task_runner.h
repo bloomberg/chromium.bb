@@ -43,10 +43,10 @@ class FakeWebTaskRunner : public WebTaskRunner {
 
   class Data;
   class BaseTaskRunner;
-  RefPtr<Data> data_;
+  scoped_refptr<Data> data_;
   scoped_refptr<BaseTaskRunner> base_task_runner_;
 
-  FakeWebTaskRunner(RefPtr<Data> data,
+  FakeWebTaskRunner(scoped_refptr<Data> data,
                     scoped_refptr<BaseTaskRunner> base_task_runner);
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebTaskRunner);

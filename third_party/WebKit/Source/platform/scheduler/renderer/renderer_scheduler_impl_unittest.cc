@@ -3828,7 +3828,7 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
       web_view_scheduler->CreateWebFrameSchedulerImpl(
           nullptr, WebFrameScheduler::FrameType::kSubframe);
 
-  RefPtr<WebTaskRunner> timer_wtr =
+  scoped_refptr<WebTaskRunner> timer_wtr =
       web_frame_scheduler->ThrottleableTaskRunner();
   TaskQueue* timer_tq =
       static_cast<WebTaskRunnerImpl*>(timer_wtr.get())->GetTaskQueue();

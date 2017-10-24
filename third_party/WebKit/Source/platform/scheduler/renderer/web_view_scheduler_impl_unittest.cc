@@ -89,15 +89,16 @@ TEST_F(WebViewSchedulerImplTest, TestDestructionOfFrameSchedulersAfter) {
 
 namespace {
 
-void RunRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner, int* run_count);
+void RunRepeatingTask(scoped_refptr<blink::WebTaskRunner> task_runner,
+                      int* run_count);
 
-WTF::Closure MakeRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner,
+WTF::Closure MakeRepeatingTask(scoped_refptr<blink::WebTaskRunner> task_runner,
                                int* run_count) {
   return WTF::Bind(&RunRepeatingTask, WTF::Passed(std::move(task_runner)),
                    WTF::Unretained(run_count));
 }
 
-void RunRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner,
+void RunRepeatingTask(scoped_refptr<blink::WebTaskRunner> task_runner,
                       int* run_count) {
   ++*run_count;
   blink::WebTaskRunner* task_runner_ptr = task_runner.get();
@@ -190,10 +191,11 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
 
 namespace {
 
-void RunVirtualTimeRecorderTask(base::SimpleTestTickClock* clock,
-                                RefPtr<blink::WebTaskRunner> web_task_runner,
-                                std::vector<base::TimeTicks>* out_real_times,
-                                std::vector<size_t>* out_virtual_times_ms) {
+void RunVirtualTimeRecorderTask(
+    base::SimpleTestTickClock* clock,
+    scoped_refptr<blink::WebTaskRunner> web_task_runner,
+    std::vector<base::TimeTicks>* out_real_times,
+    std::vector<size_t>* out_virtual_times_ms) {
   out_real_times->push_back(clock->NowTicks());
   out_virtual_times_ms->push_back(
       web_task_runner->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0);
@@ -201,7 +203,7 @@ void RunVirtualTimeRecorderTask(base::SimpleTestTickClock* clock,
 
 WTF::Closure MakeVirtualTimeRecorderTask(
     base::SimpleTestTickClock* clock,
-    RefPtr<blink::WebTaskRunner> web_task_runner,
+    scoped_refptr<blink::WebTaskRunner> web_task_runner,
     std::vector<base::TimeTicks>* out_real_times,
     std::vector<size_t>* out_virtual_times_ms) {
   return WTF::Bind(&RunVirtualTimeRecorderTask, WTF::Unretained(clock),
@@ -322,7 +324,7 @@ void RunOrderTask(int index, std::vector<int>* out_run_order) {
 }
 
 void DelayedRunOrderTask(int index,
-                         RefPtr<blink::WebTaskRunner> task_runner,
+                         scoped_refptr<blink::WebTaskRunner> task_runner,
                          std::vector<int>* out_run_order) {
   out_run_order->push_back(index);
   task_runner->PostTask(
@@ -474,7 +476,7 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
           ->CreateWebFrameSchedulerImpl(nullptr,
                                         WebFrameScheduler::FrameType::kSubframe)
           .release();
-  RefPtr<blink::WebTaskRunner> timer_task_runner =
+  scoped_refptr<blink::WebTaskRunner> timer_task_runner =
       web_frame_scheduler->ThrottleableTaskRunner();
 
   int run_count = 0;
@@ -773,7 +775,7 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeObserver) {
 }
 
 namespace {
-void RepostingTask(RefPtr<WebTaskRunner> task_runner,
+void RepostingTask(scoped_refptr<WebTaskRunner> task_runner,
                    int max_count,
                    int* count) {
   if (++(*count) >= max_count)

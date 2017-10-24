@@ -54,7 +54,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
   WebFrameScheduler::FrameType GetFrameType() const override;
-  RefPtr<WebTaskRunner> GetTaskRunner(TaskType) override;
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
   WebViewScheduler* GetWebViewScheduler() override;
   void WillNavigateBackForwardSoon() override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
@@ -77,12 +77,12 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   // TODO(hajimehoshi): Some tests like RendererSchedulerImplTest depends on
   // these functions. These are public or a lot of FORWARD_DECLARE_TEST and
   // FRIEND_TEST_ALL_PREFIXES would be required. Fix the tests not to use these.
-  RefPtr<WebTaskRunner> LoadingTaskRunner();
-  RefPtr<WebTaskRunner> LoadingControlTaskRunner();
-  RefPtr<WebTaskRunner> ThrottleableTaskRunner();
-  RefPtr<WebTaskRunner> DeferrableTaskRunner();
-  RefPtr<WebTaskRunner> PausableTaskRunner();
-  RefPtr<WebTaskRunner> UnpausableTaskRunner();
+  scoped_refptr<WebTaskRunner> LoadingTaskRunner();
+  scoped_refptr<WebTaskRunner> LoadingControlTaskRunner();
+  scoped_refptr<WebTaskRunner> ThrottleableTaskRunner();
+  scoped_refptr<WebTaskRunner> DeferrableTaskRunner();
+  scoped_refptr<WebTaskRunner> PausableTaskRunner();
+  scoped_refptr<WebTaskRunner> UnpausableTaskRunner();
 
  private:
   friend class WebViewSchedulerImpl;
