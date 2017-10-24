@@ -26,8 +26,8 @@
 
 #include "platform/loader/fetch/ResourceResponse.h"
 
-#include "platform/http_names.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/http_names.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"

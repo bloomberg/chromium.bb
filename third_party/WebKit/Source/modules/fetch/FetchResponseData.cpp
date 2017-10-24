@@ -8,8 +8,8 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/http_names.h"
 #include "platform/loader/fetch/FetchUtils.h"
+#include "platform/network/http_names.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 

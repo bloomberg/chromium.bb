@@ -35,8 +35,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"
-#include "platform/http_names.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
+#include "platform/network/http_names.h"
 #include "platform/text/SegmentedString.h"
 #include "platform/weborigin/SecurityPolicy.h"
 

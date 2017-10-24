@@ -4,8 +4,8 @@
 
 #include "modules/fetch/MultipartParser.h"
 
-#include "platform/http_names.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/http_names.h"
 #include "public/platform/Platform.h"
 
 #include <algorithm>

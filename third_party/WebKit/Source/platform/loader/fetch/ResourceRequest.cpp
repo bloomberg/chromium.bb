@@ -27,8 +27,8 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 
 #include <memory>
-#include "platform/http_names.h"
 #include "platform/network/NetworkUtils.h"
+#include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
