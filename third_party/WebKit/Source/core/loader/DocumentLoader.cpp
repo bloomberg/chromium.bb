@@ -999,11 +999,12 @@ bool DocumentLoader::ShouldClearWindowName(
     const LocalFrame& frame,
     SecurityOrigin* previous_security_origin,
     const Document& new_document) {
-  if (!previous_security_origin || !frame.IsMainFrame() ||
-      frame.Loader().Opener() ||
-      (frame.GetPage() && frame.GetPage()->OpenedByDOM())) {
+  if (!previous_security_origin)
     return false;
-  }
+  if (!frame.IsMainFrame())
+    return false;
+  if (frame.Loader().Opener())
+    return false;
 
   return !new_document.GetSecurityOrigin()->IsSameSchemeHostPort(
       previous_security_origin);
@@ -1095,7 +1096,12 @@ void DocumentLoader::InstallNewDocument(
   }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {
-    frame_->Tree().SetName(g_null_atom);
+    // TODO(andypaicu): experimentalSetNullName will just record the fact
+    // that the name would be nulled and if the name is accessed after we will
+    // fire a UseCounter. If we decide to move forward with this change, we'd
+    // actually clean the name here.
+    // frame_->tree().setName(g_null_atom);
+    frame_->Tree().ExperimentalSetNulledName();
   }
 
   if (!overriding_url.IsEmpty())
