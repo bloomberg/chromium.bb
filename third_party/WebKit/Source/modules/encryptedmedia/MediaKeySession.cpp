@@ -248,7 +248,7 @@ class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
     Resolve();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(session_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -294,7 +294,7 @@ class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
     NOTREACHED();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(session_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -322,7 +322,7 @@ class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
     Resolve();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(session_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }

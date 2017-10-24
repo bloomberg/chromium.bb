@@ -49,7 +49,7 @@ class ContentDecryptionModuleResultPromise
   // It is only valid to call this before completion.
   ScriptPromise Promise();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit ContentDecryptionModuleResultPromise(ScriptState*);
