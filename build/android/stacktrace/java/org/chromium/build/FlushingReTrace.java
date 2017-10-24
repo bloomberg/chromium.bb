@@ -21,11 +21,11 @@ import proguard.retrace.ReTrace;
  */
 public class FlushingReTrace {
     // E.g.: D/ConnectivityService(18029): Message
-    // E.g.: W/GCM     (15158): Message
+    // E.g.: W/GCM     ( 151): Message
     // E.g.: 09-08 14:22:59.995 18029 18055 I ProcessStatsService: Message
     // E.g.: 09-08 14:30:59.145 17731 18020 D MDnsDS  : Message
     private static final String LOGCAT_PREFIX =
-            "(?:[VDIWEF]/.*?\\(\\d+\\): |\\d\\d-\\d\\d [0-9:. ]+[VDIWEF] .*?: )?";
+            "(?:[VDIWEF]/.*?\\( *\\d+\\): |\\d\\d-\\d\\d [0-9:. ]+[VDIWEF] .*?: )?";
 
     // Note: Order of these sub-patterns defines their precedence.
     // Note: Deobfuscation of methods without the presense of line numbers basically never works.

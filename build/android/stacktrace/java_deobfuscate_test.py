@@ -17,6 +17,7 @@ LINE_PREFIXES = [
     '09-08 14:38:35.535 18029 18084 E qcom_sensors_hal: ',
     # logcat
     'W/GCM     (15158): ',
+    'W/GCM     (  158): ',
 ]
 
 TEST_MAP = """\
