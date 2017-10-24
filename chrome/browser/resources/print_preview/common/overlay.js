@@ -36,7 +36,7 @@ cr.define('print_preview', function() {
             e.preventDefault();
             this.cancel();
           } else if (e.keyCode == 13) {
-            var activeElementTag = document.activeElement ?
+            const activeElementTag = document.activeElement ?
                 document.activeElement.tagName.toUpperCase() :
                 '';
             if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT') {

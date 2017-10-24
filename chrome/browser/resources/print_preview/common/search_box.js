@@ -96,12 +96,12 @@ cr.define('print_preview', function() {
      */
     dispatchSearchEvent_: function() {
       this.timeout_ = null;
-      var searchEvent = new Event(SearchBox.EventType.SEARCH);
-      var query = this.getQuery_();
+      const searchEvent = new Event(SearchBox.EventType.SEARCH);
+      const query = this.getQuery_();
       searchEvent.query = query;
       if (query) {
         // Generate regexp-safe query by escaping metacharacters.
-        var safeQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        const safeQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
         searchEvent.queryRegExp = new RegExp('(' + safeQuery + ')', 'ig');
       } else {
         searchEvent.queryRegExp = null;
