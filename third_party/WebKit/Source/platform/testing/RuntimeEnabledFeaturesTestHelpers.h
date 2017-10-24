@@ -208,6 +208,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SignatureBasedIntegrityEnabled,
     RuntimeEnabledFeatures::SetSignatureBasedIntegrityEnabled>
     ScopedSignatureBasedIntegrityForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled,
+    RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled>
+    ScopedTimerThrottlingForHiddenFramesForTest;
 }  // namespace blink
 
 #endif  // RuntimeEnabledFeaturesTestHelpers_h
