@@ -13,6 +13,7 @@ import android.os.ResultReceiver;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
+import android.view.accessibility.AccessibilityNodeProvider;
 import android.webkit.JavascriptInterface;
 
 import org.junit.After;
@@ -154,6 +155,40 @@ public class AwContentsGarbageCollectionTest {
             containerViews[i] = null;
         }
         containerViews = null;
+        removeAllViews();
+        gcAndCheckAllAwContentsDestroyed();
+    }
+
+    @Test
+    @DisableHardwareAccelerationForTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testAccessibility() throws Throwable {
+        gcAndCheckAllAwContentsDestroyed();
+
+        TestAwContentsClient client = new TestAwContentsClient();
+        AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
+        AccessibilityNodeProvider providers[] =
+                new AccessibilityNodeProvider[MAX_IDLE_INSTANCES + 1];
+        for (int i = 0; i < containerViews.length; i++) {
+            final AwTestContainerView containerView =
+                    mActivityTestRule.createAwTestContainerViewOnMainSync(client);
+            containerViews[i] = containerView;
+            mActivityTestRule.loadUrlAsync(
+                    containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+            providers[i] = ThreadUtils.runOnUiThreadBlocking(() -> {
+                containerView.getContentViewCore().setAccessibilityState(true);
+                return containerView.getAccessibilityNodeProvider();
+            });
+            Assert.assertNotNull(providers[i]);
+        }
+
+        for (int i = 0; i < containerViews.length; i++) {
+            containerViews[i] = null;
+            providers[i] = null;
+        }
+        containerViews = null;
+        providers = null;
         removeAllViews();
         gcAndCheckAllAwContentsDestroyed();
     }

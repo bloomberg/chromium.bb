@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.ActionMode;
@@ -978,6 +979,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         mSystemCaptioningBridge.addListener(this);
         mImeAdapter.onViewAttachedToWindow();
+        if (mWebContentsAccessibility != null) {
+            mWebContentsAccessibility.onAttachedToWindow();
+        }
     }
 
     /**
@@ -1016,6 +1020,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         // locking and app switching.
         updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
+        if (mWebContentsAccessibility != null) {
+            mWebContentsAccessibility.onDetachedFromWindow();
+        }
     }
 
     /**
@@ -1732,18 +1739,24 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         if (mIsObscuredByAnotherView) return null;
 
-        if (mWebContentsAccessibility != null) {
-            if (mWebContentsAccessibility.isEnabled()) {
-                return mWebContentsAccessibility.getAccessibilityNodeProvider();
+        // If WebContentsAccessibility is null, create it if native a11y is allowed and WebContent
+        // is not null. Else return null.
+        if (mWebContentsAccessibility == null) {
+            if (!mNativeAccessibilityAllowed || mWebContents == null) {
+                return null;
             }
-            mWebContentsAccessibility.enable();
-        } else if (mNativeAccessibilityAllowed) {
-            if (mWebContents == null) return null;
             mWebContentsAccessibility = WebContentsAccessibility.create(mContext, mContainerView,
                     mWebContents, mRenderCoordinates, mShouldSetAccessibilityFocusOnPageLoad);
+        }
+        if (!mWebContentsAccessibility.isEnabled()) {
             mWebContentsAccessibility.enable();
         }
-        return null;
+        // For Lollipop devices, we need to register a broadcast receiver for locale change.
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP
+                && mContainerView.isAttachedToWindow()) {
+            mWebContentsAccessibility.onAttachedToWindow();
+        }
+        return mWebContentsAccessibility.getAccessibilityNodeProvider();
     }
 
     /**
