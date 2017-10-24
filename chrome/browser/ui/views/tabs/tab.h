@@ -102,9 +102,12 @@ class Tab : public gfx::AnimationDelegate,
   void StartPulse();
   void StopPulse();
 
+  // Notifies the tab that its title changed outside of loading.
+  void TabTitleChangedNotLoading();
+
   // Sets the visibility of the indicator shown when the tab needs to indicate
   // to the user that it needs their attention.
-  void SetTabNeedsAttention(bool value);
+  void SetTabNeedsAttention(bool attention);
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
@@ -321,7 +324,12 @@ class Tab : public gfx::AnimationDelegate,
 
   bool should_display_crashed_favicon_;
 
-  bool showing_attention_indicator_ = false;
+  enum AttentionType : int {
+    kPinnedTabTitleChange = 1 << 0,     // The title of a pinned tab changed.
+    kBlockedWebContents = 1 << 1,       // The WebContents is marked as blocked.
+    kTabWantsAttentionStatus = 1 << 2,  // SetTabNeedsAttention() was called.
+  };
+  int current_attention_types_ = 0;
 
   // Whole-tab throbbing "pulse" animation.
   gfx::ThrobAnimation pulse_animation_;

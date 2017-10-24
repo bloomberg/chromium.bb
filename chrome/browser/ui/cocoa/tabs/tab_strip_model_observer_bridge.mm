@@ -124,12 +124,21 @@ void TabStripModelObserverBridge::TabPinnedStateChanged(
   }
 }
 
+void TabStripModelObserverBridge::TabBlockedStateChanged(WebContents* contents,
+                                                         int index) {
+  if ([controller_ respondsToSelector:@selector
+                   (tabBlockedStateChangedWithContents:atIndex:)]) {
+    [controller_ tabBlockedStateChangedWithContents:contents atIndex:index];
+  }
+}
+
 void TabStripModelObserverBridge::TabStripEmpty() {
   if ([controller_ respondsToSelector:@selector(tabStripEmpty)])
     [controller_ tabStripEmpty];
 }
 
-void TabStripModelObserverBridge::TabNeedsAttentionAt(int index) {
-  if ([controller_ respondsToSelector:@selector(tabNeedsAttentionAt:)])
-    [controller_ tabNeedsAttentionAt:index];
+void TabStripModelObserverBridge::SetTabNeedsAttentionAt(int index,
+                                                         bool attention) {
+  if ([controller_ respondsToSelector:@selector(tabAtIndex:needsAttention:)])
+    [controller_ tabAtIndex:index needsAttention:attention];
 }

@@ -153,9 +153,9 @@ class TabStripModelObserver {
   virtual void CloseAllTabsCanceled();
 
   // The specified tab at |index| requires the display of a UI indication to the
-  // user that it needs their attention. The UI indication must be cleared when
-  // the tab is next activated.
-  virtual void TabNeedsAttentionAt(int index);
+  // user that it needs their attention. The UI indication is set iff
+  // |attention| is true.
+  virtual void SetTabNeedsAttentionAt(int index, bool attention);
 
  protected:
   TabStripModelObserver();

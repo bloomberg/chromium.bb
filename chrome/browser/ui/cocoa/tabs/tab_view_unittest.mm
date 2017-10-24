@@ -33,32 +33,14 @@ TEST_VIEW(TabViewTest, view_)
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(TabViewTest, Display) {
   for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 5; j++) {
-      [view_ setHoverAlpha:i*0.2];
-      [view_ setAlertAlpha:j*0.2];
-      [view_ display];
-    }
+    [view_ setHoverAlpha:i * 0.2];
+    [view_ display];
   }
 }
 
 // Test it doesn't crash when asked for its menu with no TabController set.
 TEST_F(TabViewTest, Menu) {
   EXPECT_FALSE([view_ menu]);
-}
-
-TEST_F(TabViewTest, Glow) {
-  // TODO(viettrungluu): Figure out how to test this, which is timing-sensitive
-  // and which moreover uses |-performSelector:withObject:afterDelay:|.
-
-  // Call |-startOnceAlert|/|-cancelAlert| and make sure it doesn't crash.
-  for (int i = 0; i < 5; i++) {
-    [view_ startOnceAlert];
-    [view_ cancelAlert];
-  }
-  [view_ startOnceAlert];
-  [view_ startOnceAlert];
-  [view_ cancelAlert];
-  [view_ cancelAlert];
 }
 
 // Test that clicks outside of the visible boundaries are ignored.

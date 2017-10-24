@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 
+#import <QuartzCore/QuartzCore.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -20,19 +22,13 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "extensions/common/extension.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/native_theme/native_theme.h"
 
-@implementation TabController
-
-@synthesize action = action_;
-@synthesize loadingState = loadingState_;
-@synthesize pinned = pinned_;
-@synthesize target = target_;
-@synthesize url = url_;
-
-namespace TabControllerInternal {
+namespace {
 
 // A C++ delegate that handles enabling/disabling menu items and handling when
 // a menu command is chosen. Also fixes up the menu item label for "pin/unpin
@@ -61,7 +57,42 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   TabController* owner_;  // weak, owns me
 };
 
-}  // TabControllerInternal namespace
+}  // namespace
+
+@interface TabController () {
+  base::scoped_nsobject<SpriteView> iconView_;
+  base::scoped_nsobject<NSImage> icon_;
+  base::scoped_nsobject<NSView> attentionDotView_;
+  base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton_;
+  base::scoped_nsobject<HoverCloseButton> closeButton_;
+
+  BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
+
+  BOOL active_;
+  BOOL selected_;
+  std::unique_ptr<ui::SimpleMenuModel> contextMenuModel_;
+  std::unique_ptr<MenuDelegate> contextMenuDelegate_;
+  base::scoped_nsobject<MenuController> contextMenuController_;
+
+  enum AttentionType : int {
+    kPinnedTabTitleChange = 1 << 0,     // The title of a pinned tab changed.
+    kBlockedWebContents = 1 << 1,       // The WebContents is marked as blocked.
+    kTabWantsAttentionStatus = 1 << 2,  // SetTabNeedsAttention() was called.
+  };
+}
+
+@property(nonatomic) int currentAttentionTypes;  // Bitmask of AttentionType.
+
+@end
+
+@implementation TabController
+
+@synthesize action = action_;
+@synthesize currentAttentionTypes = currentAttentionTypes_;
+@synthesize loadingState = loadingState_;
+@synthesize pinned = pinned_;
+@synthesize target = target_;
+@synthesize url = url_;
 
 namespace {
 static const CGFloat kTabLeadingPadding = 18;
@@ -166,10 +197,13 @@ static const CGFloat kTabElementYOrigin = 6;
   TabView* tabView = [self tabView];
   if ([self active]) {
     [tabView setState:NSOnState];
-    [tabView cancelAlert];
+    self.currentAttentionTypes &= ~AttentionType::kPinnedTabTitleChange;
   } else {
     [tabView setState:selected ? NSMixedState : NSOffState];
   }
+  // The attention indicator must always be updated, as it needs to disappear
+  // if a tab is blocked and is brought forward.
+  [self updateAttentionIndicator];
   [self updateVisibility];
   [self updateTitleColor];
 }
@@ -178,8 +212,7 @@ static const CGFloat kTabElementYOrigin = 6;
 // the menu based off of the cross-platform model. Re-create the menu and
 // model every time to get the correct labels and enabling.
 - (NSMenu*)menu {
-  contextMenuDelegate_.reset(
-      new TabControllerInternal::MenuDelegate(target_, self));
+  contextMenuDelegate_.reset(new MenuDelegate(target_, self));
   contextMenuModel_.reset(
       [target_ contextMenuModelForController:self
                                 menuDelegate:contextMenuDelegate_.get()]);
@@ -234,9 +267,6 @@ static const CGFloat kTabElementYOrigin = 6;
   TabView* tabView = [self tabView];
   [tabView setTitle:title];
 
-  if ([self pinned] && ![self active]) {
-    [tabView startOnceAlert];
-  }
   [super setTitle:title];
 }
 
@@ -270,8 +300,10 @@ static const CGFloat kTabElementYOrigin = 6;
   [iconView_ removeFromSuperview];
   iconView_.reset([iconView retain]);
 
-  if (iconView_)
+  if (iconView_) {
     [[self view] addSubview:iconView_];
+    [self updateAttentionIndicator];
+  }
 }
 
 - (AlertIndicatorButton*)alertIndicatorButton {
@@ -291,8 +323,35 @@ static const CGFloat kTabElementYOrigin = 6;
   [alertIndicatorButton_ transitionToAlertState:alertState];
 }
 
-- (void)setNeedsAttention {
-  [[self tabView] startInfiniteAlert];
+- (BOOL)blocked {
+  return self.currentAttentionTypes & AttentionType::kBlockedWebContents ? YES
+                                                                         : NO;
+}
+
+- (void)setBlocked:(BOOL)blocked {
+  if (blocked)
+    self.currentAttentionTypes |= AttentionType::kBlockedWebContents;
+  else
+    self.currentAttentionTypes &= ~AttentionType::kBlockedWebContents;
+}
+
+- (void)titleChangedNotLoading {
+  if ([self pinned] && ![self active])
+    self.currentAttentionTypes |= AttentionType::kPinnedTabTitleChange;
+}
+
+- (void)setNeedsAttention:(bool)attention {
+  if (attention)
+    self.currentAttentionTypes |= AttentionType::kTabWantsAttentionStatus;
+  else
+    self.currentAttentionTypes &= ~AttentionType::kTabWantsAttentionStatus;
+}
+
+- (void)setCurrentAttentionTypes:(int)attentionTypes {
+  if (currentAttentionTypes_ == attentionTypes)
+    return;
+  currentAttentionTypes_ = attentionTypes;
+  [self updateAttentionIndicator];
 }
 
 - (HoverCloseButton*)closeButton {
@@ -379,6 +438,73 @@ static const CGFloat kTabElementYOrigin = 6;
                                     gfx::kFaviconSize, gfx::kFaviconSize);
       [iconView_ setFrame:iconFrame];
     }
+  }
+}
+
+- (void)updateAttentionIndicator {
+  // Don't show the attention indicator for blocked WebContentses if the tab is
+  // active; it's distracting.
+  int actualAttentionTypes = self.currentAttentionTypes;
+  if ([self active])
+    actualAttentionTypes &= ~AttentionType::kBlockedWebContents;
+
+  if (actualAttentionTypes != 0) {
+    // The attention indicator consists of two parts:
+    // . a wedge cut out of the bottom right (or left in rtl) of the favicon.
+    // . a circle in the bottom right (or left in rtl) of the favicon.
+    //
+    // The favicon lives in a view to itself, a view which is too small to
+    // contain the dot (the second part of the indicator), so the dot is added
+    // as a separate subview.
+    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+    CGRect iconViewBounds = iconView_.get().layer.bounds;
+    CGPoint indicatorCenter = CGPointMake(
+        isRTL ? CGRectGetMinX(iconViewBounds) : CGRectGetMaxX(iconViewBounds),
+        CGRectGetMinY(iconViewBounds));
+
+    const CGFloat kIndicatorCropRadius = 4.5;
+    CGRect cropCircleBounds = CGRectZero;
+    cropCircleBounds.origin = indicatorCenter;
+    cropCircleBounds = CGRectInset(cropCircleBounds, -kIndicatorCropRadius,
+                                   -kIndicatorCropRadius);
+
+    base::ScopedCFTypeRef<CGMutablePathRef> maskPath(CGPathCreateMutable());
+    CGPathAddRect(maskPath, nil, iconViewBounds);
+    CGPathAddEllipseInRect(maskPath, nil, cropCircleBounds);
+
+    CAShapeLayer* maskLayer = [CAShapeLayer layer];
+    maskLayer.frame = iconViewBounds;
+    maskLayer.path = maskPath.get();
+    maskLayer.fillRule = kCAFillRuleEvenOdd;
+    iconView_.get().layer.mask = maskLayer;
+
+    if (!attentionDotView_) {
+      NSRect iconViewFrame = [iconView_ frame];
+      NSPoint indicatorCenter =
+          NSMakePoint(isRTL ? NSMinX(iconViewFrame) : NSMaxX(iconViewFrame),
+                      NSMinY(iconViewFrame));
+
+      const float kIndicatorRadius = 3.0f;
+      NSRect indicatorCircleFrame = NSZeroRect;
+      indicatorCircleFrame.origin = indicatorCenter;
+      indicatorCircleFrame = NSInsetRect(indicatorCircleFrame,
+                                         -kIndicatorRadius, -kIndicatorRadius);
+      attentionDotView_.reset(
+          [[NSView alloc] initWithFrame:indicatorCircleFrame]);
+      attentionDotView_.get().wantsLayer = YES;
+      SkColor indicatorColor =
+          ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+              ui::NativeTheme::kColorId_ProminentButtonColor);
+      attentionDotView_.get().layer.backgroundColor =
+          skia::SkColorToSRGBNSColor(indicatorColor).CGColor;
+      attentionDotView_.get().layer.cornerRadius = kIndicatorRadius;
+
+      [[self view] addSubview:attentionDotView_];
+    }
+  } else {
+    iconView_.get().layer.mask = nil;
+    [attentionDotView_ removeFromSuperview];
+    attentionDotView_.reset();
   }
 }
 

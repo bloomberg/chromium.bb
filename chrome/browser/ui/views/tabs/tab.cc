@@ -512,9 +512,10 @@ bool Tab::IsActive() const {
 }
 
 void Tab::ActiveStateChanged() {
-  // The attention indicator is only shown for inactive tabs. When transitioning
-  // between active and inactive always reset the state to enforce that.
-  SetTabNeedsAttention(false);
+  // Cancel the pinned tab title change attention indicator when a tab becomes
+  // activated.
+  if (IsActive())
+    current_attention_types_ &= ~AttentionType::kPinnedTabTitleChange;
   OnButtonColorMaybeChanged();
   alert_indicator_button_->UpdateEnabledForMuteToggle();
   Layout();
@@ -585,11 +586,16 @@ void Tab::StopPulse() {
   pulse_animation_.Stop();
 }
 
-void Tab::SetTabNeedsAttention(bool value) {
-  if (value == showing_attention_indicator_)
-    return;
+void Tab::TabTitleChangedNotLoading() {
+  current_attention_types_ |= AttentionType::kPinnedTabTitleChange;
+  SchedulePaint();
+}
 
-  showing_attention_indicator_ = value;
+void Tab::SetTabNeedsAttention(bool attention) {
+  if (attention)
+    current_attention_types_ |= AttentionType::kTabWantsAttentionStatus;
+  else
+    current_attention_types_ &= ~AttentionType::kTabWantsAttentionStatus;
   SchedulePaint();
 }
 
@@ -1055,9 +1061,9 @@ void Tab::DataChanged(const TabRendererData& old) {
     return;
 
   if (data().blocked)
-    StartPulse();
+    current_attention_types_ |= AttentionType::kBlockedWebContents;
   else
-    StopPulse();
+    current_attention_types_ &= ~AttentionType::kBlockedWebContents;
 }
 
 void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
@@ -1311,7 +1317,13 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     }
   }
 
-  if (showing_attention_indicator_ && !should_display_crashed_favicon_) {
+  // Don't show the attention indicator for blocked WebContentses if the tab is
+  // active; it's distracting.
+  int actual_attention_types = current_attention_types_;
+  if (IsActive())
+    actual_attention_types &= ~AttentionType::kBlockedWebContents;
+
+  if (actual_attention_types != 0 && !should_display_crashed_favicon_) {
     PaintAttentionIndicatorAndIcon(canvas, bounds);
   } else if (!favicon_.isNull()) {
     canvas->DrawImageInt(favicon_, 0, 0, bounds.width(), bounds.height(),

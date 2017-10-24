@@ -131,7 +131,7 @@ class TabStrip : public views::View,
   void TabTitleChangedNotLoading(int model_index);
 
   // Invoked when a tab needs to show UI that it needs the user's attention.
-  void SetTabNeedsAttention(int model_index);
+  void SetTabNeedsAttention(int model_index, bool attention);
 
   // Retrieves the ideal bounds for the Tab at the specified index.
   const gfx::Rect& ideal_bounds(int tab_data_index) {

@@ -47,10 +47,6 @@ bool IsTabStripKeyboardFocusEnabled() {
 const NSTimeInterval kHoverShowDuration = 0.2;
 const NSTimeInterval kHoverHoldDuration = 0.02;
 const NSTimeInterval kHoverHideDuration = 0.4;
-const NSTimeInterval kAlertShowDuration = 0.4;
-const NSTimeInterval kAlertHoldDuration = 0.4;
-const NSTimeInterval kAlertHideDuration = 0.4;
-const NSTimeInterval kAlertOffDuration = 0.4;
 
 // The default time interval in seconds between glow updates (when
 // increasing/decreasing).
@@ -213,7 +209,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 @synthesize state = state_;
 @synthesize hoverAlpha = hoverAlpha_;
-@synthesize alertAlpha = alertAlpha_;
 @synthesize closing = closing_;
 
 + (CGFloat)maskImageFillHeight {
@@ -497,14 +492,11 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
 
   CGFloat hoverAlpha = [self hoverAlpha];
-  CGFloat alertAlpha = [self alertAlpha];
-  if (hoverAlpha > 0 || alertAlpha > 0) {
+  if (hoverAlpha > 0) {
     CGContextBeginTransparencyLayer(cgContext, 0);
 
-    // The alert glow overlay is like the selected state but at most 80%
-    // opaque. The hover glow brings up the overlay's opacity at most 50%.
-    CGFloat backgroundAlpha = 0.8 * alertAlpha;
-    backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
+    // The hover glow brings up the overlay's opacity at most 50%.
+    CGFloat backgroundAlpha = 0.5 * hoverAlpha;
     CGContextSetAlpha(cgContext, backgroundAlpha);
 
     [[self backgroundColorForSelected:YES] set];
@@ -720,44 +712,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   }
 }
 
-- (void)startOnceAlert {
-  // Do not start a new once-alert to interrupt another once-alert or an
-  // infinite-alert.
-  if (alertState_ == tabs::kAlertNone) {
-    isInfiniteAlert_ = NO;
-    alertState_ = tabs::kAlertRising;
-    [self resetLastGlowUpdateTime];
-    [self adjustGlowValue];
-  }
-}
-
-- (void)startInfiniteAlert {
-  // Allow turning a once-alert into an infinite-alert.
-  if (alertState_ == tabs::kAlertNone || !isInfiniteAlert_) {
-    if (alertState_ == tabs::kAlertNone) {
-      // No existing alert; start one.
-      isInfiniteAlert_ = YES;
-      alertState_ = tabs::kAlertRising;
-    } else {
-      // Upgrade an existing once-alert; leave the current cycle state alone.
-      isInfiniteAlert_ = YES;
-    }
-    [self resetLastGlowUpdateTime];
-    [self adjustGlowValue];
-  }
-}
-
-- (void)cancelAlert {
-  if (alertState_ != tabs::kAlertNone) {
-    isInfiniteAlert_ = NO;
-    alertState_ = tabs::kAlertFalling;
-    alertHoldEndTime_ =
-        [NSDate timeIntervalSinceReferenceDate] + kGlowUpdateInterval;
-    [self resetLastGlowUpdateTime];
-    [self adjustGlowValue];
-  }
-}
-
 - (int)widthOfLargestSelectableRegion {
   // Assume the entire region to the left of the alert indicator and/or close
   // buttons is available for click-to-select.  If neither are visible, the
@@ -918,65 +872,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     } else {
       // Schedule update for end of hold time.
       nextUpdate = MIN(hoverHoldEndTime_ - currentTime, nextUpdate);
-    }
-  }
-
-  CGFloat alertAlpha = [self alertAlpha];
-  switch (alertState_) {
-    case tabs::kAlertNone: {
-      break;
-    }
-    case tabs::kAlertRising: {
-      // Increase alert glow until it's 1 ...
-      alertAlpha = MIN(alertAlpha + elapsed / kAlertShowDuration, 1);
-      [self setAlertAlpha:alertAlpha];
-
-      // ... and having reached 1, switch to holding.
-      if (alertAlpha >= 1) {
-        alertState_ = tabs::kAlertHolding;
-        alertHoldEndTime_ = currentTime + kAlertHoldDuration;
-        nextUpdate = MIN(kAlertHoldDuration, nextUpdate);
-      } else {
-        nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
-      }
-      break;
-    }
-    case tabs::kAlertHolding: {
-      if (currentTime >= alertHoldEndTime_) {
-        alertState_ = tabs::kAlertFalling;
-        nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
-      } else {
-        nextUpdate = MIN(alertHoldEndTime_ - currentTime, nextUpdate);
-      }
-      break;
-    }
-    case tabs::kAlertFalling: {
-      // Decrease alert glow until it's 0 ...
-      alertAlpha = MAX(alertAlpha - elapsed / kAlertHideDuration, 0);
-      [self setAlertAlpha:alertAlpha];
-
-      // ... and having reached 0, switch to either off or stop alerting.
-      if (alertAlpha <= 0) {
-        if (isInfiniteAlert_) {
-          alertState_ = tabs::kAlertOff;
-          alertHoldEndTime_ = currentTime + kAlertOffDuration;
-          nextUpdate = MIN(kAlertOffDuration, nextUpdate);
-        } else {
-          alertState_ = tabs::kAlertNone;
-        }
-      } else {
-        nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
-      }
-      break;
-    }
-    case tabs::kAlertOff: {
-      if (currentTime >= alertHoldEndTime_) {
-        alertState_ = tabs::kAlertRising;
-        nextUpdate = MIN(kGlowUpdateInterval, nextUpdate);
-      } else {
-        nextUpdate = MIN(alertHoldEndTime_ - currentTime, nextUpdate);
-      }
-      break;
     }
   }
 
