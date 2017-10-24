@@ -38,8 +38,6 @@ class DefaultVideoPlane : public VideoPlane {
 DefaultVideoPlane* g_video_plane = nullptr;
 base::ThreadTaskRunnerHandle* g_thread_task_runner_handle = nullptr;
 
-base::AtExitManager g_at_exit_manager;
-
 }  // namespace
 
 void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
