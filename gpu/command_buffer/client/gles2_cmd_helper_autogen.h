@@ -2610,17 +2610,6 @@ void ProduceTextureDirectCHROMIUMImmediate(GLuint texture,
   }
 }
 
-void ConsumeTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
-  const uint32_t size =
-      gles2::cmds::ConsumeTextureCHROMIUMImmediate::ComputeSize();
-  gles2::cmds::ConsumeTextureCHROMIUMImmediate* c =
-      GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::ConsumeTextureCHROMIUMImmediate>(size);
-  if (c) {
-    c->Init(target, mailbox);
-  }
-}
-
 void CreateAndConsumeTextureINTERNALImmediate(GLenum target,
                                               GLuint texture,
                                               const GLbyte* mailbox) {

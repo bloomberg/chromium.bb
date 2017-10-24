@@ -357,11 +357,6 @@ void TestGLES2Interface::ProduceTextureDirectCHROMIUM(GLuint texture,
   test_context_->produceTextureDirectCHROMIUM(texture, target, mailbox);
 }
 
-void TestGLES2Interface::ConsumeTextureCHROMIUM(GLenum target,
-                                                const GLbyte* mailbox) {
-  test_context_->consumeTextureCHROMIUM(target, mailbox);
-}
-
 GLuint TestGLES2Interface::CreateAndConsumeTextureCHROMIUM(
     GLenum target,
     const GLbyte* mailbox) {

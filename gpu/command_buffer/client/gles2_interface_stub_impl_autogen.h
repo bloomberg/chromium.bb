@@ -954,8 +954,6 @@ void GLES2InterfaceStub::ProduceTextureDirectCHROMIUM(
     GLuint /* texture */,
     GLenum /* target */,
     const GLbyte* /* mailbox */) {}
-void GLES2InterfaceStub::ConsumeTextureCHROMIUM(GLenum /* target */,
-                                                const GLbyte* /* mailbox */) {}
 GLuint GLES2InterfaceStub::CreateAndConsumeTextureCHROMIUM(
     GLenum /* target */,
     const GLbyte* /* mailbox */) {

@@ -807,8 +807,6 @@ error::Error DoProduceTextureCHROMIUM(GLenum target,
 error::Error DoProduceTextureDirectCHROMIUM(GLuint texture_client_id,
                                             GLenum target,
                                             const volatile GLbyte* mailbox);
-error::Error DoConsumeTextureCHROMIUM(GLenum target,
-                                      const volatile GLbyte* mailbox);
 error::Error DoCreateAndConsumeTextureINTERNAL(GLenum target,
                                                GLuint texture_client_id,
                                                const volatile GLbyte* mailbox);

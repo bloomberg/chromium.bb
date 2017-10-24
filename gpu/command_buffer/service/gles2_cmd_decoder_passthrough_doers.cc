@@ -3913,50 +3913,6 @@ error::Error GLES2DecoderPassthroughImpl::DoProduceTextureDirectCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoConsumeTextureCHROMIUM(
-    GLenum target,
-    const volatile GLbyte* mailbox) {
-  auto bound_textures_iter = bound_textures_.find(target);
-  if (bound_textures_iter == bound_textures_.end()) {
-    InsertError(GL_INVALID_OPERATION, "Invalid texture target.");
-    return error::kNoError;
-  }
-
-  const BoundTexture& current_texture =
-      bound_textures_iter->second[active_texture_unit_];
-  if (current_texture.client_id == 0) {
-    InsertError(GL_INVALID_OPERATION, "Unknown texture for target.");
-    return error::kNoError;
-  }
-
-  const Mailbox& mb = Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  scoped_refptr<TexturePassthrough> texture = static_cast<TexturePassthrough*>(
-      group_->mailbox_manager()->ConsumeTexture(mb));
-  if (texture == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "Invalid mailbox name.");
-    return error::kNoError;
-  }
-
-  if (texture->target() != target) {
-    InsertError(GL_INVALID_OPERATION, "Texture target does not match.");
-    return error::kNoError;
-  }
-
-  // Update id mappings
-  resources_->texture_id_map.RemoveClientID(current_texture.client_id);
-  resources_->texture_id_map.SetIDMapping(current_texture.client_id,
-                                          texture->service_id());
-  resources_->texture_object_map.erase(current_texture.client_id);
-  resources_->texture_object_map.insert(
-      std::make_pair(current_texture.client_id, texture));
-
-  // Bind the service id that now represents this texture
-  UpdateTextureBinding(target, current_texture.client_id, texture.get());
-
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLenum target,
     GLuint texture_client_id,

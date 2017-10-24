@@ -1400,10 +1400,6 @@ void GL_APIENTRY GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
                                                    const GLbyte* mailbox) {
   gles2::GetGLContext()->ProduceTextureDirectCHROMIUM(texture, target, mailbox);
 }
-void GL_APIENTRY GLES2ConsumeTextureCHROMIUM(GLenum target,
-                                             const GLbyte* mailbox) {
-  gles2::GetGLContext()->ConsumeTextureCHROMIUM(target, mailbox);
-}
 GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(GLenum target,
                                                         const GLbyte* mailbox) {
   return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(target,
@@ -2857,10 +2853,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glProduceTextureDirectCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glProduceTextureDirectCHROMIUM),
-    },
-    {
-        "glConsumeTextureCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glConsumeTextureCHROMIUM),
     },
     {
         "glCreateAndConsumeTextureCHROMIUM",

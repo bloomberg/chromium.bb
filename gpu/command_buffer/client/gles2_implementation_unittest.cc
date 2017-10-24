@@ -3717,19 +3717,6 @@ TEST_F(GLES2ImplementationTest, Enable) {
   EXPECT_TRUE(NoCommandsWritten());
 }
 
-TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
-  struct Cmds {
-    cmds::ConsumeTextureCHROMIUMImmediate cmd;
-    GLbyte data[GL_MAILBOX_SIZE_CHROMIUM];
-  };
-
-  Mailbox mailbox = Mailbox::Generate();
-  Cmds expected;
-  expected.cmd.Init(GL_TEXTURE_2D, mailbox.name);
-  gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, CreateAndConsumeTextureCHROMIUM) {
   struct Cmds {
     cmds::CreateAndConsumeTextureINTERNALImmediate cmd;

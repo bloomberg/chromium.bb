@@ -3945,31 +3945,6 @@ GLES2DecoderPassthroughImpl::HandleProduceTextureDirectCHROMIUMImmediate(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleConsumeTextureCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::ConsumeTextureCHROMIUMImmediate& c = *static_cast<
-      const volatile gles2::cmds::ConsumeTextureCHROMIUMImmediate*>(cmd_data);
-  GLenum target = static_cast<GLenum>(c.target);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
-    return error::kOutOfBounds;
-  }
-  if (data_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
-      c, data_size, immediate_data_size);
-  if (mailbox == nullptr) {
-    return error::kOutOfBounds;
-  }
-  error::Error error = DoConsumeTextureCHROMIUM(target, mailbox);
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
-}
-
 error::Error
 GLES2DecoderPassthroughImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
     uint32_t immediate_data_size,

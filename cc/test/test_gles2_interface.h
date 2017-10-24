@@ -147,7 +147,6 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void ProduceTextureDirectCHROMIUM(GLuint texture,
                                     GLenum target,
                                     const GLbyte* mailbox) override;
-  void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override;
   GLuint CreateAndConsumeTextureCHROMIUM(GLenum target,
                                          const GLbyte* mailbox) override;
 

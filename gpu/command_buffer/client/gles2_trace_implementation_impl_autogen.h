@@ -2027,12 +2027,6 @@ void GLES2TraceImplementation::ProduceTextureDirectCHROMIUM(
   gl_->ProduceTextureDirectCHROMIUM(texture, target, mailbox);
 }
 
-void GLES2TraceImplementation::ConsumeTextureCHROMIUM(GLenum target,
-                                                      const GLbyte* mailbox) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ConsumeTextureCHROMIUM");
-  gl_->ConsumeTextureCHROMIUM(target, mailbox);
-}
-
 GLuint GLES2TraceImplementation::CreateAndConsumeTextureCHROMIUM(
     GLenum target,
     const GLbyte* mailbox) {
