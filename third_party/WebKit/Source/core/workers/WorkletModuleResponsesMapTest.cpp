@@ -57,7 +57,7 @@ class WorkletModuleResponsesMapTest : public ::testing::Test {
   void SetUp() override {
     platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
     dummy_page_holder_ = DummyPageHolder::Create();
-    auto context =
+    auto* context =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
     fetcher_ = ResourceFetcher::Create(context);
     map_ = new WorkletModuleResponsesMap(fetcher_);

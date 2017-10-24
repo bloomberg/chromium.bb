@@ -33,7 +33,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    auto global_scope = new DedicatedWorkerGlobalScope(
+    auto* global_scope = new DedicatedWorkerGlobalScope(
         std::move(creation_params), this, time_origin_);
     // Initializing a global scope with a dummy creation params may emit warning
     // messages (e.g., invalid CSP directives). Clear them here for tests that
@@ -145,7 +145,7 @@ class DedicatedWorkerMessagingProxyForTest
     return static_cast<DedicatedWorkerThreadForTest*>(GetWorkerThread());
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(mock_worker_thread_lifecycle_observer_);
     DedicatedWorkerMessagingProxy::Trace(visitor);
   }

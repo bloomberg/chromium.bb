@@ -44,7 +44,7 @@ class CORE_EXPORT ParentFrameTaskRunners final
   // any threads.
   scoped_refptr<WebTaskRunner> Get(TaskType);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   using TaskRunnerHashMap = HashMap<TaskType,

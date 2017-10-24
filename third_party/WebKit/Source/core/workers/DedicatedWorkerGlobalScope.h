@@ -68,7 +68,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;

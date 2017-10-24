@@ -60,7 +60,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
     return *worker_object_proxy_.get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class DedicatedWorkerMessagingProxyForTest;
