@@ -34,8 +34,8 @@ config("freetype_config") {
     defines += [ "WITHOUT_HARFBUZZ" ]
   }
 
-  if (is_mac && !is_component_build) {
-    defines += [ "MAC_RESTRICT_VISIBILITY" ]
+  if (!is_component_build) {
+    defines += [ "CHROMIUM_RESTRICT_VISIBILITY" ]
   }
 }
 

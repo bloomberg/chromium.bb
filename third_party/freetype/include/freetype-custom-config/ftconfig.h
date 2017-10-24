@@ -450,7 +450,7 @@ FT_BEGIN_HEADER
 #endif
 
 #else
-#if !defined(MAC_RESTRICT_VISIBILITY)
+#if !defined(CHROMIUM_RESTRICT_VISIBILITY)
 #define FT_EXPORT(x)     __attribute__((visibility ("default"))) x
 #define FT_EXPORT_DEF(x) __attribute__((visibility ("default"))) x
 #else
