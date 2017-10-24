@@ -56,7 +56,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   ~ThreadedWorkletThreadForTest() override {}
 
   WorkerBackingThread& GetWorkerBackingThread() override {
-    auto worklet_thread_holder =
+    auto* worklet_thread_holder =
         WorkletThreadHolder<ThreadedWorkletThreadForTest>::GetInstance();
     DCHECK(worklet_thread_holder);
     return *worklet_thread_holder->GetThread();

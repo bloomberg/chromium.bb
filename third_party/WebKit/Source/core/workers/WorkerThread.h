@@ -84,7 +84,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     kLastEnum,
   };
 
-  virtual ~WorkerThread();
+  ~WorkerThread() override;
 
   // Starts the underlying thread and creates the global scope. Called on the
   // main thread.

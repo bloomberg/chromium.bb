@@ -107,8 +107,8 @@ class CORE_EXPORT WorkletGlobalScope
     return document_security_origin_.get();
   }
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   // Partial implementation of the "set up a worklet environment settings

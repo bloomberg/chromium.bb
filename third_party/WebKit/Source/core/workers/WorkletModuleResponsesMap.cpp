@@ -82,7 +82,7 @@ class WorkletModuleResponsesMap::Entry final
     module_fetcher_.Clear();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(module_fetcher_);
     visitor->Trace(clients_);
   }

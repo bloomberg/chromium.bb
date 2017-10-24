@@ -24,7 +24,7 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
   void AddConsoleMessage(ConsoleMessage*) final;
   void ExceptionThrown(ErrorEvent*) final;
 
-  WorkerThread* GetThread() const { return thread_; }
+  WorkerThread* GetThread() const override { return thread_; }
 
  protected:
   ThreadedWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

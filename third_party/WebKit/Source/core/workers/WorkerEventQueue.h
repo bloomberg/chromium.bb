@@ -39,7 +39,7 @@ class WorkerEventQueue final : public EventQueue {
  public:
   static WorkerEventQueue* Create(WorkerGlobalScope*);
   ~WorkerEventQueue() override;
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // EventQueue
   bool EnqueueEvent(const WebTraceLocation&, Event*) override;

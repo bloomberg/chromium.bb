@@ -47,7 +47,7 @@ class ClientAdapter final : public GarbageCollectedFinalized<ClientAdapter>,
         CrossThreadBind(&WorkletModuleResponsesMap::Client::OnFailed, client_));
   }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
  private:
   ClientAdapter(WorkletModuleResponsesMap::Client* client,
