@@ -72,16 +72,13 @@ void TabletModeWindowManager::AddWindow(aura::Window* window) {
 }
 
 void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
-  // We come here because the tablet window state object was destroyed. It was
-  // destroyed either because ForgetWindow() was called, or because its
-  // associated window was destroyed. In both cases, the window must has removed
-  // TabletModeWindowManager as an observer.
+  // At this time ForgetWindow() should already have been called. If not,
+  // someone else must have replaced the "window manager's state object".
   DCHECK(!window->HasObserver(this));
 
-  // The window state object might have been removed in OnWindowDestroying().
   auto it = window_state_map_.find(window);
-  if (it != window_state_map_.end())
-    window_state_map_.erase(it);
+  DCHECK(it != window_state_map_.end());
+  window_state_map_.erase(it);
 }
 
 void TabletModeWindowManager::OnOverviewModeStarting() {
@@ -117,7 +114,7 @@ void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
   } else {
     // If a known window gets destroyed we need to remove all knowledge about
     // it.
-    ForgetWindow(window, true /* destroyed */);
+    ForgetWindow(window);
   }
 }
 
@@ -152,7 +149,7 @@ void TabletModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
   // Stop managing |window| if the always-on-top property is added.
   if (key == aura::client::kAlwaysOnTopKey &&
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
-    ForgetWindow(window, false /* destroyed */);
+    ForgetWindow(window);
   }
 }
 
@@ -254,7 +251,7 @@ void TabletModeWindowManager::MaximizeAllWindows() {
 
 void TabletModeWindowManager::RestoreAllWindows() {
   while (window_state_map_.size())
-    ForgetWindow(window_state_map_.begin()->first, false /* destroyed */);
+    ForgetWindow(window_state_map_.begin()->first);
 }
 
 void TabletModeWindowManager::SetDeferBoundsUpdates(aura::Window* window,
@@ -276,31 +273,21 @@ void TabletModeWindowManager::MaximizeAndTrackWindow(aura::Window* window) {
   window_state_map_[window] = new TabletModeWindowState(window, this);
 }
 
-void TabletModeWindowManager::ForgetWindow(aura::Window* window,
-                                           bool destroyed) {
+void TabletModeWindowManager::ForgetWindow(aura::Window* window) {
   added_windows_.erase(window);
   window->RemoveObserver(this);
 
   WindowToState::iterator it = window_state_map_.find(window);
   // A window may not be registered yet if the observer was
   // registered in OnWindowHierarchyChanged.
-  if (it == window_state_map_.end())
+  if (it == window_state_map_.end()) {
     return;
-
-  if (destroyed) {
-    // If the window is to-be-destroyed, remove it from |window_state_map_|
-    // immidietely. Otherwise it's possible to send a WMEvent to the to-be-
-    // destroyed window.  Note we should not restore its old previous window
-    // state object here since it will send unnecessary window state change
-    // events. The tablet window state object and the old window state object
-    // will be both deleted when the window is destroyed.
-    window_state_map_.erase(it);
-  } else {
-    // By telling the state object to revert, it will switch back the old
-    // State object and destroy itself, calling WindowStateDestroyed().
-    it->second->LeaveTabletMode(wm::GetWindowState(it->first));
-    DCHECK(!base::ContainsKey(window_state_map_, window));
   }
+
+  // By telling the state object to revert, it will switch back the old
+  // State object and destroy itself, calling WindowStateDestroyed().
+  it->second->LeaveTabletMode(wm::GetWindowState(it->first));
+  DCHECK(!base::ContainsKey(window_state_map_, window));
 }
 
 bool TabletModeWindowManager::ShouldHandleWindow(aura::Window* window) {
