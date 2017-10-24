@@ -25,7 +25,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/crl_set_component_installer.h"
+#include "components/component_updater/crl_set_remover.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -217,10 +217,9 @@ void RegisterComponentsForUpdate() {
   base::FilePath path;
   const bool success = PathService::Get(ios::DIR_USER_DATA, &path);
   DCHECK(success);
-  // CRLSetFetcher attempts to load a CRL set from either the local disk or
-  // network.
+  // Clean up any legacy CRLSet on the local disk - CRLSet used to be shipped
+  // as a component on iOS but is not anymore.
   component_updater::DeleteLegacyCRLSet(path);
-  component_updater::RegisterCRLSetComponent(cus, path);
 }
 
 // Used to update the current BVC mode if a new tab is added while the stack

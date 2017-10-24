@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/component_updater/crl_set_component_installer.h"
+#include "chrome/browser/component_updater/crl_set_component_installer.h"
 
 #include <memory>
 #include <string>
@@ -131,15 +131,6 @@ void RegisterCRLSetComponent(ComponentUpdateService* cus,
   ComponentInstaller* installer =
       new ComponentInstaller(base::MakeUnique<CRLSetPolicy>());
   installer->Register(cus, base::Closure());
-}
-
-void DeleteLegacyCRLSet(const base::FilePath& user_data_dir) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                     user_data_dir.Append(
-                         FILE_PATH_LITERAL("Certificate Revocation Lists")),
-                     false));
 }
 
 }  // namespace component_updater
