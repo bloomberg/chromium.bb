@@ -82,7 +82,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   Bluetooth* GetBluetooth() { return bluetooth_; }
 
   // Interface required by Garbage Collection:
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // IDL exposed interface:
   String id() { return device_->id; }

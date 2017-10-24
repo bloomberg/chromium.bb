@@ -69,10 +69,10 @@ class BluetoothRemoteGATTCharacteristic final
 
   // EventTarget methods:
   const AtomicString& InterfaceName() const override;
-  ExecutionContext* GetExecutionContext() const;
+  ExecutionContext* GetExecutionContext() const override;
 
   // Interface required by garbage collection.
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // IDL exposed interface:
   BluetoothRemoteGATTService* service() { return service_; }
