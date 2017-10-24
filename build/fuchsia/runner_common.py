@@ -199,7 +199,8 @@ class BootfsData(object):
 
 
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
-                bootdata, summary_output, power_off, target_cpu, use_device):
+                bootdata, summary_output, shutdown_machine, target_cpu,
+                use_device):
   # |runtime_deps| already contains (target, source) pairs for the runtime deps,
   # so we can initialize |file_mapping| from it directly.
   file_mapping = dict(runtime_deps)
@@ -233,13 +234,18 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
   autorun_file.write('\n')
   autorun_file.write('echo \"%s\"\n' % ALL_DONE_MESSAGE)
 
-  if power_off:
+  if shutdown_machine:
     autorun_file.write('echo Sleeping and shutting down...\n')
 
     # A delay is required to give the guest OS or remote device a chance to
     # flush its output before it terminates.
-    autorun_file.write('msleep %d\n' % (8000 if use_device else 3000))
-    autorun_file.write('dm poweroff\n')
+    if use_device:
+      autorun_file.write('msleep 8000\n')
+      autorun_file.write('dm reboot\n')
+    else:
+      autorun_file.write('msleep 3000\n')
+      autorun_file.write('dm poweroff\n')
+
 
   autorun_file.flush()
   os.chmod(autorun_file.name, 0750)
