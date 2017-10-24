@@ -24,8 +24,6 @@ Number of unique symbols 47 -> 47 (+0)
 0 paths added, 0 removed, 0 changed
 
 Showing 0 symbols (aliases not grouped for diffs) with total pss: 0 bytes
-Histogram of symbols based on PSS:
-    {0}: 49
 .text=0 bytes    .rodata=0 bytes    .data.rel.ro=0 bytes    .data=0 bytes    .bss=0 bytes    total=0 bytes
 Number of unique paths: 0
 
