@@ -46,7 +46,7 @@ class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
 
 class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
  public:
-  explicit BaseTaskRunner(RefPtr<Data> data) : data_(std::move(data)) {}
+  explicit BaseTaskRunner(scoped_refptr<Data> data) : data_(std::move(data)) {}
 
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
@@ -65,7 +65,7 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
   bool RunsTasksInCurrentSequence() const { return true; }
 
  private:
-  RefPtr<Data> data_;
+  scoped_refptr<Data> data_;
 };
 
 FakeWebTaskRunner::FakeWebTaskRunner()
@@ -73,7 +73,7 @@ FakeWebTaskRunner::FakeWebTaskRunner()
       base_task_runner_(new BaseTaskRunner(data_)) {}
 
 FakeWebTaskRunner::FakeWebTaskRunner(
-    RefPtr<Data> data,
+    scoped_refptr<Data> data,
     scoped_refptr<BaseTaskRunner> base_task_runner)
     : data_(std::move(data)), base_task_runner_(std::move(base_task_runner)) {}
 

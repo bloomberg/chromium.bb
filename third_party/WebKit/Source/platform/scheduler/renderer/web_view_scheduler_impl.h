@@ -131,7 +131,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl
   WebScheduler::InterventionReporter* intervention_reporter_;  // Not owned.
   RendererSchedulerImpl* renderer_scheduler_;
   VirtualTimePolicy virtual_time_policy_;
-  RefPtr<WebTaskRunnerImpl> virtual_time_control_task_queue_;
+  scoped_refptr<WebTaskRunnerImpl> virtual_time_control_task_queue_;
   TaskHandle virtual_time_budget_expired_task_handle_;
   int background_parser_count_;
 

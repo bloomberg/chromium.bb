@@ -28,7 +28,7 @@ void WorkerGlobalScopeScheduler::Dispose() {
 #endif
 }
 
-RefPtr<WebTaskRunner> WorkerGlobalScopeScheduler::GetTaskRunner(
+scoped_refptr<WebTaskRunner> WorkerGlobalScopeScheduler::GetTaskRunner(
     TaskType type) const {
   switch (type) {
     case TaskType::kDOMManipulation:

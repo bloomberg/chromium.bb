@@ -31,13 +31,13 @@ class PLATFORM_EXPORT WorkerGlobalScopeScheduler {
   // be called from any thread.
   //
   // This must be called only from TaskRunnerHelper::Get().
-  RefPtr<WebTaskRunner> GetTaskRunner(TaskType) const;
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) const;
 
   // TODO(nhiroki): Add mechanism to throttle/suspend tasks in response to the
   // state of the parent document (https://crbug.com/670534).
 
  private:
-  RefPtr<WebTaskRunnerImpl> unthrottled_task_runner_;
+  scoped_refptr<WebTaskRunnerImpl> unthrottled_task_runner_;
 
 #if DCHECK_IS_ON()
   bool is_disposed_ = false;
