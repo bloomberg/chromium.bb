@@ -79,10 +79,8 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
 
   void SetCPUThrottlingRate(double rate) override;
 
-  void OnAttach(const std::string& host_id, int session_id);
-  void OnReattach(const std::string& host_id,
-                  int session_id,
-                  const std::string& agent_state);
+  void OnAttach(int session_id);
+  void OnReattach(int session_id, const std::string& agent_state);
   void OnDetach(int session_id);
   void OnDispatchOnInspectorBackend(int session_id,
                                     int call_id,

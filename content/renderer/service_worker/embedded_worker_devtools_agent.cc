@@ -49,16 +49,13 @@ bool EmbeddedWorkerDevToolsAgent::OnMessageReceived(
   return handled;
 }
 
-void EmbeddedWorkerDevToolsAgent::OnAttach(const std::string& host_id,
-                                           int session_id) {
-  webworker_->AttachDevTools(WebString::FromUTF8(host_id), session_id);
+void EmbeddedWorkerDevToolsAgent::OnAttach(int session_id) {
+  webworker_->AttachDevTools(session_id);
 }
 
-void EmbeddedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
-                                             int session_id,
+void EmbeddedWorkerDevToolsAgent::OnReattach(int session_id,
                                              const std::string& state) {
-  webworker_->ReattachDevTools(WebString::FromUTF8(host_id), session_id,
-                               WebString::FromUTF8(state));
+  webworker_->ReattachDevTools(session_id, WebString::FromUTF8(state));
 }
 
 void EmbeddedWorkerDevToolsAgent::OnDetach(int session_id) {

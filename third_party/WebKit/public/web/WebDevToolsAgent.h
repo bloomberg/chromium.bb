@@ -43,10 +43,8 @@ class WebDevToolsAgent {
  public:
   virtual ~WebDevToolsAgent() {}
 
-  virtual void Attach(const WebString& host_id, int session_id) = 0;
-  virtual void Reattach(const WebString& host_id,
-                        int session_id,
-                        const WebString& saved_state) = 0;
+  virtual void Attach(int session_id) = 0;
+  virtual void Reattach(int session_id, const WebString& saved_state) = 0;
   virtual void Detach(int session_id) = 0;
 
   virtual void ContinueProgram() = 0;

@@ -82,6 +82,9 @@ WorkerShadowPage::CreateURLLoaderFactory() {
 }
 
 WebString WorkerShadowPage::GetInstrumentationToken() {
+  // TODO(dgozman): instrumentation token will have to be passed directly to
+  // DevTools once we stop using a frame for workers. Currently, we rely on
+  // the frame's instrumentation token to match the worker.
   return client_->GetInstrumentationToken();
 }
 

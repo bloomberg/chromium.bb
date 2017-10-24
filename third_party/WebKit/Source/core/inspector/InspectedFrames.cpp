@@ -9,7 +9,9 @@
 
 namespace blink {
 
-InspectedFrames::InspectedFrames(LocalFrame* root) : root_(root) {}
+InspectedFrames::InspectedFrames(LocalFrame* root,
+                                 const String& instrumentation_token)
+    : root_(root), instrumentation_token_(instrumentation_token) {}
 
 InspectedFrames::Iterator InspectedFrames::begin() {
   return Iterator(root_, root_);

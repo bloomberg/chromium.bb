@@ -48,7 +48,9 @@ class CORE_EXPORT WorkerInspectorProxy final
                                    const String& message,
                                    std::unique_ptr<SourceLocation>);
 
-  void ConnectToInspector(int session_id, const String&, PageInspector*);
+  void ConnectToInspector(int session_id,
+                          const String& parent_instrumentation_token,
+                          PageInspector*);
   void DisconnectFromInspector(int session_id, PageInspector*);
   void SendMessageToInspector(int session_id, const String& message);
   void WriteTimelineStartedEvent(const String& tracing_session_id);

@@ -28,8 +28,8 @@ void WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   }
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     session->SetRenderer(host, nullptr);
-    host->Send(new DevToolsAgentMsg_Attach(
-        worker_id_.second, GetId(), session->session_id()));
+    host->Send(
+        new DevToolsAgentMsg_Attach(worker_id_.second, session->session_id()));
   }
   session->SetFallThroughForNotFound(true);
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
@@ -106,9 +106,8 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
       for (DevToolsSession* session : sessions()) {
         session->SetRenderer(host, nullptr);
-        host->Send(new DevToolsAgentMsg_Reattach(worker_id_.second, GetId(),
-                                                 session->session_id(),
-                                                 session->state_cookie()));
+        host->Send(new DevToolsAgentMsg_Reattach(
+            worker_id_.second, session->session_id(), session->state_cookie()));
         for (const auto& pair : session->waiting_messages()) {
           int call_id = pair.first;
           const DevToolsSession::Message& message = pair.second;

@@ -70,9 +70,8 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void TerminateWorkerContext() = 0;
 
   virtual void PauseWorkerContextOnStart() = 0;
-  virtual void AttachDevTools(const WebString& host_id, int session_id) = 0;
-  virtual void ReattachDevTools(const WebString& host_id,
-                                int session_id,
+  virtual void AttachDevTools(int session_id) = 0;
+  virtual void ReattachDevTools(int session_id,
                                 const WebString& saved_state) = 0;
   virtual void DetachDevTools(int session_id) = 0;
   virtual void DispatchDevToolsMessage(int session_id,

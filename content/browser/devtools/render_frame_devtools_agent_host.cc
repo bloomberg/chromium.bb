@@ -151,8 +151,8 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::~FrameHostHolder() {
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Attach(
     DevToolsSession* session) {
-  host_->Send(new DevToolsAgentMsg_Attach(
-      host_->GetRoutingID(), agent_->GetId(), session->session_id()));
+  host_->Send(new DevToolsAgentMsg_Attach(host_->GetRoutingID(),
+                                          session->session_id()));
   agent_->GrantPolicy(host_);
   InitInfo(session->session_id());
 }
@@ -187,8 +187,8 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::ReattachWithCookie(
     DevToolsSession* session,
     std::string cookie) {
   InitInfo(session->session_id()).chunk_processor->set_state_cookie(cookie);
-  host_->Send(new DevToolsAgentMsg_Reattach(
-      host_->GetRoutingID(), agent_->GetId(), session->session_id(), cookie));
+  host_->Send(new DevToolsAgentMsg_Reattach(host_->GetRoutingID(),
+                                            session->session_id(), cookie));
   agent_->GrantPolicy(host_);
 }
 
@@ -534,8 +534,8 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 
   if (IsBrowserSideNavigationEnabled()) {
     if (frame_host_) {
-      frame_host_->Send(new DevToolsAgentMsg_Attach(
-          frame_host_->GetRoutingID(), GetId(), session->session_id()));
+      frame_host_->Send(new DevToolsAgentMsg_Attach(frame_host_->GetRoutingID(),
+                                                    session->session_id()));
     }
   } else {
     if (current_)
@@ -742,9 +742,9 @@ void RenderFrameDevToolsAgentHost::MaybeReattachToRenderFrame() {
   if (!frame_host_)
     return;
   for (DevToolsSession* session : sessions()) {
-    frame_host_->Send(new DevToolsAgentMsg_Reattach(
-        frame_host_->GetRoutingID(), GetId(), session->session_id(),
-        session->state_cookie()));
+    frame_host_->Send(new DevToolsAgentMsg_Reattach(frame_host_->GetRoutingID(),
+                                                    session->session_id(),
+                                                    session->state_cookie()));
     for (const auto& pair : session->waiting_messages()) {
       int call_id = pair.first;
       const DevToolsSession::Message& message = pair.second;

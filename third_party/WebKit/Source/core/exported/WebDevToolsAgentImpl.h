@@ -91,10 +91,8 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool CacheDisabled() override;
 
   // WebDevToolsAgent implementation.
-  void Attach(const WebString& host_id, int session_id) override;
-  void Reattach(const WebString& host_id,
-                int session_id,
-                const WebString& saved_state) override;
+  void Attach(int session_id) override;
+  void Reattach(int session_id, const WebString& saved_state) override;
   void Detach(int session_id) override;
   void ContinueProgram() override;
   void DispatchOnInspectorBackend(int session_id,
@@ -137,7 +135,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void DidProcessTask() override;
 
   InspectorSession* InitializeSession(int session_id,
-                                      const String& host_id,
                                       String* state);
   void DestroySession(int session_id);
   void DispatchMessageFromFrontend(int session_id,
