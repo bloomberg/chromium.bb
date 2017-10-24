@@ -39,5 +39,6 @@ source_set("unit_tests") {
     ":encrypted_messages",
     "//base",
     "//testing/gtest",
+    "//third_party/boringssl:boringssl",
   ]
 }
