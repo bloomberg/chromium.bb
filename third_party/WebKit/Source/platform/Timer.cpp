@@ -161,8 +161,7 @@ void TimerBase::RunInternal() {
     // happen due to lack of timer precision.
     double interval_to_next_fire_time =
         repeat_interval_ - fmod(now - next_fire_time_, repeat_interval_);
-    SetNextFireTime(TimerMonotonicallyIncreasingTime(),
-                    interval_to_next_fire_time);
+    SetNextFireTime(now, interval_to_next_fire_time);
   } else {
     next_fire_time_ = 0;
   }
