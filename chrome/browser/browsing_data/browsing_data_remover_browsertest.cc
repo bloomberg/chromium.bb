@@ -152,7 +152,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   // deleted and the cookie counter is back to zero.
   void TestSiteData(const std::string& type) {
     EXPECT_EQ(0, GetSiteDataCount());
-    GURL url = embedded_test_server()->GetURL("/site_data.html");
+    GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
     // We don't want to measure site engagement entries.
     RemoveSiteEngagement();
@@ -172,7 +172,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   // creates an empty store, are counted and deleted correctly.
   void TestEmptySiteData(const std::string& type) {
     EXPECT_EQ(0, GetSiteDataCount());
-    GURL url = embedded_test_server()->GetURL("/site_data.html");
+    GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
     RemoveSiteEngagement();
     EXPECT_EQ(0, GetSiteDataCount());
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 // deleted properly.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SiteEngagementDeletion) {
   EXPECT_EQ(0, GetSiteDataCount());
-  GURL url = embedded_test_server()->GetURL("/site_data.html");
+  GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(1, GetSiteDataCount());
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 // Test that session storage is not counted until crbug.com/772337 is fixed.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_EQ(0, GetSiteDataCount());
-  GURL url = embedded_test_server()->GetURL("/site_data.html");
+  GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
   RemoveSiteEngagement();
   EXPECT_EQ(0, GetSiteDataCount());
@@ -373,9 +373,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_TRUE(HasDataForType("SessionStorage"));
 }
 
-// TODO(crbug.com/776711) Test is flaky on all plattforms.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       DISABLED_ServiceWorkerDeletion) {
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, ServiceWorkerDeletion) {
   TestSiteData("ServiceWorker");
 }
 
