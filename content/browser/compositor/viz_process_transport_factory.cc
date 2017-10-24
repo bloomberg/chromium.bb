@@ -65,8 +65,7 @@ bool LockAndCheckContextLost(
     return false;
 
   viz::ContextProvider::ScopedContextLock lock(context_provider);
-  auto status = context_provider->ContextGL()->GetGraphicsResetStatusKHR();
-  return status != GL_NO_ERROR;
+  return lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
 }  // namespace
