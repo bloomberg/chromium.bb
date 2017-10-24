@@ -336,7 +336,7 @@ class WebView : protected WebWidget {
   // Data exchange -------------------------------------------------------
 
   // Do a hit test at given point and return the HitTestResult.
-  virtual WebHitTestResult HitTestResultAt(const WebPoint&) = 0;
+  WebHitTestResult HitTestResultAt(const WebPoint&) override = 0;
 
   // Do a hit test equivalent to what would be done for a GestureTap event
   // that has width/height corresponding to the supplied |tapArea|.

@@ -258,7 +258,7 @@ class WebLocalFrame : public WebFrame {
   // Navigation State -------------------------------------------------------
 
   // Returns true if the current frame's load event has not completed.
-  virtual bool IsLoading() const = 0;
+  bool IsLoading() const override = 0;
 
   // Returns true if there is a pending redirect or location change
   // within specified interval (in seconds). This could be caused by:

@@ -19,7 +19,7 @@ class WebGamepadListener : public WebPlatformEventListener {
   virtual void DidDisconnectGamepad(unsigned index, const device::Gamepad&) = 0;
 
  protected:
-  virtual ~WebGamepadListener() {}
+  ~WebGamepadListener() override {}
 };
 
 }  // namespace blink
