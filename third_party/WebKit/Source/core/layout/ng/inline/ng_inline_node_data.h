@@ -31,7 +31,7 @@ struct CORE_EXPORT NGInlineNodeData {
 
   friend class NGInlineNode;
   friend class NGInlineNodeForTest;
-  friend class NGInlineNodeOffsetMappingTest;
+  friend class NGOffsetMappingTest;
 
   // Text content for all inline items represented by a single NGInlineNode.
   // Encoded either as UTF-16 or latin-1 depending on the content.

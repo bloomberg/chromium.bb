@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_offset_mapping_result.h"
 
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-// TODO(xiaochengh): Rename this test to NGOffsetMappingTest.
-
-class NGInlineNodeOffsetMappingTest : public RenderingTest {
+class NGOffsetMappingTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
@@ -98,14 +96,14 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
   EXPECT_EQ(start, ranges.at(owner).first);   \
   EXPECT_EQ(end, ranges.at(owner).second)
 
-TEST_F(NGInlineNodeOffsetMappingTest, StoredResult) {
+TEST_F(NGOffsetMappingTest, StoredResult) {
   SetupHtml("t", "<div id=t>foo</div>");
   EXPECT_FALSE(IsOffsetMappingStored());
   GetOffsetMapping();
   EXPECT_TRUE(IsOffsetMappingStored());
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, GetNGInlineNodeForText) {
+TEST_F(NGOffsetMappingTest, GetNGInlineNodeForText) {
   SetupHtml("t", "<div id=t>foo</div>");
   Element* div = GetDocument().getElementById("t");
   Node* text = div->firstChild();
@@ -115,7 +113,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, GetNGInlineNodeForText) {
   EXPECT_EQ(layout_block_flow_, inline_node->GetLayoutBlockFlow());
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, CantGetNGInlineNodeForBody) {
+TEST_F(NGOffsetMappingTest, CantGetNGInlineNodeForBody) {
   SetupHtml("t", "<div id=t>foo</div>");
   Element* div = GetDocument().getElementById("t");
 
@@ -123,7 +121,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, CantGetNGInlineNodeForBody) {
   EXPECT_FALSE(inline_node.has_value());
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
+TEST_F(NGOffsetMappingTest, OneTextNode) {
   SetupHtml("t", "<div id=t>foo</div>");
   const Node* foo_node = layout_object_->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
@@ -170,7 +168,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 3));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
+TEST_F(NGOffsetMappingTest, TwoTextNodes) {
   SetupHtml("t", "<div id=t>foo<span id=s>bar</span></div>");
   const LayoutText* foo = ToLayoutText(layout_object_);
   const LayoutText* bar = GetLayoutTextUnder("s");
@@ -233,7 +231,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
   EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 3));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
+TEST_F(NGOffsetMappingTest, BRBetweenTextNodes) {
   SetupHtml("t", u"<div id=t>foo<br>bar</div>");
   const LayoutText* foo = ToLayoutText(layout_object_);
   const LayoutText* br = ToLayoutText(foo->NextSibling());
@@ -283,7 +281,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
   EXPECT_EQ(7u, *GetTextContentOffset(*bar_node, 3));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
+TEST_F(NGOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   SetupHtml("t", "<div id=t>foo  bar</div>");
   const Node* node = layout_object_->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
@@ -350,7 +348,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 8));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
+TEST_F(NGOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   SetupHtml("t",
             "<div id=t>"
             "<span id=s1>foo </span>"
@@ -408,7 +406,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*space_node, 0u));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
+TEST_F(NGOffsetMappingTest, ReplacedElement) {
   SetupHtml("t", "<div id=t>foo <img> bar</div>");
   const LayoutText* foo = ToLayoutText(layout_object_);
   const LayoutObject* img = foo->NextSibling();
@@ -466,7 +464,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
   EXPECT_EQ(9u, *GetTextContentOffset(*bar_node, 4));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, FirstLetter) {
+TEST_F(NGOffsetMappingTest, FirstLetter) {
   SetupHtml("t",
             "<style>div:first-letter{color:red}</style>"
             "<div id=t>foo</div>");
@@ -490,7 +488,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetter) {
   EXPECT_EQ(2u, *GetTextContentOffset(*foo_node, 2));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithLeadingSpace) {
+TEST_F(NGOffsetMappingTest, FirstLetterWithLeadingSpace) {
   SetupHtml("t",
             "<style>div:first-letter{color:red}</style>"
             "<div id=t>  foo</div>");
@@ -520,7 +518,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithLeadingSpace) {
   EXPECT_EQ(2u, *GetTextContentOffset(*foo_node, 4));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithoutRemainingText) {
+TEST_F(NGOffsetMappingTest, FirstLetterWithoutRemainingText) {
   SetupHtml("t",
             "<style>div:first-letter{color:red}</style>"
             "<div id=t>  f</div>");
@@ -548,7 +546,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithoutRemainingText) {
   EXPECT_EQ(1u, *GetTextContentOffset(*text_node, 3));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterInDifferentBlock) {
+TEST_F(NGOffsetMappingTest, FirstLetterInDifferentBlock) {
   SetupHtml("t",
             "<style>:first-letter{float:right}</style><div id=t>foo</div>");
   Element* div = GetDocument().getElementById("t");
@@ -604,7 +602,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterInDifferentBlock) {
   EXPECT_EQ(3u, *remaining_text_result.GetTextContentOffset(*text_node, 3));
 }
 
-TEST_F(NGInlineNodeOffsetMappingTest, WhiteSpaceTextNodeWithoutLayoutText) {
+TEST_F(NGOffsetMappingTest, WhiteSpaceTextNodeWithoutLayoutText) {
   SetupHtml("t", "<div id=t> <span>foo</span></div>");
   Element* div = GetDocument().getElementById("t");
   const Node* text_node = div->firstChild();
