@@ -13,9 +13,8 @@ namespace blink {
 
 class CORE_EXPORT CompositorAnimator : public GarbageCollectedMixin {
  public:
-  // Runs the animation frame callback for the frame starting at the given time.
-  virtual void Mutate(double monotonic_time_now,
-                      const CompositorMutatorInputState&) = 0;
+  // Runs the animation frame callback.
+  virtual void Mutate(const CompositorMutatorInputState&) = 0;
   virtual void Trace(blink::Visitor* visitor) {}
 };
 

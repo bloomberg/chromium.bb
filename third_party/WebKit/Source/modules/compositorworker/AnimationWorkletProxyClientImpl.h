@@ -41,8 +41,7 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
 
   // CompositorAnimator:
   // This method is invoked in compositor thread
-  void Mutate(double monotonic_time_now,
-              const CompositorMutatorInputState&) override;
+  void Mutate(const CompositorMutatorInputState&) override;
 
   static AnimationWorkletProxyClientImpl* FromDocument(Document*);
 

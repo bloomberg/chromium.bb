@@ -24,8 +24,7 @@ class PLATFORM_EXPORT CompositorMutatorClient
 
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*);
-  void Mutate(base::TimeTicks monotonic_time,
-              std::unique_ptr<cc::MutatorInputState>) override;
+  void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
   // TODO(majidvp): Remove this when CC knows about timeline input.
   bool HasAnimators() override;
 

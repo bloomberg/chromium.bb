@@ -100,7 +100,7 @@ TEST_F(WorkletAnimationPlayerTest,
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
 
-  EXPECT_CALL(*mock_mutator, MutateRef(_, _));
+  EXPECT_CALL(*mock_mutator, MutateRef(_));
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
