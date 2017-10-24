@@ -106,7 +106,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         UiConfig uiConfig = new UiConfig(mRecyclerView);
         mRecyclerView.init(uiConfig, mContextMenuManager);
 
-        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
+        OfflinePageBridge offlinePageBridge = depsFactory.getOfflinePageBridge(profile);
 
         mSuggestionsCarousel =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)

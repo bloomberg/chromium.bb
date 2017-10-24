@@ -12,6 +12,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
@@ -64,6 +65,7 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         public SuggestionsEventReporter eventReporter;
         public ThumbnailProvider thumbnailProvider;
         public FaviconHelper faviconHelper;
+        public OfflinePageBridge offlinePageBridge;
 
         @Override
         public SuggestionsSource createSuggestionSource(Profile profile) {
@@ -99,6 +101,12 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         public FaviconHelper createFaviconHelper() {
             if (faviconHelper != null) return faviconHelper;
             return super.createFaviconHelper();
+        }
+
+        @Override
+        public OfflinePageBridge getOfflinePageBridge(Profile profile) {
+            if (offlinePageBridge != null) return offlinePageBridge;
+            return super.getOfflinePageBridge(profile);
         }
     }
 }

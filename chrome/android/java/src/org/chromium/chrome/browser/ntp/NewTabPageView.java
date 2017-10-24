@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
+import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.Tile;
 import org.chromium.chrome.browser.suggestions.TileGroup;
@@ -255,7 +256,8 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         });
 
         Profile profile = Profile.getLastUsedProfile();
-        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
+        OfflinePageBridge offlinePageBridge =
+                SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
         TileRenderer tileRenderer =
                 new TileRenderer(mTab.getActivity(), SuggestionsConfig.getTileStyle(mUiConfig),
                         getTileTitleLines(), mManager.getImageFetcher());

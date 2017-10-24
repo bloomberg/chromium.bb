@@ -302,7 +302,7 @@ public class TileGridLayoutTest {
         return ntp;
     }
 
-    private void setOrientation(int requestedOrientation, Activity activity) {
+    private void setOrientation(final int requestedOrientation, final Activity activity) {
         if (orientationMatchesRequest(activity, requestedOrientation)) return;
 
         ThreadUtils.runOnUiThreadBlocking(
@@ -391,16 +391,11 @@ public class TileGridLayoutTest {
 
     private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions)
             throws IOException, InterruptedException {
-        return renderTiles(siteSuggestions, Collections.emptyList());
-    }
-
-    private SiteSuggestion makeSuggestionFromDataIndex(int dataIndex) {
-        return createSiteSuggestion(FAKE_MOST_VISITED_TITLES[dataIndex],
-                mTestServerRule.getServer().getURL(FAKE_MOST_VISITED_URLS[dataIndex]));
+        return renderTiles(siteSuggestions, Collections.<String>emptyList());
     }
 
     private SiteSection createSiteSection(
-            SiteSectionViewHolder viewHolder, UiConfig uiConfig, List<String> offlineUrls) {
+            final SiteSectionViewHolder viewHolder, UiConfig uiConfig, List<String> offlineUrls) {
         ThreadUtils.assertOnUiThread();
 
         ChromeActivity activity = mActivityTestRule.getActivity();
@@ -411,14 +406,14 @@ public class TileGridLayoutTest {
                 mSuggestionsDeps.getFactory().createEventReporter(), null, profile, null,
                 activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
 
-        FakeOfflinePageBridge opb = new FakeOfflinePageBridge();
+        FakeOfflinePageBridge offlinePageBridge = new FakeOfflinePageBridge();
         List<OfflinePageItem> offlinePageItems = new ArrayList<>();
         for (int i = 0; i < offlineUrls.size(); i++) {
             offlinePageItems.add(
                     FakeOfflinePageBridge.createOfflinePageItem(offlineUrls.get(i), i + 1L));
         }
-        opb.setItems(offlinePageItems);
-        opb.setIsOfflinePageModelLoaded(true);
+        offlinePageBridge.setItems(offlinePageItems);
+        offlinePageBridge.setIsOfflinePageModelLoaded(true);
 
         TileGroup.Delegate delegate = new TileGroupDelegateImpl(activity, profile, null, null) {
             @Override
@@ -428,7 +423,8 @@ public class TileGridLayoutTest {
             }
         };
 
-        SiteSection siteSection = new SiteSection(uiDelegate, null, delegate, opb, uiConfig);
+        SiteSection siteSection =
+                new SiteSection(uiDelegate, null, delegate, offlinePageBridge, uiConfig);
 
         siteSection.setParent(new NodeParent() {
             @Override
