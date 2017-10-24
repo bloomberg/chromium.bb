@@ -88,6 +88,7 @@ class NetworkHandler : public DevToolsDomainHandler,
       double download_throughput,
       double upload_throughput,
       Maybe<protocol::Network::ConnectionType> connection_type) override;
+  Response SetBypassServiceWorker(bool bypass) override;
 
   DispatchResponse SetRequestInterception(
       std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
@@ -132,6 +133,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   void InterceptedNavigationRequestFinished(const std::string& interception_id);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
   void AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
+  bool ShouldBypassServiceWorker() const;
 
  private:
   void SetNetworkConditions(mojom::NetworkConditionsPtr conditions);
@@ -146,6 +148,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;
   std::string host_id_;
+  bool bypass_service_worker_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
