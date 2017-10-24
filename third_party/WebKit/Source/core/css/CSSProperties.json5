@@ -2911,8 +2911,8 @@
       api_class: true,
       runtime_flag: "CSSTransformBox",
       field_template: "keyword",
-      keywords: ["border-box", "fill-box", "view-box"],
-      default_value: "border-box",
+      keywords: ["fill-box", "view-box"],
+      default_value: "view-box",
     },
     {
       name: "transform-origin",

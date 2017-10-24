@@ -336,8 +336,7 @@ static FloatRect ComputeTransformReferenceBox(const SVGElement& element) {
   }
   if (style.TransformBox() == ETransformBox::kFillBox)
     return layout_object.ObjectBoundingBox();
-  DCHECK(style.TransformBox() == ETransformBox::kBorderBox ||
-         style.TransformBox() == ETransformBox::kViewBox);
+  DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);
   SVGLengthContext length_context(&element);
   FloatSize viewport_size;
   length_context.DetermineViewport(viewport_size);
