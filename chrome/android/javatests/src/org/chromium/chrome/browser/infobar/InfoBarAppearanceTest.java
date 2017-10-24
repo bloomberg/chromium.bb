@@ -80,6 +80,12 @@ public class InfoBarAppearanceTest {
                         // a longer text or for more verbose languages.
                         return getLongMessage();
                     }
+
+                    @Override
+                    public String getBlockedUrl() {
+                        return "https://someverylonglinkthatwilldefinitelynotfitevenwhenremoving"
+                                + "thefilepath.com/somemorestuff";
+                    }
                 };
         FramebustBlockInfoBar infobar = new FramebustBlockInfoBar(messageDelegate);
 
