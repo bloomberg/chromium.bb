@@ -23,14 +23,20 @@ video::-webkit-media-controls {
 
 audio::-webkit-media-controls-enclosure,
 video::-webkit-media-controls-enclosure {
-  width: 100%;
-  height: 96px;
-  flex-shrink: 0;
   bottom: 0;
   text-indent: 0;
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+  width: 100%;
+}
+
+video::-webkit-media-controls-overlay-enclosure {
+  display: none;
 }
 
 audio::-webkit-media-controls-panel,
@@ -45,22 +51,19 @@ video::-webkit-media-controls-panel {
   overflow: hidden;
   bottom: auto;
 
-  width: 100%;
-  height: 96px;
   min-width: 48px;
+  flex: 1;
+  padding-bottom: 12px;
 
   font-size: 12px;
   font-weight: normal;  /* Make sure that we don't inherit non-defaults. */
   font-style: normal;
 
-  background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, .4) 32px,
-    rgba(255, 255, 255, .8) 64px,
-    rgba(255, 255, 255, .8) 89px,
-    rgba(255, 255, 255, 0) 89px,
-    rgba(255, 255, 255, 0) 91px,
-    rgba(255, 255, 255, .8) 91px);
+  background-image:
+    linear-gradient(-180deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, .27) 32%,
+      rgba(255, 255, 255, .9) 98%);
 }
 
 audio::-internal-media-controls-button-panel,
@@ -84,8 +87,14 @@ video::-internal-media-controls-button-panel {
   bottom: auto;
   height: 32px;
   min-width: 48px;
-  line-height: 32px;
-  padding: 0;
+  line-height: 30px;
+  padding: 0 10px 0 16px;
+  box-sizing: border-box;
+}
+
+audio::-internal-media-controls-button-spacer,
+video::-internal-media-controls-button-spacer {
+  flex: 1;
 }
 
 /**
@@ -93,12 +102,7 @@ video::-internal-media-controls-button-panel {
  */
 
 audio::-webkit-media-controls-play-button,
-video::-webkit-media-controls-play-button {
-  /* The play button is not used in the new design and will be removed in the
-   * future. */
-  display: none;
-}
-
+video::-webkit-media-controls-play-button,
 audio::-webkit-media-controls-mute-button,
 video::-webkit-media-controls-mute-button,
 video::-internal-media-controls-cast-icon,
@@ -112,27 +116,37 @@ video::-webkit-media-controls-toggle-closed-captions-button,
 audio::-internal-media-controls-download-button,
 video::-internal-media-controls-download-button {
   -webkit-appearance: -internal-media-control;
-  background-size: 32px;
+  background-size: 24px;
   background-repeat: no-repeat;
   background-position: center center;
   width: 32px;
   height: 32px;
+  min-width: 32px;
   padding: 0;
   border-width: 0;
   background-color: initial;
   color: inherit;
 }
 
+audio::-webkit-media-controls-play-button,
+video::-webkit-media-controls-play-button {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_play_arrow.png) 1x,
+    url(default_200_percent/modern/ic_play_arrow.png) 2x);
+}
+
 audio::-webkit-media-controls-mute-button,
 video::-webkit-media-controls-mute-button {
   background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_sound_not_muted.png) 1x);
+    url(default_100_percent/modern/ic_volume_up.png) 1x,
+    url(default_200_percent/modern/ic_volume_up.png) 2x);
 }
 
 audio::-webkit-media-controls-mute-button.muted,
 video::-webkit-media-controls-mute-button.muted {
   background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_sound_muted.png) 1x);
+    url(default_100_percent/modern/ic_volume_off.png) 1x,
+    url(default_200_percent/modern/ic_volume_off.png) 2x);
 }
 
 video::-internal-media-remoting-cast-icon {
@@ -144,13 +158,15 @@ video::-internal-media-remoting-cast-icon {
 audio::-webkit-media-controls-fullscreen-button,
 video::-webkit-media-controls-fullscreen-button {
   background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_enter_fullscreen.png) 1x);
+    url(default_100_percent/modern/ic_fullscreen.png) 1x,
+    url(default_200_percent/modern/ic_fullscreen.png) 2x);
 }
 
 audio::-webkit-media-controls-fullscreen-button.fullscreen,
 video::-webkit-media-controls-fullscreen-button.fullscreen {
   background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_exit_fullscreen.png) 1x);
+    url(default_100_percent/modern/ic_fullscreen_exit.png) 1x,
+    url(default_200_percent/modern/ic_fullscreen_exit.png) 2x);
 }
 
 audio::-internal-media-controls-cast-button,
@@ -188,7 +204,42 @@ audio::-internal-media-controls-download-button {
 video::-internal-media-controls-overflow-button,
 audio::-internal-media-controls-overflow-button {
   background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_overflow_menu.png) 1x);
+    url(default_100_percent/modern/ic_menu.png) 1x,
+    url(default_200_percent/modern/ic_menu.png) 2x);
+}
+
+video::-webkit-media-controls-overlay-play-button {
+  -webkit-appearance: -internal-media-control;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: transparent;
+  margin-bottom: -40px;
+}
+
+input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_play_arrow.png) 1x,
+    url(default_200_percent/modern/ic_play_arrow.png) 2x);
+  background-color: rgba(255, 255, 255, .9);
+}
+
+.state-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_pause.png) 1x,
+    url(default_200_percent/modern/ic_pause.png) 2x);
 }
 
 /**
@@ -201,7 +252,7 @@ video::-webkit-media-controls-timeline {
 
   height: 2px;
   padding: 0;
-  margin: 5px 0;
+  margin: 5px 16px;
   background: transparent;
 }
 
@@ -210,17 +261,19 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segm
 
   flex: 1;
   background: rgba(0, 0, 0, .2);
+  border-radius: 2px;
   position: relative;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   -webkit-appearance: -internal-media-control;
-  background: black;
+  background: rgba(0, 0, 0, .87);
+  box-shadow: 0 0 10px 0 #fff;
 
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  margin-top: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  margin-top: -4px;
   flex: 0 0 0;
 }
 
@@ -230,9 +283,20 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-backg
   top: 0;
 }
 
-input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before {
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after {
+  position: absolute;
   height: 2px;
-  background: black;
+}
+
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before {
+  background: rgba(0, 0, 0, .54);
+  border-radius: 100px;
+}
+
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after {
+  background: rgba(0, 0, 0, .87);
+  border-radius: 2px;
 }
 
 audio::-webkit-media-controls-volume-slider,
@@ -246,48 +310,62 @@ video::-webkit-media-controls-volume-slider {
 
 audio::-webkit-media-controls-time-remaining-display,
 video::-webkit-media-controls-time-remaining-display {
-  flex: 1;
   text-align: left;
+  margin-left: 4px;
+}
+
+audio::-webkit-media-controls-current-time-display,
+video::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display,
+video::-webkit-media-controls-time-remaining-display {
+  opacity: 0.87;
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 14px;
+  color: #000000;
+  letter-spacing: 0;
+  text-shadow: 0 0 10px #FFFFFF;
 }
 
 /**
- * Overlay
+ * Overflow Menu
  */
 
-audio::-webkit-media-controls-overlay-enclosure {
-  display: none;
+video::-internal-media-controls-overflow-menu-list,
+audio::-internal-media-controls-overflow-menu-list {
+  position: fixed;
+  max-width: 50%;
+  max-height: 250px;
+  min-width: 150px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: nowrap;
+  font-size: 14px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
+  border-radius: 2px;
 }
 
-video::-webkit-media-controls-overlay-enclosure {
+video::-internal-media-controls-overflow-menu-list-item,
+audio::-internal-media-controls-overflow-menu-list-item {
   display: flex;
-  position: relative;
-  flex-direction: column;
-  justify-content: flex-end;
   align-items: center;
-  flex: 1 1;
-  min-height: 0;
-  width: 100%;
-  margin-bottom: -52px;
-  text-indent: 0;
-  box-sizing: border-box;
-  overflow: hidden;
+  justify-content: flex-start;
+
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 14px;
+  color: rgba(0,0,0,0.87);
+  letter-spacing: 0;
+
+  line-height: 48px;
+  padding-left: 15px;
 }
 
-video::-webkit-media-controls-overlay-play-button {
-  -webkit-appearance: -internal-media-control;
-  display: flex;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0;
-  border-width: 0px;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  background-size: 48px;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_overlay_play.png) 1x);
-  background-color: transparent;
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
+  margin-left: -22px;
+  margin-right: 2px;
+}
+
+video::-internal-media-controls-overflow-menu-list-item:hover,
+audio::-internal-media-controls-overflow-menu-list-item:hover {
+  background-color: #e0e0e0;
 }
