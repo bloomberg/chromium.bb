@@ -335,12 +335,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypePaymentMethod:
     case ItemTypeShippingOption:
     case ItemTypeContactInfo: {
-      if ([cell isKindOfClass:[CollectionViewDetailCell class]]) {
-        CollectionViewDetailCell* detailCell =
-            base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
-        detailCell.detailTextLabel.font = [MDCTypography body2Font];
-        detailCell.detailTextLabel.textColor =
-            [[MDCPalette cr_bluePalette] tint500];
+      if ([cell isKindOfClass:[PaymentsTextCell class]]) {
+        PaymentsTextCell* paymentsTextCell =
+            base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        paymentsTextCell.textLabel.font = [MDCTypography body2Font];
+        // Style call to action cells.
+        if (paymentsTextCell.cellType == PaymentsTextCellTypeCallToAction) {
+          paymentsTextCell.textLabel.textColor =
+              [[MDCPalette cr_bluePalette] tint500];
+        }
       }
       break;
     }

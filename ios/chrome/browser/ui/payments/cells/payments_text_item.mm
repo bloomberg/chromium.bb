@@ -38,6 +38,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 @synthesize trailingImage = _trailingImage;
 @synthesize accessoryType = _accessoryType;
 @synthesize complete = _complete;
+@synthesize cellType = _cellType;
 
 #pragma mark CollectionViewItem
 
@@ -72,6 +73,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   cell.detailTextLabel.textColor = self.detailTextColor;
   cell.leadingImageView.image = self.leadingImage;
   cell.trailingImageView.image = self.trailingImage;
+  cell.cellType = self.cellType;
 }
 
 @end
@@ -91,6 +93,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 @synthesize detailTextLabel = _detailTextLabel;
 @synthesize leadingImageView = _leadingImageView;
 @synthesize trailingImageView = _trailingImageView;
+@synthesize cellType = _cellType;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -219,6 +222,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   self.detailTextLabel.text = nil;
   self.leadingImageView.image = nil;
   self.trailingImageView.image = nil;
+  self.cellType = PaymentsTextCellTypeNormal;
 }
 
 #pragma mark - NSObject(Accessibility)

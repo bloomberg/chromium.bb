@@ -99,9 +99,9 @@ TEST_F(PaymentRequestSelectorViewControllerTest, TestModel) {
   [GetPaymentRequestSelectorViewController() loadModel];
   CheckTitle(kTestTitle);
 
-  ASSERT_EQ(1, NumberOfSections());
-  // One header item, two selectable items, and one add button.
-  ASSERT_EQ(4, NumberOfItemsInSection(0));
+  ASSERT_EQ(2, NumberOfSections());
+  // One header item and two selectable items.
+  ASSERT_EQ(3, NumberOfItemsInSection(0));
 
   // The first item should be of type CollectionViewItem.
   id item = GetCollectionViewItem(0, 0);
@@ -120,8 +120,11 @@ TEST_F(PaymentRequestSelectorViewControllerTest, TestModel) {
   selectable_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryNone, selectable_item.accessoryType);
 
-  // The last item should be of type CollectionViewItem.
-  item = GetCollectionViewItem(0, 3);
+  // One add button.
+  ASSERT_EQ(1, NumberOfItemsInSection(1));
+
+  // The item should be of type CollectionViewItem.
+  item = GetCollectionViewItem(1, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewItem class]]);
 }
 

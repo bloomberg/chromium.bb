@@ -34,6 +34,7 @@ const CGFloat kSeparatorEdgeInset = 14;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierItems = kSectionIdentifierEnumZero,
+  SectionIdentifierAddButton,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -167,10 +168,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (!self.editing) {
     CollectionViewItem* addButtonItem = [self.dataSource addButtonItem];
     if (addButtonItem) {
+      [model addSectionWithIdentifier:SectionIdentifierAddButton];
       addButtonItem.type = ItemTypeAddItem;
       addButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
       [model addItem:addButtonItem
-          toSectionWithIdentifier:SectionIdentifierItems];
+          toSectionWithIdentifier:SectionIdentifierAddButton];
     }
   }
 }
@@ -206,6 +208,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
             self.dataSource.state == PaymentRequestSelectorStateError
                 ? [[MDCPalette cr_redPalette] tint600]
                 : [[MDCPalette greyPalette] tint600];
+      }
+      break;
+    }
+    case ItemTypeAddItem: {
+      if ([cell isKindOfClass:[PaymentsTextCell class]]) {
+        PaymentsTextCell* paymentsTextCell =
+            base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        paymentsTextCell.textLabel.font = [MDCTypography body2Font];
+        paymentsTextCell.textLabel.textColor =
+            [[MDCPalette cr_bluePalette] tint500];
       }
       break;
     }

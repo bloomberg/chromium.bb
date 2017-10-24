@@ -11,6 +11,14 @@
 #import "ios/chrome/browser/ui/payments/cells/payments_is_selectable.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
+// The possible types a PaymentsTextCell can have.
+typedef NS_ENUM(NSUInteger, PaymentsTextCellType) {
+  // The cell has a normal type.
+  PaymentsTextCellTypeNormal,
+  // The cell has a call to action type.
+  PaymentsTextCellTypeCallToAction,
+};
+
 // PaymentsTextItem is the model class corresponding to PaymentsTextCell.
 @interface PaymentsTextItem : CollectionViewItem<PaymentsIsSelectable>
 
@@ -37,6 +45,9 @@
 // The accessory type for the represented cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 
+// The type of the represented cell.
+@property(nonatomic) PaymentsTextCellType cellType;
+
 @end
 
 // PaymentsTextCell implements a MDCCollectionViewCell subclass containing
@@ -61,6 +72,9 @@
 
 // UIImageView corresponding to |trailingImage| from the item.
 @property(nonatomic, readonly, nullable, strong) UIImageView* trailingImageView;
+
+// The type of the cell.
+@property(nonatomic) PaymentsTextCellType cellType;
 
 @end
 

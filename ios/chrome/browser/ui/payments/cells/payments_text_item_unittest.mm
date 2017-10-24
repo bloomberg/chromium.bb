@@ -30,6 +30,7 @@ TEST_F(PaymentRequestPaymentsTextItemTest, TextLabelAndImage) {
   item.detailText = detailText;
   item.leadingImage = image;
   item.trailingImage = image;
+  item.cellType = PaymentsTextCellTypeCallToAction;
 
   id cell = [[[item cellClass] alloc] init];
   ASSERT_TRUE([cell isMemberOfClass:[PaymentsTextCell class]]);
@@ -39,12 +40,14 @@ TEST_F(PaymentRequestPaymentsTextItemTest, TextLabelAndImage) {
   EXPECT_FALSE(paymentsTextCell.detailTextLabel.text);
   EXPECT_FALSE(paymentsTextCell.leadingImageView.image);
   EXPECT_FALSE(paymentsTextCell.trailingImageView.image);
+  EXPECT_EQ(PaymentsTextCellTypeNormal, paymentsTextCell.cellType);
 
   [item configureCell:paymentsTextCell];
   EXPECT_NSEQ(text, paymentsTextCell.textLabel.text);
   EXPECT_NSEQ(detailText, paymentsTextCell.detailTextLabel.text);
   EXPECT_NSEQ(image, paymentsTextCell.leadingImageView.image);
   EXPECT_NSEQ(image, paymentsTextCell.trailingImageView.image);
+  EXPECT_EQ(PaymentsTextCellTypeCallToAction, paymentsTextCell.cellType);
 }
 
 }  // namespace
