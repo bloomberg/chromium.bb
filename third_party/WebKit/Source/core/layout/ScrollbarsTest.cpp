@@ -930,16 +930,17 @@ static void DisableCompositing(WebSettings* settings) {
   settings->SetPreferCompositingToLCDTextEnabled(false);
 }
 
-#if defined(THREAD_SANITIZER)
-#define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
+#if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define DISABLE_ON_TSAN_AND_ASAN(test_name) DISABLED_##test_name
 #else
-#define DISABLE_ON_TSAN(test_name) test_name
+#define DISABLE_ON_TSAN_AND_ASAN(test_name) test_name
 #endif  // defined(THREAD_SANITIZER)
 
 // Make sure overlay scrollbars on non-composited scrollers fade out and set
 // the hidden bit as needed.
+// TODO(crbug.com/776684): Fix and re-enable on TSAN and ASAN.
 TEST_P(ScrollbarsTest,
-       DISABLE_ON_TSAN(TestNonCompositedOverlayScrollbarsFade)) {
+       DISABLE_ON_TSAN_AND_ASAN(TestNonCompositedOverlayScrollbarsFade)) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &DisableCompositing);
