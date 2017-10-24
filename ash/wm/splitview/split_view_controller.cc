@@ -13,6 +13,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -348,11 +349,9 @@ void SplitViewController::RemoveObserver(Observer* observer) {
 }
 
 void SplitViewController::OnWindowDestroying(aura::Window* window) {
-  // If one of the snapped window gets closed, end the split view mode. The
-  // behavior might change in the future.
   DCHECK(IsSplitViewModeActive());
   DCHECK(window == left_window_ || window == right_window_);
-  EndSplitView();
+  OnSnappedWindowMinimizedOrDestroyed(window);
 }
 
 void SplitViewController::OnPostWindowStateTypeChange(
@@ -360,12 +359,15 @@ void SplitViewController::OnPostWindowStateTypeChange(
     ash::mojom::WindowStateType old_type) {
   DCHECK(IsSplitViewModeActive());
 
-  if (window_state->IsFullscreen() || window_state->IsMinimized() ||
-      window_state->IsMaximized()) {
-    // TODO(xdai): Decide what to do if one of the snapped windows gets
-    // minimized /maximized / full-screened. For now we end the split view mode
-    // for simplicity.
+  if (window_state->IsFullscreen() || window_state->IsMaximized()) {
+    // End split view mode if one of the snapped windows gets maximized /
+    // full-screened. Also end overview mode if overview mode is active at the
+    // moment.
     EndSplitView();
+    if (Shell::Get()->window_selector_controller()->IsSelecting())
+      Shell::Get()->window_selector_controller()->ToggleOverview();
+  } else if (window_state->IsMinimized()) {
+    OnSnappedWindowMinimizedOrDestroyed(window_state->window());
   }
 }
 
@@ -744,6 +746,34 @@ int SplitViewController::GetDividerEndPosition() {
   const gfx::Rect work_area_bounds =
       GetDisplayWorkAreaBoundsInScreen(GetDefaultSnappedWindow());
   return std::max(work_area_bounds.width(), work_area_bounds.height());
+}
+
+void SplitViewController::OnSnappedWindowMinimizedOrDestroyed(
+    aura::Window* window) {
+  DCHECK(window);
+  DCHECK(window == left_window_ || window == right_window_);
+  if (left_window_ == window) {
+    StopObserving(left_window_);
+    left_window_ = nullptr;
+  } else {
+    StopObserving(right_window_);
+    right_window_ = nullptr;
+  }
+
+  if (!left_window_ && !right_window_) {
+    // If there is no snapped window at this moment, ends split view mode. Note
+    // this will update overview window grid bounds if the overview mode is
+    // active at the moment.
+    EndSplitView();
+  } else {
+    // If there is still one snapped window after minimizing/closing one snapped
+    // window, update its snap state and open overview window grid.
+    State previous_state = state_;
+    state_ = left_window_ ? LEFT_SNAPPED : RIGHT_SNAPPED;
+    default_snap_position_ = left_window_ ? LEFT : RIGHT;
+    NotifySplitViewStateChanged(previous_state, state_);
+    Shell::Get()->window_selector_controller()->ToggleOverview();
+  }
 }
 
 }  // namespace ash
