@@ -1002,6 +1002,17 @@ jboolean WebContentsAccessibilityAndroid::NextAtGranularity(
   return false;
 }
 
+jint WebContentsAccessibilityAndroid::GetTextLength(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint unique_id) {
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return -1;
+  base::string16 text = node->GetText();
+  return text.size();
+}
+
 jboolean WebContentsAccessibilityAndroid::PreviousAtGranularity(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
