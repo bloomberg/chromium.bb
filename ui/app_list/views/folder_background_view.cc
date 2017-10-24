@@ -20,6 +20,7 @@ namespace {
 
 const float kFolderInkBubbleScale = 1.2f;
 const int kBubbleTransitionDurationMs = 200;
+const int kBubbleRadiusFullScreen = 288;
 
 }  // namespace
 
@@ -71,6 +72,14 @@ void FolderBackgroundView::UpdateFolderContainerBubble(ShowState state) {
   SchedulePaint();
 }
 
+int FolderBackgroundView::GetFolderContainerBubbleRadius() const {
+  return is_fullscreen_app_list_enabled_
+             ? kBubbleRadiusFullScreen
+             : std::max(GetContentsBounds().width(),
+                        GetContentsBounds().height()) /
+                   2;
+}
+
 void FolderBackgroundView::OnPaint(gfx::Canvas* canvas) {
   if (show_state_ == NO_BUBBLE)
     return;
@@ -81,7 +90,7 @@ void FolderBackgroundView::OnPaint(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setColor(kFolderBubbleColor);
   canvas->DrawCircle(GetContentsBounds().CenterPoint(),
-                     kFolderBackgroundBubbleRadius, flags);
+                     GetFolderContainerBubbleRadius(), flags);
 }
 
 void FolderBackgroundView::OnImplicitAnimationsCompleted() {

@@ -57,6 +57,8 @@ class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
   static std::vector<gfx::Rect> GetTopIconsBounds(
       const gfx::Rect& folder_icon_bounds);
 
+  static SkColor GetFolderBubbleSkColor();
+
   // Returns the target icon bounds for |item| to fly back to its parent folder
   // icon in animation UI. If |item| is one of the top item icon, this will
   // match its corresponding top item icon in the folder icon. Otherwise,

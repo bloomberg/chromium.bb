@@ -108,19 +108,21 @@ class AppListFolderView : public views::View,
   bool IsOEMFolder() const override;
   void SetRootLevelDragViewVisible(bool visible) override;
 
-  AppsContainerView* container_view_;     // Not owned.
+  AppsContainerView* container_view_;  // Not owned.
   AppListMainView* app_list_main_view_;   // Not Owned.
   FolderHeaderView* folder_header_view_;  // Owned by views hierarchy.
-  AppsGridView* items_grid_view_;         // Owned by the views hierarchy.
+  AppsGridView* items_grid_view_;  // Owned by the views hierarchy.
 
   std::unique_ptr<views::ViewModel> view_model_;
 
-  AppListModel* model_;             // Not owned.
+  AppListModel* model_;  // Not owned.
   AppListFolderItem* folder_item_;  // Not owned.
 
   bool hide_for_reparent_;
 
   base::string16 accessible_name_;
+
+  const bool is_fullscreen_app_list_enabled_;
 
   // Whether the app list focus is enabled.
   const bool is_app_list_focus_enabled_;

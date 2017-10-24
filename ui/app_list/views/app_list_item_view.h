@@ -180,6 +180,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   bool is_installing_ = false;
   bool is_highlighted_ = false;
 
+  const bool is_fullscreen_app_list_enabled_;
+
   base::string16 tooltip_text_;
 
   // A timer to defer showing drag UI when mouse is pressed.

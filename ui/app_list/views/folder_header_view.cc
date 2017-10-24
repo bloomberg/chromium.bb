@@ -64,7 +64,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
     // Make folder name font size 14px.
     folder_name_view_->SetFontList(font_list.DeriveWithSizeDelta(-1));
     folder_name_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
-    folder_name_view_->SetTextColor(kGridTitleColor);
+    folder_name_view_->SetTextColor(kGridTitleColorFullscreen);
   } else {
     folder_name_view_->SetFontList(font_list);
     folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);

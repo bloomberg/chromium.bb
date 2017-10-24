@@ -30,6 +30,9 @@ class FolderBackgroundView : public views::View,
   // Updates the ink bubble's ShowState.
   void UpdateFolderContainerBubble(ShowState state);
 
+  // Returns the radius of the folder container ink bubble.
+  int GetFolderContainerBubbleRadius() const;
+
   void set_folder_view(AppListFolderView* folder_view) {
     folder_view_ = folder_view;
   }
