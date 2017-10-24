@@ -127,7 +127,6 @@ if (pdf_enable_xfa) {
     ]
     dict = "dicts/pdf_codec_gif.dict"
     seed_corpus = "corpora/pdf_codec_gif"
-    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
   }
 
   fuzzer_test("pdf_codec_jpeg_fuzzer") {
