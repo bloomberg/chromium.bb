@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/interface_provider_filtering.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
@@ -721,8 +722,9 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   binding_.set_connection_error_handler(
       base::BindOnce(&RemoveProviderHost, context_, process_id, provider_id()));
 
-  interface_provider_binding_.Bind(
-      mojo::MakeRequest(&provider_info->interface_provider));
+  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
+      mojom::kNavigation_ServiceWorkerSpec, process_id,
+      mojo::MakeRequest(&provider_info->interface_provider)));
 
   // Set the document URL to the script url in order to allow
   // register/unregister/getRegistration on ServiceWorkerGlobalScope.

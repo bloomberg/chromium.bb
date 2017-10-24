@@ -7,6 +7,11 @@ module blink.mojom;
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "url/mojo/origin.mojom";
 
+// The name of the InterfaceProviderSpec in service manifests used by the
+// frame tree to expose dedicated-worker-specific interfaces between renderer
+// and browser.
+const string kNavigation_DedicatedWorkerSpec = "navigation:dedicated_worker";
+
 interface DedicatedWorkerFactory {
   // Informs the browser that the renderer has created a new dedicated worker,
   // requesting |worker_interface_provider| to provide the worker access to mojo

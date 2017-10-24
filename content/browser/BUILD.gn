@@ -919,6 +919,8 @@ source_set("browser") {
     "indexed_db/list_set.h",
     "installedapp/installed_app_provider_impl_default.cc",
     "installedapp/installed_app_provider_impl_default.h",
+    "interface_provider_filtering.cc",
+    "interface_provider_filtering.h",
     "isolated_origin_util.cc",
     "isolated_origin_util.h",
     "keyboard_lock/keyboard_lock_service_impl.cc",

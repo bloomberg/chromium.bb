@@ -55,6 +55,21 @@
       "requires": {
         "content_browser": [ "renderer" ]
       }
+    },
+    "navigation:dedicated_worker": {
+      "requires": {
+        "content_browser": [ "renderer" ]
+      }
+    },
+    "navigation:service_worker": {
+      "requires": {
+        "content_browser": [ "renderer" ]
+      }
+    },
+    "navigation:shared_worker": {
+      "requires": {
+        "content_browser": [ "renderer" ]
+      }
     }
   },
   "required_files" : {
