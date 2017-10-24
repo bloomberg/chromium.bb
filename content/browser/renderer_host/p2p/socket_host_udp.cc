@@ -26,9 +26,9 @@
 namespace {
 
 // UDP packets cannot be bigger than 64k.
-const int kReadBufferSize = 65536;
+const int kUdpReadBufferSize = 65536;
 // Socket receive buffer size.
-const int kRecvSocketBufferSize = 65536;  // 64K
+const int kUdpRecvSocketBufferSize = 65536;  // 64K
 
 // Defines set of transient errors. These errors are ignored when we get them
 // from sendto() or recvfrom() calls.
@@ -175,9 +175,9 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
   }
 
   // Setting recv socket buffer size.
-  if (socket_->SetReceiveBufferSize(kRecvSocketBufferSize) != net::OK) {
+  if (socket_->SetReceiveBufferSize(kUdpRecvSocketBufferSize) != net::OK) {
     LOG(WARNING) << "Failed to set socket receive buffer size to "
-                 << kRecvSocketBufferSize;
+                 << kUdpRecvSocketBufferSize;
   }
 
   net::IPEndPoint address;
@@ -198,7 +198,7 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
   message_sender_->Send(new P2PMsg_OnSocketCreated(
       id_, address, remote_address.ip_address));
 
-  recv_buffer_ = new net::IOBuffer(kReadBufferSize);
+  recv_buffer_ = new net::IOBuffer(kUdpReadBufferSize);
   DoRead();
 
   return true;
@@ -218,9 +218,7 @@ void P2PSocketHostUdp::DoRead() {
   int result;
   do {
     result = socket_->RecvFrom(
-        recv_buffer_.get(),
-        kReadBufferSize,
-        &recv_address_,
+        recv_buffer_.get(), kUdpReadBufferSize, &recv_address_,
         base::Bind(&P2PSocketHostUdp::OnRecv, base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       return;
