@@ -458,8 +458,14 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->cfl->mi_row = mi_row;
   xd->cfl->mi_col = mi_col;
 #endif
-  for (y = 0; y < y_mis; ++y)
-    for (x = !y; x < x_mis; ++x) xd->mi[y * cm->mi_stride + x] = xd->mi[0];
+
+  assert(x_mis && y_mis);
+  for (x = 1; x < x_mis; ++x) xd->mi[x] = xd->mi[0];
+  int idx = cm->mi_stride;
+  for (y = 1; y < y_mis; ++y) {
+    memcpy(&xd->mi[idx], &xd->mi[0], x_mis * sizeof(xd->mi[0]));
+    idx += cm->mi_stride;
+  }
 
   set_plane_n4(xd, bw, bh);
   set_skip_context(xd, mi_row, mi_col);

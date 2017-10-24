@@ -36,9 +36,8 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
   int w, h;
 
   for (h = 0; h < y_mis; h++) {
-    MV_REF *const frame_mv = frame_mvs + h * frame_mvs_stride;
+    MV_REF *mv = frame_mvs;
     for (w = 0; w < x_mis; w++) {
-      MV_REF *const mv = frame_mv + w;
       mv->ref_frame[0] = mi->mbmi.ref_frame[0];
       mv->ref_frame[1] = mi->mbmi.ref_frame[1];
       mv->mv[0].as_int = mi->mbmi.mv[0].as_int;
@@ -46,7 +45,9 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
       // (TODO:yunqing) The following 2 lines won't be used and can be removed.
       mv->pred_mv[0].as_int = mi->mbmi.pred_mv[0].as_int;
       mv->pred_mv[1].as_int = mi->mbmi.pred_mv[1].as_int;
+      mv++;
     }
+    frame_mvs += frame_mvs_stride;
   }
 }
 

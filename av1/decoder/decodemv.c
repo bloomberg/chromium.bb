@@ -2814,12 +2814,13 @@ static void av1_intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row,
   int w, h;
 
   for (h = 0; h < y_mis; h++) {
-    MV_REF *const frame_mv = frame_mvs + h * frame_mvs_stride;
+    MV_REF *mv = frame_mvs;
     for (w = 0; w < x_mis; w++) {
-      MV_REF *const mv = frame_mv + w;
       mv->ref_frame[0] = NONE_FRAME;
       mv->ref_frame[1] = NONE_FRAME;
+      mv++;
     }
+    frame_mvs += frame_mvs_stride;
   }
 }
 
