@@ -1,10 +1,11 @@
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(`Verify that bindings handle target suspension as expected.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
 
-async function test() {
   TestRunner.markStep('initialWorkspace');
   var snapshot = BindingsTestRunner.dumpWorkspace();
 
@@ -33,12 +34,4 @@ async function test() {
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>
-Verify that bindings handle target suspension as expected.
-</p>
-</body>
+})();

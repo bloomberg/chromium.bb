@@ -1,11 +1,12 @@
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(`Verify that SourceMap bindings are generating UISourceCodes properly.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
 
-async function test() {
   var contentScriptsNavigator = new Sources.ContentScriptsNavigatorView();
   contentScriptsNavigator.show(UI.inspectorView.element);
 
@@ -29,12 +30,4 @@ async function test() {
   SourcesTestRunner.dumpNavigatorView(contentScriptsNavigator, false);
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>
-Verify that SourceMap bindings are generating UISourceCodes properly.
-</p>
-</body>
+})();

@@ -4,24 +4,14 @@ Verify that navigator is properly rendered in case of multiple iframes.
 Running: dumpInitialNavigator
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: createIframes
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame1 (magic-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -38,13 +28,8 @@ top
 Running: detachFrame1
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame2 (magic-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -55,11 +40,6 @@ top
 Running: detachFrame2
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 

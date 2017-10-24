@@ -1,28 +1,17 @@
 Verify that navigator is rendered properly when targets are suspended and resumed.
 
 
-
 Running: initialWorkspace
 top
   127.0.0.1:8000
-    devtools/bindings
-      suspendtarget-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: attachFramesAndWaitForSourceMaps
 top
   127.0.0.1:8000
-    devtools/bindings
-      suspendtarget-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   (no domain)
     _test_create-iframe1.js
     _test_create-iframe2.js
@@ -46,8 +35,8 @@ top
 Running: Suspending targets.
 top
   127.0.0.1:8000
-    devtools/bindings
-      suspendtarget-navigator.html
+    devtools/resources
+      inspected-page.html
   frame1 (sourcemap-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -60,8 +49,8 @@ top
 Running: detachFrame
 top
   127.0.0.1:8000
-    devtools/bindings
-      suspendtarget-navigator.html
+    devtools/resources
+      inspected-page.html
   frame2 (sourcemap-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -70,13 +59,8 @@ top
 Running: Resuming targets.
 top
   127.0.0.1:8000
-    devtools/bindings
-      suspendtarget-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame2 (sourcemap-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources

@@ -1,11 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(`Verify that UISourceCodes are removed as main frame gets navigated.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
 
-async function test() {
   TestRunner.markStep('dumpInitialWorkspace');
   var snapshot = BindingsTestRunner.dumpWorkspace();
 
@@ -22,19 +22,5 @@ async function test() {
   await TestRunner.navigatePromise(url);
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-  TestRunner.markStep('navigateBack');
-  var originalUrl = 'http://127.0.0.1:8000/devtools/bindings/bindings-main-frame-navigated.html';
-  await TestRunner.navigatePromise(originalUrl);
-
   TestRunner.completeTest();
-}
-
-</script>
-
-</head>
-<body onload="runTest()">
-<p>
-Verify that UISourceCodes are removed as main frame gets navigated.
-</p>
-</body>
-</html>
+})();

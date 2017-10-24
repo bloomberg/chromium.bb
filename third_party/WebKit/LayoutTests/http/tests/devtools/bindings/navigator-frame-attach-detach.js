@@ -1,12 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(`Verify that navigator is rendered properly when frames come and go.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
 
-async function test() {
   var sourcesNavigator = new Sources.SourcesNavigatorView();
   sourcesNavigator.show(UI.inspectorView.element);
 
@@ -14,7 +14,7 @@ async function test() {
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.markStep('attachFrame');
-  await BindingsTestRunner.attachFrame('frame', './resources/dynamic-frame.html');
+  await BindingsTestRunner.attachFrame('frame', './resources/magic-frame.html');
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.markStep('detachFrame');
@@ -22,15 +22,4 @@ async function test() {
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.completeTest();
-}
-
-</script>
-
-</head>
-<body onload="runTest()">
-<p>
-Verify that navigator is rendered properly when frame with dynamic script and
-style is added and removed.
-</p>
-</body>
-</html>
+})();
