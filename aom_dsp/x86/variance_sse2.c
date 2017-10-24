@@ -15,6 +15,8 @@
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
 
+#include "aom_dsp/x86/synonyms.h"
+
 #include "aom_ports/mem.h"
 
 #include "./av1_rtcd.h"
@@ -29,7 +31,7 @@ unsigned int aom_get_mb_ss_sse2(const int16_t *src) {
   int i;
 
   for (i = 0; i < 32; ++i) {
-    const __m128i v = _mm_loadu_si128((const __m128i *)src);
+    const __m128i v = xx_loadu_128(src);
     vsum = _mm_add_epi32(vsum, _mm_madd_epi16(v, v));
     src += 8;
   }
@@ -39,19 +41,22 @@ unsigned int aom_get_mb_ss_sse2(const int16_t *src) {
   return _mm_cvtsi128_si32(vsum);
 }
 
-#define READ64(p, stride, i)                                  \
-  _mm_unpacklo_epi8(                                          \
-      _mm_cvtsi32_si128(*(const uint32_t *)(p + i * stride)), \
-      _mm_cvtsi32_si128(*(const uint32_t *)(p + (i + 1) * stride)))
+// Read 4 samples from each of row and row + 1. Interleave the two rows and
+// zero-extend them to 16 bit samples stored in the lower half of an SSE
+// register.
+static __m128i read64(const uint8_t *p, int stride, int row) {
+  __m128i row0 = xx_loadl_32(p + (row + 0) * stride);
+  __m128i row1 = xx_loadl_32(p + (row + 1) * stride);
+  return _mm_unpacklo_epi8(_mm_unpacklo_epi8(row0, row1), _mm_setzero_si128());
+}
 
 static void get4x4var_sse2(const uint8_t *src, int src_stride,
                            const uint8_t *ref, int ref_stride,
                            unsigned int *sse, int *sum) {
-  const __m128i zero = _mm_setzero_si128();
-  const __m128i src0 = _mm_unpacklo_epi8(READ64(src, src_stride, 0), zero);
-  const __m128i src1 = _mm_unpacklo_epi8(READ64(src, src_stride, 2), zero);
-  const __m128i ref0 = _mm_unpacklo_epi8(READ64(ref, ref_stride, 0), zero);
-  const __m128i ref1 = _mm_unpacklo_epi8(READ64(ref, ref_stride, 2), zero);
+  const __m128i src0 = read64(src, src_stride, 0);
+  const __m128i src1 = read64(src, src_stride, 2);
+  const __m128i ref0 = read64(ref, ref_stride, 0);
+  const __m128i ref1 = read64(ref, ref_stride, 2);
   const __m128i diff0 = _mm_sub_epi16(src0, ref0);
   const __m128i diff1 = _mm_sub_epi16(src1, ref1);
 
@@ -78,16 +83,16 @@ void aom_get8x8var_sse2(const uint8_t *src, int src_stride, const uint8_t *ref,
   int i;
 
   for (i = 0; i < 8; i += 2) {
-    const __m128i src0 = _mm_unpacklo_epi8(
-        _mm_loadl_epi64((const __m128i *)(src + i * src_stride)), zero);
-    const __m128i ref0 = _mm_unpacklo_epi8(
-        _mm_loadl_epi64((const __m128i *)(ref + i * ref_stride)), zero);
+    const __m128i src0 =
+        _mm_unpacklo_epi8(xx_loadl_64(src + i * src_stride), zero);
+    const __m128i ref0 =
+        _mm_unpacklo_epi8(xx_loadl_64(ref + i * ref_stride), zero);
     const __m128i diff0 = _mm_sub_epi16(src0, ref0);
 
-    const __m128i src1 = _mm_unpacklo_epi8(
-        _mm_loadl_epi64((const __m128i *)(src + (i + 1) * src_stride)), zero);
-    const __m128i ref1 = _mm_unpacklo_epi8(
-        _mm_loadl_epi64((const __m128i *)(ref + (i + 1) * ref_stride)), zero);
+    const __m128i src1 =
+        _mm_unpacklo_epi8(xx_loadl_64(src + (i + 1) * src_stride), zero);
+    const __m128i ref1 =
+        _mm_unpacklo_epi8(xx_loadl_64(ref + (i + 1) * ref_stride), zero);
     const __m128i diff1 = _mm_sub_epi16(src1, ref1);
 
     vsum = _mm_add_epi16(vsum, diff0);
@@ -117,8 +122,8 @@ void aom_get16x16var_sse2(const uint8_t *src, int src_stride,
   int i;
 
   for (i = 0; i < 16; ++i) {
-    const __m128i s = _mm_loadu_si128((const __m128i *)src);
-    const __m128i r = _mm_loadu_si128((const __m128i *)ref);
+    const __m128i s = xx_loadu_128(src);
+    const __m128i r = xx_loadu_128(ref);
 
     const __m128i src0 = _mm_unpacklo_epi8(s, zero);
     const __m128i ref0 = _mm_unpacklo_epi8(r, zero);
@@ -604,8 +609,7 @@ void aom_upsampled_pred_sse2(uint8_t *comp_pred, int width, int height,
       for (i = 0; i < height; i++) {
         int j;
         for (j = 0; j < width; j += 16) {
-          __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-          _mm_storeu_si128((__m128i *)comp_pred, s0);
+          xx_storeu_128(comp_pred, xx_loadu_128(ref));
           comp_pred += 16;
           ref += 16;
         }
@@ -617,10 +621,9 @@ void aom_upsampled_pred_sse2(uint8_t *comp_pred, int width, int height,
       assert(!(height & 1));
       /*Read 8 pixels two rows at a time.*/
       for (i = 0; i < height; i += 2) {
-        __m128i s0 = _mm_loadl_epi64((const __m128i *)ref);
-        __m128i s1 = _mm_loadl_epi64((const __m128i *)(ref + ref_stride));
-        __m128i t0 = _mm_unpacklo_epi64(s0, s1);
-        _mm_storeu_si128((__m128i *)comp_pred, t0);
+        __m128i s0 = xx_loadl_64(ref + 0 * ref_stride);
+        __m128i s1 = xx_loadl_64(ref + 1 * ref_stride);
+        xx_storeu_128(comp_pred, _mm_unpacklo_epi64(s0, s1));
         comp_pred += 16;
         ref += 2 * ref_stride;
       }
@@ -630,16 +633,13 @@ void aom_upsampled_pred_sse2(uint8_t *comp_pred, int width, int height,
       assert(!(height & 3));
       /*Read 4 pixels four rows at a time.*/
       for (i = 0; i < height; i++) {
-        __m128i s0 = _mm_cvtsi32_si128(*(const uint32_t *)ref);
-        __m128i s1 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + ref_stride));
-        __m128i s2 =
-            _mm_cvtsi32_si128(*(const uint32_t *)(ref + 2 * ref_stride));
-        __m128i s3 =
-            _mm_cvtsi32_si128(*(const uint32_t *)(ref + 3 * ref_stride));
-        __m128i t0 = _mm_unpacklo_epi32(s0, s1);
-        __m128i t1 = _mm_unpacklo_epi32(s2, s3);
-        __m128i u0 = _mm_unpacklo_epi64(t0, t1);
-        _mm_storeu_si128((__m128i *)comp_pred, u0);
+        const __m128i row0 = xx_loadl_32(ref + 0 * ref_stride);
+        const __m128i row1 = xx_loadl_32(ref + 1 * ref_stride);
+        const __m128i row2 = xx_loadl_32(ref + 2 * ref_stride);
+        const __m128i row3 = xx_loadl_32(ref + 3 * ref_stride);
+        const __m128i reg = _mm_unpacklo_epi64(_mm_unpacklo_epi32(row0, row1),
+                                               _mm_unpacklo_epi32(row2, row3));
+        xx_storeu_128(comp_pred, reg);
         comp_pred += 16;
         ref += 4 * ref_stride;
       }
@@ -690,9 +690,9 @@ void aom_comp_avg_upsampled_pred_sse2(uint8_t *comp_pred, const uint8_t *pred,
   assert(!(width * height & 15));
   n = width * height >> 4;
   for (i = 0; i < n; i++) {
-    __m128i s0 = _mm_loadu_si128((const __m128i *)comp_pred);
-    __m128i p0 = _mm_loadu_si128((const __m128i *)pred);
-    _mm_storeu_si128((__m128i *)comp_pred, _mm_avg_epu8(s0, p0));
+    __m128i s0 = xx_loadu_128(comp_pred);
+    __m128i p0 = xx_loadu_128(pred);
+    xx_storeu_128(comp_pred, _mm_avg_epu8(s0, p0));
     comp_pred += 16;
     pred += 16;
   }
