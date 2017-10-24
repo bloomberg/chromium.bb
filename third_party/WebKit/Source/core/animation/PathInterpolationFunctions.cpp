@@ -19,7 +19,7 @@ namespace blink {
 
 class SVGPathNonInterpolableValue : public NonInterpolableValue {
  public:
-  virtual ~SVGPathNonInterpolableValue() {}
+  ~SVGPathNonInterpolableValue() override {}
 
   static scoped_refptr<SVGPathNonInterpolableValue> Create(
       Vector<SVGPathSegType>& path_seg_types) {

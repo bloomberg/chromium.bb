@@ -58,7 +58,7 @@ class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
 
 class AnimationDocumentTimelineTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     page_holder = DummyPageHolder::Create();
     document = &page_holder->GetDocument();
     document->GetAnimationClock().ResetTimeForTesting();
@@ -69,7 +69,7 @@ class AnimationDocumentTimelineTest : public ::testing::Test {
     ASSERT_EQ(0, timeline->CurrentTimeInternal());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     document.Release();
     element.Release();
     timeline.Release();

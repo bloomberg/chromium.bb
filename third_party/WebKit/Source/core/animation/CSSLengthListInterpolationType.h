@@ -32,9 +32,9 @@ class CSSLengthListInterpolationType : public CSSInterpolationType {
                                          ConversionCheckers&) const final;
   InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  virtual InterpolationValue MaybeConvertValue(const CSSValue&,
-                                               const StyleResolverState*,
-                                               ConversionCheckers&) const;
+  InterpolationValue MaybeConvertValue(const CSSValue&,
+                                       const StyleResolverState*,
+                                       ConversionCheckers&) const override;
 
   PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,

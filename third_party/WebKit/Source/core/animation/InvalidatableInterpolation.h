@@ -40,12 +40,12 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   }
 
   const PropertyHandle& GetProperty() const final { return property_; }
-  virtual void Interpolate(int iteration, double fraction);
+  void Interpolate(int iteration, double fraction) override;
   bool DependsOnUnderlyingValue() const final;
   static void ApplyStack(const ActiveInterpolations&,
                          InterpolationEnvironment&);
 
-  virtual bool IsInvalidatableInterpolation() const { return true; }
+  bool IsInvalidatableInterpolation() const override { return true; }
 
   const TypedInterpolationValue* GetCachedValueForTesting() const {
     return cached_value_.get();
