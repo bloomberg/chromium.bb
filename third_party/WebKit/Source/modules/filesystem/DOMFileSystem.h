@@ -88,7 +88,7 @@ class MODULES_EXPORT DOMFileSystem final
   static void ScheduleCallback(ExecutionContext* execution_context,
                                WTF::Closure task);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DOMFileSystem(ExecutionContext*,

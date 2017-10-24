@@ -102,8 +102,8 @@ class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
 class ScriptErrorCallback final : public ErrorCallbackBase {
  public:
   static ScriptErrorCallback* Wrap(ErrorCallback*);
-  virtual ~ScriptErrorCallback() {}
-  virtual void Trace(blink::Visitor*);
+  ~ScriptErrorCallback() override {}
+  void Trace(blink::Visitor*) override;
 
   void Invoke(FileError::ErrorCode) override;
 
@@ -234,8 +234,8 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
                                                           BlobCallback*,
                                                           ErrorCallbackBase*,
                                                           ExecutionContext*);
-  virtual void DidCreateSnapshotFile(const FileMetadata&,
-                                     scoped_refptr<BlobDataHandle> snapshot);
+  void DidCreateSnapshotFile(const FileMetadata&,
+                             scoped_refptr<BlobDataHandle> snapshot) override;
 
  private:
   SnapshotFileCallback(DOMFileSystemBase*,

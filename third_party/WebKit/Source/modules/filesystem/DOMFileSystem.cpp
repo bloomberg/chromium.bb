@@ -154,12 +154,12 @@ class ConvertToFileWriterCallback : public FileWriterBaseCallback {
     return new ConvertToFileWriterCallback(callback);
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(callback_);
     FileWriterBaseCallback::Trace(visitor);
   }
 
-  void handleEvent(FileWriterBase* file_writer_base) {
+  void handleEvent(FileWriterBase* file_writer_base) override {
     callback_->handleEvent(static_cast<FileWriter*>(file_writer_base));
   }
 

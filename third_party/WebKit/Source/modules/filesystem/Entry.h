@@ -74,7 +74,7 @@ class MODULES_EXPORT Entry : public EntryBase {
                  ErrorCallback* = nullptr) const;
   String toURL(ScriptState*) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   Entry(DOMFileSystemBase*, const String& full_path);

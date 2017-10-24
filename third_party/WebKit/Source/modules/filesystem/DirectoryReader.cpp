@@ -55,7 +55,7 @@ class DirectoryReader::EntriesCallbackHelper final : public EntriesCallback {
     reader_->AddEntries(entries);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
     EntriesCallback::Trace(visitor);
   }
@@ -72,7 +72,7 @@ class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
 
   void Invoke(FileError::ErrorCode error) override { reader_->OnError(error); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
     ErrorCallbackBase::Trace(visitor);
   }
@@ -112,7 +112,7 @@ void DirectoryReader::readEntries(EntriesCallback* entries_callback,
 
   if (!has_more_entries_ || !entries_.IsEmpty()) {
     if (entries_callback) {
-      auto entries = new HeapVector<Member<Entry>>(std::move(entries_));
+      auto* entries = new HeapVector<Member<Entry>>(std::move(entries_));
       DOMFileSystem::ScheduleCallback(
           Filesystem()->GetExecutionContext(),
           WTF::Bind(&RunEntriesCallback, WrapPersistent(entries_callback),
