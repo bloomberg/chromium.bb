@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +28,9 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -48,6 +51,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetCon
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView.OnNavigationItemSelectedListener;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
@@ -87,6 +91,12 @@ public class BottomSheetContentController
     // Since the placeholder content cannot be triggered by a navigation item like the others, this
     // value must also be an invalid ID.
     private static final int PLACEHOLDER_ID = -2;
+
+    /** The threshold of application screen height for showing a tall bottom navigation bar. */
+    private static final float TALL_BOTTOM_NAV_THRESHOLD_DP = 683.0f;
+
+    /** The height of the bottom navigation bar that appears when the bottom sheet is expanded. */
+    private int mBottomNavHeight;
 
     private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
 
@@ -232,6 +242,17 @@ public class BottomSheetContentController
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
 
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
+                    @Override
+                    public void onSuccess(boolean alreadyStarted) {
+                        initBottomNavMenu();
+                    }
+
+                    @Override
+                    public void onFailure() {}
+                });
+
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
@@ -279,6 +300,29 @@ public class BottomSheetContentController
     }
 
     /**
+     * Initializes the height of the bottom navigation menu based on the device's screen dp density,
+     * and whether or not we're showing labels beneath the icons in the menu.
+     *
+     * Needs to be called after the native library is loaded.
+     */
+    private void initBottomNavMenu() {
+        assert ChromeFeatureList.isInitialized();
+
+        DisplayMetrics metrics =
+                ContextUtils.getApplicationContext().getResources().getDisplayMetrics();
+        boolean useTallBottomNav =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_BOTTOM_NAV_LABELS)
+                || Float.compare(
+                           Math.max(metrics.heightPixels, metrics.widthPixels) / metrics.density,
+                           TALL_BOTTOM_NAV_THRESHOLD_DP)
+                        >= 0;
+        mBottomNavHeight = getResources().getDimensionPixelSize(
+                useTallBottomNav ? R.dimen.bottom_nav_height_tall : R.dimen.bottom_nav_height);
+
+        initializeMenuView();
+    }
+
+    /**
      * Initializes the menu, hiding labels and showing the shadow if necessary, and centering menu
      * items.
      *
@@ -286,9 +330,7 @@ public class BottomSheetContentController
      *
      * Needs to be called after the native library is loaded.
      */
-    public void initializeMenuView() {
-        assert ChromeFeatureList.isInitialized();
-
+    private void initializeMenuView() {
         mLabelsEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_BOTTOM_NAV_LABELS);
         if (mLabelsEnabled) {
@@ -303,15 +345,14 @@ public class BottomSheetContentController
         int bottomNavShadowHeight = mLabelsEnabled
                 ? mActivity.getResources().getDimensionPixelSize(R.dimen.bottom_nav_shadow_height)
                 : 0;
-        getLayoutParams().height = (int) mBottomSheet.getBottomNavHeight() + bottomNavShadowHeight;
-        getMenuView().getLayoutParams().height = (int) mBottomSheet.getBottomNavHeight();
+        getLayoutParams().height = mBottomNavHeight + bottomNavShadowHeight;
+        getMenuView().getLayoutParams().height = mBottomNavHeight;
         getMenuView().getLayoutParams().width = LayoutParams.MATCH_PARENT;
         getMenuView().setGravity(Gravity.CENTER);
 
         ViewGroup snackbarContainer =
                 (ViewGroup) mActivity.findViewById(R.id.bottom_sheet_snackbar_container);
-        ((MarginLayoutParams) snackbarContainer.getLayoutParams()).bottomMargin =
-                (int) mBottomSheet.getBottomNavHeight();
+        ((MarginLayoutParams) snackbarContainer.getLayoutParams()).bottomMargin = mBottomNavHeight;
 
         setMenuBackgroundColor(mTabModelSelector.isIncognitoSelected());
     }
@@ -550,6 +591,14 @@ public class BottomSheetContentController
             entry.getValue().destroy();
             contentIterator.remove();
         }
+    }
+
+    /**
+     * Gets the bottom navigation menu height in pixels.
+     * @return Bottom navigation menu height in pixels.
+     */
+    public int getBottomNavHeight() {
+        return mBottomNavHeight;
     }
 
     /**
