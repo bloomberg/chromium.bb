@@ -70,8 +70,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
   int cul_level = 0;
-  uint8_t levels[64 * 64];
-  int8_t signs[64 * 64];
+  uint8_t levels[MAX_TX_SQUARE];
+  int8_t signs[MAX_TX_SQUARE];
 
   memset(tcoeffs, 0, sizeof(*tcoeffs) * seg_eob);
 
