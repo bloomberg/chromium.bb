@@ -93,6 +93,26 @@
       });
     });
   }
+
+  function setIndexedDb() {
+    var open = indexedDB.open('db', 2);
+    open.onupgradeneeded = function() {
+      open.result.createObjectStore('store');
+    }
+    open.onsuccess = function() {
+      open.result.close();
+      success_();
+    }
+  }
+
+  function hasIndexedDb() {
+    var open = indexedDB.open('db');
+    open.onsuccess = function() {
+      var hasStore = open.result.objectStoreNames.contains('store');
+      open.result.close();
+      domAutomationController.send(hasStore);
+    }
+  }
 </script>
 
 <body>

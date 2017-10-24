@@ -398,3 +398,12 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, WebSqlDeletion) {
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyWebSql) {
   TestEmptySiteData("WebSql");
 }
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, IndexedDbDeletion) {
+  TestSiteData("IndexedDb");
+}
+
+// Test that empty indexed dbs are deleted correctly.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyIndexedDb) {
+  TestEmptySiteData("IndexedDb");
+}
