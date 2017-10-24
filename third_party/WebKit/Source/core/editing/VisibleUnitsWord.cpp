@@ -121,10 +121,8 @@ unsigned StartWordBoundary(
     return 0;
   }
   need_more_context = false;
-  int start, end;
   U16_BACK_1(characters, 0, offset);
-  FindWordBoundary(characters, length, offset, &start, &end);
-  return start;
+  return FindWordStartBoundary(characters, length, offset);
 }
 
 template <typename Strategy>
