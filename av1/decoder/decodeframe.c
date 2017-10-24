@@ -148,7 +148,7 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #endif  // CONFIG_VAR_TX_NO_TX_MODE
 }
 
-#if !CONFIG_RESTRICT_COMPRESSED_HDR
+#if !CONFIG_NEW_MULTISYMBOL
 static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i;
   for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
@@ -177,7 +177,7 @@ static REFERENCE_MODE read_frame_reference_mode(
   }
 }
 
-#if !CONFIG_RESTRICT_COMPRESSED_HDR
+#if !CONFIG_NEW_MULTISYMBOL
 static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
   FRAME_CONTEXT *const fc = cm->fc;
   int i;
@@ -3489,7 +3489,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
 static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                                   size_t partition_size) {
-#if CONFIG_RESTRICT_COMPRESSED_HDR
+#if CONFIG_NEW_MULTISYMBOL
   (void)pbi;
   (void)data;
   (void)partition_size;
@@ -3585,7 +3585,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   }
 
   return aom_reader_has_error(&r);
-#endif  // CONFIG_RESTRICT_COMPRESSED_HDR
+#endif  // CONFIG_NEW_MULTISYMBOL
 }
 
 #ifdef NDEBUG

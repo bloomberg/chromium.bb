@@ -345,7 +345,6 @@ EXPERIMENT_LIST="
     opt_ref_mv
     tmv
     ext_warped_motion
-    restrict_compressed_hdr
     horzonly_frame_superres
     simple_bwd_adapt
 "
@@ -562,7 +561,6 @@ post_process_cmdline() {
     enabled lgt_from_pred && disable_feature mrc_tx
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef
-    enabled new_multisymbol && enable_feature restrict_compressed_hdr
     enabled mfmv && enable_feature frame_marker
     enabled jnt_comp && enable_feature frame_marker
     enabled frame_sign_bias && enable_feature frame_marker
