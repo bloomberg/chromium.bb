@@ -80,8 +80,8 @@ class PLATFORM_EXPORT MemoryCache final
 
  public:
   static MemoryCache* Create();
-  ~MemoryCache();
-  void Trace(blink::Visitor*);
+  ~MemoryCache() override;
+  void Trace(blink::Visitor*) override;
 
   struct TypeStatistic {
     STACK_ALLOCATED();

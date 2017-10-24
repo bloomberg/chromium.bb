@@ -53,7 +53,7 @@ class MemoryCacheTest : public ::testing::Test {
       return new FakeDecodedResource(request, type, options);
     }
 
-    virtual void AppendData(const char* data, size_t len) {
+    void AppendData(const char* data, size_t len) override {
       Resource::AppendData(data, len);
       SetDecodedSize(this->size());
     }
@@ -91,12 +91,12 @@ class MemoryCacheTest : public ::testing::Test {
   };
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
   }
 

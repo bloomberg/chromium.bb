@@ -86,7 +86,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
         insec_url("http://example.test:80") {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     context =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   }
