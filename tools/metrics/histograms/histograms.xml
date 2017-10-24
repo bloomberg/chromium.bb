@@ -29221,6 +29221,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.BluetoothDiscoverySessionStopped"
+    enum="BooleanSuccess">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides the success rate of stopping a Bluetooth discovery session.
+  </summary>
+</histogram>
+
 <histogram name="InstantTethering.ConnectionToHostResult.Failure"
     enum="InstantTethering_ConnectionToHostResult_Failure">
   <owner>hansberry@chromium.com</owner>
