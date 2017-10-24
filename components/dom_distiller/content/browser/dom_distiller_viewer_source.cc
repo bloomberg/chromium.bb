@@ -179,7 +179,7 @@ void DomDistillerViewerSource::RequestViewerHandle::WebContentsDestroyed() {
 
 void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
   // No need to listen for notifications.
-  content::WebContentsObserver::Observe(NULL);
+  content::WebContentsObserver::Observe(nullptr);
 
   // Schedule the Viewer for deletion. Ensures distillation is cancelled, and
   // any pending data stored in |buffer_| is released.

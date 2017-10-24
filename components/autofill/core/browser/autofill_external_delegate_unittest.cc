@@ -89,7 +89,7 @@ class MockAutofillManager : public AutofillManager {
   MockAutofillManager(AutofillDriver* driver, MockAutofillClient* client)
       // Force to use the constructor designated for unit test, but we don't
       // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(driver, client, NULL) {}
+      : AutofillManager(driver, client, nullptr) {}
   virtual ~MockAutofillManager() {}
 
   MOCK_METHOD2(ShouldShowScanCreditCard,

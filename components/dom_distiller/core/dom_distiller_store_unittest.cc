@@ -139,8 +139,8 @@ class DomDistillerStoreTest : public testing::Test {
 
   void TearDown() override {
     store_.reset();
-    fake_db_ = NULL;
-    fake_sync_processor_ = NULL;
+    fake_db_ = nullptr;
+    fake_sync_processor_ = nullptr;
   }
 
   // Creates a simple DomDistillerStore initialized with |store_model_| and

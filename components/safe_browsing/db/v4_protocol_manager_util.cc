@@ -342,7 +342,7 @@ void V4ProtocolManagerUtil::GenerateHostsToCheck(
     const GURL& url,
     std::vector<std::string>* hosts) {
   std::string canon_host;
-  CanonicalizeUrl(url, &canon_host, NULL, NULL);
+  CanonicalizeUrl(url, &canon_host, nullptr, nullptr);
   GenerateHostVariantsToCheck(canon_host, hosts);
 }
 
@@ -352,7 +352,7 @@ void V4ProtocolManagerUtil::GeneratePathsToCheck(
     std::vector<std::string>* paths) {
   std::string canon_path;
   std::string canon_query;
-  CanonicalizeUrl(url, NULL, &canon_path, &canon_query);
+  CanonicalizeUrl(url, nullptr, &canon_path, &canon_query);
   GeneratePathVariantsToCheck(canon_path, canon_query, paths);
 }
 
@@ -439,7 +439,8 @@ void V4ProtocolManagerUtil::CanonicalizeUrl(const GURL& url,
   url::StdStringCanonOutput output(&url_unescaped_with_can_hostpath);
   url::Parsed temp_parsed;
   url::ReplaceComponents(url_unescaped_str.data(), url_unescaped_str.length(),
-                         parsed, hp_replacements, NULL, &output, &temp_parsed);
+                         parsed, hp_replacements, nullptr, &output,
+                         &temp_parsed);
   output.Complete();
 
   // 6. Step needed to revert escaping done in url::ReplaceComponents.

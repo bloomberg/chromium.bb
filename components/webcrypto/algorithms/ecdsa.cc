@@ -55,7 +55,7 @@ Status GetEcGroupOrderSize(EVP_PKEY* pkey, size_t* order_size_bytes) {
   const EC_GROUP* group = EC_KEY_get0_group(ec);
 
   bssl::UniquePtr<BIGNUM> order(BN_new());
-  if (!EC_GROUP_get_order(group, order.get(), NULL))
+  if (!EC_GROUP_get_order(group, order.get(), nullptr))
     return Status::OperationError();
 
   *order_size_bytes = BN_num_bytes(order.get());
@@ -170,7 +170,7 @@ class EcdsaImplementation : public EcAlgorithm {
         // This is not a typo! ES512 means P-521 with SHA-512.
         return "ES512";
       default:
-        return NULL;
+        return nullptr;
     }
   }
 
@@ -183,8 +183,8 @@ class EcdsaImplementation : public EcAlgorithm {
 
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-    EVP_PKEY* private_key = NULL;
-    const EVP_MD* digest = NULL;
+    EVP_PKEY* private_key = nullptr;
+    const EVP_MD* digest = nullptr;
     Status status = GetPKeyAndDigest(algorithm, key, &private_key, &digest);
     if (status.IsError())
       return status;
@@ -194,9 +194,9 @@ class EcdsaImplementation : public EcAlgorithm {
     // the real one, which may be smaller.
     bssl::ScopedEVP_MD_CTX ctx;
     size_t sig_len = 0;
-    if (!EVP_DigestSignInit(ctx.get(), NULL, digest, NULL, private_key) ||
+    if (!EVP_DigestSignInit(ctx.get(), nullptr, digest, nullptr, private_key) ||
         !EVP_DigestSignUpdate(ctx.get(), data.bytes(), data.byte_length()) ||
-        !EVP_DigestSignFinal(ctx.get(), NULL, &sig_len)) {
+        !EVP_DigestSignFinal(ctx.get(), nullptr, &sig_len)) {
       return Status::OperationError();
     }
 
@@ -221,8 +221,8 @@ class EcdsaImplementation : public EcAlgorithm {
 
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-    EVP_PKEY* public_key = NULL;
-    const EVP_MD* digest = NULL;
+    EVP_PKEY* public_key = nullptr;
+    const EVP_MD* digest = nullptr;
     Status status = GetPKeyAndDigest(algorithm, key, &public_key, &digest);
     if (status.IsError())
       return status;
@@ -240,7 +240,8 @@ class EcdsaImplementation : public EcAlgorithm {
     }
 
     bssl::ScopedEVP_MD_CTX ctx;
-    if (!EVP_DigestVerifyInit(ctx.get(), NULL, digest, NULL, public_key) ||
+    if (!EVP_DigestVerifyInit(ctx.get(), nullptr, digest, nullptr,
+                              public_key) ||
         !EVP_DigestVerifyUpdate(ctx.get(), data.bytes(), data.byte_length())) {
       return Status::OperationError();
     }

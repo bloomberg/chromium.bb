@@ -21,7 +21,7 @@ void SetupGLContext(gpu::gles2::GLES2Interface* gl,
   // "const GLvoid*" even though it is actually an offset into the buffer
   // object's data store and not a pointer to the client's address space.
   const void* offsets[3] = {
-      0, reinterpret_cast<const void*>(3 * sizeof(float)),
+      nullptr, reinterpret_cast<const void*>(3 * sizeof(float)),
       reinterpret_cast<const void*>(5 * sizeof(float)),
   };
 

@@ -195,8 +195,8 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
           test_data::kIndex, *old_navigation_entry);
 
   const std::unique_ptr<content::NavigationEntry> new_navigation_entry(
-      ContentSerializedNavigationBuilder::ToNavigationEntry(
-          &navigation, NULL));
+      ContentSerializedNavigationBuilder::ToNavigationEntry(&navigation,
+                                                            nullptr));
 
   EXPECT_EQ(test_data::kReferrerURL, new_navigation_entry->GetReferrer().url);
   EXPECT_EQ(test_data::kReferrerPolicy,

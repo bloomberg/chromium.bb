@@ -68,7 +68,7 @@ TEST_F(SessionBackendTest, SimpleReadWrite) {
   ASSERT_TRUE(commands.empty());
 
   // Read it back in.
-  backend = NULL;
+  backend = nullptr;
   backend = new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE,
                                path_);
   backend->ReadLastSessionCommandsImpl(&commands);
@@ -78,7 +78,7 @@ TEST_F(SessionBackendTest, SimpleReadWrite) {
 
   commands.clear();
 
-  backend = NULL;
+  backend = nullptr;
   backend = new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE,
                                path_);
   backend->ReadLastSessionCommandsImpl(&commands);
@@ -149,7 +149,7 @@ TEST_F(SessionBackendTest, BigData) {
   commands.push_back(CreateCommandFromData(data[1]));
   backend->AppendCommands(std::move(commands), false);
 
-  backend = NULL;
+  backend = nullptr;
   backend = new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE,
                                path_);
 
@@ -199,7 +199,7 @@ TEST_F(SessionBackendTest, Truncate) {
   backend->AppendCommands(std::move(commands), true);
 
   // Read it back in.
-  backend = NULL;
+  backend = nullptr;
   backend = new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE,
                                path_);
   backend->ReadLastSessionCommandsImpl(&commands);

@@ -59,7 +59,7 @@ class KeywordProviderTest : public testing::Test {
     const MatchType<ResultType> output[3];
   };
 
-  KeywordProviderTest() : kw_provider_(NULL) {
+  KeywordProviderTest() : kw_provider_(nullptr) {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trial_list_.reset();
@@ -138,7 +138,7 @@ void KeywordProviderTest::SetUpClientAndKeywordProvider() {
 
 void KeywordProviderTest::TearDown() {
   client_.reset();
-  kw_provider_ = NULL;
+  kw_provider_ = nullptr;
 }
 
 template<class ResultType>
@@ -476,7 +476,7 @@ TEST_F(KeywordProviderTest, RemoveKeyword) {
   template_url_service->Remove(
       template_url_service->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")));
   ASSERT_TRUE(template_url_service->GetTemplateURLForKeyword(
-                  ASCIIToUTF16("aaaa")) == NULL);
+                  ASCIIToUTF16("aaaa")) == nullptr);
 }
 
 TEST_F(KeywordProviderTest, GetKeywordForInput) {

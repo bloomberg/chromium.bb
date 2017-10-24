@@ -460,7 +460,7 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
   // If the poly has not been split, then it is just a normal DrawQuad,
   // and we should save any extra processing that would have to be done.
   if (!poly.is_split()) {
-    DoDrawQuad(poly.original_ref(), NULL);
+    DoDrawQuad(poly.original_ref(), nullptr);
     return;
   }
 

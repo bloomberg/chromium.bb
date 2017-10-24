@@ -293,7 +293,7 @@ void CloudPolicyClientRegistrationHelper::RequestCompleted() {
   if (client_) {
     client_->RemoveObserver(this);
     // |client_| may be freed by the callback so clear it now.
-    client_ = NULL;
+    client_ = nullptr;
     callback_.Run();
   }
 }

@@ -77,8 +77,8 @@ TEST(SelectFaviconFramesTest, ZeroSizePicksLargest) {
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 48, 48));
   bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 32, 32));
 
-  gfx::ImageSkia image = CreateFaviconImageSkia(bitmaps,
-      SizesFromBitmaps(bitmaps), 0, NULL);
+  gfx::ImageSkia image =
+      CreateFaviconImageSkia(bitmaps, SizesFromBitmaps(bitmaps), 0, nullptr);
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(48, image.width());
@@ -95,8 +95,8 @@ TEST(SelectFaviconFramesTest, _16From16) {
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
   bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 17, 17));
 
-  gfx::ImageSkia image = CreateFaviconImageSkia(bitmaps,
-      SizesFromBitmaps(bitmaps), 16, NULL);
+  gfx::ImageSkia image =
+      CreateFaviconImageSkia(bitmaps, SizesFromBitmaps(bitmaps), 16, nullptr);
   image.EnsureRepsForSupportedScales();
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
@@ -123,8 +123,8 @@ TEST(SelectFaviconFramesTest, _16From17) {
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 17, 17));
 
   // Should resample from the bigger candidate.
-  gfx::ImageSkia image = CreateFaviconImageSkia(bitmaps,
-      SizesFromBitmaps(bitmaps), 16, NULL);
+  gfx::ImageSkia image =
+      CreateFaviconImageSkia(bitmaps, SizesFromBitmaps(bitmaps), 16, nullptr);
   image.EnsureRepsForSupportedScales();
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
@@ -142,8 +142,8 @@ TEST(SelectFaviconFramesTest, _16From15) {
 
   // If nothing else is available, should resample from the next smaller
   // candidate.
-  gfx::ImageSkia image = CreateFaviconImageSkia(bitmaps,
-      SizesFromBitmaps(bitmaps), 16, NULL);
+  gfx::ImageSkia image =
+      CreateFaviconImageSkia(bitmaps, SizesFromBitmaps(bitmaps), 16, nullptr);
   image.EnsureRepsForSupportedScales();
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
@@ -157,8 +157,8 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_16) {
   vector<SkBitmap> bitmaps;
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
 
-  gfx::ImageSkia image = CreateFaviconImageSkia(bitmaps,
-      SizesFromBitmaps(bitmaps), 16, NULL);
+  gfx::ImageSkia image =
+      CreateFaviconImageSkia(bitmaps, SizesFromBitmaps(bitmaps), 16, nullptr);
   image.EnsureRepsForSupportedScales();
   EXPECT_EQ(2u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
@@ -176,8 +176,8 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_32) {
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
   bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 32, 32));
 
-  gfx::ImageSkia image = CreateFaviconImageSkia(bitmaps,
-      SizesFromBitmaps(bitmaps), 16, NULL);
+  gfx::ImageSkia image =
+      CreateFaviconImageSkia(bitmaps, SizesFromBitmaps(bitmaps), 16, nullptr);
   image.EnsureRepsForSupportedScales();
   EXPECT_EQ(2u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));

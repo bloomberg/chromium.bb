@@ -26,7 +26,7 @@ size_t EncodeUrl(const std::string& url, std::vector<uint8_t>* encoded_url) {
    * Sanitize input.
    */
 
-  if (encoded_url == NULL)
+  if (encoded_url == nullptr)
     return kNullEncodedUrl;
   if (url.empty())
     return kEmptyUrl;

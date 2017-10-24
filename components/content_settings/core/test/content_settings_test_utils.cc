@@ -20,8 +20,9 @@ base::Value* TestUtils::GetContentSettingValue(
     const std::string& resource_identifier,
     bool include_incognito) {
   return HostContentSettingsMap::GetContentSettingValueAndPatterns(
-      provider, primary_url, secondary_url, content_type, resource_identifier,
-      include_incognito, NULL, NULL).release();
+             provider, primary_url, secondary_url, content_type,
+             resource_identifier, include_incognito, nullptr, nullptr)
+      .release();
 }
 
 // static

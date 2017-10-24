@@ -256,7 +256,7 @@ bool DataReductionProxyBypassProtocol::HandleValidResponseHeadersCase(
   // Only record UMA if the proxy isn't already on the retry list.
   if (!config_->IsProxyBypassed(
           request.context()->proxy_service()->proxy_retry_info(), proxy_server,
-          NULL)) {
+          nullptr)) {
     DataReductionProxyBypassStats::RecordDataReductionProxyBypassInfo(
         data_reduction_proxy_type_info->proxy_index == 0,
         data_reduction_proxy_info->bypass_all, proxy_server, *bypass_type);

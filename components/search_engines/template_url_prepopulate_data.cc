@@ -1258,7 +1258,7 @@ int GetCurrentCountryID() {
 #elif defined(OS_POSIX)
 
 int GetCurrentCountryID() {
-  const char* locale = setlocale(LC_MESSAGES, NULL);
+  const char* locale = setlocale(LC_MESSAGES, nullptr);
   if (!locale)
     return kCountryIDUnknown;
 

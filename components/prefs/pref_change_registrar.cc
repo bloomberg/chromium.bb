@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "components/prefs/pref_service.h"
 
-PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}
+PrefChangeRegistrar::PrefChangeRegistrar() : service_(nullptr) {}
 
 PrefChangeRegistrar::~PrefChangeRegistrar() {
   // If you see an invalid memory access in this destructor, this

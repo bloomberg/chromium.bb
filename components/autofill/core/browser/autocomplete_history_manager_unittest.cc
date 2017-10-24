@@ -233,7 +233,7 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
 
   // Should trigger a call to OnSuggestionsReturned, verified by the mock.
   EXPECT_CALL(external_delegate, OnSuggestionsReturned(_, _));
-  autocomplete_history_manager.SendSuggestions(NULL);
+  autocomplete_history_manager.SendSuggestions(nullptr);
 }
 
 // Verify that no autocomplete suggestion is returned for textarea.

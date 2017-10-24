@@ -37,16 +37,17 @@ TEST(ContentSettingsProviderTest, Mock) {
             TestUtils::GetContentSetting(&mock_provider, url, url,
                                          CONTENT_SETTINGS_TYPE_PLUGINS,
                                          "flash_plugin", false));
-  EXPECT_EQ(NULL, TestUtils::GetContentSettingValue(
-                      &mock_provider, url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
-                      "flash_plugin", false));
+  EXPECT_EQ(nullptr, TestUtils::GetContentSettingValue(
+                         &mock_provider, url, url,
+                         CONTENT_SETTINGS_TYPE_PLUGINS, "flash_plugin", false));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             TestUtils::GetContentSetting(&mock_provider, url, url,
                                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                          std::string(), false));
-  EXPECT_EQ(NULL, TestUtils::GetContentSettingValue(
-                      &mock_provider, url, url,
-                      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
+  EXPECT_EQ(nullptr,
+            TestUtils::GetContentSettingValue(&mock_provider, url, url,
+                                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              std::string(), false));
 
   bool owned = mock_provider.SetWebsiteSetting(
       pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",

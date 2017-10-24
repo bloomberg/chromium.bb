@@ -38,13 +38,13 @@ void InfoBarManager::Observer::OnManagerShuttingDown(InfoBarManager* manager) {
 InfoBar* InfoBarManager::AddInfoBar(std::unique_ptr<InfoBar> infobar) {
   DCHECK(infobar);
   if (!infobars_enabled_)
-    return NULL;
+    return nullptr;
 
   for (InfoBars::const_iterator i(infobars_.begin()); i != infobars_.end();
        ++i) {
     if ((*i)->delegate()->EqualsDelegate(infobar->delegate())) {
       DCHECK_NE((*i)->delegate(), infobar->delegate());
-      return NULL;
+      return nullptr;
     }
   }
 

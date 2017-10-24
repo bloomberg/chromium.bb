@@ -165,7 +165,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
   if (reset_to_default) {
-    edit_model_->OnPopupDataChanged(match.inline_autocompletion, NULL,
+    edit_model_->OnPopupDataChanged(match.inline_autocompletion, nullptr,
                                     keyword, is_keyword_hint);
   } else {
     edit_model_->OnPopupDataChanged(match.fill_into_edit, &current_destination,

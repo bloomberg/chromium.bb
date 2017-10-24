@@ -66,7 +66,7 @@ const char kChromeCrx[] = "chromecrx";
 const char kChromiumCrx[] = "chromiumcrx";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-UpdateQueryParamsDelegate* g_delegate = NULL;
+UpdateQueryParamsDelegate* g_delegate = nullptr;
 
 }  // namespace
 

@@ -41,7 +41,7 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   if ((request.load_flags() & net::LOAD_BYPASS_PROXY) ||
       (request.proxy_server().is_valid() &&
        !request.proxy_server().is_direct() &&
-       !config.IsDataReductionProxy(request.proxy_server(), NULL)) ||
+       !config.IsDataReductionProxy(request.proxy_server(), nullptr)) ||
       config.IsBypassedByDataReductionProxyLocalRules(
           request, data_reduction_proxy_config)) {
     return SHORT_BYPASS;

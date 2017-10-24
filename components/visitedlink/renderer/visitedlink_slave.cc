@@ -33,7 +33,7 @@ void VisitedLinkSlave::UpdateVisitedLinks(
   // Since this function may be called again to change the table, we may need
   // to free old objects.
   FreeTable();
-  DCHECK(hash_table_ == NULL);
+  DCHECK(hash_table_ == nullptr);
 
   int32_t table_len = 0;
   {
@@ -75,7 +75,7 @@ void VisitedLinkSlave::FreeTable() {
     return;
 
   table_mapping_.reset();
-  hash_table_ = NULL;
+  hash_table_ = nullptr;
   table_length_ = 0;
 }
 

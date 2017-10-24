@@ -209,7 +209,7 @@ TEST_F(DomDistillerRequestViewTest, TestLoadingIndicator) {
   const std::string show_loader = "showLoadingIndicator(false);";
 
   TestRequestViewHandle handle(distilled_page_prefs_.get());
-  handle.TakeViewerHandle(NULL);
+  handle.TakeViewerHandle(nullptr);
 
   std::vector<scoped_refptr<ArticleDistillationUpdate::RefCountedPageProto>>
       pages;

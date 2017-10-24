@@ -436,8 +436,8 @@ TEST(CreditCardTest, Compare) {
   EXPECT_EQ(0, a.Compare(b));
 
   // Different values produce non-zero results.
-  test::SetCreditCardInfo(&a, "Jimmy", NULL, NULL, NULL, "");
-  test::SetCreditCardInfo(&b, "Ringo", NULL, NULL, NULL, "");
+  test::SetCreditCardInfo(&a, "Jimmy", nullptr, nullptr, nullptr, "");
+  test::SetCreditCardInfo(&b, "Ringo", nullptr, nullptr, nullptr, "");
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
 }

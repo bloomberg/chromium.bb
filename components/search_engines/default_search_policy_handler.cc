@@ -31,7 +31,7 @@ void SetListInPref(const PolicyMap& policies,
                    base::DictionaryValue* dict) {
   DCHECK(dict);
   const base::Value* policy_value = policies.GetValue(policy_name);
-  const base::ListValue* policy_list = NULL;
+  const base::ListValue* policy_list = nullptr;
   if (policy_value) {
     bool is_list = policy_value->GetAsList(&policy_list);
     DCHECK(is_list);
@@ -221,7 +221,7 @@ bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
 bool DefaultSearchPolicyHandler::HasDefaultSearchPolicy(
     const PolicyMap& policies,
     const char* policy_name) {
-  return policies.Get(policy_name) != NULL;
+  return policies.Get(policy_name) != nullptr;
 }
 
 bool DefaultSearchPolicyHandler::AnyDefaultSearchPoliciesSpecified(

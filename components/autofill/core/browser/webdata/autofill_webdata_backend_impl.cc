@@ -228,7 +228,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
   }
 
   // Send GUID-based notification.
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, NULL);
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, nullptr);
   for (auto& db_observer : db_observer_list_)
     db_observer.AutofillProfileChanged(change);
 

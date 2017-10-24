@@ -49,7 +49,7 @@ void WebContentsMainFrameObserver::RenderProcessGone(
 }
 
 void WebContentsMainFrameObserver::CleanUp() {
-  content::WebContentsObserver::Observe(NULL);
+  content::WebContentsObserver::Observe(nullptr);
 }
 
 }  // namespace dom_distiller

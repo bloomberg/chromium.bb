@@ -97,7 +97,7 @@ size_t URLPrefix::GetInlineAutocompleteOffset(
             : BestURLPrefixInternal(lower_text, lower_fixed_up_input);
     matching_string = &fixed_up_input;
   }
-  return (best_prefix != NULL) ?
-      (best_prefix->prefix.length() + matching_string->length()) :
-      base::string16::npos;
+  return (best_prefix != nullptr)
+             ? (best_prefix->prefix.length() + matching_string->length())
+             : base::string16::npos;
 }

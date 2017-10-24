@@ -46,7 +46,7 @@ class UserInfoFetcherTest : public testing::Test {
 
 TEST_F(UserInfoFetcherTest, FailedFetch) {
   MockUserInfoFetcherDelegate delegate;
-  UserInfoFetcher fetcher(&delegate, NULL);
+  UserInfoFetcher fetcher(&delegate, nullptr);
   fetcher.Start("access_token");
 
   // Fake a failed fetch - should result in the failure callback being invoked.
@@ -58,7 +58,7 @@ TEST_F(UserInfoFetcherTest, FailedFetch) {
 
 TEST_F(UserInfoFetcherTest, SuccessfulFetch) {
   MockUserInfoFetcherDelegate delegate;
-  UserInfoFetcher fetcher(&delegate, NULL);
+  UserInfoFetcher fetcher(&delegate, nullptr);
   fetcher.Start("access_token");
 
   // Generate what we expect our result will look like (should match

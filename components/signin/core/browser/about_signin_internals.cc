@@ -189,7 +189,7 @@ AboutSigninInternals::AboutSigninInternals(
     : token_service_(token_service),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
-      client_(NULL),
+      client_(nullptr),
       signin_error_controller_(signin_error_controller),
       cookie_manager_service_(cookie_manager_service) {}
 

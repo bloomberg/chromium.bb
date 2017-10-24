@@ -331,7 +331,7 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
     NOTREACHED() << "Unregistered translate whitelist pref";
     return;
   }
-  dict->Remove(original_language, NULL);
+  dict->Remove(original_language, nullptr);
 }
 
 bool TranslatePrefs::HasBlockedLanguages() const {
@@ -636,7 +636,7 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs,
   if (dict && !dict->empty()) {
     base::DictionaryValue::Iterator iter(*dict);
     while (!iter.IsAtEnd()) {
-      const base::ListValue* list = NULL;
+      const base::ListValue* list = nullptr;
       if (!iter.value().GetAsList(&list) || !list)
         break;  // Dictionary has either been migrated or new format.
       std::string key = iter.key();
@@ -646,7 +646,7 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs,
       if (list->empty() ||
           !list->GetString(list->GetSize() - 1, &target_lang) ||
           target_lang.empty()) {
-        dict->Remove(key, NULL);
+        dict->Remove(key, nullptr);
       } else {
         dict->SetString(key, target_lang);
       }
@@ -695,17 +695,17 @@ void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
   }
 
   base::Value string_value(value);
-  blacklist->Remove(string_value, NULL);
+  blacklist->Remove(string_value, nullptr);
 }
 
 bool TranslatePrefs::IsListEmpty(const char* pref_id) const {
   const base::ListValue* blacklist = prefs_->GetList(pref_id);
-  return (blacklist == NULL || blacklist->empty());
+  return (blacklist == nullptr || blacklist->empty());
 }
 
 bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {
   const base::DictionaryValue* dict = prefs_->GetDictionary(pref_id);
-  return (dict == NULL || dict->empty());
+  return (dict == nullptr || dict->empty());
 }
 
 double TranslatePrefs::GetReadingFromUserLanguageProfile(

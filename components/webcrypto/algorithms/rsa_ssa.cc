@@ -31,7 +31,7 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
       case blink::kWebCryptoAlgorithmIdSha512:
         return "RS512";
       default:
-        return NULL;
+        return nullptr;
     }
   }
 

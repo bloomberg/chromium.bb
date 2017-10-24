@@ -186,9 +186,9 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByOverrides) {
   ExpectSimilar(prepopulated_urls[default_search_index].get(),
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
-  EXPECT_NE(manager.GetDefaultSearchEngine(NULL)->short_name(),
+  EXPECT_NE(manager.GetDefaultSearchEngine(nullptr)->short_name(),
             first_default.short_name());
-  EXPECT_NE(manager.GetDefaultSearchEngine(NULL)->keyword(),
+  EXPECT_NE(manager.GetDefaultSearchEngine(nullptr)->keyword(),
             first_default.keyword());
 }
 
@@ -212,7 +212,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByPolicy) {
 
   TemplateURLData null_policy_data;
   SetPolicy(pref_service(), false, &null_policy_data);
-  EXPECT_EQ(NULL, manager.GetDefaultSearchEngine(&source));
+  EXPECT_EQ(nullptr, manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_POLICY, source);
 
   pref_service()->RemoveManagedPref(

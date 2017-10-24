@@ -114,7 +114,7 @@ static void ValidatePointsWithinDeltaOf(const DrawPolygon& polygon,
 // A simple square in a plane.
 TEST(DrawPolygonConstructionTest, NormalNormal) {
   gfx::Transform Identity;
-  DrawPolygon polygon(NULL, gfx::RectF(10.0f, 10.0f), Identity, 1);
+  DrawPolygon polygon(nullptr, gfx::RectF(10.0f, 10.0f), Identity, 1);
   EXPECT_NORMAL(polygon, 0.0f, 0.0f, 1.0f);
 }
 
@@ -174,7 +174,7 @@ TEST(DrawPolygonConstructionTest, SimpleNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform_i(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_i(NULL, src, transform_i, 1);
+  DrawPolygon polygon_i(nullptr, src, transform_i, 1);
 
   EXPECT_NORMAL(polygon_i, 0.0f, 0.0f, 1.0f);
 }
@@ -183,7 +183,7 @@ TEST(DrawPolygonConstructionTest, DISABLED_NormalInvertXY) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_a(NULL, src, transform, 2);
+  DrawPolygon polygon_a(nullptr, src, transform, 2);
 
   EXPECT_NORMAL(polygon_a, 0.0f, 0.0f, 1.0f);
 }
@@ -192,7 +192,7 @@ TEST(DrawPolygonConstructionTest, DISABLED_NormalInvertXZ) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_b(NULL, src, transform, 3);
+  DrawPolygon polygon_b(nullptr, src, transform, 3);
 
   EXPECT_NORMAL(polygon_b, 1.0f, 0.0f, 0.0f);
 }
@@ -201,7 +201,7 @@ TEST(DrawPolygonConstructionTest, DISABLED_NormalInvertYZ) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_c(NULL, src, transform, 4);
+  DrawPolygon polygon_c(nullptr, src, transform, 4);
 
   EXPECT_NORMAL(polygon_c, 0.0f, 1.0f, 0.0f);
 }
@@ -210,7 +210,7 @@ TEST(DrawPolygonConstructionTest, NormalRotate90) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1);
-  DrawPolygon polygon_b(NULL, src, transform, 3);
+  DrawPolygon polygon_b(nullptr, src, transform, 3);
 
   EXPECT_NORMAL(polygon_b, 0.0f, 0.0f, 1.0f);
 }
@@ -219,7 +219,7 @@ TEST(DrawPolygonConstructionTest, InvertXNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_d(NULL, src, transform, 5);
+  DrawPolygon polygon_d(nullptr, src, transform, 5);
 
   EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
 }
@@ -228,7 +228,7 @@ TEST(DrawPolygonConstructionTest, InvertYNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_d(NULL, src, transform, 5);
+  DrawPolygon polygon_d(nullptr, src, transform, 5);
 
   EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
 }
@@ -237,7 +237,7 @@ TEST(DrawPolygonConstructionTest, InvertZNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_d(NULL, src, transform, 5);
+  DrawPolygon polygon_d(nullptr, src, transform, 5);
 
   EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, -1.0f);
 }

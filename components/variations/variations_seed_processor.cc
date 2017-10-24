@@ -270,8 +270,8 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
           study.name(), processed_study.total_probability(),
           processed_study.GetDefaultExperimentName(),
           base::FieldTrialList::kNoExpirationYear, 1, 1, randomization_type,
-          randomization_seed, NULL,
-          ShouldStudyUseLowEntropy(study) ? low_entropy_provider : NULL));
+          randomization_seed, nullptr,
+          ShouldStudyUseLowEntropy(study) ? low_entropy_provider : nullptr));
 
   bool has_overrides = false;
   bool enables_or_disables_features = false;

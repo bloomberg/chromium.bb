@@ -47,9 +47,7 @@ bool AppModalDialogQueue::HasActiveDialog() const {
 }
 
 AppModalDialogQueue::AppModalDialogQueue()
-    : active_dialog_(NULL),
-      showing_modal_dialog_(false) {
-}
+    : active_dialog_(nullptr), showing_modal_dialog_(false) {}
 
 AppModalDialogQueue::~AppModalDialogQueue() {
 }

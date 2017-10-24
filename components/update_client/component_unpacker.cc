@@ -121,7 +121,7 @@ bool ComponentUnpacker::BeginPatching() {
 void ComponentUnpacker::EndPatching(UnpackerError error, int extended_error) {
   error_ = error;
   extended_error_ = extended_error;
-  patcher_ = NULL;
+  patcher_ = nullptr;
 
   EndUnpacking();
 }

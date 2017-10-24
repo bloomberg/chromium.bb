@@ -67,7 +67,7 @@ class AlgorithmRegistry {
       case blink::kWebCryptoAlgorithmIdPbkdf2:
         return pbkdf2_.get();
       default:
-        return NULL;
+        return nullptr;
     }
   }
 

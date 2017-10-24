@@ -35,7 +35,7 @@ SyncInvalidationListener::SyncInvalidationListener(
     std::unique_ptr<SyncNetworkChannel> network_channel)
     : sync_network_channel_(std::move(network_channel)),
       sync_system_resources_(sync_network_channel_.get(), this),
-      delegate_(NULL),
+      delegate_(nullptr),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
       push_client_state_(DEFAULT_INVALIDATION_ERROR),
       weak_ptr_factory_(this) {
@@ -417,7 +417,7 @@ void SyncInvalidationListener::Stop() {
   invalidation_client_->Stop();
 
   invalidation_client_.reset();
-  delegate_ = NULL;
+  delegate_ = nullptr;
 
   ticl_state_ = DEFAULT_INVALIDATION_ERROR;
   push_client_state_ = DEFAULT_INVALIDATION_ERROR;

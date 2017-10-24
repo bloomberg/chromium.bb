@@ -157,7 +157,7 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
       status.Add(JsonErrorToPolicyLoadStatus(error_code));
       continue;
     }
-    base::DictionaryValue* dictionary_value = NULL;
+    base::DictionaryValue* dictionary_value = nullptr;
     if (!value->GetAsDictionary(&dictionary_value)) {
       LOG(WARNING) << "Expected JSON dictionary in configuration file "
                    << config_file_iter->value();

@@ -85,9 +85,7 @@ AutofillProfileSyncableService::FromWebDataService(
 }
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
-    : webdata_backend_(NULL),
-      scoped_observer_(this) {
-}
+    : webdata_backend_(nullptr), scoped_observer_(this) {}
 
 syncer::SyncMergeResult
 AutofillProfileSyncableService::MergeDataAndStartSyncing(

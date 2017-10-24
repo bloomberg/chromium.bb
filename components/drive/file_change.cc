@@ -17,7 +17,7 @@ FileChange::Change::Change(ChangeType change, FileType file_type)
 }
 
 std::string FileChange::Change::DebugString() const {
-  const char* change_string = NULL;
+  const char* change_string = nullptr;
   switch (change()) {
     case CHANGE_TYPE_ADD_OR_UPDATE:
       change_string = "ADD_OR_UPDATE";

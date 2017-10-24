@@ -109,9 +109,8 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
 CustomFakeGCMDriver::CustomFakeGCMDriver()
     : connected_(true),
       update_accounts_called_(false),
-      last_connection_observer_(NULL),
-      removed_connection_observer_(NULL) {
-}
+      last_connection_observer_(nullptr),
+      removed_connection_observer_(nullptr) {}
 
 CustomFakeGCMDriver::~CustomFakeGCMDriver() {
 }
@@ -141,8 +140,8 @@ void CustomFakeGCMDriver::SetConnected(bool connected) {
 void CustomFakeGCMDriver::ResetResults() {
   accounts_.clear();
   update_accounts_called_ = false;
-  last_connection_observer_ = NULL;
-  removed_connection_observer_ = NULL;
+  last_connection_observer_ = nullptr;
+  removed_connection_observer_ = nullptr;
 }
 
 
@@ -410,7 +409,7 @@ TEST_F(GCMAccountTrackerTest, AccountRemovedWhileRequestsPending) {
 
 // Makes sure that tracker observes GCM connection when running.
 TEST_F(GCMAccountTrackerTest, TrackerObservesConnection) {
-  EXPECT_EQ(NULL, driver()->last_connection_observer());
+  EXPECT_EQ(nullptr, driver()->last_connection_observer());
   tracker()->Start();
   EXPECT_EQ(tracker(), driver()->last_connection_observer());
   tracker()->Shutdown();

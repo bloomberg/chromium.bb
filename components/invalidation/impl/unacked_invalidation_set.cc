@@ -192,7 +192,7 @@ bool UnackedInvalidationSet::ResetFromValue(
     return false;
   }
   object_id_ = invalidation::ObjectId(source, name);
-  const base::ListValue* invalidation_list = NULL;
+  const base::ListValue* invalidation_list = nullptr;
   if (!value.GetList(kInvalidationListKey, &invalidation_list)
       || !ResetListFromValue(*invalidation_list)) {
     // Earlier versions of this class did not set this field, so we don't treat

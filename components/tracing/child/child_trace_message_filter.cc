@@ -26,7 +26,7 @@ const int kMinTimeBetweenHistogramChangesInSeconds = 10;
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::SingleThreadTaskRunner* ipc_task_runner)
     : enabled_tracing_modes_(0),
-      sender_(NULL),
+      sender_(nullptr),
       ipc_task_runner_(ipc_task_runner) {}
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -39,7 +39,7 @@ void ChildTraceMessageFilter::SetSenderForTesting(IPC::Sender* sender) {
 }
 
 void ChildTraceMessageFilter::OnFilterRemoved() {
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
 bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {

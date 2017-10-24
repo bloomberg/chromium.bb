@@ -37,7 +37,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
 
-  EXPECT_EQ(NULL, surface_manager->GetSurfaceForId(surface_id));
+  EXPECT_EQ(nullptr, surface_manager->GetSurfaceForId(surface_id));
 }
 
 TEST(SurfaceTest, SurfaceIds) {

@@ -268,7 +268,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(callback, HTTP_PRECONDITION,
-                     base::Passed(base::WrapUnique<FileResource>(NULL))));
+                     base::Passed(base::WrapUnique<FileResource>(nullptr))));
       return CancelCallback();
     }
 
@@ -337,7 +337,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_NO_CONNECTION,
-                   base::Passed(base::WrapUnique<FileResource>(NULL))));
+                   base::Passed(base::WrapUnique<FileResource>(nullptr))));
     return CancelCallback();
   }
 
@@ -352,7 +352,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_NO_CONNECTION,
-                   base::Passed(base::WrapUnique<FileResource>(NULL))));
+                   base::Passed(base::WrapUnique<FileResource>(nullptr))));
     return CancelCallback();
   }
 };

@@ -35,8 +35,7 @@ PhoneNumber::PhoneNumber(AutofillProfile* profile)
     : profile_(profile) {
 }
 
-PhoneNumber::PhoneNumber(const PhoneNumber& number)
-    : profile_(NULL) {
+PhoneNumber::PhoneNumber(const PhoneNumber& number) : profile_(nullptr) {
   *this = number;
 }
 

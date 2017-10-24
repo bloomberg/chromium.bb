@@ -115,11 +115,10 @@ const char ProcessedStudy::kGenericDefaultExperimentName[] =
     "VariationsDefaultExperiment";
 
 ProcessedStudy::ProcessedStudy()
-    : study_(NULL),
+    : study_(nullptr),
       total_probability_(0),
       all_assignments_to_one_group_(false),
-      is_expired_(false) {
-}
+      is_expired_(false) {}
 
 ProcessedStudy::~ProcessedStudy() {
 }

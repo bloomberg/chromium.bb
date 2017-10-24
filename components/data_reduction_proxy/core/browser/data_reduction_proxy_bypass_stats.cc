@@ -332,7 +332,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
   }
 
   if (data_reduction_proxy_config_->AreDataReductionProxiesBypassed(
-          request, data_reduction_proxy_config, NULL)) {
+          request, data_reduction_proxy_config, nullptr)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyBypassStats::NETWORK_ERROR,
                         content_length);
@@ -347,8 +347,8 @@ void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
   DCHECK(!request.was_cached());
 
   if (!data_reduction_proxy_config_->WasDataReductionProxyUsed(&request,
-                                                               NULL) ||
-      HasDataReductionProxyViaHeader(*request.response_headers(), NULL)) {
+                                                               nullptr) ||
+      HasDataReductionProxyViaHeader(*request.response_headers(), nullptr)) {
     // Only track requests that used the data reduction proxy and had responses
     // that were missing the data reduction proxy via header.
     return;

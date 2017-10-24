@@ -298,7 +298,7 @@ void StorageMonitorLinux::EjectDevice(
     base::Callback<void(EjectStatus)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StorageInfo::Type type;
-  if (!StorageInfo::CrackDeviceId(device_id, &type, NULL)) {
+  if (!StorageInfo::CrackDeviceId(device_id, &type, nullptr)) {
     callback.Run(EJECT_FAILURE);
     return;
   }

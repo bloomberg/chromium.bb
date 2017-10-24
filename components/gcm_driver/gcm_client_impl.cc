@@ -296,11 +296,11 @@ GCMClientImpl::GCMClientImpl(
     std::unique_ptr<GCMInternalsBuilder> internals_builder)
     : internals_builder_(std::move(internals_builder)),
       state_(UNINITIALIZED),
-      delegate_(NULL),
+      delegate_(nullptr),
       start_mode_(DELAYED_START),
       clock_(internals_builder_->BuildClock()),
       gcm_store_reset_(false),
-      url_request_context_getter_(NULL),
+      url_request_context_getter_(nullptr),
       periodic_checkin_ptr_factory_(this),
       destroying_gcm_store_ptr_factory_(this),
       weak_ptr_factory_(this) {}
@@ -1235,7 +1235,7 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   stats.gcm_client_created = true;
   stats.is_recording = recorder_.is_recording();
   stats.gcm_client_state = GetStateString();
-  stats.connection_client_created = mcs_client_.get() != NULL;
+  stats.connection_client_created = mcs_client_.get() != nullptr;
   stats.last_checkin = last_checkin_time_;
   stats.next_checkin =
       last_checkin_time_ + gservices_settings_.GetCheckinInterval();

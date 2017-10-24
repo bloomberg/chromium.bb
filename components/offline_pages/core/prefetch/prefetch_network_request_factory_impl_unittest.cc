@@ -222,7 +222,7 @@ TEST_F(PrefetchNetworkRequestFactoryTest, GetOperationRequestDoneUMA) {
   // Check that operation names have been cleaned up.
   EXPECT_FALSE(request_factory()->HasOutstandingRequests());
   EXPECT_TRUE(request_factory()->GetAllOperationNamesRequested()->empty());
-  EXPECT_EQ(NULL,
+  EXPECT_EQ(nullptr,
             request_factory()->FindGetOperationRequestByName(operation_name1));
 
   // TODO(petewil): We should also test that when the maximum concurrent

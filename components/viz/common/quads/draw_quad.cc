@@ -16,7 +16,7 @@
 namespace viz {
 
 DrawQuad::DrawQuad()
-    : material(INVALID), needs_blending(false), shared_quad_state(0) {}
+    : material(INVALID), needs_blending(false), shared_quad_state(nullptr) {}
 
 DrawQuad::DrawQuad(const DrawQuad& other) = default;
 

@@ -33,7 +33,7 @@ static const uint32_t kMaxBodySizeBytes = 1024;
 namespace safe_browsing {
 
 ThreatDetailsCacheCollector::ThreatDetailsCacheCollector()
-    : resources_(NULL), result_(NULL), has_started_(false) {}
+    : resources_(nullptr), result_(nullptr), has_started_(false) {}
 
 void ThreatDetailsCacheCollector::StartCacheCollection(
     net::URLRequestContextGetter* request_context_getter,
@@ -130,7 +130,7 @@ ThreatDetailsCacheCollector::GetResource(const GURL& url) {
   if (it != resources_->end()) {
     return it->second.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 void ThreatDetailsCacheCollector::OnURLFetchComplete(
@@ -223,7 +223,7 @@ void ThreatDetailsCacheCollector::AdvanceEntry() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Advance to the next resource.
   ++resources_it_;
-  current_fetch_.reset(NULL);
+  current_fetch_.reset(nullptr);
 
   // Create a task so we don't take over the IO thread for too long.
   BrowserThread::PostTask(

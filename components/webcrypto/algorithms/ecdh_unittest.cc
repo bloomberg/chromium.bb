@@ -46,7 +46,7 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
                         blink::WebCryptoKey* public_key,
                         blink::WebCryptoKey* private_key) {
   // Import the public key.
-  const base::DictionaryValue* public_key_json = NULL;
+  const base::DictionaryValue* public_key_json = nullptr;
   EXPECT_TRUE(test->GetDictionary("public_key", &public_key_json));
   blink::WebCryptoNamedCurve curve =
       GetCurveNameFromDictionary(public_key_json);
@@ -61,7 +61,7 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
   test->GetString("private_key_error", &expected_private_key_error);
 
   // Import the private key.
-  const base::DictionaryValue* private_key_json = NULL;
+  const base::DictionaryValue* private_key_json = nullptr;
   EXPECT_TRUE(test->GetDictionary("private_key", &private_key_json));
   curve = GetCurveNameFromDictionary(private_key_json);
   Status status = ImportKey(
@@ -123,7 +123,7 @@ TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
   if (!ReadJsonTestFileToList("ecdh.json", &tests))
     return ::testing::AssertionFailure() << "Failed loading ecdh.json";
 
-  const base::DictionaryValue* test = NULL;
+  const base::DictionaryValue* test = nullptr;
   bool valid_p521_keys = false;
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
@@ -309,7 +309,7 @@ TEST_F(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   ASSERT_TRUE(tests->GetDictionary(0, &test));
 
   // Import the public key.
-  const base::DictionaryValue* public_key_json = NULL;
+  const base::DictionaryValue* public_key_json = nullptr;
   EXPECT_TRUE(test->GetDictionary("public_key", &public_key_json));
   blink::WebCryptoNamedCurve curve =
       GetCurveNameFromDictionary(public_key_json);
@@ -320,7 +320,7 @@ TEST_F(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   EXPECT_EQ(0, key.Usages());
 
   // Import the private key.
-  const base::DictionaryValue* private_key_json = NULL;
+  const base::DictionaryValue* private_key_json = nullptr;
   EXPECT_TRUE(test->GetDictionary("private_key", &private_key_json));
   curve = GetCurveNameFromDictionary(private_key_json);
   ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),

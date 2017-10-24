@@ -15,7 +15,7 @@ namespace url_matcher_helpers {
 // successful.
 bool GetAsStringVector(const base::Value* value,
                        std::vector<std::string>* out) {
-  const base::ListValue* value_as_list = 0;
+  const base::ListValue* value_as_list = nullptr;
   if (!value->GetAsList(&value_as_list))
     return false;
 

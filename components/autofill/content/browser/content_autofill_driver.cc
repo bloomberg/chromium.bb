@@ -83,7 +83,7 @@ net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
 }
 
 bool ContentAutofillDriver::RendererIsAvailable() {
-  return render_frame_host_->GetRenderViewHost() != NULL;
+  return render_frame_host_->GetRenderViewHost() != nullptr;
 }
 
 void ContentAutofillDriver::SendFormDataToRenderer(

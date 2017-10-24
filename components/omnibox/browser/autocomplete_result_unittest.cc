@@ -52,7 +52,7 @@ void PopulateAutocompleteMatchesFromTestData(
     const AutocompleteMatchTestData* data,
     size_t count,
     ACMatches* matches) {
-  ASSERT_TRUE(matches != NULL);
+  ASSERT_TRUE(matches != nullptr);
   for (size_t i = 0; i < count; ++i) {
     AutocompleteMatch match;
     match.destination_url = GURL(data[i].destination_url);
@@ -113,7 +113,7 @@ class AutocompleteResultTest : public testing::Test {
   }
 
   void SetUp() override {
-    template_url_service_.reset(new TemplateURLService(NULL, 0));
+    template_url_service_.reset(new TemplateURLService(nullptr, 0));
     template_url_service_->Load();
   }
 

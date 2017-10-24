@@ -51,7 +51,7 @@ Status CommonEncryptDecrypt(InitFunc init_func,
   if (!digest)
     return Status::ErrorUnsupported();
 
-  bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(pkey, NULL));
+  bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(pkey, nullptr));
 
   if (!init_func(ctx.get()) ||
       !EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_OAEP_PADDING) ||
@@ -78,7 +78,7 @@ Status CommonEncryptDecrypt(InitFunc init_func,
 
   // Determine the maximum length of the output.
   size_t outlen = 0;
-  if (!encrypt_decrypt_func(ctx.get(), NULL, &outlen, data.bytes(),
+  if (!encrypt_decrypt_func(ctx.get(), nullptr, &outlen, data.bytes(),
                             data.byte_length())) {
     return Status::OperationError();
   }
@@ -114,7 +114,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
       case blink::kWebCryptoAlgorithmIdSha512:
         return "RSA-OAEP-512";
       default:
-        return NULL;
+        return nullptr;
     }
   }
 

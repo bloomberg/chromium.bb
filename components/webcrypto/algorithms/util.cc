@@ -29,7 +29,7 @@ const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
     case blink::kWebCryptoAlgorithmIdSha512:
       return EVP_sha512();
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -61,7 +61,8 @@ bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
 }
 
 BIGNUM* CreateBIGNUM(const std::string& n) {
-  return BN_bin2bn(reinterpret_cast<const uint8_t*>(n.data()), n.size(), NULL);
+  return BN_bin2bn(reinterpret_cast<const uint8_t*>(n.data()), n.size(),
+                   nullptr);
 }
 
 Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
@@ -79,7 +80,7 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
     return Status::ErrorUnexpected();
 
   if (!EVP_AEAD_CTX_init(ctx.get(), aead_alg, raw_key.data(), raw_key.size(),
-                         tag_length_bytes, NULL)) {
+                         tag_length_bytes, nullptr)) {
     return Status::OperationError();
   }
 

@@ -355,7 +355,7 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
   }
 
   void StartLocalDatabaseManager() {
-    v4_local_database_manager_->StartOnIOThread(NULL,
+    v4_local_database_manager_->StartOnIOThread(nullptr,
                                                 GetTestV4ProtocolConfig());
   }
 

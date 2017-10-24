@@ -205,7 +205,7 @@ void GCMInvalidationBridge::CoreInitializationDone(
 void GCMInvalidationBridge::RequestToken(
     syncer::GCMNetworkChannelDelegate::RequestTokenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (access_token_request_ != NULL) {
+  if (access_token_request_ != nullptr) {
     // Report previous request as cancelled.
     GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
     std::string access_token;
@@ -269,7 +269,7 @@ void GCMInvalidationBridge::Register(
     syncer::GCMNetworkChannelDelegate::RegisterCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No-op if GCMClient is disabled.
-  if (gcm_driver_ == NULL)
+  if (gcm_driver_ == nullptr)
     return;
 
   std::vector<std::string> sender_ids;
@@ -298,7 +298,7 @@ void GCMInvalidationBridge::RegisterFinished(
 void GCMInvalidationBridge::Unregister() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No-op if GCMClient is disabled.
-  if (gcm_driver_ == NULL)
+  if (gcm_driver_ == nullptr)
     return;
 
   gcm_driver_->Unregister(
@@ -314,7 +314,7 @@ void GCMInvalidationBridge::UnregisterFinishedNoOp(
 
 void GCMInvalidationBridge::SubscribeForIncomingMessages() {
   // No-op if GCMClient is disabled.
-  if (gcm_driver_ == NULL)
+  if (gcm_driver_ == nullptr)
     return;
 
   DCHECK(!subscribed_for_incoming_messages_);

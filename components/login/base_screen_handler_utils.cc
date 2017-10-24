@@ -12,7 +12,7 @@ namespace {
 
 template <typename StringListType>
 bool ParseStringList(const base::Value* value, StringListType* out_value) {
-  const base::ListValue* list = NULL;
+  const base::ListValue* list = nullptr;
   if (!value->GetAsList(&list))
     return false;
   out_value->resize(list->GetSize());

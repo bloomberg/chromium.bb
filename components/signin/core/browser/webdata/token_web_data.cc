@@ -104,7 +104,7 @@ WebDataServiceBase::Handle TokenWebData::GetAllTokens(
 TokenWebData::TokenWebData(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner)
-    : WebDataServiceBase(NULL, ProfileErrorCallback(), ui_task_runner),
+    : WebDataServiceBase(nullptr, ProfileErrorCallback(), ui_task_runner),
       token_backend_(new TokenWebDataBackend(db_task_runner)) {}
 
 TokenWebData::~TokenWebData() {

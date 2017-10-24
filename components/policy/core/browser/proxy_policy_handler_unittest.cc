@@ -31,7 +31,7 @@ class ProxyPolicyHandlerTest
     // Reset the PolicyServiceImpl to one that has the policy fixup
     // preprocessor. The previous store must be nulled out first so that it
     // removes itself from the service's observer list.
-    store_ = NULL;
+    store_ = nullptr;
     policy_service_.reset(new PolicyServiceImpl(providers_));
     store_ = new ConfigurationPolicyPrefStore(
         policy_service_.get(), &handler_list_, POLICY_LEVEL_MANDATORY);
@@ -44,7 +44,7 @@ class ProxyPolicyHandlerTest
       const std::string& expected_proxy_pac_url,
       const std::string& expected_proxy_bypass_list,
       const ProxyPrefs::ProxyMode& expected_proxy_mode) {
-    const base::Value* value = NULL;
+    const base::Value* value = nullptr;
     ASSERT_TRUE(store_->GetValue(proxy_config::prefs::kProxy, &value));
     ASSERT_EQ(base::Value::Type::DICTIONARY, value->type());
     ProxyConfigDictionary dict(
@@ -130,7 +130,7 @@ TEST_F(ProxyPolicyHandlerTest, ManualOptionsInvalid) {
       nullptr);
   UpdateProviderPolicy(policy);
 
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_FALSE(store_->GetValue(proxy_config::prefs::kProxy, &value));
 }
 
@@ -207,9 +207,9 @@ TEST_F(ProxyPolicyHandlerTest, PacScriptProxyModeInvalid) {
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
              base::MakeUnique<base::Value>(ProxyPrefs::kPacScriptProxyModeName),
-             NULL);
+             nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_FALSE(store_->GetValue(proxy_config::prefs::kProxy, &value));
 }
 

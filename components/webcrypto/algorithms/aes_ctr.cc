@@ -33,7 +33,7 @@ const EVP_CIPHER* GetAESCipherByKeyLength(size_t key_length_bytes) {
     case 32:
       return EVP_aes_256_ctr();
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -51,7 +51,7 @@ Status AesCtrEncrypt128BitCounter(const EVP_CIPHER* cipher,
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   bssl::ScopedEVP_CIPHER_CTX context;
-  if (!EVP_CipherInit_ex(context.get(), cipher, NULL, raw_key.bytes(),
+  if (!EVP_CipherInit_ex(context.get(), cipher, nullptr, raw_key.bytes(),
                          counter.bytes(), ENCRYPT)) {
     return Status::OperationError();
   }
@@ -91,7 +91,7 @@ bssl::UniquePtr<BIGNUM> GetCounter(const CryptoData& counter_block,
     unsigned int byte_length = counter_length_bits / 8;
     return bssl::UniquePtr<BIGNUM>(BN_bin2bn(
         counter_block.bytes() + counter_block.byte_length() - byte_length,
-        byte_length, NULL));
+        byte_length, nullptr));
   }
 
   // Otherwise make a copy of the counter and zero out the topmost bits so
@@ -103,7 +103,7 @@ bssl::UniquePtr<BIGNUM> GetCounter(const CryptoData& counter_block,
   counter[0] &= ~(0xFF << counter_length_remainder_bits);
 
   return bssl::UniquePtr<BIGNUM>(
-      BN_bin2bn(counter.data(), counter.size(), NULL));
+      BN_bin2bn(counter.data(), counter.size(), nullptr));
 }
 
 // Returns a counter block with the counter bits all set all zero.

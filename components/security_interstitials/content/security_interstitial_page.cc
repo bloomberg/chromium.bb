@@ -29,7 +29,7 @@ SecurityInterstitialPage::SecurityInterstitialPage(
     std::unique_ptr<SecurityInterstitialControllerClient> controller)
     : web_contents_(web_contents),
       request_url_(request_url),
-      interstitial_page_(NULL),
+      interstitial_page_(nullptr),
       create_view_(true),
       on_show_extended_reporting_pref_exists_(false),
       on_show_extended_reporting_pref_value_(false),

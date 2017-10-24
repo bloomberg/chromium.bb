@@ -511,7 +511,7 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
 
   enabled_ = false;
 
-  current_local_database_manager_ = NULL;
+  current_local_database_manager_ = nullptr;
 
   pending_checks_.clear();
 

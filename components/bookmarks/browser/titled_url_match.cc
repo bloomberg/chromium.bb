@@ -9,7 +9,7 @@
 
 namespace bookmarks {
 
-TitledUrlMatch::TitledUrlMatch() : node(NULL) {}
+TitledUrlMatch::TitledUrlMatch() : node(nullptr) {}
 
 TitledUrlMatch::TitledUrlMatch(const TitledUrlMatch& other) = default;
 

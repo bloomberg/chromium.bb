@@ -43,7 +43,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       database_(autofill_client->GetDatabase()),
       pending_query_handle_(0),
       query_id_(0),
-      external_delegate_(NULL),
+      external_delegate_(nullptr),
       autofill_client_(autofill_client) {
   DCHECK(autofill_client_);
 }
@@ -63,7 +63,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
   if (!autofill_client_->IsAutocompleteEnabled() ||
       form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
-    SendSuggestions(NULL);
+    SendSuggestions(nullptr);
     return;
   }
 
@@ -148,7 +148,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   // Linux due to NFS dismounting and causing sql failures.
   // See http://crbug.com/68783.
   if (!result) {
-    SendSuggestions(NULL);
+    SendSuggestions(nullptr);
     return;
   }
 

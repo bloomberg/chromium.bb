@@ -46,7 +46,7 @@ std::string FakeInvalidationService::GetInvalidatorClientId() const {
 }
 
 InvalidationLogger* FakeInvalidationService::GetInvalidationLogger() {
-  return NULL;
+  return nullptr;
 }
 
 void FakeInvalidationService::RequestDetailedStatus(

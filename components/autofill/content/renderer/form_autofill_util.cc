@@ -1181,7 +1181,7 @@ bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
       static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
                                           form_util::EXTRACT_OPTION_TEXT |
                                           form_util::EXTRACT_OPTIONS),
-      data, NULL);
+      data, nullptr);
 }
 
 bool IsFormVisible(blink::WebLocalFrame* frame,

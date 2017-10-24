@@ -30,8 +30,8 @@ class DistillerURLFetcherTest : public testing::Test {
  protected:
   // testing::Test implementation:
   void SetUp() override {
-    url_fetcher_.reset(new dom_distiller::DistillerURLFetcher(NULL));
-    factory_.reset(new net::FakeURLFetcherFactory(NULL));
+    url_fetcher_.reset(new dom_distiller::DistillerURLFetcher(nullptr));
+    factory_.reset(new net::FakeURLFetcherFactory(nullptr));
     factory_->SetFakeResponse(
         GURL(kTestPageA),
         std::string(kTestPageAResponse, sizeof(kTestPageAResponse)),

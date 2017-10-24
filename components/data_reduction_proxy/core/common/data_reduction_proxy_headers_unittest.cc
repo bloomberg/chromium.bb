@@ -607,7 +607,7 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
     bool has_chrome_proxy_via_header, has_intermediary;
     if (tests[i].ignore_intermediary) {
       has_chrome_proxy_via_header =
-          HasDataReductionProxyViaHeader(*parsed, NULL);
+          HasDataReductionProxyViaHeader(*parsed, nullptr);
     }
     else {
       has_chrome_proxy_via_header =

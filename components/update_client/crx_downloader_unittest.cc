@@ -108,7 +108,7 @@ CrxDownloaderTest::CrxDownloaderTest()
           base::ThreadTaskRunnerHandle::Get())) {}
 
 CrxDownloaderTest::~CrxDownloaderTest() {
-  context_ = NULL;
+  context_ = nullptr;
 
   // The GetInterceptor requires the message loop to run to destruct correctly.
   get_interceptor_.reset();

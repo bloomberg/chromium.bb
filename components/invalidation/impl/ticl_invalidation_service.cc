@@ -190,7 +190,7 @@ void TiclInvalidationService::RequestDetailedStatus(
 
 void TiclInvalidationService::RequestAccessToken() {
   // Only one active request at a time.
-  if (access_token_request_ != NULL)
+  if (access_token_request_ != nullptr)
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
@@ -349,7 +349,7 @@ bool TiclInvalidationService::IsReadyToStart() {
 }
 
 bool TiclInvalidationService::IsStarted() const {
-  return invalidator_.get() != NULL;
+  return invalidator_.get() != nullptr;
 }
 
 void TiclInvalidationService::StartInvalidator(

@@ -307,7 +307,7 @@ bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
 }
 
 void HistoryURLProviderTest::TearDown() {
-  autocomplete_ = NULL;
+  autocomplete_ = nullptr;
 }
 
 void HistoryURLProviderTest::FillData() {
@@ -440,7 +440,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
           arraysize(expected_synth));
 
   // Test that unpopular pages are ignored completely.
-  RunTest(ASCIIToUTF16("fresh"), std::string(), true, NULL, 0);
+  RunTest(ASCIIToUTF16("fresh"), std::string(), true, nullptr, 0);
 
   // Test that if we create or promote shorter suggestions that would not
   // normally be inline autocompletable, we make them inline autocompletable if
@@ -583,7 +583,7 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   redirects_to_a.push_back(GURL(test_cases[2].url));
   redirects_to_a.push_back(GURL(test_cases[0].url));
   client_->GetHistoryService()->AddPage(
-      GURL(test_cases[0].url), base::Time::Now(), NULL, 0, GURL(),
+      GURL(test_cases[0].url), base::Time::Now(), nullptr, 0, GURL(),
       redirects_to_a, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, true);
 
   // Because all the results are part of a redirect chain with other results,
@@ -618,8 +618,8 @@ TEST_F(HistoryURLProviderTestNoSearchProvider, WhatYouTypedNoSearchProvider) {
   RunTest(ASCIIToUTF16("wytmatch"), std::string(), false, results_1,
           arraysize(results_1));
 
-  RunTest(ASCIIToUTF16("wytmatch foo bar"), std::string(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), std::string(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch foo bar"), std::string(), false, nullptr, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), std::string(), false, nullptr, 0);
 
   const UrlAndLegalDefault results_2[] = {
     { "http://wytmatch+foo+bar.com/", true }
@@ -630,10 +630,11 @@ TEST_F(HistoryURLProviderTestNoSearchProvider, WhatYouTypedNoSearchProvider) {
 
 TEST_F(HistoryURLProviderTest, WhatYouTyped) {
   // Make sure we suggest a What You Typed match at the right times.
-  RunTest(ASCIIToUTF16("wytmatch"), std::string(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch foo bar"), std::string(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), std::string(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch+foo+bar.com"), std::string(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch"), std::string(), false, nullptr, 0);
+  RunTest(ASCIIToUTF16("wytmatch foo bar"), std::string(), false, nullptr, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), std::string(), false, nullptr, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar.com"), std::string(), false, nullptr,
+          0);
 
   const UrlAndLegalDefault results_1[] = {
     { "http://www.wytmatch.com/", true }
@@ -674,16 +675,16 @@ TEST_F(HistoryURLProviderTest, WhatYouTyped) {
 
 TEST_F(HistoryURLProviderTest, Fixup) {
   // Test for various past crashes we've had.
-  RunTest(ASCIIToUTF16("\\"), std::string(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("#"), std::string(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("%20"), std::string(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("\\"), std::string(), false, nullptr, 0);
+  RunTest(ASCIIToUTF16("#"), std::string(), false, nullptr, 0);
+  RunTest(ASCIIToUTF16("%20"), std::string(), false, nullptr, 0);
   const UrlAndLegalDefault fixup_crash[] = {
     { "http://%EF%BD%A5@s/", false }
   };
   RunTest(base::WideToUTF16(L"\uff65@s"), std::string(), false, fixup_crash,
           arraysize(fixup_crash));
   RunTest(base::WideToUTF16(L"\u2015\u2015@ \uff7c"), std::string(), false,
-          NULL, 0);
+          nullptr, 0);
 
   // Fixing up "file:" should result in an inline autocomplete offset of just
   // after "file:", not just after "file://".
@@ -775,7 +776,7 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
   RunTest(ASCIIToUTF16("slash"), std::string(), false, navigation_2,
           arraysize(navigation_2));
 
-  RunTest(ASCIIToUTF16("this is a query"), std::string(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("this is a query"), std::string(), false, nullptr, 0);
 }
 
 TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
@@ -825,7 +826,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
     if (test_cases[i].relevance == 0) {
-      RunTest(ASCIIToUTF16(test_cases[i].input), std::string(), false, NULL, 0);
+      RunTest(ASCIIToUTF16(test_cases[i].input), std::string(), false, nullptr,
+              0);
     } else {
       const UrlAndLegalDefault output[] = {
           {url_formatter::FixupURL(test_cases[i].input, std::string()).spec(),
@@ -1163,36 +1165,46 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     };
     ExpectedMatch matches[kMaxMatches];
   } test_cases[] = {
-    // Max score 2000 -> no demotion.
-    { "7.com/1", max_2000_no_time_decay,
-      {{"7.com/1a", 1413, 1413}, {NULL, 0, 0}, {NULL, 0, 0}} },
+      // Max score 2000 -> no demotion.
+      {"7.com/1",
+       max_2000_no_time_decay,
+       {{"7.com/1a", 1413, 1413}, {nullptr, 0, 0}, {nullptr, 0, 0}}},
 
-    // Limit score to 1250/1000 and make sure that the top match is unchanged.
-    { "7.com/1", max_1250_no_time_decay,
-      {{"7.com/1a", 1413, 1413}, {NULL, 0, 0}, {NULL, 0, 0}} },
-    { "7.com/2", max_1250_no_time_decay,
-      {{"7.com/2a", 1413, 1413}, {"7.com/2b", 1412, 1250}, {NULL, 0, 0}} },
-    { "7.com/4", max_1000_no_time_decay,
-      {{"7.com/4", 1203, 1203}, {"7.com/4a", 1202, 1000},
-       {"7.com/4b", 1201, 999}} },
+      // Limit score to 1250/1000 and make sure that the top match is unchanged.
+      {"7.com/1",
+       max_1250_no_time_decay,
+       {{"7.com/1a", 1413, 1413}, {nullptr, 0, 0}, {nullptr, 0, 0}}},
+      {"7.com/2",
+       max_1250_no_time_decay,
+       {{"7.com/2a", 1413, 1413}, {"7.com/2b", 1412, 1250}, {nullptr, 0, 0}}},
+      {"7.com/4",
+       max_1000_no_time_decay,
+       {{"7.com/4", 1203, 1203},
+        {"7.com/4a", 1202, 1000},
+        {"7.com/4b", 1201, 999}}},
 
-    // Max relevance cap is 1400 and half-life is 16 days.
-    { "7.com/1", max_1100_with_time_decay_and_max_cap,
-      {{"7.com/1a", 1413, 1413}, {NULL, 0, 0}, {NULL, 0, 0}} },
-    { "7.com/4", max_1100_with_time_decay_and_max_cap,
-      {{"7.com/4", 1203, 1203}, {"7.com/4a", 1202, 200},
-       {"7.com/4b", 1201, 100}} },
+      // Max relevance cap is 1400 and half-life is 16 days.
+      {"7.com/1",
+       max_1100_with_time_decay_and_max_cap,
+       {{"7.com/1a", 1413, 1413}, {nullptr, 0, 0}, {nullptr, 0, 0}}},
+      {"7.com/4",
+       max_1100_with_time_decay_and_max_cap,
+       {{"7.com/4", 1203, 1203},
+        {"7.com/4a", 1202, 200},
+        {"7.com/4b", 1201, 100}}},
 
-    // Max relevance cap is 1400 and half-life is 16 days for both visit/typed.
-    { "7.com/5", max_1100_visit_typed_decays,
-      {{"7.com/5", 1203, 1203}, {"7.com/5a", 1202, 50}, {NULL, 0, 0}} },
+      // Max relevance cap is 1400 and half-life is 16 days for both
+      // visit/typed.
+      {"7.com/5",
+       max_1100_visit_typed_decays,
+       {{"7.com/5", 1203, 1203}, {"7.com/5a", 1202, 50}, {nullptr, 0, 0}}},
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
     UrlAndLegalDefault output[kMaxMatches];
     int max_matches;
     for (max_matches = 0; max_matches < kMaxMatches; ++max_matches) {
-      if (test_cases[i].matches[max_matches].url == NULL)
+      if (test_cases[i].matches[max_matches].url == nullptr)
         break;
       output[max_matches].url =
           url_formatter::FixupURL(test_cases[i].matches[max_matches].url,

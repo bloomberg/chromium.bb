@@ -162,7 +162,7 @@ TEST_F(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
 
-    base::DictionaryValue* test = NULL;
+    base::DictionaryValue* test = nullptr;
     ASSERT_TRUE(tests->GetDictionary(test_index, &test));
 
     blink::WebCryptoAlgorithm digest_algorithm =

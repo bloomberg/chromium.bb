@@ -80,7 +80,7 @@ ShortcutsBackendTest::MatchCoreForTesting(const std::string& url,
                                           const std::string& contents_class,
                                           const std::string& description_class,
                                           AutocompleteMatch::Type type) {
-  AutocompleteMatch match(NULL, 0, 0, type);
+  AutocompleteMatch match(nullptr, 0, 0, type);
   match.destination_url = GURL(url);
   match.contents = base::ASCIIToUTF16("test");
   match.contents_class =

@@ -114,12 +114,12 @@ std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
   // Make sure there is enough in the buffer for the size of the next command.
   if (available_count_ < sizeof(size_type)) {
     if (!FillBuffer())
-      return NULL;
+      return nullptr;
     if (available_count_ < sizeof(size_type)) {
       VLOG(1) << "SessionFileReader::ReadCommand, file incomplete";
       // Still couldn't read a valid size for the command, assume write was
       // incomplete and return NULL.
-      return NULL;
+      return nullptr;
     }
   }
   // Get the size of the command.
@@ -131,7 +131,7 @@ std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
   if (command_size == 0) {
     VLOG(1) << "SessionFileReader::ReadCommand, empty command";
     // Empty command. Shouldn't happen if write was successful, fail.
-    return NULL;
+    return nullptr;
   }
 
   // Make sure buffer has the complete contents of the command.
@@ -141,7 +141,7 @@ std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
     if (!FillBuffer() || command_size > available_count_) {
       // Again, assume the file was ok, and just the last chunk was lost.
       VLOG(1) << "SessionFileReader::ReadCommand, last chunk lost";
-      return NULL;
+      return nullptr;
     }
   }
   const id_type command_id = buffer_[buffer_position_];
@@ -230,7 +230,7 @@ void SessionBackend::AppendCommands(
   // Need to check current_session_file_ again, ResetFile may fail.
   if (current_session_file_.get() && current_session_file_->IsValid() &&
       !AppendCommandsToFile(current_session_file_.get(), commands)) {
-    current_session_file_.reset(NULL);
+    current_session_file_.reset(nullptr);
   }
   empty_file_ = false;
 }
@@ -262,7 +262,7 @@ void SessionBackend::DeleteLastSession() {
 
 void SessionBackend::MoveCurrentSessionToLastSession() {
   Init();
-  current_session_file_.reset(NULL);
+  current_session_file_.reset(nullptr);
 
   const base::FilePath current_session_path = GetCurrentSessionPath();
   const base::FilePath last_session_path = GetLastSessionPath();
@@ -340,7 +340,7 @@ void SessionBackend::ResetFile() {
     if (current_session_file_->Seek(
             base::File::FROM_BEGIN, header_size) != header_size ||
         !current_session_file_->SetLength(header_size))
-      current_session_file_.reset(NULL);
+      current_session_file_.reset(nullptr);
   }
   if (!current_session_file_.get())
     current_session_file_.reset(OpenAndWriteHeader(GetCurrentSessionPath()));
@@ -354,14 +354,14 @@ base::File* SessionBackend::OpenAndWriteHeader(const base::FilePath& path) {
                 base::File::FLAG_EXCLUSIVE_WRITE |
                 base::File::FLAG_EXCLUSIVE_READ));
   if (!file->IsValid())
-    return NULL;
+    return nullptr;
   FileHeader header;
   header.signature = kFileSignature;
   header.version = kFileCurrentVersion;
   int wrote = file->WriteAtCurrentPos(reinterpret_cast<char*>(&header),
                                       sizeof(header));
   if (wrote != sizeof(header))
-    return NULL;
+    return nullptr;
   return file.release();
 }
 

@@ -802,7 +802,7 @@ void GCMDriverDesktop::RecordDecryptionFailure(const std::string& app_id,
 
 GCMClient* GCMDriverDesktop::GetGCMClientForTesting() const {
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
-  return io_worker_ ? io_worker_->gcm_client_for_testing() : NULL;
+  return io_worker_ ? io_worker_->gcm_client_for_testing() : nullptr;
 }
 
 bool GCMDriverDesktop::IsStarted() const {

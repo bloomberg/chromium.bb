@@ -265,7 +265,7 @@ void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(
   DCHECK_EQ(wrapped_, registry);
   wrapped_->RemoveObserver(this);
   wrapped_->RemoveInternalObserver(this);
-  wrapped_ = NULL;
+  wrapped_ = nullptr;
   // Keep serving the same |schema_map_|.
 }
 

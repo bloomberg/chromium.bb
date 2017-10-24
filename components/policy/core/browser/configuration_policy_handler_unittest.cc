@@ -47,8 +47,8 @@ class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
 
   bool CheckAndGetValueForTest(const PolicyMap& policies,
                                std::unique_ptr<base::Value>* value) {
-    return SchemaValidatingPolicyHandler::CheckAndGetValue(
-        policies, NULL, value);
+    return SchemaValidatingPolicyHandler::CheckAndGetValue(policies, nullptr,
+                                                           value);
   }
 };
 
@@ -187,7 +187,7 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("no list"),
-                 NULL);
+                 nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -680,10 +680,10 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "}";
   std::unique_ptr<base::Value> policy_map_value =
       base::JSONReader::ReadAndReturnError(kPolicyMapJson, base::JSON_PARSE_RFC,
-                                           NULL, &error);
+                                           nullptr, &error);
   ASSERT_TRUE(policy_map_value) << error;
 
-  const base::DictionaryValue* policy_map_dict = NULL;
+  const base::DictionaryValue* policy_map_dict = nullptr;
   ASSERT_TRUE(policy_map_value->GetAsDictionary(&policy_map_dict));
 
   PolicyMap policy_map;
@@ -695,7 +695,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
   ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
   ASSERT_TRUE(output_value);
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   ASSERT_TRUE(output_value->GetAsDictionary(&dict));
 
   // Test that CheckAndGetValue() actually dropped invalid properties.
@@ -740,10 +740,10 @@ TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "}";
   std::unique_ptr<base::Value> policy_map_value =
       base::JSONReader::ReadAndReturnError(kPolicyMapJson, base::JSON_PARSE_RFC,
-                                           NULL, &error);
+                                           nullptr, &error);
   ASSERT_TRUE(policy_map_value) << error;
 
-  const base::DictionaryValue* policy_map_dict = NULL;
+  const base::DictionaryValue* policy_map_dict = nullptr;
   ASSERT_TRUE(policy_map_value->GetAsDictionary(&policy_map_dict));
 
   PolicyMap policy_map_recommended;

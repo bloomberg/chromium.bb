@@ -30,7 +30,7 @@ void TestPhysicalWebDataSource::StartDiscovery(bool network_request_enabled) {}
 void TestPhysicalWebDataSource::StopDiscovery() {}
 
 std::unique_ptr<MetadataList> TestPhysicalWebDataSource::GetMetadataList() {
-  return NULL;
+  return nullptr;
 }
 
 bool TestPhysicalWebDataSource::HasUnresolvedDiscoveries() {

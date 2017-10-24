@@ -64,7 +64,7 @@ class MockImageFetcher : public ImageFetcher {
 class ImageManagerTest : public testing::Test {
  public:
   ImageManagerTest()
-      : mock_image_fetcher_(NULL),
+      : mock_image_fetcher_(nullptr),
         num_callback_null_called_(0),
         num_callback_valid_called_(0) {}
 
@@ -74,7 +74,7 @@ class ImageManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    fake_db_ = NULL;
+    fake_db_ = nullptr;
     db_model_.clear();
     image_manager_.reset();
   }

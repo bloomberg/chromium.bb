@@ -302,7 +302,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   for (const auto& test : tests) {
     std::vector<std::string> expected_experiments;
 
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         data_reduction_proxy::switches::kDataReductionProxyExperiment,

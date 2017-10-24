@@ -50,7 +50,7 @@ void FakeGCMDriver::Disable() {
 }
 
 GCMClient* FakeGCMDriver::GetGCMClientForTesting() const {
-  return NULL;
+  return nullptr;
 }
 
 bool FakeGCMDriver::IsStarted() const {
@@ -111,7 +111,7 @@ void FakeGCMDriver::WakeFromSuspendForHeartbeat(bool wake) {
 }
 
 InstanceIDHandler* FakeGCMDriver::GetInstanceIDHandlerInternal() {
-  return NULL;
+  return nullptr;
 }
 
 void FakeGCMDriver::AddHeartbeatInterval(const std::string& scope,

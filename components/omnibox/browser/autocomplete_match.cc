@@ -81,7 +81,7 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
 };
 
 AutocompleteMatch::AutocompleteMatch()
-    : provider(NULL),
+    : provider(nullptr),
       relevance(0),
       typed_count(-1),
       deletable(false),
@@ -130,13 +130,13 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       subtype_identifier(match.subtype_identifier),
       associated_keyword(match.associated_keyword.get()
                              ? new AutocompleteMatch(*match.associated_keyword)
-                             : NULL),
+                             : nullptr),
       keyword(match.keyword),
       from_previous(match.from_previous),
       search_terms_args(
           match.search_terms_args.get()
               ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
-              : NULL),
+              : nullptr),
       additional_info(match.additional_info),
       duplicate_matches(match.duplicate_matches) {}
 
@@ -168,12 +168,16 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   transition = match.transition;
   type = match.type;
   subtype_identifier = match.subtype_identifier;
-  associated_keyword.reset(match.associated_keyword.get() ?
-      new AutocompleteMatch(*match.associated_keyword) : NULL);
+  associated_keyword.reset(
+      match.associated_keyword.get()
+          ? new AutocompleteMatch(*match.associated_keyword)
+          : nullptr);
   keyword = match.keyword;
   from_previous = match.from_previous;
-  search_terms_args.reset(match.search_terms_args.get() ?
-      new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) : NULL);
+  search_terms_args.reset(
+      match.search_terms_args.get()
+          ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
+          : nullptr);
   additional_info = match.additional_info;
   duplicate_matches = match.duplicate_matches;
   return *this;
@@ -417,10 +421,11 @@ TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
     TemplateURLService* template_url_service,
     const base::string16& keyword,
     const std::string& host) {
-  if (template_url_service == NULL)
-    return NULL;
-  TemplateURL* template_url = keyword.empty() ?
-      NULL : template_url_service->GetTemplateURLForKeyword(keyword);
+  if (template_url_service == nullptr)
+    return nullptr;
+  TemplateURL* template_url =
+      keyword.empty() ? nullptr
+                      : template_url_service->GetTemplateURLForKeyword(keyword);
   return (template_url || host.empty()) ?
       template_url : template_url_service->GetTemplateURLForHost(host);
 }
@@ -443,7 +448,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   // provider matches.
   const TemplateURL* template_url = GetTemplateURLWithKeyword(
       template_url_service, keyword, stripped_destination_url.host());
-  if (template_url != NULL &&
+  if (template_url != nullptr &&
       template_url->SupportsReplacement(
           template_url_service->search_terms_data())) {
     base::string16 search_terms;
@@ -597,7 +602,7 @@ void AutocompleteMatch::GetKeywordUIState(
     TemplateURLService* template_url_service,
     base::string16* keyword,
     bool* is_keyword_hint) const {
-  *is_keyword_hint = associated_keyword.get() != NULL;
+  *is_keyword_hint = associated_keyword.get() != nullptr;
   keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
       GetSubstitutingExplicitlyInvokedKeyword(template_url_service));
 }
@@ -605,7 +610,7 @@ void AutocompleteMatch::GetKeywordUIState(
 base::string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
     TemplateURLService* template_url_service) const {
   if (!ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_KEYWORD) ||
-      template_url_service == NULL) {
+      template_url_service == nullptr) {
     return base::string16();
   }
 
@@ -653,7 +658,7 @@ std::string AutocompleteMatch::GetAdditionalInfo(
 bool AutocompleteMatch::IsVerbatimType() const {
   const bool is_keyword_verbatim_match =
       (type == AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
-       provider != NULL &&
+       provider != nullptr &&
        provider->type() == AutocompleteProvider::TYPE_SEARCH);
   return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
       type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||

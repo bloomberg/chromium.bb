@@ -48,11 +48,10 @@ void UndoGroup::Undo() {
 
 UndoManager::UndoManager()
     : group_actions_count_(0),
-      undo_in_progress_action_(NULL),
+      undo_in_progress_action_(nullptr),
       undo_suspended_count_(0),
       performing_undo_(false),
-      performing_redo_(false) {
-}
+      performing_redo_(false) {}
 
 UndoManager::~UndoManager() {
   DCHECK_EQ(0, group_actions_count_);

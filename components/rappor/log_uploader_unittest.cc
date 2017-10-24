@@ -65,7 +65,7 @@ class LogUploaderTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        factory_(NULL) {}
+        factory_(nullptr) {}
 
  protected:
   // Required for base::ThreadTaskRunnerHandle::Get().

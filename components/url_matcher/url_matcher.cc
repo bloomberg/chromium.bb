@@ -159,8 +159,7 @@ bool IsOriginAndPathRegexCriterion(URLMatcherCondition::Criterion criterion) {
 //
 
 URLMatcherCondition::URLMatcherCondition()
-    : criterion_(HOST_PREFIX),
-      string_pattern_(NULL) {}
+    : criterion_(HOST_PREFIX), string_pattern_(nullptr) {}
 
 URLMatcherCondition::~URLMatcherCondition() {}
 
@@ -184,9 +183,10 @@ URLMatcherCondition& URLMatcherCondition::operator=(
 bool URLMatcherCondition::operator<(const URLMatcherCondition& rhs) const {
   if (criterion_ < rhs.criterion_) return true;
   if (criterion_ > rhs.criterion_) return false;
-  if (string_pattern_ != NULL && rhs.string_pattern_ != NULL)
+  if (string_pattern_ != nullptr && rhs.string_pattern_ != nullptr)
     return *string_pattern_ < *rhs.string_pattern_;
-  if (string_pattern_ == NULL && rhs.string_pattern_ != NULL) return true;
+  if (string_pattern_ == nullptr && rhs.string_pattern_ != nullptr)
+    return true;
   // Either string_pattern_ != NULL && rhs.string_pattern_ == NULL,
   // or both are NULL.
   return false;
@@ -496,7 +496,7 @@ URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
     URLMatcherCondition::Criterion criterion,
     const std::string& pattern) {
   StringPattern search_pattern(pattern, 0);
-  PatternSingletons* pattern_singletons = NULL;
+  PatternSingletons* pattern_singletons = nullptr;
   if (IsRegexCriterion(criterion))
     pattern_singletons = &regex_pattern_singletons_;
   else if (IsOriginAndPathRegexCriterion(criterion))
@@ -557,8 +557,9 @@ std::string URLMatcherConditionFactory::CanonicalizeQuery(
 bool URLMatcherConditionFactory::StringPatternPointerCompare::operator()(
     StringPattern* lhs,
     StringPattern* rhs) const {
-  if (lhs == NULL && rhs != NULL) return true;
-  if (lhs != NULL && rhs != NULL)
+  if (lhs == nullptr && rhs != nullptr)
+    return true;
+  if (lhs != nullptr && rhs != nullptr)
     return lhs->pattern() < rhs->pattern();
   // Either both are NULL or only rhs is NULL.
   return false;
@@ -617,9 +618,9 @@ bool URLQueryElementMatcherCondition::operator<(
     const URLQueryElementMatcherCondition& rhs) const {
   if (match_type_ != rhs.match_type_)
     return match_type_ < rhs.match_type_;
-  if (string_pattern_ != NULL && rhs.string_pattern_ != NULL)
+  if (string_pattern_ != nullptr && rhs.string_pattern_ != nullptr)
     return *string_pattern_ < *rhs.string_pattern_;
-  if (string_pattern_ == NULL && rhs.string_pattern_ != NULL)
+  if (string_pattern_ == nullptr && rhs.string_pattern_ != nullptr)
     return true;
   // Either string_pattern_ != NULL && rhs.string_pattern_ == NULL,
   // or both are NULL.

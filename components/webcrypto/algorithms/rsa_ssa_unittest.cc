@@ -716,7 +716,7 @@ TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_JWK) {
 
   base::DictionaryValue dict;
   RestoreJwkRsaDictionary(&dict);
-  dict.Remove("use", NULL);
+  dict.Remove("use", nullptr);
   dict.SetString("alg", "RS256");
 
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
@@ -946,7 +946,7 @@ TEST_F(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
   const std::string kKtyParmName[] = {"n", "e"};
   for (size_t idx = 0; idx < arraysize(kKtyParmName); ++idx) {
     // Fail on missing parameter.
-    dict.Remove(kKtyParmName[idx], NULL);
+    dict.Remove(kKtyParmName[idx], nullptr);
     EXPECT_NE(Status::Success(),
               ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
     RestoreJwkRsaDictionary(&dict);

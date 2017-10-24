@@ -12,7 +12,7 @@ namespace subtle {
 
 ScopedUserPrefUpdateBase::ScopedUserPrefUpdateBase(PrefService* service,
                                                    const std::string& path)
-    : service_(service), path_(path), value_(NULL) {
+    : service_(service), path_(path), value_(nullptr) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(service_->sequence_checker_);
 }
 
@@ -31,7 +31,7 @@ base::Value* ScopedUserPrefUpdateBase::GetValueOfType(base::Value::Type type) {
 void ScopedUserPrefUpdateBase::Notify() {
   if (value_) {
     service_->ReportUserPrefChanged(path_);
-    value_ = NULL;
+    value_ = nullptr;
   }
 }
 

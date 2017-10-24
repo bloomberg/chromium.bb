@@ -94,7 +94,7 @@ class HistoryServiceTest : public testing::Test {
   void CleanupHistoryService() {
     DCHECK(history_service_);
 
-    history_service_->ClearCachedDataForContextID(0);
+    history_service_->ClearCachedDataForContextID(nullptr);
     history_service_->SetOnBackendDestroyTask(
         base::MessageLoop::QuitWhenIdleClosure());
     history_service_->Cleanup();
@@ -187,19 +187,18 @@ TEST_F(HistoryServiceTest, AddPage) {
   ASSERT_TRUE(history_service_.get());
   // Add the page once from a child frame.
   const GURL test_url("http://www.google.com/");
-  history_service_->AddPage(test_url, base::Time::Now(), NULL, 0, GURL(),
-                            history::RedirectList(),
-                            ui::PAGE_TRANSITION_MANUAL_SUBFRAME,
-                            history::SOURCE_BROWSED, false);
+  history_service_->AddPage(
+      test_url, base::Time::Now(), nullptr, 0, GURL(), history::RedirectList(),
+      ui::PAGE_TRANSITION_MANUAL_SUBFRAME, history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
   EXPECT_TRUE(query_url_row_.hidden());  // Hidden because of child frame.
 
   // Add the page once from the main frame (should unhide it).
-  history_service_->AddPage(test_url, base::Time::Now(), NULL, 0, GURL(),
-                   history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                   history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url, base::Time::Now(), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(2, query_url_row_.visit_count());  // Added twice.
   EXPECT_EQ(0, query_url_row_.typed_count());  // Never typed.
@@ -284,10 +283,9 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   // Add a non-typed visit to an intranet URL on an unvisited host.  This should
   // get promoted to a typed visit.
   const GURL test_url("http://intranet_host/path");
-  history_service_->AddPage(
-      test_url, base::Time::Now(), NULL, 0, GURL(),
-      history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url, base::Time::Now(), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(1, query_url_row_.typed_count());
@@ -300,10 +298,9 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
 
   // Different path.
   const GURL test_url2("http://intranet_host/different_path");
-  history_service_->AddPage(
-      test_url2, base::Time::Now(), NULL, 0, GURL(),
-      history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url2, base::Time::Now(), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url2));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
@@ -313,10 +310,9 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
 
   // No path.
   const GURL test_url3("http://intranet_host/");
-  history_service_->AddPage(
-      test_url3, base::Time::Now(), NULL, 0, GURL(),
-      history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url3, base::Time::Now(), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url3));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
@@ -326,10 +322,9 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
 
   // Different scheme.
   const GURL test_url4("https://intranet_host/");
-  history_service_->AddPage(
-      test_url4, base::Time::Now(), NULL, 0, GURL(),
-      history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url4, base::Time::Now(), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url4));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
@@ -340,10 +335,8 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   // Different transition.
   const GURL test_url5("http://intranet_host/another_path");
   history_service_->AddPage(
-      test_url5, base::Time::Now(), NULL, 0, GURL(),
-      history::RedirectList(),
-      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-      history::SOURCE_BROWSED, false);
+      test_url5, base::Time::Now(), nullptr, 0, GURL(), history::RedirectList(),
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK, history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url5));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
@@ -352,10 +345,9 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                                            ui::PAGE_TRANSITION_AUTO_BOOKMARK));
 
   // Original URL.
-  history_service_->AddPage(
-      test_url, base::Time::Now(), NULL, 0, GURL(),
-      history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url, base::Time::Now(), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(2, query_url_row_.visit_count());
   EXPECT_EQ(1, query_url_row_.typed_count());
@@ -367,7 +359,7 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   history::RedirectList redirects1 = {GURL("http://intranet1/path"),
                                       GURL("http://second1.com/"),
                                       GURL("http://third1.com/")};
-  history_service_->AddPage(redirects1.back(), base::Time::Now(), NULL, 0,
+  history_service_->AddPage(redirects1.back(), base::Time::Now(), nullptr, 0,
                             GURL(), redirects1, ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), redirects1.front()));
@@ -381,7 +373,7 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   history::RedirectList redirects2 = {GURL("http://first2.com/"),
                                       GURL("http://second2.com/"),
                                       GURL("http://intranet2/path")};
-  history_service_->AddPage(redirects2.back(), base::Time::Now(), NULL, 0,
+  history_service_->AddPage(redirects2.back(), base::Time::Now(), nullptr, 0,
                             GURL(), redirects2, ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), redirects2.back()));
@@ -395,7 +387,7 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   history::RedirectList redirects3 = {GURL("http://first3.com/"),
                                       GURL("http://intranet3/path"),
                                       GURL("http://third3.com/")};
-  history_service_->AddPage(redirects3.back(), base::Time::Now(), NULL, 0,
+  history_service_->AddPage(redirects3.back(), base::Time::Now(), nullptr, 0,
                             GURL(), redirects3, ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), redirects3[1]));
@@ -678,9 +670,8 @@ TEST_F(HistoryServiceTest, ProcessLocalDeleteDirectiveSyncOnline) {
   for (int64_t i = 1; i <= 10; ++i) {
     base::Time t =
         base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
-    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
-                              history::RedirectList(),
-                              ui::PAGE_TRANSITION_LINK,
+    history_service_->AddPage(test_url, t, nullptr, 0, GURL(),
+                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
   }
 
@@ -742,9 +733,8 @@ TEST_F(HistoryServiceTest, ProcessGlobalIdDeleteDirective) {
   for (int64_t i = 1; i <= 20; i++) {
     base::Time t =
         base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
-    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
-                              history::RedirectList(),
-                              ui::PAGE_TRANSITION_LINK,
+    history_service_->AddPage(test_url, t, nullptr, 0, GURL(),
+                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
   }
 
@@ -832,9 +822,8 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
   for (int64_t i = 1; i <= 10; ++i) {
     base::Time t =
         base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
-    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
-                              history::RedirectList(),
-                              ui::PAGE_TRANSITION_LINK,
+    history_service_->AddPage(test_url, t, nullptr, 0, GURL(),
+                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
   }
 

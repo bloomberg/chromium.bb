@@ -40,7 +40,7 @@ class CrashKeysTest : public testing::Test {
 
   void TearDown() override {
     base::debug::ResetCrashLoggingForTesting();
-    self_ = NULL;
+    self_ = nullptr;
   }
 
   bool HasCrashKey(const std::string& key) {
@@ -75,7 +75,7 @@ class CrashKeysTest : public testing::Test {
   std::map<std::string, std::string> keys_;
 };
 
-CrashKeysTest* CrashKeysTest::self_ = NULL;
+CrashKeysTest* CrashKeysTest::self_ = nullptr;
 
 TEST_F(CrashKeysTest, Switches) {
   ASSERT_TRUE(InitSwitchesCrashKeys());

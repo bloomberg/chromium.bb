@@ -36,12 +36,12 @@ TestStorageMonitor* TestStorageMonitor::CreateAndInstall() {
   monitor->Init();
   monitor->MarkInitialized();
 
-  if (StorageMonitor::GetInstance() == NULL) {
+  if (StorageMonitor::GetInstance() == nullptr) {
     StorageMonitor::SetStorageMonitorForTesting(std::move(pass_monitor));
     return monitor;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 // static

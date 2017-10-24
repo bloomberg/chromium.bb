@@ -142,7 +142,7 @@ std::string ReplaceHtmlTemplateValues(
       l10n_util::GetStringUTF8(
           IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $8
 
-  return base::ReplaceStringPlaceholders(html_template, substitutions, NULL);
+  return base::ReplaceStringPlaceholders(html_template, substitutions, nullptr);
 }
 
 }  // namespace

@@ -194,7 +194,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
   BuildDefaultSearchPolicy(&policy);
   UpdateProviderPolicy(policy);
 
-  const base::Value* temp = NULL;
+  const base::Value* temp = nullptr;
   const base::DictionaryValue* dictionary;
   std::string value;
   const base::ListValue* list_value;
@@ -251,7 +251,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, Disabled) {
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
              base::WrapUnique(new base::Value(false)), nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* temp = NULL;
+  const base::Value* temp = nullptr;
   const base::DictionaryValue* dictionary;
   EXPECT_TRUE(store_->GetValue(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName, &temp));
@@ -274,7 +274,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
              base::WrapUnique(new base::Value(kSearchURL)), nullptr);
   UpdateProviderPolicy(policy);
 
-  const base::Value* temp = NULL;
+  const base::Value* temp = nullptr;
   const base::DictionaryValue* dictionary;
   std::string value;
   const base::ListValue* list_value;
@@ -327,7 +327,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, FileURL) {
              base::WrapUnique(new base::Value(kFileSearchURL)), nullptr);
   UpdateProviderPolicy(policy);
 
-  const base::Value* temp = NULL;
+  const base::Value* temp = nullptr;
   const base::DictionaryValue* dictionary;
   std::string value;
 

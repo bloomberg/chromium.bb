@@ -7,7 +7,7 @@
 
 namespace safe_browsing {
 
-SafeBrowsingApiHandler* SafeBrowsingApiHandler::instance_ = NULL;
+SafeBrowsingApiHandler* SafeBrowsingApiHandler::instance_ = nullptr;
 
 // static
 void SafeBrowsingApiHandler::SetInstance(SafeBrowsingApiHandler* instance) {

@@ -61,7 +61,7 @@ TemplateURL* SearchHostToURLsMap::GetTemplateURLForHost(
 
   HostToURLsMap::const_iterator iter = host_to_urls_map_.find(host);
   if (iter == host_to_urls_map_.end() || iter->second.empty())
-    return NULL;
+    return nullptr;
   return *(iter->second.begin());  // Return the 1st element.
 }
 
@@ -71,7 +71,7 @@ SearchHostToURLsMap::TemplateURLSet* SearchHostToURLsMap::GetURLsForHost(
 
   HostToURLsMap::iterator urls_for_host = host_to_urls_map_.find(host);
   if (urls_for_host == host_to_urls_map_.end() || urls_for_host->second.empty())
-    return NULL;
+    return nullptr;
   return &urls_for_host->second;
 }
 

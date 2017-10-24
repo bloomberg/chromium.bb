@@ -15,7 +15,7 @@ int TestHttpBridge::GetResponseContentLength() const {
 }
 
 const char* TestHttpBridge::GetResponseContent() const {
-  return 0;
+  return nullptr;
 }
 
 const std::string TestHttpBridge::GetResponseHeaderValue(

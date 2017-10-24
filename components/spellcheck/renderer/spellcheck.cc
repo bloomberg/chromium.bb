@@ -382,13 +382,8 @@ bool SpellCheck::SpellCheckParagraph(
   int misspelling_start = 0;
   int misspelling_length = 0;
   while (position_in_text <= length) {
-    if (SpellCheckWord(text.c_str(),
-                       position_in_text,
-                       length,
-                       kNoTag,
-                       &misspelling_start,
-                       &misspelling_length,
-                       NULL)) {
+    if (SpellCheckWord(text.c_str(), position_in_text, length, kNoTag,
+                       &misspelling_start, &misspelling_length, nullptr)) {
       results->Assign(textcheck_results);
       return true;
     }

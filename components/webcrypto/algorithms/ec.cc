@@ -203,7 +203,7 @@ Status GetPublicKey(EC_KEY* ec,
   y->reset(BN_new());
 
   if (!EC_POINT_get_affine_coordinates_GFp(group, point, x->get(), y->get(),
-                                           NULL)) {
+                                           nullptr)) {
     return Status::OperationError();
   }
 

@@ -89,7 +89,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 
 TEST_F(URLBlacklistPolicyHandlerTest, ApplyPolicySettings_NothingSpecified) {
   ApplyPolicies();
-  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, NULL));
+  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, nullptr));
 }
 
 TEST_F(URLBlacklistPolicyHandlerTest,
@@ -97,7 +97,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
   // The policy expects a list. Give it a boolean.
   SetPolicy(key::kDisabledSchemes, base::MakeUnique<base::Value>(false));
   ApplyPolicies();
-  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, NULL));
+  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, nullptr));
 }
 
 TEST_F(URLBlacklistPolicyHandlerTest,
@@ -105,7 +105,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
   // The policy expects a list. Give it a boolean.
   SetPolicy(key::kURLBlacklist, base::MakeUnique<base::Value>(false));
   ApplyPolicies();
-  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, NULL));
+  EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, nullptr));
 }
 
 TEST_F(URLBlacklistPolicyHandlerTest,

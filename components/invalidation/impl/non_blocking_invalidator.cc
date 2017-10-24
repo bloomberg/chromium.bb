@@ -173,7 +173,7 @@ void NonBlockingInvalidator::Core::Teardown() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UnregisterHandler(this);
   invalidation_notifier_.reset();
-  network_task_runner_ = NULL;
+  network_task_runner_ = nullptr;
 }
 
 void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {

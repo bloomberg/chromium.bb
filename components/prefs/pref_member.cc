@@ -17,10 +17,7 @@ using base::SingleThreadTaskRunner;
 
 namespace subtle {
 
-PrefMemberBase::PrefMemberBase()
-    : prefs_(NULL),
-      setting_value_(false) {
-}
+PrefMemberBase::PrefMemberBase() : prefs_(nullptr), setting_value_(false) {}
 
 PrefMemberBase::~PrefMemberBase() {
   Destroy();
@@ -48,7 +45,7 @@ void PrefMemberBase::Init(const std::string& pref_name, PrefService* prefs) {
 void PrefMemberBase::Destroy() {
   if (prefs_ && !pref_name_.empty()) {
     prefs_->RemovePrefObserver(pref_name_, this);
-    prefs_ = NULL;
+    prefs_ = nullptr;
   }
 }
 

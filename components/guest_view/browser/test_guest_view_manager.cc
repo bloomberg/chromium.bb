@@ -169,8 +169,7 @@ void TestGuestViewManager::ViewGarbageCollected(int embedder_process_id,
 
 // Test factory for creating test instances of GuestViewManager.
 TestGuestViewManagerFactory::TestGuestViewManagerFactory()
-    : test_guest_view_manager_(NULL) {
-}
+    : test_guest_view_manager_(nullptr) {}
 
 TestGuestViewManagerFactory::~TestGuestViewManagerFactory() {
 }

@@ -23,9 +23,9 @@ TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
     : PrefService(
           pref_notifier,
           new PrefValueStore(managed_prefs,
-                             NULL,
+                             nullptr,
                              extension_prefs,
-                             NULL,
+                             nullptr,
                              user_prefs,
                              recommended_prefs,
                              pref_registry->defaults().get(),

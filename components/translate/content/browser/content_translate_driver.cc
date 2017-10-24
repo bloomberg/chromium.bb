@@ -37,7 +37,7 @@ ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller)
     : content::WebContentsObserver(nav_controller->GetWebContents()),
       navigation_controller_(nav_controller),
-      translate_manager_(NULL),
+      translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       next_page_seq_no_(0),
       weak_pointer_factory_(this) {
@@ -143,7 +143,7 @@ const GURL& ContentTranslateDriver::GetVisibleURL() {
 }
 
 bool ContentTranslateDriver::HasCurrentPage() {
-  return (navigation_controller_->GetLastCommittedEntry() != NULL);
+  return (navigation_controller_->GetLastCommittedEntry() != nullptr);
 }
 
 void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {

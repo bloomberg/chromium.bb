@@ -27,8 +27,8 @@ class InMemoryPrefStoreTest : public testing::Test {
 };
 
 TEST_F(InMemoryPrefStoreTest, SetGetValue) {
-  const base::Value* value = NULL;
-  base::Value* mutable_value = NULL;
+  const base::Value* value = nullptr;
+  base::Value* mutable_value = nullptr;
   EXPECT_FALSE(store_->GetValue(kTestPref, &value));
   EXPECT_FALSE(store_->GetMutableValue(kTestPref, &mutable_value));
 

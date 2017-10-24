@@ -121,8 +121,8 @@ INSTANTIATE_TEST_CASE_P(AddressI18nTest,
                                 ADDRESS_HOME_LINE2, STREET_ADDRESS}));
 
 TEST(AddressI18nTest, UnconvertableServerFields) {
-  EXPECT_FALSE(FieldForType(PHONE_HOME_NUMBER, NULL));
-  EXPECT_FALSE(FieldForType(EMAIL_ADDRESS, NULL));
+  EXPECT_FALSE(FieldForType(PHONE_HOME_NUMBER, nullptr));
+  EXPECT_FALSE(FieldForType(EMAIL_ADDRESS, nullptr));
 }
 
 TEST(AddressI18nTest, CreateAddressDataFromAutofillProfile) {

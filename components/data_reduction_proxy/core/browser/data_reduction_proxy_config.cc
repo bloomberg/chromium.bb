@@ -227,7 +227,7 @@ bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     return true;
   if (result.proxy_server().is_direct())
     return true;
-  return !IsDataReductionProxy(result.proxy_server(), NULL);
+  return !IsDataReductionProxy(result.proxy_server(), nullptr);
 }
 
 bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
@@ -235,8 +235,8 @@ bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
     const net::ProxyConfig& data_reduction_proxy_config,
     base::TimeDelta* min_retry_delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (request.context() != NULL &&
-      request.context()->proxy_service() != NULL) {
+  if (request.context() != nullptr &&
+      request.context()->proxy_service() != nullptr) {
     return AreProxiesBypassed(
         request.context()->proxy_service()->proxy_retry_info(),
         data_reduction_proxy_config.proxy_rules(),
@@ -272,7 +272,7 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
       continue;
 
     base::TimeDelta delay;
-    if (IsDataReductionProxy(proxy, NULL)) {
+    if (IsDataReductionProxy(proxy, nullptr)) {
       if (!IsProxyBypassed(retry_map, proxy, &delay))
         return false;
       if (delay < min_delay)
@@ -316,7 +316,7 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
       proxy_rules.MapUrlSchemeToProxyList("http");
   if (http_proxy_list && !http_proxy_list->IsEmpty() &&
       // Sufficient to check only the first proxy.
-      IsDataReductionProxy(http_proxy_list->Get(), NULL)) {
+      IsDataReductionProxy(http_proxy_list->Get(), nullptr)) {
     return true;
   }
 

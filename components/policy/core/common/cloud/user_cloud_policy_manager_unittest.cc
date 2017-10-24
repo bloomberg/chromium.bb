@@ -31,7 +31,7 @@ namespace {
 
 class UserCloudPolicyManagerTest : public testing::Test {
  protected:
-  UserCloudPolicyManagerTest() : store_(NULL) {}
+  UserCloudPolicyManagerTest() : store_(nullptr) {}
 
   void SetUp() override {
     // Set up a policy map for testing.

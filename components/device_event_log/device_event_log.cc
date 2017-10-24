@@ -19,7 +19,7 @@ const size_t kDefaultMaxEntries = 4000;
 const int kSlowMethodThresholdMs = 10;
 const int kVerySlowMethodThresholdMs = 50;
 
-DeviceEventLogImpl* g_device_event_log = NULL;
+DeviceEventLogImpl* g_device_event_log = nullptr;
 
 }  // namespace
 
@@ -39,7 +39,7 @@ bool IsInitialized() {
 
 void Shutdown() {
   delete g_device_event_log;
-  g_device_event_log = NULL;
+  g_device_event_log = nullptr;
 }
 
 void AddEntry(const char* file,

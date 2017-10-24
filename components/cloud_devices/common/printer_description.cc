@@ -351,7 +351,7 @@ const MediaDefinition& FindMediaByType(MediaType type) {
 }
 
 const MediaDefinition* FindMediaBySize(int32_t width_um, int32_t height_um) {
-  const MediaDefinition* result = NULL;
+  const MediaDefinition* result = nullptr;
   for (size_t i = 0; i < arraysize(kMediaDefinitions); ++i) {
     int32_t diff =
         std::max(std::abs(width_um - kMediaDefinitions[i].width_um),
@@ -716,11 +716,11 @@ class PageRangeTraits : public ItemsTraits<kOptionPageRange> {
   }
 
   static bool Load(const base::DictionaryValue& dict, PageRange* option) {
-    const base::ListValue* list = NULL;
+    const base::ListValue* list = nullptr;
     if (!dict.GetList(kPageRangeInterval, &list))
       return false;
     for (size_t i = 0; i < list->GetSize(); ++i) {
-      const base::DictionaryValue* interval = NULL;
+      const base::DictionaryValue* interval = nullptr;
       if (!list->GetDictionary(i, &interval))
         return false;
       Interval new_interval(1, kMaxPageNumber);

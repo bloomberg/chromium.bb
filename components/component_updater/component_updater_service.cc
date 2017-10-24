@@ -227,14 +227,14 @@ const CrxComponent* CrxUpdateService::GetComponent(
     const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   const auto it(components_.find(id));
-  return it != components_.end() ? &(it->second) : NULL;
+  return it != components_.end() ? &(it->second) : nullptr;
 }
 
 const CrxUpdateItem* CrxUpdateService::GetComponentState(
     const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   const auto it(component_states_.find(id));
-  return it != component_states_.end() ? &it->second : NULL;
+  return it != component_states_.end() ? &it->second : nullptr;
 }
 
 void CrxUpdateService::MaybeThrottle(const std::string& id,

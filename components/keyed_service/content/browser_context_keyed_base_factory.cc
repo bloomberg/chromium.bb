@@ -23,7 +23,7 @@ content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
 
   // Safe default for the Incognito mode: no service.
   if (context->IsOffTheRecord())
-    return NULL;
+    return nullptr;
 
   return context;
 }

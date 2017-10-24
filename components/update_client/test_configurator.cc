@@ -108,7 +108,7 @@ net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
 
 scoped_refptr<OutOfProcessPatcher> TestConfigurator::CreateOutOfProcessPatcher()
     const {
-  return NULL;
+  return nullptr;
 }
 
 bool TestConfigurator::EnabledDeltas() const {

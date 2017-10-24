@@ -251,7 +251,7 @@ bool AccountId::Deserialize(const std::string& serialized,
                             AccountId* account_id) {
   base::JSONReader reader;
   std::unique_ptr<const base::Value> value(reader.Read(serialized));
-  const base::DictionaryValue* dictionary_value = NULL;
+  const base::DictionaryValue* dictionary_value = nullptr;
 
   if (!value || !value->GetAsDictionary(&dictionary_value))
     return false;

@@ -233,7 +233,7 @@ bool DomDistillerStore::ChangeEntry(const ArticleEntry& entry,
     return false;
   }
 
-  bool hasEntry = model_.GetEntryById(entry.entry_id(), NULL);
+  bool hasEntry = model_.GetEntryById(entry.entry_id(), nullptr);
   if (hasEntry) {
     if (changeType == SyncChange::ACTION_ADD) {
       DVLOG(1) << "Already have entry with id " << entry.entry_id() << ".";

@@ -264,7 +264,7 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
     return std::unique_ptr<base::DictionaryValue>();
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, &error);
   if (!root.get())
     return std::unique_ptr<base::DictionaryValue>();
   if (!root->IsType(base::Value::Type::DICTIONARY))

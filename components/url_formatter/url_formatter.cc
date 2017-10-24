@@ -336,7 +336,7 @@ struct UIDNAWrapper {
     // registrars, search engines) converge toward a consensus.
     value = uidna_openUTS46(UIDNA_CHECK_BIDI, &err);
     if (U_FAILURE(err))
-      value = NULL;
+      value = nullptr;
   }
 
   UIDNA* value;
@@ -362,7 +362,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   if ((comp_len > arraysize(kIdnPrefix)) &&
       !memcmp(comp, kIdnPrefix, sizeof(kIdnPrefix))) {
     UIDNA* uidna = g_uidna.Get().value;
-    DCHECK(uidna != NULL);
+    DCHECK(uidna != nullptr);
     size_t original_length = out->length();
     int32_t output_length = 64;
     UIDNAInfo info = UIDNA_INFO_INITIALIZER;

@@ -40,7 +40,7 @@ class NoOpAutofillBackend : public AutofillWebDataBackend {
  public:
   NoOpAutofillBackend() {}
   ~NoOpAutofillBackend() override {}
-  WebDatabase* GetDatabase() override { return NULL; }
+  WebDatabase* GetDatabase() override { return nullptr; }
   void AddObserver(
       autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
   }

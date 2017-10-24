@@ -127,25 +127,25 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
               &condition_attribute_value,
               error);
       if (!error->empty())
-        return scoped_refptr<URLMatcherConditionSet>(NULL);
+        return scoped_refptr<URLMatcherConditionSet>(nullptr);
       url_matcher_conditions.insert(url_matcher_condition);
     } else if (condition_attribute_name == keys::kSchemesKey) {
       // Handle scheme.
       url_matcher_schema_filter = CreateURLMatcherScheme(
           &condition_attribute_value, error);
       if (!error->empty())
-        return scoped_refptr<URLMatcherConditionSet>(NULL);
+        return scoped_refptr<URLMatcherConditionSet>(nullptr);
     } else if (condition_attribute_name == keys::kPortsKey) {
       // Handle ports.
       url_matcher_port_filter = CreateURLMatcherPorts(
           &condition_attribute_value, error);
       if (!error->empty())
-        return scoped_refptr<URLMatcherConditionSet>(NULL);
+        return scoped_refptr<URLMatcherConditionSet>(nullptr);
     } else {
       // Handle unknown attributes.
       *error = base::StringPrintf(kUnknownURLFilterAttribute,
                                   condition_attribute_name.c_str());
-      return scoped_refptr<URLMatcherConditionSet>(NULL);
+      return scoped_refptr<URLMatcherConditionSet>(nullptr);
     }
   }
 
@@ -242,7 +242,7 @@ std::unique_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
     const base::Value* value,
     std::string* error) {
   std::vector<URLMatcherPortFilter::Range> ranges;
-  const base::ListValue* value_list = NULL;
+  const base::ListValue* value_list = nullptr;
   if (!value->GetAsList(&value_list)) {
     *error = kInvalidPortRanges;
     return nullptr;
@@ -250,7 +250,7 @@ std::unique_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
 
   for (const auto& entry : *value_list) {
     int port = 0;
-    const base::ListValue* range = NULL;
+    const base::ListValue* range = nullptr;
     if (entry.GetAsInteger(&port)) {
       ranges.push_back(URLMatcherPortFilter::CreateRange(port));
     } else if (entry.GetAsList(&range)) {

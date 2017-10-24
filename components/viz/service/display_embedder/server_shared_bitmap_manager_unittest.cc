@@ -40,31 +40,31 @@ TEST_F(ServerSharedBitmapManagerTest, TestCreate) {
 
   std::unique_ptr<SharedBitmap> large_bitmap;
   large_bitmap = manager()->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
-  EXPECT_TRUE(large_bitmap.get() == NULL);
+  EXPECT_TRUE(large_bitmap.get() == nullptr);
 
   std::unique_ptr<SharedBitmap> very_large_bitmap;
   very_large_bitmap =
       manager()->GetSharedBitmapFromId(gfx::Size(1, (1 << 30) | 1), id);
-  EXPECT_TRUE(very_large_bitmap.get() == NULL);
+  EXPECT_TRUE(very_large_bitmap.get() == nullptr);
 
   std::unique_ptr<SharedBitmap> negative_size_bitmap;
   negative_size_bitmap =
       manager()->GetSharedBitmapFromId(gfx::Size(-1, 1024), id);
-  EXPECT_TRUE(negative_size_bitmap.get() == NULL);
+  EXPECT_TRUE(negative_size_bitmap.get() == nullptr);
 
   SharedBitmapId id2 = SharedBitmap::GenerateId();
   std::unique_ptr<SharedBitmap> invalid_bitmap;
   invalid_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id2);
-  EXPECT_TRUE(invalid_bitmap.get() == NULL);
+  EXPECT_TRUE(invalid_bitmap.get() == nullptr);
 
   std::unique_ptr<SharedBitmap> shared_bitmap;
   shared_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id);
-  ASSERT_TRUE(shared_bitmap.get() != NULL);
+  ASSERT_TRUE(shared_bitmap.get() != nullptr);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), 4), 0);
 
   std::unique_ptr<SharedBitmap> large_bitmap2;
   large_bitmap2 = manager()->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
-  EXPECT_TRUE(large_bitmap2.get() == NULL);
+  EXPECT_TRUE(large_bitmap2.get() == nullptr);
 
   std::unique_ptr<SharedBitmap> shared_bitmap2;
   shared_bitmap2 = manager()->GetSharedBitmapFromId(bitmap_size, id);
@@ -101,7 +101,7 @@ TEST_F(ServerSharedBitmapManagerTest, ServiceDestroyed) {
     notifier.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
     shared_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id);
-    ASSERT_TRUE(shared_bitmap.get() != NULL);
+    ASSERT_TRUE(shared_bitmap.get() != nullptr);
 
     EXPECT_EQ(1u, manager()->AllocatedBitmapCount());
   }
@@ -136,7 +136,7 @@ TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
 
   std::unique_ptr<SharedBitmap> shared_bitmap;
   shared_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id);
-  ASSERT_TRUE(shared_bitmap.get() != NULL);
+  ASSERT_TRUE(shared_bitmap.get() != nullptr);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
             0);
   notifier.DidDeleteSharedBitmap(id);

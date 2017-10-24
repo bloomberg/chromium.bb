@@ -33,10 +33,9 @@ ManagedBookmarksTracker::ManagedBookmarksTracker(
     PrefService* prefs,
     const GetManagementDomainCallback& callback)
     : model_(model),
-      managed_node_(NULL),
+      managed_node_(nullptr),
       prefs_(prefs),
-      get_management_domain_callback_(callback) {
-}
+      get_management_domain_callback_(callback) {}
 
 ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
@@ -54,7 +53,7 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
     // Extract the data for the next bookmark from the |list|.
     base::string16 title;
     GURL url;
-    const base::ListValue* children = NULL;
+    const base::ListValue* children = nullptr;
     if (!LoadBookmark(list, i, &title, &url, &children))
       continue;
 
@@ -122,7 +121,7 @@ void ManagedBookmarksTracker::UpdateBookmarks(const BookmarkNode* folder,
     // Extract the data for the next bookmark from the |list|.
     base::string16 title;
     GURL url;
-    const base::ListValue* children = NULL;
+    const base::ListValue* children = nullptr;
     if (!LoadBookmark(list, i, &title, &url, &children)) {
       // Skip this bookmark from |list| but don't advance |folder_index|.
       continue;
@@ -130,7 +129,7 @@ void ManagedBookmarksTracker::UpdateBookmarks(const BookmarkNode* folder,
 
     // Look for a bookmark at |folder_index| or ahead that matches the current
     // bookmark from the pref.
-    const BookmarkNode* existing = NULL;
+    const BookmarkNode* existing = nullptr;
     for (int k = folder_index; k < folder->child_count(); ++k) {
       const BookmarkNode* node = folder->GetChild(k);
       if (node->GetTitle() == title &&
@@ -175,8 +174,8 @@ bool ManagedBookmarksTracker::LoadBookmark(const base::ListValue* list,
                                            const base::ListValue** children) {
   std::string spec;
   *url = GURL();
-  *children = NULL;
-  const base::DictionaryValue* dict = NULL;
+  *children = nullptr;
+  const base::DictionaryValue* dict = nullptr;
   if (!list->GetDictionary(index, &dict) ||
       !dict->GetString(kName, title) ||
       (!dict->GetString(kUrl, &spec) &&

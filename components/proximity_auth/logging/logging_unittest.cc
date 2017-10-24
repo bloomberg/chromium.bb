@@ -37,7 +37,7 @@ bool HandleStandardLogMessage(int severity,
 
 class ProximityAuthLoggingTest : public testing::Test {
  public:
-  ProximityAuthLoggingTest() : previous_handler_(NULL) {}
+  ProximityAuthLoggingTest() : previous_handler_(nullptr) {}
 
   void SetUp() override {
     LogBuffer::GetInstance()->Clear();

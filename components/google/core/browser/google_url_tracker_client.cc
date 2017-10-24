@@ -4,8 +4,8 @@
 
 #include "components/google/core/browser/google_url_tracker_client.h"
 
-GoogleURLTrackerClient::GoogleURLTrackerClient() : google_url_tracker_(NULL) {
-}
+GoogleURLTrackerClient::GoogleURLTrackerClient()
+    : google_url_tracker_(nullptr) {}
 
 GoogleURLTrackerClient::~GoogleURLTrackerClient() {
 }

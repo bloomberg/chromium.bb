@@ -332,7 +332,7 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
   DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
       content_type));
   std::unique_ptr<base::Value> value = GetWebsiteSetting(
-      primary_url, secondary_url, content_type, resource_identifier, NULL);
+      primary_url, secondary_url, content_type, resource_identifier, nullptr);
   return content_settings::ValueToContentSetting(value.get());
 }
 
@@ -738,7 +738,7 @@ HostContentSettingsMap::~HostContentSettingsMap() {
 void HostContentSettingsMap::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
-  prefs_ = NULL;
+  prefs_ = nullptr;
   for (const auto& provider_pair : content_settings_providers_)
     provider_pair.second->ShutdownOnUIThread();
 }
@@ -829,8 +829,8 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     const std::string& resource_identifier,
     content_settings::SettingInfo* info) const {
   UsedContentSettingsProviders();
-  ContentSettingsPattern* primary_pattern = NULL;
-  ContentSettingsPattern* secondary_pattern = NULL;
+  ContentSettingsPattern* primary_pattern = nullptr;
+  ContentSettingsPattern* secondary_pattern = nullptr;
   if (info) {
     primary_pattern = &info->primary_pattern;
     secondary_pattern = &info->secondary_pattern;

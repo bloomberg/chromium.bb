@@ -24,8 +24,7 @@ scoped_refptr<net::HttpResponseHeaders> CreateResponseHeaders(
 namespace captive_portal {
 
 CaptivePortalDetectorTestBase::CaptivePortalDetectorTestBase()
-    : detector_(NULL) {
-}
+    : detector_(nullptr) {}
 
 CaptivePortalDetectorTestBase::~CaptivePortalDetectorTestBase() {
 }

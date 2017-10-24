@@ -84,7 +84,7 @@ const std::string DomDistillerService::AddToList(
   TaskTracker* task_tracker = nullptr;
   if (is_already_added) {
     task_tracker = GetTaskTrackerForEntry(entry);
-    if (task_tracker == NULL) {
+    if (task_tracker == nullptr) {
       // Entry is in the store but there is no task tracker. This could
       // happen when distillation has already completed. For now just return
       // true.
@@ -116,7 +116,7 @@ const std::string DomDistillerService::AddToList(
 }
 
 bool DomDistillerService::HasEntry(const std::string& entry_id) {
-  return store_ && store_->GetEntryById(entry_id, NULL);
+  return store_ && store_->GetEntryById(entry_id, nullptr);
 }
 
 std::string DomDistillerService::GetUrlForEntry(const std::string& entry_id) {
@@ -139,7 +139,7 @@ std::unique_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
   std::unique_ptr<ArticleEntry> entry(new ArticleEntry);
   entry->set_entry_id(entry_id);
   TaskTracker* task_tracker = GetTaskTrackerForEntry(*entry);
-  if (task_tracker != NULL) {
+  if (task_tracker != nullptr) {
     task_tracker->CancelSaveCallbacks();
   }
 

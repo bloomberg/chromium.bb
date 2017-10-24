@@ -43,7 +43,7 @@ const size_t* QueryResults::MatchesForURL(const GURL& url,
   if (found == url_to_results_.end()) {
     if (num_matches)
       *num_matches = 0;
-    return NULL;
+    return nullptr;
   }
 
   // All entries in the map should have at least one index, otherwise it
@@ -72,7 +72,7 @@ void QueryResults::SetURLResults(std::vector<URLResult>&& results) {
 void QueryResults::DeleteURL(const GURL& url) {
   // Delete all instances of this URL. We re-query each time since each
   // mutation will cause the indices to change.
-  while (const size_t* match_indices = MatchesForURL(url, NULL))
+  while (const size_t* match_indices = MatchesForURL(url, nullptr))
     DeleteRange(*match_indices, *match_indices);
 }
 

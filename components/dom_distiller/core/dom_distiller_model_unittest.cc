@@ -31,7 +31,7 @@ TEST(DomDistillerModelTest, TestGetByEntryId) {
   ASSERT_TRUE(IsEntryValid(found_entry));
   EXPECT_TRUE(AreEntriesEqual(entry2, found_entry));
 
-  EXPECT_FALSE(model.GetEntryById("some_other_id", NULL));
+  EXPECT_FALSE(model.GetEntryById("some_other_id", nullptr));
 }
 
 TEST(DomDistillerModelTest, TestGetByUrl) {
@@ -68,7 +68,7 @@ TEST(DomDistillerModelTest, TestGetByUrl) {
   ASSERT_TRUE(IsEntryValid(found_entry));
   EXPECT_TRUE(AreEntriesEqual(entry2, found_entry));
 
-  EXPECT_FALSE(model.GetEntryByUrl(GURL("http://example.com/foo"), NULL));
+  EXPECT_FALSE(model.GetEntryByUrl(GURL("http://example.com/foo"), nullptr));
 }
 
 // This test ensures that the model handles the case where an URL maps to
@@ -96,9 +96,9 @@ TEST(DomDistillerModelTest, TestUrlToMultipleEntries) {
 
   DomDistillerModel model(initial_model);
 
-  EXPECT_TRUE(model.GetEntryByUrl(GURL(page1->url()), NULL));
-  EXPECT_TRUE(model.GetEntryByUrl(GURL(page2->url()), NULL));
-  EXPECT_TRUE(model.GetEntryByUrl(GURL(page3->url()), NULL));
+  EXPECT_TRUE(model.GetEntryByUrl(GURL(page1->url()), nullptr));
+  EXPECT_TRUE(model.GetEntryByUrl(GURL(page2->url()), nullptr));
+  EXPECT_TRUE(model.GetEntryByUrl(GURL(page3->url()), nullptr));
 
   ArticleEntry found_entry;
   EXPECT_TRUE(model.GetEntryById(entry1.entry_id(), &found_entry));

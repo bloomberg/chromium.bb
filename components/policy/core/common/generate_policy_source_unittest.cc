@@ -136,22 +136,18 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
 
   // The properties are iterated in order.
   const char* kExpectedProperties[] = {
-    key::kProxyBypassList,
-    key::kProxyMode,
-    key::kProxyPacUrl,
-    key::kProxyServer,
-    key::kProxyServerMode,
-    NULL,
+      key::kProxyBypassList, key::kProxyMode,       key::kProxyPacUrl,
+      key::kProxyServer,     key::kProxyServerMode, nullptr,
   };
   const char** next = kExpectedProperties;
   for (Schema::Iterator it(subschema.GetPropertiesIterator());
        !it.IsAtEnd(); it.Advance(), ++next) {
-    ASSERT_TRUE(*next != NULL);
+    ASSERT_TRUE(*next != nullptr);
     EXPECT_STREQ(*next, it.key());
     ASSERT_TRUE(it.schema().valid());
     EXPECT_EQ(base::Value::Type::STRING, it.schema().type());
   }
-  EXPECT_TRUE(*next == NULL);
+  EXPECT_TRUE(*next == nullptr);
 
 #if defined(OS_CHROMEOS)
   subschema = schema.GetKnownProperty(key::kPowerManagementIdleSettings);

@@ -71,7 +71,7 @@ bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
 
 bool ConfigurationPolicyPrefStore::GetValue(const std::string& key,
                                             const base::Value** value) const {
-  const base::Value* stored_value = NULL;
+  const base::Value* stored_value = nullptr;
   if (!prefs_.get() || !prefs_->GetValue(key, &stored_value))
     return false;
 

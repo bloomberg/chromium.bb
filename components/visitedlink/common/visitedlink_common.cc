@@ -17,8 +17,7 @@ const VisitedLinkCommon::Fingerprint VisitedLinkCommon::null_fingerprint_ = 0;
 const VisitedLinkCommon::Hash VisitedLinkCommon::null_hash_ = -1;
 
 VisitedLinkCommon::VisitedLinkCommon()
-    : hash_table_(NULL),
-      table_length_(0) {
+    : hash_table_(nullptr), table_length_(0) {
   memset(salt_, 0, sizeof(salt_));
 }
 

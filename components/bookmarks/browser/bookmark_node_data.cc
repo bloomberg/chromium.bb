@@ -285,7 +285,7 @@ const BookmarkNode* BookmarkNodeData::GetFirstNode(
     BookmarkModel* model,
     const base::FilePath& profile_path) const {
   std::vector<const BookmarkNode*> nodes = GetNodes(model, profile_path);
-  return nodes.size() == 1 ? nodes[0] : NULL;
+  return nodes.size() == 1 ? nodes[0] : nullptr;
 }
 
 void BookmarkNodeData::Clear() {

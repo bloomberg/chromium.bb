@@ -23,7 +23,7 @@ namespace {
 
 class P2PInvalidatorTestDelegate {
  public:
-  P2PInvalidatorTestDelegate() : fake_push_client_(NULL) {}
+  P2PInvalidatorTestDelegate() : fake_push_client_(nullptr) {}
 
   ~P2PInvalidatorTestDelegate() {
     DestroyInvalidator();
@@ -52,7 +52,7 @@ class P2PInvalidatorTestDelegate {
 
   void DestroyInvalidator() {
     invalidator_.reset();
-    fake_push_client_ = NULL;
+    fake_push_client_ = nullptr;
   }
 
   void WaitForInvalidator() {

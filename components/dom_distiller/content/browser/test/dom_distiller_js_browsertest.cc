@@ -56,7 +56,7 @@ const char* kRunJsTestsJs =
 
 class DomDistillerJsTest : public content::ContentBrowserTest {
  public:
-  DomDistillerJsTest() : result_(NULL) {}
+  DomDistillerJsTest() : result_(nullptr) {}
 
   // content::ContentBrowserTest:
   void SetUpOnMainThread() override {
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
   run_loop.Run();
 
   // By now either the timeout has triggered, or there should be a result.
-  ASSERT_TRUE(result_ != NULL) << "No result found. Timeout?";
+  ASSERT_TRUE(result_ != nullptr) << "No result found. Timeout?";
 
   // Convert to dictionary and parse the results.
   const base::DictionaryValue* dict;

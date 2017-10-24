@@ -11,16 +11,14 @@
 #include "components/prefs/pref_observer.h"
 
 PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
-    : pref_value_store_(NULL),
-      type_(PrefValueStore::INVALID_STORE) {
-}
+    : pref_value_store_(nullptr), type_(PrefValueStore::INVALID_STORE) {}
 
 PrefValueStore::PrefStoreKeeper::~PrefStoreKeeper() {
   if (pref_store_.get()) {
     pref_store_->RemoveObserver(this);
-    pref_store_ = NULL;
+    pref_store_ = nullptr;
   }
-  pref_value_store_ = NULL;
+  pref_value_store_ = nullptr;
 }
 
 void PrefValueStore::PrefStoreKeeper::Initialize(
@@ -212,7 +210,7 @@ bool PrefValueStore::PrefValueInStore(
     PrefValueStore::PrefStoreType store) const {
   // Declare a temp Value* and call GetValueFromStore,
   // ignoring the output value.
-  const base::Value* tmp_value = NULL;
+  const base::Value* tmp_value = nullptr;
   return GetValueFromStore(name, store, &tmp_value);
 }
 
@@ -253,7 +251,7 @@ bool PrefValueStore::GetValueFromStore(const std::string& name,
 
   // No valid value found for the given preference name: set the return value
   // to false.
-  *out_value = NULL;
+  *out_value = nullptr;
   return false;
 }
 
@@ -271,7 +269,7 @@ bool PrefValueStore::GetValueFromStoreWithType(
                  << store;
   }
 
-  *out_value = NULL;
+  *out_value = nullptr;
   return false;
 }
 

@@ -505,7 +505,7 @@ Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
       dir_, fname,
       filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite));
   if (!f.IsValid()) {
-    *result = NULL;
+    *result = nullptr;
     RecordOSError(leveldb_env::kNewLogger, f.error_details());
     return MakeIOError(fname, "Unable to create log file",
                        leveldb_env::kNewLogger, f.error_details());

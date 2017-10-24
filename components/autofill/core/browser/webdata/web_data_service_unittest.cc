@@ -118,8 +118,8 @@ class WebDataServiceTest : public testing::Test {
   void TearDown() override {
     wds_->ShutdownOnUISequence();
     wdbs_->ShutdownDatabase();
-    wds_ = NULL;
-    wdbs_ = NULL;
+    wds_ = nullptr;
+    wdbs_ = nullptr;
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -312,8 +312,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   EXPECT_EQ(profile, *consumer.result()[0]);
 
   // Check that GUID-based notification was sent.
-  const AutofillProfileChange expected_change(
-      AutofillProfileChange::REMOVE, profile.guid(), NULL);
+  const AutofillProfileChange expected_change(AutofillProfileChange::REMOVE,
+                                              profile.guid(), nullptr);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
       .WillOnce(SignalEvent(&done_event_));
 
@@ -493,7 +493,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
 
   // Check that GUID-based notification was sent for the profile.
   const AutofillProfileChange expected_profile_change(
-      AutofillProfileChange::REMOVE, profile.guid(), NULL);
+      AutofillProfileChange::REMOVE, profile.guid(), nullptr);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_profile_change))
       .WillOnce(SignalEvent(&done_event_));
 

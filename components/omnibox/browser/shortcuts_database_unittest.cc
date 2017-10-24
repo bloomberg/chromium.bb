@@ -109,7 +109,7 @@ void ShortcutsDatabaseTest::SetUp() {
 }
 
 void ShortcutsDatabaseTest::TearDown() {
-  db_ = NULL;
+  db_ = nullptr;
 }
 
 void ShortcutsDatabaseTest::ClearDB() {

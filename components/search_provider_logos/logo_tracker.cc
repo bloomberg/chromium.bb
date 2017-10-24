@@ -54,7 +54,7 @@ std::unique_ptr<EncodedLogo> GetLogoFromCacheOnFileThread(LogoCache* logo_cache,
     return nullptr;
 
   if (metadata->source_url != logo_url || !IsLogoOkToShow(*metadata, now)) {
-    logo_cache->SetCachedLogo(NULL);
+    logo_cache->SetCachedLogo(nullptr);
     return nullptr;
   }
 

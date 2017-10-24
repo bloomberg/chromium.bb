@@ -266,7 +266,7 @@ class HistoryBackendTestBase : public testing::Test {
   void TearDown() override {
     if (backend_.get())
       backend_->Closing();
-    backend_ = NULL;
+    backend_ = nullptr;
     mem_backend_.reset();
     base::DeleteFile(test_dir_, true);
     base::RunLoop().RunUntilIdle();
@@ -352,7 +352,7 @@ class HistoryBackendTest : public HistoryBackendTestBase {
                                              ui::PageTransition transition,
                                              base::Time time) {
     history::RedirectList redirects;
-    for (int i = 0; sequence[i] != NULL; ++i)
+    for (int i = 0; sequence[i] != nullptr; ++i)
       redirects.push_back(GURL(sequence[i]));
 
     ContextID context_id = reinterpret_cast<ContextID>(1);
@@ -503,8 +503,8 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
 
  protected:
   void SimulateNotificationURLsDeleted(const URLRow* row1,
-                                       const URLRow* row2 = NULL,
-                                       const URLRow* row3 = NULL) {
+                                       const URLRow* row2 = nullptr,
+                                       const URLRow* row3 = nullptr) {
     URLRows rows;
     rows.push_back(*row1);
     if (row2) rows.push_back(*row2);
@@ -631,8 +631,8 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   rows.push_back(row1);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
 
-  URLID row1_id = backend_->db_->GetRowForURL(row1.url(), NULL);
-  URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
+  URLID row1_id = backend_->db_->GetRowForURL(row1.url(), nullptr);
+  URLID row2_id = backend_->db_->GetRowForURL(row2.url(), nullptr);
 
   // Get the two visits for the URLs we just added.
   VisitVector visits;
@@ -647,7 +647,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // typed URL.
   ASSERT_TRUE(mem_backend_.get());
   URLRow outrow1;
-  EXPECT_TRUE(mem_backend_->db_->GetRowForURL(row1.url(), NULL));
+  EXPECT_TRUE(mem_backend_->db_->GetRowForURL(row1.url(), nullptr));
 
   // Star row1.
   history_client_.AddBookmark(row1.url());
@@ -751,7 +751,7 @@ TEST_F(HistoryBackendTest, DeleteAllURLPreviouslyDeleted) {
   history_client_.AddBookmark(kPageURL);
 
   // Test initial state.
-  URLID row_id = backend_->db_->GetRowForURL(kPageURL, NULL);
+  URLID row_id = backend_->db_->GetRowForURL(kPageURL, nullptr);
   ASSERT_NE(0, row_id);
   VisitVector visits;
   backend_->db_->GetVisitsForURL(row_id, &visits);
@@ -768,7 +768,7 @@ TEST_F(HistoryBackendTest, DeleteAllURLPreviouslyDeleted) {
 
   // Test that the entry in the url table for the bookmark is gone but that the
   // favicon data for the bookmark is still there.
-  ASSERT_EQ(0, backend_->db_->GetRowForURL(kPageURL, NULL));
+  ASSERT_EQ(0, backend_->db_->GetRowForURL(kPageURL, nullptr));
 
   icon_mappings.clear();
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
@@ -784,7 +784,7 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
 
   base::Time visit_time = base::Time::Now();
   GURL url("http://www.google.com/");
-  HistoryAddPageArgs request(url, visit_time, NULL, 0, GURL(),
+  HistoryAddPageArgs request(url, visit_time, nullptr, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false, true);
@@ -855,8 +855,8 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   rows.push_back(row1);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
 
-  URLID row1_id = backend_->db_->GetRowForURL(row1.url(), NULL);
-  URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
+  URLID row1_id = backend_->db_->GetRowForURL(row1.url(), nullptr);
+  URLID row2_id = backend_->db_->GetRowForURL(row2.url(), nullptr);
 
   // Star the two URLs.
   history_client_.AddBookmark(row1.url());
@@ -864,7 +864,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
 
   // Delete url 2.
   backend_->expirer_.DeleteURL(row2.url());
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), NULL));
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), nullptr));
   VisitVector visits;
   backend_->db_->GetVisitsForURL(row2_id, &visits);
   EXPECT_EQ(0U, visits.size());
@@ -882,7 +882,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   backend_->URLsNoLongerBookmarked(unstarred_urls);
 
   // The URL should still not exist.
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), NULL));
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), nullptr));
   // And the favicon should be deleted.
   EXPECT_EQ(0, backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
                    favicon_url2, favicon_base::FAVICON));
@@ -897,7 +897,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   backend_->URLsNoLongerBookmarked(unstarred_urls);
 
   // The URL should still exist (because there were visits).
-  EXPECT_EQ(row1_id, backend_->db_->GetRowForURL(row1.url(), NULL));
+  EXPECT_EQ(row1_id, backend_->db_->GetRowForURL(row1.url(), nullptr));
 
   // There should still be visits.
   visits.clear();
@@ -917,7 +917,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   GURL url("http://google.com");
 
   base::Time visit_time = base::Time::Now() - base::TimeDelta::FromDays(1);
-  HistoryAddPageArgs request(url, visit_time, NULL, 0, GURL(),
+  HistoryAddPageArgs request(url, visit_time, nullptr, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false, true);
@@ -950,7 +950,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   // Going back to the same entry should not increment the typed count.
   ui::PageTransition back_transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FORWARD_BACK);
-  HistoryAddPageArgs back_request(url, visit_time, NULL, 0, GURL(),
+  HistoryAddPageArgs back_request(url, visit_time, nullptr, 0, GURL(),
                                   history::RedirectList(), back_transition,
                                   history::SOURCE_BROWSED, false, true);
   backend_->AddPage(back_request);
@@ -1258,7 +1258,7 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Fetch the row information about stripped url from history db.
   VisitVector visits;
-  URLID row_id = backend_->db_->GetRowForURL(stripped_url, NULL);
+  URLID row_id = backend_->db_->GetRowForURL(stripped_url, nullptr);
   backend_->db_->GetVisitsForURL(row_id, &visits);
 
   // Check if stripped url is stored in database.
@@ -1363,7 +1363,7 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
 
   // Fetch the row information about the url from history db.
   VisitVector visits;
-  URLID row_id = backend_->db_->GetRowForURL(url, NULL);
+  URLID row_id = backend_->db_->GetRowForURL(url, nullptr);
   backend_->db_->GetVisitsForURL(row_id, &visits);
 
   // Check if all the visits to the url are stored in database.
@@ -1476,22 +1476,20 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   GURL url("http://testpageargs.com");
 
   // Assume this page is browsed by user.
-  HistoryAddPageArgs request1(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false, true);
+  HistoryAddPageArgs request1(url, base::Time::Now(), nullptr, 0, GURL(),
+                              history::RedirectList(),
+                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
+                              history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request1);
   // Assume this page is synced.
-  HistoryAddPageArgs request2(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             ui::PAGE_TRANSITION_LINK,
-                             history::SOURCE_SYNCED, false, true);
+  HistoryAddPageArgs request2(url, base::Time::Now(), nullptr, 0, GURL(),
+                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                              history::SOURCE_SYNCED, false, true);
   backend_->AddPage(request2);
   // Assume this page is browsed again.
-  HistoryAddPageArgs request3(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             ui::PAGE_TRANSITION_TYPED,
-                             history::SOURCE_BROWSED, false, true);
+  HistoryAddPageArgs request3(
+      url, base::Time::Now(), nullptr, 0, GURL(), history::RedirectList(),
+      ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request3);
 
   // Three visits should be added with proper sources.
@@ -1687,7 +1685,7 @@ TEST_F(HistoryBackendTest, RemoveVisitsSource) {
 TEST_F(HistoryBackendTest, MigrationVisitSource) {
   ASSERT_TRUE(backend_.get());
   backend_->Closing();
-  backend_ = NULL;
+  backend_ = nullptr;
 
   base::FilePath old_history_path;
   ASSERT_TRUE(GetTestDataHistoryDir(&old_history_path));
@@ -1706,7 +1704,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
                                 base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
-  backend_ = NULL;
+  backend_ = nullptr;
 
   // Now the database should already be migrated.
   // Check version first.
@@ -1898,7 +1896,7 @@ TEST_F(HistoryBackendTest, RecentRedirectsForClientRedirects) {
 
   // Page A is browsed by user and server redirects to B.
   HistoryAddPageArgs request(
-      client_redirect_url, base::Time::Now(), NULL, 0, GURL(),
+      client_redirect_url, base::Time::Now(), nullptr, 0, GURL(),
       /*redirects=*/{server_redirect_url, client_redirect_url},
       ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request);
@@ -1983,10 +1981,10 @@ TEST_F(HistoryBackendTest, SetFaviconsDeleteBitmaps) {
 
   scoped_refptr<base::RefCountedMemory> bitmap_data_out;
   gfx::Size pixel_size_out;
-  EXPECT_FALSE(backend_->thumbnail_db_->GetFaviconBitmap(small_bitmap_id,
-      NULL, NULL, &bitmap_data_out, &pixel_size_out));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetFaviconBitmap(large_bitmap_id,
-      NULL, NULL, &bitmap_data_out, &pixel_size_out));
+  EXPECT_FALSE(backend_->thumbnail_db_->GetFaviconBitmap(
+      small_bitmap_id, nullptr, nullptr, &bitmap_data_out, &pixel_size_out));
+  EXPECT_TRUE(backend_->thumbnail_db_->GetFaviconBitmap(
+      large_bitmap_id, nullptr, nullptr, &bitmap_data_out, &pixel_size_out));
   EXPECT_TRUE(BitmapColorEqual(SK_ColorWHITE, bitmap_data_out));
   EXPECT_EQ(kLargeSize, pixel_size_out);
 
@@ -3350,10 +3348,10 @@ TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
 
 TEST_F(HistoryBackendTest, TopHosts_IgnoreRedirects) {
   const char* redirect1[] = {"http://foo.com/page1.html",
-                             "http://mobile.foo.com/page1.html", NULL};
+                             "http://mobile.foo.com/page1.html", nullptr};
   const char* redirect2[] = {"http://bar.com/page1.html",
                              "https://bar.com/page1.html",
-                             "https://mobile.bar.com/page1.html", NULL};
+                             "https://mobile.bar.com/page1.html", nullptr};
   AddRedirectChain(redirect1, 0);
   AddRedirectChain(redirect2, 1);
   EXPECT_THAT(backend_->TopHosts(5),
@@ -3520,7 +3518,7 @@ TEST_F(HistoryBackendTest, UpdateVisitDuration) {
 TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   ASSERT_TRUE(backend_.get());
   backend_->Closing();
-  backend_ = NULL;
+  backend_ = nullptr;
 
   base::FilePath old_history_path, old_history;
   ASSERT_TRUE(GetTestDataHistoryDir(&old_history_path));
@@ -3539,7 +3537,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
                                 base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
-  backend_ = NULL;
+  backend_ = nullptr;
 
   // Now the history database should already be migrated.
 
@@ -3612,7 +3610,7 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
   // Visits to http://example.com are untouched.
   VisitVector visit_vector;
   EXPECT_TRUE(backend_->GetVisitsForURL(
-      backend_->db_->GetRowForURL(GURL("http://example.com"), NULL),
+      backend_->db_->GetRowForURL(GURL("http://example.com"), nullptr),
       &visit_vector));
   ASSERT_EQ(5u, visit_vector.size());
   EXPECT_EQ(base::Time::FromInternalValue(0), visit_vector[0].visit_time);
@@ -3624,7 +3622,7 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
   // Visits to http://example.net between [2,8] are removed.
   visit_vector.clear();
   EXPECT_TRUE(backend_->GetVisitsForURL(
-      backend_->db_->GetRowForURL(GURL("http://example.net"), NULL),
+      backend_->db_->GetRowForURL(GURL("http://example.net"), nullptr),
       &visit_vector));
   ASSERT_EQ(2u, visit_vector.size());
   EXPECT_EQ(base::Time::FromInternalValue(1), visit_vector[0].visit_time);
@@ -3747,9 +3745,9 @@ TEST_F(HistoryBackendTest, DeleteMatchingUrlsForKeyword) {
 
   // Test that corresponding keyword search terms are deleted for rows 2 & 3,
   // but not for row 1
-  EXPECT_TRUE(backend_->db()->GetKeywordSearchTermRow(url1_id, NULL));
-  EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url2_id, NULL));
-  EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url3_id, NULL));
+  EXPECT_TRUE(backend_->db()->GetKeywordSearchTermRow(url1_id, nullptr));
+  EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url2_id, nullptr));
+  EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url3_id, nullptr));
 }
 
 // Simple test that removes a bookmark. This test exercises the code paths in
@@ -3766,9 +3764,8 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   EXPECT_TRUE(service->Init(
       TestHistoryDatabaseParamsForPath(scoped_temp_dir.GetPath())));
 
-  service->AddPage(
-      url, base::Time::Now(), NULL, 1, GURL(), RedirectList(),
-      ui::PAGE_TRANSITION_TYPED, SOURCE_BROWSED, false);
+  service->AddPage(url, base::Time::Now(), nullptr, 1, GURL(), RedirectList(),
+                   ui::PAGE_TRANSITION_TYPED, SOURCE_BROWSED, false);
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
@@ -3881,8 +3878,8 @@ TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedPiecewise) {
   // correctly removed, and the non-typed URL does not magically appear.
   URLRow cached_row1;
   EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
-  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), NULL));
-  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row3.url(), NULL));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), nullptr));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row3.url(), nullptr));
   EXPECT_EQ(row1.id(), cached_row1.id());
 }
 
@@ -3898,9 +3895,9 @@ TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedEnMasse) {
                               std::set<GURL>());
 
   // Expect that everything goes away.
-  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row1.url(), NULL));
-  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), NULL));
-  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row3.url(), NULL));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row1.url(), nullptr));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), nullptr));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row3.url(), nullptr));
 }
 
 void InMemoryHistoryBackendTest::PopulateTestURLsAndSearchTerms(
@@ -3943,8 +3940,8 @@ TEST_F(InMemoryHistoryBackendTest, SetKeywordSearchTerms) {
   // at the low level that the rows are there.
   EXPECT_EQ(1u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
   EXPECT_EQ(1u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
-  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
-  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), nullptr));
+  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), nullptr));
 }
 
 TEST_F(InMemoryHistoryBackendTest, DeleteKeywordSearchTerms) {
@@ -3968,8 +3965,8 @@ TEST_F(InMemoryHistoryBackendTest, DeleteKeywordSearchTerms) {
   // check at the low level that they are gone for good.
   EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
   EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
-  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
-  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), nullptr));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), nullptr));
 }
 
 TEST_F(InMemoryHistoryBackendTest, DeleteAllSearchTermsForKeyword) {
@@ -3993,8 +3990,8 @@ TEST_F(InMemoryHistoryBackendTest, DeleteAllSearchTermsForKeyword) {
   // check at the low level that they are gone for good.
   EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
   EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
-  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
-  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), nullptr));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), nullptr));
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedWithSearchTerms) {
@@ -4012,8 +4009,8 @@ TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedWithSearchTerms) {
   // first URLRow should not be affected.
   EXPECT_EQ(1u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
   EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
-  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
-  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), nullptr));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), nullptr));
 }
 
 TEST_F(HistoryBackendTest, QueryMostVisitedURLs) {

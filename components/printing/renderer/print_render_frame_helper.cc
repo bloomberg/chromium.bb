@@ -167,8 +167,8 @@ PrintMsg_Print_Params GetCssPrintParams(
 
   // Invalid page size and/or margins. We just use the default setting.
   if (new_content_width < 1 || new_content_height < 1) {
-    CHECK(frame != NULL);
-    page_css_params = GetCssPrintParams(NULL, page_index, page_params);
+    CHECK(frame != nullptr);
+    page_css_params = GetCssPrintParams(nullptr, page_index, page_params);
     return page_css_params;
   }
 
@@ -308,7 +308,7 @@ void ComputeWebKitPrintParamsInDesiredDpi(
 blink::WebPlugin* GetPlugin(const blink::WebLocalFrame* frame) {
   return frame->GetDocument().IsPluginDocument()
              ? frame->GetDocument().To<blink::WebPluginDocument>().Plugin()
-             : NULL;
+             : nullptr;
 }
 
 bool PrintingNodeOrPdfFrame(const blink::WebLocalFrame* frame,
@@ -529,7 +529,7 @@ FrameReference::FrameReference(blink::WebLocalFrame* frame) {
 }
 
 FrameReference::FrameReference() {
-  Reset(NULL);
+  Reset(nullptr);
 }
 
 FrameReference::~FrameReference() {}
@@ -545,20 +545,20 @@ void FrameReference::Reset(blink::WebLocalFrame* frame) {
     DCHECK(view_);
     frame_ = frame;
   } else {
-    view_ = NULL;
-    frame_ = NULL;
+    view_ = nullptr;
+    frame_ = nullptr;
   }
 }
 
 blink::WebLocalFrame* FrameReference::GetFrame() {
-  if (view_ == NULL || frame_ == NULL)
-    return NULL;
-  for (blink::WebFrame* frame = view_->MainFrame(); frame != NULL;
+  if (view_ == nullptr || frame_ == nullptr)
+    return nullptr;
+  for (blink::WebFrame* frame = view_->MainFrame(); frame != nullptr;
        frame = frame->TraverseNext()) {
     if (frame == frame_)
       return frame_;
   }
-  return NULL;
+  return nullptr;
 }
 
 blink::WebView* FrameReference::view() {
@@ -928,7 +928,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
       web_view->Close();
     }
   }
-  frame_.Reset(NULL);
+  frame_.Reset(nullptr);
   on_ready_.Reset();
 }
 

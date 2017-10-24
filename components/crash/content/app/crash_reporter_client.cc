@@ -20,7 +20,7 @@ namespace crash_reporter {
 
 namespace {
 
-CrashReporterClient* g_client = NULL;
+CrashReporterClient* g_client = nullptr;
 
 }  // namespace
 

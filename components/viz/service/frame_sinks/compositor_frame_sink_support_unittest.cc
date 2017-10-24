@@ -209,7 +209,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
 
   // The second frame references no resources of first frame and thus should
   // make all resources of first frame available to be returned.
-  SubmitCompositorFrameWithResources(NULL, 0);
+  SubmitCompositorFrameWithResources(nullptr, 0);
 
   ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
@@ -261,7 +261,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   // The second frame references no resources and thus should make all resources
   // available to be returned as soon as the resource provider releases them.
-  SubmitCompositorFrameWithResources(NULL, 0);
+  SubmitCompositorFrameWithResources(nullptr, 0);
 
   EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
   fake_support_client_.clear_returned_resources();
@@ -291,14 +291,14 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
                                      arraysize(first_frame_ids));
 
   // This removes all references to resource id 7.
-  SubmitCompositorFrameWithResources(NULL, 0);
+  SubmitCompositorFrameWithResources(nullptr, 0);
 
   // This references id 7 again.
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
   // This removes it again.
-  SubmitCompositorFrameWithResources(NULL, 0);
+  SubmitCompositorFrameWithResources(nullptr, 0);
 
   // Now it should be returned.
   // We don't care how many entries are in the returned array for 7, so long as
@@ -335,7 +335,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
 
   // Submit a frame with no resources to remove all current frame refs from
   // submitted resources.
-  SubmitCompositorFrameWithResources(NULL, 0);
+  SubmitCompositorFrameWithResources(nullptr, 0);
 
   EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
   fake_support_client_.clear_returned_resources();
@@ -482,7 +482,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 
   // If we submit an empty frame, however, they should become available.
   // Resources that were previously unref'd also return at this point.
-  SubmitCompositorFrameWithResources(NULL, 0u);
+  SubmitCompositorFrameWithResources(nullptr, 0u);
 
   {
     SCOPED_TRACE("fourth frame, second unref");

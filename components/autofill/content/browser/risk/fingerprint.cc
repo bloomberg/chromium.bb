@@ -85,7 +85,7 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
   for (const auto& it : fonts) {
     // Each item in the list is a two-element list such that the first element
     // is the font family and the second is the font name.
-    const base::ListValue* font_description = NULL;
+    const base::ListValue* font_description = nullptr;
     bool success = it.GetAsList(&font_description);
     DCHECK(success);
 
@@ -288,7 +288,7 @@ FingerprintDataLoader::FingerprintDataLoader(
                                   weak_ptr_factory_.GetWeakPtr()));
 
   // Load GPU data if needed.
-  if (gpu_data_manager_->GpuAccessAllowed(NULL) &&
+  if (gpu_data_manager_->GpuAccessAllowed(nullptr) &&
       !gpu_data_manager_->IsEssentialGpuInfoAvailable()) {
     gpu_observer_.Add(gpu_data_manager_);
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
@@ -354,10 +354,9 @@ void FingerprintDataLoader::MaybeFillFingerprint() {
   // If all of the data has been loaded, or if the |timeout_timer_| has expired,
   // fill the fingerprint and clean up.
   if (!timeout_timer_.IsRunning() ||
-      ((!gpu_data_manager_->GpuAccessAllowed(NULL) ||
+      ((!gpu_data_manager_->GpuAccessAllowed(nullptr) ||
         gpu_data_manager_->IsEssentialGpuInfoAvailable()) &&
-       fonts_ &&
-       !waiting_on_plugins_ &&
+       fonts_ && !waiting_on_plugins_ &&
        (geoposition_.Validate() ||
         geoposition_.error_code != device::Geoposition::ERROR_CODE_NONE))) {
     FillFingerprint();

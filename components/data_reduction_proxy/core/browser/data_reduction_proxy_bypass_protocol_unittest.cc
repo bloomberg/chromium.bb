@@ -529,7 +529,7 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-        GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, NULL,
+        GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, nullptr,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method(tests[i].method);
     EXPECT_EQ(tests[i].expected_result,

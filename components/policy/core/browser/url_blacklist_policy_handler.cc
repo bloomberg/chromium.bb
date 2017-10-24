@@ -44,12 +44,12 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                     PrefValueMap* prefs) {
   const base::Value* url_blacklist_policy =
       policies.GetValue(key::kURLBlacklist);
-  const base::ListValue* url_blacklist = NULL;
+  const base::ListValue* url_blacklist = nullptr;
   if (url_blacklist_policy)
     url_blacklist_policy->GetAsList(&url_blacklist);
   const base::Value* disabled_schemes_policy =
       policies.GetValue(key::kDisabledSchemes);
-  const base::ListValue* disabled_schemes = NULL;
+  const base::ListValue* disabled_schemes = nullptr;
   if (disabled_schemes_policy)
     disabled_schemes_policy->GetAsList(&disabled_schemes);
 

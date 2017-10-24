@@ -111,7 +111,7 @@ const char* GetMetricsName(MetricsNameIndex index) {
       return kMetricsEntries[i].name;
   }
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace TranslateBrowserMetrics

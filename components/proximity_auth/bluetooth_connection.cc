@@ -66,11 +66,11 @@ void BluetoothConnection::Disconnect() {
   SetStatus(DISCONNECTED);
   if (socket_.get()) {
     socket_->Disconnect(base::Bind(&base::DoNothing));
-    socket_ = NULL;
+    socket_ = nullptr;
   }
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+    adapter_ = nullptr;
   }
 }
 

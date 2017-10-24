@@ -562,7 +562,7 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
     std::vector<ScalerStage>* scaler_stages) {
   while (!x_ops->empty() || !y_ops->empty()) {
     gfx::Vector2d intermediate_scale = scale_from;
-    base::circular_deque<ScaleOp>* current_queue = NULL;
+    base::circular_deque<ScaleOp>* current_queue = nullptr;
 
     if (!y_ops->empty()) {
       current_queue = y_ops;
@@ -1193,7 +1193,7 @@ void ShaderProgram::UseProgram(const gfx::Size& src_texture_size,
   // OpenGL defines the last parameter to VertexAttribPointer as type
   // "const GLvoid*" even though it is actually an offset into the buffer
   // object's data store and not a pointer to the client's address space.
-  const void* offsets[2] = {0,
+  const void* offsets[2] = {nullptr,
                             reinterpret_cast<const void*>(2 * sizeof(GLfloat))};
 
   gl_->VertexAttribPointer(position_location_, 2, GL_FLOAT, GL_FALSE,

@@ -87,7 +87,7 @@ int ZoomController::GetZoomPercent() const {
 
 bool ZoomController::SetZoomLevel(double zoom_level) {
   // A client did not initiate this zoom change.
-  return SetZoomLevelByClient(zoom_level, NULL);
+  return SetZoomLevelByClient(zoom_level, nullptr);
 }
 
 bool ZoomController::SetZoomLevelByClient(
@@ -132,7 +132,7 @@ bool ZoomController::SetZoomLevelByClient(
     for (auto& observer : observers_)
       observer.OnZoomChanged(zoom_change_data);
 
-    last_client_ = NULL;
+    last_client_ = nullptr;
     return true;
   }
 
@@ -150,7 +150,7 @@ bool ZoomController::SetZoomLevelByClient(
     zoom_map->SetTemporaryZoomLevel(process_id, view_id, zoom_level);
   } else {
     if (!entry) {
-      last_client_ = NULL;
+      last_client_ = nullptr;
       // If we exit without triggering an update, we should clear event_data_,
       // else we may later trigger a DCHECK(event_data_).
       event_data_.reset();
@@ -162,7 +162,7 @@ bool ZoomController::SetZoomLevelByClient(
   }
 
   DCHECK(!event_data_);
-  last_client_ = NULL;
+  last_client_ = nullptr;
   return true;
 }
 

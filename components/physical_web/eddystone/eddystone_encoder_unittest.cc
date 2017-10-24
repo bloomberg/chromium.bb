@@ -38,7 +38,7 @@ TEST_F(EddystoneEncoderTest, NullVector) {
   size_t expected_result = physical_web::kNullEncodedUrl;
   size_t actual_result;
 
-  actual_result = physical_web::EncodeUrl(valid_url, NULL);
+  actual_result = physical_web::EncodeUrl(valid_url, nullptr);
 
   EXPECT_TRUE(expected_result == actual_result);
 }

@@ -59,8 +59,8 @@ class YUVReadbackTest : public testing::Test {
   }
 
   void TearDown() override {
-    helper_.reset(NULL);
-    context_.reset(NULL);
+    helper_.reset(nullptr);
+    context_.reset(nullptr);
   }
 
   void StartTracing(const std::string& filter) {
@@ -98,7 +98,7 @@ class YUVReadbackTest : public testing::Test {
 
     std::string error_msg;
     std::unique_ptr<base::Value> trace_data =
-        base::JSONReader::ReadAndReturnError(json_data, 0, NULL, &error_msg);
+        base::JSONReader::ReadAndReturnError(json_data, 0, nullptr, &error_msg);
     CHECK(trace_data) << "JSON parsing failed (" << error_msg
                       << ") JSON data:" << std::endl
                       << json_data;
@@ -106,7 +106,7 @@ class YUVReadbackTest : public testing::Test {
     base::ListValue* list;
     CHECK(trace_data->GetAsList(&list));
     for (size_t i = 0; i < list->GetSize(); i++) {
-      base::Value* item = NULL;
+      base::Value* item = nullptr;
       if (list->Get(i, &item)) {
         base::DictionaryValue* dict;
         CHECK(item->GetAsDictionary(&dict));

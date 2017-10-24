@@ -309,10 +309,7 @@ bool SpellcheckCharAttribute::OutputDefault(UChar c,
 // SpellcheckWordIterator implementation:
 
 SpellcheckWordIterator::SpellcheckWordIterator()
-    : text_(NULL),
-      attribute_(NULL),
-      iterator_() {
-}
+    : text_(nullptr), attribute_(nullptr), iterator_() {}
 
 SpellcheckWordIterator::~SpellcheckWordIterator() {
   Reset();

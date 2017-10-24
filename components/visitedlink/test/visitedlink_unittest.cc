@@ -178,7 +178,7 @@ class VisitedLinkTest : public testing::Test {
   // and TearDown will do this to make sure eveything is shiny before quitting.
   void ClearDB() {
     if (master_.get())
-      master_.reset(NULL);
+      master_.reset(nullptr);
 
     // Wait for all pending file I/O to be completed.
     content::RunAllTasksUntilIdle();
