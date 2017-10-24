@@ -473,7 +473,18 @@ var CrPngBehavior = {
           }
           break;
         case 'PLTE':
-          console.error('Bad PNG chunk type: ' + type);
+          /**
+           * https://www.w3.org/TR/2003/REC-PNG-20031110/#11PLTE
+           *
+           * Palette data        X bytes
+           */
+          var PLTE = new Uint8Array(12 + length);
+          this.writeUInt32_(PLTE, length, 0);
+          this.writeFourCC_(PLTE, 'PLTE', 4);
+          this.writeBytes_(PLTE, chunk, 8);
+          this.writeUInt32_(
+              PLTE, this.getCRC_(PLTE, 4, 8 + length), 8 + length);
+          png.chunks.push(PLTE);
           break;
         case 'IEND':
           /** Update fcTL now that size is known. */
