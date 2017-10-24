@@ -68,10 +68,10 @@ cr.define('print_preview', function() {
      * @private
      */
     this.controls_ = {};
-    for (var key in print_preview.ticket_items.CustomMarginsOrientation) {
-      var orientation =
+    for (const key in print_preview.ticket_items.CustomMarginsOrientation) {
+      const orientation =
           print_preview.ticket_items.CustomMarginsOrientation[key];
-      var control = new print_preview.MarginControl(orientation);
+      const control = new print_preview.MarginControl(orientation);
       this.controls_[orientation] = control;
       this.addChild(control);
     }
@@ -145,7 +145,7 @@ cr.define('print_preview', function() {
     updateTranslationTransform: function(translateTransform) {
       if (!translateTransform.equals(this.translateTransform_)) {
         this.translateTransform_ = translateTransform;
-        for (var orientation in this.controls_) {
+        for (const orientation in this.controls_) {
           this.controls_[orientation].setTranslateTransform(translateTransform);
         }
       }
@@ -158,7 +158,7 @@ cr.define('print_preview', function() {
     updateScaleTransform: function(scaleTransform) {
       if (scaleTransform != this.scaleTransform_) {
         this.scaleTransform_ = scaleTransform;
-        for (var orientation in this.controls_) {
+        for (const orientation in this.controls_) {
           this.controls_[orientation].setScaleTransform(scaleTransform);
         }
       }
@@ -173,8 +173,8 @@ cr.define('print_preview', function() {
         return;
       }
       this.clippingSize_ = clipSize;
-      for (var orientation in this.controls_) {
-        var el = this.controls_[orientation].getElement();
+      for (const orientation in this.controls_) {
+        const el = this.controls_[orientation].getElement();
         el.style.clip = 'rect(' + (-el.offsetTop) + 'px, ' +
             (clipSize.width - el.offsetLeft) + 'px, ' +
             (clipSize.height - el.offsetTop) + 'px, ' + (-el.offsetLeft) +
@@ -215,7 +215,7 @@ cr.define('print_preview', function() {
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
 
-      for (var orientation in this.controls_) {
+      for (const orientation in this.controls_) {
         this.tracker.add(
             this.controls_[orientation],
             print_preview.MarginControl.EventType.DRAG_START,
@@ -229,7 +229,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     decorateInternal: function() {
-      for (var orientation in this.controls_) {
+      for (const orientation in this.controls_) {
         this.controls_[orientation].render(this.getElement());
       }
     },
@@ -239,7 +239,7 @@ cr.define('print_preview', function() {
      * @private
      */
     setIsMarginControlsVisible_: function(isVisible) {
-      for (var orientation in this.controls_) {
+      for (const orientation in this.controls_) {
         this.controls_[orientation].setIsVisible(isVisible);
       }
     },
@@ -253,7 +253,7 @@ cr.define('print_preview', function() {
      * @private
      */
     moveControlWithConstraints_: function(control, posInPixels) {
-      var newPosInPts;
+      let newPosInPts;
       if (MarginControlContainer.isTopOrBottom_(control.getOrientation())) {
         newPosInPts = control.convertPixelsToPts(posInPixels.y);
       } else {
@@ -279,14 +279,14 @@ cr.define('print_preview', function() {
       if (value.length == 0) {
         return null;
       }
-      var validationRegex = new RegExp(
+      const validationRegex = new RegExp(
           '^(^-?)(\\d)+(\\' + this.measurementSystem_.thousandsDelimeter +
           '\\d{3})*(\\' + this.measurementSystem_.decimalDelimeter + '\\d*)?' +
           '(' + this.measurementSystem_.unitSymbol + ')?$');
       if (validationRegex.test(value)) {
         // Replacing decimal point with the dot symbol in order to use
         // parseFloat() properly.
-        var replacementRegex =
+        const replacementRegex =
             new RegExp('\\' + this.measurementSystem_.decimalDelimeter + '{1}');
         value = value.replace(replacementRegex, '.');
         return this.measurementSystem_.convertToPoints(parseFloat(value));
@@ -350,7 +350,7 @@ cr.define('print_preview', function() {
         this.getElement().classList.remove(
             MarginControlContainer.Classes_.DRAGGING_HORIZONTAL);
         if (event) {
-          var posInPixels =
+          const posInPixels =
               this.draggedControl_.translateMouseToPositionInPixels(
                   new print_preview.Coordinate2d(event.x, event.y));
           this.moveControlWithConstraints_(this.draggedControl_, posInPixels);
@@ -371,7 +371,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onMouseOver_: function(event) {
-      var fromElement = event.fromElement;
+      let fromElement = event.fromElement;
       while (fromElement != null) {
         if (fromElement == this.getElement()) {
           return;
@@ -392,7 +392,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onMouseOut_: function(event) {
-      var toElement = event.toElement;
+      let toElement = event.toElement;
       while (toElement != null) {
         if (toElement == this.getElement()) {
           return;
@@ -402,7 +402,7 @@ cr.define('print_preview', function() {
       if (this.draggedControl_ != null) {
         return;
       }
-      for (var orientation in this.controls_) {
+      for (const orientation in this.controls_) {
         if (this.controls_[orientation].getIsFocused() ||
             this.controls_[orientation].getIsInError()) {
           return;
@@ -417,9 +417,9 @@ cr.define('print_preview', function() {
      * @private
      */
     onTicketChange_: function() {
-      var margins = this.customMarginsTicketItem_.getValue();
-      for (var orientation in this.controls_) {
-        var control = this.controls_[orientation];
+      const margins = this.customMarginsTicketItem_.getValue();
+      for (const orientation in this.controls_) {
+        const control = this.controls_[orientation];
         control.setPageSize(this.documentInfo_.pageSize);
         control.setTextboxValue(
             this.serializeValueFromPts_(margins.get(orientation)));
@@ -442,17 +442,17 @@ cr.define('print_preview', function() {
      * @private
      */
     onControlTextChange_: function(control) {
-      var marginValue = this.parseValueToPts_(control.getTextboxValue());
+      const marginValue = this.parseValueToPts_(control.getTextboxValue());
       if (marginValue != null) {
         this.customMarginsTicketItem_.updateMargin(
             control.getOrientation(), marginValue);
         // Enable all controls.
-        for (var o in this.controls_) {
+        for (const o in this.controls_) {
           this.controls_[o].setIsEnabled(true);
         }
         control.setIsInError(false);
       } else {
-        var enableOtherControls;
+        let enableOtherControls;
         if (!control.getIsFocused()) {
           // If control no longer in focus, revert to previous valid value.
           control.setTextboxValue(
@@ -464,7 +464,7 @@ cr.define('print_preview', function() {
           enableOtherControls = false;
         }
         // Enable other controls.
-        for (var o in this.controls_) {
+        for (const o in this.controls_) {
           if (control.getOrientation() != o) {
             this.controls_[o].setIsEnabled(enableOtherControls);
           }

@@ -266,7 +266,7 @@ cr.define('print_preview', function() {
       }
 
       // Don't handle the key event for these elements.
-      var tagName = document.activeElement.tagName;
+      const tagName = document.activeElement.tagName;
       if (arrayContains(['INPUT', 'SELECT', 'EMBED'], tagName)) {
         return;
       }
@@ -276,7 +276,7 @@ cr.define('print_preview', function() {
       // element, and work up the DOM tree to see if any element has a
       // scrollbar. If there exists a scrollbar, do not handle the key event
       // here.
-      var element = e.target;
+      let element = e.target;
       while (element) {
         if (element.scrollHeight > element.clientHeight ||
             element.scrollWidth > element.clientWidth) {
@@ -317,7 +317,7 @@ cr.define('print_preview', function() {
           assert(this.openSystemDialogButton_), 'click',
           this.onOpenSystemDialogButtonClick_.bind(this));
 
-      var TicketStoreEvent = print_preview.PrintTicketStore.EventType;
+      const TicketStoreEvent = print_preview.PrintTicketStore.EventType;
       [TicketStoreEvent.INITIALIZE, TicketStoreEvent.CAPABILITIES_CHANGE,
        TicketStoreEvent.DOCUMENT_CHANGE]
           .forEach(eventType => {
@@ -386,9 +386,9 @@ cr.define('print_preview', function() {
       // TODO(raymes): It's harder to test compatibility of the out of process
       // plugin because it's asynchronous. We could do a better job at some
       // point.
-      var oopCompatObj = this.getElement().getElementsByClassName(
+      const oopCompatObj = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.OUT_OF_PROCESS_COMPATIBILITY_OBJECT)[0];
-      var isOOPCompatible = oopCompatObj.postMessage;
+      const isOOPCompatible = oopCompatObj.postMessage;
       oopCompatObj.parentElement.removeChild(oopCompatObj);
 
       return isOOPCompatible;
@@ -404,25 +404,25 @@ cr.define('print_preview', function() {
      */
     showMessage_: function(messageId, opt_message) {
       // Hide all messages.
-      var messageEls = this.getElement().getElementsByClassName(
+      const messageEls = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.MESSAGE);
-      for (var i = 0, messageEl; (messageEl = messageEls[i]); i++) {
+      for (let i = 0, messageEl; (messageEl = messageEls[i]); i++) {
         setIsVisible(messageEl, false);
       }
       // Disable jumping animation to conserve cycles.
-      var jumpingDotsEl = this.getElement().querySelector(
+      const jumpingDotsEl = this.getElement().querySelector(
           '.preview-area-loading-message-jumping-dots');
       jumpingDotsEl.classList.remove('jumping-dots');
 
       // Show specific message.
       if (messageId == print_preview.PreviewAreaMessageId_.CUSTOM) {
-        var customMessageTextEl = this.getElement().getElementsByClassName(
+        const customMessageTextEl = this.getElement().getElementsByClassName(
             PreviewArea.Classes_.CUSTOM_MESSAGE_TEXT)[0];
         customMessageTextEl.textContent = opt_message;
       } else if (messageId == print_preview.PreviewAreaMessageId_.LOADING) {
         jumpingDotsEl.classList.add('jumping-dots');
       }
-      var messageEl = this.getElement().getElementsByClassName(
+      const messageEl = this.getElement().getElementsByClassName(
           PreviewArea.MessageIdClassMap_[messageId])[0];
       setIsVisible(messageEl, true);
 
@@ -440,20 +440,20 @@ cr.define('print_preview', function() {
       this.overlayEl_.setAttribute('aria-hidden', !visible);
 
       // Hide/show all controls that will overlap when the overlay is visible.
-      var marginControls = this.getElement().getElementsByClassName(
+      const marginControls = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.MARGIN_CONTROL);
-      for (var i = 0; i < marginControls.length; ++i) {
+      for (let i = 0; i < marginControls.length; ++i) {
         marginControls[i].setAttribute('aria-hidden', visible);
       }
-      var previewAreaControls = this.getElement().getElementsByClassName(
+      const previewAreaControls = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.PREVIEW_AREA);
-      for (var i = 0; i < previewAreaControls.length; ++i) {
+      for (let i = 0; i < previewAreaControls.length; ++i) {
         previewAreaControls[i].setAttribute('aria-hidden', visible);
       }
 
       if (!visible) {
         // Disable jumping animation to conserve cycles.
-        var jumpingDotsEl = this.getElement().querySelector(
+        const jumpingDotsEl = this.getElement().querySelector(
             '.preview-area-loading-message-jumping-dots');
         jumpingDotsEl.classList.remove('jumping-dots');
       }
@@ -505,7 +505,7 @@ cr.define('print_preview', function() {
      */
     onOpenSystemDialogButtonClick_: function() {
       this.openSystemDialogButton_.disabled = true;
-      var openSystemDialogThrobber = this.getElement().getElementsByClassName(
+      const openSystemDialogThrobber = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.OPEN_SYSTEM_DIALOG_BUTTON_THROBBER)[0];
       setIsVisible(openSystemDialogThrobber, true);
       cr.dispatchSimpleEvent(
@@ -519,7 +519,7 @@ cr.define('print_preview', function() {
     onTicketChange_: function() {
       if (!this.previewGenerator_)
         return;
-      var previewRequest = this.previewGenerator_.requestPreview();
+      const previewRequest = this.previewGenerator_.requestPreview();
       if (previewRequest.id <= -1) {
         this.marginControlContainer_.showMarginControlsIfNeeded();
         return;
