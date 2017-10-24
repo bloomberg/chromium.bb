@@ -1979,12 +1979,39 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       'shards': 2,
     },
   },
-  'webgl_conformance_gl_tests': {
+  'webgl_conformance_d3d11_passthrough': {
+    'tester_configs': [
+      {
+        # Run this on the FYI waterfall, optional tryservers, and Win
+        # ANGLE AMD tryserver.
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
+        'os_types': ['win'],
+        'disabled_instrumentation_types': ['tsan'],
+      }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux Ozone (Intel)',
+        ],
+      },
+    ],
+    'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-angle=d3d11',
+      '--use-cmd-decoder=passthrough',
+    ],
+    'asan_args': ['--is-asan'],
+    'swarming': {
+      'shards': 2,
+    },
+  },
+  'webgl_conformance_gl_passthrough': {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
-        'os_types': ['win'],
+        'os_types': ['linux', 'win'],
         'disabled_instrumentation_types': ['tsan'],
       }
     ],
@@ -2018,59 +2045,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
             'gpu': '8086:0412',
             'os': 'Windows-2008ServerR2-SP1'
           },
-        ],
-      },
-    ],
-    'target_name': 'webgl_conformance',
-    'extra_browser_args': [
-      '--use-angle=gl',
-      '--use-cmd-decoder=validating',
-    ],
-    'asan_args': ['--is-asan'],
-    'swarming': {
-      'shards': 2,
-    },
-  },
-  'webgl_conformance_d3d11_passthrough': {
-    'tester_configs': [
-      {
-        # Run this on the FYI waterfall, optional tryservers, and Win
-        # ANGLE AMD tryserver.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
-        'os_types': ['win'],
-        'disabled_instrumentation_types': ['tsan'],
-      }
-    ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux Ozone (Intel)',
-        ],
-      },
-    ],
-    'target_name': 'webgl_conformance',
-    'extra_browser_args': [
-      '--use-angle=d3d11',
-      '--use-cmd-decoder=passthrough',
-    ],
-    'asan_args': ['--is-asan'],
-    'swarming': {
-      'shards': 2,
-    },
-  },
-  'webgl_conformance_gl_passthrough': {
-    'tester_configs': [
-      {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
-        'os_types': ['linux'],
-        'disabled_instrumentation_types': ['tsan'],
-      }
-    ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux Ozone (Intel)',
         ],
       },
     ],
