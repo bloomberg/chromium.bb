@@ -5,13 +5,13 @@
 import("clang.gni")
 
 config("find_bad_constructs") {
-  if (clang_use_chrome_plugins) {
+  # TODO(fuchsia): Enable this on Fuchsia, crbug.com/777847
+  if (clang_use_chrome_plugins && !is_fuchsia) {
     cflags = []
 
     # On Windows, the plugin is built directly into clang, so there's
     # no need to load it dynamically.
-
-    if (is_mac || is_ios) {
+    if (host_os == "mac") {
       cflags += [
         "-Xclang",
         "-load",
@@ -19,7 +19,7 @@ config("find_bad_constructs") {
         rebase_path("${clang_base_path}/lib/libFindBadConstructs.dylib",
                     root_build_dir),
       ]
-    } else if (is_linux || is_android) {
+    } else if (host_os == "linux") {
       cflags += [
         "-Xclang",
         "-load",
