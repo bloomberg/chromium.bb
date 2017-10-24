@@ -35,7 +35,7 @@ class SetMediaKeysHandler : public ScriptPromiseResolver {
   static ScriptPromise Create(ScriptState*, HTMLMediaElement&, MediaKeys*);
   ~SetMediaKeysHandler() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);

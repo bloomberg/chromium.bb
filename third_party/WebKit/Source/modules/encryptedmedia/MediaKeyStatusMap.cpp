@@ -90,7 +90,7 @@ class MapIterationSource final
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(map_);
     PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::Trace(
         visitor);
@@ -124,7 +124,7 @@ const MediaKeyStatusMap::MapEntry& MediaKeyStatusMap::at(size_t index) const {
 
 size_t MediaKeyStatusMap::IndexOf(const DOMArrayPiece& key) const {
   for (size_t index = 0; index < entries_.size(); ++index) {
-    const auto& current = entries_.at(index)->KeyId();
+    auto* const current = entries_.at(index)->KeyId();
     if (key == *current)
       return index;
   }

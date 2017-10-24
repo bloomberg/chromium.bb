@@ -147,7 +147,7 @@ class SetCertificateResultPromise
         exception_code, system_code, error_message);
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -179,7 +179,7 @@ class GetStatusForPolicyResultPromise
     Resolve(EncryptedMediaUtils::ConvertKeyStatusToString(key_status));
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
