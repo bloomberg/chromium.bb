@@ -342,6 +342,25 @@ String UrlForFrame(LocalFrame* frame) {
   return url.GetString();
 }
 
+const char* CompileOptionsString(v8::ScriptCompiler::CompileOptions options) {
+  switch (options) {
+    case v8::ScriptCompiler::kNoCompileOptions:
+      return "no";
+    case v8::ScriptCompiler::kProduceParserCache:
+      return "parser";
+    case v8::ScriptCompiler::kConsumeParserCache:
+      return "parser";
+    case v8::ScriptCompiler::kProduceCodeCache:
+      return "code";
+    case v8::ScriptCompiler::kProduceFullCodeCache:
+      return "full code";
+    case v8::ScriptCompiler::kConsumeCodeCache:
+      return "code";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
@@ -1033,10 +1052,51 @@ std::unique_ptr<TracedValue> InspectorParseScriptEvent::Data(
   return value;
 }
 
+InspectorCompileScriptEvent::V8CacheResult::ProduceResult::ProduceResult(
+    v8::ScriptCompiler::CompileOptions produce_options,
+    int cache_size)
+    : produce_options(produce_options), cache_size(cache_size) {
+  DCHECK(produce_options == v8::ScriptCompiler::kProduceParserCache ||
+         produce_options == v8::ScriptCompiler::kProduceCodeCache ||
+         produce_options == v8::ScriptCompiler::kProduceFullCodeCache);
+}
+
+InspectorCompileScriptEvent::V8CacheResult::ConsumeResult::ConsumeResult(
+    v8::ScriptCompiler::CompileOptions consume_options,
+    int cache_size,
+    bool rejected)
+    : consume_options(consume_options),
+      cache_size(cache_size),
+      rejected(rejected) {
+  DCHECK(consume_options == v8::ScriptCompiler::kConsumeParserCache ||
+         consume_options == v8::ScriptCompiler::kConsumeCodeCache);
+}
+
 std::unique_ptr<TracedValue> InspectorCompileScriptEvent::Data(
     const String& url,
-    const TextPosition& text_position) {
-  return FillLocation(url, text_position);
+    const TextPosition& text_position,
+    const V8CacheResult& cache_result,
+    bool streamed) {
+  std::unique_ptr<TracedValue> value = FillLocation(url, text_position);
+
+  if (cache_result.produce_result) {
+    value->SetString(
+        "cacheProduceOptions",
+        CompileOptionsString(cache_result.produce_result->produce_options));
+    value->SetInteger("producedCacheSize",
+                      cache_result.produce_result->cache_size);
+  }
+
+  if (cache_result.consume_result) {
+    value->SetString(
+        "cacheConsumeOptions",
+        CompileOptionsString(cache_result.consume_result->consume_options));
+    value->SetInteger("consumedCacheSize",
+                      cache_result.consume_result->cache_size);
+    value->SetBoolean("cacheRejected", cache_result.consume_result->rejected);
+  }
+  value->SetBoolean("streamed", streamed);
+  return value;
 }
 
 std::unique_ptr<TracedValue> InspectorFunctionCallEvent::Data(

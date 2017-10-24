@@ -17,6 +17,8 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
+#include "platform/wtf/Optional.h"
+#include "v8/include/v8.h"
 
 namespace v8 {
 class Function;
@@ -392,7 +394,30 @@ std::unique_ptr<TracedValue> Data(unsigned long identifier, const String& url);
 }
 
 namespace InspectorCompileScriptEvent {
-std::unique_ptr<TracedValue> Data(const String& url, const WTF::TextPosition&);
+
+struct V8CacheResult {
+  struct ProduceResult {
+    ProduceResult(v8::ScriptCompiler::CompileOptions produce_options,
+                  int cache_size);
+    v8::ScriptCompiler::CompileOptions produce_options;
+    int cache_size;
+  };
+  struct ConsumeResult {
+    ConsumeResult(v8::ScriptCompiler::CompileOptions consume_options,
+                  int cache_size,
+                  bool rejected);
+    v8::ScriptCompiler::CompileOptions consume_options;
+    int cache_size;
+    bool rejected;
+  };
+  Optional<ProduceResult> produce_result;
+  Optional<ConsumeResult> consume_result;
+};
+
+std::unique_ptr<TracedValue> Data(const String& url,
+                                  const WTF::TextPosition&,
+                                  const V8CacheResult&,
+                                  bool streamed);
 }
 
 namespace InspectorFunctionCallEvent {
