@@ -153,8 +153,6 @@ test("cast_audio_backend_unittests") {
   sources = [
     "filter_group_unittest.cc",
     "post_processors/governor_unittest.cc",
-    "post_processors/post_processor_unittest.cc",
-    "post_processors/post_processor_unittest.h",
     "post_processors/saturated_gain_unittest.cc",
   ]
 
@@ -166,6 +164,7 @@ test("cast_audio_backend_unittests") {
     ":saturated_gain",
     "//base",
     "//base/test:run_all_unittests",
+    "//chromecast/media/cma/backend/post_processors:test_support",
     "//chromecast/public/media",
     "//media:shared_memory_support",
     "//testing/gmock",
