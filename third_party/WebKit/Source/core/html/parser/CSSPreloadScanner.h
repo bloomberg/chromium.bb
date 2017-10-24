@@ -106,7 +106,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
 
  public:
   CSSPreloaderResourceClient(Resource*, HTMLResourcePreloader*);
-  ~CSSPreloaderResourceClient();
+  ~CSSPreloaderResourceClient() override;
   void SetCSSStyleSheet(const String& href,
                         const KURL& base_url,
                         ReferrerPolicy,
@@ -115,7 +115,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
   void DidAppendFirstData(const CSSStyleSheetResource*) override;
   String DebugName() const override { return "CSSPreloaderResourceClient"; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   // Protected for tests, which don't want to initialize a fully featured
