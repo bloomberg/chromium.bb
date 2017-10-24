@@ -27,7 +27,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
   const WebLayer* GetWebLayer() { return web_layer_.get(); }
 
   // WebMediaPlayer
-  void Load(LoadType, const WebMediaPlayerSource&, CORSMode) {
+  void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
     network_state_ = kNetworkStateLoaded;
     client_->NetworkStateChanged();
     ready_state_ = kReadyStateHaveEnoughData;

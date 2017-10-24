@@ -490,7 +490,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit PaintLayerScrollableArea(PaintLayer&);

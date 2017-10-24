@@ -45,7 +45,7 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   bool HasOverflowClip() const { return false; }
   bool ShouldClipOverflow() const { return false; }
   bool HasSelfPaintingLayer() const { return false; }
-  LayoutRect VisualRect() const { return visual_rect_; }
+  LayoutRect VisualRect() const override { return visual_rect_; }
   LayoutRect VisualOverflowRect() const { return VisualRect(); }
   LayoutRect OverflowClipRect(const LayoutPoint&,
                               OverlayScrollbarClipBehavior) const {
@@ -53,7 +53,7 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   }
 
   // DisplayItemClient methods.
-  String DebugName() const { return "NGPaintFragment"; }
+  String DebugName() const override { return "NGPaintFragment"; }
 
   // Commonly used functions for NGPhysicalFragment.
   Node* GetNode() const { return PhysicalFragment().GetNode(); }

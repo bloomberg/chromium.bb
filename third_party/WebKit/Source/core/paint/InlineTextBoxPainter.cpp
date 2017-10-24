@@ -759,7 +759,7 @@ void DrawDocumentMarker(GraphicsContext& context,
                       (RecordMarker(DocumentMarker::kSpelling).release()));
   DEFINE_STATIC_LOCAL(PaintRecord*, grammar_marker,
                       (RecordMarker(DocumentMarker::kGrammar).release()));
-  const auto& marker = marker_type == DocumentMarker::kSpelling
+  auto* const marker = marker_type == DocumentMarker::kSpelling
                            ? spelling_marker
                            : grammar_marker;
 

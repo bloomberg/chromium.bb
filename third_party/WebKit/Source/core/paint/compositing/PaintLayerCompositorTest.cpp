@@ -18,7 +18,7 @@ class PaintLayerCompositorTest : public RenderingTest {
       : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
  private:
-  void SetUp() {
+  void SetUp() override {
     RenderingTest::SetUp();
     EnableCompositing();
   }

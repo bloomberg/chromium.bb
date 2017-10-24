@@ -100,7 +100,7 @@ class CORE_EXPORT PaintTiming final
 
   void ReportSwapResultHistogram(const WebLayerTreeView::SwapResult);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit PaintTiming(Document&);

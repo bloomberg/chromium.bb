@@ -205,7 +205,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
       CompositingReasonsStats&);
 
   // GraphicsLayerClient implementation
-  bool NeedsRepaint(const GraphicsLayer&) const { return true; }
+  bool NeedsRepaint(const GraphicsLayer&) const override { return true; }
   IntRect ComputeInterestRect(const GraphicsLayer*,
                               const IntRect&) const override;
   void PaintContents(const GraphicsLayer*,
