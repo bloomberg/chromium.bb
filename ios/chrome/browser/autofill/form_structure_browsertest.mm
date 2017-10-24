@@ -9,7 +9,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
 #import "base/test/ios/wait_util.h"
@@ -55,13 +54,6 @@ base::FilePath GetIOSOutputDirectory(
             .AppendASCII("output");
 
   return dir;
-}
-
-// Returns the list of tests that fail to run properly on iOS.
-// TODO(crbug.com/762970): Reduce the amount of failing tests.
-const std::set<std::string>& FailingTestData() {
-  static std::set<std::string> failing_tests = {};
-  return failing_tests;
 }
 
 const std::vector<base::FilePath> GetTestFiles() {
@@ -179,14 +171,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 }
 
 TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
-  auto param = GetParam();
-  auto failing_tests = FailingTestData();
-  bool test_expected_to_fail =
-      base::ContainsKey(failing_tests, param.BaseName().value());
-  DataDrivenTestStatus test_status =
-      test_expected_to_fail ? TEST_FAILING : TEST_PASSING;
-  RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(kTestName),
-                       test_status);
+  RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(kTestName));
 }
 
 INSTANTIATE_TEST_CASE_P(AllForms,
