@@ -5096,6 +5096,82 @@
             "caroline-arc64"
         ]
     },
+    "caroline-arcnext-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "caroline-arcnext"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "caroline-arcnext-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "caroline-arcnext"
+        ]
+    },
+    "caroline-arcnext-full": {
+        "_template": "full",
+        "boards": [
+            "caroline-arcnext"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "caroline-arcnext-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "caroline-arcnext"
+        ]
+    },
+    "caroline-arcnext-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "caroline-arcnext"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "caroline-arcnext-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "caroline-arcnext"
+        ],
+        "vm_tests": []
+    },
+    "caroline-arcnext-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "caroline-arcnext"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "caroline-arcnext-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "caroline-arcnext"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "caroline-arcnext-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "caroline-arcnext"
+        ]
+    },
     "caroline-bertha-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
@@ -8277,6 +8353,82 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "eve-arcnext-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "eve-arcnext"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "eve-arcnext-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "eve-arcnext"
+        ]
+    },
+    "eve-arcnext-full": {
+        "_template": "full",
+        "boards": [
+            "eve-arcnext"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "eve-arcnext-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "eve-arcnext"
+        ]
+    },
+    "eve-arcnext-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "eve-arcnext"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "eve-arcnext-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "eve-arcnext"
+        ],
+        "vm_tests": []
+    },
+    "eve-arcnext-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "eve-arcnext"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "eve-arcnext-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "eve-arcnext"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "eve-arcnext-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "eve-arcnext"
         ]
     },
     "eve-bertha-chromium-pfq": {
@@ -13102,6 +13254,82 @@
             "chrome_internal"
         ]
     },
+    "kevin-arcnext-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "kevin-arcnext"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kevin-arcnext-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "kevin-arcnext"
+        ]
+    },
+    "kevin-arcnext-full": {
+        "_template": "full",
+        "boards": [
+            "kevin-arcnext"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kevin-arcnext-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "kevin-arcnext"
+        ]
+    },
+    "kevin-arcnext-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "kevin-arcnext"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kevin-arcnext-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "kevin-arcnext"
+        ],
+        "vm_tests": []
+    },
+    "kevin-arcnext-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "kevin-arcnext"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kevin-arcnext-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "kevin-arcnext"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kevin-arcnext-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "kevin-arcnext"
+        ]
+    },
     "kevin-bertha-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
@@ -16727,6 +16955,7 @@
             "butterfly-release",
             "candy-release",
             "caroline-arc64-release",
+            "caroline-arcnext-release",
             "caroline-bertha-release",
             "caroline-ndktranslation-release",
             "caroline-release",
@@ -16744,6 +16973,7 @@
             "edgar-release",
             "elm-release",
             "enguarde-release",
+            "eve-arcnext-release",
             "eve-bertha-release",
             "eve-kvm-release",
             "eve-release",
@@ -16770,6 +17000,7 @@
             "jecht-release",
             "kahlee-release",
             "kefka-release",
+            "kevin-arcnext-release",
             "kevin-bertha-release",
             "kevin-release",
             "kip-release",
