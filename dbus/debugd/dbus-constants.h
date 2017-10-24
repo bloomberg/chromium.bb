@@ -65,6 +65,9 @@ enum CupsResult {
   CUPS_AUTOCONF_FAILURE = 4,
 };
 
+// Debug log keys which should be substituted in the system info dialog.
+const char kIwlwifiDumpKey[] = "iwlwifi_dump";
+
 }  // namespace debugd
 
 #endif  // SYSTEM_API_DBUS_DEBUGD_DBUS_CONSTANTS_H_
