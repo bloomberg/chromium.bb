@@ -16,11 +16,11 @@
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_flags.h"
 #include "content/browser/accessibility/ax_platform_position.h"
-#include "content/browser/accessibility/browser_accessibility_event.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
@@ -110,7 +110,7 @@ struct BrowserAccessibilityFindInPageInfo {
 };
 
 // Manages a tree of BrowserAccessibility objects.
-class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
+class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
  public:
   // Creates the platform-specific BrowserAccessibilityManager, but
   // with no parent window pointer. Only useful for unit tests.
@@ -128,23 +128,20 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   static ui::AXTreeUpdate GetEmptyDocument();
 
-  virtual void NotifyAccessibilityEvent(
-      BrowserAccessibilityEvent::Source source,
-      ui::AXEvent event_type,
-      BrowserAccessibility* node);
+  // Subclasses override these methods to send native event notifications.
+  virtual void FireFocusEvent(BrowserAccessibility* node);
+  virtual void FireBlinkEvent(ui::AXEvent event_type,
+                              BrowserAccessibility* node) {}
+  virtual void FireGeneratedEvent(AXEventGenerator::Event event_type,
+                                  BrowserAccessibility* node) {}
 
   // Checks whether focus has changed since the last time it was checked,
   // taking into account whether the window has focus and which frame within
   // the frame tree has focus. If focus has changed, calls FireFocusEvent.
-  void FireFocusEventsIfNeeded(BrowserAccessibilityEvent::Source source);
+  void FireFocusEventsIfNeeded();
 
   // Return whether or not we are currently able to fire events.
   virtual bool CanFireEvents();
-
-  // Fire a focus event. Virtual so that some platforms can customize it,
-  // like firing a focus event on the root first, on Windows.
-  virtual void FireFocusEvent(BrowserAccessibilityEvent::Source source,
-                              BrowserAccessibility* node);
 
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
@@ -342,12 +339,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   const ui::AXTree* ax_tree() const { return tree_.get(); }
 
   // AXTreeDelegate implementation.
-  void OnNodeDataWillChange(ui::AXTree* tree,
-                            const ui::AXNodeData& old_node_data,
-                            const ui::AXNodeData& new_node_data) override;
-  void OnTreeDataChanged(ui::AXTree* tree,
-                         const ui::AXTreeData& old_tree_data,
-                         const ui::AXTreeData& new_tree_data) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override;
@@ -420,11 +411,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   base::hash_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
-
-  // A set of accessibility events to fire based on changes to the
-  // accessibility tree. It's represented as a map from node id
-  // to a set of events, which makes it easy to remove duplicates.
-  std::map<int32_t, std::set<ui::AXEvent>> tree_events_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;

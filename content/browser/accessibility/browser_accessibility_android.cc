@@ -21,11 +21,6 @@
 #include "ui/accessibility/platform/ax_platform_unique_id.h"
 #include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 
-namespace aria_strings {
-const char kAriaLivePolite[] = "polite";
-const char kAriaLiveAssertive[] = "assertive";
-}
-
 namespace {
 
 // These are enums from android.text.InputType in Java:
@@ -84,7 +79,6 @@ BrowserAccessibilityAndroid* BrowserAccessibilityAndroid::GetFromUniqueId(
 BrowserAccessibilityAndroid::BrowserAccessibilityAndroid()
     : unique_id_(ui::GetNextAXPlatformNodeUniqueId()) {
   g_unique_id_map.Get()[unique_id_] = this;
-  first_time_ = true;
 }
 
 BrowserAccessibilityAndroid::~BrowserAccessibilityAndroid() {
@@ -97,10 +91,9 @@ bool BrowserAccessibilityAndroid::IsNative() const {
 }
 
 void BrowserAccessibilityAndroid::OnLocationChanged() {
-  manager()->NotifyAccessibilityEvent(
-      BrowserAccessibilityEvent::FromTreeChange,
-      ui::AX_EVENT_LOCATION_CHANGED,
-      this);
+  auto* manager =
+      static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
+  manager->FireLocationChanged(this);
 }
 
 base::string16 BrowserAccessibilityAndroid::GetValue() const {
@@ -1427,39 +1420,6 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
       old_value_ = new_value_;
       new_value_ = value;
     }
-  }
-
-  if (GetRole() == ui::AX_ROLE_ALERT && first_time_) {
-    manager()->NotifyAccessibilityEvent(
-        BrowserAccessibilityEvent::FromTreeChange,
-        ui::AX_EVENT_ALERT,
-        this);
-  }
-
-  base::string16 live;
-  if (GetString16Attribute(
-      ui::AX_ATTR_CONTAINER_LIVE_STATUS, &live)) {
-    NotifyLiveRegionUpdate(live);
-  }
-
-  first_time_ = false;
-}
-
-void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
-    base::string16& aria_live) {
-  if (!base::EqualsASCII(aria_live, aria_strings::kAriaLivePolite) &&
-      !base::EqualsASCII(aria_live, aria_strings::kAriaLiveAssertive))
-    return;
-
-  base::string16 text = GetText();
-  if (cached_text_ != text) {
-    if (!text.empty()) {
-      manager()->NotifyAccessibilityEvent(
-          BrowserAccessibilityEvent::FromTreeChange,
-          ui::AX_EVENT_SHOW,
-          this);
-    }
-    cached_text_ = text;
   }
 }
 

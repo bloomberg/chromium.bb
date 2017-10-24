@@ -62,6 +62,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::LOAD_COMPLETE:
         event_name = "LOAD_COMPLETE";
         break;
+      case AXEventGenerator::Event::MENU_ITEM_SELECTED:
+        event_name = "MENU_ITEM_SELECTED";
+        break;
       case AXEventGenerator::Event::NAME_CHANGED:
         event_name = "NAME_CHANGED";
         break;
@@ -412,6 +415,47 @@ TEST(AXEventGeneratorTest, LiveRegionChanged) {
       DumpEvents(&event_generator));
 }
 
+TEST(AXEventGeneratorTest, BusyLiveRegionChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddStringAttribute(ui::AX_ATTR_LIVE_STATUS, "polite");
+  initial_state.nodes[0].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                            "polite");
+  initial_state.nodes[0].AddBoolAttribute(ui::AX_ATTR_BUSY, true);
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ui::AX_ROLE_STATIC_TEXT;
+  initial_state.nodes[1].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                            "polite");
+  initial_state.nodes[1].AddStringAttribute(ui::AX_ATTR_NAME, "Before 1");
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ui::AX_ROLE_STATIC_TEXT;
+  initial_state.nodes[2].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                            "polite");
+  initial_state.nodes[2].AddStringAttribute(ui::AX_ATTR_NAME, "Before 2");
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[1].string_attributes.clear();
+  update.nodes[1].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                     "polite");
+  update.nodes[1].AddStringAttribute(ui::AX_ATTR_NAME, "After 1");
+  update.nodes[2].string_attributes.clear();
+  update.nodes[2].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                     "polite");
+  update.nodes[2].AddStringAttribute(ui::AX_ATTR_NAME, "After 2");
+
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "NAME_CHANGED on 2, "
+      "NAME_CHANGED on 3",
+      DumpEvents(&event_generator));
+}
+
 TEST(AXEventGeneratorTest, AddChild) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -562,6 +606,32 @@ TEST(AXEventGeneratorTest, RoleChanged) {
   update.nodes[0].role = ui::AX_ROLE_CHECK_BOX;
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("ROLE_CHANGED on 1", DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, MenuItemSelected) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ui::AX_ROLE_MENU;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[0].AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, 2);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ui::AX_ROLE_MENU_LIST_OPTION;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ui::AX_ROLE_MENU_LIST_OPTION;
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].int_attributes.clear();
+  update.nodes[0].AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, 3);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "ACTIVE_DESCENDANT_CHANGED on 1, "
+      "MENU_ITEM_SELECTED on 3",
+      DumpEvents(&event_generator));
 }
 
 }  // namespace ui

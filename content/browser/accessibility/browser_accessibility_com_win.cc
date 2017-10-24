@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
 #include "base/win/windows_version.h"
-#include "content/browser/accessibility/browser_accessibility_event_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -2376,9 +2375,8 @@ bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
 void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
   if (owner()->PlatformIsChildOfLeaf())
     return;
-  (new BrowserAccessibilityEventWin(BrowserAccessibilityEvent::FromTreeChange,
-                                    ui::AX_EVENT_NONE, win_event_type, owner()))
-      ->Fire();
+  Manager()->ToBrowserAccessibilityManagerWin()->FireWinAccessibilityEvent(
+      win_event_type, owner());
 }
 
 BrowserAccessibilityComWin* ToBrowserAccessibilityComWin(

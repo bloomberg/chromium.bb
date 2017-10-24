@@ -75,29 +75,66 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() {
   return focus;
 }
 
-void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
-    BrowserAccessibilityEvent::Source source,
-    ui::AXEvent event_type,
+void BrowserAccessibilityManagerAndroid::FireFocusEvent(
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireFocusEvent(node);
+  WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
+  if (!wcax)
+    return;
+
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+  wcax->HandleFocusChanged(android_node->unique_id());
+}
+
+void BrowserAccessibilityManagerAndroid::FireLocationChanged(
     BrowserAccessibility* node) {
   WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
   if (!wcax)
     return;
 
-  if (event_type == ui::AX_EVENT_HIDE)
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+  wcax->HandleContentChanged(android_node->unique_id());
+}
+
+void BrowserAccessibilityManagerAndroid::FireBlinkEvent(
+    ui::AXEvent event_type,
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
+  WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
+  if (!wcax)
     return;
 
-  if (event_type == ui::AX_EVENT_TREE_CHANGED)
-    return;
+  // Sometimes we get events on nodes in our internal accessibility tree
+  // that aren't exposed on Android. Update |node| to point to the highest
+  // ancestor that's a leaf node.
+  node = node->GetClosestPlatformObject();
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
 
-  // Layout changes are handled in OnLocationChanges and
-  // SendLocationChangeEvents.
-  if (event_type == ui::AX_EVENT_LAYOUT_COMPLETE)
-    return;
-
-  if (event_type == ui::AX_EVENT_HOVER) {
-    HandleHoverEvent(node);
-    return;
+  switch (event_type) {
+    case ui::AX_EVENT_HOVER:
+      HandleHoverEvent(node);
+      break;
+    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
+      wcax->HandleScrolledToAnchor(android_node->unique_id());
+      break;
+    case ui::AX_EVENT_CLICKED:
+      wcax->HandleClicked(android_node->unique_id());
+      break;
+    default:
+      break;
   }
+}
+
+void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
+    AXEventGenerator::Event event_type,
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
+  WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
+  if (!wcax)
+    return;
 
   // Sometimes we get events on nodes in our internal accessibility tree
   // that aren't exposed on Android. Update |node| to point to the highest
@@ -122,55 +159,64 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   // node has changed.
   wcax->HandleContentChanged(android_node->unique_id());
 
-  // Ignore load complete events on iframes.
-  if (event_type == ui::AX_EVENT_LOAD_COMPLETE &&
-      node->manager() != GetRootManager()) {
-    return;
-  }
-
   switch (event_type) {
-    case ui::AX_EVENT_LOAD_COMPLETE: {
-      auto* android_focused =
-          static_cast<BrowserAccessibilityAndroid*>(GetFocus());
-      wcax->HandlePageLoaded(android_focused->unique_id());
-    } break;
-    case ui::AX_EVENT_FOCUS:
-      wcax->HandleFocusChanged(android_node->unique_id());
+    case Event::LOAD_COMPLETE:
+      if (node->manager() == GetRootManager()) {
+        auto* android_focused =
+            static_cast<BrowserAccessibilityAndroid*>(GetFocus());
+        wcax->HandlePageLoaded(android_focused->unique_id());
+      }
       break;
-    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
+    case Event::CHECKED_STATE_CHANGED:
       wcax->HandleCheckStateChanged(android_node->unique_id());
       break;
-    case ui::AX_EVENT_CLICKED:
-      wcax->HandleClicked(android_node->unique_id());
-      break;
-    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
+    case Event::SCROLL_POSITION_CHANGED:
       wcax->HandleScrollPositionChanged(android_node->unique_id());
       break;
-    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
-      wcax->HandleScrolledToAnchor(android_node->unique_id());
-      break;
-    case ui::AX_EVENT_ALERT:
-      // An alert is a special case of live region. Fall through to the
-      // next case to handle it.
-    case ui::AX_EVENT_SHOW: {
+    case Event::ALERT:
+    // An alert is a special case of live region. Fall through to the
+    // next case to handle it.
+    case Event::LIVE_REGION_NODE_CHANGED: {
       // This event is fired when an object appears in a live region.
       // Speak its text.
       base::string16 text = android_node->GetText();
       wcax->AnnounceLiveRegionText(text);
       break;
     }
-    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
-      wcax->HandleTextSelectionChanged(android_node->unique_id());
+    case Event::DOCUMENT_SELECTION_CHANGED: {
+      int32_t focus_id = GetTreeData().sel_focus_object_id;
+      BrowserAccessibility* focus_object = GetFromID(focus_id);
+      if (focus_object) {
+        BrowserAccessibilityAndroid* android_focus_object =
+            static_cast<BrowserAccessibilityAndroid*>(focus_object);
+        wcax->HandleTextSelectionChanged(android_focus_object->unique_id());
+      }
       break;
-    case ui::AX_EVENT_TEXT_CHANGED:
-    case ui::AX_EVENT_VALUE_CHANGED:
+    }
+    case Event::VALUE_CHANGED:
       if (android_node->IsEditableText() && GetFocus() == node) {
         wcax->HandleEditableTextChanged(android_node->unique_id());
       } else if (android_node->IsSlider()) {
         wcax->HandleSliderChanged(android_node->unique_id());
       }
       break;
-    default:
+    case Event::ACTIVE_DESCENDANT_CHANGED:
+    case Event::CHILDREN_CHANGED:
+    case Event::COLLAPSED:
+    case Event::DESCRIPTION_CHANGED:
+    case Event::DOCUMENT_TITLE_CHANGED:
+    case Event::EXPANDED:
+    case Event::INVALID_STATUS_CHANGED:
+    case Event::LIVE_REGION_CHANGED:
+    case Event::LIVE_REGION_CREATED:
+    case Event::MENU_ITEM_SELECTED:
+    case Event::NAME_CHANGED:
+    case Event::OTHER_ATTRIBUTE_CHANGED:
+    case Event::ROLE_CHANGED:
+    case Event::ROW_COUNT_CHANGED:
+    case Event::SELECTED_CHANGED:
+    case Event::SELECTED_CHILDREN_CHANGED:
+    case Event::STATE_CHANGED:
       // There are some notifications that aren't meaningful on Android.
       // It's okay to skip them.
       break;
