@@ -196,9 +196,6 @@ bool GetDisplayModeForNextResolution(const ManagedDisplayInfo& info,
 
 }  // namespace
 
-using std::string;
-using std::vector;
-
 DisplayManager::BeginEndNotifier::BeginEndNotifier(
     DisplayManager* display_manager)
     : display_manager_(display_manager) {
@@ -242,7 +239,7 @@ bool DisplayManager::InitFromCommandLine() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(::switches::kHostWindowBounds))
     return false;
-  const string size_str =
+  const std::string size_str =
       command_line->GetSwitchValueASCII(::switches::kHostWindowBounds);
   for (const std::string& part : base::SplitString(
            size_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -293,7 +290,7 @@ const DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
     DisplayIdList list = GetCurrentDisplayIdList();
     return layout_store_->GetRegisteredDisplayLayout(list);
   }
-  LOG(ERROR) << "DisplayLayout is requested for single display";
+  DLOG(ERROR) << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
   static DisplayLayout layout;
   layout.primary_id = active_display_list_[0].id();
@@ -454,10 +451,11 @@ bool DisplayManager::SetDisplayMode(int64_t display_id,
     if (info.id() == display_id) {
       auto iter = FindDisplayMode(info, display_mode);
       if (iter == info.display_modes().end()) {
-        LOG(WARNING) << "Unsupported display mode was requested:"
-                     << "size=" << display_mode.size().ToString()
-                     << ", ui scale=" << display_mode.ui_scale()
-                     << ", scale factor=" << display_mode.device_scale_factor();
+        DLOG(WARNING) << "Unsupported display mode was requested:"
+                      << "size=" << display_mode.size().ToString()
+                      << ", ui scale=" << display_mode.ui_scale()
+                      << ", scale factor="
+                      << display_mode.device_scale_factor();
         return false;
       }
 
@@ -604,10 +602,10 @@ void DisplayManager::SetSelectedModeForDisplayId(
   ManagedDisplayInfo info = GetDisplayInfo(display_id);
   auto iter = FindDisplayMode(info, display_mode);
   if (iter == info.display_modes().end()) {
-    LOG(WARNING) << "Unsupported display mode was requested:"
-                 << "size=" << display_mode.size().ToString()
-                 << ", ui scale=" << display_mode.ui_scale()
-                 << ", scale factor=" << display_mode.device_scale_factor();
+    DLOG(WARNING) << "Unsupported display mode was requested:"
+                  << "size=" << display_mode.size().ToString()
+                  << ", ui scale=" << display_mode.ui_scale()
+                  << ", scale factor=" << display_mode.device_scale_factor();
   }
 
   display_modes_[display_id] = *iter;
@@ -627,8 +625,8 @@ gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
 void DisplayManager::OnNativeDisplaysChanged(
     const DisplayInfoList& updated_displays) {
   if (updated_displays.empty()) {
-    VLOG(1) << "OnNativeDisplaysChanged(0): # of current displays="
-            << active_display_list_.size();
+    DVLOG(1) << __func__
+             << "(0): # of current displays=" << active_display_list_.size();
     // If the device is booted without display, or chrome is started
     // without --ash-host-window-bounds on linux desktop, use the
     // default display.
@@ -652,16 +650,15 @@ void DisplayManager::OnNativeDisplaysChanged(
     }
     return;
   }
+  DVLOG_IF(1, updated_displays.size() == 1)
+      << __func__ << "(1):" << updated_displays[0].ToString();
+  DVLOG_IF(1, updated_displays.size() > 1)
+      << __func__ << "(" << updated_displays.size()
+      << ") [0]=" << updated_displays[0].ToString()
+      << ", [1]=" << updated_displays[1].ToString();
+
   first_display_id_ = updated_displays[0].id();
   std::set<gfx::Point> origins;
-
-  if (updated_displays.size() == 1) {
-    VLOG(1) << "OnNativeDisplaysChanged(1):" << updated_displays[0].ToString();
-  } else {
-    VLOG(1) << "OnNativeDisplaysChanged(" << updated_displays.size()
-            << ") [0]=" << updated_displays[0].ToString()
-            << ", [1]=" << updated_displays[1].ToString();
-  }
 
   bool internal_display_connected = false;
   num_connected_displays_ = updated_displays.size();
@@ -1133,9 +1130,9 @@ void DisplayManager::SetTouchCalibrationData(
     }
     display_info_list.push_back(info);
   }
-  if (update)
+  if (update) {
     UpdateDisplaysWith(display_info_list);
-  else {
+  } else {
     display_info_[display_id].SetTouchCalibrationData(touch_device_identifier,
                                                       calibration_data);
   }
@@ -1157,9 +1154,9 @@ void DisplayManager::ClearTouchCalibrationData(
     }
     display_info_list.push_back(info);
   }
-  if (update)
+  if (update) {
     UpdateDisplaysWith(display_info_list);
-  else {
+  } else {
     if (touch_device_identifier) {
       display_info_[display_id].ClearTouchCalibrationData(
           *touch_device_identifier);
@@ -1201,30 +1198,29 @@ void DisplayManager::ReconfigureDisplays() {
 
 bool DisplayManager::UpdateDisplayBounds(int64_t display_id,
                                          const gfx::Rect& new_bounds) {
-  if (change_display_upon_host_resize_) {
-    display_info_[display_id].SetBounds(new_bounds);
-    // Don't notify observers if the mirrored window has changed.
-    if (software_mirroring_enabled() && mirroring_display_id_ == display_id)
-      return false;
+  if (!change_display_upon_host_resize_)
+    return false;
+  display_info_[display_id].SetBounds(new_bounds);
+  // Don't notify observers if the mirrored window has changed.
+  if (software_mirroring_enabled() && mirroring_display_id_ == display_id)
+    return false;
 
-    // In unified mode then |active_display_list_| won't have a display for
-    // |display_id| but |software_mirroring_display_list_| should. Reconfigure
-    // the displays so the unified display size is recomputed.
-    if (IsInUnifiedMode() &&
-        ContainsDisplayWithId(software_mirroring_display_list_, display_id)) {
-      DCHECK(!IsActiveDisplayId(display_id));
-      ReconfigureDisplays();
-      return true;
-    }
-
-    Display* display = FindDisplayForId(display_id);
-    DCHECK(display);
-    display->SetSize(display_info_[display_id].size_in_pixel());
-    BeginEndNotifier notifier(this);
-    NotifyMetricsChanged(*display, DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  // In unified mode then |active_display_list_| won't have a display for
+  // |display_id| but |software_mirroring_display_list_| should. Reconfigure
+  // the displays so the unified display size is recomputed.
+  if (IsInUnifiedMode() &&
+      ContainsDisplayWithId(software_mirroring_display_list_, display_id)) {
+    DCHECK(!IsActiveDisplayId(display_id));
+    ReconfigureDisplays();
     return true;
   }
-  return false;
+
+  Display* display = FindDisplayForId(display_id);
+  DCHECK(display);
+  display->SetSize(display_info_[display_id].size_in_pixel());
+  BeginEndNotifier notifier(this);
+  NotifyMetricsChanged(*display, DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  return true;
 }
 
 void DisplayManager::CreateMirrorWindowAsyncIfAny() {
@@ -1240,8 +1236,9 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
 
 void DisplayManager::UpdateInternalManagedDisplayModeListForTest() {
   if (!Display::HasInternalDisplay() ||
-      display_info_.count(Display::InternalDisplayId()) == 0)
+      display_info_.count(Display::InternalDisplayId()) == 0) {
     return;
+  }
   ManagedDisplayInfo* info = &display_info_[Display::InternalDisplayId()];
   SetInternalManagedDisplayModeList(info);
 }

@@ -122,20 +122,9 @@ bool TouchCalibrationData::operator==(TouchCalibrationData other) const {
   return quad_1 == quad_2;
 }
 
-ManagedDisplayMode::ManagedDisplayMode()
-    : refresh_rate_(0.0f),
-      is_interlaced_(false),
-      native_(false),
-      ui_scale_(1.0f),
-      device_scale_factor_(1.0f) {}
+ManagedDisplayMode::ManagedDisplayMode() {}
 
-ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size)
-    : size_(size),
-      refresh_rate_(0.0f),
-      is_interlaced_(false),
-      native_(false),
-      ui_scale_(1.0f),
-      device_scale_factor_(1.0f) {}
+ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size) : size_(size) {}
 
 ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
                                        float refresh_rate,
@@ -144,9 +133,7 @@ ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
     : size_(size),
       refresh_rate_(refresh_rate),
       is_interlaced_(is_interlaced),
-      native_(native),
-      ui_scale_(1.0f),
-      device_scale_factor_(1.0f) {}
+      native_(native) {}
 
 ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
                                        float refresh_rate,
@@ -162,8 +149,10 @@ ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
       device_scale_factor_(device_scale_factor) {}
 
 ManagedDisplayMode::~ManagedDisplayMode() = default;
+
 ManagedDisplayMode::ManagedDisplayMode(const ManagedDisplayMode& other) =
     default;
+
 ManagedDisplayMode& ManagedDisplayMode::operator=(
     const ManagedDisplayMode& other) = default;
 
@@ -389,19 +378,19 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   // Rotation, ui_scale, color_profile and overscan are given by preference,
   // or unit tests. Don't copy if this native_info came from
   // DisplayChangeObserver.
-  if (!native_info.native()) {
-    // Update the overscan_insets_in_dip_ either if the inset should be
-    // cleared, or has non empty insts.
-    if (native_info.clear_overscan_insets())
-      overscan_insets_in_dip_.Set(0, 0, 0, 0);
-    else if (!native_info.overscan_insets_in_dip_.IsEmpty())
-      overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
+  if (native_info.native())
+    return;
+  // Update the overscan_insets_in_dip_ either if the inset should be
+  // cleared, or has non empty insts.
+  if (native_info.clear_overscan_insets())
+    overscan_insets_in_dip_.Set(0, 0, 0, 0);
+  else if (!native_info.overscan_insets_in_dip_.IsEmpty())
+    overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
 
-    touch_calibration_data_map_ = native_info.touch_calibration_data_map_;
+  touch_calibration_data_map_ = native_info.touch_calibration_data_map_;
 
-    rotations_ = native_info.rotations_;
-    configured_ui_scale_ = native_info.configured_ui_scale_;
-  }
+  rotations_ = native_info.rotations_;
+  configured_ui_scale_ = native_info.configured_ui_scale_;
 }
 
 void ManagedDisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
@@ -411,13 +400,13 @@ void ManagedDisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
 }
 
 float ManagedDisplayInfo::GetDensityRatio() const {
-  if (Use125DSFForUIScaling() && device_scale_factor_ == 1.25f)
+  if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
     return 1.0f;
   return device_scale_factor_;
 }
 
 float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
-  if (Use125DSFForUIScaling() && device_scale_factor_ == 1.25f)
+  if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.25f : 1.0f;
   if (device_scale_factor_ == configured_ui_scale_)
     return 1.0f;
@@ -425,7 +414,7 @@ float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
 }
 
 float ManagedDisplayInfo::GetEffectiveUIScale() const {
-  if (Use125DSFForUIScaling() && device_scale_factor_ == 1.25f)
+  if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.0f : configured_ui_scale_;
   if (device_scale_factor_ == configured_ui_scale_)
     return 1.0f;
@@ -467,9 +456,9 @@ void ManagedDisplayInfo::SetManagedDisplayModes(
 }
 
 gfx::Size ManagedDisplayInfo::GetNativeModeSize() const {
-  for (size_t i = 0; i < display_modes_.size(); ++i) {
-    if (display_modes_[i].native())
-      return display_modes_[i].size();
+  for (const ManagedDisplayMode& display_mode : display_modes_) {
+    if (display_mode.native())
+      return display_mode.size();
   }
   return gfx::Size();
 }
@@ -498,9 +487,7 @@ std::string ManagedDisplayInfo::ToString() const {
 
 std::string ManagedDisplayInfo::ToFullString() const {
   std::string display_modes_str;
-  ManagedDisplayModeList::const_iterator iter = display_modes_.begin();
-  for (; iter != display_modes_.end(); ++iter) {
-    ManagedDisplayMode m(*iter);
+  for (const ManagedDisplayMode& m : display_modes_) {
     if (!display_modes_str.empty())
       display_modes_str += ",";
     base::StringAppendF(&display_modes_str, "(%dx%d@%g%c%s %g/%g)",
@@ -509,10 +496,6 @@ std::string ManagedDisplayInfo::ToFullString() const {
                         m.ui_scale(), m.device_scale_factor());
   }
   return ToString() + ", display_modes==" + display_modes_str;
-}
-
-bool ManagedDisplayInfo::Use125DSFForUIScaling() const {
-  return Display::IsInternalDisplayId(id_);
 }
 
 void ManagedDisplayInfo::AddTouchDevice(uint32_t touch_device_identifier) {
@@ -528,10 +511,6 @@ void ManagedDisplayInfo::ClearTouchDevices() {
 bool ManagedDisplayInfo::HasTouchDevice(
     uint32_t touch_device_identifier) const {
   return touch_device_identifiers_.count(touch_device_identifier);
-}
-
-void ResetDisplayIdForTest() {
-  synthesized_display_id = kSynthesizedDisplayIdStart;
 }
 
 void ManagedDisplayInfo::SetTouchCalibrationData(
@@ -578,6 +557,10 @@ void ManagedDisplayInfo::ClearTouchCalibrationData(
 
 void ManagedDisplayInfo::ClearAllTouchCalibrationData() {
   touch_calibration_data_map_.clear();
+}
+
+void ResetDisplayIdForTest() {
+  synthesized_display_id = kSynthesizedDisplayIdStart;
 }
 
 }  // namespace display
