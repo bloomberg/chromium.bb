@@ -488,9 +488,7 @@ def DescribeSizeInfoCoverage(size_info):
           _Divide(star_syms.size, in_section.size))
 
     if section == 'r':
-      STRING_LITERAL = models.STRING_LITERAL_NAME_PREFIX
-      string_literals = in_section.Filter(
-          lambda s: s.full_name.startswith(STRING_LITERAL))
+      string_literals = in_section.Filter(lambda s: s.IsStringLiteral())
       yield '* Contains {} string literals. Total size={}, padding={}'.format(
           len(string_literals), string_literals.size_without_padding,
           string_literals.padding)

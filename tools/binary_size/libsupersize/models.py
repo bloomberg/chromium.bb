@@ -83,7 +83,7 @@ DIFF_STATUS_REMOVED = 3
 DIFF_PREFIX_BY_STATUS = ['= ', '~ ', '+ ', '- ']
 
 
-STRING_LITERAL_NAME_PREFIX = 'string literal '
+STRING_LITERAL_NAME = 'string literal'
 
 
 class SizeInfo(object):
@@ -250,6 +250,9 @@ class BaseSymbol(object):
   def IsGeneratedByToolchain(self):
     return '.' in self.name or (
         self.name.endswith(']') and not self.name.endswith('[]'))
+
+  def IsStringLiteral(self):
+    return self.full_name == STRING_LITERAL_NAME
 
   def IterLeafSymbols(self):
     yield self
@@ -808,19 +811,20 @@ class SymbolGroup(BaseSymbol):
 
     The main function of clustering is to put symbols that were broken into
     multiple parts under a group so that they once again look like a single
-    symbol. It also groups together symbols like "** merge strings".
+    symbol. This is to prevent someone thinking that a symbol got smaller, when
+    all it did was get split into parts.
+
+    It also groups together "** symbol gap", since these are mostly just noise.
 
     To view created groups:
       Print(size_info.symbols.WhereIsGroup())
     """
     def cluster_func(symbol):
       name = symbol.full_name
-      if not name:
+      if not name or symbol.IsStringLiteral():
         # min_count=2 will ensure order is maintained while not being grouped.
         # "&" to distinguish from real symbol names, id() to ensure uniqueness.
         name = '&' + hex(id(symbol))
-      elif name.startswith(STRING_LITERAL_NAME_PREFIX):
-        name = 'string literals'
       elif name.startswith('*'):
         # "symbol gap 3" -> "symbol gaps"
         name = re.sub(r'\s+\d+( \(.*\))?$', 's', name)
