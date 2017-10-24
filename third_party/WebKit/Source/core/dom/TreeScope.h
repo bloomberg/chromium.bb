@@ -172,7 +172,7 @@ inline bool TreeScope::ContainsMultipleElementsWithId(
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 
 HitTestResult HitTestInDocument(
-    Document*,
+    const Document*,
     int x,
     int y,
     const HitTestRequest& = HitTestRequest::kReadOnly |
