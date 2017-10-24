@@ -25,9 +25,11 @@ static_library("common") {
 
   deps = [
     "//base",
+    "//components/pref_registry",
   ]
 
   public_deps = [
     ":signin_features",
+    "//components/prefs",
   ]
 }
