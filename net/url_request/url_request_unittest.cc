@@ -8,9 +8,9 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <objbase.h>
 #include <shlobj.h>
+#include <windows.h>
 #include <wrl/client.h>
 #endif
 

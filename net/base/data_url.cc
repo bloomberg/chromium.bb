@@ -21,8 +21,10 @@
 namespace net {
 
 // static
-bool DataURL::Parse(const GURL& url, std::string* mime_type,
-                    std::string* charset, std::string* data) {
+bool DataURL::Parse(const GURL& url,
+                    std::string* mime_type,
+                    std::string* charset,
+                    std::string* data) {
   if (!url.is_valid())
     return false;
 

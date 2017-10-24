@@ -234,7 +234,7 @@ SimpleBackendImpl::SimpleBackendImpl(
                                  ? SimpleEntryImpl::OPTIMISTIC_OPERATIONS
                                  : SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
-   io_thread_checker_.DetachFromThread();
+  io_thread_checker_.DetachFromThread();
 
   // Treat negative passed-in sizes same as SetMaxSize would here and in other
   // backends, as default (if first call).

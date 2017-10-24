@@ -23,7 +23,6 @@
 #include "net/quic/test_tools/simulator/simulator.h"
 #include "net/quic/test_tools/simulator/switch.h"
 
-// TODO(vasilvv): make this tests not time out on Android and iOS.
 namespace net {
 namespace test {
 
