@@ -26,6 +26,7 @@ function submitWord(url) {
     })
 }
 
+
 Running: testCursorInTheWordStart
 'function': 1
 

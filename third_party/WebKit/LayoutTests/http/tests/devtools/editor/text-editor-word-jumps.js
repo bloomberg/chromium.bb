@@ -1,9 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `This test checks how text editor handles different movements: ctrl-left, ctrl-right, ctrl-shift-left, ctrl-backspace, alt-left, alt-right, alt-shift-left, alt-shift-right.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   // clang-format off
 function testFunction(foo, bar)
 {
@@ -132,15 +136,4 @@ function testMyCamelMove(foo, bar)
       fireEventWhileSelectionChanges('ArrowLeft', [camelJumpModifier, 'shiftKey'], next);
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest();">
-<p>
-This test checks how text editor handles different movements: ctrl-left, ctrl-right, ctrl-shift-left, ctrl-backspace, alt-left, alt-right, alt-shift-left, alt-shift-right.
-</p>
-
-</body>
-</html>
+})();

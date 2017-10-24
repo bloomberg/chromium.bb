@@ -3,6 +3,7 @@ This test verifies that auto-appended spaces are removed on consequent enters.
 function (){}
     if (a == b) {
 
+
 Running: testCollapsedBlock
 function.(){
 

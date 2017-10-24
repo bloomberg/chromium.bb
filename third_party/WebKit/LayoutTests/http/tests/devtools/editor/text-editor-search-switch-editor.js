@@ -1,12 +1,15 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../sources/debugger/resources/edit-me.js"></script>
-<script src="resources/search-me.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Tests that switching editor tabs after searching does not affect editor selection and viewport.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addScriptTag('../sources/debugger/resources/edit-me.js');
+  await TestRunner.addScriptTag('resources/search-me.js');
+
   var textEditor;
   var searchString = 'FINDME';
   var searchableView = UI.panels.sources.searchableView();
@@ -52,10 +55,4 @@ function test() {
       TestRunner.completeTest();
     }
   }
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that switching editor tabs after searching does not affect editor selection and viewport.</p>
-</body>
-</html>
+})();

@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`This test checks TextEditorModel.markClean/isClean methods\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   var textEditor = SourcesTestRunner.createTestEditor();
   textEditor.setText('1\n2\n3\n4');
 
@@ -59,15 +61,4 @@ function test() {
       next();
     },
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-This test checks TextEditorModel.markClean/isClean methods
-</p>
-
-</body>
-</html>
+})();

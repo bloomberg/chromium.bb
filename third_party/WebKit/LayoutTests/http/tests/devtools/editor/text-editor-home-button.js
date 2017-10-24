@@ -1,10 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `This test verifies that home button triggers selection between first symbol of the line and first non-blank symbol of the line.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   // clang-format off
 function foo()
 {
@@ -84,16 +87,4 @@ function foo()
       hitHomeButton(true, 3, next);
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest();">
-<p>
-This test verifies that home button triggers selection between first symbol of the line
-and first non-blank symbol of the line.
-</p>
-
-</body>
-</html>
+})();

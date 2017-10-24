@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Test editor cursorPositionToCoordinates and coordinatesToCursorPosition API\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   var text = ['function foo(a, b) {', '    var f = /*.[a]/.test(a);', '    return f;'];
   var textEditor = SourcesTestRunner.createTestEditor();
   textEditor.setText(text.join('\n'));
@@ -44,14 +46,4 @@ function test() {
       next();
     },
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Test editor cursorPositionToCoordinates and coordinatesToCursorPosition API
-</p>
-</body>
-</html>
+})();

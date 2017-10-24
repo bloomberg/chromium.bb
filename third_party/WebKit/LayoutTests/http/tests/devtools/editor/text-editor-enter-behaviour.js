@@ -1,14 +1,18 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
-function codeSnippet() {
-    return document.getElementById("codeSnippet").textContent;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
-  // clang-format off
+(async function() {
+  TestRunner.addResult(`This test checks text editor enter behaviour.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function codeSnippet() {
+          return document.getElementById("codeSnippet").textContent;
+      }
+  `);
+
+// clang-format off
 function testFunction()
 {
     var a = 100;
@@ -22,7 +26,7 @@ function testFunction()
     }
     return c;
 }
-  // clang-format on
+// clang-format on
 
   var textEditor = SourcesTestRunner.createTestEditor();
   textEditor.setMimeType('text/javascript');
@@ -105,14 +109,4 @@ function testFunction()
       next();
     }
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest();">
-<p>
-This test checks text editor enter behaviour.
-</p>
-</body>
-</html>
+})();

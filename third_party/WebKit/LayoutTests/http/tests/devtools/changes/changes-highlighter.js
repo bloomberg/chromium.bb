@@ -1,18 +1,15 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" href="resources/before.css">
-<link rel="stylesheet" href="resources/after.css">
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
+(async function() {
+  TestRunner.addResult(`Tests that the changes view highlights diffs correctly.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('changes');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addStylesheetTag('resources/before.css');
+  await TestRunner.addStylesheetTag('resources/after.css');
 
-<script>
-
-var initialize_Changes = function() {
-  InspectorTest.preloadModule("changes");
-};
-
-function test() {
   TestRunner.waitForUISourceCode('after.css').then(uiSourceCode => uiSourceCode.requestContent()).then(onAfterContent);
 
   function onAfterContent(content) {
@@ -37,10 +34,4 @@ function test() {
     }
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that the changes view highlights diffs correctly.</p>
-</body>
-</html>
+})();

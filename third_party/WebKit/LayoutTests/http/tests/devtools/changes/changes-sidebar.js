@@ -1,13 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var initialize_Changes = function() {
-  InspectorTest.preloadModule("changes");
-};
+(async function() {
+  TestRunner.addResult(`Tests that the changes sidebar contains the changed uisourcecodes.\n`);
+  await TestRunner.loadModule('changes');
 
-function test() {
   var fulfill = function() {};
   var workspace = new Workspace.Workspace();
   var project =
@@ -66,10 +64,4 @@ function test() {
     return project.addContentProvider(
         url, Common.StaticContentProvider.fromString(url, Common.resourceTypes.Stylesheet, content));
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that the changes sidebar contains the changed uisourcecodes.</p>
-</body>
-</html>
+})();
