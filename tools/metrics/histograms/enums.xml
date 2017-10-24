@@ -24211,6 +24211,8 @@ from previous Chrome versions.
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813474479" label="site-per-process"/>
   <int value="-812461825" label="AutofillCreditCardSigninPromo:enabled"/>
+  <int value="-810684526"
+      label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
   <int value="-795600188" label="disable-async-dns"/>
@@ -24687,6 +24689,8 @@ from previous Chrome versions.
   <int value="651844675" label="EasyUnlockPromotions:enabled"/>
   <int value="652561231" label="CustomContextMenu:enabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
+  <int value="665409384"
+      label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
