@@ -818,9 +818,8 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent* event) {
   // Translate the root frame position to content coordinates.
   absolute_location = ParentFrameView().RootFrameToContents(absolute_location);
 
-  IntPoint local_point =
-      RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
-          absolute_location, kUseTransforms));
+  FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
+      absolute_location, kUseTransforms);
   WebMouseWheelEvent translated_event = event->NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
