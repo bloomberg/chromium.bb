@@ -23,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 using base::MessageLoop;
 using base::ScopedTempDir;
@@ -736,13 +737,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
     ASSERT_TRUE(db.Save(pairs_to_save, keys_to_remove));
   }
 
-  // Corrupt the database.
-  // TODO(cmumford): Create function in Chrome leveldb code to corrupt a db.
-  base::File current(temp_dir.GetPath().AppendASCII("CURRENT"),
-                     base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
-  const char kString[] = "StringWithoutEOL";
-  current.Write(0, kString, sizeof(kString));
-  current.Close();
+  EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(temp_dir.GetPath()));
 
   // Open the corrupt database which should succeed, but will destroy the
   // existing corrupt database.

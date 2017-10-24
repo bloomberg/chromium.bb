@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_LEVELDB_CHROME_H_
 #define THIRD_PARTY_LEVELDATABASE_LEVELDB_CHROME_H_
 
+#include "base/files/file_path.h"
 #include "leveldb/cache.h"
 #include "leveldb/env.h"
 #include "leveldb/export.h"
@@ -39,6 +40,12 @@ LEVELDB_EXPORT bool ParseFileName(const std::string& filename,
 
 // Report leveldb UMA values.
 LEVELDB_EXPORT void UpdateHistograms();
+
+// Corrupt a closed database for testing purposes. After calling this function
+// leveldb::OpenDB(...) will return a status where IsCorruption() returns true.
+// Returns true if the database was successfully corrupted, false if not.
+// Note: This function will fail if |db_path| does not exist.
+LEVELDB_EXPORT bool CorruptClosedDBForTesting(const base::FilePath& db_path);
 
 }  // namespace leveldb_chrome
 

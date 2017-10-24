@@ -38,6 +38,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace gcm {
 
@@ -683,9 +684,7 @@ TEST_F(GCMClientImplTest, LoadingBusted) {
   PumpLoopUntilIdle();
 
   // Mess up the store.
-  base::FilePath store_file_path =
-      gcm_store_path().Append(FILE_PATH_LITERAL("CURRENT"));
-  ASSERT_TRUE(base::AppendToFile(store_file_path, "A", 1));
+  EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(gcm_store_path()));
 
   // Restart GCM client. The store should be reset and the loading should
   // complete successfully.
