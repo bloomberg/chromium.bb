@@ -67,7 +67,7 @@ class BeforeInstallPromptEvent final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   BeforeInstallPromptEvent(const AtomicString& name,
