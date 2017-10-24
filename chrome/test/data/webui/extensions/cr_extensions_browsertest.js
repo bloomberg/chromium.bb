@@ -561,3 +561,25 @@ TEST_F('CrExtensionsViewManagerTest', 'VisibilityTest', function() {
 TEST_F('CrExtensionsViewManagerTest', 'EventFiringTest', function() {
   mocha.grep(assert(extension_view_manager_tests.TestNames.EventFiring)).run();
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// extensions-toggle-row tests.
+
+var CrExtensionsToggleRowTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/toggle_row.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'toggle_row_test.js',
+    ]);
+  }
+}
+
+TEST_F('CrExtensionsToggleRowTest', 'ToggleRowTest', function() {
+  mocha.run();
+});
