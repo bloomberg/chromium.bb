@@ -96,6 +96,8 @@ const int kLinkColor = 0x03A9F4;
 
     // Learn more button.
     MDCButton* learnMore = [[MDCFlatButton alloc] init];
+    [learnMore setBackgroundColor:[UIColor clearColor]
+                         forState:UIControlStateNormal];
     UIColor* inkColor =
         [[[MDCPalette greyPalette] tint300] colorWithAlphaComponent:0.25];
     [learnMore setInkColor:inkColor];
