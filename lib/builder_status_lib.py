@@ -415,7 +415,9 @@ class SlaveBuilderStatus(object):
       BuildbucketInfos (The BuildbucketInfo of the most recently retried one of
       there're multiple retries for a slave build config).
     """
-    assert buildbucket_client is not None, 'buildbucket_client is None'
+    #TODO(nxia): consider replacing this with a more elaborate fix
+    if buildbucket_client is None:
+      return {}
 
     all_buildbucket_info_dict = {}
     for build_config, build_info in scheduled_buildbucket_info_dict.iteritems():
