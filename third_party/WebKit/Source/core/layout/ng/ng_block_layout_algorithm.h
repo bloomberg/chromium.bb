@@ -53,7 +53,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                          NGBlockBreakToken* break_token = nullptr);
 
   Optional<MinMaxSize> ComputeMinMaxSize() const override;
-  virtual scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<NGLayoutResult> Layout() override;
 
  private:
   NGBoxStrut CalculateMargins(NGLayoutInputNode child,

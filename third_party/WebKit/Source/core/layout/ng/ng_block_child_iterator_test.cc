@@ -18,7 +18,7 @@ class NGBlockChildIteratorTest : public RenderingTest {
   NGBlockChildIteratorTest() {
     RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
   }
-  ~NGBlockChildIteratorTest() {
+  ~NGBlockChildIteratorTest() override {
     RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
   }
 };
