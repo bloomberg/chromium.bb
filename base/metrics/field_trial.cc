@@ -50,7 +50,11 @@ const char kActivationMarker = '*';
 // This is safe from race conditions because MakeIterable is a release operation
 // and GetNextOfType is an acquire operation, so memory writes before
 // MakeIterable happen before memory reads after GetNextOfType.
+#if defined(OS_FUCHSIA)  // TODO(752368): Not yet supported on Fuchsia.
+const bool kUseSharedMemoryForFieldTrials = false;
+#else
 const bool kUseSharedMemoryForFieldTrials = true;
+#endif
 
 // Constants for the field trial allocator.
 const char kAllocatorName[] = "FieldTrialAllocator";
