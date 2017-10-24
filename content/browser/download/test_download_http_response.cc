@@ -46,11 +46,8 @@ uint64_t XorShift64StarWithIndex(uint64_t seed, uint64_t index) {
 
 // Called when the response is sent to the client.
 void OnResponseBodySent(const base::Closure& request_completed_cb,
-                        const base::Closure& inject_error_cb,
                         const net::test_server::SendCompleteCallback& done) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, request_completed_cb);
-  if (!inject_error_cb.is_null())
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, inject_error_cb);
   done.Run();
 }
 
@@ -343,17 +340,16 @@ void TestDownloadHttpResponse::SendResponse(
   base::Closure request_completed_cb =
       base::Bind(&OnResponseSentOnServerIOThread, on_response_sent_callback_,
                  base::Passed(&completed_request));
-  base::Closure inject_error_cb;
   if (!parameters_.injected_errors.empty() &&
       parameters_.injected_errors.front() < requested_range_end_ &&
       !parameters_.inject_error_cb.is_null()) {
-    inject_error_cb = base::Bind(parameters_.inject_error_cb,
-                                 requested_range_begin_, body.size());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(parameters_.inject_error_cb,
+                                       requested_range_begin_, body.size()));
   }
 
   SendResponses(header, body, requested_range_begin_, std::move(parameters_),
-                base::Bind(&OnResponseBodySent, request_completed_cb,
-                           inject_error_cb, done),
+                base::Bind(&OnResponseBodySent, request_completed_cb, done),
                 send);
 }
 
