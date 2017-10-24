@@ -32,7 +32,7 @@ class NavigatorInstalledApp final
 
   InstalledAppController* Controller();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NavigatorInstalledApp(Navigator&);
