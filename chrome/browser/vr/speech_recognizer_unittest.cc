@@ -301,4 +301,27 @@ TEST_F(SpeechRecognizerTest, SafeToResetAfterStart) {
   base::RunLoop().RunUntilIdle();
 }
 
+// This test that calling start after stop should still work as expected.
+TEST_F(SpeechRecognizerTest, RestartAfterStop) {
+  EXPECT_CALL(*speech_recognizer_,
+              OnSpeechResult(base::ASCIIToUTF16("kitten"), false))
+      .Times(0);
+  EXPECT_CALL(*speech_recognizer_,
+              OnSpeechResult(base::ASCIIToUTF16("cat"), true))
+      .Times(1);
+
+  speech_recognizer_->Start();
+  base::RunLoop().RunUntilIdle();
+
+  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(INTERIM_RESULT);
+  speech_recognizer_->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  speech_recognizer_->Start();
+  base::RunLoop().RunUntilIdle();
+
+  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(FINAL_RESULT);
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace vr
