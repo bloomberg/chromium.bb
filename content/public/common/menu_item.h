@@ -21,7 +21,8 @@ struct CONTENT_EXPORT MenuItem {
     CHECKABLE_OPTION = blink::WebMenuItemInfo::kCheckableOption,
     GROUP = blink::WebMenuItemInfo::kGroup,
     SEPARATOR = blink::WebMenuItemInfo::kSeparator,
-    SUBMENU  // This is currently only used by Pepper, not by WebKit.
+    SUBMENU,  // This is currently only used by Pepper, not by WebKit.
+    TYPE_LAST = SUBMENU
   };
 
   MenuItem();
