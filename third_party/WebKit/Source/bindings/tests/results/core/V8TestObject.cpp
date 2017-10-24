@@ -9005,12 +9005,6 @@ static void RuntimeCallStatsCounterMethodMethod(const v8::FunctionCallbackInfo<v
   impl->RuntimeCallStatsCounterMethod();
 }
 
-static void serializerMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  V8SetReturnValueString(info, impl->serializerMethod(), info.GetIsolate());
-}
-
 static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "clear");
 
@@ -9185,7 +9179,10 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  V8SetReturnValueString(info, impl->serializerMethod(), info.GetIsolate());
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+
+  ScriptValue result = impl->toJSONForBinding(scriptState);
+  V8SetReturnValue(info, result.V8Value());
 }
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -12913,12 +12910,6 @@ void V8TestObject::RuntimeCallStatsCounterMethodMethodCallback(const v8::Functio
   TestObjectV8Internal::RuntimeCallStatsCounterMethodMethod(info);
 }
 
-void V8TestObject::serializerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_serializerMethod");
-
-  TestObjectV8Internal::serializerMethodMethod(info);
-}
-
 void V8TestObject::clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_clear");
 
@@ -13621,7 +13612,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"newObjectTestInterfaceMethod", V8TestObject::newObjectTestInterfaceMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"newObjectTestInterfacePromiseMethod", V8TestObject::newObjectTestInterfacePromiseMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"RuntimeCallStatsCounterMethod", V8TestObject::RuntimeCallStatsCounterMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"serializerMethod", V8TestObject::serializerMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"keys", V8TestObject::keysMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"values", V8TestObject::valuesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"forEach", V8TestObject::forEachMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

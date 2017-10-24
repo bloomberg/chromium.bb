@@ -2094,16 +2094,11 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "toJSON");
-
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
-  ScriptValue result = impl->toJSONForBinding(scriptState, exceptionState);
-  if (exceptionState.HadException()) {
-    return;
-  }
+  ScriptValue result = impl->toJSONForBinding(scriptState);
   V8SetReturnValue(info, result.V8Value());
 }
 
@@ -3457,7 +3452,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
     {"keys", V8TestInterface::keysMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"values", V8TestInterface::valuesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"forEach", V8TestInterface::forEachMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"toJSON", V8TestInterface::toJSONMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"toJSON", V8TestInterface::toJSONMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"toString", V8TestInterface::toStringMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
 };
 
