@@ -334,6 +334,13 @@ TEST(FileTest, Length) {
   EXPECT_EQ(file_size, bytes_read);
   for (int i = 0; i < file_size; i++)
     EXPECT_EQ(data_to_write[i], data_read[i]);
+
+  // Close the file and reopen with base::File::FLAG_CREATE_ALWAYS, and make
+  // sure the file is empty (old file was overridden).
+  file.Close();
+  file.Initialize(file_path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  EXPECT_EQ(0, file.GetLength());
 }
 
 // Flakily fails: http://crbug.com/86494
