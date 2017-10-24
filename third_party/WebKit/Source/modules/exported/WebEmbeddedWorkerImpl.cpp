@@ -388,8 +388,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                                       std::move(web_worker_fetch_context));
   }
 
-  WorkerThreadStartMode start_mode =
-      worker_inspector_proxy_->WorkerStartMode(document);
   std::unique_ptr<WorkerSettings> worker_settings =
       WTF::MakeUnique<WorkerSettings>(document->GetSettings());
 
@@ -405,7 +403,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         main_script_loader_->SourceText(),
-        main_script_loader_->ReleaseCachedMetadata(), start_mode,
+        main_script_loader_->ReleaseCachedMetadata(),
         document->GetContentSecurityPolicy()->Headers().get(),
         main_script_loader_->GetReferrerPolicy(), starter_origin,
         worker_clients, main_script_loader_->ResponseAddressSpace(),
@@ -419,7 +417,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // script.
     global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
-        "" /* SourceText */, nullptr /* CachedMetadata */, start_mode,
+        "" /* SourceText */, nullptr /* CachedMetadata */,
         nullptr /* ContentSecurityPolicy */, "" /* ReferrerPolicy */,
         starter_origin, worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, std::move(worker_settings),
@@ -435,9 +433,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we
   // populate the task runners with default task runners of the main thread.
-  worker_thread_->Start(std::move(global_scope_creation_params),
-                        WorkerBackingThreadStartupData::CreateDefault(),
-                        ParentFrameTaskRunners::Create());
+  worker_thread_->Start(
+      std::move(global_scope_creation_params),
+      WorkerBackingThreadStartupData::CreateDefault(),
+      worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
+      ParentFrameTaskRunners::Create());
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);

@@ -106,6 +106,7 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
+    WorkerInspectorProxy::PauseOnWorkerStart pause_mode,
     ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(IsMainThread());
   DCHECK(!parent_frame_task_runners_);
@@ -126,7 +127,7 @@ void WorkerThread::Start(
       CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
                       CrossThreadUnretained(this),
                       WTF::Passed(std::move(global_scope_creation_params)),
-                      thread_startup_data));
+                      thread_startup_data, pause_mode));
 }
 
 void WorkerThread::Terminate() {
@@ -396,14 +397,12 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
 
 void WorkerThread::InitializeOnWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
-    const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
+    const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
+    WorkerInspectorProxy::PauseOnWorkerStart pause_mode) {
   DCHECK(IsCurrentThread());
   DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
   KURL script_url = global_scope_creation_params->script_url;
-  // TODO(nhiroki): Rename WorkerThreadStartMode to GlobalScopeStartMode.
-  // (https://crbug.com/710364)
-  WorkerThreadStartMode start_mode = global_scope_creation_params->start_mode;
 
   // TODO(nhiroki): Separate these fields from GlobalScopeCreationParams because
   // these are used not for creating a global scope but for evaluating a script.
@@ -441,14 +440,13 @@ void WorkerThread::InitializeOnWorkerThread(
     SetThreadState(lock, ThreadState::kRunning);
   }
 
-  if (start_mode == kPauseWorkerGlobalScopeOnStart)
+  if (pause_mode == WorkerInspectorProxy::PauseOnWorkerStart::kPause)
     StartRunningDebuggerTasksOnPauseOnWorkerThread();
 
   if (CheckRequestedToTerminateOnWorkerThread()) {
     // Stop further worker tasks from running after this point. WorkerThread
     // was requested to terminate before initialization or during running
-    // debugger tasks, or loading the installed main script
-    // failed. PerformShutdownOnWorkerThread() will be called soon.
+    // debugger tasks. PerformShutdownOnWorkerThread() will be called soon.
     PrepareForShutdownOnWorkerThread();
     return;
   }

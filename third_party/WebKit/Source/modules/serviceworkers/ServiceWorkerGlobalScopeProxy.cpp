@@ -41,6 +41,7 @@
 #include "core/origin_trials/origin_trials.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/background_fetch/BackgroundFetchClickEvent.h"
 #include "modules/background_fetch/BackgroundFetchClickEventInit.h"
 #include "modules/background_fetch/BackgroundFetchEvent.h"

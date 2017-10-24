@@ -34,6 +34,7 @@
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
+#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadLifecycleContext.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/WaitableEvent.h"
@@ -57,11 +58,6 @@ class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
 struct GlobalScopeCreationParams;
-
-enum WorkerThreadStartMode {
-  kDontPauseWorkerGlobalScopeOnStart,
-  kPauseWorkerGlobalScopeOnStart
-};
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
@@ -100,6 +96,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const WTF::Optional<WorkerBackingThreadStartupData>&,
+             WorkerInspectorProxy::PauseOnWorkerStart,
              ParentFrameTaskRunners*);
 
   // Closes the global scope and terminates the underlying thread. Called on the
@@ -240,7 +237,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void InitializeSchedulerOnWorkerThread(WaitableEvent*);
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
-      const WTF::Optional<WorkerBackingThreadStartupData>&);
+      const WTF::Optional<WorkerBackingThreadStartupData>&,
+      WorkerInspectorProxy::PauseOnWorkerStart);
 
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread();
