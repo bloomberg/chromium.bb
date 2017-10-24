@@ -1189,9 +1189,13 @@ public class AwSettingsTest {
                     + (mOpenTwice ? "newWindow = window.open('about:blank');" : "")
                     + "        if (newWindow) {"
                     + "            if (newWindow === window) {"
-                    + "                newWindow.document.write("
-                    + "                    '<html><head><title>" + POPUP_ENABLED
+                    + "                if (newWindow.opener != null) {"
+                    + "                    newWindow.document.write("
+                    + "                        '<html><head><title>" + POPUP_ENABLED
                     + "</title></head></html>');"
+                    + "                } else {"
+                    + "                    newWindow.document.write('failed to set opener');"
+                    + "                }"
                     + "            } else {"
                     + "                document.title = '" + POPUP_ENABLED + "';"
                     + "            }"

@@ -300,8 +300,12 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (!page)
     return nullptr;
 
-  if (page == old_page)
-    return &opener_frame.Tree().Top();
+  if (page == old_page) {
+    Frame* frame = &opener_frame.Tree().Top();
+    if (request.GetShouldSetOpener() == kMaybeSetOpener)
+      frame->Client()->SetOpener(&opener_frame);
+    return frame;
+  }
 
   DCHECK(page->MainFrame());
   LocalFrame& frame = *ToLocalFrame(page->MainFrame());
