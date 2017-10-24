@@ -266,8 +266,15 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
             chromeos::NetworkTypePattern::Cellular());
     std::string home_provider_id;
-    if (cellular_device)
-      home_provider_id = cellular_device->home_provider_id();
+    if (cellular_device) {
+      if (!cellular_device->country_code().empty()) {
+        home_provider_id = base::StringPrintf(
+            "%s (%s)", cellular_device->operator_name().c_str(),
+            cellular_device->country_code().c_str());
+      } else {
+        home_provider_id = cellular_device->operator_name();
+      }
+    }
     return base::MakeUnique<base::Value>(home_provider_id);
   }
 

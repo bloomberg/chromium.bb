@@ -133,16 +133,16 @@ const chromeos::MobileConfig::Carrier* GetCarrier(
     const NetworkState* cellular) {
   const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
       GetDeviceState(cellular->device_path());
-  std::string carrier_id = device ? device->home_provider_id() : "";
+  std::string carrier_id = device ? device->operator_name() : "";
   if (carrier_id.empty()) {
     NET_LOG_ERROR("Empty carrier ID for cellular network",
                   device ? device->path(): "No device");
-    return NULL;
+    return nullptr;
   }
 
   chromeos::MobileConfig* config = chromeos::MobileConfig::GetInstance();
   if (!config->IsReady())
-    return NULL;
+    return nullptr;
 
   return config->GetCarrier(carrier_id);
 }
