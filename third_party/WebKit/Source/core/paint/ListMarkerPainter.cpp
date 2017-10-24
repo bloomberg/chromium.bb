@@ -8,6 +8,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ListMarkerText.h"
 #include "core/layout/api/SelectionState.h"
+#include "core/paint/AdjustPaintOffsetScope.h"
 #include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SelectionPaintingUtils.h"
@@ -53,23 +54,26 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
           paint_info.context, layout_list_marker_, paint_info.phase))
     return;
 
-  LayoutPoint box_origin(paint_offset + layout_list_marker_.Location());
+  AdjustPaintOffsetScope adjustment(layout_list_marker_, paint_info,
+                                    paint_offset);
+  const auto& local_paint_info = adjustment.GetPaintInfo();
+  auto box_origin = adjustment.AdjustedPaintOffset();
   LayoutRect overflow_rect(layout_list_marker_.VisualOverflowRect());
   overflow_rect.MoveBy(box_origin);
 
   IntRect pixel_snapped_overflow_rect = PixelSnappedIntRect(overflow_rect);
-  if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
+  if (!local_paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
 
-  DrawingRecorder recorder(paint_info.context, layout_list_marker_,
-                           paint_info.phase, pixel_snapped_overflow_rect);
+  DrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
+                           local_paint_info.phase, pixel_snapped_overflow_rect);
 
   LayoutRect box(box_origin, layout_list_marker_.Size());
 
   IntRect marker = layout_list_marker_.GetRelativeMarkerRect();
   marker.MoveBy(RoundedIntPoint(box_origin));
 
-  GraphicsContext& context = paint_info.context;
+  GraphicsContext& context = local_paint_info.context;
 
   if (layout_list_marker_.IsImage()) {
     // Since there is no way for the developer to specify decode behavior, use

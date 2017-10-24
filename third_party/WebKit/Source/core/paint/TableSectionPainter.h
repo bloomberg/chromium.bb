@@ -40,12 +40,11 @@ class TableSectionPainter {
   void PaintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
 
   enum ItemToPaint { kPaintCollapsedBorders, kPaintSection };
-  void PaintRepeatingHeaderGroup(
-      const PaintInfo&,
-      const LayoutPoint& paint_offset,
-      ItemToPaint);
+  void PaintRepeatingHeaderGroup(const PaintInfo&,
+                                 const LayoutPoint&,
+                                 ItemToPaint);
   void PaintRepeatingFooterGroup(const PaintInfo&,
-                                 const LayoutPoint& paint_offset,
+                                 const LayoutPoint&,
                                  ItemToPaint);
   void PaintSection(const PaintInfo&, const LayoutPoint&);
   void PaintCollapsedSectionBorders(const PaintInfo&, const LayoutPoint&);

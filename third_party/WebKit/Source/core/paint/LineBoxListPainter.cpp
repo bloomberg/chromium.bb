@@ -60,8 +60,6 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
           paint_info.GetCullRect(), paint_offset))
     return;
 
-  PaintInfo info(paint_info);
-
   // See if our root lines intersect with the dirty rect. If so, then we paint
   // them. Note that boxes can easily overlap, so we can't make any assumptions
   // based off positions of our first line box or our last line box.
@@ -70,9 +68,9 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
     if (line_box_list_.LineIntersectsDirtyRect(
             LineLayoutBoxModel(
                 const_cast<LayoutBoxModelObject*>(&layout_object)),
-            curr, info.GetCullRect(), paint_offset)) {
+            curr, paint_info.GetCullRect(), paint_offset)) {
       RootInlineBox& root = curr->Root();
-      curr->Paint(info, paint_offset, root.LineTop(), root.LineBottom());
+      curr->Paint(paint_info, paint_offset, root.LineTop(), root.LineBottom());
     }
   }
 }

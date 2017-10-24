@@ -5,6 +5,7 @@
 #include "core/paint/TableCellPainter.h"
 
 #include "core/layout/LayoutTableCell.h"
+#include "core/paint/AdjustPaintOffsetScope.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxModelObjectPainter.h"
@@ -37,9 +38,11 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
       !layout_table_cell_.FirstChild())
     return;
 
-  LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(
-      paint_offset + layout_table_cell_.Location());
-  PaintBackground(paint_info, paint_rect, background_object);
+  AdjustPaintOffsetScope adjustment(layout_table_cell_, paint_info,
+                                    paint_offset);
+  auto paint_rect =
+      PaintRectNotIncludingVisualOverflow(adjustment.AdjustedPaintOffset());
+  PaintBackground(adjustment.GetPaintInfo(), paint_rect, background_object);
 }
 
 void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
