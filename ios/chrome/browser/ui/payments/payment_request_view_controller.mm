@@ -338,7 +338,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       if ([cell isKindOfClass:[PaymentsTextCell class]]) {
         PaymentsTextCell* paymentsTextCell =
             base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
-        paymentsTextCell.textLabel.font = [MDCTypography body2Font];
         // Style call to action cells.
         if (paymentsTextCell.cellType == PaymentsTextCellTypeCallToAction) {
           paymentsTextCell.textLabel.textColor =
