@@ -545,12 +545,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 #if CONFIG_LOOP_RESTORATION
   av1_free_restoration_buffers(cm);
   aom_free_frame_buffer(&cpi->trial_frame_rst);
-  aom_free(cpi->extra_rstbuf);
-  {
-    int i;
-    for (i = 0; i < MAX_MB_PLANE; ++i)
-      av1_free_restoration_struct(&cpi->rst_search[i]);
-  }
 #endif  // CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
@@ -827,14 +821,6 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
           AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
-  int extra_rstbuf_sz = RESTORATION_EXTBUF_SIZE;
-  if (extra_rstbuf_sz > 0) {
-    aom_free(cpi->extra_rstbuf);
-    CHECK_MEM_ERROR(cm, cpi->extra_rstbuf,
-                    (uint8_t *)aom_malloc(extra_rstbuf_sz));
-  } else {
-    cpi->extra_rstbuf = NULL;
-  }
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
@@ -4260,16 +4246,6 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
                        "Failed to allocate frame buffer");
 
 #if CONFIG_LOOP_RESTORATION
-  set_restoration_tilesize(
-#if CONFIG_FRAME_SUPERRES
-      cm->superres_upscaled_width, cm->superres_upscaled_height,
-#else
-      cm->width, cm->height,
-#endif  // CONFIG_FRAME_SUPERRES
-      cm->subsampling_x, cm->subsampling_y, cm->rst_info);
-  for (int i = 0; i < MAX_MB_PLANE; ++i)
-    cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
-
 #if CONFIG_FRAME_SUPERRES
   const int frame_width = cm->superres_upscaled_width;
   const int frame_height = cm->superres_upscaled_height;
@@ -4277,25 +4253,12 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   const int frame_width = cm->width;
   const int frame_height = cm->height;
 #endif
+  set_restoration_tilesize(frame_width, frame_height, cm->subsampling_x,
+                           cm->subsampling_y, cm->rst_info);
+  for (int i = 0; i < MAX_MB_PLANE; ++i)
+    cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
 
   av1_alloc_restoration_buffers(cm);
-
-  // Set up the rst_search RestorationInfo structures. These are the same as
-  // the rst_info ones except need their own arrays of types and coefficients,
-  // allocated in av1_alloc_restoration_struct.
-  for (int i = 0; i < MAX_MB_PLANE; ++i) {
-    RestorationInfo *search = &cpi->rst_search[i];
-    RestorationInfo *rsi = &cm->rst_info[i];
-
-    search->restoration_tilesize = rsi->restoration_tilesize;
-    search->procunit_width = rsi->procunit_width;
-    search->procunit_height = rsi->procunit_height;
-    av1_alloc_restoration_struct(cm, search, frame_width, frame_height);
-#if CONFIG_STRIPED_LOOP_RESTORATION
-    // We can share boundary buffers between the search info and the main one
-    search->boundaries = rsi->boundaries;
-#endif
-  }
 #endif                            // CONFIG_LOOP_RESTORATION
   alloc_util_frame_buffers(cpi);  // TODO(afergs): Remove? Gets called anyways.
   init_motion_estimation(cpi);
