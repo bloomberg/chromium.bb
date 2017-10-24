@@ -16220,62 +16220,38 @@ struct RasterCHROMIUM {
 
   void Init(uint32_t _list_shm_id,
             uint32_t _list_shm_offset,
-            GLint _x,
-            GLint _y,
-            GLint _w,
-            GLint _h,
             uint32_t _data_size) {
     SetHeader();
     list_shm_id = _list_shm_id;
     list_shm_offset = _list_shm_offset;
-    x = _x;
-    y = _y;
-    w = _w;
-    h = _h;
     data_size = _data_size;
   }
 
   void* Set(void* cmd,
             uint32_t _list_shm_id,
             uint32_t _list_shm_offset,
-            GLint _x,
-            GLint _y,
-            GLint _w,
-            GLint _h,
             uint32_t _data_size) {
-    static_cast<ValueType*>(cmd)->Init(_list_shm_id, _list_shm_offset, _x, _y,
-                                       _w, _h, _data_size);
+    static_cast<ValueType*>(cmd)->Init(_list_shm_id, _list_shm_offset,
+                                       _data_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32_t list_shm_id;
   uint32_t list_shm_offset;
-  int32_t x;
-  int32_t y;
-  int32_t w;
-  int32_t h;
   uint32_t data_size;
 };
 
-static_assert(sizeof(RasterCHROMIUM) == 32,
-              "size of RasterCHROMIUM should be 32");
+static_assert(sizeof(RasterCHROMIUM) == 16,
+              "size of RasterCHROMIUM should be 16");
 static_assert(offsetof(RasterCHROMIUM, header) == 0,
               "offset of RasterCHROMIUM header should be 0");
 static_assert(offsetof(RasterCHROMIUM, list_shm_id) == 4,
               "offset of RasterCHROMIUM list_shm_id should be 4");
 static_assert(offsetof(RasterCHROMIUM, list_shm_offset) == 8,
               "offset of RasterCHROMIUM list_shm_offset should be 8");
-static_assert(offsetof(RasterCHROMIUM, x) == 12,
-              "offset of RasterCHROMIUM x should be 12");
-static_assert(offsetof(RasterCHROMIUM, y) == 16,
-              "offset of RasterCHROMIUM y should be 16");
-static_assert(offsetof(RasterCHROMIUM, w) == 20,
-              "offset of RasterCHROMIUM w should be 20");
-static_assert(offsetof(RasterCHROMIUM, h) == 24,
-              "offset of RasterCHROMIUM h should be 24");
-static_assert(offsetof(RasterCHROMIUM, data_size) == 28,
-              "offset of RasterCHROMIUM data_size should be 28");
+static_assert(offsetof(RasterCHROMIUM, data_size) == 12,
+              "offset of RasterCHROMIUM data_size should be 12");
 
 struct EndRasterCHROMIUM {
   typedef EndRasterCHROMIUM ValueType;

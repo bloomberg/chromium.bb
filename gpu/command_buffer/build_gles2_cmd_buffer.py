@@ -4616,6 +4616,7 @@ _FUNCTION_INFO = {
     'needs_size': True,
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',
+    'cmd_args': 'void* list',
   },
   'EndRasterCHROMIUM': {
     'decoder_func': 'DoEndRasterCHROMIUM',

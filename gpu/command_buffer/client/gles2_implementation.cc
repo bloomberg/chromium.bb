@@ -7181,8 +7181,7 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
     size_t size = op->Serialize(memory + written_bytes, free_bytes, options);
     if (!size) {
       buffer.Shrink(written_bytes);
-      helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), x, y, w, h,
-                              written_bytes);
+      helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), written_bytes);
       buffer.Reset(kBlockAlloc);
       memory = static_cast<char*>(buffer.address());
       written_bytes = 0;
@@ -7203,8 +7202,7 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
 
   if (!written_bytes)
     return;
-  helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), x, y, w, h,
-                          buffer.size());
+  helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), buffer.size());
 
   CheckGLError();
 #endif
