@@ -38,7 +38,7 @@ class BackgroundFetchRegistration final
                               unsigned long long downloaded,
                               HeapVector<IconDefinition> icons,
                               const String& title);
-  ~BackgroundFetchRegistration();
+  ~BackgroundFetchRegistration() override;
 
   // Initializes the BackgroundFetchRegistration to be associated with the given
   // ServiceWorkerRegistration. It will register itself as an observer for
@@ -74,7 +74,7 @@ class BackgroundFetchRegistration final
 
   void Dispose();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   void DidAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
