@@ -4400,7 +4400,6 @@
       longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
       api_class: true,
       api_methods: ["ParseShorthand"],
-      use_handlers_for: "CSSPropertyTextDecorationLine",
     },
     {
       name: "transition",
