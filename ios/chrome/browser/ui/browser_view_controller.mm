@@ -2426,6 +2426,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)installDelegatesForTab:(Tab*)tab {
+  DCHECK_NE(tab.webState->GetDelegate(), _webStateDelegate.get());
   // Unregistration happens when the Tab is removed from the TabModel.
   tab.iOSCaptivePortalBlockingPageDelegate = self;
   tab.dispatcher = self.dispatcher;
@@ -2461,6 +2462,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
+  DCHECK_EQ(tab.webState->GetDelegate(), _webStateDelegate.get());
   tab.iOSCaptivePortalBlockingPageDelegate = nil;
   tab.dispatcher = nil;
   tab.dialogDelegate = nil;
@@ -4755,8 +4757,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _sadTabCoordinator.webState = newTab.webState;
 
   [self tabSelected:newTab];
-  DCHECK_EQ(newTab, [model currentTab]);
-  [self installDelegatesForTab:newTab];
 }
 
 // Observer method, tab changed.
