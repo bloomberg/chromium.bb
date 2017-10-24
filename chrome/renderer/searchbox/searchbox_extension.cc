@@ -193,6 +193,15 @@ base::Time ConvertDateValueToTime(v8::Value* value) {
   return base::Time::FromJsTime(v8::Date::Cast(value)->ValueOf());
 }
 
+base::Optional<int> CoerceToInt(v8::Isolate* isolate, v8::Value* value) {
+  DCHECK(value);
+  v8::MaybeLocal<v8::Int32> maybe_int =
+      value->ToInt32(isolate->GetCurrentContext());
+  if (maybe_int.IsEmpty())
+    return base::nullopt;
+  return maybe_int.ToLocalChecked()->Value();
+}
+
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -446,9 +455,12 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
 
+  // Handlers for JS properties.
   static bool GetRightToLeft();
   static bool IsFocused();
   static bool IsKeyCaptureEnabled();
+
+  // Handlers for JS functions.
   static void Paste(const std::string& text);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
@@ -534,13 +546,22 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
 
   static bool HasOrigin(const GURL& origin);
 
+  // Handlers for JS properties.
   static bool IsInputInProgress();
   static v8::Local<v8::Value> GetMostVisited(v8::Isolate* isolate);
   static v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
 
+  // Handlers for JS functions visible to all NTPs.
   static void CheckIsUserSignedInToChromeAs(const std::string& identity);
   static void CheckIsUserSyncingHistory();
-  static void DeleteMostVisitedItem(int rid);
+  static void DeleteMostVisitedItem(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> rid);
+  static void UndoAllMostVisitedDeletions();
+  static void UndoMostVisitedDeletion(v8::Isolate* isolate,
+                                      v8::Local<v8::Value> rid);
+
+  // Handlers for JS functions visible only to the most visited iframe and/or
+  // the local NTP.
   static v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate,
                                                      int rid);
   static void LogEvent(int event);
@@ -556,8 +577,6 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       int tile_source,
       int tile_type,
       v8::Local<v8::Value> data_generation_time);
-  static void UndoAllMostVisitedDeletions();
-  static void UndoMostVisitedDeletion(int rid);
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
 };
@@ -581,17 +600,17 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::CheckIsUserSyncingHistory)
       .SetMethod("deleteMostVisitedItem",
                  &NewTabPageBindings::DeleteMostVisitedItem)
+      .SetMethod("undoAllMostVisitedDeletions",
+                 &NewTabPageBindings::UndoAllMostVisitedDeletions)
+      .SetMethod("undoMostVisitedDeletion",
+                 &NewTabPageBindings::UndoMostVisitedDeletion)
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
       .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
       .SetMethod("logMostVisitedImpression",
                  &NewTabPageBindings::LogMostVisitedImpression)
       .SetMethod("logMostVisitedNavigation",
-                 &NewTabPageBindings::LogMostVisitedNavigation)
-      .SetMethod("undoAllMostVisitedDeletions",
-                 &NewTabPageBindings::UndoAllMostVisitedDeletions)
-      .SetMethod("undoMostVisitedDeletion",
-                 &NewTabPageBindings::UndoMostVisitedDeletion);
+                 &NewTabPageBindings::LogMostVisitedNavigation);
 }
 
 // static
@@ -667,11 +686,38 @@ void NewTabPageBindings::CheckIsUserSyncingHistory() {
 }
 
 // static
-void NewTabPageBindings::DeleteMostVisitedItem(int rid) {
+void NewTabPageBindings::DeleteMostVisitedItem(v8::Isolate* isolate,
+                                               v8::Local<v8::Value> rid_value) {
+  // Manually convert to integer, so that the string "\"1\"" is also accepted.
+  base::Optional<int> rid = CoerceToInt(isolate, *rid_value);
+  if (!rid.has_value())
+    return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->DeleteMostVisitedItem(rid);
+  search_box->DeleteMostVisitedItem(*rid);
+}
+
+// static
+void NewTabPageBindings::UndoAllMostVisitedDeletions() {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->UndoAllMostVisitedDeletions();
+}
+
+// static
+void NewTabPageBindings::UndoMostVisitedDeletion(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> rid_value) {
+  // Manually convert to integer, so that the string "\"1\"" is also accepted.
+  base::Optional<int> rid = CoerceToInt(isolate, *rid_value);
+  if (!rid.has_value())
+    return;
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->UndoMostVisitedDeletion(*rid);
 }
 
 // static
@@ -748,22 +794,6 @@ void NewTabPageBindings::LogMostVisitedNavigation(
         /*url_for_rappor=*/GURL());
     search_box->LogMostVisitedNavigation(impression);
   }
-}
-
-// static
-void NewTabPageBindings::UndoAllMostVisitedDeletions() {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->UndoAllMostVisitedDeletions();
-}
-
-// static
-void NewTabPageBindings::UndoMostVisitedDeletion(int rid) {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->UndoMostVisitedDeletion(rid);
 }
 
 }  // namespace
