@@ -50,29 +50,6 @@ using ui::WebInputEventTraits;
 namespace content {
 namespace {
 
-const char* GetEventAckName(InputEventAckState ack_result) {
-  switch (ack_result) {
-    case INPUT_EVENT_ACK_STATE_UNKNOWN:
-      return "UNKNOWN";
-    case INPUT_EVENT_ACK_STATE_CONSUMED:
-      return "CONSUMED";
-    case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-      return "NOT_CONSUMED";
-    case INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE:
-      return "CONSUMED_SHOULD_BUBBLE";
-    case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
-      return "NO_CONSUMER_EXISTS";
-    case INPUT_EVENT_ACK_STATE_IGNORED:
-      return "IGNORED";
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING:
-      return "SET_NON_BLOCKING";
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
-      return "SET_NON_BLOCKING_DUE_TO_FLING";
-  }
-  DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.";
-  return "";
-}
-
 bool WasHandled(InputEventAckState state) {
   switch (state) {
     case INPUT_EVENT_ACK_STATE_CONSUMED:
@@ -430,7 +407,7 @@ void InputRouterImpl::KeyboardEventHandled(
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::KeboardEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
-               GetEventAckName(state));
+               InputEventAckStateToString(state));
 
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
@@ -452,7 +429,7 @@ void InputRouterImpl::MouseEventHandled(
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
-               GetEventAckName(state));
+               InputEventAckStateToString(state));
 
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
@@ -469,7 +446,7 @@ void InputRouterImpl::TouchEventHandled(
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::TouchEventHandled", "type",
                WebInputEvent::GetName(touch_event.event.GetType()), "ack",
-               GetEventAckName(state));
+               InputEventAckStateToString(state));
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
   touch_event.latency.AddNewLatencyFrom(latency);
@@ -494,7 +471,7 @@ void InputRouterImpl::GestureEventHandled(
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::GestureEventHandled", "type",
                WebInputEvent::GetName(gesture_event.event.GetType()), "ack",
-               GetEventAckName(state));
+               InputEventAckStateToString(state));
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
   if (gesture_event.event.GetType() ==
@@ -523,7 +500,7 @@ void InputRouterImpl::MouseWheelEventHandled(
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseWheelEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
-               GetEventAckName(state));
+               InputEventAckStateToString(state));
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
   event.latency.AddNewLatencyFrom(latency);
