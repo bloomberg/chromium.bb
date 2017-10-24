@@ -104,7 +104,7 @@ FetchRequestData::FetchRequestData()
       referrer_(Referrer(ClientReferrerString(), kReferrerPolicyDefault)),
       mode_(WebURLRequest::kFetchRequestModeNoCORS),
       credentials_(WebURLRequest::kFetchCredentialsModeOmit),
-      cache_mode_(WebURLRequest::kFetchRequestCacheModeDefault),
+      cache_mode_(mojom::FetchCacheMode::kDefault),
       redirect_(WebURLRequest::kFetchRedirectModeFollow),
       response_tainting_(kBasicTainting) {}
 

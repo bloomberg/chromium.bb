@@ -12,6 +12,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 #if INSIDE_BLINK
 #include <utility>
@@ -78,8 +79,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetIntegrity(const WebString&);
   const WebString& Integrity() const;
 
-  void SetCacheMode(WebURLRequest::FetchRequestCacheMode);
-  WebURLRequest::FetchRequestCacheMode CacheMode() const;
+  void SetCacheMode(mojom::FetchCacheMode);
+  mojom::FetchCacheMode CacheMode() const;
 
   void SetRedirectMode(WebURLRequest::FetchRedirectMode);
   WebURLRequest::FetchRedirectMode RedirectMode() const;

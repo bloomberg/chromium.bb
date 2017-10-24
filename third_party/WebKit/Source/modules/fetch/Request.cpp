@@ -261,17 +261,17 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
   if (init.CacheMode() == "default") {
-    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeDefault);
+    request->SetCacheMode(mojom::FetchCacheMode::kDefault);
   } else if (init.CacheMode() == "no-store") {
-    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeNoStore);
+    request->SetCacheMode(mojom::FetchCacheMode::kNoStore);
   } else if (init.CacheMode() == "reload") {
-    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeReload);
+    request->SetCacheMode(mojom::FetchCacheMode::kBypassCache);
   } else if (init.CacheMode() == "no-cache") {
-    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeNoCache);
+    request->SetCacheMode(mojom::FetchCacheMode::kValidateCache);
   } else if (init.CacheMode() == "force-cache") {
-    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeForceCache);
+    request->SetCacheMode(mojom::FetchCacheMode::kForceCache);
   } else if (init.CacheMode() == "only-if-cached") {
-    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeOnlyIfCached);
+    request->SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
   }
 
   // "If |init|'s redirect member is present, set |request|'s redirect mode
@@ -653,17 +653,17 @@ String Request::credentials() const {
 String Request::cache() const {
   // "The cache attribute's getter must return request's cache mode."
   switch (request_->CacheMode()) {
-    case WebURLRequest::kFetchRequestCacheModeDefault:
+    case mojom::FetchCacheMode::kDefault:
       return "default";
-    case WebURLRequest::kFetchRequestCacheModeNoStore:
+    case mojom::FetchCacheMode::kNoStore:
       return "no-store";
-    case WebURLRequest::kFetchRequestCacheModeReload:
+    case mojom::FetchCacheMode::kBypassCache:
       return "reload";
-    case WebURLRequest::kFetchRequestCacheModeNoCache:
+    case mojom::FetchCacheMode::kValidateCache:
       return "no-cache";
-    case WebURLRequest::kFetchRequestCacheModeForceCache:
+    case mojom::FetchCacheMode::kForceCache:
       return "force-cache";
-    case WebURLRequest::kFetchRequestCacheModeOnlyIfCached:
+    case mojom::FetchCacheMode::kOnlyIfCached:
       return "only-if-cached";
   }
   NOTREACHED();
