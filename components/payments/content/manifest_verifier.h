@@ -27,7 +27,7 @@ class Origin;
 
 namespace payments {
 
-class PaymentManifestParserHost;
+class PaymentManifestParser;
 class PaymentManifestWebDataService;
 class PaymentMethodManifestDownloaderInterface;
 
@@ -52,7 +52,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // Creates the verifier and starts up the parser utility process.
   ManifestVerifier(
       std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
-      std::unique_ptr<PaymentManifestParserHost> parser,
+      std::unique_ptr<PaymentManifestParser> parser,
       scoped_refptr<PaymentManifestWebDataService> cache);
 
   ~ManifestVerifier() override;
@@ -87,7 +87,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader_;
 
   // Parses the manifests.
-  std::unique_ptr<PaymentManifestParserHost> parser_;
+  std::unique_ptr<PaymentManifestParser> parser_;
 
   // Caches the manifests.
   scoped_refptr<PaymentManifestWebDataService> cache_;

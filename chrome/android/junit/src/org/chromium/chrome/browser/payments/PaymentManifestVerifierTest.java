@@ -20,8 +20,8 @@ import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVeri
 import org.chromium.chrome.browser.payments.PaymentManifestWebDataService.PaymentManifestWebDataServiceCallback;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,6 +41,15 @@ public class PaymentManifestVerifierTest {
     private final PaymentManifestParser mParser;
     private final PackageManagerDelegate mPackageManagerDelegate;
     private final ManifestVerifyCallback mCallback;
+
+    // SHA256("01020304050607080900"):
+    public final static byte[][] BOB_PAY_SIGNATURE_FINGERPRINTS = {{(byte) 0x9A, (byte) 0x89,
+            (byte) 0xC6, (byte) 0x8C, (byte) 0x4C, (byte) 0x5E, (byte) 0x28, (byte) 0xB8,
+            (byte) 0xC4, (byte) 0xA5, (byte) 0x56, (byte) 0x76, (byte) 0x73, (byte) 0xD4,
+            (byte) 0x62, (byte) 0xFF, (byte) 0xF5, (byte) 0x15, (byte) 0xDB, (byte) 0x46,
+            (byte) 0x11, (byte) 0x6F, (byte) 0x99, (byte) 0x00, (byte) 0x62, (byte) 0x4D,
+            (byte) 0x09, (byte) 0xC4, (byte) 0x74, (byte) 0xF5, (byte) 0x93, (byte) 0xFB}};
+    public final static Signature BOB_PAY_SIGNATURE = new Signature("01020304050607080900");
 
     public PaymentManifestVerifierTest() throws URISyntaxException {
         mMethodName = new URI("https://example.com");
@@ -94,17 +103,9 @@ public class PaymentManifestVerifierTest {
             @Override
             public void parseWebAppManifest(String content, ManifestParseCallback callback) {
                 WebAppManifestSection[] manifest = new WebAppManifestSection[1];
-                manifest[0] = new WebAppManifestSection();
-                manifest[0].id = "com.bobpay.app";
-                manifest[0].minVersion = 10;
-                // SHA256("01020304050607080900"):
-                manifest[0].fingerprints = new byte[][] {{(byte) 0x9A, (byte) 0x89, (byte) 0xC6,
-                        (byte) 0x8C, (byte) 0x4C, (byte) 0x5E, (byte) 0x28, (byte) 0xB8,
-                        (byte) 0xC4, (byte) 0xA5, (byte) 0x56, (byte) 0x76, (byte) 0x73,
-                        (byte) 0xD4, (byte) 0x62, (byte) 0xFF, (byte) 0xF5, (byte) 0x15,
-                        (byte) 0xDB, (byte) 0x46, (byte) 0x11, (byte) 0x6F, (byte) 0x99,
-                        (byte) 0x00, (byte) 0x62, (byte) 0x4D, (byte) 0x09, (byte) 0xC4,
-                        (byte) 0x74, (byte) 0xF5, (byte) 0x93, (byte) 0xFB}};
+                int minVersion = 10;
+                manifest[0] = new WebAppManifestSection(
+                        "com.bobpay.app", minVersion, BOB_PAY_SIGNATURE_FINGERPRINTS);
                 callback.onWebAppManifestParseSuccess(manifest);
             }
         };
@@ -114,7 +115,7 @@ public class PaymentManifestVerifierTest {
         PackageInfo bobPayPackageInfo = new PackageInfo();
         bobPayPackageInfo.versionCode = 10;
         bobPayPackageInfo.signatures = new Signature[1];
-        bobPayPackageInfo.signatures[0] = new Signature("01020304050607080900");
+        bobPayPackageInfo.signatures[0] = BOB_PAY_SIGNATURE;
         Mockito.when(mPackageManagerDelegate.getPackageInfoWithSignatures("com.bobpay.app"))
                 .thenReturn(bobPayPackageInfo);
 
