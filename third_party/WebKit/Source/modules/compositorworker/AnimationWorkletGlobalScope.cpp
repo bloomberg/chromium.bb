@@ -10,7 +10,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/workers/WorkerClients.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 
@@ -55,30 +55,18 @@ class ScopedAnimatorsSweeper {
 }  // namespace
 
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
-    const KURL& url,
-    const String& user_agent,
-    scoped_refptr<SecurityOrigin> document_security_origin,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerThread* thread,
-    WorkerClients* worker_clients) {
-  return new AnimationWorkletGlobalScope(url, user_agent,
-                                         std::move(document_security_origin),
-                                         isolate, thread, worker_clients);
+    WorkerThread* thread) {
+  return new AnimationWorkletGlobalScope(std::move(creation_params), isolate,
+                                         thread);
 }
 
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
-    const KURL& url,
-    const String& user_agent,
-    scoped_refptr<SecurityOrigin> document_security_origin,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerThread* thread,
-    WorkerClients* worker_clients)
-    : ThreadedWorkletGlobalScope(url,
-                                 user_agent,
-                                 std::move(document_security_origin),
-                                 isolate,
-                                 thread,
-                                 worker_clients) {
+    WorkerThread* thread)
+    : ThreadedWorkletGlobalScope(std::move(creation_params), isolate, thread) {
   if (AnimationWorkletProxyClient* proxy_client =
           AnimationWorkletProxyClient::From(Clients()))
     proxy_client->SetGlobalScope(this);

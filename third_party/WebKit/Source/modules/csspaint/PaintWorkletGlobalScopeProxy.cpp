@@ -8,6 +8,8 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/WTF.h"
 
@@ -25,9 +27,21 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
   DCHECK(IsMainThread());
   Document* document = frame->GetDocument();
   reporting_proxy_ = WTF::MakeUnique<MainThreadWorkletReportingProxy>(document);
+
+  // TODO(nhiroki): Set CSP headers (https://crbug.com/773786).
+  // TODO(nhiroki): Inherit a referrer policy from owner's document.
+  // (https://crbug.com/773921)
+  auto creation_params = std::make_unique<GlobalScopeCreationParams>(
+      document->Url(), document->UserAgent(), String() /* source_code */,
+      nullptr /* cached_meta_data */,
+      nullptr /* content_security_policy_parsed_headers */,
+      String() /* referrer_policy */, document->GetSecurityOrigin(),
+      nullptr /* worker_clients */, document->AddressSpace(),
+      OriginTrialContext::GetTokens(document).get(),
+      nullptr /* worker_settings */, kV8CacheOptionsDefault);
   global_scope_ = PaintWorkletGlobalScope::Create(
-      frame, document->Url(), document->UserAgent(), ToIsolate(document),
-      *reporting_proxy_, pending_generator_registry, global_scope_number);
+      frame, std::move(creation_params), ToIsolate(document), *reporting_proxy_,
+      pending_generator_registry, global_scope_number);
 }
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(

@@ -26,6 +26,7 @@ class Modulator;
 class WorkletModuleResponsesMap;
 class WorkletPendingTasks;
 class WorkerReportingProxy;
+struct GlobalScopeCreationParams;
 
 class CORE_EXPORT WorkletGlobalScope
     : public ScriptWrappable,
@@ -113,20 +114,15 @@ class CORE_EXPORT WorkletGlobalScope
   // Partial implementation of the "set up a worklet environment settings
   // object" algorithm:
   // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
-  //
-  // The url, user_agent and document_security_origin arguments are inherited
-  // from the parent Document.
-  WorkletGlobalScope(const KURL&,
-                     const String& user_agent,
-                     scoped_refptr<SecurityOrigin> document_security_origin,
+  WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                      v8::Isolate*,
-                     WorkerClients*,
                      WorkerReportingProxy&);
 
  private:
   EventTarget* ErrorEventTarget() final { return nullptr; }
   void DidUpdateSecurityOrigin() final {}
 
+  // The |url_| and |user_agent_| are inherited from the parent Document.
   const KURL url_;
   const String user_agent_;
 

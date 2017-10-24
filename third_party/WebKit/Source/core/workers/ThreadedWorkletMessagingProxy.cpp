@@ -34,18 +34,16 @@ void ThreadedWorkletMessagingProxy::Initialize() {
   worklet_object_proxy_ = CreateObjectProxy(this, GetParentFrameTaskRunners());
 
   Document* document = ToDocument(GetExecutionContext());
-  SecurityOrigin* starter_origin = document->GetSecurityOrigin();
-  KURL script_url = document->Url();
-
   ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
   DCHECK(csp);
 
-  // TODO(ikilpatrick): Decide on sensible a value for referrerPolicy.
+  // TODO(nhiroki): Inherit a referrer policy from owner's document.
+  // (https://crbug.com/773921)
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          script_url, document->UserAgent(), String() /* source_code */,
+          document->Url(), document->UserAgent(), String() /* source_code */,
           nullptr /* cached_meta_data */, csp->Headers().get(),
-          String() /* referrer_policy */, starter_origin,
+          String() /* referrer_policy */, document->GetSecurityOrigin(),
           ReleaseWorkerClients(), document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           std::make_unique<WorkerSettings>(document->GetSettings()),
@@ -54,7 +52,7 @@ void ThreadedWorkletMessagingProxy::Initialize() {
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.
   InitializeWorkerThread(std::move(global_scope_creation_params), WTF::nullopt,
-                         script_url);
+                         document->Url());
 }
 
 void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {

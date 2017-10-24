@@ -123,12 +123,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) final {
-    scoped_refptr<SecurityOrigin> security_origin =
-        SecurityOrigin::Create(creation_params->script_url);
-    return new ThreadedWorkletGlobalScope(
-        creation_params->script_url, creation_params->user_agent,
-        std::move(security_origin), this->GetIsolate(), this,
-        creation_params->worker_clients);
+    return new ThreadedWorkletGlobalScope(std::move(creation_params),
+                                          GetIsolate(), this);
   }
 
   bool IsOwningBackingThread() const final { return false; }

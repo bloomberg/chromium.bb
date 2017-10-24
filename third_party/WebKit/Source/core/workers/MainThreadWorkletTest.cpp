@@ -5,7 +5,9 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/UseCounter.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/MainThreadWorkletReportingProxy.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -47,9 +49,17 @@ class MainThreadWorkletTest : public ::testing::Test {
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
+    auto creation_params = std::make_unique<GlobalScopeCreationParams>(
+        document->Url(), document->UserAgent(), String() /* source_code */,
+        nullptr /* cached_meta_data */,
+        nullptr /* content_security_policy_parsed_headers */,
+        String() /* referrer_policy */, document->GetSecurityOrigin(),
+        nullptr /* worker_clients */, document->AddressSpace(),
+        OriginTrialContext::GetTokens(document).get(),
+        nullptr /* worker_settings */, kV8CacheOptionsDefault);
     global_scope_ = new MainThreadWorkletGlobalScope(
-        &page_->GetFrame(), document->Url(), "fake user agent",
-        ToIsolate(document), *reporting_proxy_);
+        &page_->GetFrame(), std::move(creation_params), ToIsolate(document),
+        *reporting_proxy_);
   }
 
   void TearDown() override { global_scope_->Terminate(); }

@@ -25,13 +25,13 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 
  public:
-  static PaintWorkletGlobalScope* Create(LocalFrame*,
-                                         const KURL&,
-                                         const String& user_agent,
-                                         v8::Isolate*,
-                                         WorkerReportingProxy&,
-                                         PaintWorkletPendingGeneratorRegistry*,
-                                         size_t global_scope_number);
+  static PaintWorkletGlobalScope* Create(
+      LocalFrame*,
+      std::unique_ptr<GlobalScopeCreationParams>,
+      v8::Isolate*,
+      WorkerReportingProxy&,
+      PaintWorkletPendingGeneratorRegistry*,
+      size_t global_scope_number);
   ~PaintWorkletGlobalScope() override;
   void Dispose() final;
 
@@ -48,8 +48,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
 
  private:
   PaintWorkletGlobalScope(LocalFrame*,
-                          const KURL&,
-                          const String& user_agent,
+                          std::unique_ptr<GlobalScopeCreationParams>,
                           v8::Isolate*,
                           WorkerReportingProxy&,
                           PaintWorkletPendingGeneratorRegistry*);
