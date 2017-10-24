@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AURA_WINDOW_PROPERTIES_H_
 #define UI_ACCESSIBILITY_PLATFORM_AURA_WINDOW_PROPERTIES_H_
 
+#include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/aura/window.h"
@@ -13,6 +14,8 @@ namespace ui {
 
 AX_EXPORT extern const aura::WindowProperty<AXTreeIDRegistry::AXTreeID>* const
     kChildAXTreeID;
+
+AX_EXPORT extern const aura::WindowProperty<AXRole>* const kAXRoleOverride;
 
 }  // namespace ui
 
