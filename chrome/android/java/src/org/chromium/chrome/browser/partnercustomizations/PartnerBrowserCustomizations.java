@@ -248,12 +248,7 @@ public class PartnerBrowserCustomizations {
         initializeAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         // Cancel the initialization if it reaches timeout.
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-            @Override
-            public void run() {
-                initializeAsyncTask.cancel(true);
-            }
-        }, timeoutMs);
+        ThreadUtils.postOnUiThreadDelayed(() -> initializeAsyncTask.cancel(true), timeoutMs);
     }
 
     /**
@@ -279,14 +274,9 @@ public class PartnerBrowserCustomizations {
     public static void setOnInitializeAsyncFinished(final Runnable callback, long timeoutMs) {
         sInitializeAsyncCallbacks.add(callback);
 
-        ThreadUtils.postOnUiThreadDelayed(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        if (sInitializeAsyncCallbacks.remove(callback)) callback.run();
-                    }
-                },
-                sIsInitialized ? 0 : timeoutMs);
+        ThreadUtils.postOnUiThreadDelayed(() -> {
+            if (sInitializeAsyncCallbacks.remove(callback)) callback.run();
+        }, sIsInitialized ? 0 : timeoutMs);
     }
 
     public static void destroy() {
