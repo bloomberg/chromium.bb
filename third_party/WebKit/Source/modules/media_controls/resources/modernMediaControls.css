@@ -236,6 +236,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   background-color: rgba(255, 255, 255, .9);
 }
 
+.state-playing input[pseudo="-webkit-media-controls-play-button" i],
 .state-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   background-image: -webkit-image-set(
     url(default_100_percent/modern/ic_pause.png) 1x,
@@ -275,6 +276,10 @@ input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   border-radius: 5px;
   margin-top: -4px;
   flex: 0 0 0;
+}
+
+.state-no-source input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+  display: none;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background {
@@ -384,4 +389,59 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
 video::-internal-media-controls-overflow-menu-list-item:hover,
 audio::-internal-media-controls-overflow-menu-list-item:hover {
   background-color: #e0e0e0;
+}
+
+/**
+ * Audio Controls
+ */
+
+audio::-webkit-media-controls {
+  min-width: 240px;
+}
+
+audio::-webkit-media-controls {
+  max-height: 54px;
+  flex-direction: row;
+  background: #F1F3F4;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+audio::-webkit-media-controls-overlay-enclosure {
+  display: none;
+}
+
+audio::-webkit-media-controls-panel {
+  flex-direction: row;
+  background: none;
+  padding: 0 10px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+audio::-internal-media-controls-play-button {
+  display: none;
+}
+
+audio::-webkit-media-controls-current-time-display {
+  text-align: right;
+  margin-left: 5px;
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+  min-width: auto;
+  flex: 0;
+  white-space: nowrap;
+}
+
+audio::-webkit-media-controls-timeline {
+  flex: 1 0 0px;
+  width: 0;
+}
+
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-mute-button,
+audio::-internal-media-controls-overflow-button {
+  flex: 0 0 32px;
 }
