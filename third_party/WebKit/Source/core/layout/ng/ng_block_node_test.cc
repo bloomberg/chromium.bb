@@ -12,7 +12,9 @@ namespace {
 class NGBlockNodeForTest : public RenderingTest {
  public:
   NGBlockNodeForTest() { RuntimeEnabledFeatures::SetLayoutNGEnabled(true); }
-  ~NGBlockNodeForTest() { RuntimeEnabledFeatures::SetLayoutNGEnabled(false); };
+  ~NGBlockNodeForTest() override {
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
+  };
 };
 
 TEST_F(NGBlockNodeForTest, ChildInlineAndBlock) {

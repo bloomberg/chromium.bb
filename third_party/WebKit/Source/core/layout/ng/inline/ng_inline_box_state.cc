@@ -32,7 +32,7 @@ void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
                                            FontBaseline baseline_type) {
   HashSet<const SimpleFontData*> fallback_fonts;
   shape_result->FallbackFonts(&fallback_fonts);
-  for (const auto& fallback_font : fallback_fonts) {
+  for (auto* const fallback_font : fallback_fonts) {
     NGLineHeightMetrics fallback_metrics(fallback_font->GetFontMetrics(),
                                          baseline_type);
     fallback_metrics.AddLeading(

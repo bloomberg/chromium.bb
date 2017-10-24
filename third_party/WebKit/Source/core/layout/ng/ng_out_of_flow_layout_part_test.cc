@@ -17,7 +17,7 @@ class NGOutOfFlowLayoutPartTest : public RenderingTest {
     RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
     RuntimeEnabledFeatures::SetLayoutNGFragmentCachingEnabled(true);
   };
-  ~NGOutOfFlowLayoutPartTest() {
+  ~NGOutOfFlowLayoutPartTest() override {
     RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
     RuntimeEnabledFeatures::SetLayoutNGFragmentCachingEnabled(false);
   };

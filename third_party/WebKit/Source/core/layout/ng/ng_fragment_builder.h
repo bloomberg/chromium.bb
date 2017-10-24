@@ -35,7 +35,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
                     NGWritingMode,
                     TextDirection);
 
-  ~NGFragmentBuilder();
+  ~NGFragmentBuilder() override;
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
