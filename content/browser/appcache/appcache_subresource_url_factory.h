@@ -20,7 +20,6 @@ class AppCacheJob;
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
 class URLLoaderFactoryGetter;
-struct SubresourceLoadInfo;
 
 // Implements the URLLoaderFactory mojom for AppCache subresource requests.
 class CONTENT_EXPORT AppCacheSubresourceURLFactory
@@ -52,36 +51,19 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
 
   base::WeakPtr<AppCacheSubresourceURLFactory> GetWeakPtr();
 
-  // Called bythe AppCacheURLLoaderJob to restart the request during a
-  // redirect. We attempt to serve the request out of the AppCache and if
-  // that fails we go to the network.
-  void Restart(const net::RedirectInfo& redirect_info,
-               std::unique_ptr<AppCacheRequestHandler> subresource_handler,
-               std::unique_ptr<SubresourceLoadInfo> subresource_load_info);
-
  private:
   friend class AppCacheNetworkServiceBrowserTest;
 
+  // TODO(michaeln): Declare SubresourceLoader here and add unittests.
+
   AppCacheSubresourceURLFactory(URLLoaderFactoryGetter* factory_getter,
                                 base::WeakPtr<AppCacheHost> host);
-
   void OnConnectionError();
 
-  // Notifies the |client| if there is a failure. The |error_code| contains the
-  // actual error.
-  void NotifyError(mojom::URLLoaderClientPtr client, int error_code);
-
-  // Mojo bindings.
   mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
-
-  // Used to retrieve the network service factory to pass unhandled requests to
-  // the network service.
   scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
-
   base::WeakPtr<AppCacheHost> appcache_host_;
-
   base::WeakPtrFactory<AppCacheSubresourceURLFactory> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(AppCacheSubresourceURLFactory);
 };
 

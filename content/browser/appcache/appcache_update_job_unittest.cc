@@ -606,9 +606,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
                                 traffic_annotation) override {
     if (url_request.url.host() == "failme" ||
         url_request.url.host() == "testme") {
-      ResourceRequestCompletionStatus status;
-      status.error_code = -100;
-      client->OnComplete(status);
+      client->OnComplete(ResourceRequestCompletionStatus(-100));
       return;
     }
 

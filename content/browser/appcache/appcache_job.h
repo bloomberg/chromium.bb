@@ -18,29 +18,23 @@
 namespace net {
 class HttpRequestHeaders;
 class HttpResponseInfo;
-class NetworkDelegate;
 class URLRequestJob;
 }
 
 namespace content {
 
 class AppCacheEntry;
-class AppCacheHost;
-class AppCacheRequest;
 class AppCacheResponseInfo;
 class AppCacheResponseReader;
-class AppCacheStorage;
 class AppCacheURLLoaderJob;
-class URLLoaderFactoryGetter;
-class URLRequestJob;
-struct SubresourceLoadInfo;
+class AppCacheURLRequestJob;
 
 // Interface for an AppCache job. This is used to send data stored in the
 // AppCache to networking consumers.
 // Subclasses implement this interface to wrap custom job objects like
 // URLRequestJob, URLLoaderJob, etc to ensure that these dependencies stay out
 // of the AppCache code.
-class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
+class CONTENT_EXPORT AppCacheJob {
  public:
   enum DeliveryType {
     AWAITING_DELIVERY_ORDERS,
@@ -49,31 +43,7 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
     ERROR_DELIVERY
   };
 
-  // Callback that will be invoked before the request is restarted. The caller
-  // can use this opportunity to grab state from the job to determine how it
-  // should behave when the request is restarted.
-  // TODO(ananta)
-  // This applies only to the URLRequestJob at the moment. Look into taking
-  // this knowledge out of this class.
-  using OnPrepareToRestartCallback = base::OnceClosure;
-
-  // Factory function to create the AppCacheJob instance for the |request|
-  // passed in. The |job_type| parameter controls the type of job which is
-  // created.
-  static std::unique_ptr<AppCacheJob> Create(
-      bool is_main_resource,
-      AppCacheHost* host,
-      AppCacheStorage* storage,
-      AppCacheRequest* request,
-      net::NetworkDelegate* network_delegate,
-      OnPrepareToRestartCallback restart_callback,
-      std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
-      URLLoaderFactoryGetter* loader_factory_getter);
-
   virtual ~AppCacheJob();
-
-  // Kills the job.
-  virtual void Kill() = 0;
 
   // Returns true if the job was started.
   virtual bool IsStarted() const = 0;
@@ -109,11 +79,11 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
   virtual void DeliverErrorResponse() = 0;
 
   // Returns a weak pointer reference to the job.
-  virtual base::WeakPtr<AppCacheJob> GetWeakPtr();
+  virtual base::WeakPtr<AppCacheJob> GetWeakPtr() = 0;
 
-  // Returns the underlying URLRequestJob if any. This only applies to
+  // Returns the underlying AppCacheURLRequestJob if any. This only applies to
   // AppCaches loaded via the URLLoader mechanism.
-  virtual net::URLRequestJob* AsURLRequestJob();
+  virtual AppCacheURLRequestJob* AsURLRequestJob();
 
   // Returns the underlying ApppCacheURLLoaderJob if any. This only applies to
   // AppCaches loaded via the URLRequest mechanism.
@@ -149,8 +119,6 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
 
   // Used to read the cache.
   std::unique_ptr<AppCacheResponseReader> reader_;
-
-  base::WeakPtrFactory<AppCacheJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheJob);
 };
