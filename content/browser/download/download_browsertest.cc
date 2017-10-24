@@ -388,14 +388,16 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       const net::NetLogWithSource& net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer)
+      base::WeakPtr<DownloadDestinationObserver> observer,
+      int64_t error_stream_offset,
+      int64_t error_stream_length)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
                          net_log,
                          observer),
-        error_stream_offset_(-1),
-        error_stream_length_(0) {}
+        error_stream_offset_(error_stream_offset),
+        error_stream_length_(error_stream_length) {}
 
   ~ErrorInjectionDownloadFile() override = default;
 
@@ -436,10 +438,13 @@ class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     ErrorInjectionDownloadFile* download_file = new ErrorInjectionDownloadFile(
         std::move(save_info), default_download_directory, std::move(stream),
-        net_log, observer);
-    download_file_ = download_file;
-    if (injected_error_offset_ >= 0)
-      InjectErrorIntoDownloadFile();
+        net_log, observer, injected_error_offset_, injected_error_length_);
+    // If the InjectError() is not called yet, memorize |download_file| and wait
+    // for error to be injected.
+    if (injected_error_offset_ < 0)
+      download_file_ = download_file;
+    injected_error_offset_ = -1;
+    injected_error_length_ = 0;
     return download_file;
   }
 
@@ -2918,7 +2923,7 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
   parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
   TestRequestPauseHandler request_pause_handler;
   parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
-  parameters.pause_offset = 10000;
+  parameters.pause_offset = DownloadRequestCore::kDownloadByteStreamSize;
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
@@ -3076,9 +3081,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBody) {
 // Verify the case that the first response is HTTP 200, and then interrupted,
 // and the second response is HTTP 404, the response body of 404 should be
 // fetched.
-// Flaky. See http://crbug.com/769993.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       DISABLED_FetchErrorResponseBodyResumption) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   SetupErrorInjectionDownloads();
   const std::string kNotFoundResponseBody = "This is 404 response body.";
 
