@@ -1972,12 +1972,6 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
   void EndSplitView() { split_view_controller()->EndSplitView(); }
 
  protected:
-  aura::Window* CreateWindow(const gfx::Rect& bounds) {
-    aura::Window* window = CreateTestWindowInShellWithDelegate(
-        new SplitViewTestWindowDelegate, -1, bounds);
-    return window;
-  }
-
   gfx::Rect GetSplitViewLeftWindowBounds(aura::Window* window) {
     return split_view_controller()->GetSnappedWindowBoundsInScreen(
         window, SplitViewController::LEFT);
@@ -2025,15 +2019,6 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
   }
 
  private:
-  class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
-   public:
-    SplitViewTestWindowDelegate() {}
-    ~SplitViewTestWindowDelegate() override {}
-
-    // aura::test::TestWindowDelegate:
-    void OnWindowDestroying(aura::Window* window) override { window->Hide(); }
-  };
-
   DISALLOW_COPY_AND_ASSIGN(SplitViewWindowSelectorTest);
 };
 
@@ -2089,10 +2074,9 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
 // overview mode when split view is enabled.
 TEST_F(SplitViewWindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
   // Add three windows and enter overview mode.
-  const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
 
   ToggleOverview();
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
@@ -2279,9 +2263,8 @@ TEST_F(SplitViewWindowSelectorTest, PhantomWindowVisibilityUnsnappableWindow) {
 
 // Verify that the split view overview overlay is shown when expected.
 TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
-  const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
   ToggleOverview();
   ASSERT_TRUE(window_selector_controller()->IsSelecting());

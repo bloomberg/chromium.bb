@@ -112,10 +112,8 @@ class ASH_EXPORT TabletModeWindowManager
   // immediately.
   void MaximizeAndTrackWindow(aura::Window* window);
 
-  // Remove a window from our tracking list. If the window is going to be
-  // destroyed, do not restore its old previous window state object as it will
-  // send unneccessary window state change event.
-  void ForgetWindow(aura::Window* window, bool destroyed);
+  // Remove a window from our tracking list.
+  void ForgetWindow(aura::Window* window);
 
   // Returns true when the given window should be modified in any way by us.
   bool ShouldHandleWindow(aura::Window* window);
