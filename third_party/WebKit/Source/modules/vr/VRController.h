@@ -29,7 +29,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
 
  public:
   VRController(NavigatorVR*);
-  virtual ~VRController();
+  ~VRController() override;
 
   void GetDisplays(ScriptPromiseResolver*);
   void SetListeningForActivate(bool);
@@ -41,7 +41,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
 
   void FocusChanged();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   void OnDisplaysSynced();

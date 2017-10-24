@@ -48,7 +48,7 @@ class VR final : public EventTargetWithInlineData,
 
   void Dispose();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit VR(LocalFrame& frame);

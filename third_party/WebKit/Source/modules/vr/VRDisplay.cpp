@@ -72,7 +72,7 @@ class VRDisplayFrameRequestCallback
     vr_display_->OnMagicWindowVSync(monotonic_time);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(vr_display_);
 
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
@@ -857,10 +857,10 @@ void VRDisplay::OnDeactivate(
 
 void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
   TRACE_EVENT1("gpu", "VRDisplay::window.rAF", "frame", vr_frame_id_);
-  auto doc = navigator_vr_->GetDocument();
+  auto* doc = navigator_vr_->GetDocument();
   if (!doc)
     return;
-  auto page = doc->GetPage();
+  auto* page = doc->GetPage();
   if (!page)
     return;
 
