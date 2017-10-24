@@ -35,7 +35,7 @@ class MODULES_EXPORT NavigatorVR final
  public:
   static NavigatorVR* From(Document&);
   static NavigatorVR& From(Navigator&);
-  virtual ~NavigatorVR();
+  ~NavigatorVR() override;
 
   // Latest API
   static VR* vr(Navigator&);
@@ -63,7 +63,7 @@ class MODULES_EXPORT NavigatorVR final
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class VRDisplay;
