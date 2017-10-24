@@ -96044,6 +96044,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="XHR.Async.PageDismissal" enum="XHRPageDismissalState">
+  <owner>panicker@chromium.org</owner>
+  <summary>
+    Records occurence of async XHR during page dismissal state (unload,
+    beforeunload, pagehide etc).
+  </summary>
+</histogram>
+
+<histogram name="XHR.Sync.PageDismissal" enum="XHRPageDismissalState">
+  <owner>panicker@chromium.org</owner>
+  <summary>
+    Records occurence of sync XHR during page dismissal state (unload,
+    beforeunload, pagehide etc).
+  </summary>
+</histogram>
+
 <histogram name="ZeroSuggest.AllResults">
   <owner>hfung@chromium.org</owner>
   <summary>
