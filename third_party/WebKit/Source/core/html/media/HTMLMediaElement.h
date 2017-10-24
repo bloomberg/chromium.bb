@@ -104,9 +104,9 @@ class CORE_EXPORT HTMLMediaElement
   // for the given document.
   static void OnMediaControlsEnabledChange(Document*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   void ClearWeakMembers(Visitor*);
   WebMediaPlayer* GetWebMediaPlayer() const { return web_media_player_.get(); }

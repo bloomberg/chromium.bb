@@ -57,7 +57,7 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   virtual HTMLDivElement* PanelElement() = 0;
   virtual void OnMediaControlsEnabledChange() = 0;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<HTMLMediaElement> media_element_;
