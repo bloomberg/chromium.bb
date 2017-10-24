@@ -205,7 +205,11 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
       passwords_data_.state() == password_manager::ui::MANAGE_STATE) {
     passwords_data_.OnPasswordAutofilled(password_form_map, origin,
                                          federated_matches);
-    UpdateBubbleAndIconVisibility();
+    // Don't close the existing bubble. Update the icon later.
+    if (bubble_status_ == SHOWN)
+      bubble_status_ = SHOWN_PENDING_ICON_UPDATE;
+    if (bubble_status_ != SHOWN_PENDING_ICON_UPDATE)
+      UpdateBubbleAndIconVisibility();
   }
 }
 
