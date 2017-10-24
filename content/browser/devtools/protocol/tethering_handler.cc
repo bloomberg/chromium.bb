@@ -28,7 +28,7 @@ const int kListenBacklog = 5;
 const int kSocketPumpBufferSize = 16 * 1024;
 
 const int kMinTetheringPort = 1024;
-const int kMaxTetheringPort = 32767;
+const int kMaxTetheringPort = 65535;
 
 using CreateServerSocketCallback =
     base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
