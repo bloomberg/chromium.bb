@@ -560,25 +560,25 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyboardEventAck) {
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
-      "document.body.addEventListener('keydown', () => console.log('x'));"));
+      "document.body.addEventListener('keydown', () => {debugger;});"));
 
   auto filter = std::make_unique<InputMsgWatcher>(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
-      blink::WebInputEvent::kMouseMove);
+      blink::WebInputEvent::kRawKeyDown);
 
-  SendCommand("Runtime.enable", nullptr);
+  SendCommand("Debugger.enable", nullptr);
   SendKeyEvent("rawKeyDown", 0, 13, 13, "Enter", false);
 
-  // We expect that the console log message event arrives *before* the input
+  // We expect that the debugger message event arrives *before* the input
   // event ack, and the subsequent command response for Input.dispatchKeyEvent.
-  WaitForNotification("Runtime.consoleAPICalled");
-  EXPECT_THAT(console_messages_, ElementsAre("x"));
+  WaitForNotification("Debugger.paused");
   EXPECT_FALSE(filter->HasReceivedAck());
   EXPECT_EQ(1u, result_ids_.size());
 
-  WaitForResponse();
-  EXPECT_EQ(2u, result_ids_.size());
+  SendCommand("Debugger.resume", nullptr);
+  filter->WaitForAck();
+  EXPECT_EQ(3u, result_ids_.size());
 }
 
 IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
@@ -586,26 +586,26 @@ IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
-      "document.body.addEventListener('mousemove', () => console.log('x'));"));
+      "document.body.addEventListener('mousemove', () => {debugger;});"));
 
   auto filter = std::make_unique<InputMsgWatcher>(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
       blink::WebInputEvent::kMouseMove);
 
-  SendCommand("Runtime.enable", nullptr);
+  SendCommand("Debugger.enable", nullptr);
   SendMouseEvent("mouseMoved", 15, 15, false);
 
-  // We expect that the console log message event arrives *before* the input
+  // We expect that the debugger message event arrives *before* the input
   // event ack, and the subsequent command response for
   // Input.dispatchMouseEvent.
-  WaitForNotification("Runtime.consoleAPICalled");
-  EXPECT_THAT(console_messages_, ElementsAre("x"));
+  WaitForNotification("Debugger.paused");
   EXPECT_FALSE(filter->HasReceivedAck());
   EXPECT_EQ(1u, result_ids_.size());
 
-  WaitForResponse();
-  EXPECT_EQ(2u, result_ids_.size());
+  SendCommand("Debugger.resume", nullptr);
+  filter->WaitForAck();
+  EXPECT_EQ(3u, result_ids_.size());
 }
 
 namespace {
