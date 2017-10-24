@@ -109,13 +109,6 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_NEW_MULTISYMBOL)
-    if (NOT CONFIG_RESTRICT_COMPRESSED_HDR)
-      change_config_and_warn(CONFIG_RESTRICT_COMPRESSED_HDR 1
-                             CONFIG_NEW_MULTISYMBOL)
-    endif ()
-  endif ()
-
   if (CONFIG_STRIPED_LOOP_RESTORATION)
     if (NOT CONFIG_LOOP_RESTORATION)
       change_config_and_warn(CONFIG_LOOP_RESTORATION 1
