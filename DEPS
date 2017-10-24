@@ -1434,14 +1434,6 @@ hooks = [
                 '-vpython-tool', 'install',
     ],
   },
-  {
-    'name': 'vpython_webkitpy',
-    'pattern': '.',
-    'action': [ 'vpython',
-                '-vpython-spec', 'src/third_party/WebKit/Tools/Scripts/common.vpython',
-                '-vpython-tool', 'install',
-    ],
-  },
 ]
 
 recursedeps = [
