@@ -7,11 +7,17 @@
 
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace keyboard {
+
+// Margins from the bottom right corner of the screen for the default location
+// of the keyboard.
+constexpr int kDefaultDistanceFromScreenBottom = 20;
+constexpr int kDefaultDistanceFromScreenRight = 20;
 
 class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
  public:
@@ -27,8 +33,30 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   void InitializeShowAnimationStartingState(aura::Window* container) override;
   const gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
-      const gfx::Rect& requested_bounds) const override;
+      const gfx::Rect& requested_bounds) override;
   bool IsOverscrollAllowed() const override;
+
+ private:
+  // Ensures that the keyboard is neither off the screen nor overlapping an
+  // edge.
+  gfx::Rect ContainKeyboardToScreenBounds(
+      const gfx::Rect& keyboard_bounds,
+      const gfx::Rect& display_bounds) const;
+
+  // Saves the current keyboard location for use the next time it is displayed.
+  void UpdateLastPoint(const gfx::Point& position);
+
+  // Returns true if the keyboard has not been display/moved yet and the default
+  // position should be used.
+  bool UseDefaultPosition() const;
+
+  // Calculate the position of the keyboard for when it is being shown.
+  gfx::Point GetPositionForShowingKeyboard(
+      const gfx::Size& keyboard_size,
+      const gfx::Rect& display_bounds) const;
+
+  // TODO(blakeo): cache the default_position_ on a per-display basis.
+  gfx::Point default_position_ = gfx::Point(-1, -1);
 };
 
 }  // namespace keyboard

@@ -4,15 +4,27 @@
 
 #include "ui/keyboard/container_floating_behavior.h"
 
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace keyboard {
 
+// Width of the floatin keyboard
 constexpr int kKeyboardWidth = 600;
 
+// Length of the animation to show and hide the keyboard.
 constexpr int kAnimationDurationMs = 200;
+
+// The opacity of virtual keyboard container when show animation starts or
+// hide animation finishes. This cannot be zero because we call Show() on the
+// keyboard window before setting the opacity back to 1.0. Since windows are not
+// allowed to be shown with zero opacity, we always animate to 0.01 instead.
 constexpr float kAnimationStartOrAfterHideOpacity = 0.01f;
+
+// Distance the keyboard moves during the animation
 constexpr int kAnimationDistance = 30;
 
 ContainerFloatingBehavior::~ContainerFloatingBehavior() {}
@@ -41,19 +53,20 @@ void ContainerFloatingBehavior::DoShowingAnimation(
 
 void ContainerFloatingBehavior::InitializeShowAnimationStartingState(
     aura::Window* container) {
-  // TODO(blakeo): preserve the last location of the floating keyboard and use
-  // that instead of the top left corner of the screen.
-  const int start_x = 0;
-  const int start_y = 0;
-  const int height = container->bounds().height();
-
   KeyboardController* controller = KeyboardController::GetInstance();
-  container->SetBounds(gfx::Rect(start_x, start_y, kKeyboardWidth, height));
+  aura::Window* root_window = container->GetRootWindow();
+  const gfx::Rect& display_bounds = root_window->bounds();
+
+  gfx::Size keyboard_size =
+      gfx::Size(kKeyboardWidth, container->bounds().height());
+  gfx::Point keyboard_location =
+      GetPositionForShowingKeyboard(keyboard_size, display_bounds);
+  container->SetBounds(gfx::Rect(keyboard_location, keyboard_size));
 
   // UI content container is a child of the keyboard controller container and
   // should always be positioned to the origin (0, 0).
   controller->ui()->GetContentsWindow()->SetBounds(
-      gfx::Rect(0, 0, kKeyboardWidth, height));
+      gfx::Rect(gfx::Point(0, 0), keyboard_size));
 
   gfx::Transform transform;
   transform.Translate(0, kAnimationDistance);
@@ -63,46 +76,94 @@ void ContainerFloatingBehavior::InitializeShowAnimationStartingState(
 
 const gfx::Rect ContainerFloatingBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
-    const gfx::Rect& requested_bounds) const {
-  // TODO(blakeo): the keyboard height is currently set by the mandated by
-  // the extension, so this value must be preserved. Eventually we'd like to
-  // manage the height from here, like the width.
-  int height = requested_bounds.height();
+    const gfx::Rect& requested_bounds) {
+  gfx::Rect keyboard_bounds = requested_bounds;
 
-  gfx::Rect new_bounds = requested_bounds;
-  int left = requested_bounds.x();
-  int top = requested_bounds.y();
-  int right = left + kKeyboardWidth;
-  int bottom = top + height;
+  // floating keyboard has a fixed width.
+  keyboard_bounds.set_width(kKeyboardWidth);
+  const bool is_possibly_initial_load_request = requested_bounds.x() == 0;
+  if (is_possibly_initial_load_request && UseDefaultPosition()) {
+    // If the keyboard hasn't been shown yet, ignore the request and use
+    // default.
+    gfx::Point keyboard_location =
+        GetPositionForShowingKeyboard(keyboard_bounds.size(), display_bounds);
+    keyboard_bounds = gfx::Rect(keyboard_location, keyboard_bounds.size());
+  } else {
+    // Otherwise, simply make sure that the new bounds are not off the edge of
+    // the screen.
+    keyboard_bounds =
+        ContainKeyboardToScreenBounds(keyboard_bounds, display_bounds);
 
-  // Prevent dragging off screen
+    // When this isn't a default load request, (i.e. the user is moving the
+    // keyboard), save the coordinates for use for next time.
+    UpdateLastPoint(keyboard_bounds.origin());
+  }
+
+  return keyboard_bounds;
+}
+
+gfx::Rect ContainerFloatingBehavior::ContainKeyboardToScreenBounds(
+    const gfx::Rect& keyboard_bounds,
+    const gfx::Rect& display_bounds) const {
+  int left = keyboard_bounds.x();
+  int top = keyboard_bounds.y();
+  int right = left + keyboard_bounds.width();
+  int bottom = top + keyboard_bounds.height();
+
+  // Prevent keyboard from appearing off screen or overlapping with the edge.
   if (left < 0) {
     left = 0;
-    right = kKeyboardWidth;
+    right = keyboard_bounds.width();
   }
   if (right >= display_bounds.width()) {
     right = display_bounds.width();
-    left = right - kKeyboardWidth;
+    left = right - keyboard_bounds.width();
   }
   if (top < 0) {
     top = 0;
-    bottom = height;
+    bottom = keyboard_bounds.height();
   }
   if (bottom >= display_bounds.height()) {
     bottom = display_bounds.height();
-    top = bottom - height;
+    top = bottom - keyboard_bounds.height();
   }
 
-  new_bounds.set_x(left);
-  new_bounds.set_y(top);
-  new_bounds.set_width(kKeyboardWidth);
-  new_bounds.set_height(height);
-
-  return new_bounds;
+  return gfx::Rect(left, top, right - left, bottom - top);
 }
 
 bool ContainerFloatingBehavior::IsOverscrollAllowed() const {
   return false;
+}
+
+bool ContainerFloatingBehavior::UseDefaultPosition() const {
+  // (-1, -1) is used as a sentinel unset value.
+  return default_position_.x() == -1;
+}
+
+void ContainerFloatingBehavior::UpdateLastPoint(const gfx::Point& position) {
+  default_position_ = gfx::Point(position);
+}
+
+gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
+    const gfx::Size& keyboard_size,
+    const gfx::Rect& display_bounds) const {
+  // Start with the last saved position
+  gfx::Point position = default_position_;
+  if (UseDefaultPosition()) {
+    // If there is none, center the keyboard along the bottom of the screen.
+    position.set_x(display_bounds.width() - keyboard_size.width() -
+                   kDefaultDistanceFromScreenRight);
+    position.set_y(display_bounds.height() - keyboard_size.height() -
+                   kDefaultDistanceFromScreenBottom);
+  }
+
+  // Make sure that this location is valid according to the current size of the
+  // screen.
+  gfx::Rect keyboard_bounds = gfx::Rect(position, keyboard_size);
+  gfx::Rect valid_keyboard_bounds =
+      ContainKeyboardToScreenBounds(keyboard_bounds, display_bounds);
+
+  return valid_keyboard_bounds.origin();
 }
 
 }  //  namespace keyboard

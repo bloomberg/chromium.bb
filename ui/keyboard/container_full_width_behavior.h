@@ -31,7 +31,7 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   void InitializeShowAnimationStartingState(aura::Window* container) override;
   const gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
-      const gfx::Rect& requested_bounds) const override;
+      const gfx::Rect& requested_bounds) override;
   bool IsOverscrollAllowed() const override;
 };
 
