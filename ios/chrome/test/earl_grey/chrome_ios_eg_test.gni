@@ -48,14 +48,13 @@ template("chrome_ios_eg_test") {
   if (!defined(entitlements_path) && !defined(entitlements_target)) {
     _target_name = target_name
     _tweak_entitlements = target_name + "_tweak_entitlements"
-    compile_plist(_tweak_entitlements) {
-      format = "xml1"
+    compile_entitlements(_tweak_entitlements) {
       substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
       output_name = "$target_gen_dir/$_target_name.entitlements"
-      plist_templates =
+      entitlements_templates =
           [ "//ios/chrome/test/earl_grey/resources/Chrome.entitlements" ]
       if (ios_egtests_entitlements_additions != []) {
-        plist_templates += ios_egtests_entitlements_additions
+        entitlements_templates += ios_egtests_entitlements_additions
       }
     }
   }

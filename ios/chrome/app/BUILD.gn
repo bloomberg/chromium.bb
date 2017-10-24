@@ -85,11 +85,10 @@ tweak_info_plist("info_plist") {
   ]
 }
 
-compile_plist("entitlements") {
-  format = "xml1"
-  plist_templates = [ "resources/Chrome.entitlements" ]
+compile_entitlements("entitlements") {
+  entitlements_templates = [ "resources/Chrome.entitlements" ]
   if (ios_chrome_entitlements_additions != []) {
-    plist_templates += ios_chrome_entitlements_additions
+    entitlements_templates += ios_chrome_entitlements_additions
   }
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   output_name = "$target_gen_dir/$chromium_short_name.entitlements"
