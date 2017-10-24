@@ -198,13 +198,8 @@ class BootfsData(object):
     self.target_cpu = target_cpu
 
 
-def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
-                bootdata, summary_output, shutdown_machine, target_cpu,
-                use_device):
-  # |runtime_deps| already contains (target, source) pairs for the runtime deps,
-  # so we can initialize |file_mapping| from it directly.
-  file_mapping = dict(runtime_deps)
-
+def WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
+                 dry_run, use_device, file_mapping):
   # Generate a script that runs the binaries and shuts down QEMU (if used).
   autorun_file = open(bin_name + '.bootfs_autorun', 'w')
   autorun_file.write('#!/boot/bin/sh\n')
@@ -254,6 +249,17 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
   # Add the autorun file, logger file, and target binary to |file_mapping|.
   file_mapping['autorun'] = autorun_file.name
   file_mapping[os.path.basename(bin_name)] = bin_name
+
+def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
+                bootdata, summary_output, shutdown_machine, target_cpu,
+                use_device, use_autorun):
+  # |runtime_deps| already contains (target, source) pairs for the runtime deps,
+  # so we can initialize |file_mapping| from it directly.
+  file_mapping = dict(runtime_deps)
+
+  if use_autorun:
+      WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
+                   dry_run, use_device, file_mapping)
 
   # Find the full list of files to add to the bootfs.
   file_mapping = _ExpandDirectories(
