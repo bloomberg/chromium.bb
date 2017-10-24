@@ -647,15 +647,30 @@ void PannerHandler::UpdateDirtyState() {
 
 PannerNode::PannerNode(BaseAudioContext& context)
     : AudioNode(context),
-      position_x_(AudioParam::Create(context, kParamTypePannerPositionX, 0.0)),
-      position_y_(AudioParam::Create(context, kParamTypePannerPositionY, 0.0)),
-      position_z_(AudioParam::Create(context, kParamTypePannerPositionZ, 0.0)),
-      orientation_x_(
-          AudioParam::Create(context, kParamTypePannerOrientationX, 1.0)),
-      orientation_y_(
-          AudioParam::Create(context, kParamTypePannerOrientationY, 0.0)),
-      orientation_z_(
-          AudioParam::Create(context, kParamTypePannerOrientationZ, 0.0)) {
+      position_x_(AudioParam::Create(context,
+                                     kParamTypePannerPositionX,
+                                     "Panner.positionX",
+                                     0.0)),
+      position_y_(AudioParam::Create(context,
+                                     kParamTypePannerPositionY,
+                                     "Panner.positionY",
+                                     0.0)),
+      position_z_(AudioParam::Create(context,
+                                     kParamTypePannerPositionZ,
+                                     "Panner.positionZ",
+                                     0.0)),
+      orientation_x_(AudioParam::Create(context,
+                                        kParamTypePannerOrientationX,
+                                        "Panner.orientationX",
+                                        1.0)),
+      orientation_y_(AudioParam::Create(context,
+                                        kParamTypePannerOrientationY,
+                                        "Panner.orientationY",
+                                        0.0)),
+      orientation_z_(AudioParam::Create(context,
+                                        kParamTypePannerOrientationZ,
+                                        "Panner.orientationZ",
+                                        0.0)) {
   SetHandler(PannerHandler::Create(
       *this, context.sampleRate(), position_x_->Handler(),
       position_y_->Handler(), position_z_->Handler(), orientation_x_->Handler(),

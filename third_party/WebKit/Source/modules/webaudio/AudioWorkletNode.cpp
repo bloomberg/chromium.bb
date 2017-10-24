@@ -162,11 +162,11 @@ AudioWorkletNode::AudioWorkletNode(
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
   for (const auto& param_info : param_info_list) {
     String param_name = param_info.Name().IsolatedCopy();
-    AudioParam* audio_param = AudioParam::Create(context,
-                                                 kParamTypeAudioWorklet,
-                                                 param_info.DefaultValue(),
-                                                 param_info.MinValue(),
-                                                 param_info.MaxValue());
+    AudioParam* audio_param =
+        AudioParam::Create(context, kParamTypeAudioWorklet,
+                           "AudioWorklet(\"" + name + "\")." + param_name,
+                           param_info.DefaultValue(), param_info.MinValue(),
+                           param_info.MaxValue());
     audio_param_map.Set(param_name, audio_param);
     param_handler_map.Set(param_name, WrapRefCounted(&audio_param->Handler()));
 

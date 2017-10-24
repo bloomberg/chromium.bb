@@ -655,9 +655,12 @@ AudioBufferSourceNode::AudioBufferSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
       playback_rate_(AudioParam::Create(context,
                                         kParamTypeAudioBufferSourcePlaybackRate,
+                                        "AudioBufferSource.playbackRate",
                                         1.0)),
-      detune_(
-          AudioParam::Create(context, kParamTypeAudioBufferSourceDetune, 0.0)) {
+      detune_(AudioParam::Create(context,
+                                 kParamTypeAudioBufferSourceDetune,
+                                 "AudioBufferSource.detune",
+                                 0.0)) {
   SetHandler(AudioBufferSourceHandler::Create(*this, context.sampleRate(),
                                               playback_rate_->Handler(),
                                               detune_->Handler()));
