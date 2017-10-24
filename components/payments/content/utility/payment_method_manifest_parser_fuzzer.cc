@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "url/gurl.h"
@@ -22,8 +23,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<GURL> web_app_manifest_urls;
   std::vector<url::Origin> supported_origins;
   bool all_origins_supported;
+
+  std::string json_data(reinterpret_cast<const char*>(data), size);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_data);
+
   payments::PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
-      std::string(reinterpret_cast<const char*>(data), size),
-      &web_app_manifest_urls, &supported_origins, &all_origins_supported);
+      std::move(value), &web_app_manifest_urls, &supported_origins,
+      &all_origins_supported);
   return 0;
 }

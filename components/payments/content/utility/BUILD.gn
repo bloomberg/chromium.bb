@@ -13,7 +13,9 @@ static_library("utility") {
   ]
   deps = [
     "//base",
-    "//components/payments/mojom:mojom_parser",
+    "//components/payments/content:content_common",
+    "//content/public/common",
+    "//services/data_decoder/public/cpp",
     "//url",
   ]
 }
@@ -52,6 +54,7 @@ fuzzer_test("payment_web_app_manifest_fuzzer") {
   deps = [
     ":utility",
     "//base",
+    "//components/payments/content:content_common",
   ]
   dict = "payment_manifest_json.dict"
   seed_corpus = "payment_web_app_manifest_fuzzer_corpus"

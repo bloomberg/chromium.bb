@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "components/payments/mojom/payment_manifest_parser.mojom.h"
+#include "components/payments/content/web_app_manifest_section.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database.h"
 
@@ -33,8 +33,7 @@ class PaymentManifestWebDataService : public WebDataServiceBase {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   // Adds the web app |manifest|.
-  void AddPaymentWebAppManifest(
-      std::vector<mojom::WebAppManifestSectionPtr> manifest);
+  void AddPaymentWebAppManifest(std::vector<WebAppManifestSection> manifest);
 
   // Adds the |payment_method|'s manifest.
   void AddPaymentMethodManifest(const std::string& payment_method,
@@ -56,7 +55,7 @@ class PaymentManifestWebDataService : public WebDataServiceBase {
   void RemoveExpiredData(WebDatabase* db);
 
   WebDatabase::State AddPaymentWebAppManifestImpl(
-      const std::vector<mojom::WebAppManifestSectionPtr>& manifest,
+      const std::vector<WebAppManifestSection>& manifest,
       WebDatabase* db);
   WebDatabase::State AddPaymentMethodManifestImpl(
       const std::string& payment_method,

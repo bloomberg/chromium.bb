@@ -5,22 +5,23 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_UTILITY_PAYMENT_MANIFEST_PARSER_H_
 #define COMPONENTS_PAYMENTS_CONTENT_UTILITY_PAYMENT_MANIFEST_PARSER_H_
 
+#include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/payments/mojom/payment_manifest_parser.mojom.h"
-
-class GURL;
-
-namespace url {
-class Origin;
-}
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
+#include "components/payments/content/web_app_manifest_section.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace payments {
 
-// Parser for payment method manifests and web app manifests. Should be used
-// only in a sandboxed utility process.
+// Parser for payment method manifests and web app manifests.
 //
 // Example 1 of valid payment method manifest structure:
 //
@@ -52,31 +53,49 @@ namespace payments {
 //
 // Spec:
 // https://docs.google.com/document/d/1izV4uC-tiRJG3JLooqY3YRLU22tYOsLTNq0P_InPJeE
-class PaymentManifestParser : public mojom::PaymentManifestParser {
+//
+// Note the JSON parsing is done using the SafeJsonParser (either OOP or in a
+// safe environment).
+class PaymentManifestParser {
  public:
-  static void Create(mojom::PaymentManifestParserRequest request);
+  // Called on successful parsing of a payment method manifest. Parse failure
+  // results in empty vectors and "false".
+  using PaymentMethodCallback = base::OnceCallback<
+      void(const std::vector<GURL>&, const std::vector<url::Origin>&, bool)>;
+  // Called on successful parsing of a web app manifest. Parse failure results
+  // in an empty vector.
+  using WebAppCallback =
+      base::OnceCallback<void(const std::vector<WebAppManifestSection>&)>;
 
+  PaymentManifestParser();
+  ~PaymentManifestParser();
+
+  void ParsePaymentMethodManifest(const std::string& content,
+                                  PaymentMethodCallback callback);
+  void ParseWebAppManifest(const std::string& content, WebAppCallback callback);
+
+  // Visible for tests.
   static void ParsePaymentMethodManifestIntoVectors(
-      const std::string& input,
+      std::unique_ptr<base::Value> value,
       std::vector<GURL>* web_app_manifest_urls,
       std::vector<url::Origin>* supported_origins,
       bool* all_origins_supported);
 
-  // The return value is move-only, so no copying occurs.
-  static std::vector<mojom::WebAppManifestSectionPtr>
-  ParseWebAppManifestIntoVector(const std::string& input);
-
-  PaymentManifestParser();
-  ~PaymentManifestParser() override;
-
-  // mojom::PaymentManifestParser
-  void ParsePaymentMethodManifest(
-      const std::string& content,
-      ParsePaymentMethodManifestCallback callback) override;
-  void ParseWebAppManifest(const std::string& content,
-                           ParseWebAppManifestCallback callack) override;
+  static bool ParseWebAppManifestIntoVector(
+      std::unique_ptr<base::Value> value,
+      std::vector<WebAppManifestSection>* output);
 
  private:
+  void OnPaymentMethodParse(PaymentMethodCallback callback,
+                            std::unique_ptr<base::Value> value);
+  void OnWebAppParse(WebAppCallback callback,
+                     std::unique_ptr<base::Value> value);
+
+  int64_t parse_payment_callback_counter_ = 0;
+  int64_t parse_webapp_callback_counter_ = 0;
+
+  base::WeakPtrFactory<PaymentManifestParser> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParser);
 };
 

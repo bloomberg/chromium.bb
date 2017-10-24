@@ -12,7 +12,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
-#include "components/payments/mojom/payment_manifest_parser.mojom.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"

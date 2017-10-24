@@ -21,9 +21,9 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallback;
+import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
 
@@ -70,7 +70,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @Before
     public void setUp() throws Throwable {
         mRule.startMainActivityOnBlankPage();
-        mRule.runOnUiThread((Runnable) () -> mParser.startUtilityProcess());
+        mRule.runOnUiThread((Runnable) () -> mParser.createNative());
         mWebAppManifestUris = null;
         mSupportedOrigins = null;
         mAllOriginsSupported = false;
@@ -82,7 +82,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
 
     @After
     public void tearDown() throws Throwable {
-        mRule.runOnUiThread((Runnable) () -> mParser.stopUtilityProcess());
+        mRule.runOnUiThread((Runnable) () -> mParser.destroyNative());
     }
 
     @Test

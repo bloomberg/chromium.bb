@@ -22,7 +22,7 @@ PaymentManifestWebDataService::PaymentManifestWebDataService(
 PaymentManifestWebDataService::~PaymentManifestWebDataService() {}
 
 void PaymentManifestWebDataService::AddPaymentWebAppManifest(
-    std::vector<mojom::WebAppManifestSectionPtr> manifest) {
+    std::vector<WebAppManifestSection> manifest) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
       base::Bind(&PaymentManifestWebDataService::AddPaymentWebAppManifestImpl,
@@ -30,7 +30,7 @@ void PaymentManifestWebDataService::AddPaymentWebAppManifest(
 }
 
 WebDatabase::State PaymentManifestWebDataService::AddPaymentWebAppManifestImpl(
-    const std::vector<mojom::WebAppManifestSectionPtr>& manifest,
+    const std::vector<WebAppManifestSection>& manifest,
     WebDatabase* db) {
   if (WebAppManifestSectionTable::FromWebDatabase(db)->AddWebAppManifest(
           manifest)) {
@@ -77,8 +77,7 @@ PaymentManifestWebDataService::GetPaymentWebAppManifestImpl(
     const std::string& web_app,
     WebDatabase* db) {
   RemoveExpiredData(db);
-  return base::MakeUnique<
-      WDResult<std::vector<mojom::WebAppManifestSectionPtr>>>(
+  return std::make_unique<WDResult<std::vector<WebAppManifestSection>>>(
       PAYMENT_WEB_APP_MANIFEST,
       WebAppManifestSectionTable::FromWebDatabase(db)->GetWebAppManifest(
           web_app));
@@ -100,7 +99,7 @@ PaymentManifestWebDataService::GetPaymentMethodManifestImpl(
     const std::string& payment_method,
     WebDatabase* db) {
   RemoveExpiredData(db);
-  return base::MakeUnique<WDResult<std::vector<std::string>>>(
+  return std::make_unique<WDResult<std::vector<std::string>>>(
       PAYMENT_METHOD_MANIFEST,
       PaymentMethodManifestTable::FromWebDatabase(db)->GetManifest(
           payment_method));
