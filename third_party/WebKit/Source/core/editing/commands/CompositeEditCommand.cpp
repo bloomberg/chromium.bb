@@ -1976,12 +1976,12 @@ void CompositeEditCommand::SetParent(CompositeEditCommand* parent) {
 // visibly fit inside selectedRange
 bool CompositeEditCommand::IsNodeVisiblyContainedWithin(
     Node& node,
-    const Range& selected_range) {
+    const EphemeralRange& selected_range) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       node.GetDocument().Lifecycle());
 
-  if (IsNodeFullyContained(EphemeralRange(&selected_range), node))
+  if (IsNodeFullyContained(selected_range, node))
     return true;
 
   bool start_is_visually_same =
