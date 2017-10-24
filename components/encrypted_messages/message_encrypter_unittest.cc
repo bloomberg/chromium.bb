@@ -6,6 +6,7 @@
 #include "base/strings/string_piece.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/curve25519.h"
 
 namespace encrypted_messages {
 
@@ -157,6 +158,25 @@ const unsigned char kSerializedEncryptedMessage[] = {
     0x1A, 0x7D, 0x19, 0x81, 0xF0, 0x4D, 0x20, 0x01};
 
 static const char kHkdfLabel[] = "certificate report";
+
+// This test checks that after encrypting and decrypting, a message matches the
+// original.
+TEST(MessageEncrypterTest, EncryptedMessageCanBeDecrypted) {
+  uint8_t server_private_key[32];
+  uint8_t server_public_key[32];
+  uint8_t client_private_key[32];
+  memset(server_private_key, 1, sizeof(server_private_key));
+  memset(client_private_key, 2, sizeof(client_private_key));
+  X25519_public_from_private(server_public_key, server_private_key);
+  encrypted_messages::EncryptedMessage message;
+  std::string test_message = "test message";
+  ASSERT_TRUE(encrypted_messages::EncryptSerializedMessage(
+      server_public_key, 1, "encryption test", test_message, &message));
+  std::string decrypted_message;
+  ASSERT_TRUE(encrypted_messages::DecryptMessageForTesting(
+      server_private_key, "encryption test", message, &decrypted_message));
+  ASSERT_EQ(decrypted_message, test_message);
+}
 
 TEST(MessageEncrypterTest, DecrypterWorksWithProperKey) {
   // This test decrypts a "known gold" report. It's intentionally brittle
