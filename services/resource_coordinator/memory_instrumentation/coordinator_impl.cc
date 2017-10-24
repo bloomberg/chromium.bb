@@ -109,8 +109,10 @@ void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
 void CoordinatorImpl::GetVmRegionsForHeapProfiler(
     const GetVmRegionsForHeapProfilerCallback& callback) {
   base::trace_event::MemoryDumpRequestArgs args{
-      0 /* dump_guid */, base::trace_event::MemoryDumpType::VM_REGIONS_ONLY,
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+      0 /* dump_guid */,
+      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      base::trace_event::MemoryDumpLevelOfDetail::
+          VM_REGIONS_ONLY_FOR_HEAP_PROFILER};
   RequestGlobalMemoryDump(args, callback);
 }
 
@@ -174,10 +176,8 @@ void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
   // another request in the queue with the same level of detail, there's no
   // point in enqueuing this request.
   if (another_dump_is_queued &&
-      args.dump_type !=
-          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED &&
-      args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY &&
-      args.dump_type != base::trace_event::MemoryDumpType::VM_REGIONS_ONLY) {
+      (args.dump_type == MemoryDumpType::PERIODIC_INTERVAL ||
+       args.dump_type == MemoryDumpType::PEAK_MEMORY_USAGE)) {
     for (const auto& request : queued_memory_dump_requests_) {
       if (request.args.level_of_detail == args.level_of_detail) {
         VLOG(1) << "RequestGlobalMemoryDump("

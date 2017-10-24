@@ -16,7 +16,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-using base::trace_event::MemoryDumpType;
+using base::trace_event::MemoryDumpLevelOfDetail;
 
 namespace memory_instrumentation {
 
@@ -263,7 +263,8 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
           &raw_dumps.raw_os_dump->memory_maps);
     }
 
-    if (request->args.dump_type == MemoryDumpType::VM_REGIONS_ONLY) {
+    if (request->args.level_of_detail ==
+        MemoryDumpLevelOfDetail::VM_REGIONS_ONLY_FOR_HEAP_PROFILER) {
       DCHECK(request->wants_mmaps());
       os_dump->memory_maps_for_heap_profiler =
           std::move(raw_dumps.raw_os_dump->memory_maps);
