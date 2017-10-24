@@ -140,7 +140,7 @@ class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
 
 class RemoteShTest(RemoteAccessTest):
   """Tests of basic RemoteSh functions"""
-  TEST_CMD = ['ls']
+  TEST_CMD = 'ls'
   RETURN_CODE = 0
   OUTPUT = 'witty'
   ERROR = 'error'
