@@ -30,6 +30,8 @@ static_library("core") {
     "model/get_pages_task.h",
     "model/mark_page_accessed_task.cc",
     "model/mark_page_accessed_task.h",
+    "model/offline_page_model_taskified.cc",
+    "model/offline_page_model_taskified.h",
     "model/temporary_pages_consistency_check_task.cc",
     "model/temporary_pages_consistency_check_task.h",
     "offline_event_logger.cc",
