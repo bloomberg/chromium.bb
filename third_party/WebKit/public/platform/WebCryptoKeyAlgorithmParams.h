@@ -81,11 +81,11 @@ class WebCryptoAesKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
 
   unsigned short LengthBits() const { return length_bits_; }
 
-  virtual WebCryptoKeyAlgorithmParamsType GetType() const {
+  WebCryptoKeyAlgorithmParamsType GetType() const override {
     return kWebCryptoKeyAlgorithmParamsTypeAes;
   }
 
-  virtual void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+  void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const override {
     dict->SetUint("length", length_bits_);
   }
 
@@ -103,11 +103,11 @@ class WebCryptoHmacKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
 
   unsigned LengthBits() const { return length_bits_; }
 
-  virtual WebCryptoKeyAlgorithmParamsType GetType() const {
+  WebCryptoKeyAlgorithmParamsType GetType() const override {
     return kWebCryptoKeyAlgorithmParamsTypeHmac;
   }
 
-  virtual void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+  void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const override {
     dict->SetAlgorithm("hash", hash_);
     dict->SetUint("length", length_bits_);
   }
@@ -136,11 +136,11 @@ class WebCryptoRsaHashedKeyAlgorithmParams
 
   const WebCryptoAlgorithm& GetHash() const { return hash_; }
 
-  virtual WebCryptoKeyAlgorithmParamsType GetType() const {
+  WebCryptoKeyAlgorithmParamsType GetType() const override {
     return kWebCryptoKeyAlgorithmParamsTypeRsaHashed;
   }
 
-  virtual void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+  void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const override {
     dict->SetAlgorithm("hash", hash_);
     dict->SetUint("modulusLength", modulus_length_bits_);
     dict->SetUint8Array("publicExponent", public_exponent_);
@@ -159,11 +159,11 @@ class WebCryptoEcKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
 
   WebCryptoNamedCurve NamedCurve() const { return named_curve_; }
 
-  virtual WebCryptoKeyAlgorithmParamsType GetType() const {
+  WebCryptoKeyAlgorithmParamsType GetType() const override {
     return kWebCryptoKeyAlgorithmParamsTypeEc;
   }
 
-  virtual void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+  void WriteToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const override {
     switch (named_curve_) {
       case kWebCryptoNamedCurveP256:
         dict->SetString("namedCurve", "P-256");

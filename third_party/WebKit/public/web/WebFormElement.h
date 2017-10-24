@@ -43,7 +43,7 @@ class WebFormControlElement;
 // information about the form.
 class BLINK_EXPORT WebFormElement final : public WebElement {
  public:
-  ~WebFormElement() { Reset(); }
+  ~WebFormElement() override { Reset(); }
 
   WebFormElement() : WebElement() {}
   WebFormElement(const WebFormElement& element) : WebElement(element) {}

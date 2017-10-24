@@ -27,7 +27,7 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   static std::unique_ptr<WebVideoFrameSubmitter> Create(
       cc::VideoFrameProvider*,
       WebContextProviderCallback);
-  virtual ~WebVideoFrameSubmitter() = default;
+  ~WebVideoFrameSubmitter() override = default;
   virtual void StartSubmitting(const viz::FrameSinkId&) = 0;
 };
 

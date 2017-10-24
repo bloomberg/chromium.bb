@@ -63,7 +63,7 @@ class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoAesCbcParams(WebVector<unsigned char> iv)
       : iv_(std::move(iv)) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesCbcParams;
   }
 
@@ -94,7 +94,7 @@ class WebCryptoAesCtrParams : public WebCryptoAlgorithmParams {
         counter_(std::move(counter)),
         length_bits_(length_bits) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesCtrParams;
   }
 
@@ -111,7 +111,7 @@ class WebCryptoAesKeyGenParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoAesKeyGenParams(unsigned short length_bits)
       : length_bits_(length_bits) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesKeyGenParams;
   }
 
@@ -139,7 +139,7 @@ class WebCryptoHmacImportParams : public WebCryptoAlgorithmParamsWithHash {
     DCHECK(has_length_bits || !length_bits);
   }
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeHmacImportParams;
   }
 
@@ -163,7 +163,7 @@ class WebCryptoHmacKeyGenParams : public WebCryptoAlgorithmParamsWithHash {
     DCHECK(has_length_bits || !length_bits);
   }
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeHmacKeyGenParams;
   }
 
@@ -192,7 +192,7 @@ class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
     DCHECK(has_tag_length_bits || !tag_length_bits);
   }
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesGcmParams;
   }
 
@@ -219,7 +219,7 @@ class WebCryptoRsaHashedImportParams : public WebCryptoAlgorithmParamsWithHash {
   explicit WebCryptoRsaHashedImportParams(const WebCryptoAlgorithm& hash)
       : WebCryptoAlgorithmParamsWithHash(hash) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeRsaHashedImportParams;
   }
 };
@@ -235,7 +235,7 @@ class WebCryptoRsaHashedKeyGenParams : public WebCryptoAlgorithmParams {
     DCHECK(!hash.IsNull());
   }
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams;
   }
 
@@ -273,7 +273,7 @@ class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
     DCHECK(has_label || optional_label_.empty());
   }
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeRsaOaepParams;
   }
 
@@ -292,7 +292,7 @@ class WebCryptoRsaPssParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoRsaPssParams(unsigned salt_length_bytes)
       : salt_length_bytes_(salt_length_bytes) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeRsaPssParams;
   }
 
@@ -307,7 +307,7 @@ class WebCryptoEcdsaParams : public WebCryptoAlgorithmParamsWithHash {
   explicit WebCryptoEcdsaParams(const WebCryptoAlgorithm& hash)
       : WebCryptoAlgorithmParamsWithHash(hash) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeEcdsaParams;
   }
 };
@@ -317,7 +317,7 @@ class WebCryptoEcKeyGenParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoEcKeyGenParams(WebCryptoNamedCurve named_curve)
       : named_curve_(named_curve) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeEcKeyGenParams;
   }
 
@@ -332,7 +332,7 @@ class WebCryptoEcKeyImportParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoEcKeyImportParams(WebCryptoNamedCurve named_curve)
       : named_curve_(named_curve) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeEcKeyImportParams;
   }
 
@@ -347,7 +347,7 @@ class WebCryptoEcdhKeyDeriveParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoEcdhKeyDeriveParams(const WebCryptoKey& public_key)
       : public_key_(public_key) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams;
   }
 
@@ -362,7 +362,7 @@ class WebCryptoAesDerivedKeyParams : public WebCryptoAlgorithmParams {
   explicit WebCryptoAesDerivedKeyParams(unsigned short length_bits)
       : length_bits_(length_bits) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const override {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams;
   }
 
@@ -385,7 +385,7 @@ class WebCryptoHkdfParams : public WebCryptoAlgorithmParamsWithHash {
 
   const WebVector<unsigned char>& Info() const { return info_; }
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeHkdfParams;
   }
 
@@ -403,7 +403,7 @@ class WebCryptoPbkdf2Params : public WebCryptoAlgorithmParamsWithHash {
         salt_(std::move(salt)),
         iterations_(iterations) {}
 
-  virtual WebCryptoAlgorithmParamsType GetType() const {
+  WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypePbkdf2Params;
   }
 
