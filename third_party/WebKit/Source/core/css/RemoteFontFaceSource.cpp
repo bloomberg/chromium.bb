@@ -103,8 +103,8 @@ void RemoteFontFaceSource::NotifyFinished(Resource* unused_resource) {
   font_ = nullptr;
 
   PruneTable();
-  font_selector_->FontFaceInvalidated();
-  face_->FontLoaded(this, load_finish_reason);
+  if (face_->FontLoaded(this, load_finish_reason))
+    font_selector_->FontFaceInvalidated();
 }
 
 void RemoteFontFaceSource::FontLoadShortLimitExceeded(FontResource*) {
@@ -135,8 +135,8 @@ void RemoteFontFaceSource::SwitchToSwapPeriod() {
   period_ = kSwapPeriod;
 
   PruneTable();
-  font_selector_->FontFaceInvalidated();
-  face_->DidBecomeVisibleFallback(this);
+  if (face_->DidBecomeVisibleFallback(this))
+    font_selector_->FontFaceInvalidated();
 
   histograms_.RecordFallbackTime();
 }
