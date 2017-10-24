@@ -16710,6 +16710,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2195" label="CookieGet"/>
   <int value="2196" label="GeolocationDisabledByFeaturePolicy"/>
   <int value="2197" label="EncryptedMediaDisabledByFeaturePolicy"/>
+  <int value="2198" label="BatteryStatusGetBattery"/>
+  <int value="2199" label="BatteryStatusInsecureOrigin"/>
+  <int value="2200" label="BatteryStatusCrossOrigin"/>
+  <int value="2201" label="BatteryStatusSameOriginABA"/>
 </enum>
 
 <enum name="FeedbackSource">
