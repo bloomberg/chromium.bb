@@ -6,7 +6,7 @@
 
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/layout/LayoutFrameSet.h"
-#include "core/paint/ObjectPainter.h"
+#include "core/paint/AdjustPaintOffsetScope.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 
@@ -152,7 +152,6 @@ void FrameSetPainter::PaintChildren(const PaintInfo& paint_info,
 
 void FrameSetPainter::Paint(const PaintInfo& paint_info,
                             const LayoutPoint& paint_offset) {
-  ObjectPainter(layout_frame_set_).CheckPaintOffset(paint_info, paint_offset);
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
@@ -160,10 +159,12 @@ void FrameSetPainter::Paint(const PaintInfo& paint_info,
   if (!child)
     return;
 
-  LayoutPoint adjusted_paint_offset =
-      paint_offset + layout_frame_set_.Location();
-  PaintChildren(paint_info, adjusted_paint_offset);
-  PaintBorders(paint_info, adjusted_paint_offset);
+  AdjustPaintOffsetScope adjustment(layout_frame_set_, paint_info,
+                                    paint_offset);
+  const auto& local_paint_info = adjustment.GetPaintInfo();
+  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
+  PaintChildren(local_paint_info, adjusted_paint_offset);
+  PaintBorders(local_paint_info, adjusted_paint_offset);
 }
 
 }  // namespace blink

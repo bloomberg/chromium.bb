@@ -137,25 +137,4 @@ void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info,
   layout_object_.Paint(info, paint_offset);
 }
 
-#if DCHECK_IS_ON()
-void ObjectPainter::DoCheckPaintOffset(const PaintInfo& paint_info,
-                                       const LayoutPoint& paint_offset) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
-  // TODO(pdr): Let painter and paint property tree builder generate the same
-  // paint offset for LayoutScrollbarPart. crbug.com/664249.
-  if (layout_object_.IsLayoutScrollbarPart())
-    return;
-
-  LayoutPoint adjusted_paint_offset = paint_offset;
-  if (layout_object_.IsBox())
-    adjusted_paint_offset += ToLayoutBox(layout_object_).Location();
-  DCHECK(layout_object_.PaintOffset() == adjusted_paint_offset)
-      << " Paint offset mismatch: " << layout_object_.DebugName()
-      << " from PaintPropertyTreeBuilder: "
-      << layout_object_.PaintOffset().ToString()
-      << " from painter: " << adjusted_paint_offset.ToString();
-}
-#endif
-
 }  // namespace blink

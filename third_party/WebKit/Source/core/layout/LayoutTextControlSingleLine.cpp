@@ -34,6 +34,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/paint/AdjustPaintOffsetScope.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ThemePainter.h"
@@ -66,12 +67,15 @@ inline HTMLElement* LayoutTextControlSingleLine::InnerSpinButtonElement()
       ShadowElementNames::SpinButton()));
 }
 
+// TODO(wangxianzhu): Move this into TextControlSingleLinePainter.
 void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
                                         const LayoutPoint& paint_offset) const {
   LayoutTextControl::Paint(paint_info, paint_offset);
 
   if (ShouldPaintSelfBlockBackground(paint_info.phase) &&
       should_draw_caps_lock_indicator_) {
+    // TODO(wangxianzhu): This display item may have conflicting id with the
+    // normal background. Should we allocate another DisplayItem::Type?
     if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context, *this,
                                                     paint_info.phase))
       return;
@@ -84,13 +88,15 @@ void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
     else
       contents_rect.SetX((Size().Width() - contents_rect.Width()) / 2);
 
-    // Convert the rect into the coords used for painting the content
-    contents_rect.MoveBy(paint_offset + Location());
+    // Convert the rect into the coords used for painting the content.
+    AdjustPaintOffsetScope adjustment(*this, paint_info, paint_offset);
+    const auto& local_paint_info = adjustment.GetPaintInfo();
+    contents_rect.MoveBy(adjustment.AdjustedPaintOffset());
     IntRect snapped_rect = PixelSnappedIntRect(contents_rect);
-    DrawingRecorder recorder(paint_info.context, *this, paint_info.phase,
-                             snapped_rect);
-    LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(*this, paint_info,
-                                                             snapped_rect);
+    DrawingRecorder recorder(local_paint_info.context, *this,
+                             local_paint_info.phase, snapped_rect);
+    LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(
+        *this, local_paint_info, snapped_rect);
   }
 }
 

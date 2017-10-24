@@ -11,10 +11,10 @@
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/page/Page.h"
+#include "core/paint/AdjustPaintOffsetScope.h"
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -23,56 +23,19 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/paint/ScrollHitTestDisplayItem.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
 
-bool BlockPainter::ShouldAdjustForPaintOffsetTranslation(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return false;
-  if (!layout_block_.HasLayer() || layout_block_.HasSelfPaintingLayer())
-    return false;
-  auto* paint_properties = layout_block_.FirstFragment()->PaintProperties();
-  if (!paint_properties)
-    return false;
-  if (!paint_properties->PaintOffsetTranslation())
-    return false;
-
-  return true;
-}
-
 DISABLE_CFI_PERF
 void BlockPainter::Paint(const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset) {
-  Optional<ScopedPaintChunkProperties> scoped_contents_properties;
-  LayoutPoint adjusted_paint_offset;
-  PaintInfo local_paint_info(paint_info);
-  if (ShouldAdjustForPaintOffsetTranslation(local_paint_info,
-                                            adjusted_paint_offset)) {
-    auto* paint_properties = layout_block_.FirstFragment()->PaintProperties();
-    const auto* local_border_box_properties =
-        layout_block_.FirstFragment()->LocalBorderBoxProperties();
-    PaintChunkProperties chunk_properties(
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
-    chunk_properties.property_tree_state = *local_border_box_properties;
-    scoped_contents_properties.emplace(paint_info.context.GetPaintController(),
-                                       *layout_block_.Layer(),
-                                       chunk_properties);
+  AdjustPaintOffsetScope adjustment(layout_block_, paint_info, paint_offset);
+  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
+  auto& local_paint_info = adjustment.MutablePaintInfo();
 
-    adjusted_paint_offset = layout_block_.PaintOffset();
-    local_paint_info.UpdateCullRect(paint_properties->PaintOffsetTranslation()
-                                        ->Matrix()
-                                        .ToAffineTransform());
-  } else {
-    ObjectPainter(layout_block_).CheckPaintOffset(paint_info, paint_offset);
-    adjusted_paint_offset = paint_offset + layout_block_.Location();
-  }
-
-  if (!IntersectsPaintRect(paint_info, adjusted_paint_offset))
+  if (!IntersectsPaintRect(local_paint_info, adjusted_paint_offset))
     return;
 
   PaintPhase original_phase = local_paint_info.phase;
