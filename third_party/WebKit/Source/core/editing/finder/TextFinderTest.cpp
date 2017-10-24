@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/TextFinder.h"
+#include "core/editing/finder/TextFinder.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
@@ -10,7 +10,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/FindInPageCoordinates.h"
+#include "core/editing/finder/FindInPageCoordinates.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"

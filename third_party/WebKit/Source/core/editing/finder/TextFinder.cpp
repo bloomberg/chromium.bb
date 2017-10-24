@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/TextFinder.h"
+#include "core/editing/finder/TextFinder.h"
 
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Range.h"
@@ -36,11 +36,11 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/FindInPageCoordinates.h"
-#include "core/editing/FindOptions.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/editing/finder/FindInPageCoordinates.h"
+#include "core/editing/finder/FindOptions.h"
 #include "core/editing/iterators/SearchBuffer.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
