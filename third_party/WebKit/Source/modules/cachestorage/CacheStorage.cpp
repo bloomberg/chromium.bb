@@ -15,7 +15,7 @@
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/http_names.h"
+#include "platform/network/http_names.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"

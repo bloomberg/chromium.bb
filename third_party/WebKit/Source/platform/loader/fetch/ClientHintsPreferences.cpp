@@ -5,9 +5,9 @@
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 
 #include "base/macros.h"
-#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "third_party/WebKit/common/client_hints/client_hints.h"

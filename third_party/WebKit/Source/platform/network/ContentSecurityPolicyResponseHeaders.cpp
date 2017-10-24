@@ -25,9 +25,9 @@
 
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 
-#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPHeaderMap.h"
+#include "platform/network/http_names.h"
 
 namespace blink {
 
