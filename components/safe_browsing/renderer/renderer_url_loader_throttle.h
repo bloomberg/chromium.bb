@@ -35,7 +35,8 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
-  void WillProcessResponse(const content::ResourceResponseHead& response_head,
+  void WillProcessResponse(const GURL& response_url,
+                           const content::ResourceResponseHead& response_head,
                            bool* defer) override;
 
   // mojom::UrlCheckNotifier implementation.

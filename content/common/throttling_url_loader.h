@@ -241,6 +241,9 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
 
   uint32_t inside_delegate_calls_ = 0;
 
+  // The latest request URL from where we expect a response
+  GURL response_url_;
+
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };
 

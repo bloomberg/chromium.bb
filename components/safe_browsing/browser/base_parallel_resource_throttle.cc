@@ -157,7 +157,7 @@ void BaseParallelResourceThrottle::WillProcessResponse(bool* defer) {
   }
 
   url_loader_throttle_holder_->throttle()->WillProcessResponse(
-      content::ResourceResponseHead(), defer);
+      GURL(), content::ResourceResponseHead(), defer);
   if (!*defer)
     throttle_in_band_ = false;
 }

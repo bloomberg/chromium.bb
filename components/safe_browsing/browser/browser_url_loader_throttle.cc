@@ -83,6 +83,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 }
 
 void BrowserURLLoaderThrottle::WillProcessResponse(
+    const GURL& response_url,
     const content::ResourceResponseHead& response_head,
     bool* defer) {
   if (blocked_) {

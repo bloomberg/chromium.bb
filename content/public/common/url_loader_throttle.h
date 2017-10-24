@@ -8,6 +8,8 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 
+class GURL;
+
 namespace net {
 struct RedirectInfo;
 }
@@ -70,7 +72,9 @@ class CONTENT_EXPORT URLLoaderThrottle {
                                    bool* defer);
 
   // Called when the response headers and meta data are available.
-  virtual void WillProcessResponse(const ResourceResponseHead& response_head,
+  // TODO(776312): Migrate this URL to ResourceResponseHead.
+  virtual void WillProcessResponse(const GURL& response_url,
+                                   const ResourceResponseHead& response_head,
                                    bool* defer);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
