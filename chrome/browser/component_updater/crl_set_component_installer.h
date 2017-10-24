@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COMPONENT_UPDATER_CRL_SET_COMPONENT_INSTALLER_H_
-#define COMPONENTS_COMPONENT_UPDATER_CRL_SET_COMPONENT_INSTALLER_H_
+#ifndef CHROME_BROWSER_COMPONENT_UPDATER_CRL_SET_COMPONENT_INSTALLER_H_
+#define CHROME_BROWSER_COMPONENT_UPDATER_CRL_SET_COMPONENT_INSTALLER_H_
 
 namespace base {
 class FilePath;
@@ -16,9 +16,6 @@ class ComponentUpdateService;
 void RegisterCRLSetComponent(ComponentUpdateService* cus,
                              const base::FilePath& user_data_dir);
 
-// TODO(waffles): Remove in M66 or later.
-void DeleteLegacyCRLSet(const base::FilePath& user_data_dir);
-
 }  // namespace component_updater
 
-#endif  // COMPONENTS_COMPONENT_UPDATER_CRL_SET_COMPONENT_INSTALLER_H_
+#endif  // CHROME_BROWSER_COMPONENT_UPDATER_CRL_SET_COMPONENT_INSTALLER_H_

@@ -32,16 +32,14 @@ static_library("component_updater") {
   ]
 }
 
-static_library("crl_set_installer") {
+static_library("crl_set_remover") {
   sources = [
-    "crl_set_component_installer.cc",
-    "crl_set_component_installer.h",
+    "crl_set_remover.cc",
+    "crl_set_remover.h",
   ]
 
   deps = [
-    ":component_updater",
     "//base",
-    "//net",
   ]
 }
 
