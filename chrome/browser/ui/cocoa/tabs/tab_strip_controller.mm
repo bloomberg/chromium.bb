@@ -1656,13 +1656,13 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (modelIndex == tabStripModel_->active_index())
     [delegate_ onTabChanged:change withContents:contents];
 
+  TabController* tabController = [tabArray_ objectAtIndex:index];
+
   if (change == TabStripModelObserver::TITLE_NOT_LOADING) {
-    // TODO(sky): make this work.
+    [tabController titleChangedNotLoading];
     // We'll receive another notification of the change asynchronously.
     return;
   }
-
-  TabController* tabController = [tabArray_ objectAtIndex:index];
 
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents];
@@ -1727,14 +1727,25 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [self layoutTabs];
 }
 
-- (void)tabNeedsAttentionAt:(NSInteger)modelIndex {
+- (void)tabBlockedStateChangedWithContents:(content::WebContents*)contents
+                                   atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
   TabController* tabController =
       base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
 
-  [tabController setNeedsAttention];
+  [tabController setBlocked:tabStripModel_->IsTabBlocked(modelIndex)];
+}
+
+- (void)tabAtIndex:(NSInteger)modelIndex needsAttention:(bool)attention {
+  // Take closing tabs into account.
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+
+  TabController* tabController =
+      base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
+
+  [tabController setNeedsAttention:attention];
 }
 
 - (void)setFrame:(NSRect)frame ofTabView:(NSView*)view {

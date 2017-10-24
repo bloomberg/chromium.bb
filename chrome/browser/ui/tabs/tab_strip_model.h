@@ -247,9 +247,8 @@ class TabStripModel {
       TabStripModelObserver::TabChangeType change_type);
 
   // Cause a tab to display a UI indication to the user that it needs their
-  // attention. The UI indication will be cleared when the tab is next
-  // activated. Only call this for a tab that is not the active tab.
-  void TabNeedsAttentionAt(int index);
+  // attention.
+  void SetTabNeedsAttentionAt(int index, bool attention);
 
   // Close all tabs at once. Code can use closing_all() above to defer
   // operations that might otherwise by invoked by the flurry of detach/select

@@ -121,7 +121,7 @@ class TabStripTest : public views::ViewsTestBase {
 
  protected:
   bool IsShowingAttentionIndicator(int model_index) {
-    return tab_strip_->tab_at(model_index)->showing_attention_indicator_;
+    return tab_strip_->tab_at(model_index)->current_attention_types_ > 0;
   }
 
   // Checks whether |tab| contains |point_in_tabstrip_coords|, where the point

@@ -25,9 +25,6 @@ enum TabLoadingState {
 
 @class AlertIndicatorButton;
 @class MenuController;
-namespace TabControllerInternal {
-class MenuDelegate;
-}
 @class SpriteView;
 @class TabView;
 @protocol TabControllerTarget;
@@ -43,30 +40,13 @@ class MenuDelegate;
 // progress. The default in the nib is an image view so nothing special is
 // required if that's all you need.
 
-@interface TabController : NSViewController<TabDraggingEventTarget> {
- @private
-  base::scoped_nsobject<SpriteView> iconView_;
-  base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton_;
-  base::scoped_nsobject<HoverCloseButton> closeButton_;
-
-  BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
-
-  BOOL pinned_;
-  BOOL active_;
-  BOOL selected_;
-  GURL url_;
-  TabLoadingState loadingState_;
-  id<TabControllerTarget> target_;  // weak, where actions are sent
-  SEL action_;  // selector sent when tab is selected by clicking
-  std::unique_ptr<ui::SimpleMenuModel> contextMenuModel_;
-  std::unique_ptr<TabControllerInternal::MenuDelegate> contextMenuDelegate_;
-  base::scoped_nsobject<MenuController> contextMenuController_;
-}
+@interface TabController : NSViewController<TabDraggingEventTarget>
 
 @property(assign, nonatomic) TabLoadingState loadingState;
 
 @property(assign, nonatomic) SEL action;
 @property(assign, nonatomic) BOOL pinned;
+@property(assign, nonatomic) BOOL blocked;
 @property(assign, nonatomic) NSString* toolTip;
 // Note that |-selected| will return YES if the controller is |-active|, too.
 // |-setSelected:| affects the selection, while |-setActive:| affects the key
@@ -104,8 +84,11 @@ class MenuDelegate;
 // Sets the current tab alert state and updates the views.
 - (void)setAlertState:(TabAlertState)alertState;
 
+// Notifies the tab that its title changed outside of loading.
+- (void)titleChangedNotLoading;
+
 // Sets the tab to display that it needs attention from the user.
-- (void)setNeedsAttention;
+- (void)setNeedsAttention:(bool)attention;
 
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.
