@@ -168,7 +168,7 @@ struct wayland_shm_buffer {
 	struct wl_buffer *buffer;
 	void *data;
 	size_t size;
-	pixman_region32_t damage;
+	pixman_region32_t damage;		/**< in global coords */
 	int frame_damaged;
 
 	pixman_image_t *pm_image;
@@ -311,8 +311,8 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 	wl_list_init(&sb->free_link);
 	wl_list_insert(&output->shm.buffers, &sb->link);
 
-	pixman_region32_init_rect(&sb->damage, 0, 0,
-				  output->base.width, output->base.height);
+	pixman_region32_init(&sb->damage);
+	pixman_region32_copy(&sb->damage, &output->base.region);
 	sb->frame_damaged = 1;
 
 	sb->data = data;
