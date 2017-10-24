@@ -19,5 +19,8 @@
 
   [CallWith=ScriptState] Promise<VRFrameOfReference> requestFrameOfReference(VRFrameOfReferenceType type, [PermissiveDictionaryConversion] optional VRFrameOfReferenceOptions options);
 
+  long requestFrame(VRFrameRequestCallback callback);
+  void cancelFrame(long handle);
+
   [CallWith=ScriptState] Promise<void> end();
 };

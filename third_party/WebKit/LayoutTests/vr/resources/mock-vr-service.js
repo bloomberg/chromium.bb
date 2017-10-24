@@ -173,3 +173,31 @@ function vr_test(func, vrDisplays, name, properties) {
   let t = async_test(name, properties);
   func(t, mockVRService);
 }
+
+function vr_session_test(func, vrDevice, sessionOptions, name, properties) {
+  mockVRService.setVRDisplays([vrDevice]);
+  let t = async_test(name, properties);
+
+  navigator.vr.requestDevice().then( (device) => {
+    // Perform the session request in a user gesture.
+    function thunk() {
+      document.removeEventListener("keypress", thunk, false);
+
+      device.requestSession(sessionOptions).then( (session) => {
+        func(t, session, mockVRService);
+      }, (err) => {
+        t.step( () => {
+          assert_unreached("requestSession rejected");
+        });
+        t.done();
+      });
+    }
+    document.addEventListener("keypress", thunk, false);
+    eventSender.keyDown(" ", []);
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("navigator.vr.getDevices rejected in vr_session_test");
+    });
+    t.done();
+  });
+}

@@ -17,6 +17,7 @@
 namespace blink {
 
 class VR;
+class VRFrameProvider;
 
 class VRDevice final : public EventTargetWithInlineData,
                        public device::mojom::blink::VRDisplayClient {
@@ -50,10 +51,16 @@ class VRDevice final : public EventTargetWithInlineData,
                   OnActivateCallback on_handled) override;
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
+  VRFrameProvider* frameProvider();
+
   void Dispose();
 
   const device::mojom::blink::VRDisplayHostPtr& vrDisplayHostPtr() const {
     return display_;
+  }
+  const device::mojom::blink::VRMagicWindowProviderPtr&
+  vrMagicWindowProviderPtr() const {
+    return magic_window_provider_;
   }
   const device::mojom::blink::VRDisplayInfoPtr& vrDisplayInfoPtr() const {
     return display_info_;
@@ -67,6 +74,7 @@ class VRDevice final : public EventTargetWithInlineData,
   const char* checkSessionSupport(const VRSessionCreationOptions&) const;
 
   Member<VR> vr_;
+  Member<VRFrameProvider> frame_provider_;
   String device_name_;
   bool is_external_;
   bool supports_exclusive_;
