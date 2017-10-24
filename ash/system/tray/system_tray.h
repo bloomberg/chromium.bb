@@ -11,6 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_bubble.h"
+#include "ash/system/tray/system_tray_view.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -104,7 +105,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   bool HasSystemBubble() const;
 
   // Returns true if the system_bubble_ exists and is of type |type|.
-  bool HasSystemBubbleType(SystemTrayBubble::BubbleType type);
+  bool HasSystemTrayType(SystemTrayView::SystemTrayType type);
 
   // Returns a pointer to the system bubble or NULL if none.
   SystemTrayBubble* GetSystemBubble();
@@ -198,8 +199,11 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Pointers to members of |items_|.
   SystemTrayItem* detailed_item_ = nullptr;
 
-  // Bubble for default and detailed views.
+  // Bubble for SystemTrayViews.
   std::unique_ptr<SystemBubbleWrapper> system_bubble_;
+
+  // View for system tray content. This lifetime is same as |system_bubble_|.
+  std::unique_ptr<SystemTrayView> system_tray_view_;
 
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.
