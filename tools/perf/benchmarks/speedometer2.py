@@ -96,3 +96,18 @@ class Speedometer2(perf_benchmark.PerfBenchmark):
     ps.AddStory(page_module.Page(
        'file://InteractiveRunner.html', ps, ps.base_dir, name='Speedometer2'))
     return ps
+
+
+@benchmark.Owner(emails=['hablich@chromium.org'])
+class V8Speedometer2Future(Speedometer2):
+  """Speedometer2 benchmark with the V8 flag --future.
+
+  Shows the performance of upcoming V8 VM features.
+  """
+
+  @classmethod
+  def Name(cls):
+    return 'speedometer2-future'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-features=V8VmFuture')
