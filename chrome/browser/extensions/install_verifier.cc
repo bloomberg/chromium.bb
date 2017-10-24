@@ -55,12 +55,9 @@ enum VerifyStatus {
   VERIFY_STATUS_MAX
 };
 
-#if defined(GOOGLE_CHROME_BUILD)
 const char kExperimentName[] = "ExtensionInstallVerification";
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 VerifyStatus GetExperimentStatus() {
-#if defined(GOOGLE_CHROME_BUILD)
   const std::string group = base::FieldTrialList::FindFullName(
       kExperimentName);
 
@@ -73,11 +70,11 @@ VerifyStatus GetExperimentStatus() {
     return ENFORCE_STRICT;
   }
 
-#if defined(OS_WIN)
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_MACOSX))
   VerifyStatus default_status = ENFORCE;
 #else
   VerifyStatus default_status = NONE;
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
   if (group == "EnforceStrict")
     return ENFORCE_STRICT;
@@ -87,11 +84,8 @@ VerifyStatus GetExperimentStatus() {
     return BOOTSTRAP;
   else if (group == "None" || group == "Control")
     return NONE;
-  else
-    return default_status;
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
-  return NONE;
+  return default_status;
 }
 
 VerifyStatus GetCommandLineStatus() {
