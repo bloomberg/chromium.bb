@@ -143,14 +143,6 @@ IPC_STRUCT_TRAITS_END()
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
 
-// Asks the browser to enable/disable navigation preload for a registration.
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_EnableNavigationPreload,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* provider_id */,
-                     int64_t /* registration_id */,
-                     bool /* enable */)
-
 // Asks the browser to get navigation preload state for a registration.
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_GetNavigationPreloadState,
                      int /* thread_id */,
@@ -272,14 +264,6 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_UpdateFound,
                      int /* thread_id */,
                      int /* registration_handle_id */)
 
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidEnableNavigationPreload,
-                     int /* thread_id */,
-                     int /* request_id */)
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_EnableNavigationPreloadError,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerErrorType,
-                     std::string /* message */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_DidGetNavigationPreloadState,
                      int /* thread_id */,
                      int /* request_id */,

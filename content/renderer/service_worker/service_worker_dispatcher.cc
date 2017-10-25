@@ -68,14 +68,10 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // handler in ServiceWorkerMessageFilter to release references passed from
   // the browser process in case we fail to post task to the thread.
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidEnableNavigationPreload,
-                        OnDidEnableNavigationPreload)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetNavigationPreloadState,
                         OnDidGetNavigationPreloadState)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
                         OnDidSetNavigationPreloadHeader)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_EnableNavigationPreloadError,
-                        OnEnableNavigationPreloadError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GetNavigationPreloadStateError,
                         OnGetNavigationPreloadStateError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
@@ -92,18 +88,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
-}
-
-void ServiceWorkerDispatcher::EnableNavigationPreload(
-    int provider_id,
-    int64_t registration_id,
-    bool enable,
-    std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) {
-  DCHECK(callbacks);
-  int request_id =
-      enable_navigation_preload_callbacks_.Add(std::move(callbacks));
-  thread_safe_sender_->Send(new ServiceWorkerHostMsg_EnableNavigationPreload(
-      CurrentWorkerId(), request_id, provider_id, registration_id, enable));
 }
 
 void ServiceWorkerDispatcher::GetNavigationPreloadState(
@@ -286,17 +270,6 @@ ServiceWorkerDispatcher::GetOrCreateRegistrationForServiceWorkerClient(
   return registration;
 }
 
-void ServiceWorkerDispatcher::OnDidEnableNavigationPreload(int thread_id,
-                                                           int request_id) {
-  WebEnableNavigationPreloadCallbacks* callbacks =
-      enable_navigation_preload_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-  callbacks->OnSuccess();
-  enable_navigation_preload_callbacks_.Remove(request_id);
-}
-
 void ServiceWorkerDispatcher::OnDidGetNavigationPreloadState(
     int thread_id,
     int request_id,
@@ -320,21 +293,6 @@ void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
     return;
   callbacks->OnSuccess();
   set_navigation_preload_header_callbacks_.Remove(request_id);
-}
-
-void ServiceWorkerDispatcher::OnEnableNavigationPreloadError(
-    int thread_id,
-    int request_id,
-    blink::mojom::ServiceWorkerErrorType error_type,
-    const std::string& message) {
-  WebEnableNavigationPreloadCallbacks* callbacks =
-      enable_navigation_preload_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-  callbacks->OnError(
-      WebServiceWorkerError(error_type, blink::WebString::FromUTF8(message)));
-  enable_navigation_preload_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnGetNavigationPreloadStateError(

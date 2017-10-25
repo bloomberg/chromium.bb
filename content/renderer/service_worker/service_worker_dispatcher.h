@@ -51,8 +51,6 @@ struct ServiceWorkerVersionAttributes;
 // scripts through methods like navigator.registerServiceWorker().
 class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
  public:
-  using WebEnableNavigationPreloadCallbacks =
-      blink::WebServiceWorkerRegistration::WebEnableNavigationPreloadCallbacks;
   using WebGetNavigationPreloadStateCallbacks = blink::
       WebServiceWorkerRegistration::WebGetNavigationPreloadStateCallbacks;
   using WebSetNavigationPreloadHeaderCallbacks = blink::
@@ -65,12 +63,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
 
   void OnMessageReceived(const IPC::Message& msg);
 
-  // Corresponds to NavigationPreloadManager.enable/disable.
-  void EnableNavigationPreload(
-      int provider_id,
-      int64_t registration_id,
-      bool enable,
-      std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks);
   // Corresponds to NavigationPreloadManager.getState.
   void GetNavigationPreloadState(
       int provider_id,
@@ -139,8 +131,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   }
 
  private:
-  using EnableNavigationPreloadCallbackMap =
-      base::IDMap<std::unique_ptr<WebEnableNavigationPreloadCallbacks>>;
   using GetNavigationPreloadStateCallbackMap =
       base::IDMap<std::unique_ptr<WebGetNavigationPreloadStateCallbacks>>;
   using SetNavigationPreloadHeaderCallbackMap =
@@ -161,16 +151,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void OnDidEnableNavigationPreload(int thread_id, int request_id);
   void OnDidGetNavigationPreloadState(int thread_id,
                                       int request_id,
                                       const NavigationPreloadState& state);
   void OnDidSetNavigationPreloadHeader(int thread_id, int request_id);
-  void OnEnableNavigationPreloadError(
-      int thread_id,
-      int request_id,
-      blink::mojom::ServiceWorkerErrorType error_type,
-      const std::string& message);
   void OnGetNavigationPreloadStateError(
       int thread_id,
       int request_id,
@@ -206,7 +190,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
 
-  EnableNavigationPreloadCallbackMap enable_navigation_preload_callbacks_;
   GetNavigationPreloadStateCallbackMap get_navigation_preload_state_callbacks_;
   SetNavigationPreloadHeaderCallbackMap
       set_navigation_preload_header_callbacks_;
