@@ -169,12 +169,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
     return has_received_user_gesture_before_nav_;
   }
 
-  // Activates the user activation state of this frame and all its ancestors.
-  //
-  // TODO(mustaq): make this private, the only external user
-  // (LocalDOMWindow.cpp) should be able to avoid it.
-  void NotifyUserActivation();
-
   // Creates a |UserGestureIndicator| that contains a |UserGestureToken| with
   // the given status.  Also activates the user activation state of the
   // |LocalFrame| (provided it's non-null) and all its ancestors.
@@ -236,6 +230,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool is_inert_ = false;
 
  private:
+  // Activates the user activation state of this frame and all its ancestors.
+  void NotifyUserActivation();
+
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
