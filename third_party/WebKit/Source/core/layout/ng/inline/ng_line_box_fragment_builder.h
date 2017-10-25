@@ -34,8 +34,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   void SetMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
-  void SetBlockSize(LayoutUnit);
-
   void AddPositionedFloat(const NGPositionedFloat&);
 
   // Set the break token for the fragment to build.
@@ -106,7 +104,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGInlineNode node_;
 
   NGLineHeightMetrics metrics_;
-  LayoutUnit block_size_;
   Vector<NGPositionedFloat> positioned_floats_;
 
   scoped_refptr<NGInlineBreakToken> break_token_;

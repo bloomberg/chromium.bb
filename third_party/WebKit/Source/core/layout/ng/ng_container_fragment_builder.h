@@ -32,6 +32,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   LayoutUnit InlineSize() const { return inline_size_; }
   NGContainerFragmentBuilder& SetInlineSize(LayoutUnit);
+  void SetBlockSize(LayoutUnit block_size) { block_size_ = block_size; }
 
   virtual NGLogicalSize Size() const = 0;
 
@@ -87,6 +88,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
                              TextDirection);
 
   LayoutUnit inline_size_;
+  LayoutUnit block_size_;
+
   WTF::Optional<NGBfcOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
   std::unique_ptr<const NGExclusionSpace> exclusion_space_;

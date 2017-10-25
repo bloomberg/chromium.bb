@@ -39,7 +39,6 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
-  NGFragmentBuilder& SetBlockSize(LayoutUnit);
   NGLogicalSize Size() const final { return {inline_size_, block_size_}; }
 
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
@@ -142,7 +141,6 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   NGLayoutInputNode node_;
   LayoutObject* layout_object_;
 
-  LayoutUnit block_size_;
   LayoutUnit intrinsic_block_size_;
 
   NGPhysicalFragment::NGBoxType box_type_;
