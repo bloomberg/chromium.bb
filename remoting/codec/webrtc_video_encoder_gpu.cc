@@ -5,10 +5,12 @@
 #include "remoting/codec/webrtc_video_encoder_gpu.h"
 
 #include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "remoting/base/constants.h"
@@ -198,6 +200,9 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
   // per second.
   uint32_t initial_bitrate = kTargetFrameRate * 1024 * 1024 * 8;
   gpu::GpuPreferences gpu_preferences;
+#if defined(OS_WIN)
+  gpu_preferences.enable_media_foundation_vea_on_windows7 = true;
+#endif
 
   video_encode_accelerator_ =
       media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
