@@ -17,7 +17,7 @@
 
 #if defined(OS_LINUX)
 #include "content/public/browser/zygote_host_linux.h"
-#include "content/public/common/sandbox_linux.h"
+#include "services/service_manager/sandbox/sandbox.h"
 #endif
 
 namespace {
@@ -28,22 +28,23 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
   const int status =
       content::ZygoteHost::GetInstance()->GetRendererSandboxStatus();
 
-  source->AddBoolean("suid", status & content::kSandboxLinuxSUID);
-  source->AddBoolean("userNs", status & content::kSandboxLinuxUserNS);
-  source->AddBoolean("pidNs", status & content::kSandboxLinuxPIDNS);
-  source->AddBoolean("netNs", status & content::kSandboxLinuxNetNS);
-  source->AddBoolean("seccompBpf", status & content::kSandboxLinuxSeccompBPF);
+  source->AddBoolean("suid", status & service_manager::Sandbox::kSUID);
+  source->AddBoolean("userNs", status & service_manager::Sandbox::kUserNS);
+  source->AddBoolean("pidNs", status & service_manager::Sandbox::kPIDNS);
+  source->AddBoolean("netNs", status & service_manager::Sandbox::kNetNS);
+  source->AddBoolean("seccompBpf",
+                     status & service_manager::Sandbox::kSeccompBPF);
   source->AddBoolean("seccompTsync",
-                     status & content::kSandboxLinuxSeccompTSYNC);
-  source->AddBoolean("yama", status & content::kSandboxLinuxYama);
+                     status & service_manager::Sandbox::kSeccompTSYNC);
+  source->AddBoolean("yama", status & service_manager::Sandbox::kYama);
 
   // Require either the setuid or namespace sandbox for our first-layer sandbox.
-  bool good_layer1 = (status & content::kSandboxLinuxSUID ||
-                      status & content::kSandboxLinuxUserNS) &&
-                     status & content::kSandboxLinuxPIDNS &&
-                     status & content::kSandboxLinuxNetNS;
+  bool good_layer1 = (status & service_manager::Sandbox::kSUID ||
+                      status & service_manager::Sandbox::kUserNS) &&
+                     status & service_manager::Sandbox::kPIDNS &&
+                     status & service_manager::Sandbox::kNetNS;
   // A second-layer sandbox is also required to be adequately sandboxed.
-  bool good_layer2 = status & content::kSandboxLinuxSeccompBPF;
+  bool good_layer2 = status & service_manager::Sandbox::kSeccompBPF;
   source->AddBoolean("sandboxGood", good_layer1 && good_layer2);
 }
 #endif

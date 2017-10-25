@@ -34,7 +34,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -42,6 +41,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 
@@ -105,7 +105,7 @@ namespace content {
 SandboxLinux::SandboxLinux()
     : proc_fd_(-1),
       seccomp_bpf_started_(false),
-      sandbox_status_flags_(kSandboxLinuxInvalid),
+      sandbox_status_flags_(service_manager::Sandbox::kInvalid),
       pre_initialized_(false),
       seccomp_bpf_supported_(false),
       seccomp_bpf_with_tsync_supported_(false),
@@ -213,35 +213,35 @@ int SandboxLinux::GetStatus() {
   if (!pre_initialized_) {
     return 0;
   }
-  if (kSandboxLinuxInvalid == sandbox_status_flags_) {
+  if (sandbox_status_flags_ == service_manager::Sandbox::kInvalid) {
     // Initialize sandbox_status_flags_.
     sandbox_status_flags_ = 0;
     if (setuid_sandbox_client_->IsSandboxed()) {
-      sandbox_status_flags_ |= kSandboxLinuxSUID;
+      sandbox_status_flags_ |= service_manager::Sandbox::kSUID;
       if (setuid_sandbox_client_->IsInNewPIDNamespace())
-        sandbox_status_flags_ |= kSandboxLinuxPIDNS;
+        sandbox_status_flags_ |= service_manager::Sandbox::kPIDNS;
       if (setuid_sandbox_client_->IsInNewNETNamespace())
-        sandbox_status_flags_ |= kSandboxLinuxNetNS;
+        sandbox_status_flags_ |= service_manager::Sandbox::kNetNS;
     } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
-      sandbox_status_flags_ |= kSandboxLinuxUserNS;
+      sandbox_status_flags_ |= service_manager::Sandbox::kUserNS;
       if (sandbox::NamespaceSandbox::InNewPidNamespace())
-        sandbox_status_flags_ |= kSandboxLinuxPIDNS;
+        sandbox_status_flags_ |= service_manager::Sandbox::kPIDNS;
       if (sandbox::NamespaceSandbox::InNewNetNamespace())
-        sandbox_status_flags_ |= kSandboxLinuxNetNS;
+        sandbox_status_flags_ |= service_manager::Sandbox::kNetNS;
     }
 
     // We report whether the sandbox will be activated when renderers, workers
     // and PPAPI plugins go through sandbox initialization.
     if (seccomp_bpf_supported()) {
-      sandbox_status_flags_ |= kSandboxLinuxSeccompBPF;
+      sandbox_status_flags_ |= service_manager::Sandbox::kSeccompBPF;
     }
 
     if (seccomp_bpf_with_tsync_supported()) {
-      sandbox_status_flags_ |= kSandboxLinuxSeccompTSYNC;
+      sandbox_status_flags_ |= service_manager::Sandbox::kSeccompTSYNC;
     }
 
     if (yama_is_enforcing_) {
-      sandbox_status_flags_ |= kSandboxLinuxYama;
+      sandbox_status_flags_ |= service_manager::Sandbox::kYama;
     }
   }
 
@@ -471,8 +471,8 @@ void SandboxLinux::CheckForBrokenPromises(
   }
   // Make sure that any promise made with GetStatus() wasn't broken.
   bool promised_seccomp_bpf_would_start =
-      (sandbox_status_flags_ != kSandboxLinuxInvalid) &&
-      (GetStatus() & kSandboxLinuxSeccompBPF);
+      (sandbox_status_flags_ != service_manager::Sandbox::kInvalid) &&
+      (GetStatus() & service_manager::Sandbox::kSeccompBPF);
   CHECK(!promised_seccomp_bpf_would_start || seccomp_bpf_started_);
 }
 

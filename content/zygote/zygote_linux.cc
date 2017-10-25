@@ -38,13 +38,13 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/sandbox_linux.h"
 #include "content/public/common/send_zygote_child_ping_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_channel.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "services/service_manager/embedder/set_process_title.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 // See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
 
@@ -223,11 +223,11 @@ bool Zygote::GetProcessInfo(base::ProcessHandle pid,
 }
 
 bool Zygote::UsingSUIDSandbox() const {
-  return sandbox_flags_ & kSandboxLinuxSUID;
+  return sandbox_flags_ & service_manager::Sandbox::kSUID;
 }
 
 bool Zygote::UsingNSSandbox() const {
-  return sandbox_flags_ & kSandboxLinuxUserNS;
+  return sandbox_flags_ & service_manager::Sandbox::kUserNS;
 }
 
 bool Zygote::HandleRequestFromBrowser(int fd) {
@@ -443,8 +443,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CHECK_NE(pid, 0);
   } else {
     CreatePipe(&read_pipe, &write_pipe);
-    if (sandbox_flags_ & kSandboxLinuxPIDNS &&
-        sandbox_flags_ & kSandboxLinuxUserNS) {
+    if (sandbox_flags_ & service_manager::Sandbox::kPIDNS &&
+        sandbox_flags_ & service_manager::Sandbox::kUserNS) {
       pid = sandbox::NamespaceSandbox::ForkInNewPidNamespace(
           /*drop_capabilities_in_child=*/true);
     } else {
