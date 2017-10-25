@@ -59,8 +59,6 @@ class CORE_EXPORT PaintLayerPainter {
 
   enum ClipState { kHasNotClipped, kHasClipped };
 
-  inline bool IsFixedPositionObjectInPagedMedia();
-
   // "For paged media, boxes with fixed positions are repeated on every page."
   // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
   // Repeats singleFragmentIgnoredPagination of the fixed-position object in

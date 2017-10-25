@@ -1247,7 +1247,8 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
   auto& properties = layout_object->GetMutableForPainting()
-                         .EnsureFirstFragment()
+                         .FirstFragment()
+                         .EnsureRarePaintData()
                          .EnsurePaintProperties();
 
   // Add a transform with a compositing reason, which should allow starting
@@ -1278,7 +1279,8 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
   auto& properties = layout_object->GetMutableForPainting()
-                         .EnsureFirstFragment()
+                         .FirstFragment()
+                         .EnsureRarePaintData()
                          .EnsurePaintProperties();
 
   // Add an effect with a compositing reason, which should allow starting

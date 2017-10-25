@@ -391,7 +391,7 @@ void LayoutScrollbar::InvalidateDisplayItemClientsOfScrollbarParts() {
 void LayoutScrollbar::SetVisualRect(const LayoutRect& rect) {
   Scrollbar::SetVisualRect(rect);
   for (auto& part : parts_)
-    part.value->SetVisualRect(rect);
+    part.value->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
 }
 
 }  // namespace blink

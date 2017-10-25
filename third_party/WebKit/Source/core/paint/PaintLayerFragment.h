@@ -32,6 +32,8 @@
 
 namespace blink {
 
+class FragmentData;
+
 // PaintLayerFragment is the representation of a fragment.
 // https://drafts.csswg.org/css-break/#fragment
 //
@@ -107,6 +109,8 @@ struct PaintLayerFragment {
   // The physical translation to apply to shift the layer when
   // painting/hit-testing.
   LayoutPoint pagination_offset;
+
+  const FragmentData* fragment_data = nullptr;
 };
 
 typedef Vector<PaintLayerFragment, 1> PaintLayerFragments;

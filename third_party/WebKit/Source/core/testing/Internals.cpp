@@ -3503,7 +3503,7 @@ DOMRect* Internals::visualRect(Node* node) {
     return DOMRect::Create();
 
   return DOMRect::FromFloatRect(
-      FloatRect(node->GetLayoutObject()->VisualRect()));
+      FloatRect(node->GetLayoutObject()->FragmentsVisualRectBoundingBox()));
 }
 
 void Internals::crash() {

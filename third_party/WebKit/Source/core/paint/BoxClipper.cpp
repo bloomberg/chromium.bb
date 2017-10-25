@@ -44,9 +44,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     return;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const auto* object_properties =
-        box_.FirstFragment() ? box_.FirstFragment()->PaintProperties()
-                             : nullptr;
+    const auto* object_properties = box_.FirstFragment().PaintProperties();
     if (object_properties && object_properties->OverflowClip()) {
       PaintChunkProperties properties(paint_info.context.GetPaintController()
                                           .CurrentPaintChunkProperties());

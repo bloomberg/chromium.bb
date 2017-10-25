@@ -179,7 +179,8 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   UpdateAllLifecyclePhases();
   LayoutRect caret_visual_rect1 = GetCaretDisplayItemClient().VisualRect();
   EXPECT_EQ(1, caret_visual_rect1.Width());
-  EXPECT_EQ(block1->VisualRect().Location(), caret_visual_rect1.Location());
+  EXPECT_EQ(block1->FirstFragment().VisualRect().Location(),
+            caret_visual_rect1.Location());
   EXPECT_TRUE(block1->ShouldPaintCursorCaret());
   EXPECT_FALSE(block2->ShouldPaintCursorCaret());
 
@@ -192,7 +193,8 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
 
   LayoutRect caret_visual_rect2 = GetCaretDisplayItemClient().VisualRect();
   EXPECT_EQ(1, caret_visual_rect2.Width());
-  EXPECT_EQ(block2->VisualRect().Location(), caret_visual_rect2.Location());
+  EXPECT_EQ(block2->FirstFragment().VisualRect().Location(),
+            caret_visual_rect2.Location());
   EXPECT_FALSE(block1->ShouldPaintCursorCaret());
   EXPECT_TRUE(block2->ShouldPaintCursorCaret());
 

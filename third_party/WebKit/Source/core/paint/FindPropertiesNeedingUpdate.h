@@ -113,25 +113,27 @@ class FindFrameViewPropertiesNeedingUpdateScope {
 class FindObjectPropertiesNeedingUpdateScope {
  public:
   FindObjectPropertiesNeedingUpdateScope(const LayoutObject& object,
+                                         const FragmentData& fragment_data,
                                          bool force_subtree_update)
       : object_(object),
+        fragment_data_(fragment_data),
         needed_paint_property_update_(object.NeedsPaintPropertyUpdate()),
         needed_forced_subtree_update_(force_subtree_update),
-        original_paint_offset_(object.PaintOffset()) {
+        original_paint_offset_(fragment_data.PaintOffset()) {
     // No need to check if an update was already needed.
     if (needed_paint_property_update_ || needed_forced_subtree_update_)
       return;
 
     // Mark the properties as needing an update to ensure they are rebuilt.
-    object_.GetMutableForPainting()
+    object.GetMutableForPainting()
         .SetOnlyThisNeedsPaintPropertyUpdateForTesting();
 
-    if (const auto* fragment_data = object_.FirstFragment()) {
-      if (const auto* properties = fragment_data->PaintProperties())
+    if (auto* rare_paint_data = fragment_data_.GetRarePaintData()) {
+      if (const auto* properties = rare_paint_data->PaintProperties())
         original_properties_ = properties->Clone();
 
       if (const auto* local_border_box =
-              fragment_data->LocalBorderBoxProperties()) {
+              rare_paint_data->LocalBorderBoxProperties()) {
         original_local_border_box_properties_ =
             WTF::WrapUnique(new PropertyTreeState(*local_border_box));
       }
@@ -142,11 +144,11 @@ class FindObjectPropertiesNeedingUpdateScope {
     // Paint offset and paintOffsetTranslation should not change under
     // FindObjectPropertiesNeedingUpdateScope no matter if we needed paint
     // property update.
-    DCHECK_OBJECT_PROPERTY_EQ(object_, &original_paint_offset_,
-                              &object_.PaintOffset());
+    LayoutPoint paint_offset = fragment_data_.PaintOffset();
+    DCHECK_OBJECT_PROPERTY_EQ(object_, &original_paint_offset_, &paint_offset);
+    auto* rare_paint_data = fragment_data_.GetRarePaintData();
     const auto* object_properties =
-        object_.FirstFragment() ? object_.FirstFragment()->PaintProperties()
-                                : nullptr;
+        rare_paint_data ? rare_paint_data->PaintProperties() : nullptr;
     if (original_properties_ && object_properties) {
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_properties_->PaintOffsetTranslation(),
@@ -203,9 +205,7 @@ class FindObjectPropertiesNeedingUpdateScope {
     }
 
     const auto* object_border_box =
-        object_.FirstFragment()
-            ? object_.FirstFragment()->LocalBorderBoxProperties()
-            : nullptr;
+        rare_paint_data ? rare_paint_data->LocalBorderBoxProperties() : nullptr;
     if (original_local_border_box_properties_ && object_border_box) {
       DCHECK_OBJECT_PROPERTY_EQ(
           object_, original_local_border_box_properties_->Transform(),
@@ -227,6 +227,7 @@ class FindObjectPropertiesNeedingUpdateScope {
 
  private:
   const LayoutObject& object_;
+  const FragmentData& fragment_data_;
   bool needed_paint_property_update_;
   bool needed_forced_subtree_update_;
   LayoutPoint original_paint_offset_;

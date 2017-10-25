@@ -35,7 +35,8 @@ void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
           container_context.paint_invalidation_container) {
     ObjectPaintInvalidatorWithContext(container, container_context)
         .InvalidatePaintRectangleWithContext(
-            container.VisualRect(), PaintInvalidationReason::kGeometry);
+            container.FirstFragment().VisualRect(),
+            PaintInvalidationReason::kGeometry);
   }
 }
 
@@ -44,7 +45,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
   // and the row or table paints collapsed borders. If the cell's geometry
   // changed and the containers which will paint backgrounds and/or collapsed
   // borders haven't been full invalidated, invalidate the containers.
-  if (context_.old_location != cell_.LocationInBacking() ||
+  if (context_.old_location != context_.fragment_data->LocationInBacking() ||
       cell_.Size() != cell_.PreviousSize()) {
     const auto& row = *cell_.Row();
     const auto& section = *row.Section();

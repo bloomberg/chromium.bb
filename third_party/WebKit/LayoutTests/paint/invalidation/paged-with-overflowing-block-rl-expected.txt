@@ -10,11 +10,20 @@
           "object": "LayoutBlockFlow DIV id='elm'",
           "rect": [8, 8, 500, 485],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='elm'",
+          "rect": [8, 8, 500, 485],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='elm'",
+      "reason": "style change"
+    },
     {
       "object": "LayoutBlockFlow DIV id='elm'",
       "reason": "style change"

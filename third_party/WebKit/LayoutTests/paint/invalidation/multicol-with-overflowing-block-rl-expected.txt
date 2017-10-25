@@ -8,13 +8,31 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [8, 8, 500, 500],
+          "rect": [-492, 174, 1500, 168],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='elm'",
+          "rect": [8, 341, 1500, 167],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='elm'",
+          "rect": [-992, 8, 1500, 167],
           "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='elm'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='elm'",
+      "reason": "style change"
+    },
     {
       "object": "LayoutBlockFlow DIV id='elm'",
       "reason": "style change"

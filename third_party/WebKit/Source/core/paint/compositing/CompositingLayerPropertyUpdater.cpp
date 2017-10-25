@@ -23,37 +23,38 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   if (!mapping)
     return;
 
-  const FragmentData* fragment_data = object.FirstFragment();
-  DCHECK(fragment_data);
-  DCHECK(fragment_data->LocalBorderBoxProperties());
+  const FragmentData& fragment_data = object.FirstFragment();
+  const RarePaintData* rare_paint_data = fragment_data.GetRarePaintData();
+  DCHECK(rare_paint_data);
+  DCHECK(rare_paint_data->LocalBorderBoxProperties());
   // SPv1 compositing forces single fragment for composited elements.
-  DCHECK(!fragment_data->NextFragment());
+  DCHECK(!fragment_data.NextFragment());
 
   LayoutPoint layout_snapped_paint_offset =
-      fragment_data->PaintOffset() - mapping->SubpixelAccumulation();
+      fragment_data.PaintOffset() - mapping->SubpixelAccumulation();
   IntPoint snapped_paint_offset = RoundedIntPoint(layout_snapped_paint_offset);
   DCHECK(layout_snapped_paint_offset == snapped_paint_offset);
 
   if (GraphicsLayer* main_layer = mapping->MainGraphicsLayer()) {
     main_layer->SetLayerState(
-        PropertyTreeState(*fragment_data->LocalBorderBoxProperties()),
+        PropertyTreeState(*rare_paint_data->LocalBorderBoxProperties()),
         snapped_paint_offset + main_layer->OffsetFromLayoutObject());
   }
   if (GraphicsLayer* scrolling_contents_layer =
           mapping->ScrollingContentsLayer()) {
     scrolling_contents_layer->SetLayerState(
-        fragment_data->ContentsProperties(),
+        rare_paint_data->ContentsProperties(),
         snapped_paint_offset +
             scrolling_contents_layer->OffsetFromLayoutObject());
   }
   if (GraphicsLayer* squashing_layer = mapping->SquashingLayer()) {
     squashing_layer->SetLayerState(
-        fragment_data->PreEffectProperties(),
+        rare_paint_data->PreEffectProperties(),
         snapped_paint_offset + mapping->SquashingLayerOffsetFromLayoutObject());
   }
   if (GraphicsLayer* foreground_layer = mapping->ForegroundLayer()) {
     foreground_layer->SetLayerState(
-        fragment_data->ContentsProperties(),
+        rare_paint_data->ContentsProperties(),
         snapped_paint_offset + foreground_layer->OffsetFromLayoutObject());
   }
   // TODO(trchen): Complete for all drawable layers.

@@ -211,7 +211,7 @@ String PaintLayer::DebugName() const {
 }
 
 LayoutRect PaintLayer::VisualRect() const {
-  return layout_object_.VisualRect();
+  return layout_object_.FragmentsVisualRectBoundingBox();
 }
 
 PaintLayerCompositor* PaintLayer::Compositor() const {
@@ -360,14 +360,18 @@ bool PaintLayer::FixedToViewport() const {
   // An option for improving this is to cache the nearest scroll node in
   // the local border box properties.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    const auto* view_border_box_properties =
-        GetLayoutObject().View()->FirstFragment()->LocalBorderBoxProperties();
+    const auto* view_border_box_properties = GetLayoutObject()
+                                                 .View()
+                                                 ->FirstFragment()
+                                                 .GetRarePaintData()
+                                                 ->LocalBorderBoxProperties();
     const auto* view_scroll = view_border_box_properties->Transform()
                                   ->NearestScrollTranslationNode()
                                   .ScrollNode();
 
     const auto* scroll = GetLayoutObject()
                              .FirstFragment()
+                             .GetRarePaintData()
                              ->LocalBorderBoxProperties()
                              ->Transform()
                              ->NearestScrollTranslationNode()
@@ -1630,11 +1634,12 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
   Clipper(geometry_mapper_option)
       .CalculateRects(clip_rects_context,
                       geometry_mapper_option == kUseGeometryMapper
-                          ? GetLayoutObject().FirstFragment()
+                          ? &GetLayoutObject().FirstFragment()
                           : nullptr,
                       dirty_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
                       offset_from_root);
+  fragment.fragment_data = &GetLayoutObject().FirstFragment();
   fragments.push_back(fragment);
 }
 
@@ -1680,7 +1685,7 @@ void PaintLayer::CollectFragmentsForPaint(
   // In the presence of fragmentation, we cannot use it.
   bool offset_from_root_can_be_used =
       !ShouldFragmentCompositedBounds(root_layer);
-  for (auto* fragment_data = GetLayoutObject().FirstFragment(); fragment_data;
+  for (auto* fragment_data = &GetLayoutObject().FirstFragment(); fragment_data;
        fragment_data = fragment_data->NextFragment()) {
     Clipper(geometry_mapper_option)
         .CalculateRects(
@@ -1689,7 +1694,9 @@ void PaintLayer::CollectFragmentsForPaint(
             fragment.foreground_rect,
             offset_from_root_can_be_used ? offset_from_root : nullptr);
 
-    fragment.pagination_offset = fragment_data->PaginationOffset();
+    fragment.fragment_data = fragment_data;
+    fragment.pagination_offset =
+        fragment_data->GetRarePaintData()->PaginationOffset();
 
     fragments.push_back(fragment);
   }

@@ -167,7 +167,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   bool HasSelfPaintingLayer() const;
   PaintLayer* Layer() const {
-    return GetRarePaintData() ? GetRarePaintData()->Layer() : nullptr;
+    return FirstFragment().GetRarePaintData()
+               ? FirstFragment().GetRarePaintData()->Layer()
+               : nullptr;
   }
   // The type of PaintLayer to instantiate. Any value returned from this
   // function other than NoPaintLayer will lead to a PaintLayer being created.

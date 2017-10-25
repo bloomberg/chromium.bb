@@ -26,6 +26,7 @@
 #include "core/paint/SVGRootPainter.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/CompositingReasonFinder.h"
+#include "platform/geometry/TransformState.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -210,6 +211,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
       // Rebuild all descendant properties because a property was removed.
       full_context.force_subtree_update = true;
     }
+    full_context.painting_layer = frame_view.GetLayoutView()->Layer();
   }
 
   // Initialize the context for current, absolute and fixed position cases.
@@ -764,16 +766,21 @@ void PaintPropertyTreeBuilder::UpdateFilter(
   }
 }
 
-static bool NeedsFragmentationClip(const LayoutObject& object) {
-  if (!object.HasLayer())
-    return false;
-  return ToLayoutBoxModelObject(object).Layer()->EnclosingPaginationLayer();
+static bool NeedsFragmentation(const LayoutObject& object,
+                               const PaintLayer& painting_layer) {
+  return painting_layer.ShouldFragmentCompositedBounds();
+}
+
+static bool NeedsFragmentationClip(const LayoutObject& object,
+                                   const PaintLayer& painting_layer) {
+  return object.HasLayer() && NeedsFragmentation(object, painting_layer);
 }
 
 void PaintPropertyTreeBuilder::UpdateFragmentClip(
     const LayoutObject& object,
     ObjectPaintProperties& properties,
     PaintPropertyTreeBuilderFragmentContext& context,
+    const PaintLayer& painting_layer,
     bool& force_subtree_update,
     bool& clip_changed) {
   if (object.NeedsPaintPropertyUpdate() || force_subtree_update) {
@@ -781,8 +788,9 @@ void PaintPropertyTreeBuilder::UpdateFragmentClip(
     bool local_clip_changed = false;
     // It's possible to still have no clips even if NeedsFragmentationClip is
     // true, in the case when the FragmentainerIterator returns none.
-    if (NeedsFragmentationClip(object) && context.fragment_clip_context) {
-      LayoutRect clip_rect(context.fragment_clip_context->fragment_clip);
+    if (NeedsFragmentationClip(object, painting_layer) &&
+        context.fragment_clip) {
+      LayoutRect clip_rect(*context.fragment_clip);
 
       FloatRoundedRect rounded_clip_rect((FloatRect(clip_rect)));
 
@@ -846,26 +854,28 @@ void PaintPropertyTreeBuilder::UpdateCssClip(
 void PaintPropertyTreeBuilder::UpdateLocalBorderBoxContext(
     const LayoutObject& object,
     PaintPropertyTreeBuilderFragmentContext& context,
-    FragmentData* fragment_data,
+    FragmentData& fragment_data,
     bool& force_subtree_update) {
   if (!object.NeedsPaintPropertyUpdate() && !force_subtree_update)
     return;
 
+  auto* rare_paint_data = fragment_data.GetRarePaintData();
+
   if (!object.HasLayer() && !NeedsPaintOffsetTranslation(object)) {
-    if (fragment_data)
-      fragment_data->ClearLocalBorderBoxProperties();
+    if (rare_paint_data)
+      rare_paint_data->ClearLocalBorderBoxProperties();
   } else {
-    DCHECK(fragment_data);
+    DCHECK(rare_paint_data);
     const ClipPaintPropertyNode* clip = context.current.clip;
-    if (fragment_data->PaintProperties() &&
-        fragment_data->PaintProperties()->FragmentClip()) {
-      clip = fragment_data->PaintProperties()->FragmentClip();
+    if (rare_paint_data->PaintProperties() &&
+        rare_paint_data->PaintProperties()->FragmentClip()) {
+      clip = rare_paint_data->PaintProperties()->FragmentClip();
     }
 
     PropertyTreeState local_border_box = PropertyTreeState(
         context.current.transform, clip, context.current_effect);
 
-    fragment_data->SetLocalBorderBoxProperties(local_border_box);
+    rare_paint_data->SetLocalBorderBoxProperties(local_border_box);
   }
 }
 
@@ -941,38 +951,7 @@ void PaintPropertyTreeBuilder::UpdateOverflowClip(
     if (NeedsOverflowClip(object)) {
       const LayoutBox& box = ToLayoutBox(object);
       LayoutRect clip_rect;
-      if (context.fragment_clip_context) {
-        clip_rect =
-            box.OverflowClipRect(context.fragment_clip_context->paint_offset);
-      } else if (NeedsControlClipFragmentationAdjustment(box)) {
-        PaintLayer* painting_layer = box.PaintingLayer();
-        // TODO(chrishtr): remove this workaround once non-PaintLayers can
-        // fragment.
-        LayoutRect object_bounding_box_in_flow_thread =
-            box.OverflowClipRect(LayoutPoint());
-        object_bounding_box_in_flow_thread.Move(
-            object.OffsetFromAncestorContainer(
-                &painting_layer->EnclosingPaginationLayer()
-                     ->GetLayoutObject()));
-
-        const LayoutFlowThread& flow_thread = ToLayoutFlowThread(
-            painting_layer->EnclosingPaginationLayer()->GetLayoutObject());
-        FragmentainerIterator iterator(flow_thread,
-                                       object_bounding_box_in_flow_thread);
-
-        LayoutPoint offset = context.current.paint_offset;
-        if (!iterator.AtEnd()) {
-          offset = object_bounding_box_in_flow_thread.Location();
-          offset.Move(iterator.PaginationOffset());
-          offset.MoveBy(VisualOffsetFromPaintOffsetRoot(
-              context, painting_layer->EnclosingPaginationLayer()));
-          iterator.Advance();
-        }
-
-        clip_rect = box.OverflowClipRect(offset);
-      } else {
-        clip_rect = box.OverflowClipRect(context.current.paint_offset);
-      }
+      clip_rect = box.OverflowClipRect(context.current.paint_offset);
 
       const auto* current_clip = context.current.clip;
       if (box.StyleRef().HasBorderRadius()) {
@@ -1245,53 +1224,123 @@ void PaintPropertyTreeBuilder::UpdateOutOfFlowContext(
   }
 }
 
+static LayoutRect BoundingBoxInPaginationContainer(
+    const LayoutObject& object,
+    const PaintLayer& enclosing_pagination_layer) {
+  // Non-boxes that have no layer paint in the space of their containing block.
+  if (!object.IsBox() && !object.HasLayer()) {
+    return BoundingBoxInPaginationContainer(*object.ContainingBlock(),
+                                            enclosing_pagination_layer);
+  }
+
+  LayoutRect object_bounding_box_in_flow_thread;
+  if (object.HasLayer()) {
+    PaintLayer* paint_layer = ToLayoutBoxModelObject(object).Layer();
+    object_bounding_box_in_flow_thread =
+        paint_layer->PhysicalBoundingBox(&enclosing_pagination_layer);
+  } else {
+    // Compute the bounding box without transforms.
+    object_bounding_box_in_flow_thread = object.LocalVisualRect();
+    TransformState transform_state(
+        TransformState::kApplyTransformDirection,
+        FloatPoint(object_bounding_box_in_flow_thread.Location()));
+    object.MapLocalToAncestor(&enclosing_pagination_layer.GetLayoutObject(),
+                              transform_state, kApplyContainerFlip);
+    transform_state.Flatten();
+    object_bounding_box_in_flow_thread.SetLocation(
+        LayoutPoint(transform_state.LastPlanarPoint()));
+  }
+
+  return object_bounding_box_in_flow_thread;
+}
+
 void PaintPropertyTreeBuilder::UpdatePaintOffset(
-    const LayoutBoxModelObject& object,
+    const LayoutObject& object,
     const LayoutObject* container_for_absolute_position,
+    const FragmentData& fragment_data,
     PaintPropertyTreeBuilderFragmentContext& context) {
+  // Paint offsets for fragmented content are computed from scratch.
+  if (context.fragment_clip &&
+      // Except if the paint_offset_root is below the pagination container,
+      // in which case fragmentation offsets are already baked into the paint
+      // offset transform for paint_offset_root.
+      !context.current.paint_offset_root->PaintingLayer()
+           ->EnclosingPaginationLayer()) {
+    PaintLayer* paint_layer = object.PaintingLayer();
+    PaintLayer* enclosing_pagination_layer =
+        paint_layer->EnclosingPaginationLayer();
+    DCHECK(enclosing_pagination_layer);
+
+    // Set fragment visual paint offset.
+    LayoutPoint paint_offset =
+        BoundingBoxInPaginationContainer(object, *enclosing_pagination_layer)
+            .Location();
+
+    paint_offset.MoveBy(fragment_data.GetRarePaintData()->PaginationOffset());
+    paint_offset.MoveBy(
+        VisualOffsetFromPaintOffsetRoot(context, enclosing_pagination_layer));
+
+    // The paint offset root can have a subpixel paint offset adjustment.
+    // The paint offset root always has one fragment.
+    paint_offset.MoveBy(
+        context.current.paint_offset_root->FirstFragment().PaintOffset());
+
+    context.current.paint_offset = paint_offset;
+
+    return;
+  }
+
   if (object.IsFloating())
     context.current.paint_offset = context.paint_offset_for_float;
 
   // Multicolumn spanners are painted starting at the multicolumn container (but
   // still inherit properties in layout-tree order) so reset the paint offset.
-  if (object.IsColumnSpanAll())
-    context.current.paint_offset = object.Container()->PaintOffset();
+  if (object.IsColumnSpanAll()) {
+    context.current.paint_offset =
+        object.Container()->FirstFragment().PaintOffset();
+  }
 
-  switch (object.StyleRef().GetPosition()) {
-    case EPosition::kStatic:
-      break;
-    case EPosition::kRelative:
-      context.current.paint_offset += object.OffsetForInFlowPosition();
-      break;
-    case EPosition::kAbsolute: {
-      DCHECK(container_for_absolute_position == object.Container());
-      context.current = context.absolute_position;
-
-      // Absolutely positioned content in an inline should be positioned
-      // relative to the inline.
-      const LayoutObject* container = container_for_absolute_position;
-      if (container && container->IsInFlowPositioned() &&
-          container->IsLayoutInline()) {
-        DCHECK(object.IsBox());
+  if (object.IsBoxModelObject()) {
+    const LayoutBoxModelObject& box_model_object =
+        ToLayoutBoxModelObject(object);
+    switch (box_model_object.StyleRef().GetPosition()) {
+      case EPosition::kStatic:
+        break;
+      case EPosition::kRelative:
         context.current.paint_offset +=
-            ToLayoutInline(container)->OffsetForInFlowPositionedInline(
-                ToLayoutBox(object));
+            box_model_object.OffsetForInFlowPosition();
+        break;
+      case EPosition::kAbsolute: {
+        DCHECK(container_for_absolute_position == box_model_object.Container());
+        context.current = context.absolute_position;
+
+        // Absolutely positioned content in an inline should be positioned
+        // relative to the inline.
+        const LayoutObject* container = container_for_absolute_position;
+        if (container && container->IsInFlowPositioned() &&
+            container->IsLayoutInline()) {
+          DCHECK(box_model_object.IsBox());
+          context.current.paint_offset +=
+              ToLayoutInline(container)->OffsetForInFlowPositionedInline(
+                  ToLayoutBox(box_model_object));
+        }
+        break;
       }
-      break;
+      case EPosition::kSticky:
+        context.current.paint_offset +=
+            box_model_object.OffsetForInFlowPosition();
+        break;
+      case EPosition::kFixed:
+        context.current = context.fixed_position;
+        // Fixed-position elements that are fixed to the vieport have a
+        // transform above the scroll of the LayoutView. Child content is
+        // relative to that transform, and hence the fixed-position element.
+        if (context.fixed_position.fixed_position_children_fixed_to_root)
+          context.current.paint_offset_root = &box_model_object;
+        break;
+      default:
+        NOTREACHED();
     }
-    case EPosition::kSticky:
-      context.current.paint_offset += object.OffsetForInFlowPosition();
-      break;
-    case EPosition::kFixed:
-      context.current = context.fixed_position;
-      // Fixed-position elements that are fixed to the vieport have a transform
-      // above the scroll of the LayoutView. Child content is relative to that
-      // transform, and hence the fixed-position element.
-      if (context.fixed_position.fixed_position_children_fixed_to_root)
-        context.current.paint_offset_root = &object;
-      break;
-    default:
-      NOTREACHED();
   }
 
   if (object.IsBox()) {
@@ -1366,22 +1415,21 @@ static void SetNeedsPaintPropertyUpdateIfNeeded(const LayoutObject& object) {
 void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     const LayoutObject& object,
     const LayoutObject* container_for_absolute_position,
-    FragmentData* fragment_data,
+    FragmentData& fragment_data,
     bool& is_actually_needed,
     PaintPropertyTreeBuilderFragmentContext& context,
     bool& force_subtree_update,
     Optional<IntPoint>& paint_offset_translation) {
 #if DCHECK_IS_ON()
-  FindPaintOffsetNeedingUpdateScope check_scope(object, is_actually_needed);
+  FindPaintOffsetNeedingUpdateScope check_scope(object, fragment_data,
+                                                is_actually_needed);
 #endif
 
-  if (object.IsBoxModelObject()) {
-    UpdatePaintOffset(ToLayoutBoxModelObject(object),
-                      container_for_absolute_position, context);
-    paint_offset_translation = UpdateForPaintOffsetTranslation(object, context);
-  }
+  UpdatePaintOffset(object, container_for_absolute_position, fragment_data,
+                    context);
+  paint_offset_translation = UpdateForPaintOffsetTranslation(object, context);
 
-  if (object.PaintOffset() != context.current.paint_offset) {
+  if (fragment_data.PaintOffset() != context.current.paint_offset) {
     // Many paint properties depend on paint offset so we force an update of
     // the entire subtree on paint offset changes.
     force_subtree_update = true;
@@ -1390,35 +1438,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
       object.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
           PaintInvalidationReason::kGeometry);
     }
-    object.GetMutableForPainting().SetPaintOffset(context.current.paint_offset);
-  }
-
-  // Update fragment paint offset, which differs from LayoutObject
-  // paint offset by one or more flow thread -> visual coordinates offsets.
-  if (context.fragment_clip_context && fragment_data && object.HasLayer()) {
-    PaintLayer* paint_layer = ToLayoutBoxModelObject(object).Layer();
-    PaintLayer* enclosing_pagination_layer =
-        paint_layer->EnclosingPaginationLayer();
-    DCHECK(enclosing_pagination_layer);
-
-    // Set fragment visual paint offset.
-    LayoutPoint paint_offset;
-    paint_layer->ConvertToLayerCoords(enclosing_pagination_layer, paint_offset);
-    paint_offset.MoveBy(fragment_data->PaginationOffset());
-    paint_offset.MoveBy(
-        VisualOffsetFromPaintOffsetRoot(context, enclosing_pagination_layer));
-    // The paint offset root can have a subpixel paint offset adjustment.
-    paint_offset.MoveBy(context.current.paint_offset_root->PaintOffset());
-
-    if (paint_offset_translation) {
-      paint_offset_translation =
-          ApplyPaintOffsetTranslation(object, paint_offset);
-    }
-
-    context.fragment_clip_context->paint_offset = paint_offset;
-    fragment_data->SetPaintOffset(paint_offset);
-  } else if (fragment_data) {
-    fragment_data->SetPaintOffset(context.current.paint_offset);
+    fragment_data.SetPaintOffset(context.current.paint_offset);
   }
 
   if (paint_offset_translation)
@@ -1435,12 +1455,10 @@ PaintPropertyTreeBuilderFragmentContext ContextForFragment(
         parent_fragments) {
   // Find a fragment whose clip intersects this one, if any.
   for (auto& fragment_context : parent_fragments) {
-    if (!fragment_context.fragment_clip_context ||
-        fragment_clip.Intersects(
-            fragment_context.fragment_clip_context->fragment_clip)) {
+    if (!fragment_context.fragment_clip ||
+        fragment_clip.Intersects(*fragment_context.fragment_clip)) {
       PaintPropertyTreeBuilderFragmentContext context(fragment_context);
-      context.fragment_clip_context = FragmentClipContext();
-      context.fragment_clip_context->fragment_clip = fragment_clip;
+      context.fragment_clip = fragment_clip;
       return context;
     }
   }
@@ -1448,12 +1466,11 @@ PaintPropertyTreeBuilderFragmentContext ContextForFragment(
   // Otherwise return a new fragment parented at the first parent fragment.
   if (parent_fragments.IsEmpty()) {
     PaintPropertyTreeBuilderFragmentContext context;
-    context.fragment_clip_context = FragmentClipContext();
+    context.fragment_clip = LayoutRect();
     return context;
   }
   PaintPropertyTreeBuilderFragmentContext context(parent_fragments[0]);
-  context.fragment_clip_context = FragmentClipContext();
-  context.fragment_clip_context->fragment_clip = fragment_clip;
+  context.fragment_clip = fragment_clip;
   return context;
 }
 
@@ -1461,16 +1478,15 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& full_context,
     bool needs_paint_properties) {
-  FragmentData& first_fragment =
-      object.GetMutableForPainting().EnsureFirstFragment();
+  FragmentData& first_fragment = object.GetMutableForPainting().FirstFragment();
   first_fragment.ClearNextFragment();
   if (needs_paint_properties)
-    first_fragment.EnsurePaintProperties();
+    first_fragment.EnsureRarePaintData().EnsurePaintProperties();
   if (full_context.fragments.IsEmpty()) {
     full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   } else {
     full_context.fragments.resize(1);
-    full_context.fragments[0].fragment_clip_context.reset();
+    full_context.fragments[0].fragment_clip.reset();
   }
 }
 
@@ -1486,55 +1502,56 @@ void PaintPropertyTreeBuilder::UpdateFragments(
       NeedsFilter(object) || NeedsCssClip(object) ||
       NeedsScrollbarPaintOffset(object) || NeedsOverflowClip(object) ||
       NeedsPerspective(object) || NeedsSVGLocalToBorderBoxTransform(object) ||
-      NeedsScrollOrScrollTranslation(object) || NeedsFragmentationClip(object);
+      NeedsScrollOrScrollTranslation(object) ||
+      NeedsFragmentationClip(object, *full_context.painting_layer);
 
-  bool had_paint_properties =
-      object.FirstFragment() && object.FirstFragment()->PaintProperties();
-
-  if (!needs_paint_properties && !object.HasLayer()) {
+  bool needs_fragments =
+      NeedsFragmentation(object, *full_context.painting_layer);
+  bool had_paint_properties = object.FirstFragment().PaintProperties();
+  if (!needs_paint_properties && !needs_fragments && !object.HasLayer()) {
     if (had_paint_properties) {
-      object.GetMutableForPainting().ClearFirstFragment();
       full_context.force_subtree_update = true;
+      object.FirstFragment().GetRarePaintData()->ClearPaintProperties();
     }
+    InitSingleFragmentFromParent(object, full_context, needs_paint_properties);
   } else {
-    // We need at least the fragments for all PaintLayers, which store their
-    // local border box properties on the fragment.
-    PaintLayer* paint_layer = nullptr;
-    if (object.HasLayer())
-      paint_layer = ToLayoutBoxModelObject(object).Layer();
-    if (!paint_layer || !paint_layer->ShouldFragmentCompositedBounds()) {
+    if (!needs_fragments) {
       InitSingleFragmentFromParent(object, full_context,
                                    needs_paint_properties);
+
     } else {
+      // We need at least the fragments for all fragmented objects, which store
+      // their local border box properties and paint invalidation data (such
+      // as paint offset and visual rect) on each fragment.
+      PaintLayer* paint_layer = object.PaintingLayer();
       PaintLayer* enclosing_pagination_layer =
           paint_layer->EnclosingPaginationLayer();
 
-      LayoutPoint offset_within_paginated_layer;
-      paint_layer->ConvertToLayerCoords(enclosing_pagination_layer,
-                                        offset_within_paginated_layer);
-      LayoutRect layer_bounding_box_in_flow_thread(
-          paint_layer->PhysicalBoundingBox(offset_within_paginated_layer));
+      LayoutRect object_bounding_box_in_flow_thread =
+          BoundingBoxInPaginationContainer(object, *enclosing_pagination_layer);
       const LayoutFlowThread& flow_thread =
           ToLayoutFlowThread(enclosing_pagination_layer->GetLayoutObject());
       FragmentainerIterator iterator(flow_thread,
-                                     layer_bounding_box_in_flow_thread);
+                                     object_bounding_box_in_flow_thread);
 
       Vector<PaintPropertyTreeBuilderFragmentContext> new_fragment_contexts;
       FragmentData* current_fragment_data = nullptr;
-
-      DCHECK(needs_paint_properties);
 
       int fragment_count = 0;
       for (; !iterator.AtEnd() && fragment_count < kMaxNumFragments;
            iterator.Advance(), fragment_count++) {
         if (!current_fragment_data) {
           current_fragment_data =
-              &object.GetMutableForPainting().EnsureFirstFragment();
+              &object.GetMutableForPainting().FirstFragment();
         } else {
           current_fragment_data = &current_fragment_data->EnsureNextFragment();
         }
 
-        current_fragment_data->EnsurePaintProperties();
+        RarePaintData& rare_paint_data =
+            current_fragment_data->EnsureRarePaintData();
+
+        if (needs_paint_properties)
+          rare_paint_data.EnsurePaintProperties();
 
         // 1. Compute clip in flow thread space of the containing flow thread.
         LayoutRect fragment_clip(iterator.ClipRectInFlowThread());
@@ -1551,9 +1568,11 @@ void PaintPropertyTreeBuilder::UpdateFragments(
 
           // Adjust for paint offset of the root, which may have a subpixel
           // component.
+          // The paint offset root never has more than one fragment.
           pagination_visual_offset.MoveBy(
               full_context.fragments[0]
-                  .current.paint_offset_root->PaintOffset());
+                  .current.paint_offset_root->FirstFragment()
+                  .PaintOffset());
 
           fragment_clip.MoveBy(pagination_visual_offset);
         }
@@ -1564,7 +1583,7 @@ void PaintPropertyTreeBuilder::UpdateFragments(
         // 5. Save off PaginationOffset (which allows us to adjust
         // logical paint offsets into the space of the current fragment later.
 
-        current_fragment_data->SetPaginationOffset(
+        current_fragment_data->GetRarePaintData()->SetPaginationOffset(
             ToLayoutPoint(iterator.PaginationOffset()));
       }
       if (current_fragment_data) {
@@ -1588,22 +1607,45 @@ void PaintPropertyTreeBuilder::UpdateFragments(
 
 static inline bool ObjectTypeMightNeedPaintProperties(
     const LayoutObject& object) {
-  return object.IsBoxModelObject() || object.IsSVG();
+  return object.IsBoxModelObject() || object.IsSVG() ||
+         object.PaintingLayer()->EnclosingPaginationLayer();
+}
+
+void UpdatePaintingLayer(const LayoutObject& object,
+                         PaintPropertyTreeBuilderContext& context) {
+  bool changed_painting_layer = false;
+  if (object.HasLayer() &&
+      ToLayoutBoxModelObject(object).HasSelfPaintingLayer()) {
+    context.painting_layer = ToLayoutBoxModelObject(object).Layer();
+    changed_painting_layer = true;
+  } else if (object.IsColumnSpanAll() ||
+             object.IsFloatingWithNonContainingBlockParent()) {
+    // See LayoutObject::paintingLayer() for the special-cases of floating under
+    // inline and multicolumn.
+    context.painting_layer = object.PaintingLayer();
+    changed_painting_layer = true;
+  }
+  DCHECK(context.painting_layer == object.PaintingLayer());
 }
 
 void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& full_context) {
+  UpdatePaintingLayer(object, full_context);
+
   if (ObjectTypeMightNeedPaintProperties(object))
     UpdateFragments(object, full_context);
+  else
+    object.GetMutableForPainting().FirstFragment().ClearNextFragment();
 
   FragmentData* fragment_data = nullptr;
   for (auto& fragment_context : full_context.fragments) {
     fragment_data = fragment_data
                         ? fragment_data->NextFragment()
-                        : object.GetMutableForPainting().FirstFragment();
+                        : &object.GetMutableForPainting().FirstFragment();
+    DCHECK(fragment_data);
     UpdateFragmentPropertiesForSelf(object, full_context, fragment_context,
-                                    fragment_data);
+                                    *fragment_data);
   }
   DCHECK(!fragment_data || !fragment_data->NextFragment());
 }
@@ -1612,7 +1654,7 @@ void PaintPropertyTreeBuilder::UpdateFragmentPropertiesForSelf(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& full_context,
     PaintPropertyTreeBuilderFragmentContext& fragment_context,
-    FragmentData* fragment_data) {
+    FragmentData& fragment_data) {
   bool is_actually_needed = false;
 #if DCHECK_IS_ON()
   is_actually_needed = full_context.is_actually_needed;
@@ -1625,12 +1667,14 @@ void PaintPropertyTreeBuilder::UpdateFragmentPropertiesForSelf(
       is_actually_needed, fragment_context, full_context.force_subtree_update,
       paint_offset_translation);
 
-  if (fragment_data && fragment_data->PaintProperties()) {
-    ObjectPaintProperties& properties = *fragment_data->PaintProperties();
+  RarePaintData* rare_paint_data = fragment_data.GetRarePaintData();
 
-    UpdateFragmentClip(object, properties, fragment_context,
-                       full_context.force_subtree_update,
-                       full_context.clip_changed);
+  if (rare_paint_data && rare_paint_data->PaintProperties()) {
+    ObjectPaintProperties& properties = *rare_paint_data->PaintProperties();
+
+    UpdateFragmentClip(
+        object, properties, fragment_context, *full_context.painting_layer,
+        full_context.force_subtree_update, full_context.clip_changed);
     UpdatePaintOffsetTranslation(object, paint_offset_translation,
                                  fragment_context, properties,
                                  full_context.force_subtree_update);
@@ -1638,11 +1682,11 @@ void PaintPropertyTreeBuilder::UpdateFragmentPropertiesForSelf(
 
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
-      object, full_context.force_subtree_update);
+      object, fragment_data, full_context.force_subtree_update);
 #endif
 
-  if (fragment_data && fragment_data->PaintProperties()) {
-    ObjectPaintProperties* properties = fragment_data->PaintProperties();
+  if (rare_paint_data && rare_paint_data->PaintProperties()) {
+    ObjectPaintProperties* properties = rare_paint_data->PaintProperties();
     UpdateTransform(object, *properties, fragment_context,
                     full_context.force_subtree_update);
     UpdateCssClip(object, *properties, fragment_context,
@@ -1657,8 +1701,8 @@ void PaintPropertyTreeBuilder::UpdateFragmentPropertiesForSelf(
   }
   UpdateLocalBorderBoxContext(object, fragment_context, fragment_data,
                               full_context.force_subtree_update);
-  if (fragment_data && fragment_data->PaintProperties()) {
-    ObjectPaintProperties* properties = fragment_data->PaintProperties();
+  if (rare_paint_data && rare_paint_data->PaintProperties()) {
+    ObjectPaintProperties* properties = rare_paint_data->PaintProperties();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       UpdateScrollbarPaintOffset(object, *properties, fragment_context,
                                  full_context.force_subtree_update);
@@ -1675,18 +1719,19 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForChildren(
 
   FragmentData* fragment_data = nullptr;
   for (auto& fragment_context : context.fragments) {
-#if DCHECK_IS_ON()
-    FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
-        object, context.force_subtree_update);
-#endif
-
     if (!fragment_data)
-      fragment_data = object.FirstFragment();
+      fragment_data = &object.GetMutableForPainting().FirstFragment();
     else
       fragment_data = fragment_data->NextFragment();
+    DCHECK(fragment_data);
+#if DCHECK_IS_ON()
+    FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
+        object, *fragment_data, context.force_subtree_update);
+#endif
 
-    if (fragment_data && fragment_data->PaintProperties()) {
-      ObjectPaintProperties* properties = fragment_data->PaintProperties();
+    RarePaintData* rare_paint_data = fragment_data->GetRarePaintData();
+    if (rare_paint_data && rare_paint_data->PaintProperties()) {
+      ObjectPaintProperties* properties = rare_paint_data->PaintProperties();
       UpdateOverflowClip(object, *properties, fragment_context,
                          context.force_subtree_update, context.clip_changed);
       UpdatePerspective(object, *properties, fragment_context,
@@ -1699,7 +1744,7 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForChildren(
 
     UpdateOutOfFlowContext(
         object, fragment_context,
-        fragment_data ? fragment_data->PaintProperties() : nullptr,
+        rare_paint_data ? rare_paint_data->PaintProperties() : nullptr,
         context.force_subtree_update);
 
     context.force_subtree_update |= object.SubtreeNeedsPaintPropertyUpdate();

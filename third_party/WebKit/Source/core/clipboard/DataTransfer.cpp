@@ -125,8 +125,10 @@ class DraggedNodeImageBuilder {
 
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      border_box_properties =
-          *layer->GetLayoutObject().FirstFragment()->LocalBorderBoxProperties();
+      border_box_properties = *layer->GetLayoutObject()
+                                   .FirstFragment()
+                                   .GetRarePaintData()
+                                   ->LocalBorderBoxProperties();
     }
     return DataTransfer::CreateDragImageForFrame(
         *local_frame_, 1.0f,

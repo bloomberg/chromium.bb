@@ -7,13 +7,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [9, 9, 400, 100],
+          "object": "LayoutInline SPAN id='a'",
+          "rect": [234, 10, 300, 57],
           "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN id='a'",
-          "rect": [234, 10, 300, 57],
+          "rect": [9, 110, 300, 57],
           "reason": "geometry"
         },
         {
@@ -23,8 +23,28 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [234, 15, 50, 50],
+          "rect": [9, 115, 300, 50],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [9, 15, 275, 150],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [234, -91, 175, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [9, 9, 175, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [234, -90, 13, 57],
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -48,11 +68,35 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutMultiColumnFlowThread (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
       "reason": "geometry"
     },
     {
@@ -70,6 +114,22 @@
     {
       "object": "InlineFlowBox",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN id='a'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'XXXXXX'",
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",

@@ -22,12 +22,6 @@ class LocalFrameView;
 class PaintLayer;
 class ObjectPaintProperties;
 
-struct FragmentClipContext {
-  LayoutRect fragment_clip;
-  // A paint offset that includes fragmentation effects.
-  LayoutPoint paint_offset;
-};
-
 // The context for PaintPropertyTreeBuilder.
 // It's responsible for bookkeeping tree state in other order, for example, the
 // most recent position container seen.
@@ -100,9 +94,8 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // generate the effect tree from a DOM-order traversal.
   const EffectPaintPropertyNode* current_effect;
 
-  // If the object is fragmented, FragmentContext contains the fragment
-  // clip and fragment paint offset.
-  Optional<FragmentClipContext> fragment_clip_context;
+  // If the object is fragmented, it will have a fragment clip.
+  Optional<LayoutRect> fragment_clip;
 };
 
 struct PaintPropertyTreeBuilderContext {
@@ -131,6 +124,8 @@ struct PaintPropertyTreeBuilderContext {
   // needed. See FindPaintOffsetAndVisualRectNeedingUpdate.h.
   bool is_actually_needed = true;
 #endif
+
+  PaintLayer* painting_layer = nullptr;
 };
 
 // Creates paint property tree nodes for special things in the layout tree.
@@ -159,11 +154,12 @@ class PaintPropertyTreeBuilder {
       const LayoutObject&,
       PaintPropertyTreeBuilderContext& full_context,
       PaintPropertyTreeBuilderFragmentContext&,
-      FragmentData*);
+      FragmentData&);
 
   ALWAYS_INLINE static void UpdatePaintOffset(
-      const LayoutBoxModelObject&,
+      const LayoutObject&,
       const LayoutObject* container_for_absolute_position,
+      const FragmentData&,
       PaintPropertyTreeBuilderFragmentContext&);
   ALWAYS_INLINE static void GetPaintOffsetTranslation(
       const LayoutBoxModelObject&,
@@ -184,7 +180,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void UpdateForObjectLocationAndSize(
       const LayoutObject&,
       const LayoutObject* container_for_absolute_position,
-      FragmentData*,
+      FragmentData&,
       bool& is_actually_needed,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update,
@@ -214,6 +210,7 @@ class PaintPropertyTreeBuilder {
       const LayoutObject&,
       ObjectPaintProperties&,
       PaintPropertyTreeBuilderFragmentContext&,
+      const PaintLayer& painting_layer,
       bool& force_subtree_update,
       bool& clip_changed);
   ALWAYS_INLINE static void UpdateCssClip(
@@ -225,7 +222,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void UpdateLocalBorderBoxContext(
       const LayoutObject&,
       PaintPropertyTreeBuilderFragmentContext&,
-      FragmentData*,
+      FragmentData&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateScrollbarPaintOffset(
       const LayoutObject&,

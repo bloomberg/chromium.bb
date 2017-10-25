@@ -234,8 +234,7 @@ TEST_P(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
             ChildDocument().Lifecycle().GetState());
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     auto* child_layout_view = ChildDocument().GetLayoutView();
-    ASSERT_TRUE(child_layout_view->FirstFragment());
-    EXPECT_TRUE(child_layout_view->FirstFragment()->PaintProperties());
+    EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
   } else {
     EXPECT_TRUE(ChildDocument().View()->PreTranslation());
   }
