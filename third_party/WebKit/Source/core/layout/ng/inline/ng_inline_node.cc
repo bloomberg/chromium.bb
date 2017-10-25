@@ -20,7 +20,7 @@
 #include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/inline/ng_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_line_breaker.h"
-#include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
@@ -390,7 +390,7 @@ void NGInlineNode::PrepareLayout() {
   ShapeText();
 }
 
-const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
+const NGOffsetMapping& NGInlineNode::ComputeOffsetMappingIfNeeded() {
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate());
 
   if (!Data().offset_mapping_) {
@@ -408,7 +408,7 @@ const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
     NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
     mapping_builder.SetDestinationString(Text());
     MutableData()->offset_mapping_ =
-        WTF::MakeUnique<NGOffsetMappingResult>(mapping_builder.Build());
+        WTF::MakeUnique<NGOffsetMapping>(mapping_builder.Build());
   }
 
   return *Data().offset_mapping_;

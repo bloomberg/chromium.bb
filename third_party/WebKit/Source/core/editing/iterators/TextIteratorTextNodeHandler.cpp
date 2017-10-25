@@ -11,7 +11,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 
 // TODO(layout-dev): Try not to include them. They are not needed by this file,
 // but are only included from ng_inline_node.h as partial classes.
@@ -107,7 +107,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
       return;
     }
 
-    const NGOffsetMappingResult& mapping =
+    const NGOffsetMapping& mapping =
         inline_node->ComputeOffsetMappingIfNeeded();
     const unsigned initial_offset = offset_;
     for (const NGOffsetMappingUnit& unit :

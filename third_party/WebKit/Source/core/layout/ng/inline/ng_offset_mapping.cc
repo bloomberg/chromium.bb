@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
@@ -42,27 +42,27 @@ unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
   return offset - dom_start_ + text_content_start_;
 }
 
-const NGOffsetMappingResult* GetNGOffsetMappingFor(const Node& node,
-                                                   unsigned offset) {
+const NGOffsetMapping* GetNGOffsetMappingFor(const Node& node,
+                                             unsigned offset) {
   Optional<NGInlineNode> inline_node = GetNGInlineNodeFor(node, offset);
   if (!inline_node)
     return nullptr;
   return &inline_node->ComputeOffsetMappingIfNeeded();
 }
 
-NGOffsetMappingResult::NGOffsetMappingResult(NGOffsetMappingResult&& other)
-    : NGOffsetMappingResult(std::move(other.units_),
-                            std::move(other.ranges_),
-                            other.text_) {}
+NGOffsetMapping::NGOffsetMapping(NGOffsetMapping&& other)
+    : NGOffsetMapping(std::move(other.units_),
+                      std::move(other.ranges_),
+                      other.text_) {}
 
-NGOffsetMappingResult::NGOffsetMappingResult(UnitVector&& units,
-                                             RangeMap&& ranges,
-                                             String text)
+NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
+                                 RangeMap&& ranges,
+                                 String text)
     : units_(units), ranges_(ranges), text_(text) {}
 
-NGOffsetMappingResult::~NGOffsetMappingResult() = default;
+NGOffsetMapping::~NGOffsetMapping() = default;
 
-const NGOffsetMappingUnit* NGOffsetMappingResult::GetMappingUnitForDOMOffset(
+const NGOffsetMappingUnit* NGOffsetMapping::GetMappingUnitForDOMOffset(
     const Node& node,
     unsigned offset) const {
   unsigned range_start;
@@ -81,7 +81,7 @@ const NGOffsetMappingUnit* NGOffsetMappingResult::GetMappingUnitForDOMOffset(
   return unit;
 }
 
-NGMappingUnitRange NGOffsetMappingResult::GetMappingUnitsForDOMOffsetRange(
+NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMOffsetRange(
     const Node& node,
     unsigned start_offset,
     unsigned end_offset) const {
@@ -109,7 +109,7 @@ NGMappingUnitRange NGOffsetMappingResult::GetMappingUnitsForDOMOffsetRange(
   return {result_begin, result_end};
 }
 
-Optional<unsigned> NGOffsetMappingResult::GetTextContentOffset(
+Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
     const Node& node,
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
@@ -118,7 +118,7 @@ Optional<unsigned> NGOffsetMappingResult::GetTextContentOffset(
   return unit->ConvertDOMOffsetToTextContent(offset);
 }
 
-Optional<unsigned> NGOffsetMappingResult::StartOfNextNonCollapsedCharacter(
+Optional<unsigned> NGOffsetMapping::StartOfNextNonCollapsedCharacter(
     const Node& node,
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
@@ -134,7 +134,7 @@ Optional<unsigned> NGOffsetMappingResult::StartOfNextNonCollapsedCharacter(
   return WTF::nullopt;
 }
 
-Optional<unsigned> NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
+Optional<unsigned> NGOffsetMapping::EndOfLastNonCollapsedCharacter(
     const Node& node,
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
@@ -152,17 +152,15 @@ Optional<unsigned> NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
   return WTF::nullopt;
 }
 
-bool NGOffsetMappingResult::IsBeforeNonCollapsedCharacter(
-    const Node& node,
-    unsigned offset) const {
+bool NGOffsetMapping::IsBeforeNonCollapsedCharacter(const Node& node,
+                                                    unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   return unit && offset < unit->DOMEnd() &&
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
-bool NGOffsetMappingResult::IsAfterNonCollapsedCharacter(
-    const Node& node,
-    unsigned offset) const {
+bool NGOffsetMapping::IsAfterNonCollapsedCharacter(const Node& node,
+                                                   unsigned offset) const {
   if (!offset)
     return false;
   // In case we have one unit ending at |offset| and another starting at
@@ -173,9 +171,8 @@ bool NGOffsetMappingResult::IsAfterNonCollapsedCharacter(
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
-Optional<UChar> NGOffsetMappingResult::GetCharacterBefore(
-    const Node& node,
-    unsigned offset) const {
+Optional<UChar> NGOffsetMapping::GetCharacterBefore(const Node& node,
+                                                    unsigned offset) const {
   Optional<unsigned> text_content_offset = GetTextContentOffset(node, offset);
   if (!text_content_offset || !*text_content_offset)
     return WTF::nullopt;

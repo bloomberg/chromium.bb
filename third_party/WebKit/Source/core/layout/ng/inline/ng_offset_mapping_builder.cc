@@ -6,7 +6,7 @@
 
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 
@@ -145,9 +145,9 @@ void NGOffsetMappingBuilder::SetDestinationString(String string) {
   destination_string_ = string;
 }
 
-NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
-  NGOffsetMappingResult::UnitVector units;
-  NGOffsetMappingResult::RangeMap ranges;
+NGOffsetMapping NGOffsetMappingBuilder::Build() const {
+  NGOffsetMapping::UnitVector units;
+  NGOffsetMapping::RangeMap ranges;
 
   const Node* current_node = nullptr;
   unsigned inline_start = 0;
@@ -190,8 +190,8 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
   if (current_node) {
     ranges.insert(current_node, std::make_pair(unit_range_start, units.size()));
   }
-  return NGOffsetMappingResult(std::move(units), std::move(ranges),
-                               destination_string_);
+  return NGOffsetMapping(std::move(units), std::move(ranges),
+                         destination_string_);
 }
 
 Vector<unsigned> NGOffsetMappingBuilder::DumpOffsetMappingForTesting() const {

@@ -36,7 +36,7 @@ namespace blink {
 
 class AbstractInlineTextBox;
 class InlineTextBox;
-class NGOffsetMappingResult;
+class NGOffsetMapping;
 
 // LayoutText is the root class for anything that represents
 // a text node (see core/dom/Text.h).
@@ -265,7 +265,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
   bool ShouldUseNGAlternatives() const;
-  const NGOffsetMappingResult& GetNGOffsetMapping() const;
+  const NGOffsetMapping& GetNGOffsetMapping() const;
 
   bool CanBeSelectionLeafInternal() const final { return true; }
 
