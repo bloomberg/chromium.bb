@@ -173,6 +173,7 @@ class GridTrackSizingAlgorithm final {
 
   // Data.
   bool needs_setup_{true};
+  bool is_in_perform_layout_{true};
   Optional<LayoutUnit> available_space_columns_;
   Optional<LayoutUnit> available_space_rows_;
 
@@ -255,7 +256,7 @@ class GridTrackSizingAlgorithmStrategy {
   virtual LayoutUnit MinLogicalWidthForChild(
       LayoutBox&,
       Length child_min_size,
-      GridTrackSizingDirection) const = 0;
+      LayoutUnit available_size) const = 0;
   virtual void LayoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool override_size_has_changed) const = 0;
@@ -264,7 +265,8 @@ class GridTrackSizingAlgorithmStrategy {
 
   bool UpdateOverrideContainingBlockContentSizeForChild(
       LayoutBox&,
-      GridTrackSizingDirection) const;
+      GridTrackSizingDirection,
+      Optional<LayoutUnit> = WTF::nullopt) const;
   LayoutUnit ComputeTrackBasedSize() const;
   Optional<LayoutUnit> ExtentForBaselineAlignment(LayoutBox&) const;
 
@@ -277,6 +279,7 @@ class GridTrackSizingAlgorithmStrategy {
   Optional<LayoutUnit> AvailableSpace() const {
     return algorithm_.AvailableSpace();
   }
+  void SetNeedsLayoutForChild(LayoutBox&) const;
 
   // Helper functions
   static bool HasOverrideContainingBlockContentSizeForChild(
