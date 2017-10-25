@@ -371,10 +371,10 @@ def main(argv):
 
       # Common codecs.
       '--enable-decoder=vorbis,libopus,flac',
-      '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le',
+      '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3',
       '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
-      '--enable-demuxer=ogg,matroska,wav,flac',
-      '--enable-parser=opus,vorbis,flac',
+      '--enable-demuxer=ogg,matroska,wav,flac,mp3,mov',
+      '--enable-parser=opus,vorbis,flac,mpegaudio',
 
       # Setup include path so Chromium's libopus can be used.
       '--extra-cflags=-I' + os.path.join(CHROMIUM_ROOT_DIR,
@@ -627,9 +627,9 @@ def main(argv):
 
   # Google Chrome & ChromeOS specific configuration.
   configure_flags['Chrome'].extend([
-      '--enable-decoder=aac,h264,mp3',
-      '--enable-demuxer=aac,mp3,mov',
-      '--enable-parser=aac,h264,mpegaudio',
+      '--enable-decoder=aac,h264',
+      '--enable-demuxer=aac',
+      '--enable-parser=aac,h264',
   ])
 
   # Google ChromeOS specific configuration.
@@ -649,9 +649,9 @@ def main(argv):
   ])
 
   configure_flags['ChromeAndroid'].extend([
-      '--enable-demuxer=aac,mp3,mov',
-      '--enable-parser=aac,mpegaudio',
-      '--enable-decoder=aac,mp3',
+      '--enable-demuxer=aac',
+      '--enable-parser=aac',
+      '--enable-decoder=aac',
 
       # TODO(dalecurtis, watk): Figure out if we need h264 parser for now?
   ])
