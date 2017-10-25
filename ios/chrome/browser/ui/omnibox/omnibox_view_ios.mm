@@ -325,7 +325,13 @@ bool OmniboxViewIOS::DeleteAtEndPressed() {
 
 void OmniboxViewIOS::GetSelectionBounds(base::string16::size_type* start,
                                         base::string16::size_type* end) const {
-  *start = *end = 0;
+  if ([field_ isFirstResponder]) {
+    NSRange selected_range = [field_ selectedNSRange];
+    *start = selected_range.location;
+    *end = selected_range.location + selected_range.length;
+  } else {
+    *start = *end = 0;
+  }
 }
 
 gfx::NativeView OmniboxViewIOS::GetNativeView() const {
