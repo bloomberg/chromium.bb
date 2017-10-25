@@ -8,7 +8,7 @@
 [
     Constructor(DOMString animatorName,
                 sequence<KeyframeEffectReadOnly> effects,
-                sequence<(DocumentTimeline or ScrollTimeline)> timelines,
+                (DocumentTimeline or ScrollTimeline) timeline,
                 SerializedScriptValue options),
     RaisesException=Constructor,
     RuntimeEnabled=AnimationWorklet
