@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview Accessibility Test API
- */
+/** @fileoverview Accessibility Test API */
 
 GEN_INCLUDE([
   'accessibility_audit_rules.js',
+  '../../../../../third_party/axe-core/axe.js',
 ]);
 
 /**

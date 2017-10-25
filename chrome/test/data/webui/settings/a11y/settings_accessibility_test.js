@@ -5,13 +5,12 @@
 /** @fileoverview Runs the Polymer Accessibility Settings tests. */
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/a11y. */
-var ROOT_PATH = '../../../../../../';
+const ROOT_PATH = '../../../../../../';
 
 // Polymer BrowserTest fixture and aXe-core accessibility audit.
 GEN_INCLUDE([
   ROOT_PATH + 'chrome/test/data/webui/a11y/accessibility_test.js',
   ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
-  ROOT_PATH + 'third_party/axe-core/axe.js',
 ]);
 
 /**
