@@ -53,8 +53,6 @@ Bug(none) external/wpt/service-workers/service-worker/shared-worker-controlled.h
 Bug(none) external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout Failure ]
 Bug(none) external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass Crash Failure ]
 Bug(none) external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
-crbug.com/778220 http/tests/devtools/service-workers/service-workers-bypass-for-network-navigation.html [ Crash Pass ]
-crbug.com/778220 http/tests/devtools/service-workers/service-workers-bypass-for-network-redirect.html [ Crash Timeout ]
 
 # NetworkService won't support Foreign Fetch.
 Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Skip ]

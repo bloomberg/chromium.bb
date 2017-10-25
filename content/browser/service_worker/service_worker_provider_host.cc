@@ -99,6 +99,19 @@ class ServiceWorkerURLTrackingRequestHandler
     return nullptr;
   }
 
+  void MaybeCreateLoader(const ResourceRequest& resource_request,
+                         ResourceContext*,
+                         LoaderCallback callback) override {
+    // |provider_host_| may have been deleted when the request is resumed.
+    if (!provider_host_)
+      return;
+    const GURL stripped_url = net::SimplifyUrlForRequest(resource_request.url);
+    provider_host_->SetDocumentUrl(stripped_url);
+    provider_host_->SetTopmostFrameUrl(resource_request.site_for_cookies);
+    // Fall back to network.
+    std::move(callback).Run(StartLoaderCallback());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLTrackingRequestHandler);
 };
