@@ -23,7 +23,8 @@ namespace internal {
 // or throughput), along with the time the observation was made. Observations
 // can be made at several places in the network stack, thus the observation
 // source is provided as well.
-struct NET_EXPORT_PRIVATE Observation {
+class NET_EXPORT_PRIVATE Observation {
+ public:
   Observation(int32_t value,
               base::TimeTicks timestamp,
               const base::Optional<int32_t>& signal_strength,
@@ -36,23 +37,35 @@ struct NET_EXPORT_PRIVATE Observation {
               const base::Optional<IPHash>& host);
 
   Observation(const Observation& other);
+  Observation& operator=(const Observation& other);
 
   ~Observation();
 
   // Value of the observation.
-  const int32_t value;
+  int32_t value() const { return value_; }
 
   // Time when the observation was taken.
-  const base::TimeTicks timestamp;
+  base::TimeTicks timestamp() const { return timestamp_; }
 
   // Signal strength when the observation was taken.
-  const base::Optional<int32_t> signal_strength;
+  base::Optional<int32_t> signal_strength() const { return signal_strength_; }
 
   // The source of the observation.
-  const NetworkQualityObservationSource source;
+  NetworkQualityObservationSource source() const { return source_; }
 
   // A unique identifier for the remote host which was used for the measurement.
-  const base::Optional<IPHash> host;
+  base::Optional<IPHash> host() const { return host_; }
+
+ private:
+  int32_t value_;
+
+  base::TimeTicks timestamp_;
+
+  base::Optional<int32_t> signal_strength_;
+
+  NetworkQualityObservationSource source_;
+
+  base::Optional<IPHash> host_;
 };
 
 }  // namespace internal
