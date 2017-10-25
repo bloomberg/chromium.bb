@@ -77,16 +77,18 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto& content2 = *GetLayoutObjectByElementId("content2");
   auto& filler2 = *GetLayoutObjectByElementId("filler2");
 
-  DisplayItemClient* background_display_item_client = nullptr;
-
+  const DisplayItemClient* background_display_item_client;
+  const DisplayItemClient* background_chunk_client;
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // With SPv1 and RLS, the document background uses the scrolling contents
     // layer as its DisplayItemClient.
     background_display_item_client =
         GetLayoutView().Layer()->GraphicsLayerBacking();
+    background_chunk_client = background_display_item_client;
   } else {
     background_display_item_client = &GetLayoutView();
+    background_chunk_client = GetLayoutView().Layer();
   }
 
   EXPECT_DISPLAY_LIST(
@@ -99,7 +101,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       TestDisplayItem(content2, kBackgroundType),
       TestDisplayItem(filler2, kBackgroundType));
 
-  auto* root_layer = GetLayoutView().Layer();
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
@@ -108,10 +109,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     // Check that new paint chunks were forced for |container1| and
     // |container2|.
-    Vector<PaintChunk> paint_chunks =
+    const auto& paint_chunks =
         RootPaintController().GetPaintArtifact().PaintChunks();
     EXPECT_EQ(5u, paint_chunks.size());
-    EXPECT_EQ(root_layer, &paint_chunks[0].id.client);
+    EXPECT_EQ(background_chunk_client, &paint_chunks[0].id.client);
     EXPECT_EQ(container1_layer, &paint_chunks[1].id.client);
     EXPECT_EQ(filler1_layer, &paint_chunks[2].id.client);
     EXPECT_EQ(container2_layer, &paint_chunks[3].id.client);
@@ -143,7 +144,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
     Vector<PaintChunk> paint_chunks =
         RootPaintController().GetPaintArtifact().PaintChunks();
     EXPECT_EQ(5u, paint_chunks.size());
-    EXPECT_EQ(root_layer, &paint_chunks[0].id.client);
+    EXPECT_EQ(background_chunk_client, &paint_chunks[0].id.client);
     EXPECT_EQ(container1_layer, &paint_chunks[1].id.client);
     EXPECT_EQ(filler1_layer, &paint_chunks[2].id.client);
     EXPECT_EQ(container2_layer, &paint_chunks[3].id.client);
