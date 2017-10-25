@@ -159,6 +159,14 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // Frees any objects currently stashed in the given CacheEntry.
   void FreeCachedResources(CacheEntry* entry);
 
+  // Queries the GL implementation to determine which is the more performance-
+  // optimal supported readback format: GL_RGBA or GL_BGRA_EXT, and memoizes the
+  // result for all future calls.
+  //
+  // Precondition: The GL context has a complete, bound framebuffer ready for
+  // readback.
+  GLenum GetOptimalReadbackFormat();
+
   // Injected dependencies.
   const scoped_refptr<ContextProvider> context_provider_;
   TextureMailboxDeleter* const texture_mailbox_deleter_;
@@ -176,6 +184,12 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // video captures, it is expected to almost always be zero or one entry in
   // size.
   base::flat_map<base::UnguessableToken, CacheEntry> cache_;
+
+  // This specifies whether the GPU+driver combination executes readback more
+  // efficiently using GL_RGBA or GL_BGRA_EXT format. This starts out as
+  // GL_NONE, which means "unknown," and will be determined at the time the
+  // first readback request is made.
+  GLenum optimal_readback_format_ = static_cast<GLenum>(GL_NONE);
 
   // Purge cache entries that have not been used after this many calls to
   // FreeUnusedCachedResources(). The choice of 60 is arbitrary, but on most

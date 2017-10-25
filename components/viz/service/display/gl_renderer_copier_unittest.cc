@@ -10,22 +10,69 @@
 #include <memory>
 
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_gles2_interface.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace viz {
 
+namespace {
+
+class CopierTestGLES2Interface : public cc::TestGLES2Interface {
+ public:
+  // Sets how GL will respond to queries regarding the implementation's internal
+  // read-back format.
+  void SetOptimalReadbackFormat(GLenum format, GLenum type) {
+    format_ = format;
+    type_ = type;
+  }
+
+  // GLES2Interface override.
+  void GetIntegerv(GLenum pname, GLint* params) override {
+    switch (pname) {
+      case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
+        ASSERT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+                  CheckFramebufferStatus(GL_FRAMEBUFFER));
+        params[0] = format_;
+        break;
+      case GL_IMPLEMENTATION_COLOR_READ_TYPE:
+        ASSERT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+                  CheckFramebufferStatus(GL_FRAMEBUFFER));
+        params[0] = type_;
+        break;
+      default:
+        cc::TestGLES2Interface::GetIntegerv(pname, params);
+        break;
+    }
+  }
+
+ private:
+  GLenum format_ = 0;
+  GLenum type_ = 0;
+};
+
+}  // namespace
+
 class GLRendererCopierTest : public testing::Test {
  public:
   void SetUp() override {
-    auto context_provider = cc::TestContextProvider::Create();
+    auto context_provider = cc::TestContextProvider::Create(
+        std::make_unique<CopierTestGLES2Interface>());
     context_provider->BindToCurrentThread();
     copier_ = std::make_unique<GLRendererCopier>(std::move(context_provider),
                                                  nullptr);
   }
 
   void TearDown() override { copier_.reset(); }
+
+  GLRendererCopier* copier() const { return copier_.get(); }
+
+  CopierTestGLES2Interface* test_gl() const {
+    return static_cast<CopierTestGLES2Interface*>(
+        copier_->context_provider_->ContextGL());
+  }
 
   // These simply forward method calls to GLRendererCopier.
   GLuint TakeCachedObjectOrCreate(const base::UnguessableToken& source,
@@ -46,6 +93,9 @@ class GLRendererCopierTest : public testing::Test {
     copier_->CacheScalerOrDelete(source, std::move(scaler));
   }
   void FreeUnusedCachedResources() { copier_->FreeUnusedCachedResources(); }
+  GLenum GetOptimalReadbackFormat() const {
+    return copier_->GetOptimalReadbackFormat();
+  }
 
   // These inspect the internal state of the GLRendererCopier's cache.
   size_t GetCopierCacheSize() { return copier_->cache_.size(); }
@@ -168,6 +218,26 @@ TEST_F(GLRendererCopierTest, FreesUnusedResources) {
   FreeUnusedCachedResources();
   EXPECT_FALSE(CacheContainsObject(source, which, a));
   EXPECT_EQ(0u, GetCopierCacheSize());
+}
+
+TEST_F(GLRendererCopierTest, DetectsBGRAForReadbackFormat) {
+  test_gl()->SetOptimalReadbackFormat(GL_BGRA_EXT, GL_UNSIGNED_BYTE);
+  EXPECT_EQ(static_cast<GLenum>(GL_BGRA_EXT), GetOptimalReadbackFormat());
+}
+
+TEST_F(GLRendererCopierTest, DetectsRGBAForReadbackFormat) {
+  test_gl()->SetOptimalReadbackFormat(GL_RGBA, GL_UNSIGNED_BYTE);
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), GetOptimalReadbackFormat());
+}
+
+TEST_F(GLRendererCopierTest, FallsBackOnRGBAForReadbackFormat_BadFormat) {
+  test_gl()->SetOptimalReadbackFormat(GL_RGB, GL_UNSIGNED_BYTE);
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), GetOptimalReadbackFormat());
+}
+
+TEST_F(GLRendererCopierTest, FallsBackOnRGBAForReadbackFormat_BadType) {
+  test_gl()->SetOptimalReadbackFormat(GL_BGRA_EXT, GL_UNSIGNED_SHORT);
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), GetOptimalReadbackFormat());
 }
 
 }  // namespace viz
