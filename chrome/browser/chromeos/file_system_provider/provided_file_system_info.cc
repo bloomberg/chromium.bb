@@ -33,13 +33,13 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo()
 }
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
-    const std::string& extension_id,
+    const std::string& provider_id,
     const MountOptions& mount_options,
     const base::FilePath& mount_path,
     bool configurable,
     bool watchable,
     extensions::FileSystemProviderSource source)
-    : extension_id_(extension_id),
+    : provider_id_(provider_id),
       file_system_id_(mount_options.file_system_id),
       display_name_(mount_options.display_name),
       writable_(mount_options.writable),

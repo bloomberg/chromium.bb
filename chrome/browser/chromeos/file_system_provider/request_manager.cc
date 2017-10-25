@@ -28,15 +28,14 @@ const int kDefaultTimeout = 10;
 
 RequestManager::RequestManager(
     Profile* profile,
-    const std::string& extension_id,
+    const std::string& provider_id,
     NotificationManagerInterface* notification_manager)
     : profile_(profile),
-      extension_id_(extension_id),
+      provider_id_(provider_id),
       notification_manager_(notification_manager),
       next_id_(1),
       timeout_(base::TimeDelta::FromSeconds(kDefaultTimeout)),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 RequestManager::~RequestManager() {
   // Abort all of the active requests.
@@ -218,7 +217,7 @@ bool RequestManager::IsInteractingWithUser() const {
   const extensions::AppWindowRegistry* const registry =
       extensions::AppWindowRegistry::Get(profile_);
   DCHECK(registry);
-  if (registry->GetCurrentAppWindowForApp(extension_id_))
+  if (registry->GetCurrentAppWindowForApp(provider_id_))
     return true;
 
   // This loop is heavy, but it's not called often. Only when a request timeouts
@@ -236,7 +235,7 @@ bool RequestManager::IsInteractingWithUser() const {
           tabs->GetWebContentsAt(i);
       const GURL& url = web_contents->GetURL();
       if (url.SchemeIs(extensions::kExtensionScheme) &&
-          url.host_piece() == extension_id_) {
+          url.host_piece() == provider_id_) {
         return true;
       }
     }

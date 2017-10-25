@@ -33,7 +33,7 @@ class ProvidedFileSystemInfo {
  public:
   ProvidedFileSystemInfo();
 
-  ProvidedFileSystemInfo(const std::string& extension_id,
+  ProvidedFileSystemInfo(const std::string& provider_id,
                          const MountOptions& mount_options,
                          const base::FilePath& mount_path,
                          bool configurable,
@@ -44,7 +44,7 @@ class ProvidedFileSystemInfo {
 
   ~ProvidedFileSystemInfo();
 
-  const std::string& extension_id() const { return extension_id_; }
+  const std::string& provider_id() const { return provider_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
   const std::string& display_name() const { return display_name_; }
   bool writable() const { return writable_; }
@@ -56,8 +56,8 @@ class ProvidedFileSystemInfo {
   extensions::FileSystemProviderSource source() const { return source_; }
 
  private:
-  // ID of the extension providing this file system.
-  std::string extension_id_;
+  // ID of the provider supplying this file system.
+  std::string provider_id_;
 
   // ID of the file system.
   std::string file_system_id_;

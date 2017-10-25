@@ -187,12 +187,12 @@ ExtensionFunction::ResponseAction FileSystemProviderGetAllFunction::Run() {
   std::vector<FileSystemInfo> items;
 
   for (const auto& file_system_info : file_systems) {
-    if (file_system_info.extension_id() == extension_id()) {
+    if (file_system_info.provider_id() == extension_id()) {
       FileSystemInfo item;
 
       chromeos::file_system_provider::ProvidedFileSystemInterface* const
           file_system =
-              service->GetProvidedFileSystem(file_system_info.extension_id(),
+              service->GetProvidedFileSystem(file_system_info.provider_id(),
                                              file_system_info.file_system_id());
       DCHECK(file_system);
 

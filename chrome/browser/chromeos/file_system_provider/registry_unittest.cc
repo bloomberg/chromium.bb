@@ -30,7 +30,7 @@ const char kTemporaryOrigin[] =
     "chrome-extension://abcabcabcabcabcabcabcabcabcabcabcabca/";
 const char kPersistentOrigin[] =
     "chrome-extension://efgefgefgefgefgefgefgefgefgefgefgefge/";
-const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kProviderId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kDisplayName[] = "Camera Pictures";
 
 // The dot in the file system ID is there in order to check that saving to
@@ -43,7 +43,7 @@ const int kOpenedFilesLimit = 5;
 // Stores a provided file system information in preferences together with a
 // fake watcher.
 void RememberFakeFileSystem(TestingProfile* profile,
-                            const std::string& extension_id,
+                            const std::string& provider_id,
                             const std::string& file_system_id,
                             const std::string& display_name,
                             bool writable,
@@ -87,7 +87,7 @@ void RememberFakeFileSystem(TestingProfile* profile,
   file_system->SetWithoutPathExpansion(kPrefKeyWatchers, std::move(watchers));
   auto file_systems = base::MakeUnique<base::DictionaryValue>();
   file_systems->SetWithoutPathExpansion(kFileSystemId, std::move(file_system));
-  extensions.SetWithoutPathExpansion(kExtensionId, std::move(file_systems));
+  extensions.SetWithoutPathExpansion(kProviderId, std::move(file_systems));
   pref_service->Set(prefs::kFileSystemProviderMounted, extensions);
 }
 
@@ -125,17 +125,17 @@ class FileSystemProviderRegistryTest : public testing::Test {
 
 TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
   // Create a fake entry in the preferences.
-  RememberFakeFileSystem(profile_, kExtensionId, kFileSystemId, kDisplayName,
+  RememberFakeFileSystem(profile_, kProviderId, kFileSystemId, kDisplayName,
                          true /* writable */, true /* supports_notify_tag */,
                          kOpenedFilesLimit, fake_watcher_);
 
   std::unique_ptr<RegistryInterface::RestoredFileSystems>
-      restored_file_systems = registry_->RestoreFileSystems(kExtensionId);
+      restored_file_systems = registry_->RestoreFileSystems(kProviderId);
 
   ASSERT_EQ(1u, restored_file_systems->size());
   const RegistryInterface::RestoredFileSystem& restored_file_system =
       restored_file_systems->at(0);
-  EXPECT_EQ(kExtensionId, restored_file_system.extension_id);
+  EXPECT_EQ(kProviderId, restored_file_system.provider_id);
   EXPECT_EQ(kFileSystemId, restored_file_system.options.file_system_id);
   EXPECT_EQ(kDisplayName, restored_file_system.options.display_name);
   EXPECT_TRUE(restored_file_system.options.writable);
@@ -159,7 +159,7 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   options.opened_files_limit = kOpenedFilesLimit;
 
   ProvidedFileSystemInfo file_system_info(
-      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
+      kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
       false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
 
   Watchers watchers;
@@ -177,7 +177,7 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   ASSERT_TRUE(extensions);
 
   const base::DictionaryValue* file_systems = NULL;
-  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kExtensionId,
+  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kProviderId,
                                                             &file_systems));
   EXPECT_EQ(1u, file_systems->size());
 
@@ -250,11 +250,11 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
 
 TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
   // Create a fake file systems in the preferences.
-  RememberFakeFileSystem(profile_, kExtensionId, kFileSystemId, kDisplayName,
+  RememberFakeFileSystem(profile_, kProviderId, kFileSystemId, kDisplayName,
                          true /* writable */, true /* supports_notify_tag */,
                          kOpenedFilesLimit, fake_watcher_);
 
-  registry_->ForgetFileSystem(kExtensionId, kFileSystemId);
+  registry_->ForgetFileSystem(kProviderId, kFileSystemId);
 
   sync_preferences::TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
@@ -265,7 +265,7 @@ TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
   ASSERT_TRUE(extensions);
 
   const base::DictionaryValue* file_systems = NULL;
-  EXPECT_FALSE(extensions->GetDictionaryWithoutPathExpansion(kExtensionId,
+  EXPECT_FALSE(extensions->GetDictionaryWithoutPathExpansion(kProviderId,
                                                              &file_systems));
 }
 
@@ -275,7 +275,7 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   options.supports_notify_tag = true;
 
   ProvidedFileSystemInfo file_system_info(
-      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
+      kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
       false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
 
   Watchers watchers;
@@ -296,7 +296,7 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   ASSERT_TRUE(extensions);
 
   const base::DictionaryValue* file_systems = NULL;
-  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kExtensionId,
+  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kProviderId,
                                                             &file_systems));
   EXPECT_EQ(1u, file_systems->size());
 

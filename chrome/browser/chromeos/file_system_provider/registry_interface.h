@@ -30,7 +30,7 @@ class RegistryInterface {
     RestoredFileSystem(const RestoredFileSystem& other);
     ~RestoredFileSystem();
 
-    std::string extension_id;
+    std::string provider_id;
     MountOptions options;
     Watchers watchers;
   };
@@ -45,14 +45,14 @@ class RegistryInterface {
 
   // Removes the file system from preferences, so it is not remounmted anymore
   // after a reboot.
-  virtual void ForgetFileSystem(const std::string& extension_id,
+  virtual void ForgetFileSystem(const std::string& provider_id,
                                 const std::string& file_system_id) = 0;
 
   // Restores from preferences file systems mounted previously by the
-  // |extension_id| providing extension. The returned list should be used to
+  // |provider_id| file system provider. The returned list should be used to
   // remount them.
   virtual std::unique_ptr<RestoredFileSystems> RestoreFileSystems(
-      const std::string& extension_id) = 0;
+      const std::string& provider_id) = 0;
 
   // Updates a tag for the specified watcher.
   virtual void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,

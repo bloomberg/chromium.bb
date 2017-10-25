@@ -39,7 +39,7 @@ namespace chromeos {
 namespace file_system_provider {
 namespace {
 
-const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kProviderId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kDisplayName[] = "Camera Pictures";
 
 // The dot in the file system ID is there in order to check that saving to
@@ -114,7 +114,7 @@ class FakeRegistry : public RegistryInterface {
                         const std::string& file_system_id) override {
     if (!file_system_info_.get() || !watchers_.get())
       return;
-    if (file_system_info_->extension_id() == extension_id &&
+    if (file_system_info_->provider_id() == extension_id &&
         file_system_info_->file_system_id() == file_system_id) {
       file_system_info_.reset();
       watchers_.reset();
@@ -127,7 +127,7 @@ class FakeRegistry : public RegistryInterface {
 
     if (file_system_info_.get() && watchers_.get()) {
       RestoredFileSystem restored_file_system;
-      restored_file_system.extension_id = file_system_info_->extension_id();
+      restored_file_system.provider_id = file_system_info_->provider_id();
 
       MountOptions options;
       options.file_system_id = file_system_info_->file_system_id();
@@ -201,7 +201,7 @@ class FileSystemProviderServiceTest : public testing::Test {
     service_.reset(new Service(profile_, extension_registry_.get()));
     service_->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
-    extension_ = CreateFakeExtension(kExtensionId);
+    extension_ = CreateFakeExtension(kProviderId);
 
     registry_ = new FakeRegistry;
     // Passes ownership to the service instance.
@@ -230,14 +230,14 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
   ASSERT_EQ(1u, observer.mounts.size());
-  EXPECT_EQ(kExtensionId, observer.mounts[0].file_system_info().extension_id());
+  EXPECT_EQ(kProviderId, observer.mounts[0].file_system_info().provider_id());
   EXPECT_EQ(kFileSystemId,
             observer.mounts[0].file_system_info().file_system_id());
   base::FilePath expected_mount_path =
-      util::GetMountPath(profile_, kExtensionId, kFileSystemId);
+      util::GetMountPath(profile_, kProviderId, kFileSystemId);
   EXPECT_EQ(expected_mount_path.AsUTF8Unsafe(),
             observer.mounts[0].file_system_info().mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kDisplayName, observer.mounts[0].file_system_info().display_name());
@@ -263,7 +263,7 @@ TEST_F(FileSystemProviderServiceTest,
   options.writable = true;
   options.supports_notify_tag = true;
   EXPECT_EQ(base::File::FILE_OK,
-            service_->MountFileSystem(kExtensionId, options));
+            service_->MountFileSystem(kProviderId, options));
 
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_TRUE(observer.mounts[0].file_system_info().writable());
@@ -282,10 +282,10 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_UniqueIds) {
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
   EXPECT_EQ(base::File::FILE_ERROR_EXISTS,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
   ASSERT_EQ(2u, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
@@ -308,14 +308,14 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_StressTest) {
         std::string("test-") + base::IntToString(i);
     EXPECT_EQ(base::File::FILE_OK,
               service_->MountFileSystem(
-                  kExtensionId, MountOptions(file_system_id, kDisplayName)));
+                  kProviderId, MountOptions(file_system_id, kDisplayName)));
   }
   ASSERT_EQ(kMaxFileSystems, observer.mounts.size());
 
   // The next file system is out of limit, and registering it should fail.
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
   ASSERT_EQ(kMaxFileSystems + 1, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
@@ -334,17 +334,16 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
   ASSERT_EQ(1u, observer.mounts.size());
 
   EXPECT_EQ(base::File::FILE_OK,
-            service_->UnmountFileSystem(kExtensionId, kFileSystemId,
+            service_->UnmountFileSystem(kProviderId, kFileSystemId,
                                         Service::UNMOUNT_REASON_USER));
   ASSERT_EQ(1u, observer.unmounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
 
-  EXPECT_EQ(kExtensionId,
-            observer.unmounts[0].file_system_info().extension_id());
+  EXPECT_EQ(kProviderId, observer.unmounts[0].file_system_info().provider_id());
   EXPECT_EQ(kFileSystemId,
             observer.unmounts[0].file_system_info().file_system_id());
 
@@ -361,7 +360,7 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
   ASSERT_EQ(1u, observer.mounts.size());
 
   // Directly call the observer's method.
@@ -371,8 +370,7 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
   ASSERT_EQ(1u, observer.unmounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
 
-  EXPECT_EQ(kExtensionId,
-            observer.unmounts[0].file_system_info().extension_id());
+  EXPECT_EQ(kProviderId, observer.unmounts[0].file_system_info().provider_id());
   EXPECT_EQ(kFileSystemId,
             observer.unmounts[0].file_system_info().file_system_id());
 
@@ -391,7 +389,7 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
   ASSERT_EQ(1u, observer.mounts.size());
   ASSERT_EQ(1u, service_->GetProvidedFileSystemInfoList().size());
 
@@ -417,7 +415,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   MountOptions options(kFileSystemId, kDisplayName);
   options.supports_notify_tag = true;
   ProvidedFileSystemInfo file_system_info(
-      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
+      kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
       false /* configurable */, false /* watchable */, extensions::SOURCE_FILE);
   Watchers fake_watchers;
   fake_watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
@@ -433,8 +431,8 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
   EXPECT_EQ(MOUNT_CONTEXT_RESTORE, observer.mounts[0].context());
 
-  EXPECT_EQ(file_system_info.extension_id(),
-            observer.mounts[0].file_system_info().extension_id());
+  EXPECT_EQ(file_system_info.provider_id(),
+            observer.mounts[0].file_system_info().provider_id());
   EXPECT_EQ(file_system_info.file_system_id(),
             observer.mounts[0].file_system_info().file_system_id());
   EXPECT_EQ(file_system_info.writable(),
@@ -447,7 +445,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   ASSERT_EQ(1u, file_system_info_list.size());
 
   ProvidedFileSystemInterface* const file_system =
-      service_->GetProvidedFileSystem(kExtensionId, kFileSystemId);
+      service_->GetProvidedFileSystem(kProviderId, kFileSystemId);
   ASSERT_TRUE(file_system);
 
   const Watchers* const watchers = file_system->GetWatchers();
@@ -474,11 +472,11 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
-                kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
   ASSERT_EQ(1u, observer.mounts.size());
 
   ASSERT_TRUE(registry_->file_system_info());
-  EXPECT_EQ(kExtensionId, registry_->file_system_info()->extension_id());
+  EXPECT_EQ(kProviderId, registry_->file_system_info()->provider_id());
   EXPECT_EQ(kFileSystemId, registry_->file_system_info()->file_system_id());
   EXPECT_EQ(kDisplayName, registry_->file_system_info()->display_name());
   EXPECT_FALSE(registry_->file_system_info()->writable());
@@ -499,7 +497,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
     EXPECT_FALSE(registry_->watchers());
     EXPECT_EQ(base::File::FILE_OK,
               service_->MountFileSystem(
-                  kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                  kProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
     EXPECT_EQ(1u, observer.mounts.size());
     EXPECT_TRUE(registry_->file_system_info());
@@ -508,7 +506,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
 
   {
     EXPECT_EQ(base::File::FILE_OK,
-              service_->UnmountFileSystem(kExtensionId, kFileSystemId,
+              service_->UnmountFileSystem(kProviderId, kFileSystemId,
                                           Service::UNMOUNT_REASON_SHUTDOWN));
 
     EXPECT_EQ(1u, observer.unmounts.size());
@@ -528,7 +526,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountByUser) {
     EXPECT_FALSE(registry_->watchers());
     EXPECT_EQ(base::File::FILE_OK,
               service_->MountFileSystem(
-                  kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+                  kProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
     EXPECT_EQ(1u, observer.mounts.size());
     EXPECT_TRUE(registry_->file_system_info());
@@ -537,7 +535,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountByUser) {
 
   {
     EXPECT_EQ(base::File::FILE_OK,
-              service_->UnmountFileSystem(kExtensionId, kFileSystemId,
+              service_->UnmountFileSystem(kProviderId, kFileSystemId,
                                           Service::UNMOUNT_REASON_USER));
 
     EXPECT_EQ(1u, observer.unmounts.size());

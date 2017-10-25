@@ -143,11 +143,10 @@ ProvidedFileSystem::ProvidedFileSystem(
       notification_manager_(
           new NotificationManager(profile_, file_system_info_)),
       request_manager_(new RequestManager(profile,
-                                          file_system_info.extension_id(),
+                                          file_system_info.provider_id(),
                                           notification_manager_.get())),
       watcher_queue_(1),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ProvidedFileSystem::~ProvidedFileSystem() {
   const std::vector<int> request_ids = request_manager_->GetActiveRequestIds();
@@ -165,7 +164,7 @@ void ProvidedFileSystem::SetNotificationManagerForTesting(
     std::unique_ptr<NotificationManagerInterface> notification_manager) {
   notification_manager_ = std::move(notification_manager);
   request_manager_.reset(new RequestManager(
-      profile_, file_system_info_.extension_id(), notification_manager_.get()));
+      profile_, file_system_info_.provider_id(), notification_manager_.get()));
 }
 
 AbortCallback ProvidedFileSystem::RequestUnmount(

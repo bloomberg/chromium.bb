@@ -14,7 +14,7 @@
 namespace chromeos {
 namespace file_system_provider {
 
-// Holds a parsed value returned by a providing extension. Each accessor can
+// Holds a parsed value returned by a file system provider. Each accessor can
 // return NULL in case the requested value type is not available. It is used
 // to pass values of success callbacks.
 class RequestValue {

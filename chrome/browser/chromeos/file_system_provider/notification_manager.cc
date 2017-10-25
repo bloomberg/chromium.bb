@@ -109,7 +109,7 @@ void NotificationManager::OnAppImageUpdated(const std::string& id,
 std::unique_ptr<message_center::Notification>
 NotificationManager::CreateNotification() {
   if (!extension_icon_.get())
-    icon_loader_->FetchImage(file_system_info_.extension_id());
+    icon_loader_->FetchImage(file_system_info_.provider_id());
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.buttons.push_back(

@@ -88,40 +88,40 @@ class Service : public KeyedService,
   // Sets a custom Registry implementation. Used by unit tests.
   void SetRegistryForTesting(std::unique_ptr<RegistryInterface> registry);
 
-  // Mounts a file system provided by an extension with the |extension_id|. If
+  // Mounts a file system provided by a provider with the |provider_id|. If
   // |writable| is set to true, then the file system is mounted in a R/W mode.
   // Otherwise, only read-only operations are supported. If change notification
   // tags are supported, then |supports_notify_tag| must be true. Note, that
   // it is required in order to enable the internal cache. For success, returns
   // base::File::FILE_OK, otherwise an error code.
-  base::File::Error MountFileSystem(const std::string& extension_id,
+  base::File::Error MountFileSystem(const std::string& provider_id,
                                     const MountOptions& options);
 
   // Unmounts a file system with the specified |file_system_id| for the
-  // |extension_id|. For success returns base::File::FILE_OK, otherwise an error
+  // |provider_id|. For success returns base::File::FILE_OK, otherwise an error
   // code.
-  base::File::Error UnmountFileSystem(const std::string& extension_id,
+  base::File::Error UnmountFileSystem(const std::string& provider_id,
                                       const std::string& file_system_id,
                                       UnmountReason reason);
 
   // Requests unmounting of the file system. Returns false if the request could
   // not been created, true otherwise.
-  bool RequestUnmount(const std::string& extension_id,
+  bool RequestUnmount(const std::string& provider_id,
                       const std::string& file_system_id);
 
   // Requests mounting a new file system by the providing extension with
-  // |extension_id|. Returns false if the request could not been created, true
+  // |provider_id|. Returns false if the request could not been created, true
   // otherwise.
-  bool RequestMount(const std::string& extension_id);
+  bool RequestMount(const std::string& provider_id);
 
   // Returns a list of information of all currently provided file systems. All
   // items are copied.
   std::vector<ProvidedFileSystemInfo> GetProvidedFileSystemInfoList();
 
   // Returns a provided file system with |file_system_id|, handled by
-  // the extension with |extension_id|. If not found, then returns NULL.
+  // the extension with |provider_id|. If not found, then returns NULL.
   ProvidedFileSystemInterface* GetProvidedFileSystem(
-      const std::string& extension_id,
+      const std::string& provider_id,
       const std::string& file_system_id);
 
   // Returns a provided file system attached to the the passed
@@ -136,7 +136,7 @@ class Service : public KeyedService,
   // Fills information of the specified providing extension and returns true.
   // If the extension is not a provider, or it doesn't exist, then false is
   // returned.
-  bool GetProvidingExtensionInfo(const std::string& extension_id,
+  bool GetProvidingExtensionInfo(const std::string& provider_id,
                                  ProvidingExtensionInfo* result) const;
 
   // Adds and removes observers.
@@ -173,7 +173,7 @@ class Service : public KeyedService,
 
   // Mounts the file system in the specified context. See MountFileSystem() for
   // more information.
-  base::File::Error MountFileSystemInternal(const std::string& extension_id,
+  base::File::Error MountFileSystemInternal(const std::string& provider_id,
                                             const MountOptions& options,
                                             MountContext context);
 
@@ -189,12 +189,12 @@ class Service : public KeyedService,
 
   // Removes the file system from preferences, so it is not remounted anymore
   // after a reboot.
-  void ForgetFileSystem(const std::string& extension_id,
+  void ForgetFileSystem(const std::string& provider_id,
                         const std::string& file_system_id);
 
   // Restores from preferences file systems mounted previously by the
-  // |extension_id| providing extension.
-  void RestoreFileSystems(const std::string& extension_id);
+  // |provider_id| provided file system.
+  void RestoreFileSystems(const std::string& provider_id);
 
   Profile* profile_;
   extensions::ExtensionRegistry* extension_registry_;  // Not owned.

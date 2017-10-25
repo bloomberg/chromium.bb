@@ -188,7 +188,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // Aborts an operation executed with a request id equal to
   // |operation_request_id|. The request is removed immediately on the C++ side
-  // despite being handled by the providing extension or not.
+  // despite being handled by the providing file system or not.
   void Abort(int operation_request_id);
 
   // Called when aborting is completed with either a success or an error.
