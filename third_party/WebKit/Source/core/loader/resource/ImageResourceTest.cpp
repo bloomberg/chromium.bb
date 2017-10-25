@@ -1266,6 +1266,7 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
   Persistent<MockResourceClient> client2 =
       new MockResourceClient(image_resource);
 
+  blink::testing::RunPendingTasks();
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
   EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
