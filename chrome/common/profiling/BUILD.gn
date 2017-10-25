@@ -11,9 +11,7 @@ static_library("profiling") {
     "memlog_allocator_shim.h",
     "memlog_sender_pipe.h",
     "memlog_sender_pipe_posix.cc",
-    "memlog_sender_pipe_posix.h",
     "memlog_sender_pipe_win.cc",
-    "memlog_sender_pipe_win.h",
     "memlog_stream.h",
     "profiling_client.cc",
     "profiling_client.h",
@@ -42,5 +40,18 @@ mojom("interfaces") {
   ]
   deps = [
     "//mojo/common:common_custom_types",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "memlog_sender_pipe_unittest.cc",
+  ]
+  deps = [
+    ":profiling",
+    "//base",
+    "//mojo/edk/system",
+    "//testing/gtest",
   ]
 }
