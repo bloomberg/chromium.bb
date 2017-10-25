@@ -363,10 +363,6 @@
     'blink_layout_ng': {
       'filepath': 'third_party/WebKit/Source/core/layout/ng',
     },
-    'blink_layout_ng_test_expectations': {
-      'filepath': 'third_party/WebKit/LayoutTests/FlagExpectations/enable-blink-features=LayoutNG' \
-                  '|third_party/WebKit/LayoutTests/flag-specific/enable-blink-features=LayoutNG'
-    },
     'blink_loader': {
       'filepath': 'third_party/WebKit/Source/core/loader/' \
                   '|third_party/WebKit/Source/platform/loader/'
@@ -1772,8 +1768,8 @@
                         'glebl+reviews@chromium.org',
                         'dgrogan+ng@chromium.org',
                         'atotic+reviews@chromium.org',
-                        'lchoi+reviews@chromium.org'],
-    'blink_layout_ng_test_expectations': ['xiaochengh@chromium.org'],
+                        'lchoi+reviews@chromium.org',
+                        'xiaochengh+watch@chromium.org'],
     'blink_loader': ['gavinp+loader@chromium.org',
                      'japhet@chromium.org',
                      'loading-reviews@chromium.org',
@@ -1829,7 +1825,7 @@
     'blink_shadow_dom': ['hayato@chromium.org'],
     'blink_spellcheck' : ['groby+blinkspell@chromium.org',
                           'timvolodine@chromium.org',
-                          'xiaochengh@chromium.org'],
+                          'xiaochengh+watch@chromium.org'],
     'blink_spv2_layout_tests': ['pdr+virtualspv2watchlist@chromium.org'],
     'blink_streams': ['tyoshino+watch@chromium.org'],
     'blink_style': ['blink-reviews-style@chromium.org'],
