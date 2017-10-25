@@ -232,10 +232,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_GPU_GRADIENT_DITHER
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_AA_CHOICE
-#define SK_SUPPORT_LEGACY_AA_CHOICE
-#endif
-
 #ifndef SK_LEGACY_LOWP_STAGES
 #define SK_LEGACY_LOWP_STAGES
 #endif
