@@ -26,10 +26,6 @@
   NewTabPageToolbarController* _toolbarController;
   UIImageView* _searchBoxBorder;
   UIImageView* _shadow;
-
-  // Constraint specifying the height of the toolbar. Used to update the height
-  // of the toolbar if the safe area changes.
-  __weak NSLayoutConstraint* toolbarHeightConstraint_;
 }
 
 @end
@@ -59,12 +55,9 @@
 }
 
 - (void)addConstraintsToToolbar {
-  toolbarHeightConstraint_ = [[_toolbarController view].heightAnchor
-      constraintEqualToConstant:
-          [_toolbarController
-
-              preferredToolbarHeightWhenAlignedToTopOfScreen]];
-
+  _toolbarController.heightConstraint.constant =
+      [_toolbarController preferredToolbarHeightWhenAlignedToTopOfScreen];
+  _toolbarController.heightConstraint.active = YES;
   [NSLayoutConstraint activateConstraints:@[
     [[_toolbarController view].leadingAnchor
         constraintEqualToAnchor:self.leadingAnchor],
@@ -72,7 +65,6 @@
         constraintEqualToAnchor:self.topAnchor],
     [[_toolbarController view].trailingAnchor
         constraintEqualToAnchor:self.trailingAnchor],
-    toolbarHeightConstraint_
   ]];
 }
 
@@ -202,8 +194,9 @@
 }
 
 - (void)safeAreaInsetsDidChange {
+  [super safeAreaInsetsDidChange];
   if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
-    toolbarHeightConstraint_.constant =
+    _toolbarController.heightConstraint.constant =
         [_toolbarController preferredToolbarHeightWhenAlignedToTopOfScreen];
   }
 }
