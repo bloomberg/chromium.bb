@@ -12,6 +12,7 @@
 
 # https://crbug.com/761214
 -RendererAudioOutputStreamFactoryIntegrationTest.StreamIntegrationTest
+-WebContentsAudioInputStreamTest.MirroringNothingWithTargetChange/0
 
 # https://crbug.com/762125
 -VideoCaptureBufferPoolTest.BufferPool/*
@@ -43,3 +44,10 @@
 
 # Flaky: https://crbug.com/776424.
 -RenderWidgetHostViewAuraOverscrollTest.*
+-RenderWidgetHostViewGuestSurfaceTest.TestGuestSurface
+
+# Flaky: https://crbug.com/777916.
+-NotificationDatabaseTest.NotificationIdCorruption
+
+# Flaky: https://crbug.com/777917.
+-LevelDBTransactionRangeTests/LevelDBTransactionRangeTest.*
