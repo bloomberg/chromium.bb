@@ -132,9 +132,15 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
 }
 
 #if CONFIG_LOOP_RESTORATION
-// Assumes cm->rst_info[p].restoration_tilesize is already initialized
+// Assumes cm->rst_info[p].restoration_unit_size is already initialized
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
-  int p;
+  for (int p = 0; p < MAX_MB_PLANE; ++p)
+    av1_alloc_restoration_struct(cm, &cm->rst_info[p], p > 0);
+  aom_free(cm->rst_tmpbuf);
+  CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
+                  (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
+
+#if CONFIG_STRIPED_LOOP_RESTORATION
 #if CONFIG_FRAME_SUPERRES
   int width = cm->superres_upscaled_width;
   int height = cm->superres_upscaled_height;
@@ -142,18 +148,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   int width = cm->width;
   int height = cm->height;
 #endif  // CONFIG_FRAME_SUPERRES
-  av1_alloc_restoration_struct(cm, &cm->rst_info[0], width, height);
-  for (p = 1; p < MAX_MB_PLANE; ++p)
-    av1_alloc_restoration_struct(cm, &cm->rst_info[p],
-                                 ROUND_POWER_OF_TWO(width, cm->subsampling_x),
-                                 ROUND_POWER_OF_TWO(height, cm->subsampling_y));
-  aom_free(cm->rst_tmpbuf);
-  CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
-                  (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
   // Allocate internal storage for the loop restoration stripe boundary lines
-  for (p = 0; p < MAX_MB_PLANE; ++p) {
+  for (int p = 0; p < MAX_MB_PLANE; ++p) {
     int w = p == 0 ? width : ROUND_POWER_OF_TWO(width, cm->subsampling_x);
     int align_bits = 5;  // align for efficiency
     int stride = ALIGN_POWER_OF_TWO(w + 2 * RESTORATION_EXTRA_HORZ, align_bits);

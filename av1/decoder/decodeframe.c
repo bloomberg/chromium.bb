@@ -1287,13 +1287,14 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_CDEF
 #if CONFIG_LOOP_RESTORATION
   for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    int rcol0, rcol1, rrow0, rrow1, nhtiles;
+    int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                            &rcol0, &rcol1, &rrow0, &rrow1,
-                                           &nhtiles)) {
+                                           &tile_tl_idx)) {
+      const int rstride = cm->rst_info[plane].horz_units_per_tile;
       for (int rrow = rrow0; rrow < rrow1; ++rrow) {
         for (int rcol = rcol0; rcol < rcol1; ++rcol) {
-          int rtile_idx = rcol + rrow * nhtiles;
+          const int rtile_idx = tile_tl_idx + rcol + rrow * rstride;
           loop_restoration_read_sb_coeffs(cm, xd, r, plane, rtile_idx);
         }
       }
@@ -1389,30 +1390,31 @@ static void decode_restoration_mode(AV1_COMMON *cm,
           aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
     }
   }
-  cm->rst_info[0].restoration_tilesize = RESTORATION_TILESIZE_MAX;
-  cm->rst_info[1].restoration_tilesize = RESTORATION_TILESIZE_MAX;
-  cm->rst_info[2].restoration_tilesize = RESTORATION_TILESIZE_MAX;
+  cm->rst_info[0].restoration_unit_size = RESTORATION_TILESIZE_MAX;
+  cm->rst_info[1].restoration_unit_size = RESTORATION_TILESIZE_MAX;
+  cm->rst_info[2].restoration_unit_size = RESTORATION_TILESIZE_MAX;
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    cm->rst_info[0].restoration_tilesize = RESTORATION_TILESIZE_MAX >> 2;
-    cm->rst_info[1].restoration_tilesize = RESTORATION_TILESIZE_MAX >> 2;
-    cm->rst_info[2].restoration_tilesize = RESTORATION_TILESIZE_MAX >> 2;
+    cm->rst_info[0].restoration_unit_size = RESTORATION_TILESIZE_MAX >> 2;
+    cm->rst_info[1].restoration_unit_size = RESTORATION_TILESIZE_MAX >> 2;
+    cm->rst_info[2].restoration_unit_size = RESTORATION_TILESIZE_MAX >> 2;
     rsi = &cm->rst_info[0];
-    rsi->restoration_tilesize <<= aom_rb_read_bit(rb);
-    if (rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 2)) {
-      rsi->restoration_tilesize <<= aom_rb_read_bit(rb);
+    rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
+    if (rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 2)) {
+      rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
     }
   }
   int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
   if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
             cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
-    cm->rst_info[1].restoration_tilesize =
-        cm->rst_info[0].restoration_tilesize >> (aom_rb_read_bit(rb) * s);
+    cm->rst_info[1].restoration_unit_size =
+        cm->rst_info[0].restoration_unit_size >> (aom_rb_read_bit(rb) * s);
   } else {
-    cm->rst_info[1].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
+    cm->rst_info[1].restoration_unit_size =
+        cm->rst_info[0].restoration_unit_size;
   }
-  cm->rst_info[2].restoration_tilesize = cm->rst_info[1].restoration_tilesize;
+  cm->rst_info[2].restoration_unit_size = cm->rst_info[1].restoration_unit_size;
 
   cm->rst_info[0].procunit_width = cm->rst_info[0].procunit_height =
       RESTORATION_PROC_UNIT_SIZE;

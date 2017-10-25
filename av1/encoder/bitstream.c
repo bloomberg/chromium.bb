@@ -2675,13 +2675,14 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
 #if CONFIG_LOOP_RESTORATION
   for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    int rcol0, rcol1, rrow0, rrow1, nhtiles;
+    int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                            &rcol0, &rcol1, &rrow0, &rrow1,
-                                           &nhtiles)) {
+                                           &tile_tl_idx)) {
+      const int rstride = cm->rst_info[plane].horz_units_per_tile;
       for (int rrow = rrow0; rrow < rrow1; ++rrow) {
         for (int rcol = rcol0; rcol < rcol1; ++rcol) {
-          int rtile_idx = rcol + rrow * nhtiles;
+          const int rtile_idx = tile_tl_idx + rcol + rrow * rstride;
           const RestorationUnitInfo *rui =
               &cm->rst_info[plane].unit_info[rtile_idx];
           loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane);
@@ -2767,29 +2768,29 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     aom_wb_write_bit(
-        wb, rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 2));
-    if (rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 2)) {
+        wb, rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 2));
+    if (rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 2)) {
       aom_wb_write_bit(
-          wb, rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 1));
+          wb, rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 1));
     }
   }
   int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
   if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
             cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
     aom_wb_write_bit(wb,
-                     cm->rst_info[1].restoration_tilesize !=
-                         cm->rst_info[0].restoration_tilesize);
-    assert(cm->rst_info[1].restoration_tilesize ==
-               cm->rst_info[0].restoration_tilesize ||
-           cm->rst_info[1].restoration_tilesize ==
-               (cm->rst_info[0].restoration_tilesize >> s));
-    assert(cm->rst_info[2].restoration_tilesize ==
-           cm->rst_info[1].restoration_tilesize);
+                     cm->rst_info[1].restoration_unit_size !=
+                         cm->rst_info[0].restoration_unit_size);
+    assert(cm->rst_info[1].restoration_unit_size ==
+               cm->rst_info[0].restoration_unit_size ||
+           cm->rst_info[1].restoration_unit_size ==
+               (cm->rst_info[0].restoration_unit_size >> s));
+    assert(cm->rst_info[2].restoration_unit_size ==
+           cm->rst_info[1].restoration_unit_size);
   } else if (!s) {
-    assert(cm->rst_info[1].restoration_tilesize ==
-           cm->rst_info[0].restoration_tilesize);
-    assert(cm->rst_info[2].restoration_tilesize ==
-           cm->rst_info[1].restoration_tilesize);
+    assert(cm->rst_info[1].restoration_unit_size ==
+           cm->rst_info[0].restoration_unit_size);
+    assert(cm->rst_info[2].restoration_unit_size ==
+           cm->rst_info[1].restoration_unit_size);
   }
 }
 

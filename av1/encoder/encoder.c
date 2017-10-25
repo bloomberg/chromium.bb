@@ -4171,8 +4171,8 @@ static void init_motion_estimation(AV1_COMP *cpi) {
 
 #if CONFIG_LOOP_RESTORATION
 #define COUPLED_CHROMA_FROM_LUMA_RESTORATION 0
-static void set_restoration_tilesize(int width, int height, int sx, int sy,
-                                     RestorationInfo *rst) {
+static void set_restoration_unit_size(int width, int height, int sx, int sy,
+                                      RestorationInfo *rst) {
   (void)width;
   (void)height;
   (void)sx;
@@ -4183,9 +4183,9 @@ static void set_restoration_tilesize(int width, int height, int sx, int sy,
   int s = 0;
 #endif  // !COUPLED_CHROMA_FROM_LUMA_RESTORATION
 
-  rst[0].restoration_tilesize = (RESTORATION_TILESIZE_MAX >> 1);
-  rst[1].restoration_tilesize = rst[0].restoration_tilesize >> s;
-  rst[2].restoration_tilesize = rst[1].restoration_tilesize;
+  rst[0].restoration_unit_size = (RESTORATION_TILESIZE_MAX >> 1);
+  rst[1].restoration_unit_size = rst[0].restoration_unit_size >> s;
+  rst[2].restoration_unit_size = rst[1].restoration_unit_size;
 
   rst[0].procunit_width = rst[0].procunit_height = RESTORATION_PROC_UNIT_SIZE;
   rst[1].procunit_width = rst[2].procunit_width =
@@ -4307,8 +4307,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   const int frame_width = cm->width;
   const int frame_height = cm->height;
 #endif
-  set_restoration_tilesize(frame_width, frame_height, cm->subsampling_x,
-                           cm->subsampling_y, cm->rst_info);
+  set_restoration_unit_size(frame_width, frame_height, cm->subsampling_x,
+                            cm->subsampling_y, cm->rst_info);
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
 

@@ -234,8 +234,19 @@ typedef struct {
 
 typedef struct {
   RestorationType frame_restoration_type;
-  int restoration_tilesize;
+  int restoration_unit_size;
   int procunit_width, procunit_height;
+
+  // Fields below here are allocated and initialised by
+  // av1_alloc_restoration_struct. (horz_)units_per_tile give the number of
+  // restoration units in (one row of) the largest tile in the frame. The data
+  // in unit_info is laid out with units_per_tile entries for each tile, which
+  // have stride horz_units_per_tile.
+  //
+  // Even if there are tiles of different sizes, the data in unit_info is laid
+  // out as if all tiles are of full size.
+  int units_per_tile;
+  int vert_units_per_tile, horz_units_per_tile;
   RestorationUnitInfo *unit_info;
 #if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationStripeBoundaries boundaries;
@@ -259,20 +270,6 @@ static INLINE void set_default_wiener(WienerInfo *wiener_info) {
   wiener_info->vfilter[6] = wiener_info->hfilter[6] = WIENER_FILT_TAP0_MIDV;
 }
 
-static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
-                                      int *nhtiles, int *nvtiles) {
-  int nhtiles_, nvtiles_;
-  const int tile_width = (tilesize < 0) ? width : AOMMIN(tilesize, width);
-  const int tile_height = (tilesize < 0) ? height : AOMMIN(tilesize, height);
-  assert(tile_width > 0 && tile_height > 0);
-
-  nhtiles_ = (width + (tile_width >> 1)) / tile_width;
-  nvtiles_ = (height + (tile_height >> 1)) / tile_height;
-  if (nhtiles) *nhtiles = nhtiles_;
-  if (nvtiles) *nvtiles = nvtiles_;
-  return (nhtiles_ * nvtiles_);
-}
-
 typedef struct { int h_start, h_end, v_start, v_end; } RestorationTileLimits;
 
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
@@ -280,9 +277,8 @@ extern int sgrproj_mtable[MAX_EPS][MAX_NELEM];
 extern const int32_t x_by_xplus1[256];
 extern const int32_t one_by_x[MAX_NELEM];
 
-int av1_alloc_restoration_struct(struct AV1Common *cm,
-                                 RestorationInfo *rst_info, int width,
-                                 int height);
+void av1_alloc_restoration_struct(struct AV1Common *cm, RestorationInfo *rsi,
+                                  int is_uv);
 void av1_free_restoration_struct(RestorationInfo *rst_info);
 
 void extend_frame(uint8_t *data, int width, int height, int stride,
@@ -344,14 +340,14 @@ void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
 // loop restoration tile.
 //
 // If the block is a top-level superblock, the function writes to
-// *rcol0, *rcol1, *rrow0, *rrow1. The rectangle of indices given by
-// [*rcol0, *rcol1) x [*rrow0, *rrow1) will point at the set of rtiles
-// whose top left corners lie in the superblock. Note that the set is
-// only nonempty if *rcol0 < *rcol1 and *rrow0 < *rrow1.
+// *rcol0, *rcol1, *rrow0, *rrow1. The rectangle of restoration unit
+// indices given by [*rcol0, *rcol1) x [*rrow0, *rrow1) are relative
+// to the current tile, whose starting index is returned as
+// *tile_tl_idx.
 int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int mi_row, int mi_col, BLOCK_SIZE bsize,
                                        int *rcol0, int *rcol1, int *rrow0,
-                                       int *rrow1, int *nhtiles);
+                                       int *rrow1, int *tile_tl_idx);
 
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               struct AV1Common *cm);

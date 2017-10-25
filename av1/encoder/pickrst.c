@@ -1158,14 +1158,17 @@ static double search_rest_type(RestSearchCtxt *rsc, RestorationType rtype) {
   return RDCOST_DBL(rsc->x->rdmult, rsc->bits >> 4, rsc->sse);
 }
 
+static int rest_tiles_in_plane(const AV1_COMMON *cm, int plane) {
+  const RestorationInfo *rsi = &cm->rst_info[plane];
+  return cm->tile_rows * cm->tile_cols * rsi->units_per_tile;
+}
+
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
 
   int ntiles[2];
   for (int is_uv = 0; is_uv < 2; ++is_uv)
-    ntiles[is_uv] = av1_get_rest_ntiles(
-        src->crop_widths[is_uv], src->crop_heights[is_uv],
-        cm->rst_info[is_uv].restoration_tilesize, NULL, NULL);
+    ntiles[is_uv] = rest_tiles_in_plane(cm, is_uv);
 
   assert(ntiles[1] <= ntiles[0]);
   RestUnitSearchInfo *rusi =
