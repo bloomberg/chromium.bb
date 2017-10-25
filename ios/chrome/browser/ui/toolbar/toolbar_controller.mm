@@ -114,6 +114,7 @@ using ios::material::TimingFunction;
 @synthesize shadowView = shadowView_;
 @synthesize toolsPopupController = toolsPopupController_;
 @synthesize style = style_;
+@synthesize heightConstraint = heightConstraint_;
 @synthesize dispatcher = dispatcher_;
 
 - (CGFloat)preferredToolbarHeightWhenAlignedToTopOfScreen {
@@ -125,6 +126,13 @@ using ios::material::TimingFunction;
     frame.size.height += statusBarOffset;
   }
   return frame.size.height;
+}
+
+- (NSLayoutConstraint*)heightConstraint {
+  if (!heightConstraint_) {
+    heightConstraint_ = [view_.heightAnchor constraintEqualToConstant:0];
+  }
+  return heightConstraint_;
 }
 
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style

@@ -13,6 +13,28 @@
 @synthesize animatingTransition = animatingTransition_;
 @synthesize hitTestBoundsContraintRelaxed = hitTestBoundsContraintRelaxed_;
 
+- (instancetype)initWithFrame:(CGRect)frame {
+  self = [super initWithFrame:frame];
+  if (self) {
+    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+      // The minimal width of the toolbar.
+      // Must be less than or equal to the smallest UIWindow size Chrome can
+      // be in, which as of M64 is 320.
+      // Must be greater or equal than the sum of the minimal width (and
+      // padding) of all of its subviews.
+      const CGFloat kMinToolbarWidth = 200;
+
+      // When the toolbar is not in the view hierarchy, UIKit sets the bounds to
+      // CGRectZero. This results in the subviews of the toolbars which are
+      // positioned with autoresizing masks to be moved.
+      // This constraint enforces a minimum width.
+      [self.widthAnchor constraintGreaterThanOrEqualToConstant:kMinToolbarWidth]
+          .active = YES;
+    }
+  }
+  return self;
+}
+
 // Some views added to the toolbar have bounds larger than the toolbar bounds
 // and still needs to receive touches. The overscroll actions view is one of
 // those. That method is overridden in order to still perform hit testing on
@@ -44,13 +66,6 @@
 - (void)didMoveToWindow {
   [super didMoveToWindow];
   [delegate_ windowDidChange];
-}
-
-- (void)willMoveToSuperview:(UIView*)newSuperview {
-  [super willMoveToSuperview:newSuperview];
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
-    [self removeConstraints:self.constraints];
-  }
 }
 
 - (id<CAAction>)actionForLayer:(CALayer*)layer forKey:(NSString*)event {
