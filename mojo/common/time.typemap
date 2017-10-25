@@ -4,12 +4,9 @@
 
 mojom = "//mojo/common/time.mojom"
 public_headers = [ "//base/time/time.h" ]
-traits_headers = [
-  "//ipc/ipc_message_utils.h",
-  "//mojo/common/common_custom_types_struct_traits.h",
-]
+traits_headers = [ "//mojo/common/time_struct_traits.h" ]
 public_deps = [
-  "//ipc",
+  "//base",
   "//mojo/common:struct_traits",
 ]
 

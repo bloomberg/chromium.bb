@@ -92,10 +92,11 @@ source_set("struct_traits") {
   sources = [
     "common_custom_types_struct_traits.cc",
     "common_custom_types_struct_traits.h",
+    "time_struct_traits.h",
   ]
   deps = [
     ":common_custom_types_shared_cpp_sources",
-    "//base:base",
+    "//base",
     "//mojo/public/cpp/system",
   ]
   public_deps = [

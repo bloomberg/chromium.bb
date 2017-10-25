@@ -4,8 +4,7 @@
 
 #include "gpu/ipc/common/gpu_info_struct_traits.h"
 
-#include "ipc/ipc_message_utils.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/common/time_struct_traits.h"
 
 namespace mojo {
 

@@ -4,8 +4,8 @@
 
 #include "services/ui/public/interfaces/cursor/cursor_struct_traits.h"
 
-#include "base/time/time.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/common/time_struct_traits.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"

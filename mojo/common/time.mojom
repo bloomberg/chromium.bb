@@ -4,12 +4,18 @@
 
 module mojo.common.mojom;
 
-[Native]
-struct Time;
+struct Time {
+  // The internal value is expressed in terms of microseconds since a fixed but
+  // intentionally unspecified epoch.
+  int64 internal_value;
+};
 
 struct TimeDelta {
   int64 microseconds;
 };
 
-[Native]
-struct TimeTicks;
+struct TimeTicks {
+  // The internal value is expressed in terms of microseconds since a fixed but
+  // intentionally unspecified epoch.
+  int64 internal_value;
+};

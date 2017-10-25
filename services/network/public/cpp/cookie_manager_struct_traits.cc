@@ -4,6 +4,8 @@
 
 #include "services/network/public/cpp/cookie_manager_struct_traits.h"
 
+#include "mojo/common/time_struct_traits.h"
+
 namespace mojo {
 
 network::mojom::CookiePriority
