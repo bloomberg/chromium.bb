@@ -506,7 +506,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
       for (i = 0; i < frames - 1; ++i) {
         uint32_t this_sz = 0;
 
-        for (j = 0; j < mag; ++j) this_sz |= (*x++) << (j * 8);
+        for (j = 0; j < mag; ++j) this_sz |= ((uint32_t)(*x++)) << (j * 8);
         this_sz += 1;
         sizes[i] = this_sz;
         frame_sz_sum += this_sz;
