@@ -738,7 +738,8 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
     }
     EXPECT_NE(test.use_direct_proxy, data_reduction_proxy_config.is_valid());
     config()->UpdateConfigForTesting(test.enabled_by_user /* enabled */,
-                                     false /* at_startup */);
+                                     false /* secure_proxies_allowed */,
+                                     true /* insecure_proxies_allowed */);
 
     net::ProxyRetryInfoMap empty_proxy_retry_info;
 

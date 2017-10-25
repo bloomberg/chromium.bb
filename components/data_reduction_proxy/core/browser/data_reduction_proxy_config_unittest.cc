@@ -239,9 +239,57 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
 
   ResetSettings();
 
-  config()->UpdateConfigForTesting(true, false);
+  config()->UpdateConfigForTesting(true, false, true);
   config()->ReloadConfig();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
+}
+
+TEST_F(DataReductionProxyConfigTest, TestOnInsecureProxyAllowedStatusChange) {
+  base::FieldTrialList field_trial_list(nullptr);
+
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+
+  ResetSettings();
+
+  config()->UpdateConfigForTesting(true /* enabled */,
+                                   false /* secure_proxies_allowed */,
+                                   true /* insecure_proxies_allowed */);
+  config()->ReloadConfig();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+
+  config()->UpdateConfigForTesting(true, true, false);
+  config()->ReloadConfig();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
+            GetConfiguredProxiesForHttp());
+
+  config()->UpdateConfigForTesting(true, false, false);
+  config()->ReloadConfig();
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
+
+  config()->UpdateConfigForTesting(true, true, true);
+  config()->ReloadConfig();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+
+  // Calling OnInsecureProxyAllowedStatusChange should reload the config.
+  config()->OnInsecureProxyAllowedStatusChange(false);
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
+            GetConfiguredProxiesForHttp());
+
+  // Calling OnInsecureProxyAllowedStatusChange again with the same status has
+  // no effect.
+  config()->OnInsecureProxyAllowedStatusChange(false);
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
+            GetConfiguredProxiesForHttp());
+
+  config()->OnInsecureProxyAllowedStatusChange(true);
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
@@ -255,7 +303,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   ResetSettings();
 
   // The proxy is enabled initially.
-  config()->UpdateConfigForTesting(true, true);
+  config()->UpdateConfigForTesting(true, true, true);
   config()->ReloadConfig();
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
