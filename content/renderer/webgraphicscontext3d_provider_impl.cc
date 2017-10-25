@@ -12,9 +12,13 @@ namespace content {
 WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
     scoped_refptr<ui::ContextProviderCommandBuffer> provider,
     bool software_rendering)
-    : provider_(std::move(provider)), software_rendering_(software_rendering) {}
+    : provider_(std::move(provider)), software_rendering_(software_rendering) {
+  provider_->AddObserver(this);
+}
 
-WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {}
+WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {
+  provider_->RemoveObserver(this);
+}
 
 bool WebGraphicsContext3DProviderImpl::BindToCurrentThread() {
   // TODO(danakj): Could plumb this result out to the caller so they know to
@@ -46,7 +50,7 @@ bool WebGraphicsContext3DProviderImpl::IsSoftwareRendering() const {
 
 void WebGraphicsContext3DProviderImpl::SetLostContextCallback(
     const base::Closure& c) {
-  provider_->SetLostContextCallback(c);
+  context_lost_callback_ = c;
 }
 
 void WebGraphicsContext3DProviderImpl::SetErrorMessageCallback(
@@ -58,6 +62,11 @@ void WebGraphicsContext3DProviderImpl::SignalQuery(
     uint32_t query,
     const base::Closure& callback) {
   provider_->ContextSupport()->SignalQuery(query, callback);
+}
+
+void WebGraphicsContext3DProviderImpl::OnContextLost() {
+  if (!context_lost_callback_.is_null())
+    context_lost_callback_.Run();
 }
 
 }  // namespace content

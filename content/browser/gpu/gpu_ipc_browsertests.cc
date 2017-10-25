@@ -6,6 +6,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -66,6 +67,27 @@ scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSyncRunLoop() {
   run_loop.Run();
   return gpu_channel_host;
 }
+
+// RunLoop implementation that runs until it observes OnContextLost().
+class ContextLostRunLoop : public viz::ContextLostObserver {
+ public:
+  ContextLostRunLoop(viz::ContextProvider* context_provider)
+      : context_provider_(context_provider) {
+    context_provider_->AddObserver(this);
+  }
+  ~ContextLostRunLoop() override { context_provider_->RemoveObserver(this); }
+
+  void RunUntilContextLost() { run_loop_.Run(); }
+
+ private:
+  // viz::LostContextProvider:
+  void OnContextLost() override { run_loop_.Quit(); }
+
+  viz::ContextProvider* const context_provider_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextLostRunLoop);
+};
 
 class ContextTestBase : public content::ContentBrowserTest {
  public:
@@ -262,11 +284,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 
   scoped_refptr<ui::ContextProviderCommandBuffer> provider =
       CreateContext(GetGpuChannel());
-  base::RunLoop run_loop;
-  int counter = 0;
-  provider->SetLostContextCallback(
-      base::Bind(&BrowserGpuChannelHostFactoryTest::OnContextLost,
-                 base::Unretained(this), run_loop.QuitClosure(), &counter));
+  ContextLostRunLoop run_loop(provider.get());
   ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
@@ -274,9 +292,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                              if (host)
                                host->gpu_service()->Crash();
                            }));
-  run_loop.Run();
+  run_loop.RunUntilContextLost();
 
-  EXPECT_EQ(1, counter);
   EXPECT_FALSE(IsChannelEstablished());
   EstablishAndWait();
   EXPECT_TRUE(IsChannelEstablished());

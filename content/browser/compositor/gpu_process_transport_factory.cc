@@ -267,6 +267,9 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
   DCHECK(per_compositor_data_.empty());
 
+  if (shared_main_thread_contexts_)
+    shared_main_thread_contexts_->RemoveObserver(this);
+
   // Make sure the lost context callback doesn't try to run during destruction.
   callback_factory_.InvalidateWeakPtrs();
 
@@ -938,12 +941,12 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, nullptr,
       ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
-  shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
-      &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
-      callback_factory_.GetWeakPtr()));
+  shared_main_thread_contexts_->AddObserver(this);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
-  if (result != gpu::ContextResult::kSuccess)
+  if (result != gpu::ContextResult::kSuccess) {
+    shared_main_thread_contexts_->RemoveObserver(this);
     shared_main_thread_contexts_ = nullptr;
+  }
   return shared_main_thread_contexts_;
 }
 
@@ -972,13 +975,6 @@ GpuProcessTransportFactory::CreatePerCompositorData(
   return return_ptr;
 }
 
-void GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
-                     callback_factory_.GetWeakPtr()));
-}
-
 void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   LOG(ERROR) << "Lost UI shared context.";
 
@@ -986,6 +982,8 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   // new resources are created if needed.
   // Kill shared contexts for both threads in tandem so they are always in
   // the same share group.
+  if (shared_main_thread_contexts_)
+    shared_main_thread_contexts_->RemoveObserver(this);
   scoped_refptr<ContextProvider> lost_shared_main_thread_contexts =
       shared_main_thread_contexts_;
   shared_main_thread_contexts_  = NULL;
@@ -1012,6 +1010,13 @@ GpuProcessTransportFactory::SharedVulkanContextProvider() {
     shared_vulkan_context_provider_initialized_ = true;
   }
   return shared_vulkan_context_provider_;
+}
+
+void GpuProcessTransportFactory::OnContextLost() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
+                     callback_factory_.GetWeakPtr()));
 }
 
 }  // namespace content

@@ -52,8 +52,8 @@ class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
   base::Lock* GetLock() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
-  void SetLostContextCallback(
-      const LostContextCallback& lost_context_callback) override;
+  void AddObserver(ContextLostObserver* obs) override;
+  void RemoveObserver(ContextLostObserver* obs) override;
 
   uint32_t GetCopyTextureInternalFormat();
 

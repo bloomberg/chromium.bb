@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 
@@ -23,9 +24,10 @@ class ContextProviderCommandBuffer;
 namespace content {
 
 class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
-    : public blink::WebGraphicsContext3DProvider {
+    : public blink::WebGraphicsContext3DProvider,
+      public viz::ContextLostObserver {
  public:
-  explicit WebGraphicsContext3DProviderImpl(
+  WebGraphicsContext3DProviderImpl(
       scoped_refptr<ui::ContextProviderCommandBuffer> provider,
       bool software_rendering);
   ~WebGraphicsContext3DProviderImpl() override;
@@ -47,8 +49,14 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   }
 
  private:
+  // viz::ContextLostObserver implementation.
+  void OnContextLost() override;
+
   scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
   const bool software_rendering_;
+  base::Closure context_lost_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGraphicsContext3DProviderImpl);
 };
 
 }  // namespace content

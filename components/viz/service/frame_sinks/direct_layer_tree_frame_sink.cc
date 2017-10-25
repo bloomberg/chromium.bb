@@ -66,12 +66,6 @@ bool DirectLayerTreeFrameSink::BindToClient(
   if (!cc::LayerTreeFrameSink::BindToClient(client))
     return false;
 
-  // We want the Display's output surface to hear about lost context, and since
-  // this shares a context with it, we should not be listening for lost context
-  // callbacks on the context here.
-  if (auto* cp = context_provider())
-    cp->SetLostContextCallback(base::Closure());
-
   constexpr bool is_root = true;
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, is_root,
@@ -159,6 +153,10 @@ void DirectLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
 
 void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
+}
+
+void DirectLayerTreeFrameSink::OnContextLost() {
+  // The display will be listening for OnContextLost(). Do nothing here.
 }
 
 }  // namespace viz

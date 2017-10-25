@@ -49,9 +49,7 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     auto result = context_provider_->BindToCurrentThread();
     success = result == gpu::ContextResult::kSuccess;
     if (success) {
-      context_provider_->SetLostContextCallback(
-          base::Bind(&LayerTreeFrameSink::DidLoseLayerTreeFrameSink,
-                     base::Unretained(this)));
+      context_provider_->AddObserver(this);
     }
   }
 
@@ -67,17 +65,16 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
 void LayerTreeFrameSink::DetachFromClient() {
   DCHECK(client_);
 
-  if (context_provider_.get()) {
-    context_provider_->SetLostContextCallback(
-        viz::ContextProvider::LostContextCallback());
-  }
+  if (context_provider_.get())
+    context_provider_->RemoveObserver(this);
+
   // Destroy the viz::ContextProvider on the bound thread.
   context_provider_ = nullptr;
   client_ = nullptr;
 }
 
-void LayerTreeFrameSink::DidLoseLayerTreeFrameSink() {
-  TRACE_EVENT0("cc", "LayerTreeFrameSink::DidLoseLayerTreeFrameSink");
+void LayerTreeFrameSink::OnContextLost() {
+  TRACE_EVENT0("cc", "LayerTreeFrameSink::OnContextLost");
   client_->DidLoseLayerTreeFrameSink();
 }
 

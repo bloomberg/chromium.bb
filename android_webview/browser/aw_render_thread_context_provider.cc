@@ -160,16 +160,20 @@ base::Lock* AwRenderThreadContextProvider::GetLock() {
   return nullptr;
 }
 
-void AwRenderThreadContextProvider::SetLostContextCallback(
-    const LostContextCallback& lost_context_callback) {
-  lost_context_callback_ = lost_context_callback;
+void AwRenderThreadContextProvider::AddObserver(viz::ContextLostObserver* obs) {
+  observers_.AddObserver(obs);
+}
+
+void AwRenderThreadContextProvider::RemoveObserver(
+    viz::ContextLostObserver* obs) {
+  observers_.RemoveObserver(obs);
 }
 
 void AwRenderThreadContextProvider::OnLostContext() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  if (!lost_context_callback_.is_null())
-    lost_context_callback_.Run();
+  for (auto& observer : observers_)
+    observer.OnContextLost();
   if (gr_context_)
     gr_context_->abandonContext();
 }

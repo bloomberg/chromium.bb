@@ -76,8 +76,6 @@ bool TestLayerTreeFrameSink::BindToClient(
 
   std::unique_ptr<OutputSurface> display_output_surface =
       test_client_->CreateDisplayOutputSurface(context_provider());
-  bool display_context_shared_with_compositor =
-      display_output_surface->context_provider() == context_provider();
 
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite_) {
@@ -99,12 +97,6 @@ bool TestLayerTreeFrameSink::BindToClient(
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
-
-  // We want the Display's OutputSurface to hear about lost context, and when
-  // this shares a context with it we should not be listening for lost context
-  // callbacks on the context here.
-  if (display_context_shared_with_compositor && context_provider())
-    context_provider()->SetLostContextCallback(base::Closure());
 
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;

@@ -49,8 +49,8 @@ class TestInProcessContextProvider : public viz::ContextProvider {
   base::Lock* GetLock() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
-  void SetLostContextCallback(
-      const LostContextCallback& lost_context_callback) override;
+  void AddObserver(viz::ContextLostObserver* obs) override {}
+  void RemoveObserver(viz::ContextLostObserver* obs) override {}
   void SetSupportTextureNorm16(bool support) {
     capabilities_texture_norm16_ = support;
   }

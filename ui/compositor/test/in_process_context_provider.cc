@@ -165,8 +165,11 @@ base::Lock* InProcessContextProvider::GetLock() {
   return &context_lock_;
 }
 
-void InProcessContextProvider::SetLostContextCallback(
-    const LostContextCallback& lost_context_callback) {
+void InProcessContextProvider::AddObserver(viz::ContextLostObserver* obs) {
+  // Pixel tests do not test lost context.
+}
+
+void InProcessContextProvider::RemoveObserver(viz::ContextLostObserver* obs) {
   // Pixel tests do not test lost context.
 }
 
