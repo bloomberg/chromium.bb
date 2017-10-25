@@ -16,6 +16,7 @@ import os
 import sys
 import time
 import unittest
+import urllib2
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
@@ -27,6 +28,10 @@ import owners_finder
 import subprocess2 as subprocess
 import presubmit_support as presubmit
 import rietveld
+import auth
+import git_cl
+import git_common as git
+import json
 
 # Shortcut.
 presubmit_canned_checks = presubmit.presubmit_canned_checks
@@ -1708,6 +1713,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
       'CheckCIPDManifest', 'CheckCIPDPackages',
+      'CheckChangedConfigs',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -1869,6 +1875,57 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(presubmit_canned_checks.CheckChangeTodoHasOwner,
                      "TODO(foo): bar", None, "TODO: bar", None,
                      presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckChangedConfigs(self):
+    affected_file1 = self.mox.CreateMock(presubmit.GitAffectedFile)
+    affected_file1.LocalPath().AndReturn('foo.cfg')
+    affected_file1.NewContents().AndReturn(['test', 'foo'])
+    affected_file2 = self.mox.CreateMock(presubmit.GitAffectedFile)
+    affected_file2.LocalPath().AndReturn('bar.cfg')
+    affected_file2.NewContents().AndReturn(['test', 'bar'])
+
+    token_mock = self.mox.CreateMock(auth.AccessToken)
+    token_mock.token = 123
+    auth_mock = self.mox.CreateMock(auth.Authenticator)
+    auth_mock.get_access_token(
+        allow_user_interaction=True).AndReturn(token_mock)
+    self.mox.StubOutWithMock(auth, 'get_authenticator_for_host')
+    auth.get_authenticator_for_host(
+        mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(auth_mock)
+
+    host = 'https://host.com'
+    branch = 'branch'
+    http_resp = {
+      'messages': [{'severity': 'ERROR', 'text': 'deadbeef'}],
+      'config_sets': [{'config_set': 'deadbeef',
+                       'location': '%s/+/%s' % (host, branch)}]
+    }
+    self.mox.StubOutWithMock(urllib2, 'urlopen')
+    urllib2.urlopen(mox.IgnoreArg()).MultipleTimes().AndReturn(http_resp)
+    self.mox.StubOutWithMock(json, 'load')
+    json.load(http_resp).MultipleTimes().AndReturn(http_resp)
+
+    mock_cl = self.mox.CreateMock(git_cl.Changelist)
+    mock_cl.GetBranch().AndReturn('test')
+    mock_cl.FetchUpstreamTuple('test').AndReturn((host, branch))
+    self.mox.StubOutWithMock(git_cl, 'Changelist', use_mock_anything=True)
+    git_cl.Changelist().AndReturn(mock_cl)
+
+    self.mox.StubOutWithMock(git, 'get_remote_url')
+    git.get_remote_url(remote=host).AndReturn(host)
+
+    change1 = presubmit.Change(
+      'foo', 'foo1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change1, False)
+    affected_files = (affected_file1, affected_file2)
+
+    input_api.AffectedFiles = lambda: affected_files
+
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckChangedConfigs(
+        input_api, presubmit.OutputApi)
+    self.assertEquals(len(results), 1)
 
   def testCannedCheckChangeHasNoTabs(self):
     self.ContentTest(presubmit_canned_checks.CheckChangeHasNoTabs,
