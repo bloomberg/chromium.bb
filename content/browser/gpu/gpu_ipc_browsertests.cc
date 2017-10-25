@@ -55,27 +55,17 @@ void OnEstablishedGpuChannel(
   quit_closure.Run();
 }
 
-class EstablishGpuChannelHelper {
- public:
-  EstablishGpuChannelHelper() {}
-  ~EstablishGpuChannelHelper() {}
-
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSyncRunLoop() {
-    gpu::GpuChannelEstablishFactory* factory =
-        content::BrowserMainLoop::GetInstance()
-            ->gpu_channel_establish_factory();
-    CHECK(factory);
-    base::RunLoop run_loop;
-    factory->EstablishGpuChannel(base::Bind(
-        &OnEstablishedGpuChannel, run_loop.QuitClosure(), &gpu_channel_host_));
-    run_loop.Run();
-    return std::move(gpu_channel_host_);
-  }
-
- private:
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
-  DISALLOW_COPY_AND_ASSIGN(EstablishGpuChannelHelper);
-};
+scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSyncRunLoop() {
+  gpu::GpuChannelEstablishFactory* factory =
+      content::BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
+  CHECK(factory);
+  base::RunLoop run_loop;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
+  factory->EstablishGpuChannel(base::Bind(
+      &OnEstablishedGpuChannel, run_loop.QuitClosure(), &gpu_channel_host));
+  run_loop.Run();
+  return gpu_channel_host;
+}
 
 class ContextTestBase : public content::ContentBrowserTest {
  public:
@@ -85,9 +75,8 @@ class ContextTestBase : public content::ContentBrowserTest {
     if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr))
       return;
 
-    EstablishGpuChannelHelper helper;
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-        helper.EstablishGpuChannelSyncRunLoop();
+        EstablishGpuChannelSyncRunLoop();
     CHECK(gpu_channel_host);
 
     provider_ = CreateContext(std::move(gpu_channel_host));
@@ -158,8 +147,7 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
   }
 
   void EstablishAndWait() {
-    EstablishGpuChannelHelper helper;
-    gpu_channel_host_ = helper.EstablishGpuChannelSyncRunLoop();
+    gpu_channel_host_ = EstablishGpuChannelSyncRunLoop();
   }
 
   gpu::GpuChannelHost* GetGpuChannel() { return gpu_channel_host_.get(); }
@@ -343,8 +331,19 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   GetGpuChannel()->DestroyChannel();
   // It's not visible until we run the task queue.
   EXPECT_EQ(impl->GetLastState().error, gpu::error::kNoError);
-  // Wait to see the error occur.
+
+  // Wait to see the error occur. The DestroyChannel() will destroy the IPC
+  // channel on the IO thread, which then notifies the main thread about the
+  // error state.
+  base::RunLoop wait_for_io_run_loop;
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+      ->PostTask(FROM_HERE, wait_for_io_run_loop.QuitClosure());
+  // Waits for the IO thread to run.
+  wait_for_io_run_loop.Run();
+
+  // Waits for the main thread to run.
   base::RunLoop().RunUntilIdle();
+  // The error has become visible on the main thread now.
   EXPECT_NE(impl->GetLastState().error, gpu::error::kNoError);
 
   // Creating a transfer buffer still works.
