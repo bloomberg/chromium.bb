@@ -103,24 +103,6 @@ TEST_F(NGOffsetMappingTest, StoredResult) {
   EXPECT_TRUE(IsOffsetMappingStored());
 }
 
-TEST_F(NGOffsetMappingTest, GetNGInlineNodeForText) {
-  SetupHtml("t", "<div id=t>foo</div>");
-  Element* div = GetDocument().getElementById("t");
-  Node* text = div->firstChild();
-
-  Optional<NGInlineNode> inline_node = GetNGInlineNodeFor(*text);
-  ASSERT_TRUE(inline_node.has_value());
-  EXPECT_EQ(layout_block_flow_, inline_node->GetLayoutBlockFlow());
-}
-
-TEST_F(NGOffsetMappingTest, CantGetNGInlineNodeForBody) {
-  SetupHtml("t", "<div id=t>foo</div>");
-  Element* div = GetDocument().getElementById("t");
-
-  Optional<NGInlineNode> inline_node = GetNGInlineNodeFor(*div);
-  EXPECT_FALSE(inline_node.has_value());
-}
-
 TEST_F(NGOffsetMappingTest, OneTextNode) {
   SetupHtml("t", "<div id=t>foo</div>");
   const Node* foo_node = layout_object_->GetNode();
@@ -552,35 +534,30 @@ TEST_F(NGOffsetMappingTest, FirstLetterInDifferentBlock) {
   Element* div = GetDocument().getElementById("t");
   const Node* text_node = div->firstChild();
 
-  Optional<NGInlineNode> inline_node0 = GetNGInlineNodeFor(*text_node, 0);
-  Optional<NGInlineNode> inline_node1 = GetNGInlineNodeFor(*text_node, 1);
-  Optional<NGInlineNode> inline_node2 = GetNGInlineNodeFor(*text_node, 2);
-  Optional<NGInlineNode> inline_node3 = GetNGInlineNodeFor(*text_node, 3);
+  const NGOffsetMapping* mapping0 = NGOffsetMapping::GetFor(*text_node, 0);
+  const NGOffsetMapping* mapping1 = NGOffsetMapping::GetFor(*text_node, 1);
+  const NGOffsetMapping* mapping2 = NGOffsetMapping::GetFor(*text_node, 2);
+  const NGOffsetMapping* mapping3 = NGOffsetMapping::GetFor(*text_node, 3);
 
-  ASSERT_TRUE(inline_node0.has_value());
-  ASSERT_TRUE(inline_node1.has_value());
-  ASSERT_TRUE(inline_node2.has_value());
-  ASSERT_TRUE(inline_node3.has_value());
+  ASSERT_TRUE(mapping0);
+  ASSERT_TRUE(mapping1);
+  ASSERT_TRUE(mapping2);
+  ASSERT_TRUE(mapping3);
 
-  // GetNGInlineNodeFor() returns different inline nodes for offset 0 and other
+  // GetNGOffsetmappingFor() returns different mappings for offset 0 and other
   // offsets, because first-letter is laid out in a different block.
-  EXPECT_NE(inline_node0->GetLayoutBlockFlow(),
-            inline_node1->GetLayoutBlockFlow());
-  EXPECT_EQ(inline_node1->GetLayoutBlockFlow(),
-            inline_node2->GetLayoutBlockFlow());
-  EXPECT_EQ(inline_node2->GetLayoutBlockFlow(),
-            inline_node3->GetLayoutBlockFlow());
+  EXPECT_NE(mapping0, mapping1);
+  EXPECT_EQ(mapping1, mapping2);
+  EXPECT_EQ(mapping2, mapping3);
 
-  const NGOffsetMapping& first_letter_result =
-      inline_node0->ComputeOffsetMappingIfNeeded();
+  const NGOffsetMapping& first_letter_result = *mapping0;
   ASSERT_EQ(1u, first_letter_result.GetUnits().size());
   TEST_UNIT(first_letter_result.GetUnits()[0],
             NGOffsetMappingUnitType::kIdentity, text_node, 0u, 1u, 0u, 1u);
   ASSERT_EQ(1u, first_letter_result.GetRanges().size());
   TEST_RANGE(first_letter_result.GetRanges(), text_node, 0u, 1u);
 
-  const NGOffsetMapping& remaining_text_result =
-      inline_node1->ComputeOffsetMappingIfNeeded();
+  const NGOffsetMapping& remaining_text_result = *mapping1;
   ASSERT_EQ(1u, remaining_text_result.GetUnits().size());
   TEST_UNIT(remaining_text_result.GetUnits()[0],
             NGOffsetMappingUnitType::kIdentity, text_node, 1u, 3u, 1u, 3u);

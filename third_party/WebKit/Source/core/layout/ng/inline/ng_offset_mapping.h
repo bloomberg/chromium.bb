@@ -102,6 +102,9 @@ class CORE_EXPORT NGOffsetMapping {
   // TODO(xiaochengh): Change the functions to take Positions instead of (node,
   // offset) pairs.
 
+  // Returns the mapping object of the block laying out the given DOM offset.
+  static const NGOffsetMapping* GetFor(const Node&, unsigned);
+
   // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
   // node. If there are multiple qualifying units, returns the last one.
   const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const Node&,
@@ -150,8 +153,6 @@ class CORE_EXPORT NGOffsetMapping {
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };
-
-const NGOffsetMapping* GetNGOffsetMappingFor(const Node&, unsigned);
 
 }  // namespace blink
 

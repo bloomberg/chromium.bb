@@ -10,7 +10,6 @@
 #include "core/layout/ng/inline/ng_inline_item.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/ng_layout_input_node.h"
-#include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -114,13 +113,6 @@ inline void NGInlineNode::AssertEndOffset(unsigned index,
                                           unsigned offset) const {
   Data().items_[index].AssertEndOffset(offset);
 }
-
-// If the given position is laid out as an inline, returns the NGInlineNode that
-// encloses it. Otherwise, returns null.
-CORE_EXPORT Optional<NGInlineNode> GetNGInlineNodeFor(const Node&, unsigned);
-
-// Short hand of the above function with offset 0.
-CORE_EXPORT Optional<NGInlineNode> GetNGInlineNodeFor(const Node&);
 
 DEFINE_TYPE_CASTS(NGInlineNode,
                   NGLayoutInputNode,
