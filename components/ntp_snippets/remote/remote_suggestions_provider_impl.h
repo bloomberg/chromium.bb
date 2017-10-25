@@ -429,6 +429,11 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // or enters the READY state.
   bool clear_history_dependent_state_when_initialized_;
 
+  // Set containing the categories for which ClearCachedSuggestions has been
+  // called while the service isn't ready. The nuke will be executed once the
+  // service finishes initialization or enters the READY state.
+  std::set<Category, Category::CompareByID> categories_clear_when_initialized_;
+
   // A clock for getting the time. This allows to inject a clock in tests.
   std::unique_ptr<base::Clock> clock_;
 

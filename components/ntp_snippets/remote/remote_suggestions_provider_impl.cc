@@ -725,6 +725,7 @@ void RemoteSuggestionsProviderImpl::ClearHistory(
 
 void RemoteSuggestionsProviderImpl::ClearCachedSuggestions(Category category) {
   if (!initialized()) {
+    categories_clear_when_initialized_.insert(category);
     return;
   }
 
@@ -1514,6 +1515,13 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
              category_contents_.end());
 
       UpdateAllCategoryStatus(CategoryStatus::AVAILABLE);
+
+      if (!categories_clear_when_initialized_.empty()) {
+        for (auto category : categories_clear_when_initialized_) {
+          ClearCachedSuggestions(category);
+        }
+        categories_clear_when_initialized_.clear();
+      }
       if (clear_history_dependent_state_when_initialized_) {
         clear_history_dependent_state_when_initialized_ = false;
         ClearHistoryDependentState();
@@ -1533,6 +1541,12 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
       // suggestions below tells the scheduler to fetch them again if the
       // scheduler is not disabled. It is disabled; thus the calls are ignored.
       NotifyStateChanged();
+      if (!categories_clear_when_initialized_.empty()) {
+        for (auto category : categories_clear_when_initialized_) {
+          ClearCachedSuggestions(category);
+        }
+        categories_clear_when_initialized_.clear();
+      }
       if (clear_history_dependent_state_when_initialized_) {
         clear_history_dependent_state_when_initialized_ = false;
         ClearHistoryDependentState();

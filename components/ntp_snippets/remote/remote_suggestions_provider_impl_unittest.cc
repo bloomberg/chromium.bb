@@ -469,6 +469,20 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         use_mock_remote_suggestions_status_service);
   }
 
+  void ResetSuggestionsProviderWithoutInitialization(
+      std::unique_ptr<RemoteSuggestionsProviderImpl>* provider,
+      bool use_mock_prefetched_pages_tracker,
+      bool use_fake_breaking_news_listener,
+      bool use_mock_remote_suggestions_status_service) {
+    provider->reset();
+    // We need to run until idle after deleting the RemoteSuggestionsDatabase.
+    RunUntilIdle();
+    observer_.reset();
+    *provider = MakeSuggestionsProviderWithoutInitialization(
+        use_mock_prefetched_pages_tracker, use_fake_breaking_news_listener,
+        use_mock_remote_suggestions_status_service);
+  }
+
   void RunUntilIdle() {
     timer_mock_task_runner_->RunUntilIdle();
     scoped_task_environment_.RunUntilIdle();
@@ -1157,6 +1171,48 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistSuggestions) {
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
   EXPECT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, ClearSuggestionsOnInit) {
+  // Add suggestions.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(Category::FromRemoteCategory(1))
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().AddId("1").SetRemoteCategoryId(1))
+          .Build());
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(Category::FromRemoteCategory(2))
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().AddId("2").SetRemoteCategoryId(2))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+  ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
+
+  // Reset the provider and clear the suggestions before it is inited.
+  ResetSuggestionsProviderWithoutInitialization(
+      &provider,
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  provider->ClearCachedSuggestions(Category::FromRemoteCategory(1));
+  provider->ClearCachedSuggestions(Category::FromRemoteCategory(2));
+
+  // The suggestions in both categories should have been cleared after the init.
+  WaitForSuggestionsProviderInitialization(provider.get());
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(0));
+  EXPECT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(0));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, DontNotifyIfNotAvailable) {
