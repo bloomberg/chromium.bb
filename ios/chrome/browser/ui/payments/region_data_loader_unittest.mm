@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/test_region_data_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,16 +40,10 @@ TEST_F(PaymentRequestRegionDataLoaderTest, SourceSuccess) {
   // Mock the consumer.
   id consumer =
       [OCMockObject mockForProtocol:@protocol(RegionDataLoaderConsumer)];
-  [[consumer expect]
-      regionDataLoaderDidSucceedWithRegions:[OCMArg checkWithBlock:^BOOL(
-                                                        id value) {
-        NSArray<RegionData*>* data =
-            base::mac::ObjCCastStrict<NSArray<RegionData*>>(value);
-        return data[0].regionCode == base::SysUTF8ToNSString(kQuebecCode) &&
-               data[0].regionName == base::SysUTF8ToNSString(kQuebec) &&
-               data[1].regionCode == base::SysUTF8ToNSString(kOntarioCode) &&
-               data[1].regionName == base::SysUTF8ToNSString(kOntario);
-      }]];
+  [[consumer expect] regionDataLoaderDidSucceedWithRegions:@{
+    base::SysUTF8ToNSString(kQuebecCode) : base::SysUTF8ToNSString(kQuebec),
+    base::SysUTF8ToNSString(kOntarioCode) : base::SysUTF8ToNSString(kOntario)
+  }];
 
   RegionDataLoader region_data_loader(consumer);
   region_data_loader.LoadRegionData("some country",
@@ -69,7 +62,7 @@ TEST_F(PaymentRequestRegionDataLoaderTest, SourceFailure) {
   // Mock the consumer.
   id consumer =
       [OCMockObject mockForProtocol:@protocol(RegionDataLoaderConsumer)];
-  [[consumer expect] regionDataLoaderDidSucceedWithRegions:@[]];
+  [[consumer expect] regionDataLoaderDidSucceedWithRegions:@{}];
 
   RegionDataLoader region_data_loader(consumer);
   region_data_loader.LoadRegionData("some country",

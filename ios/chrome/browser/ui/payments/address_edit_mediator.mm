@@ -38,40 +38,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// If |region| is either a valid region code or name in |regions|, then the
-// region's name is returned. Otherwise, returns |nil|.
-NSString* NormalizeRegionName(NSString* region, NSArray<RegionData*>* regions) {
-  // See if |region| is a region code, and return the region's name if that's
-  // the case.
-  NSIndexSet* matchingRegions =
-      [regions indexesOfObjectsPassingTest:^BOOL(RegionData* testRegion,
-                                                 NSUInteger index, BOOL* stop) {
-        return [testRegion.regionCode isEqualToString:region];
-      }];
-  if ([matchingRegions count]) {
-    DCHECK_EQ(1U, [matchingRegions count]);
-    return [regions objectAtIndex:[matchingRegions firstIndex]].regionName;
-  }
-
-  // See if |region| is a valid region name, and return that if it is.
-  matchingRegions =
-      [regions indexesOfObjectsPassingTest:^BOOL(RegionData* testRegion,
-                                                 NSUInteger index, BOOL* stop) {
-        return [testRegion.regionName isEqualToString:region];
-      }];
-  if ([matchingRegions count]) {
-    DCHECK_EQ(1U, [matchingRegions count]);
-    return region;
-  }
-
-  // |region| was neither a valid region code or region name, so return |nil|.
-  return nil;
-}
-
-}  // namespace
-
 @interface AddressEditMediator () {
   std::unique_ptr<RegionDataLoader> _regionDataLoader;
 }
@@ -183,7 +149,8 @@ NSString* NormalizeRegionName(NSString* region, NSArray<RegionData*>* regions) {
 
 #pragma mark - RegionDataLoaderConsumer
 
-- (void)regionDataLoaderDidSucceedWithRegions:(NSArray<RegionData*>*)regions {
+- (void)regionDataLoaderDidSucceedWithRegions:
+    (NSDictionary<NSString*, NSString*>*)regions {
   // Enable the previously disabled field.
   self.regionField.enabled = YES;
 
@@ -194,27 +161,28 @@ NSString* NormalizeRegionName(NSString* region, NSArray<RegionData*>* regions) {
   // nil.
   self.regionField.value = nil;
   if (self.address) {
-    self.regionField.value = NormalizeRegionName(
+    NSString* region =
         [self fieldValueFromProfile:self.address
-                          fieldType:autofill::ADDRESS_HOME_STATE],
-        regions);
+                          fieldType:autofill::ADDRESS_HOME_STATE];
+    if ([regions objectForKey:region]) {
+      self.regionField.value = region;
+    } else if ([[regions allKeysForObject:region] count]) {
+      DCHECK_EQ(1U, [[regions allKeysForObject:region] count]);
+      self.regionField.value = [regions allKeysForObject:region][0];
+    }
   }
 
   // Notify the view controller asynchronously to allow for the view to update.
   __weak AddressEditMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
-    NSMutableArray<NSString*>* values = [[NSMutableArray alloc] init];
-
+    NSMutableArray<NSString*>* values =
+        [[NSMutableArray alloc] initWithArray:[regions allKeys]];
     // If the field contains no value, insert an empty value at the beginning
     // of the list of options, as the first option is selected when the UI
     // opens. Otherwise, it would be impossible for the user to select the first
     // option without selecting another option first.
     if (!weakSelf.regionField.value)
-      [values addObject:@""];
-
-    for (RegionData* region in regions)
-      [values addObject:region.regionName];
-
+      [values insertObject:@"" atIndex:0];
     [weakSelf.consumer setOptions:@[ values ]
                    forEditorField:weakSelf.regionField];
   });
