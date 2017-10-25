@@ -36,6 +36,7 @@ const char* const kDumpProviderWhitelist[] = {
     "MemoryCache",
     "MojoHandleTable",
     "MojoLevelDB",
+    "OutOfProcessHeapProfilingDumpProvider",
     "PartitionAlloc",
     "ProcessMemoryMetrics",
     "Skia",

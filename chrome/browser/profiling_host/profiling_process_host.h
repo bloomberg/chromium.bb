@@ -142,17 +142,14 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void GetOutputFileOnBlockingThread(base::ProcessId pid,
                                      base::FilePath dest,
                                      std::string trigger_name,
-                                     bool upload,
                                      base::OnceClosure done);
   void HandleDumpProcessOnIOThread(base::ProcessId pid,
                                    base::FilePath file_path,
                                    base::File file,
                                    std::string trigger_name,
-                                   bool upload,
                                    base::OnceClosure done);
   void OnProcessDumpComplete(base::FilePath file_path,
                              std::string trigger_name,
-                             bool upload,
                              base::OnceClosure done,
                              bool success);
 
