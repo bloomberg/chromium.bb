@@ -1803,7 +1803,17 @@
       "models": [
         {
           "board_name": "reef-uni",
+          "name": "alan",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "reef-uni",
           "name": "basking",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "bigdaddy",
           "cq_test_enabled": false
         },
         {
