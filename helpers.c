@@ -530,7 +530,7 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 			bool found = false;
 			for (k = 0; k < item_size; k++) {
 				if (items[k].format == plane->formats[j] &&
-				    items[k].modifier == DRM_FORMAT_MOD_NONE) {
+				    items[k].modifier == DRM_FORMAT_MOD_INVALID) {
 					items[k].use_flags |= use_flag;
 					found = true;
 					break;
@@ -551,7 +551,7 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 
 			if (!found) {
 				items[item_size].format = plane->formats[j];
-				items[item_size].modifier = DRM_FORMAT_MOD_NONE;
+				items[item_size].modifier = DRM_FORMAT_MOD_INVALID;
 				items[item_size].use_flags = use_flag;
 				item_size++;
 			}

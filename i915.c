@@ -63,7 +63,7 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 		if (combo->format != item->format)
 			continue;
 
-		if (item->modifier == DRM_FORMAT_MOD_NONE &&
+		if (item->modifier == DRM_FORMAT_MOD_INVALID &&
 		    combo->metadata.tiling == I915_TILING_X) {
 			/*
 			 * FIXME: drv_query_kms() does not report the available modifiers
@@ -94,7 +94,7 @@ static int i915_add_combinations(struct driver *drv)
 
 	metadata.tiling = I915_TILING_NONE;
 	metadata.priority = 1;
-	metadata.modifier = DRM_FORMAT_MOD_NONE;
+	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, render_use_flags);

@@ -118,7 +118,7 @@ static int rockchip_init(struct driver *drv)
 
 	metadata.tiling = 0;
 	metadata.priority = 1;
-	metadata.modifier = DRM_FORMAT_MOD_NONE;
+	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, BO_USE_RENDER_MASK);
@@ -192,7 +192,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		 * pick that */
 		afbc_bo_from_format(bo, width, height, format);
 	} else {
-		if (!has_modifier(modifiers, count, DRM_FORMAT_MOD_NONE)) {
+		if (!has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
 			errno = EINVAL;
 			fprintf(stderr, "no usable modifier found\n");
 			return -1;
@@ -234,7 +234,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 			      uint64_t use_flags)
 {
-	uint64_t modifiers[] = { DRM_FORMAT_MOD_NONE };
+	uint64_t modifiers[] = { DRM_FORMAT_MOD_LINEAR };
 	return rockchip_bo_create_with_modifiers(bo, width, height, format, modifiers,
 						 ARRAY_SIZE(modifiers));
 }

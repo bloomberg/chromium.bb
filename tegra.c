@@ -185,7 +185,7 @@ static int tegra_init(struct driver *drv)
 
 	metadata.tiling = NV_MEM_KIND_PITCH;
 	metadata.priority = 1;
-	metadata.modifier = DRM_FORMAT_MOD_NONE;
+	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, use_flags);

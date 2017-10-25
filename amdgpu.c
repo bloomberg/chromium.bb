@@ -293,7 +293,7 @@ static int amdgpu_init(struct driver *drv)
 
 	metadata.tiling = ADDR_DISPLAYABLE << 16 | ADDR_TM_LINEAR_ALIGNED;
 	metadata.priority = 2;
-	metadata.modifier = DRM_FORMAT_MOD_NONE;
+	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, use_flags);
@@ -306,7 +306,7 @@ static int amdgpu_init(struct driver *drv)
 
 	metadata.tiling = ADDR_NON_DISPLAYABLE << 16 | ADDR_TM_LINEAR_ALIGNED;
 	metadata.priority = 3;
-	metadata.modifier = DRM_FORMAT_MOD_NONE;
+	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, use_flags);
