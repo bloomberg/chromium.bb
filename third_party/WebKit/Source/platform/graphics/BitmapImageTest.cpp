@@ -493,7 +493,7 @@ TEST_F(BitmapImageTestWithMockDecoder, DontAdvanceToIncompleteFrame) {
 }
 
 TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
-  RuntimeEnabledFeatures::SetCompositorImageAnimationsEnabled(false);
+  ScopedCompositorImageAnimationsForTest compositor_image_animations(false);
 
   repetition_count_ = kAnimationLoopOnce;
   frame_count_ = 7u;
@@ -590,6 +590,8 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
 }
 
 TEST_F(BitmapImageTestWithMockDecoder, ResetAnimation) {
+  ScopedCompositorImageAnimationsForTest compositor_image_animations(false);
+
   repetition_count_ = kAnimationLoopInfinite;
   frame_count_ = 4u;
   last_frame_complete_ = true;
@@ -603,6 +605,8 @@ TEST_F(BitmapImageTestWithMockDecoder, ResetAnimation) {
 }
 
 TEST_F(BitmapImageTestWithMockDecoder, PaintImageForStaticBitmapImage) {
+  ScopedCompositorImageAnimationsForTest compositor_image_animations(false);
+
   repetition_count_ = kAnimationLoopInfinite;
   frame_count_ = 5;
   last_frame_complete_ = true;
