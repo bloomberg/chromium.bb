@@ -69,7 +69,7 @@ def generate_command(swarming, taskid, task, duration):
     COMMAND.replace('\n', ';') % {
       'duration': duration,
       'original_cmd': ' '.join(original),
-      'task_url': 'https://%s/task/%s' % (swarming, taskid),
+      'task_url': 'https://%s/task?id=%s' % (swarming, taskid),
       'help_url': URL,
     },
   ]
