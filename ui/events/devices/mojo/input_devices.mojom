@@ -34,4 +34,5 @@ struct TouchscreenDevice {
 
   gfx.mojom.Size size;
   int32 touch_points;
+  bool has_stylus;
 };

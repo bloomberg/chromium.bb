@@ -108,7 +108,7 @@ bool IsStylusDevice(const std::string& path, const std::string& model_name) {
   std::string identifier = ExtractIdentifier(path);
   for (const ui::TouchscreenDevice& device :
        ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
-    if (device.is_stylus &&
+    if (device.has_stylus &&
         (device.name == model_name ||
          device.name.find(model_name) != std::string::npos) &&
         device.sys_path.value().find(identifier) != std::string::npos) {

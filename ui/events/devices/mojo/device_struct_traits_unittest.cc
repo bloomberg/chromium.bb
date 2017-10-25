@@ -74,7 +74,8 @@ TEST_F(DeviceStructTraitsTest, TouchscreenDevice) {
                           INPUT_DEVICE_UNKNOWN,  // type
                           "Touchscreen Device",  // name
                           gfx::Size(123, 456),   // size
-                          3);                    // touch_points
+                          3,                     // touch_points
+                          true);                 // has_stylus
   // Not setting sys_path intentionally.
   input.vendor_id = 0;
   input.product_id = 0;
@@ -91,6 +92,7 @@ TEST_F(DeviceStructTraitsTest, TouchscreenDevice) {
   EXPECT_EQ(input.product_id, output.product_id);
   EXPECT_EQ(input.size, output.size);
   EXPECT_EQ(input.touch_points, output.touch_points);
+  EXPECT_EQ(input.has_stylus, output.has_stylus);
 }
 
 }  // namespace ui
