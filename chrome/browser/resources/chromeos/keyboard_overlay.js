@@ -595,7 +595,10 @@ function update(modifiers, normModifiers) {
     classes.push('keyboard-overlay-key-background');
 
     if (shortcutId == 'keyboardOverlayVoiceInteraction' &&
-        !isVoiceInteractionEnabled()) {
+        (!isVoiceInteractionEnabled() || hasKeyboardLayout2())) {
+      // The shortcut should be disabled either voice interaction is disabled or
+      // keyboard layout 2 is in use (in which case a dedicated key for voice
+      // interaction exists).
       continue;
     }
 

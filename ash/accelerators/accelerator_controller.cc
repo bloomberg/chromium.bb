@@ -65,6 +65,7 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -619,6 +620,10 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
     base::RecordAction(
         base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
   } else if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
+    // Search+A shortcut is disabled on device with an assistant key.
+    if (ui::DeviceUsesKeyboardLayout2())
+      return;
+
     base::RecordAction(
         base::UserMetricsAction("VoiceInteraction.Started.Search_A"));
   } else if (accelerator.key_code() == ui::VKEY_ASSISTANT) {
