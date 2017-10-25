@@ -7201,11 +7201,12 @@ static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   ScriptValue functionArg;
-  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
+  if (0 < info.Length() && info[0]->IsFunction()) {
+    functionArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+  } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodK", "TestObject", "The callback provided as parameter 1 is not a function."));
     return;
   }
-  functionArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
 
   impl->overloadedMethodK(functionArg);
 }
@@ -9061,11 +9062,12 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ScriptValue callback;
   ScriptValue thisArg;
-  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
+  if (0 < info.Length() && info[0]->IsFunction()) {
+    callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+  } else {
     exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
     return;
   }
-  callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
 
   thisArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
 

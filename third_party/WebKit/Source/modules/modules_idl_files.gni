@@ -148,7 +148,6 @@ modules_idl_files =
           "geolocation/Geolocation.idl",
           "geolocation/Position.idl",
           "geolocation/PositionError.idl",
-          "geolocation/PositionErrorCallback.idl",
           "canvas/imagebitmap/ImageBitmapRenderingContext.idl",
           "imagecapture/ImageCapture.idl",
           "imagecapture/MediaSettingsRange.idl",

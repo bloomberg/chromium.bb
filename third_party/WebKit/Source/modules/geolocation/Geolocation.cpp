@@ -190,7 +190,7 @@ void Geolocation::RecordOriginTypeAccess() const {
 }
 
 void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
-                                     PositionErrorCallback* error_callback,
+                                     V8PositionErrorCallback* error_callback,
                                      const PositionOptions& options) {
   if (!GetFrame())
     return;
@@ -206,7 +206,7 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
 }
 
 int Geolocation::watchPosition(V8PositionCallback* success_callback,
-                               PositionErrorCallback* error_callback,
+                               V8PositionErrorCallback* error_callback,
                                const PositionOptions& options) {
   if (!GetFrame())
     return 0;
