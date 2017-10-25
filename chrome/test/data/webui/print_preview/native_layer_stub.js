@@ -83,18 +83,18 @@ cr.define('print_preview', function() {
         requestId: requestId,
       });
       if (destination.id == this.badPrinterId_) {
-        var rejectString = print_preview.PreviewArea.EventType.SETTINGS_INVALID;
+        let rejectString = print_preview.PreviewArea.EventType.SETTINGS_INVALID;
         rejectString = rejectString.substring(
             rejectString.lastIndexOf('.') + 1, rejectString.length);
         return Promise.reject(rejectString);
       }
-      var pageRanges = printTicketStore.pageRange.getDocumentPageRanges();
+      const pageRanges = printTicketStore.pageRange.getDocumentPageRanges();
       if (pageRanges.length == 0) {  // assume full length document, 1 page.
         cr.webUIListenerCallback('page-count-ready', 1, requestId, 100);
         cr.webUIListenerCallback('page-preview-ready', 0, 0, requestId);
       } else {
-        var pages = pageRanges.reduce(function(soFar, range) {
-          for (var page = range.from; page <= range.to; page++) {
+        const pages = pageRanges.reduce(function(soFar, range) {
+          for (let page = range.from; page <= range.to; page++) {
             soFar.push(page);
           }
           return soFar;
