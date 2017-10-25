@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,7 +34,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
       const std::string& interception_id,
       net::URLRequest* original_request,
       net::NetworkDelegate* original_network_delegate,
-      WebContents* web_contents,
+      const base::UnguessableToken& target_id,
       base::WeakPtr<protocol::NetworkHandler> network_handler,
       bool is_redirect,
       ResourceType resource_type);
@@ -84,7 +85,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
           modifications,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback);
 
-  WebContents* web_contents() const { return web_contents_; }
+  const base::UnguessableToken& target_id() const { return target_id_; }
 
  private:
   class SubRequest;
@@ -196,7 +197,10 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
 
   const std::string interception_id_;
-  WebContents* const web_contents_;
+  // TODO(caseq): this really needs to be session id, not target id,
+  // so that we can clean up pending intercept jobs for individual
+  // session.
+  base::UnguessableToken target_id_;
   const base::WeakPtr<protocol::NetworkHandler> network_handler_;
   const bool is_redirect_;
   const ResourceType resource_type_;

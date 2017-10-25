@@ -190,7 +190,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
     const std::string& interception_id,
     net::URLRequest* original_request,
     net::NetworkDelegate* original_network_delegate,
-    WebContents* web_contents,
+    const base::UnguessableToken& target_id,
     base::WeakPtr<protocol::NetworkHandler> network_handler,
     bool is_redirect,
     ResourceType resource_type)
@@ -207,7 +207,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
       intercepting_requests_(true),
       killed_(false),
       interception_id_(interception_id),
-      web_contents_(web_contents),
+      target_id_(target_id),
       network_handler_(network_handler),
       is_redirect_(is_redirect),
       resource_type_(resource_type),

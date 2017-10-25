@@ -546,6 +546,8 @@ source_set("browser") {
     "devtools/devtools_network_transaction_factory.cc",
     "devtools/devtools_session.cc",
     "devtools/devtools_session.h",
+    "devtools/devtools_target_registry.cc",
+    "devtools/devtools_target_registry.h",
     "devtools/devtools_url_interceptor_request_job.cc",
     "devtools/devtools_url_interceptor_request_job.h",
     "devtools/devtools_url_request_interceptor.cc",

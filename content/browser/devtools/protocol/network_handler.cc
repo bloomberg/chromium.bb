@@ -1068,6 +1068,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   if (!devtools_url_request_interceptor)
     return Response::Error("Interception not supported");
 
+  FrameTreeNode* frame_tree_node = host_->frame_tree_node();
   if (patterns->length()) {
     std::vector<DevToolsURLRequestInterceptor::Pattern> interceptor_patterns;
     for (size_t i = 0; i < patterns->length(); ++i) {
@@ -1084,13 +1085,12 @@ DispatchResponse NetworkHandler::SetRequestInterception(
           patterns->get(i)->GetUrlPattern("*"), std::move(resource_types)));
     }
 
-    devtools_url_request_interceptor->state()->StartInterceptingRequests(
-        web_contents, weak_factory_.GetWeakPtr(),
+    devtools_url_request_interceptor->StartInterceptingRequests(
+        frame_tree_node, weak_factory_.GetWeakPtr(),
         std::move(interceptor_patterns));
     interception_enabled_ = true;
   } else {
-    devtools_url_request_interceptor->state()->StopInterceptingRequests(
-        web_contents);
+    devtools_url_request_interceptor->StopInterceptingRequests(frame_tree_node);
     navigation_requests_.clear();
     canceled_navigation_requests_.clear();
     interception_enabled_ = false;
@@ -1175,7 +1175,7 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
 
-  devtools_url_request_interceptor->state()->ContinueInterceptedRequest(
+  devtools_url_request_interceptor->ContinueInterceptedRequest(
       interception_id,
       base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
