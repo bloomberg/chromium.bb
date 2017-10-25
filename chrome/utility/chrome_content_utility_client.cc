@@ -73,7 +73,7 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
-#include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"
+#include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"  // nogncheck
 #endif
 

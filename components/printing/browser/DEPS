@@ -1,3 +1,6 @@
 include_rules = [
+  "+components/printing/service/public/cpp",
   "+content/public/browser",
+  "+mojo/public/cpp/system",
+  "+services/service_manager/public/cpp",
 ]

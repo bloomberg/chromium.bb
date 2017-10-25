@@ -7,9 +7,21 @@
 
 struct PrintMsg_Print_Params;
 
+namespace content {
+class WebContents;
+}
+
 namespace printing {
 
 class PrintSettings;
+
+void SetOopifEnabled(bool enabled);
+bool IsOopifEnabled();
+
+// Check on the current feature settings to decide whether we need to
+// create a PDF compositor client for this |web_contents|.
+void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
+                                   bool for_preview);
 
 // Converts given settings to Print_Params and stores them in the output
 // parameter |params|.
