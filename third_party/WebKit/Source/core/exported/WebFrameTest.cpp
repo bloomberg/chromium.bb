@@ -10399,7 +10399,7 @@ TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
       web_view_helper.WebView()->MainFrame()->ToWebLocalFrame();
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
-                                "'overscroll-behavior: auto;'")));
+                                "'scroll-boundary-behavior: auto;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
   EXPECT_CALL(
@@ -10414,7 +10414,7 @@ TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
 
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
-                                "'overscroll-behavior: contain;'")));
+                                "'scroll-boundary-behavior: contain;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
   EXPECT_CALL(
@@ -10429,7 +10429,7 @@ TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
 
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
-                                "'overscroll-behavior: none;'")));
+                                "'scroll-boundary-behavior: none;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
   EXPECT_CALL(
@@ -10457,12 +10457,12 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameScrollBoundaryBehaviorHasEffect) {
       web_view_helper.WebView()->MainFrame()->ToWebLocalFrame();
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
-                                "'overscroll-behavior: auto;'")));
+                                "'scroll-boundary-behavior: auto;'")));
   WebLocalFrame* subframe =
       web_view_helper.WebView()->MainFrame()->FirstChild()->ToWebLocalFrame();
   subframe->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
-                                "'overscroll-behavior: none;'")));
+                                "'scroll-boundary-behavior: none;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
   EXPECT_CALL(
@@ -10477,7 +10477,7 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameScrollBoundaryBehaviorHasEffect) {
 
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
-                                "'overscroll-behavior: contain;'")));
+                                "'scroll-boundary-behavior: contain;'")));
 
   EXPECT_CALL(
       client,

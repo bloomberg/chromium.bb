@@ -215,9 +215,6 @@ overflowAnchor
 overflowWrap
 overflowX
 overflowY
-overscrollBehavior
-overscrollBehaviorX
-overscrollBehaviorY
 padding
 paddingBottom
 paddingLeft
@@ -244,6 +241,9 @@ right
 rx
 ry
 scrollBehavior
+scrollBoundaryBehavior
+scrollBoundaryBehaviorX
+scrollBoundaryBehaviorY
 setProperty
 shapeImageThreshold
 shapeMargin

@@ -1220,9 +1220,9 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
 
 void CompositedLayerMapping::UpdateScrollBoundaryBehavior() {
   EScrollBoundaryBehavior behavior_x =
-      GetLayoutObject().StyleRef().OverscrollBehaviorX();
+      GetLayoutObject().StyleRef().ScrollBoundaryBehaviorX();
   EScrollBoundaryBehavior behavior_y =
-      GetLayoutObject().StyleRef().OverscrollBehaviorY();
+      GetLayoutObject().StyleRef().ScrollBoundaryBehaviorY();
   if (scrolling_contents_layer_) {
     scrolling_contents_layer_->SetScrollBoundaryBehavior(
         WebScrollBoundaryBehavior(

@@ -1168,7 +1168,7 @@
     "p3",
     "rec2020",
 
-    // overscroll-behavior
+    // scroll-boundary-behavior
     // auto,
     // contain
     // none
