@@ -2349,6 +2349,10 @@ const char kArcNativeBridgeExperimentName[] =
 const char kArcNativeBridgeExperimentDescription[] =
     "Enables experimental native bridge feature.";
 
+const char kArcVpnName[] = "Enable ARC VPN integration";
+const char kArcVpnDescription[] =
+    "Allow Android VPN clients to tunnel Chrome traffic.";
+
 const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "

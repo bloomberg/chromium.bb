@@ -23935,6 +23935,7 @@ from previous Chrome versions.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
+  <int value="-1694353093" label="ArcVpn:disabled"/>
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
   <int value="-1691892152" label="SafeSearchUrlReporting:disabled"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
@@ -24412,6 +24413,7 @@ from previous Chrome versions.
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-326083626" label="AppBanners:disabled"/>
+  <int value="-323964300" label="ArcVpn:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>

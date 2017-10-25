@@ -2817,6 +2817,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcNativeBridgeExperimentName,
      flag_descriptions::kArcNativeBridgeExperimentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridgeExperimentFeature)},
+    {"arc-vpn", flag_descriptions::kArcVpnName,
+     flag_descriptions::kArcVpnDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kVpnFeature)},
 #endif  // OS_CHROMEOS
     {"enable-generic-sensor", flag_descriptions::kEnableGenericSensorName,
      flag_descriptions::kEnableGenericSensorDescription, kOsAll,
