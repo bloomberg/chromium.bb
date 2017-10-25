@@ -2962,12 +2962,6 @@ crbug.com/626703 [ Win7 ] external/wpt/html/semantics/embedded-content/the-img-e
 # For Skia roll
 crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
 
-crbug.com/777375 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsManualRebaseline ]
-
-crbug.com/773013 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsManualRebaseline ]
-crbug.com/773013 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsManualRebaseline ]
-crbug.com/773013 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsManualRebaseline ]
-
 crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-in-positioned-container.html [ NeedsManualRebaseline ]
 crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ NeedsManualRebaseline ]
 crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ NeedsManualRebaseline ]
