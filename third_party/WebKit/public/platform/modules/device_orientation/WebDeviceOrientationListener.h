@@ -44,7 +44,7 @@ class WebDeviceOrientationListener : public WebPlatformEventListener {
   // This method is called every time new device orientation data is available.
   virtual void DidChangeDeviceOrientation(const device::OrientationData&) = 0;
 
-  virtual ~WebDeviceOrientationListener() {}
+  ~WebDeviceOrientationListener() override {}
 };
 
 }  // namespace blink
