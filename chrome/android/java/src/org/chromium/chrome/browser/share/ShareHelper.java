@@ -612,11 +612,9 @@ public class ShareHelper {
 
     @VisibleForTesting
     public static Intent getShareLinkIntent(ShareParams params) {
-        String text = params.getText();
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.putExtra(Intent.EXTRA_SUBJECT, params.getTitle());
-        intent.putExtra(Intent.EXTRA_TEXT, text);
         intent.putExtra(EXTRA_TASK_ID, params.getActivity().getTaskId());
 
         Uri screenshotUri = params.getScreenshotUri();
@@ -628,12 +626,18 @@ public class ShareHelper {
             intent.setClipData(ClipData.newRawUri("", screenshotUri));
             intent.putExtra(EXTRA_SHARE_SCREENSHOT_AS_STREAM, screenshotUri);
         }
-        if (params.getOfflineUri() == null) {
-            intent.setType("text/plain");
-        } else {
-            intent.setType("multipart/related");
+
+        if (params.getOfflineUri() != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.putExtra(Intent.EXTRA_STREAM, params.getOfflineUri());
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.setType("multipart/related");
+        } else {
+            intent.putExtra(Intent.EXTRA_TEXT, params.getText());
+            intent.setType("text/plain");
         }
+
         return intent;
     }
 

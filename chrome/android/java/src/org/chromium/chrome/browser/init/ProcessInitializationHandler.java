@@ -57,7 +57,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
@@ -286,8 +285,6 @@ public class ProcessInitializationHandler {
                 PowerMonitor.create();
 
                 ShareHelper.clearSharedImages();
-
-                OfflinePageUtils.clearSharedOfflineFiles(application);
 
                 SelectFileDialog.clearCapturedCameraFiles();
 

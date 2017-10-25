@@ -185,26 +185,6 @@ public class OfflinePageUtilsUnitTest {
                         any(OfflinePageBridge.SavePageCallback.class));
     }
 
-    @Test
-    @Feature({"OfflinePagesSharing"})
-    public void testRewriteOfflineFileName() {
-        // Only dots in file name get replaced.
-        assertEquals("cs_chromium_org.mhtml",
-                OfflinePageUtils.rewriteOfflineFileName("cs.chromium.org.mhtml"));
-        // Successive dots should all be replaced.
-        assertEquals("cs_chromium___org_.mhtml",
-                OfflinePageUtils.rewriteOfflineFileName("cs.chromium...org..mhtml"));
-        // White spaces are trimmed.
-        assertEquals("cs_chromium_org.mhtml",
-                OfflinePageUtils.rewriteOfflineFileName(" cs.chromium .org .mhtml"));
-        // Other special characters is not touched
-        String directoryPath = "chrome/src/offline/";
-        assertEquals(directoryPath + "cs_chromium!_org#.mhtml",
-                OfflinePageUtils.rewriteOfflineFileName(directoryPath + "cs.chromium!.org#.mhtml"));
-        // If there is no dot other than file extension, nothing changes.
-        assertEquals("chromium.mhtml", OfflinePageUtils.rewriteOfflineFileName("chromium.mhtml"));
-    }
-
     /** A shadow/wrapper of android.os.Environment that allows injecting a test directory. */
     @Implements(Environment.class)
     public static class WrappedEnvironment {
