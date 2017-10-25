@@ -59,7 +59,8 @@ typedef enum {
   CFL_LAYER = 1 << 11,
   DUAL_FILTER_LAYER = 1 << 12,
   Q_INDEX_LAYER = 1 << 13,
-  ALL_LAYERS = (1 << 14) - 1
+  SEGMENT_ID_LAYER = 1 << 14,
+  ALL_LAYERS = (1 << 15) - 1
 } LayerType;
 
 static LayerType layers = 0;
@@ -101,6 +102,8 @@ static const arg_def_t dump_reference_frame_arg =
     ARG_DEF("r", "referenceFrame", 0, "Dump Reference Frame");
 static const arg_def_t dump_delta_q_arg =
     ARG_DEF("dq", "delta_q", 0, "Dump QIndex");
+static const arg_def_t dump_seg_id_arg =
+    ARG_DEF("si", "seg_id", 0, "Dump Segment ID");
 static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
 
 static const arg_def_t *main_args[] = { &limit_arg,
@@ -128,6 +131,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_reference_frame_arg,
                                         &dump_motion_vectors_arg,
                                         &dump_delta_q_arg,
+                                        &dump_seg_id_arg,
                                         &usage_arg,
                                         NULL };
 #define ENUM(name) \
@@ -592,6 +596,10 @@ void inspect(void *pbi, void *data) {
     buf += put_block_info(buf, NULL, "delta_q",
                           offsetof(insp_mi_data, current_qindex), 0);
   }
+  if (layers & SEGMENT_ID_LAYER) {
+    buf += put_block_info(buf, NULL, "seg_id",
+                          offsetof(insp_mi_data, segment_id), 0);
+  }
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
@@ -750,6 +758,8 @@ static void parse_args(char **argv) {
 #endif
     else if (arg_match(&arg, &dump_delta_q_arg, argi))
       layers |= Q_INDEX_LAYER;
+    else if (arg_match(&arg, &dump_seg_id_arg, argi))
+      layers |= SEGMENT_ID_LAYER;
     else if (arg_match(&arg, &dump_all_arg, argi))
       layers |= ALL_LAYERS;
     else if (arg_match(&arg, &compress_arg, argi))
