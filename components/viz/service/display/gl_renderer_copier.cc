@@ -266,10 +266,14 @@ class ReadPixelsWorkflow {
   ReadPixelsWorkflow(std::unique_ptr<CopyOutputRequest> copy_request,
                      const gfx::Rect& copy_rect,
                      const gfx::Rect& result_rect,
-                     scoped_refptr<ContextProvider> context_provider)
+                     scoped_refptr<ContextProvider> context_provider,
+                     GLenum readback_format)
       : copy_request_(std::move(copy_request)),
         result_rect_(result_rect),
-        context_provider_(std::move(context_provider)) {
+        context_provider_(std::move(context_provider)),
+        readback_format_(readback_format) {
+    DCHECK(readback_format_ == GL_RGBA || readback_format_ == GL_BGRA_EXT);
+
     auto* const gl = context_provider_->ContextGL();
 
     // Create a buffer for the pixel transfer.
@@ -284,7 +288,8 @@ class ReadPixelsWorkflow {
     gl->GenQueriesEXT(1, &query_);
     gl->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, query_);
     gl->ReadPixels(copy_rect.x(), copy_rect.y(), copy_rect.width(),
-                   copy_rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                   copy_rect.height(), readback_format_, GL_UNSIGNED_BYTE,
+                   nullptr);
     gl->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
     gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
   }
@@ -317,14 +322,16 @@ class ReadPixelsWorkflow {
     // Create the result bitmap, making sure to flip the image in the Y
     // dimension.
     //
-    // TODO(crbug/770422): Performance optimization to use GL_BGRA_EXT to avoid
-    // extra downstream CPU use for GL_RGBA→SkBitmap N32 byte order swizzling.
     // TODO(crbug/758057): Plumb-through color space into the output bitmap.
     SkBitmap result_bitmap;
+    const int bytes_per_row = result_rect_.width() * kRGBABytesPerPixel;
     result_bitmap.allocPixels(
         SkImageInfo::Make(result_rect_.width(), result_rect_.height(),
-                          kRGBA_8888_SkColorType, kPremul_SkAlphaType));
-    const int bytes_per_row = result_rect_.width() * kRGBABytesPerPixel;
+                          (readback_format_ == GL_BGRA_EXT)
+                              ? kBGRA_8888_SkColorType
+                              : kRGBA_8888_SkColorType,
+                          kPremul_SkAlphaType),
+        bytes_per_row);
     for (int y = 0; y < result_rect_.height(); ++y) {
       const int flipped_y = (result_rect_.height() - y - 1);
       const uint8_t* const src_row = pixels + flipped_y * bytes_per_row;
@@ -343,6 +350,7 @@ class ReadPixelsWorkflow {
   const std::unique_ptr<CopyOutputRequest> copy_request_;
   const gfx::Rect result_rect_;
   const scoped_refptr<ContextProvider> context_provider_;
+  const GLenum readback_format_;
   GLuint transfer_buffer_ = 0;
   GLuint query_ = 0;
 };
@@ -358,7 +366,8 @@ void GLRendererCopier::StartReadbackFromFramebuffer(
   DCHECK_SIZE_EQ(copy_rect.size(), result_rect.size());
 
   auto workflow = std::make_unique<ReadPixelsWorkflow>(
-      std::move(request), copy_rect, result_rect, context_provider_);
+      std::move(request), copy_rect, result_rect, context_provider_,
+      GetOptimalReadbackFormat());
   const GLuint query = workflow->query();
   context_provider_->ContextSupport()->SignalQuery(
       query, base::Bind(&ReadPixelsWorkflow::Finish, base::Passed(&workflow)));
@@ -523,6 +532,27 @@ void GLRendererCopier::FreeCachedResources(CacheEntry* entry) {
     gl->DeleteFramebuffers(1, name);
   entry->object_names.fill(0);
   entry->scaler.reset();
+}
+
+GLenum GLRendererCopier::GetOptimalReadbackFormat() {
+  if (optimal_readback_format_ != GL_NONE)
+    return optimal_readback_format_;
+
+  // If the GL implementation internally uses the GL_BGRA_EXT+GL_UNSIGNED_BYTE
+  // format+type combination, then consider that the optimal readback
+  // format+type. Otherwise, use GL_RGBA+GL_UNSIGNED_BYTE, which all platforms
+  // must support, per the GLES 2.0 spec.
+  auto* const gl = context_provider_->ContextGL();
+  GLint type = 0;
+  GLint readback_format = 0;
+  gl->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &type);
+  if (type == GL_UNSIGNED_BYTE)
+    gl->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &readback_format);
+  if (readback_format != GL_BGRA_EXT)
+    readback_format = GL_RGBA;
+
+  optimal_readback_format_ = static_cast<GLenum>(readback_format);
+  return optimal_readback_format_;
 }
 
 GLRendererCopier::CacheEntry::CacheEntry() = default;
