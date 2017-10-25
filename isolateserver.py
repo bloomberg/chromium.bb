@@ -1917,6 +1917,7 @@ def CMDdownload(parser, args):
       channel = threading_utils.TaskChannel()
       pending = {}
       for digest, dest in options.file:
+        dest = unicode(dest)
         pending[digest] = dest
         storage.async_fetch(
             channel,
