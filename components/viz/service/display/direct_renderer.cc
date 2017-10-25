@@ -316,7 +316,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
     cc::OverlayCandidate output_surface_plane;
     output_surface_plane.display_rect =
-        gfx::RectF(root_render_pass->output_rect);
+        gfx::RectF(device_viewport_size.width(), device_viewport_size.height());
     output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
     output_surface_plane.use_output_surface_for_resource = true;
     output_surface_plane.overlay_handled = true;
@@ -354,8 +354,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     // The entire surface has to be redrawn if it was reshaped or if switching
     // from or to DirectComposition layers, because the previous contents are
     // discarded and some contents would otherwise be undefined.
-    current_frame()->root_damage_rect =
-        current_frame()->root_render_pass->output_rect;
+    current_frame()->root_damage_rect = gfx::Rect(device_viewport_size);
   }
 
   // We can skip all drawing if the damage rect is now empty.
@@ -365,7 +364,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // If we have to draw but don't support partial swap, the whole output should
   // be considered damaged.
   if (!skip_drawing_root_render_pass && !use_partial_swap_)
-    current_frame()->root_damage_rect = root_render_pass->output_rect;
+    current_frame()->root_damage_rect = gfx::Rect(device_viewport_size);
 
   if (!skip_drawing_root_render_pass)
     DrawRenderPassAndExecuteCopyRequests(root_render_pass);
