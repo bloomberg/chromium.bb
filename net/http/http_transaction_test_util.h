@@ -286,6 +286,7 @@ class MockNetworkTransaction
   unsigned int socket_log_id_;
 
   bool done_reading_called_;
+  bool reading_;
 
   CompletionCallback resume_start_callback_;  // used for pause and restart.
 
