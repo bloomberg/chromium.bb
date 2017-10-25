@@ -133,6 +133,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
   };
 
   MessagePumpFuchsia();
+  ~MessagePumpFuchsia() override;
 
   bool WatchZxHandle(zx_handle_t handle,
                      bool persistent,

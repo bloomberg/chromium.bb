@@ -91,6 +91,8 @@ MessagePumpFuchsia::MessagePumpFuchsia() : weak_factory_(this) {
   CHECK_EQ(ZX_OK, zx_port_create(0, port_.receive()));
 }
 
+MessagePumpFuchsia::~MessagePumpFuchsia() {}
+
 bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
                                              bool persistent,
                                              int mode,
