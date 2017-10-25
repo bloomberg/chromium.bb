@@ -25,27 +25,31 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
 
   TabRendererData();
   TabRendererData(const TabRendererData& other);
+  TabRendererData(TabRendererData&& other);
   ~TabRendererData();
+
+  TabRendererData& operator=(const TabRendererData& other);
+  TabRendererData& operator=(TabRendererData&& other);
+
+  bool operator==(const TabRendererData& other);
 
   // This interprets the crashed status to decide whether or not this
   // render data represents a tab that is "crashed" (i.e. the render
   // process died unexpectedly).
   bool IsCrashed() const;
 
-  // Returns true if the TabRendererData is same as given |data|.
-  bool Equals(const TabRendererData& data);
-
   gfx::ImageSkia favicon;
-  NetworkState network_state;
+  NetworkState network_state = NETWORK_STATE_NONE;
   base::string16 title;
   GURL url;
-  base::TerminationStatus crashed_status;
-  bool incognito;
-  bool show_icon;
-  bool pinned;
-  bool blocked;
-  bool app;
-  TabAlertState alert_state;
+  base::TerminationStatus crashed_status =
+      base::TERMINATION_STATUS_STILL_RUNNING;
+  bool incognito = false;
+  bool show_icon = true;
+  bool pinned = false;
+  bool blocked = false;
+  bool app = false;
+  TabAlertState alert_state = TabAlertState::NONE;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_

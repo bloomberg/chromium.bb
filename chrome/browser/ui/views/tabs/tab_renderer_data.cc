@@ -7,19 +7,24 @@
 #include "base/process/kill.h"
 #include "build/build_config.h"
 
-TabRendererData::TabRendererData()
-    : network_state(NETWORK_STATE_NONE),
-      crashed_status(base::TERMINATION_STATUS_STILL_RUNNING),
-      incognito(false),
-      show_icon(true),
-      pinned(false),
-      blocked(false),
-      app(false),
-      alert_state(TabAlertState::NONE) {}
-
+TabRendererData::TabRendererData() = default;
 TabRendererData::TabRendererData(const TabRendererData& other) = default;
+TabRendererData::TabRendererData(TabRendererData&& other) = default;
 
-TabRendererData::~TabRendererData() {}
+TabRendererData& TabRendererData::operator=(const TabRendererData& other) =
+    default;
+TabRendererData& TabRendererData::operator=(TabRendererData&& other) = default;
+
+TabRendererData::~TabRendererData() = default;
+
+bool TabRendererData::operator==(const TabRendererData& other) {
+  return favicon.BackedBySameObjectAs(other.favicon) &&
+         network_state == other.network_state && title == other.title &&
+         url == other.url && crashed_status == other.crashed_status &&
+         incognito == other.incognito && show_icon == other.show_icon &&
+         pinned == other.pinned && blocked == other.blocked &&
+         app == other.app && alert_state == other.alert_state;
+}
 
 bool TabRendererData::IsCrashed() const {
   return (crashed_status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
@@ -30,19 +35,4 @@ bool TabRendererData::IsCrashed() const {
           crashed_status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
           crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
           crashed_status == base::TERMINATION_STATUS_LAUNCH_FAILED);
-}
-
-bool TabRendererData::Equals(const TabRendererData& data) {
-  return
-      favicon.BackedBySameObjectAs(data.favicon) &&
-      network_state == data.network_state &&
-      title == data.title &&
-      url == data.url &&
-      crashed_status == data.crashed_status &&
-      incognito == data.incognito &&
-      show_icon == data.show_icon &&
-      pinned == data.pinned &&
-      blocked == data.blocked &&
-      app == data.app &&
-      alert_state == data.alert_state;
 }

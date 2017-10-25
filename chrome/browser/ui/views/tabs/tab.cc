@@ -532,10 +532,10 @@ bool Tab::IsSelected() const {
 void Tab::SetData(const TabRendererData& data) {
   DCHECK(GetWidget());
 
-  if (data_.Equals(data))
+  if (data_ == data)
     return;
 
-  TabRendererData old(data_);
+  TabRendererData old(std::move(data_));
   data_ = data;
   UpdateThrobber(old);
 
