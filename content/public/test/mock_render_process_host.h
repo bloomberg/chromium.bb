@@ -173,6 +173,13 @@ class MockRenderProcessHost : public RenderProcessHost {
       std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
           renderer_interface);
 
+  void set_did_frame_commit_navigation(bool did_frame_commit_navigation) {
+    did_frame_commit_navigation_ = did_frame_commit_navigation;
+  }
+  bool did_frame_commit_navigation() const {
+    return did_frame_commit_navigation_;
+  }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -200,6 +207,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   service_manager::Identity child_identity_;
   viz::SharedBitmapAllocationNotifierImpl
       shared_bitmap_allocation_notifier_impl_;
+  bool did_frame_commit_navigation_ = false;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

@@ -78,9 +78,9 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const RequestNavigationParams& request_params) {
   // PlzNavigate
   if (IsBrowserSideNavigationEnabled()) {
-    OnCommitNavigation(ResourceResponseHead(), GURL(),
-                       FrameMsg_CommitDataNetworkService_Params(),
-                       common_params, request_params);
+    CommitNavigation(ResourceResponseHead(), GURL(), common_params,
+                     request_params, mojo::ScopedDataPipeConsumerHandle(),
+                     nullptr);
   } else {
     OnNavigate(common_params, start_params, request_params);
   }

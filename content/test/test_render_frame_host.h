@@ -161,6 +161,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   }
 
  private:
+  class NavigationInterceptor;
+
   void SendNavigateWithParameters(int nav_entry_id,
                                   bool did_create_new_entry,
                                   bool should_replace_entry,
@@ -174,6 +176,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   void SimulateWillStartRequest(ui::PageTransition transition);
 
+  // RenderFrameHostImpl:
+  mojom::FrameNavigationControl* GetNavigationControl() override;
+
+  mojom::FrameNavigationControl* GetInternalNavigationControl();
+
   TestRenderFrameHostCreationObserver child_creation_observer_;
 
   std::string contents_mime_type_;
@@ -183,6 +190,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // The last commit was for an error page.
   bool last_commit_was_error_page_;
+
+  // Used to track and forward outgoing navigation requests from the host.
+  std::unique_ptr<NavigationInterceptor> navigation_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);
 };

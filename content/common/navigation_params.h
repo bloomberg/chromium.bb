@@ -47,8 +47,8 @@ struct CONTENT_EXPORT SourceLocation {
 };
 
 // The following structures hold parameters used during a navigation. In
-// particular they are used by FrameMsg_Navigate, FrameMsg_CommitNavigation and
-// FrameHostMsg_BeginNavigation.
+// particular they are used by FrameMsg_Navigate, FrameHostMsg_BeginNavigation,
+// and mojom::FrameNavigationControl.
 
 // Provided by the browser or the renderer -------------------------------------
 

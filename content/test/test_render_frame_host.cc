@@ -48,6 +48,33 @@ void TestRenderFrameHostCreationObserver::RenderFrameCreated(
   last_created_frame_ = render_frame_host;
 }
 
+class TestRenderFrameHost::NavigationInterceptor
+    : public mojom::FrameNavigationControl {
+ public:
+  explicit NavigationInterceptor(TestRenderFrameHost* frame_host)
+      : frame_host_(frame_host) {}
+  ~NavigationInterceptor() override = default;
+
+  // mojom::FrameNavigationControl:
+  void CommitNavigation(const ResourceResponseHead& head,
+                        const GURL& body_url,
+                        const CommonNavigationParams& common_params,
+                        const RequestNavigationParams& request_params,
+                        mojo::ScopedDataPipeConsumerHandle body_data,
+                        mojom::URLLoaderFactoryPtr
+                            default_subresource_url_loader_factory) override {
+    frame_host_->GetProcess()->set_did_frame_commit_navigation(true);
+    frame_host_->GetInternalNavigationControl()->CommitNavigation(
+        head, body_url, common_params, request_params, std::move(body_data),
+        std::move(default_subresource_url_loader_factory));
+  }
+
+ private:
+  TestRenderFrameHost* const frame_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationInterceptor);
+};
+
 TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                                          RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
@@ -527,6 +554,17 @@ void TestRenderFrameHost::SimulateWillStartRequest(
   navigation_handle()->CallWillStartRequestForTesting(
       false /* is_post */, Referrer(GURL(), blink::kWebReferrerPolicyDefault),
       true /* user_gesture */, transition, false /* is_external_protocol */);
+}
+
+mojom::FrameNavigationControl* TestRenderFrameHost::GetNavigationControl() {
+  if (!navigation_interceptor_)
+    navigation_interceptor_ = std::make_unique<NavigationInterceptor>(this);
+  return navigation_interceptor_.get();
+}
+
+mojom::FrameNavigationControl*
+TestRenderFrameHost::GetInternalNavigationControl() {
+  return RenderFrameHostImpl::GetNavigationControl();
 }
 
 }  // namespace content

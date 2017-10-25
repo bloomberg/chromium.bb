@@ -3355,10 +3355,10 @@ void RenderFrameHostImpl::CommitNavigation(
   // prevent us from doing inappropriate things with javascript-url.
   // See https://crbug.com/766149.
   if (common_params.url.SchemeIs(url::kJavaScriptScheme)) {
-    Send(new FrameMsg_CommitNavigation(
-        routing_id_, ResourceResponseHead(), GURL(),
-        FrameMsg_CommitDataNetworkService_Params(), common_params,
-        request_params));
+    GetNavigationControl()->CommitNavigation(
+        ResourceResponseHead(), GURL(), common_params, request_params,
+        mojo::ScopedDataPipeConsumerHandle(),
+        /*default_subresource_url_loader_factory=*/nullptr);
     return;
   }
 
@@ -3378,26 +3378,24 @@ void RenderFrameHostImpl::CommitNavigation(
   const GURL body_url = body.get() ? body->GetURL() : GURL();
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
-  FrameMsg_CommitDataNetworkService_Params commit_data;
-  commit_data.handle = handle.release();
+  mojom::URLLoaderFactoryPtr default_subresource_url_loader_factory;
   // TODO(scottmg): Pass a factory for SW, etc. once we have one.
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     if (!subresource_url_loader_factory_info.is_valid()) {
       const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
       if (std::find(schemes.begin(), schemes.end(),
                     common_params.url.scheme()) != schemes.end()) {
-        commit_data.url_loader_factory = CreateWebUIURLLoader(frame_tree_node_)
-                                             .PassInterface()
-                                             .PassHandle()
-                                             .release();
+        default_subresource_url_loader_factory =
+            CreateWebUIURLLoader(frame_tree_node_);
       }
     } else {
-      commit_data.url_loader_factory =
-          subresource_url_loader_factory_info.PassHandle().release();
+      default_subresource_url_loader_factory.Bind(
+          std::move(subresource_url_loader_factory_info));
     }
   }
-  Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, commit_data,
-                                     common_params, request_params));
+  GetNavigationControl()->CommitNavigation(
+      head, body_url, common_params, request_params, std::move(handle),
+      std::move(default_subresource_url_loader_factory));
 
   // If a network request was made, update the Previews state.
   if (IsURLHandledByNetworkStack(common_params.url) &&
@@ -3498,6 +3496,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   frame_.reset();
   frame_host_interface_broker_binding_.Close();
   frame_bindings_control_.reset();
+  navigation_control_.reset();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();
@@ -4386,6 +4385,12 @@ void RenderFrameHostImpl::SetVisibilityForChildViews(bool visible) {
           return is_visible ? view->Show() : view->Hide();
       },
       visible));
+}
+
+mojom::FrameNavigationControl* RenderFrameHostImpl::GetNavigationControl() {
+  if (!navigation_control_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&navigation_control_);
+  return navigation_control_.get();
 }
 
 }  // namespace content

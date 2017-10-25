@@ -1007,6 +1007,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ForEachImmediateLocalRoot(
       const base::Callback<void(RenderFrameHostImpl*)>& callback);
 
+  // Lazily initializes and returns the mojom::FrameNavigationControl interface
+  // for this frame. May be overridden by friend subclasses for e.g. tests which
+  // wish to intercept outgoing navigation control messages.
+  virtual mojom::FrameNavigationControl* GetNavigationControl();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -1250,6 +1255,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
+  mojom::FrameNavigationControlAssociatedPtr navigation_control_;
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation
