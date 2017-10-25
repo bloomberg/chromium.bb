@@ -10,20 +10,14 @@ from __future__ import print_function
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import prebuilts
-from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
-from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import hwtest_results
-from chromite.lib import metrics
-from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
 
@@ -100,6 +94,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # slave statuses for master builds
     self._slave_statuses = {}
     self._experimental_build_statuses = {}
+    self._fatal = False
     self.buildbucket_client = self.GetBuildbucketClient()
 
   def _WaitForSlavesToComplete(self, manager, build_id, db, builders_array,
@@ -256,7 +251,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     # If all the failing, inflight and no_stat builders were sanity checkers
     # then ignore the failure.
-    fatal = self._IsFailureFatal(failing, inflight, no_stat)
+    self._fatal = self._IsFailureFatal(failing, inflight, no_stat)
 
     self_destructed = self._run.attrs.metadata.GetValueWithDefault(
         constants.SELF_DESTRUCTED_BUILD, False)
@@ -264,14 +259,14 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False)
     if self_destructed and self_destructed_with_success:
       # For a self-destructed and successful CQ, only check the failing slaves
-      fatal = self._IsFailureFatal(failing, set(), set())
+      self._fatal = self._IsFailureFatal(failing, set(), set())
 
     # Always annotate unsuccessful builders.
     self._AnnotateFailingBuilders(
         failing, inflight, no_stat, self._slave_statuses,
         self._experimental_build_statuses, self_destructed)
 
-    if fatal:
+    if self._fatal:
       self.HandleFailure(failing, inflight, no_stat, self_destructed)
       raise ImportantBuilderFailedException()
     else:
@@ -429,27 +424,29 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """
     return self._slave_statuses
 
-  def _GetFailedMessages(self, failing):
-    """Gathers the BuildFailureMessages from the |failing| builders.
+  def GetExperimentalBuildStatuses(self):
+    """Returns cached BuilderStatus of the experimental slave builds.
 
-    Args:
-      failing: Names of the builders that failed.
-
-    Returns:
-      A list of build_failure_message.BuildFailureMessage or NoneType objects.
-    """
-    return [self._slave_statuses[x].message for x in failing]
-
-  def _GetBuildersWithNoneMessages(self, failing):
-    """Returns a list of failed builders with NoneType failure message.
-
-    Args:
-      failing: Names of the builders that failed.
+    Cached results are populated during PerformStage, so this function
+    should only be called after PerformStage has returned.
 
     Returns:
-      A list of builder names.
+      A dictionary from names of experimental slave builds to their
+        builder_status_lib.BuilderStatus objects.
     """
-    return [x for x in failing if self._slave_statuses[x].message is None]
+    return self._experimental_build_statuses
+
+  def GetFatal(self):
+    """Returns whether the build (and its important slaves) failed with fatal.
+
+    Cached results are populated during PerformStage, so this function
+    should only be called after PerformStage has returned.
+
+    Returns:
+      A boolean indicating whether the build  (and its important slaves) failed
+      with fatal.
+    """
+    return self._fatal
 
 
 class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
@@ -482,8 +479,11 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     """
     builder_name = 'Canary Master'
     title = '%s has detected build failures:' % builder_name
-    msgs = [str(x) for x in self._GetFailedMessages(failing)]
-    slaves = self._GetBuildersWithNoneMessages(failing)
+    msgs = [str(x) for x in
+            builder_status_lib.GetFailedMessages(
+                self._slave_statuses, failing)]
+    slaves = builder_status_lib.GetBuildersWithNoneMessages(
+        self._slave_statuses, failing)
     msgs += ['%s failed with unknown reason.' % x for x in slaves]
     msgs += ['%s timed out' % x for x in inflight]
     msgs += ['%s did not start' % x for x in no_stat]
@@ -560,12 +560,6 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
 
-  # These stages are required to have run at least once and to never have
-  # failed, on each important slave. Otherwise, we may have incomplete
-  # information on which CLs affect which builders, and thus skip all
-  # board-aware submission.
-  _CRITICAL_STAGES = ('CommitQueueSync',)
-
   def _IsFailureFatal(self, failing, inflight, no_stat):
     """Returns a boolean indicating whether the build should fail.
 
@@ -590,10 +584,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         failing, inflight, no_stat)
 
   def HandleSuccess(self):
-    if self._run.config.master:
-      self.sync_stage.pool.SubmitPool(reason=constants.STRATEGY_CQ_SUCCESS)
-      if config_lib.IsPFQType(self._run.config.build_type):
-        super(CommitQueueCompletionStage, self).HandleSuccess()
+    """Handle a successful Commit Queue."""
+    super(CommitQueueCompletionStage, self).HandleSuccess()
 
     manager = self._run.attrs.manifest_manager
     version = manager.current_version
@@ -601,219 +593,25 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       chroot_manager = chroot_lib.ChrootManager(self._build_root)
       chroot_manager.SetChrootVersion(version)
 
-    self._RecordSubmissionMetrics(True)
-
   def HandleFailure(self, failing, inflight, no_stat, self_destructed):
     """Handle a build failure or timeout in the Commit Queue.
 
-    This function performs any tasks that need to happen when the Commit Queue
-    fails:
-      - Abort the HWTests if necessary.
-      - Push any CLs that indicate that they don't care about this failure.
-      - Determine what CLs to reject.
-
-    See MasterSlaveSyncCompletionStage.HandleFailure.
+    Runs MasterSlaveSyncCompletionStage.HandleFailure, and send out infra alerts
+    (if needed) for a master build.
 
     Args:
-      failing: Names of the builders that failed.
-      inflight: Names of the builders that timed out.
-      no_stat: Set of builder names of slave builders that had status None.
-      self_destructed: Boolean indicating whether the master build destructed
-                       itself and stopped waiting completion of its slaves.
+      failing: Set of builder names that failed.
+      inflight: Set of builder names that timed out.
+      no_stat: Set of builder names that had status None.
+      self_destructed: Boolean indicating whether it's a master build and it
+        self-destructed and stopped waiting completion of its slaves.
     """
     # Print out the status about what builds failed or not.
-    MasterSlaveSyncCompletionStage.HandleFailure(
-        self, failing, inflight, no_stat, self_destructed)
+    super(CommitQueueCompletionStage, self).HandleFailure(
+        failing, inflight, no_stat, self_destructed)
 
     if self._run.config.master:
-      slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
-      self.CQMasterHandleFailure(
-          failing, inflight, no_stat, self_destructed, slave_buildbucket_ids)
-
-    self._RecordSubmissionMetrics(False)
-
-  def _RecordSubmissionMetrics(self, success=False):
-    """Record CL handling statistics for submitted changes in monarch.
-
-    Args:
-      success: bool indicating whether the CQ was a success.
-    """
-    if not self._run.config.master:
-      return
-
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
-      my_actions = db.GetActionsForBuild(build_id)
-      my_submit_actions = [m for m in my_actions
-                           if m.action == constants.CL_ACTION_SUBMITTED]
-      # A dictionary mapping from every change that was submitted to the
-      # submission reason.
-      submitted_change_strategies = {m.patch : m.reason
-                                     for m in my_submit_actions}
-      submitted_changes_all_actions = db.GetActionsForChanges(
-          submitted_change_strategies.keys())
-
-      action_history = clactions.CLActionHistory(submitted_changes_all_actions)
-      logging.info('Recording submission metrics about %s CLs to monarch.',
-                   len(submitted_change_strategies))
-      clactions.RecordSubmissionMetrics(action_history,
-                                        submitted_change_strategies)
-
-      # Record CQ wall-clock metric.
-      submitted_any = len(submitted_change_strategies) > 0
-      bi = db.GetBuildStatus(build_id)
-      current_time = db.GetTime()
-      elapsed_seconds = int((current_time - bi['start_time']).total_seconds())
-      self_destructed = self._run.attrs.metadata.GetValueWithDefault(
-          constants.SELF_DESTRUCTED_BUILD, False)
-      fields = {'success': success,
-                'submitted_any': submitted_any,
-                'self_destructed': self_destructed}
-
-      m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
-      m.increment_by(elapsed_seconds, fields=fields)
-
-  def _GetBuildsPassedSyncStage(self, build_id, db, slave_buildbucket_ids):
-    """Get builds which passed the sync stages.
-
-    Args:
-      build_id: The build id of the master build.
-      db: An instance of cidb.CIDBConnection.
-      slave_buildbucket_ids: A list of buildbucket_ids of the slave builds.
-
-    Returns:
-      A list of the builds (master + slaves) which passed the sync stage (See
-      relevant_changes.TriageRelevantChanges.STAGE_SYNC)
-    """
-    assert db, 'No database connection to use.'
-    build_stages_dict = {}
-
-    # Get slave stages.
-    slave_stages = db.GetSlaveStages(
-        build_id, buildbucket_ids=slave_buildbucket_ids)
-    for stage in slave_stages:
-      build_stages_dict.setdefault(stage['build_config'], []).append(stage)
-
-    # Get master stages.
-    master_stages = db.GetBuildStages(build_id)
-    for stage in master_stages:
-      build_stages_dict.setdefault(self._run.config.name, []).append(stage)
-
-    triage_relevant_changes = relevant_changes.TriageRelevantChanges
-    builds_passed_sync_stage = (
-        triage_relevant_changes.GetBuildsPassedAnyOfStages(
-            build_stages_dict, triage_relevant_changes.STAGE_SYNC))
-    return builds_passed_sync_stage
-
-  def CQMasterHandleFailure(self, failing, inflight, no_stat, self_destructed,
-                            slave_buildbucket_ids):
-    """Handle changes in the validation pool upon build failure or timeout.
-
-    This function determines whether to reject CLs and what CLs to
-    reject based on the category of the failures and whether the
-    sanity check builder(s) passed.
-
-    Args:
-      failing: A set of build config names of builds that failed.
-      inflight: A set of build config names of builds that timed out.
-      no_stat: A set of build config names of builds that had status None.
-      self_destructed: Boolean indicating whether the master build destructed
-                       itself and stopped waiting completion of its slaves.
-      slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-                             scheduled by Buildbucket.
-    """
-    messages = self._GetFailedMessages(failing)
-    self.SendInfraAlertIfNeeded(failing, inflight, no_stat, self_destructed)
-
-    changes = self.sync_stage.pool.applied
-
-    build_id, db = self._run.GetCIDBHandle()
-    builds_passed_sync_stage = self._GetBuildsPassedSyncStage(
-        build_id, db, slave_buildbucket_ids)
-    builds_not_passed_sync_stage = failing.union(inflight).union(
-        no_stat).difference(builds_passed_sync_stage)
-    changes_by_config = (
-        relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
-            build_id, db, self._run.config, changes,
-            builds_not_passed_sync_stage,
-            slave_buildbucket_ids, include_master=True))
-    subsys_by_config = (
-        relevant_changes.RelevantChanges.GetSubsysResultForSlaves(
-            build_id, db))
-
-    changes_by_slaves = changes_by_config.copy()
-    # Exclude master build
-    changes_by_slaves.pop(self._run.config.name, None)
-    slaves_by_change = cros_build_lib.InvertDictionary(changes_by_slaves)
-    passed_in_history_slaves_by_change = (
-        relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            build_id, db, changes, slaves_by_change))
-
-    # Even if some slaves didn't pass the critical stages, we can still submit
-    # some changes based on CQ history.
-    # Even if there was a failure, we can submit the changes that indicate
-    # that they don't care about this failure.
-    changes = self.sync_stage.pool.SubmitPartialPool(
-        changes, messages, changes_by_config, subsys_by_config,
-        passed_in_history_slaves_by_change, failing, inflight, no_stat)
-
-    sanity_check_slaves = set(self._run.config.sanity_check_slaves)
-    tot_sanity = self._ToTSanity(sanity_check_slaves, self._slave_statuses)
-
-    if not tot_sanity:
-      # Sanity check slave failure may have been caused by bug(s)
-      # in ToT or broken infrastructure. In any of those cases, we
-      # should not reject any changes.
-      logging.warning('Detected that a sanity-check builder failed. '
-                      'Will not reject any changes.')
-
-    # If the tree was not open when we acquired a pool, do not assume that
-    # tot was sane.
-    if not self.sync_stage.pool.tree_was_open:
-      logging.info('The tree was not open when changes were acquired so we are '
-                   'attributing failures to the broken tree rather than the '
-                   'changes.')
-      tot_sanity = False
-
-    if tot_sanity:
-      try:
-        status = tree_status.WaitForTreeStatus(
-            period=tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP,
-            timeout=tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT,
-            throttled_ok=True)
-        tot_sanity = (status == constants.TREE_OPEN)
-      except timeout_util.TimeoutError:
-        logging.warning('Timed out waiting for getting tree status in %s(s).',
-                        tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT)
-        tot_sanity = False
-
-      if not tot_sanity:
-        logging.info('The tree is not open now, so we are attributing '
-                     'failures to the broken tree rather than the changes.')
-
-    if not self_destructed and inflight:
-      # The master didn't destruct itself and some slave(s) timed out due to
-      # unknown causes, so only reject infra changes (probably just chromite
-      # changes).
-      self.sync_stage.pool.HandleValidationTimeout(sanity=tot_sanity,
-                                                   changes=changes)
-      return
-
-    failed_hwtests = None
-    if db is not None:
-      slave_statuses = db.GetSlaveStatuses(
-          build_id, buildbucket_ids=slave_buildbucket_ids)
-      slave_build_ids = [x['id'] for x in slave_statuses]
-      failed_hwtests = (
-          hwtest_results.HWTestResultManager.GetFailedHWTestsFromCIDB(
-              db, slave_build_ids))
-
-    # Some builder failed, or some builder did not report stats, or
-    # the intersection of both. Let HandleValidationFailure decide
-    # what changes to reject.
-    self.sync_stage.pool.HandleValidationFailure(
-        messages, sanity=tot_sanity, changes=changes, no_stat=no_stat,
-        failed_hwtests=failed_hwtests)
+      self.SendInfraAlertIfNeeded(failing, inflight, no_stat, self_destructed)
 
   def _GetInfraFailMessages(self, failing):
     """Returns a list of messages containing infra failures.
@@ -824,7 +622,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     Returns:
       A list of build_failure_message.BuildFailureMessage objects.
     """
-    msgs = self._GetFailedMessages(failing)
+    msgs = builder_status_lib.GetFailedMessages(
+        self._slave_statuses, failing)
     # Filter out None messages because we cannot analyze them.
     return [x for x in msgs if x and
             x.HasExceptionCategories({constants.EXCEPTION_CATEGORY_INFRA,
@@ -842,7 +641,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     """
     msgs = [str(x) for x in self._GetInfraFailMessages(failing)]
     # Failed to report a non-None messages is an infra failure.
-    slaves = self._GetBuildersWithNoneMessages(failing)
+    slaves = builder_status_lib.GetBuildersWithNoneMessages(
+        self._slave_statuses, failing)
     msgs += ['%s failed with unknown reason.' % x for x in slaves]
 
     if not self_destructed:
@@ -864,23 +664,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       extra_fields = {'X-cbuildbot-alert': 'cq-infra-alert'}
       tree_status.SendHealthAlert(self._run, subject, msg,
                                   extra_fields=extra_fields)
-
-  @staticmethod
-  def _ToTSanity(sanity_check_slaves, slave_statuses):
-    """Returns False if any sanity check slaves failed.
-
-    Args:
-      sanity_check_slaves: Names of slave builders that are "sanity check"
-        builders for the current master.
-      slave_statuses: Dict of builder_status_lib.BuilderStatus objects by
-        builder name keys.
-
-    Returns:
-      True if no sanity builders ran and failed.
-    """
-    sanity_check_slaves = sanity_check_slaves or []
-    return not any([x in slave_statuses and slave_statuses[x].Failed() for
-                    x in sanity_check_slaves])
 
   def _WaitForSlavesToComplete(self, manager, build_id, db, builders_array,
                                timeout):

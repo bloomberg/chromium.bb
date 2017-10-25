@@ -7,13 +7,15 @@
 from __future__ import print_function
 
 import copy
+import mock
 import os
 
 from chromite.cbuildbot import cbuildbot_run
-from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
+from chromite.cbuildbot.stages import handle_changes_stages
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -61,11 +63,12 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     self._manager.__exit__(None, None, None)
 
   def _initConfig(
-      self, bot_id, extra_argv=None, override_hw_test_config=None, models=None):
+      self, bot_id, master=False, extra_argv=None, override_hw_test_config=None,
+      models=None):
     """Return normal options/build_config for |bot_id|"""
     site_config = config_lib.GetConfig()
     build_config = copy.deepcopy(site_config[bot_id])
-    build_config['master'] = False
+    build_config['master'] = master
     build_config['important'] = False
     if models:
       build_config['models'] = models
@@ -193,3 +196,27 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
         model2,
         test_phase2)
     self.assertIsNotNone(hw_stage)
+
+
+class DistributedBuilderTests(SimpleBuilderTest):
+  """Tests for DistributedBuilder."""
+
+  def testRunStagesCommitQueueMaster(self):
+    """Verify RunStages for master-paladin builder."""
+    builder_run = self._initConfig('master-paladin', master=True)
+    builder = simple_builders.DistributedBuilder(builder_run)
+    builder.sync_stage = mock.Mock()
+    builder.completion_stage_class = mock.Mock()
+    builder.RunStages()
+    self.assertTrue(handle_changes_stages.CommitQueueHandleChangesStage
+                    in self.called_stages)
+
+  def testRunStagesReleaseMaster(self):
+    """Verify RunStages for master-release builder."""
+    builder_run = self._initConfig('master-release', master=True)
+    builder = simple_builders.DistributedBuilder(builder_run)
+    builder.sync_stage = mock.Mock()
+    builder.completion_stage_class = mock.Mock()
+    builder.RunStages()
+    self.assertFalse(handle_changes_stages.CommitQueueHandleChangesStage
+                     in self.called_stages)

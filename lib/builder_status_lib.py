@@ -89,6 +89,33 @@ def FetchCurrentSlaveBuildersArray(config, metadata, builders_array):
   else:
     return builders_array
 
+
+def GetFailedMessages(statuses, failing):
+  """Gathers the BuildFailureMessages from the |failing| builders.
+
+  Args:
+    statuses: A dict mapping build config names to their BuilderStatus.
+    failing: Names of the builders that failed.
+
+  Returns:
+    A list of build_failure_message.BuildFailureMessage or NoneType objects.
+  """
+  return [statuses[x].message for x in failing]
+
+
+def GetBuildersWithNoneMessages(statuses, failing):
+  """Returns a list of failed builders with NoneType failure message.
+
+  Args:
+    statuses: A dict mapping build config names to their BuilderStatus.
+    failing: Names of the builders that failed.
+
+  Returns:
+    A list of builder names.
+  """
+  return [x for x in failing if statuses[x].message is None]
+
+
 class BuilderStatus(object):
   """Object representing the status of a build."""
 

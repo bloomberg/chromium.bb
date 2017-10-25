@@ -19,6 +19,7 @@ from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
+from chromite.cbuildbot.stages import handle_changes_stages
 from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import scheduler_stages
@@ -499,6 +500,11 @@ class DistributedBuilder(SimpleBuilder):
     completion_successful = False
     try:
       completion_stage.Run()
+
+      if config_lib.IsMasterCQ(self._run.config):
+        self._RunStage(handle_changes_stages.CommitQueueHandleChangesStage,
+                       self.sync_stage, completion_stage)
+
       completion_successful = True
     finally:
       self._Publish(was_build_successful, build_finished, completion_successful)
