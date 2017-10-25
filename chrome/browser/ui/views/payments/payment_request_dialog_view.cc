@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +29,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -174,6 +176,14 @@ void PaymentRequestDialogView::OnSpecUpdated() {
 
 void PaymentRequestDialogView::OnGetAllPaymentInstrumentsFinished() {
   HideProcessingSpinner();
+  if (observer_for_testing_) {
+    // The OnGetAllPaymentInstrumentsFinished() method is called if the payment
+    // instruments were retrieved asynchronously. This method hides the
+    // "Processing" spinner, so the UI is now ready for interaction. Any test
+    // that opens UI can now interact with it. The OnDialogOpened() call
+    // notifies the tests of this event.
+    observer_for_testing_->OnDialogOpened();
+  }
 }
 
 void PaymentRequestDialogView::Pay() {
@@ -340,8 +350,15 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
                             request_->spec(), request_->state(), this),
                         &controller_map_),
                     /* animate = */ false);
-  if (observer_for_testing_)
+  if (observer_for_testing_ &&
+      request_->state()->is_get_all_instruments_finished()) {
+    // The is_get_all_instruments_finished() method returns true if all payment
+    // instruments were retrieved synchronously. There's no "Processing" spinner
+    // to hide, so the UI is ready instantly. Any test that opens UI can now
+    // interact with it. The OnDialogOpened() call notifies the tests of this
+    // event.
     observer_for_testing_->OnDialogOpened();
+  }
 }
 
 void PaymentRequestDialogView::SetupSpinnerOverlay() {

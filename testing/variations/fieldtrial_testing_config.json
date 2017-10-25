@@ -3168,6 +3168,25 @@
             ]
         }
     ],
+    "ServiceWorkerPaymentApps": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerPaymentApps"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceWorkerScriptStreaming": [
         {
             "platforms": [

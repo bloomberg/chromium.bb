@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace payments {
@@ -333,11 +337,39 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   ExpectBodyContains({"NotAllowedError"});
 }
 
-// If the device does not have any payment apps installed, canMakePayment()
-// should return false for them in the incognito mode. However, the query quota
-// is still enforced to avoid incognito mode detection.
+// Querying for payment apps in incognito returns true regardless if the app is
+// installed. Multiple queries for different apps are rejected with
+// NotSupportedError to avoid user fingerprinting.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentAppsInIncognitoMode) {
+  SetIncognito();
+
+  CallCanMakePayment(CheckFor::ALICE_PAY);
+
+  ExpectBodyContains({"true"});
+
+  CallCanMakePayment(CheckFor::BOB_PAY);
+
+  ExpectBodyContains({"NotAllowedError"});
+
+  CallCanMakePayment(CheckFor::ALICE_PAY);
+
+  ExpectBodyContains({"true"});
+
+  CallCanMakePayment(CheckFor::BOB_PAY);
+
+  ExpectBodyContains({"NotAllowedError"});
+}
+
+// If the payment apps feature is disabled, canMakePayment() should return false
+// when querying for payment apps in the incognito mode. However, the query
+// quota is still enforced to avoid incognito mode detection.
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
+                       QueryQuotaForDisabledPaymentAppsInIncognitoMode) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kServiceWorkerPaymentApps);
+
   SetIncognito();
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
@@ -357,10 +389,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   ExpectBodyContains({"NotAllowedError"});
 }
 
-// If the device does not have any payment apps installed, canMakePayment()
-// queries for both payment apps and basic-card always return true, even if the
-// user does not have any cards on file. However, the query quota is still
-// enforced to avoid incognito mode detection.
+// Querying for both payment apps and autofill cards in incognito returns true
+// regardless if the app is installed and whether the user has card on file.
+// Multiple queries for different payment methods are rejected with
+// NotSupportedError to avoid user fingerprinting.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        NoQueryQuotaForPaymentAppsAndCardsInIncognito) {
   SetIncognito();
