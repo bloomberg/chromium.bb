@@ -18,7 +18,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
     : public GarbageCollectedFinalized<CallbackFunctionBase>,
       public TraceWrapperBase {
  public:
-  virtual ~CallbackFunctionBase();
+  virtual ~CallbackFunctionBase() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
   void TraceWrappers(const ScriptWrappableVisitor*) const override;

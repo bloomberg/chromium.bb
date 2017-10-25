@@ -14,8 +14,6 @@ CallbackFunctionBase::CallbackFunctionBase(ScriptState* scriptState,
   DCHECK(!callback_.IsEmpty());
 }
 
-CallbackFunctionBase::~CallbackFunctionBase() = default;
-
 void CallbackFunctionBase::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);

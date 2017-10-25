@@ -19,7 +19,6 @@ blink_modules_sources("geolocation") {
     "NavigatorGeolocation.cpp",
     "NavigatorGeolocation.h",
     "PositionError.h",
-    "PositionErrorCallback.h",
   ]
   deps = [
     "//device/geolocation/public/interfaces:interfaces_blink",

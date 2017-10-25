@@ -28,6 +28,7 @@
 #define Geolocation_h
 
 #include "bindings/modules/v8/v8_position_callback.h"
+#include "bindings/modules/v8/v8_position_error_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom-blink.h"
@@ -36,7 +37,6 @@
 #include "modules/geolocation/GeolocationWatchers.h"
 #include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionError.h"
-#include "modules/geolocation/PositionErrorCallback.h"
 #include "modules/geolocation/PositionOptions.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -69,14 +69,14 @@ class MODULES_EXPORT Geolocation final : public ScriptWrappable,
   // Creates a oneshot and attempts to obtain a position that meets the
   // constraints of the options.
   void getCurrentPosition(V8PositionCallback*,
-                          PositionErrorCallback*,
-                          const PositionOptions&);
+                          V8PositionErrorCallback* = nullptr,
+                          const PositionOptions& = PositionOptions());
 
   // Creates a watcher that will be notified whenever a new position is
   // available that meets the constraints of the options.
   int watchPosition(V8PositionCallback*,
-                    PositionErrorCallback*,
-                    const PositionOptions&);
+                    V8PositionErrorCallback* = nullptr,
+                    const PositionOptions& = PositionOptions());
 
   // Removes all references to the watcher, it will not be updated again.
   void clearWatch(int watch_id);

@@ -27,16 +27,21 @@
 [
     NoInterfaceObject
 ] interface Geolocation {
-    [LogActivity] void getCurrentPosition(PositionCallback successCallback,
-                                     optional PositionErrorCallback errorCallback,
-                                     optional PositionOptions options);
+    [LogActivity] void getCurrentPosition(
+        PositionCallback successCallback,
+        optional PositionErrorCallback errorCallback,
+        optional PositionOptions options);
 
-    [LogActivity] long watchPosition(PositionCallback successCallback,
-                                optional PositionErrorCallback errorCallback,
-                                optional PositionOptions options);
+    [LogActivity] long watchPosition(
+        PositionCallback successCallback,
+        optional PositionErrorCallback errorCallback,
+        optional PositionOptions options);
 
     void clearWatch(long watchID);
 };
 
 // https://www.w3.org/TR/geolocation-API/#position-callback
 callback PositionCallback = void(Position position);
+
+// https://www.w3.org/TR/geolocation-API/#error-callback
+callback PositionErrorCallback = void (PositionError positionError);

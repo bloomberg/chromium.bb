@@ -6,7 +6,7 @@
 #define GeoNotifier_h
 
 #include "bindings/modules/v8/v8_position_callback.h"
-#include "modules/geolocation/PositionErrorCallback.h"
+#include "bindings/modules/v8/v8_position_error_callback.h"
 #include "modules/geolocation/PositionOptions.h"
 #include "platform/Timer.h"
 #include "platform/bindings/TraceWrapperMember.h"
@@ -23,7 +23,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
  public:
   static GeoNotifier* Create(Geolocation* geolocation,
                              V8PositionCallback* position_callback,
-                             PositionErrorCallback* position_error_callback,
+                             V8PositionErrorCallback* position_error_callback,
                              const PositionOptions& options) {
     return new GeoNotifier(geolocation, position_callback,
                            position_error_callback, options);
@@ -58,12 +58,12 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
  private:
   GeoNotifier(Geolocation*,
               V8PositionCallback*,
-              PositionErrorCallback*,
+              V8PositionErrorCallback*,
               const PositionOptions&);
 
   Member<Geolocation> geolocation_;
   TraceWrapperMember<V8PositionCallback> success_callback_;
-  Member<PositionErrorCallback> error_callback_;
+  TraceWrapperMember<V8PositionErrorCallback> error_callback_;
   const PositionOptions options_;
   TaskRunnerTimer<GeoNotifier> timer_;
   Member<PositionError> fatal_error_;
