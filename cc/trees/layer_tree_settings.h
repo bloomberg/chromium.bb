@@ -91,7 +91,7 @@ class CC_EXPORT LayerTreeSettings {
   int max_preraster_distance_in_screen_pixels = 1000;
   viz::ResourceFormat preferred_tile_format;
 
-  bool enable_mask_tiling = false;
+  bool enable_mask_tiling = true;
 
   // If set to true, the compositor may selectively defer image decodes to the
   // Image Decode Service and raster tiles without images until the decode is
