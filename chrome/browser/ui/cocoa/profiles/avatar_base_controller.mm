@@ -127,6 +127,14 @@ bool ProfileUpdateObserver::HasAvatarError() {
   return button_.get();
 }
 
+- (BOOL)shouldUseGenericButton {
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  return !browser_->profile()->IsGuestSession() &&
+         storage.GetNumberOfProfiles() == 1 &&
+         !storage.GetAllProfilesAttributes().front()->IsAuthenticated();
+}
+
 - (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
                    withServiceType:(signin::GAIAServiceType)serviceType

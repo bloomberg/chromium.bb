@@ -895,6 +895,8 @@ willPositionSheet:(NSWindow*)sheet
     NSView* avatar = [avatarButtonController_ view];
     [layout setShouldShowAvatar:YES];
     [layout setShouldUseNewAvatar:[self shouldUseNewAvatarButton]];
+    [layout
+        setIsGenericAvatar:[avatarButtonController_ shouldUseGenericButton]];
     [layout setAvatarSize:[avatar frame].size];
     [layout setAvatarLineWidth:[[avatar superview] cr_lineWidth]];
   }

@@ -23,6 +23,7 @@ class BrowserWindowLayoutTest : public testing::Test {
     [layout setFullscreenButtonFrame:NSMakeRect(575, 596, 16, 17)];
     [layout setShouldShowAvatar:YES];
     [layout setShouldUseNewAvatar:YES];
+    [layout setIsGenericAvatar:NO];
     [layout setAvatarSize:NSMakeSize(63, 28)];
     [layout setAvatarLineWidth:1];
     [layout setHasToolbar:YES];
@@ -210,4 +211,19 @@ TEST_F(BrowserWindowLayoutTest, TestAvatarButtonPixelAlignment) {
   chrome::LayoutOutput output = [layout computeLayout];
 
   EXPECT_NSEQ(NSMakeRect(537, 589, 28, 28), output.tabStripLayout.avatarFrame);
+}
+
+// Tests that the avatar button is aligned properly on the right. The generic
+// avatar button should be aligned differently.
+TEST_F(BrowserWindowLayoutTest, TestAvatarButtonAlignment) {
+  [layout setShouldUseNewAvatar:YES];
+  [layout setFullscreenButtonFrame:NSZeroRect];
+  [layout setIsGenericAvatar:NO];
+
+  chrome::LayoutOutput output = [layout computeLayout];
+  EXPECT_EQ(596, NSMaxX(output.tabStripLayout.avatarFrame));
+
+  [layout setIsGenericAvatar:YES];
+  output = [layout computeLayout];
+  EXPECT_EQ(595, NSMaxX(output.tabStripLayout.avatarFrame));
 }

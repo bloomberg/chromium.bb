@@ -45,6 +45,11 @@ class ProfileUpdateObserver;
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
 
+// Returns YES if the avatar button should be a generic one. If there is a
+// single local profile, then use the generic avatar button instead of the
+// profile name. Never use the generic button if the active profile is Guest.
+- (BOOL)shouldUseGenericButton;
+
 // Shows the avatar bubble in the given mode.
 - (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
