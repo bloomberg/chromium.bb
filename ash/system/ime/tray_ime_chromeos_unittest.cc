@@ -120,9 +120,8 @@ void TrayIMETest::SuppressKeyboard() {
   ui::DeviceHotplugEventObserver* manager =
       ui::DeviceDataManager::GetInstance();
   std::vector<ui::TouchscreenDevice> screens;
-  screens.push_back(
-      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen", gfx::Size(1024, 768), 0));
+  screens.emplace_back(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                       "Touchscreen", gfx::Size(1024, 768), 0);
   manager->OnTouchscreenDevicesUpdated(screens);
 
   std::vector<ui::InputDevice> keyboards;

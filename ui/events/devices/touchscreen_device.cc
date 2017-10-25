@@ -10,20 +10,30 @@
 
 namespace ui {
 
-TouchscreenDevice::TouchscreenDevice() : touch_points(0) {}
+TouchscreenDevice::TouchscreenDevice() = default;
 
 TouchscreenDevice::TouchscreenDevice(int id,
                                      InputDeviceType type,
                                      const std::string& name,
                                      const gfx::Size& size,
-                                     int touch_points)
-    : InputDevice(id, type, name), size(size), touch_points(touch_points) {}
+                                     int touch_points,
+                                     bool has_stylus)
+    : InputDevice(id, type, name),
+      size(size),
+      touch_points(touch_points),
+      has_stylus(has_stylus) {}
 
 TouchscreenDevice::TouchscreenDevice(const InputDevice& input_device,
                                      const gfx::Size& size,
-                                     int touch_points)
-    : InputDevice(input_device), size(size), touch_points(touch_points) {}
+                                     int touch_points,
+                                     bool has_stylus)
+    : InputDevice(input_device),
+      size(size),
+      touch_points(touch_points),
+      has_stylus(has_stylus) {}
 
-TouchscreenDevice::~TouchscreenDevice() {}
+TouchscreenDevice::TouchscreenDevice(const TouchscreenDevice& other) = default;
+
+TouchscreenDevice::~TouchscreenDevice() = default;
 
 }  // namespace ui

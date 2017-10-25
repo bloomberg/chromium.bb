@@ -166,9 +166,9 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
 
 TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
-  screens.push_back(
-      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen", gfx::Size(1024, 768), 0));
+  screens.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Touchscreen",
+      gfx::Size(1024, 768), 0, false /* has_stylus */));
   UpdateTouchscreenDevices(screens);
   std::vector<ui::InputDevice> keyboard_devices;
   keyboard_devices.push_back(ui::InputDevice(

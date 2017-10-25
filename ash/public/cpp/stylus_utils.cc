@@ -37,7 +37,7 @@ bool HasStylusInput() {
   // Check to see if the hardware reports it is stylus capable.
   for (const ui::TouchscreenDevice& device :
        ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
-    if (device.is_stylus &&
+    if (device.has_stylus &&
         device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
       return true;
     }

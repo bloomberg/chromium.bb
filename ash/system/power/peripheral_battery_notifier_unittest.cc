@@ -197,9 +197,8 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_StylusNotification) {
   // Add an external stylus to our test device manager.
   ui::TouchscreenDevice stylus(0 /* id */, ui::INPUT_DEVICE_EXTERNAL,
                                kTestStylusName, gfx::Size(),
-                               1 /* touch_points */);
+                               1 /* touch_points */, true /* has_stylus */);
   stylus.sys_path = base::FilePath(kTestStylusBatteryPath);
-  stylus.is_stylus = true;
 
   ui::test::DeviceDataManagerTestAPI test_api;
   test_api.SetTouchscreenDevices({stylus});
