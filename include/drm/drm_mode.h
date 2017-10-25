@@ -75,7 +75,7 @@ extern "C" {
   * (define not exposed to user space).
   */
 #define DRM_MODE_FLAG_3D_MASK			(0x1f<<14)
-#define  DRM_MODE_FLAG_3D_NONE			(0<<14)
+#define  DRM_MODE_FLAG_3D_NONE		(0<<14)
 #define  DRM_MODE_FLAG_3D_FRAME_PACKING		(1<<14)
 #define  DRM_MODE_FLAG_3D_FIELD_ALTERNATIVE	(2<<14)
 #define  DRM_MODE_FLAG_3D_LINE_ALTERNATIVE	(3<<14)
@@ -85,6 +85,19 @@ extern "C" {
 #define  DRM_MODE_FLAG_3D_TOP_AND_BOTTOM	(7<<14)
 #define  DRM_MODE_FLAG_3D_SIDE_BY_SIDE_HALF	(8<<14)
 
+/* Picture aspect ratio options */
+#define DRM_MODE_PICTURE_ASPECT_NONE		0
+#define DRM_MODE_PICTURE_ASPECT_4_3		1
+#define DRM_MODE_PICTURE_ASPECT_16_9		2
+
+/* Aspect ratio flag bitmask (4 bits 22:19) */
+#define DRM_MODE_FLAG_PIC_AR_MASK		(0x0F<<19)
+#define  DRM_MODE_FLAG_PIC_AR_NONE \
+			(DRM_MODE_PICTURE_ASPECT_NONE<<19)
+#define  DRM_MODE_FLAG_PIC_AR_4_3 \
+			(DRM_MODE_PICTURE_ASPECT_4_3<<19)
+#define  DRM_MODE_FLAG_PIC_AR_16_9 \
+			(DRM_MODE_PICTURE_ASPECT_16_9<<19)
 
 /* DPMS flags */
 /* bit compatible with the xorg definitions. */
@@ -99,11 +112,6 @@ extern "C" {
 #define DRM_MODE_SCALE_FULLSCREEN	1 /* Full screen, ignore aspect */
 #define DRM_MODE_SCALE_CENTER		2 /* Centered, no scaling */
 #define DRM_MODE_SCALE_ASPECT		3 /* Full screen, preserve aspect */
-
-/* Picture aspect ratio options */
-#define DRM_MODE_PICTURE_ASPECT_NONE	0
-#define DRM_MODE_PICTURE_ASPECT_4_3	1
-#define DRM_MODE_PICTURE_ASPECT_16_9	2
 
 /* Dithering mode options */
 #define DRM_MODE_DITHERING_OFF	0
@@ -724,7 +732,7 @@ struct drm_format_modifier_blob {
 	/* Where in this blob the modifiers exist (in bytes) */
 	__u32 modifiers_offset;
 
-	/* u32 formats[] */
+	/* __u32 formats[] */
 	/* struct drm_format_modifier modifiers[] */
 };
 
@@ -741,9 +749,9 @@ struct drm_format_modifier {
 	 * If the number formats grew to 128, and formats 98-102 are
 	 * supported with the modifier:
 	 *
-	 * 0x0000003c00000000 0000000000000000
+	 * 0x0000007c00000000 0000000000000000
 	 *		  ^
-	 *		  |__offset = 64, formats = 0x3c00000000
+	 *		  |__offset = 64, formats = 0x7c00000000
 	 *
 	 */
 	__u64 formats;
@@ -772,6 +780,72 @@ struct drm_mode_create_blob {
  */
 struct drm_mode_destroy_blob {
 	__u32 blob_id;
+};
+
+/**
+ * Lease mode resources, creating another drm_master.
+ */
+struct drm_mode_create_lease {
+	/** Pointer to array of object ids (__u32) */
+	__u64 object_ids;
+	/** Number of object ids */
+	__u32 object_count;
+	/** flags for new FD (O_CLOEXEC, etc) */
+	__u32 flags;
+
+	/** Return: unique identifier for lessee. */
+	__u32 lessee_id;
+	/** Return: file descriptor to new drm_master file */
+	__u32 fd;
+};
+
+/**
+ * List lesses from a drm_master
+ */
+struct drm_mode_list_lessees {
+	/** Number of lessees.
+	 * On input, provides length of the array.
+	 * On output, provides total number. No
+	 * more than the input number will be written
+	 * back, so two calls can be used to get
+	 * the size and then the data.
+	 */
+	__u32 count_lessees;
+	__u32 pad;
+
+	/** Pointer to lessees.
+	 * pointer to __u64 array of lessee ids
+	 */
+	__u64 lessees_ptr;
+};
+
+/**
+ * Get leased objects
+ */
+struct drm_mode_get_lease {
+	/** Number of leased objects.
+	 * On input, provides length of the array.
+	 * On output, provides total number. No
+	 * more than the input number will be written
+	 * back, so two calls can be used to get
+	 * the size and then the data.
+	 */
+	__u32 count_objects;
+	__u32 pad;
+
+	/** Pointer to objects.
+	 * pointer to __u32 array of object ids
+	 */
+	__u64 objects_ptr;
+};
+
+/**
+ * Revoke lease
+ */
+struct drm_mode_revoke_lease {
+	/** Unique ID of lessee
+	 */
+	__u32 lessee_id;
 };
 
 #if defined(__cplusplus)
