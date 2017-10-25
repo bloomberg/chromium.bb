@@ -49,6 +49,12 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(entry.name, entry.id);
 }
 
+base::string16 GetNetworkName(const NetworkState& network) {
+  return network.Matches(NetworkTypePattern::Ethernet())
+             ? l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET)
+             : base::UTF8ToUTF16(network.name());
+}
+
 }  // namespace
 
 bool InternetDetailDialog::IsShown() {
@@ -72,11 +78,8 @@ void InternetDetailDialog::ShowDialog(const std::string& network_id) {
 
 InternetDetailDialog::InternetDetailDialog(const NetworkState& network)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetDetailDialogURL),
-                              base::string16()),
+                              GetNetworkName(network)),
       guid_(network.guid()) {
-  title_ = network.Matches(NetworkTypePattern::Ethernet())
-               ? l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET)
-               : base::UTF8ToUTF16(network.name());
   ++s_internet_detail_dialog_count;
 }
 
@@ -96,11 +99,9 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
       chrome::kChromeUIInternetDetailDialogHost);
 
   AddInternetStrings(source);
-
+  source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_DETAIL);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_INTERNET_DETAIL_DIALOG_HTML);
-  source->DisableContentSecurityPolicy();
-
   source->AddResourcePath("internet_detail_dialog.js",
                           IDR_INTERNET_DETAIL_DIALOG_JS);
 
