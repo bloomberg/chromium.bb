@@ -63,7 +63,7 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
 }
 
 FakeLayerTreeHost::~FakeLayerTreeHost() {
-  client_->SetLayerTreeHost(NULL);
+  client_->SetLayerTreeHost(nullptr);
 }
 
 void FakeLayerTreeHost::SetNeedsCommit() { needs_commit_ = true; }

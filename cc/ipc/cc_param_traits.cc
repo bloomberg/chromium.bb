@@ -279,7 +279,7 @@ void ParamTraits<sk_sp<SkImageFilter>>::Write(base::Pickle* m,
     m->WriteData(static_cast<const char*>(data->data()),
                  base::checked_cast<int>(data->size()));
   } else {
-    m->WriteData(0, 0);
+    m->WriteData(nullptr, 0);
   }
 }
 
@@ -288,7 +288,7 @@ bool ParamTraits<sk_sp<SkImageFilter>>::Read(const base::Pickle* m,
                                              param_type* r) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::SkImageFilter::Read");
-  const char* data = 0;
+  const char* data = nullptr;
   int length = 0;
   if (!iter->ReadData(&data, &length))
     return false;

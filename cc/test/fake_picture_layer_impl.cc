@@ -69,7 +69,7 @@ gfx::Size FakePictureLayerImpl::CalculateTileSize(
 }
 
 PictureLayerTiling* FakePictureLayerImpl::HighResTiling() const {
-  PictureLayerTiling* result = NULL;
+  PictureLayerTiling* result = nullptr;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
     if (tiling->resolution() == HIGH_RESOLUTION) {
@@ -82,7 +82,7 @@ PictureLayerTiling* FakePictureLayerImpl::HighResTiling() const {
 }
 
 PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
-  PictureLayerTiling* result = NULL;
+  PictureLayerTiling* result = nullptr;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
     if (tiling->resolution() == LOW_RESOLUTION) {

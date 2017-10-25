@@ -504,7 +504,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     EXPECT_EQ(1, update_check_layer_->update_count());
 
     // clear update_check_layer_ so LayerTreeHost dies.
-    update_check_layer_ = NULL;
+    update_check_layer_ = nullptr;
   }
 
  private:

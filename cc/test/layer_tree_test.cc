@@ -906,7 +906,7 @@ LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
 
 void LayerTreeTest::DestroyLayerTreeHost() {
   if (layer_tree_host_ && layer_tree_host_->root_layer())
-    layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
+    layer_tree_host_->root_layer()->SetLayerTreeHost(nullptr);
   layer_tree_host_ = nullptr;
 }
 
@@ -927,7 +927,7 @@ LayerTreeHost* LayerTreeTest::layer_tree_host() {
 }
 
 Proxy* LayerTreeTest::proxy() {
-  return layer_tree_host() ? layer_tree_host()->proxy() : NULL;
+  return layer_tree_host() ? layer_tree_host()->proxy() : nullptr;
 }
 
 }  // namespace cc

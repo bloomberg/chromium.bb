@@ -55,9 +55,9 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
                                         device_transform,
                                         1.f,
                                         1.f,
-                                        NULL,
-                                        NULL,
-                                        NULL) {}
+                                        nullptr,
+                                        nullptr,
+                                        nullptr) {}
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
@@ -108,11 +108,11 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               device_transform,
                               device_scale_factor,
                               1.f,
-                              NULL,
-                              NULL,
-                              NULL,
+                              nullptr,
+                              nullptr,
+                              nullptr,
                               gfx::Vector2dF(),
-                              NULL,
+                              nullptr,
                               std::numeric_limits<int>::max() / 2,
                               false,
                               render_surface_list,

@@ -31,7 +31,7 @@ static base::LazyInstance<base::Lock>::Leaky
     g_shared_namespace_lock = LAZY_INSTANCE_INITIALIZER;
 
 TestWebGraphicsContext3D::Namespace*
-    TestWebGraphicsContext3D::shared_namespace_ = NULL;
+    TestWebGraphicsContext3D::shared_namespace_ = nullptr;
 
 TestWebGraphicsContext3D::Namespace::Namespace()
     : next_buffer_id(1),
@@ -43,7 +43,7 @@ TestWebGraphicsContext3D::Namespace::Namespace()
 TestWebGraphicsContext3D::Namespace::~Namespace() {
   g_shared_namespace_lock.Get().AssertAcquired();
   if (shared_namespace_ == this)
-    shared_namespace_ = NULL;
+    shared_namespace_ = nullptr;
 }
 
 // static
@@ -66,7 +66,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       width_(0),
       height_(0),
       scale_factor_(-1.f),
-      test_support_(NULL),
+      test_support_(nullptr),
       last_update_type_(NO_UPDATE),
       next_insert_fence_sync_(1),
       unpack_alignment_(4),
@@ -78,7 +78,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
 
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
   base::AutoLock lock(g_shared_namespace_lock.Get());
-  namespace_ = NULL;
+  namespace_ = nullptr;
 }
 
 void TestWebGraphicsContext3D::CreateNamespace() {
@@ -586,7 +586,7 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
   DCHECK_EQ(target, buffers[bound_buffer_]->target);
   if (times_map_buffer_chromium_succeeds_ >= 0) {
     if (!times_map_buffer_chromium_succeeds_) {
-      return NULL;
+      return nullptr;
     }
     --times_map_buffer_chromium_succeeds_;
   }

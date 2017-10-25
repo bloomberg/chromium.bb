@@ -424,8 +424,8 @@ class ResourceProviderTest
  public:
   explicit ResourceProviderTest(bool child_needs_sync_token)
       : shared_data_(ContextSharedData::Create()),
-        context3d_(NULL),
-        child_context_(NULL) {
+        context3d_(nullptr),
+        child_context_(nullptr) {
     switch (GetParam()) {
       case ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
       case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE: {

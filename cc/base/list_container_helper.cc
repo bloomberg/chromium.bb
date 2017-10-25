@@ -307,7 +307,7 @@ ListContainerHelper::PositionInCharAllocator::Increment() {
     if (vector_index < ptr_to_container->list_count())
       item_iterator = ptr_to_container->InnerListById(vector_index)->Begin();
     else
-      item_iterator = NULL;
+      item_iterator = nullptr;
   } else {
     item_iterator += list->step;
   }
@@ -332,7 +332,7 @@ ListContainerHelper::PositionInCharAllocator::ReverseIncrement() {
       item_iterator =
           ptr_to_container->InnerListById(vector_index)->LastElement();
     } else {
-      item_iterator = NULL;
+      item_iterator = nullptr;
     }
   } else {
     item_iterator -= list->step;
@@ -376,7 +376,7 @@ ListContainerHelper::ConstReverseIterator ListContainerHelper::crbegin() const {
 }
 
 ListContainerHelper::ConstReverseIterator ListContainerHelper::crend() const {
-  return ConstReverseIterator(data_.get(), static_cast<size_t>(-1), NULL,
+  return ConstReverseIterator(data_.get(), static_cast<size_t>(-1), nullptr,
                               size());
 }
 
@@ -390,7 +390,7 @@ ListContainerHelper::ReverseIterator ListContainerHelper::rbegin() {
 }
 
 ListContainerHelper::ReverseIterator ListContainerHelper::rend() {
-  return ReverseIterator(data_.get(), static_cast<size_t>(-1), NULL, size());
+  return ReverseIterator(data_.get(), static_cast<size_t>(-1), nullptr, size());
 }
 
 ListContainerHelper::ConstIterator ListContainerHelper::cbegin() const {
@@ -403,10 +403,10 @@ ListContainerHelper::ConstIterator ListContainerHelper::cbegin() const {
 
 ListContainerHelper::ConstIterator ListContainerHelper::cend() const {
   if (data_->IsEmpty())
-    return ConstIterator(data_.get(), 0, NULL, size());
+    return ConstIterator(data_.get(), 0, nullptr, size());
 
   size_t id = data_->list_count();
-  return ConstIterator(data_.get(), id, NULL, size());
+  return ConstIterator(data_.get(), id, nullptr, size());
 }
 
 ListContainerHelper::Iterator ListContainerHelper::begin() {
@@ -419,10 +419,10 @@ ListContainerHelper::Iterator ListContainerHelper::begin() {
 
 ListContainerHelper::Iterator ListContainerHelper::end() {
   if (data_->IsEmpty())
-    return Iterator(data_.get(), 0, NULL, size());
+    return Iterator(data_.get(), 0, nullptr, size());
 
   size_t id = data_->list_count();
-  return Iterator(data_.get(), id, NULL, size());
+  return Iterator(data_.get(), id, nullptr, size());
 }
 
 ListContainerHelper::ConstIterator ListContainerHelper::IteratorAt(

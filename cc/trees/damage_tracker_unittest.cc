@@ -1116,7 +1116,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
 
   // Then, test removing child1.
   root->test_properties()->RemoveChild(child1);
-  child1 = NULL;
+  child1 = nullptr;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 

@@ -1041,7 +1041,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   DrawFrame();
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
-  LayerImpl* child = 0;
+  LayerImpl* child = nullptr;
   {
     std::unique_ptr<LayerImpl> child_layer =
         LayerImpl::Create(host_impl_->active_tree(), 6);
@@ -8070,7 +8070,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
  protected:
   LayerTreeHostImplViewportCoveredTest()
       : gutter_quad_material_(viz::DrawQuad::SOLID_COLOR),
-        child_(NULL),
+        child_(nullptr),
         did_activate_pending_tree_(false) {}
 
   std::unique_ptr<LayerTreeFrameSink> CreateFakeLayerTreeFrameSink(
@@ -9523,7 +9523,7 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
   EXPECT_EQ(1u, metadata_latency_after.size());
   EXPECT_TRUE(metadata_latency_after[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, nullptr));
 }
 
 TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
@@ -9663,7 +9663,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(
-            NULL, host_impl_.get(), &set_needs_commit_count,
+            nullptr, host_impl_.get(), &set_needs_commit_count,
             &set_needs_redraw_count, &forward_to_main_count));
     host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
@@ -9681,7 +9681,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(
-            NULL, host_impl_.get(), &set_needs_commit_count,
+            nullptr, host_impl_.get(), &set_needs_commit_count,
             &set_needs_redraw_count, &forward_to_main_count));
     // Redraw with damage.
     host_impl_->SetFullViewportDamage();
@@ -9694,7 +9694,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(
-            NULL, host_impl_.get(), &set_needs_commit_count,
+            nullptr, host_impl_.get(), &set_needs_commit_count,
             &set_needs_redraw_count, &forward_to_main_count));
     // Redraw without damage.
     host_impl_->SetNeedsRedraw();
@@ -9710,7 +9710,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(
-            NULL, host_impl_.get(), &set_needs_commit_count,
+            nullptr, host_impl_.get(), &set_needs_commit_count,
             &set_needs_redraw_count, &forward_to_main_count));
     SetupScrollAndContentsLayers(gfx::Size(100, 100));
 

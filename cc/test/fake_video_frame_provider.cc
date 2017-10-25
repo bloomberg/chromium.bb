@@ -7,8 +7,7 @@
 namespace cc {
 
 FakeVideoFrameProvider::FakeVideoFrameProvider()
-    : frame_(NULL), client_(NULL), put_current_frame_count_(0) {
-}
+    : frame_(nullptr), client_(nullptr), put_current_frame_count_(0) {}
 
 FakeVideoFrameProvider::~FakeVideoFrameProvider() {
   if (client_)

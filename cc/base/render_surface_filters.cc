@@ -264,7 +264,7 @@ sk_sp<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
         sk_sp<SkColorFilter> cf;
 
         {
-          SkColorFilter* colorfilter_rawptr = NULL;
+          SkColorFilter* colorfilter_rawptr = nullptr;
           op.image_filter()->asColorFilter(&colorfilter_rawptr);
           cf.reset(colorfilter_rawptr);
         }

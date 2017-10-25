@@ -57,7 +57,7 @@ class MockLayerImpl : public LayerImpl {
 
  private:
   MockLayerImpl(LayerTreeImpl* tree_impl, int layer_id)
-      : LayerImpl(tree_impl, layer_id), layer_impl_destruction_list_(NULL) {}
+      : LayerImpl(tree_impl, layer_id), layer_impl_destruction_list_(nullptr) {}
 
   std::vector<int>* layer_impl_destruction_list_;
 };
@@ -145,7 +145,7 @@ class TreeSynchronizerTest : public testing::Test {
 // Attempts to synchronizes a null tree. This should not crash, and should
 // return a null tree.
 TEST_F(TreeSynchronizerTest, SyncNullTree) {
-  TreeSynchronizer::SynchronizeTrees(static_cast<Layer*>(NULL),
+  TreeSynchronizer::SynchronizeTrees(static_cast<Layer*>(nullptr),
                                      host_->active_tree());
   EXPECT_TRUE(!host_->active_tree()->root_layer_for_testing());
 }
@@ -464,7 +464,7 @@ TEST_F(TreeSynchronizerTest, SyncMaskLayer) {
                           host_->active_tree());
 
   // Remove the mask layer.
-  layer_tree_root->children()[0]->SetMaskLayer(NULL);
+  layer_tree_root->children()[0]->SetMaskLayer(nullptr);
   host_->BuildPropertyTreesForTesting();
   host_->CommitAndCreateLayerImplTree();
 

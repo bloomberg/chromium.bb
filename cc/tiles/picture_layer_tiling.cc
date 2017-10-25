@@ -442,7 +442,7 @@ PictureLayerTiling::CoverageIterator::operator++() {
       tile_j_++;
       new_row = true;
       if (tile_j_ > bottom_) {
-        current_tile_ = NULL;
+        current_tile_ = nullptr;
         break;
       }
     }

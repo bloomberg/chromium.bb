@@ -474,7 +474,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
         target_tree->LayerById(hud_layer()->id())));
   else
-    target_tree->set_hud_layer(NULL);
+    target_tree->set_hud_layer(nullptr);
 
   target_tree->has_ever_been_drawn_ = false;
 
@@ -1374,14 +1374,14 @@ bool LayerTreeImpl::IsSyncTree() const {
 LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
   LayerTreeImpl* tree = host_impl_->active_tree();
   if (!tree)
-    return NULL;
+    return nullptr;
   return tree->LayerById(id);
 }
 
 LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
   LayerTreeImpl* tree = host_impl_->pending_tree();
   if (!tree)
-    return NULL;
+    return nullptr;
   return tree->LayerById(id);
 }
 
@@ -1812,7 +1812,7 @@ static bool PointIsClippedByAncestorClipNode(
   const TransformTree& transform_tree = property_trees->transform_tree;
   const ClipNode* clip_node = clip_tree.Node(1);
   gfx::Rect clip = gfx::ToEnclosingRect(clip_node->clip);
-  if (!PointHitsRect(screen_space_point, gfx::Transform(), clip, NULL))
+  if (!PointHitsRect(screen_space_point, gfx::Transform(), clip, nullptr))
     return true;
 
   for (const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
@@ -1824,7 +1824,7 @@ static bool PointIsClippedByAncestorClipNode(
       gfx::Transform screen_space_transform =
           transform_tree.ToScreen(clip_node->transform_id);
       if (!PointHitsRect(screen_space_point, screen_space_transform, clip,
-                         NULL)) {
+                         nullptr)) {
         return true;
       }
     }
@@ -1864,7 +1864,7 @@ static bool PointHitsLayer(const LayerImpl* layer,
 
 struct FindClosestMatchingLayerState {
   FindClosestMatchingLayerState()
-      : closest_match(NULL),
+      : closest_match(nullptr),
         closest_distance(-std::numeric_limits<float>::infinity()) {}
   LayerImpl* closest_match;
   // Note that the positive z-axis points towards the camera, so bigger means
@@ -1933,9 +1933,9 @@ struct HitTestVisibleScrollableOrTouchableFunctor {
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   if (layer_list_.empty())
-    return NULL;
+    return nullptr;
   if (!UpdateDrawProperties())
-    return NULL;
+    return nullptr;
   FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, layer_list_[0],
                            HitTestVisibleScrollableOrTouchableFunctor(),
@@ -1972,9 +1972,9 @@ struct FindTouchEventLayerFunctor {
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
     const gfx::PointF& screen_space_point) {
   if (layer_list_.empty())
-    return NULL;
+    return nullptr;
   if (!UpdateDrawProperties())
-    return NULL;
+    return nullptr;
   FindTouchEventLayerFunctor func = {screen_space_point};
   FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, layer_list_[0], func, &state);
@@ -2060,7 +2060,8 @@ void LayerTreeImpl::GetViewportSelection(
 
   selection->start = ComputeViewportSelectionBound(
       selection_.start,
-      selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
+      selection_.start.layer_id ? LayerById(selection_.start.layer_id)
+                                : nullptr,
       device_scale_factor() * painted_device_scale_factor());
   if (selection->start.type() == gfx::SelectionBound::CENTER ||
       selection->start.type() == gfx::SelectionBound::EMPTY) {
@@ -2068,7 +2069,7 @@ void LayerTreeImpl::GetViewportSelection(
   } else {
     selection->end = ComputeViewportSelectionBound(
         selection_.end,
-        selection_.end.layer_id ? LayerById(selection_.end.layer_id) : NULL,
+        selection_.end.layer_id ? LayerById(selection_.end.layer_id) : nullptr,
         device_scale_factor() * painted_device_scale_factor());
   }
 }

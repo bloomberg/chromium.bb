@@ -208,7 +208,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       use_gpu_rasterization_(false),
       use_msaa_(false),
       gpu_rasterization_status_(GpuRasterizationStatus::OFF_DEVICE),
-      input_handler_client_(NULL),
+      input_handler_client_(nullptr),
       did_lock_scrolling_layer_(false),
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
@@ -300,7 +300,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
 
   if (input_handler_client_) {
     input_handler_client_->WillShutdown();
-    input_handler_client_ = NULL;
+    input_handler_client_ = nullptr;
   }
   if (scroll_elasticity_helper_)
     scroll_elasticity_helper_.reset();
@@ -680,7 +680,7 @@ std::unique_ptr<SwapPromiseMonitor>
 LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
   return base::WrapUnique(
-      new LatencyInfoSwapPromiseMonitor(latency, NULL, this));
+      new LatencyInfoSwapPromiseMonitor(latency, nullptr, this));
 }
 
 ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
@@ -2737,7 +2737,7 @@ float LayerTreeHostImpl::CurrentBrowserControlsShownRatio() const {
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client,
                                      bool wheel_scroll_latching_enabled) {
-  DCHECK(input_handler_client_ == NULL);
+  DCHECK(input_handler_client_ == nullptr);
   input_handler_client_ = client;
   touchpad_and_wheel_scroll_latching_enabled_ = wheel_scroll_latching_enabled;
 }

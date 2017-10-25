@@ -60,7 +60,7 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
         layer_tree_host()->SetRootLayer(nullptr);
         break;
       case 3:
-        EXPECT_EQ(0, layer_tree_host()->hud_layer()->parent());
+        EXPECT_EQ(nullptr, layer_tree_host()->hud_layer()->parent());
         // Change back to the previous root layer.
         layer_tree_host()->SetRootLayer(root_layer1_);
         break;
@@ -70,7 +70,7 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
         layer_tree_host()->SetRootLayer(nullptr);
         break;
       case 5:
-        EXPECT_EQ(0, layer_tree_host()->hud_layer()->parent());
+        EXPECT_EQ(nullptr, layer_tree_host()->hud_layer()->parent());
         // Change to a new root layer from a null root.
         layer_tree_host()->SetRootLayer(root_layer2_);
         break;
