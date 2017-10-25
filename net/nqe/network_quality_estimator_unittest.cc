@@ -537,10 +537,10 @@ TEST(NetworkQualityEstimatorTest, QuicObservations) {
   std::map<std::string, std::string> variation_params;
   variation_params["add_default_platform_observations"] = "false";
   TestNetworkQualityEstimator estimator(variation_params);
-  estimator.OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::PROTOCOL_TCP,
-                                  base::TimeDelta::FromMilliseconds(10),
-                                  base::nullopt);
-  estimator.OnUpdatedRTTAvailable(
+  estimator.OnUpdatedTransportRTTAvailable(
+      SocketPerformanceWatcherFactory::PROTOCOL_TCP,
+      base::TimeDelta::FromMilliseconds(10), base::nullopt);
+  estimator.OnUpdatedTransportRTTAvailable(
       SocketPerformanceWatcherFactory::PROTOCOL_QUIC,
       base::TimeDelta::FromMilliseconds(10), base::nullopt);
   histogram_tester.ExpectBucketCount("NQE.RTT.ObservationSource",
@@ -2198,6 +2198,9 @@ TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
               SocketPerformanceWatcherFactory::PROTOCOL_QUIC, address_list);
 
   tcp_watcher->OnUpdatedRTTAvailable(tcp_rtt);
+  // First RTT sample from QUIC connections is dropped, but the second RTT
+  // notification should not be dropped.
+  quic_watcher->OnUpdatedRTTAvailable(quic_rtt);
   quic_watcher->OnUpdatedRTTAvailable(quic_rtt);
 
   base::RunLoop().RunUntilIdle();
@@ -3266,11 +3269,9 @@ TEST(NetworkQualityEstimatorTest,
   // |10 * host|.
   for (int host = 1; host <= 2; ++host) {
     for (int rtt = 10 * host; rtt <= 10 * host + 20; ++rtt) {
-      estimator.rtt_ms_observations_.AddObservation(
-          NetworkQualityEstimator::Observation(
-              rtt, historical, INT32_MIN,
-              NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
-              static_cast<uint64_t>(host)));
+      estimator.AddAndNotifyObserversOfRTT(NetworkQualityEstimator::Observation(
+          rtt, historical, INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
+          static_cast<uint64_t>(host)));
     }
   }
 
@@ -3278,10 +3279,9 @@ TEST(NetworkQualityEstimatorTest,
   // historical minimum for hosts 2 and 3.
   for (int host = 2; host <= 3; ++host) {
     for (int rtt = 11 * host + 5; rtt <= 11 * host + 15; ++rtt) {
-      estimator.rtt_ms_observations_.AddObservation(
-          NetworkQualityEstimator::Observation(
-              rtt, recent, INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
-              static_cast<uint64_t>(host)));
+      estimator.AddAndNotifyObserversOfRTT(NetworkQualityEstimator::Observation(
+          rtt, recent, INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
+          static_cast<uint64_t>(host)));
     }
   }
 
