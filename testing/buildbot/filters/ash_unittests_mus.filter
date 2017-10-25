@@ -1,11 +1,8 @@
-# TODO: fix these. They fail because DeviceDataManager isn't created.
-# http://crbug.com/734812.
--PaletteTrayTestWithInternalStylus.PaletteBubbleShownOnEject
--PaletteTrayTestWithInternalStylus.WelcomeBubbleShownOnEject
--PaletteTrayTestWithInternalStylus.WelcomeBubbleNotShownIfShownBefore
--PaletteTrayTestWithInternalStylus.WelcomeBubbleNotShownIfAutoOpenPaletteTrue
+# TODO: Needs partial screenshot support.
 -ScreenshotToolTest.EnablingCaptureRegionCallsDelegateAndDisablesTool
 -ScreenshotToolTest.EnablingCaptureScreenCallsDelegateAndDisablesTool
+# TODO: fix these. They fail because DeviceDataManager isn't created.
+# http://crbug.com/734812.
 -TouchCalibratorControllerTest.CustomCalibration
 -TouchCalibratorControllerTest.CustomCalibrationInvalidTouchId
 -TouchCalibratorControllerTest.TouchDeviceIdIsSet

@@ -34,7 +34,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -51,20 +50,14 @@ class PaletteTrayTest : public AshTestBase {
     palette_tray_->PerformAction(tap);
   }
 
-  // Fake a stylus ejection. Note: this will fail in mus or mash because
-  // DeviceDataManager is not created. See crbug.com/734812.
+  // Fake a stylus ejection.
   void EjectStylus() {
-    ui::test::DeviceDataManagerTestAPI devices_test_api;
-    devices_test_api.NotifyObserversStylusStateChanged(
-        ui::StylusState::REMOVED);
+    test_api_->OnStylusStateChanged(ui::StylusState::REMOVED);
   }
 
-  // Fake a stylus insertion. Note: this will fail in mus or mash because
-  // DeviceDataManager is not created. See crbug.com/734812.
+  // Fake a stylus insertion.
   void InsertStylus() {
-    ui::test::DeviceDataManagerTestAPI devices_test_api;
-    devices_test_api.NotifyObserversStylusStateChanged(
-        ui::StylusState::INSERTED);
+    test_api_->OnStylusStateChanged(ui::StylusState::INSERTED);
   }
 
   // AshTestBase:
