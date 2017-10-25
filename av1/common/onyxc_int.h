@@ -105,7 +105,7 @@ typedef enum {
 } REFRESH_FRAME_CONTEXT_MODE;
 
 #if CONFIG_MFMV
-#define MFMV_STACK_SIZE 4
+#define MFMV_STACK_SIZE 3
 
 typedef struct {
   int_mv mfmv[INTER_REFS_PER_FRAME][MFMV_STACK_SIZE];

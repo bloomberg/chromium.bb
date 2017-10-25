@@ -1659,7 +1659,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
   if (alt_frame_index < cur_frame_index) return;
 
-  int ref_stamp = 2;
+  int ref_stamp = MFMV_STACK_SIZE - 1;
 
   // ======================
   // Process last frame
