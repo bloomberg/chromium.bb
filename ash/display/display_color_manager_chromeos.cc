@@ -172,6 +172,13 @@ DisplayColorManager::~DisplayColorManager() {
 void DisplayColorManager::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& display_states) {
   for (const display::DisplaySnapshot* state : display_states) {
+    const bool display_has_valid_color_space = state->color_space().IsValid();
+    UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidDisplayColorSpace",
+                          display_has_valid_color_space);
+    // If |state| has a valid color space, skip retrieving/loading the ICC.
+    if (display_has_valid_color_space)
+      continue;
+
     // Ensure we always reset the configuration before setting a new one.
     configurator_->SetColorCorrection(
         state->display_id(), std::vector<display::GammaRampRGBEntry>(),
@@ -233,13 +240,15 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
     const base::FilePath& path,
     bool file_downloaded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.IccFileFound",
-                        !path.empty() && file_downloaded);
+
   std::string product_string = quirks::IdToHexString(product_id);
   if (path.empty()) {
     VLOG(1) << "No ICC file found with product id: " << product_string
             << " for display id: " << display_id;
     return;
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.IccFileDownloaded",
+                          file_downloaded);
   }
 
   if (file_downloaded && type == display::DISPLAY_CONNECTION_TYPE_INTERNAL) {
