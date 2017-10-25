@@ -304,6 +304,8 @@ source_set("common") {
     "sandbox_linux/sandbox_linux.h",
     "sandbox_linux/sandbox_seccomp_bpf_linux.cc",
     "sandbox_linux/sandbox_seccomp_bpf_linux.h",
+    "sandbox_win.cc",
+    "sandbox_win.h",
     "savable_subframe.h",
     "send_zygote_child_ping_linux.cc",
     "service_manager/service_manager_connection_impl.cc",
