@@ -3841,9 +3841,9 @@ void od_bin_fdst4(od_coeff y[4], const od_coeff *x, int xstride) {
   q3 = x[0*xstride];
   OD_FDST_4(q0, q2, q1, q3);
   y[0] = (od_coeff)q3;
-  y[1] = (od_coeff)q2;
+  y[1] = -(od_coeff)q2;
   y[2] = (od_coeff)q1;
-  y[3] = (od_coeff)q0;
+  y[3] = -(od_coeff)q0;
 }
 
 void od_bin_idst4(od_coeff *x, int xstride, const od_coeff y[4]) {
@@ -3851,9 +3851,9 @@ void od_bin_idst4(od_coeff *x, int xstride, const od_coeff y[4]) {
   int q1;
   int q2;
   int q3;
-  q0 = y[3];
+  q0 = -y[3];
   q2 = y[2];
-  q1 = y[1];
+  q1 = -y[1];
   q3 = y[0];
   OD_IDST_4(q0, q2, q1, q3);
   x[0*xstride] = q3;
