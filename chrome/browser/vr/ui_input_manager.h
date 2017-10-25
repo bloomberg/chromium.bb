@@ -60,7 +60,7 @@ class UiInputManager {
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
                       ButtonState button_state);
-  void SendButtonUp(UiElement* target,
+  bool SendButtonUp(UiElement* target,
                     const gfx::PointF& target_point,
                     ButtonState button_state);
   void GetVisualTargetElement(const gfx::Vector3dF& laser_direction,
