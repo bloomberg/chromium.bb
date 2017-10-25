@@ -22,20 +22,17 @@ Observation::Observation(int32_t value,
                          const base::Optional<int32_t>& signal_strength,
                          NetworkQualityObservationSource source,
                          const base::Optional<IPHash>& host)
-    : value(value),
-      timestamp(timestamp),
-      signal_strength(signal_strength),
-      source(source),
-      host(host) {
-  DCHECK(!timestamp.is_null());
+    : value_(value),
+      timestamp_(timestamp),
+      signal_strength_(signal_strength),
+      source_(source),
+      host_(host) {
+  DCHECK(!timestamp_.is_null());
 }
 
-Observation::Observation(const Observation& other)
-    : Observation(other.value,
-                  other.timestamp,
-                  other.signal_strength,
-                  other.source,
-                  other.host) {}
+Observation::Observation(const Observation& other) = default;
+
+Observation& Observation::operator=(const Observation& other) = default;
 
 Observation::~Observation() {}
 
