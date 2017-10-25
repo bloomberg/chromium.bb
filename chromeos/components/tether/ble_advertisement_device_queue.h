@@ -5,9 +5,12 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_DEVICE_QUEUE_H_
 #define CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_DEVICE_QUEUE_H_
 
-#include <vector>
+#include <deque>
+#include <map>
+#include <string>
 
 #include "base/macros.h"
+#include "chromeos/components/tether/connection_priority.h"
 #include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
@@ -23,6 +26,15 @@ class BleAdvertisementDeviceQueue {
   BleAdvertisementDeviceQueue();
   virtual ~BleAdvertisementDeviceQueue();
 
+  struct PrioritizedDevice {
+    PrioritizedDevice(const cryptauth::RemoteDevice& remote_device,
+                      const ConnectionPriority& connection_priority);
+    ~PrioritizedDevice();
+
+    cryptauth::RemoteDevice remote_device;
+    ConnectionPriority connection_priority;
+  };
+
   // Updates the queue with the given |devices|. Devices which are already in
   // the queue and are not in |devices| are removed from the queue, and all
   // devices which are not in the queue but are in |devices| are added to the
@@ -30,11 +42,11 @@ class BleAdvertisementDeviceQueue {
   // change order as a result of this function being called to ensure that the
   // queue remains in order. Returns whether the device list has changed due to
   // the function call.
-  bool SetDevices(std::vector<cryptauth::RemoteDevice> devices);
+  bool SetDevices(const std::vector<PrioritizedDevice>& devices);
 
   // Moves the given device to the end of the queue. If the device was not in
   // the queue to begin with, do nothing.
-  void MoveDeviceToEnd(std::string device_id);
+  void MoveDeviceToEnd(const std::string& device_id);
 
   // Returns a list of devices to which to advertise. The devices returned are
   // the first |kMaxConcurrentAdvertisements| devices in the front of the queue,
@@ -44,7 +56,12 @@ class BleAdvertisementDeviceQueue {
   size_t GetSize() const;
 
  private:
-  std::vector<cryptauth::RemoteDevice> device_queue_;
+  void AddDevicesToVectorForPriority(
+      ConnectionPriority connection_priority,
+      std::vector<cryptauth::RemoteDevice>* remote_devices_out) const;
+
+  std::map<ConnectionPriority, std::deque<cryptauth::RemoteDevice>>
+      priority_to_deque_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BleAdvertisementDeviceQueue);
 };

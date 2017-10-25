@@ -5,97 +5,138 @@
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
 namespace tether {
+
+namespace {
+
+bool DoesVectorContainDevice(
+    const ConnectionPriority& connection_priority,
+    const cryptauth::RemoteDevice& remote_device,
+    const std::vector<BleAdvertisementDeviceQueue::PrioritizedDevice>&
+        prioritized_devices) {
+  for (const auto& prioritized_device : prioritized_devices) {
+    if (prioritized_device.connection_priority == connection_priority &&
+        prioritized_device.remote_device == remote_device) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+}  // namespace
+
+BleAdvertisementDeviceQueue::PrioritizedDevice::PrioritizedDevice(
+    const cryptauth::RemoteDevice& remote_device,
+    const ConnectionPriority& connection_priority)
+    : remote_device(remote_device), connection_priority(connection_priority) {}
+
+BleAdvertisementDeviceQueue::PrioritizedDevice::~PrioritizedDevice() {}
 
 BleAdvertisementDeviceQueue::BleAdvertisementDeviceQueue() {}
 
 BleAdvertisementDeviceQueue::~BleAdvertisementDeviceQueue() {}
 
 bool BleAdvertisementDeviceQueue::SetDevices(
-    std::vector<cryptauth::RemoteDevice> devices) {
-  // Determine which devices exist in |devices| but not in |device_queue_|, then
-  // add them to |device_queue_|.
-  std::vector<cryptauth::RemoteDevice> missing_from_queue;
-  for (auto& device : devices) {
-    if (std::find(device_queue_.begin(), device_queue_.end(), device) ==
-        device_queue_.end()) {
-      missing_from_queue.push_back(device);
-    }
-  }
-  if (!missing_from_queue.empty()) {
-    for (auto& device : missing_from_queue) {
-      device_queue_.push_back(device);
+    const std::vector<PrioritizedDevice>& devices) {
+  bool updated = false;
+
+  // For each device provided, check to see if the device is already part of the
+  // queue. If it is not, add it to the end of the deque associated with the
+  // device's priority.
+  for (const auto& device : devices) {
+    std::deque<cryptauth::RemoteDevice>& deque_for_priority =
+        priority_to_deque_map_[device.connection_priority];
+    if (std::find(deque_for_priority.begin(), deque_for_priority.end(),
+                  device.remote_device) == deque_for_priority.end()) {
+      deque_for_priority.push_back(device.remote_device);
+      updated = true;
     }
   }
 
-  // Determine which devices do not exist in |devices| but do exist in
-  // |device_queue_|, then remove them from |device_queue_|.
-  std::vector<cryptauth::RemoteDevice> to_remove_from_queue;
-  for (auto& device : device_queue_) {
-    if (std::find(devices.begin(), devices.end(), device) == devices.end()) {
-      to_remove_from_queue.push_back(device);
-    }
-  }
-  if (!to_remove_from_queue.empty()) {
-    for (auto& device : to_remove_from_queue) {
-      device_queue_.erase(
-          std::find(device_queue_.begin(), device_queue_.end(), device));
+  // Now, iterate through each priority's deque to see if any of the entries
+  // were not provided as part of the |devices| parameter. If any such entries
+  // exist, remove them from the map.
+  for (auto& map_entry : priority_to_deque_map_) {
+    auto device_deque_it = map_entry.second.begin();
+    while (device_deque_it != map_entry.second.end()) {
+      if (DoesVectorContainDevice(map_entry.first, *device_deque_it, devices)) {
+        ++device_deque_it;
+        continue;
+      }
+
+      device_deque_it = map_entry.second.erase(device_deque_it);
+      updated = true;
     }
   }
 
-  return !missing_from_queue.empty() || !to_remove_from_queue.empty();
+  return updated;
 }
 
-void BleAdvertisementDeviceQueue::MoveDeviceToEnd(std::string device_id) {
-  if (device_id.empty()) {
-    return;
-  }
+void BleAdvertisementDeviceQueue::MoveDeviceToEnd(
+    const std::string& device_id) {
+  DCHECK(!device_id.empty());
 
-  int index = -1;
-  for (size_t i = 0; i < device_queue_.size(); i++) {
-    if (device_id == device_queue_[i].GetDeviceId()) {
-      index = i;
-      break;
+  for (auto& map_entry : priority_to_deque_map_) {
+    auto device_deque_it = map_entry.second.begin();
+    while (device_deque_it != map_entry.second.end()) {
+      if (device_deque_it->GetDeviceId() == device_id)
+        break;
+      ++device_deque_it;
     }
-  }
 
-  if (index >= 0) {
-    cryptauth::RemoteDevice to_move = device_queue_[index];
-    device_queue_.erase(device_queue_.begin() + index);
-    device_queue_.push_back(to_move);
+    if (device_deque_it == map_entry.second.end())
+      continue;
+
+    cryptauth::RemoteDevice to_move = *device_deque_it;
+    map_entry.second.erase(device_deque_it);
+    map_entry.second.push_back(to_move);
   }
 }
 
 std::vector<cryptauth::RemoteDevice>
 BleAdvertisementDeviceQueue::GetDevicesToWhichToAdvertise() const {
-  std::vector<cryptauth::RemoteDevice> to_advertise;
-
-  if (device_queue_.empty()) {
-    return to_advertise;
-  }
-
-  for (auto& device : device_queue_) {
-    to_advertise.push_back(device);
-
-    if (to_advertise.size() ==
-        static_cast<size_t>(kMaxConcurrentAdvertisements)) {
-      break;
-    }
-  }
-
-  return to_advertise;
+  std::vector<cryptauth::RemoteDevice> devices;
+  AddDevicesToVectorForPriority(ConnectionPriority::CONNECTION_PRIORITY_HIGH,
+                                &devices);
+  AddDevicesToVectorForPriority(ConnectionPriority::CONNECTION_PRIORITY_MEDIUM,
+                                &devices);
+  AddDevicesToVectorForPriority(ConnectionPriority::CONNECTION_PRIORITY_LOW,
+                                &devices);
+  DCHECK(devices.size() <= kMaxConcurrentAdvertisements);
+  return devices;
 }
 
 size_t BleAdvertisementDeviceQueue::GetSize() const {
-  return device_queue_.size();
+  size_t count = 0;
+  for (const auto& map_entry : priority_to_deque_map_)
+    count += map_entry.second.size();
+  return count;
+}
+
+void BleAdvertisementDeviceQueue::AddDevicesToVectorForPriority(
+    ConnectionPriority connection_priority,
+    std::vector<cryptauth::RemoteDevice>* remote_devices_out) const {
+  if (priority_to_deque_map_.find(connection_priority) ==
+      priority_to_deque_map_.end()) {
+    // Nothing to do if there is no entry for this priority.
+    return;
+  }
+
+  const std::deque<cryptauth::RemoteDevice>& deque_for_priority =
+      priority_to_deque_map_.at(connection_priority);
+  size_t i = 0;
+  while (i < deque_for_priority.size() &&
+         remote_devices_out->size() < kMaxConcurrentAdvertisements) {
+    remote_devices_out->push_back(deque_for_priority[i]);
+    ++i;
+  }
 }
 
 }  // namespace tether
