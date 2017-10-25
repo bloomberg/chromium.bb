@@ -1,6 +1,5 @@
 Tests that splitting properties when pasting works.
 
-Text
 Before pasting:
 [expanded] 
 element.style { ()

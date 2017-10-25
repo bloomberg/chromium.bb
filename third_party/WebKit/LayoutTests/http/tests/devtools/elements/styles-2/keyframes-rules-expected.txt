@@ -1,6 +1,5 @@
 Tests that source data is extracted correctly from stylesheets with @keyframes rules.
 
-Content
 
 Running: testInit
 
@@ -10,7 +9,7 @@ element.style { ()
     background-color: white;
 
 [expanded] 
-* { (keyframes-rules.html:9 -> keyframes-rules.html:9:4)
+* { (<style>…</style>)
 /-- overloaded --/     background-color: papayawhip;
 
 [expanded] 

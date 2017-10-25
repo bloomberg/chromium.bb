@@ -1,6 +1,5 @@
 Tests that CSSOM-modified shorthands are reporting their "important" bits.
 
-Text
 [expanded] 
 element.style { ()
 

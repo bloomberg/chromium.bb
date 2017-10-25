@@ -13,7 +13,7 @@ element.style { ()
     border: 1px solid black;
 
 [expanded] 
-#main { (media-queries.html:6 -> media-queries.html:6:12)
+#main { (<style>…</style>)
     background: blue;
 
 [expanded] 

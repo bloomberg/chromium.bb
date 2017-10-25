@@ -1,15 +1,26 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function removeInspectedNode()
-{
-    document.querySelector("#inspected").remove();
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that reloading page during styles sidebar pane editing cancels editing and re-renders the sidebar pane.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that reloading page during styles sidebar pane editing cancels editing and re-renders the
+      sidebar pane.
+      </p>
+      <div id="inspected" style="color: blue">Text</div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function removeInspectedNode()
+      {
+          document.querySelector("#inspected").remove();
+      }
+  `);
 
-function test() {
   var stylesSidebarPane = UI.panels.elements._stylesWidget;
   TestRunner.runTestSuite([
     function selectInspectedNode(next) {
@@ -55,16 +66,4 @@ function test() {
       next();
     },
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that reloading page during styles sidebar pane editing cancels editing and re-renders the
-sidebar pane.
-</p>
-<div id="inspected" style="color: blue">Text</div>
-</body>
-</html>
+})();

@@ -1,11 +1,23 @@
-<html>
-<head>
-<link rel="stylesheet" href="../styles/resources/import-pseudoclass-crash.css">
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Tests that modifying stylesheet text with @import and :last-child selector does not crash (Bug 95324).\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that modifying stylesheet text with @import and :last-child selector does not crash (<a href="https://bugs.webkit.org/show_bug.cgi?id=95324">Bug 95324</a>).
+      </p>
+
+      <div>
+          <p id="lastchild">:last-child</p>
+      </div>
+    `);
+  await TestRunner.addStylesheetTag('../styles/resources/import-pseudoclass-crash.css');
+
   ElementsTestRunner.nodeWithId('lastchild', nodeFound);
 
   function nodeFound(node) {
@@ -32,18 +44,4 @@ function test() {
   function modifiedCallback2() {
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that modifying stylesheet text with @import and :last-child selector does not crash (<a href="https://bugs.webkit.org/show_bug.cgi?id=95324">Bug 95324</a>).
-</p>
-
-<div>
-    <p id="lastchild">:last-child</p>
-</div>
-</body>
-</html>
+})();
