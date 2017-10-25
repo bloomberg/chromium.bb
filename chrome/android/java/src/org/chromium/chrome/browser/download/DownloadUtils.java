@@ -215,7 +215,8 @@ public class DownloadUtils {
         // Bring the ChromeTabbedActivity to the front.
         Intent intent = new Intent(appContext, tabbedActivity.getClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-        tabbedActivity.startActivity(intent);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        appContext.startActivity(intent);
         return true;
     }
 
