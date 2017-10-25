@@ -6,29 +6,32 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_FRONTEND_HOST_IMPL_H_
 
 #include "base/macros.h"
+#include "content/common/devtools.mojom.h"
 #include "content/public/browser/devtools_frontend_host.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
 
+class WebContents;
+
 class DevToolsFrontendHostImpl : public DevToolsFrontendHost,
-                                 public WebContentsObserver {
+                                 public mojom::DevToolsFrontendHost {
  public:
   DevToolsFrontendHostImpl(
-      RenderFrameHost* frontend_main_frame,
+      RenderFrameHost* frame_host,
       const HandleMessageCallback& handle_message_callback);
   ~DevToolsFrontendHostImpl() override;
 
   void BadMessageRecieved() override;
 
  private:
-  // WebContentsObserver overrides.
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
+  // mojom::DevToolsFrontendHost implementation.
+  void DispatchEmbedderMessage(const std::string& message) override;
 
-  void OnDispatchOnEmbedder(const std::string& message);
-
+  WebContents* web_contents_;
   HandleMessageCallback handle_message_callback_;
+  mojo::AssociatedBinding<mojom::DevToolsFrontendHost> binding_;
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendHostImpl);
 };
 

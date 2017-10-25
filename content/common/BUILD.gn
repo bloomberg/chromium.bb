@@ -596,6 +596,7 @@ mojom("mojo_bindings") {
     "associated_interfaces.mojom",
     "child.mojom",
     "child_memory_coordinator.mojom",
+    "devtools.mojom",
     "field_trial_recorder.mojom",
     "file_utilities.mojom",
     "frame.mojom",
