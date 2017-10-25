@@ -293,6 +293,9 @@ extern const char kChooserUsbOverviewURL[];
 #if defined(OS_CHROMEOS)
 // The URL for EOL notification
 extern const char kEolNotificationURL[];
+
+// The URL for providing more information about Google nameservers.
+extern const char kGoogleNameserversLearnMoreURL[];
 #endif
 
 }  // namespace chrome

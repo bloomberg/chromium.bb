@@ -1348,6 +1348,18 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS" desc="Settings > Network: Name servers label.">
       Name servers
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_AUTOMATIC" desc="Settings > Internet > Network details: Label for setting automatic name servers.">
+      Automatic name servers
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_CUSTOM" desc="Settings > Internet > Network details: Label for setting custom name servers.">
+      Custom name servers
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE" desc="Settings > Internet > Network details: Label for setting Google name servers.">
+      Google name servers
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_LEARN_MORE" desc="Settings > Internet > Network details: Text for the learn more link for the Google name servers option.">
+      Learn more
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) label.">
       Web Proxy Auto Discovery URL:
     </message>

@@ -17,14 +17,15 @@
           aria-labelledby="autoIPConfigLabel">
       </paper-toggle-button>
     </div>
-    <div class="property-box single-column indented stretch"
-        hidden$="[[!ipConfig_]]">
-      <network-property-list
-          fields="[[ipConfigFields_]]" property-dict="[[ipConfig_]]"
-          edit-field-types="[[getIPEditFields_(editable, automatic_)]]"
-          on-property-change="onIPChange_">
-      </network-property-list>
-    </div>
+    <template is="dom-if" if="[[hasIpConfigFields_(ipConfig_)]]">
+      <div class="property-box single-column indented stretch">
+        <network-property-list
+            fields="[[ipConfigFields_]]" property-dict="[[ipConfig_]]"
+            edit-field-types="[[getIPEditFields_(editable, automatic_)]]"
+            on-property-change="onIPChange_">
+        </network-property-list>
+      </div>
+    </template>
   </template>
   <script src="network_ip_config.js"></script>
 </dom-module>

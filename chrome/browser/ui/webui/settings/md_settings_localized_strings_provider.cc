@@ -932,6 +932,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkConnectNotAllowed", IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED},
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},
+      {"networkNameserversLearnMore",
+       IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_LEARN_MORE},
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},
       {"networkPrimaryUserControlled",
        IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED},
@@ -1005,6 +1007,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_INTERNET_NO_NETWORKS_MOBILE_DATA,
           base::ASCIIToUTF16(chrome::kInstantTetheringLearnMoreURL)));
+  html_source->AddString("networkGoogleNameserversLearnMoreUrl",
+                         chrome::kGoogleNameserversLearnMoreURL);
 }
 #endif
 
