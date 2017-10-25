@@ -15599,6 +15599,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
+<histogram name="Document.BeforeUnloadDialog" enum="BeforeUnloadDialogResult">
+  <owner>panicker@chromium.org</owner>
+  <summary>
+    Records result of invoking beforeunload handler, that determines whether to
+    show the dialog.
+  </summary>
+</histogram>
+
 <histogram name="Document.OutliveTimeAfterShutdown.DestroyedBeforeProcessDies">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>keishi@chromium.org</owner>
@@ -15626,6 +15634,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Recorded only for Android. Records on every metrics upload whether document
     mode is enabled.
   </summary>
+</histogram>
+
+<histogram name="DocumentEventTiming.BeforeUnloadDuration" units="microseconds">
+  <owner>panicker@chromium.org</owner>
+  <summary>Microseconds spent in beforeunload.</summary>
+</histogram>
+
+<histogram name="DocumentEventTiming.PageHideDuration" units="microseconds">
+  <owner>panicker@chromium.org</owner>
+  <summary>Microseconds spent in pagehide.</summary>
+</histogram>
+
+<histogram name="DocumentEventTiming.PageVibilityHiddenDuration"
+    units="microseconds">
+  <owner>panicker@chromium.org</owner>
+  <summary>Microseconds spent in vibilitychange (hidden).</summary>
+</histogram>
+
+<histogram name="DocumentEventTiming.UnloadDuration" units="microseconds">
+  <owner>panicker@chromium.org</owner>
+  <summary>Microseconds spent in unload.</summary>
 </histogram>
 
 <histogram name="DocumentScan.ConverterResult" enum="BooleanSuccess">

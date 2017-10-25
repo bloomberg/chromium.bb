@@ -3448,7 +3448,7 @@ void Document::DispatchUnloadEvents() {
         const double unload_event_end = MonotonicallyIncreasingTime();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
-            ("DocumentLoadTiming.UnloadDuration", 0, 10000000, 50));
+            ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
         unload_histogram.Count((unload_event_end - unload_event_start) *
                                1000000.0);
         timing.MarkUnloadEventEnd(unload_event_end);
