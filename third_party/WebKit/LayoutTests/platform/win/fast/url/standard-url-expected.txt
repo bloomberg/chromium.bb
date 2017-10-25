@@ -36,7 +36,7 @@ PASS canonicalize('http:/example.com/') is 'http://example.com/'
 PASS canonicalize('ftp:/example.com/') is 'ftp://example.com/'
 PASS canonicalize('https:/example.com/') is 'https://example.com/'
 PASS canonicalize('madeupscheme:/example.com/') is 'madeupscheme:/example.com/'
-FAIL canonicalize('file:/example.com/') should be file://localhost/example.com/. Was file:///E:/example.com/.
+FAIL canonicalize('file:/example.com/') should be file://localhost/example.com/. Was file:///C:/example.com/.
 PASS canonicalize('ftps:/example.com/') is 'ftps:/example.com/'
 PASS canonicalize('gopher:/example.com/') is 'gopher://example.com/'
 PASS canonicalize('ws:/example.com/') is 'ws://example.com/'

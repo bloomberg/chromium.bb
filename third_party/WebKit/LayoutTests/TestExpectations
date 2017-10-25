@@ -3551,8 +3551,15 @@ crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/trac
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
+crbug.com/769056 fast/text/emoji-web-font.html [ Failure ]
+
 # Paint-timing tests timeout without threaded-compositing, so skip them.
 crbug.com/720047 external/wpt/paint-timing [ Skip ]
+
+crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
+crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
+crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
+crbug.com/770232 [ Mac ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.html [ Pass Failure ]
 
 # Test flaky (crashing) on WebKit Android (Nexus4)
 crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
