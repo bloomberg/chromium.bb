@@ -200,6 +200,13 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
+void Layer::SetTransformInternal(const gfx::Transform& new_transform) {
+  DCHECK(new_transform != inputs_.transform);
+  inputs_.transform = new_transform;
+  if (inputs_.client)
+    inputs_.client->DidChangeLayerTransform();
+}
+
 void Layer::SetOpacityInternal(float new_opacity) {
   float old_opacity = inputs_.opacity;
   inputs_.opacity = new_opacity;
@@ -694,8 +701,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
     }
   }
 
-  inputs_.transform = transform;
-
+  SetTransformInternal(transform);
   SetNeedsCommit();
 }
 
@@ -1354,7 +1360,8 @@ TransformNode* Layer::GetTransformNode() const {
 }
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
-  inputs_.transform = transform;
+  if (transform != inputs_.transform)
+    SetTransformInternal(transform);
 }
 
 bool Layer::HasTickingAnimationForTesting() const {

@@ -463,6 +463,44 @@ class LayerTreeHostAnimationTestOpacityAnimationNotifiesClient
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestOpacityAnimationNotifiesClient);
 
+// Ensures that LayerClient::DidChangeLayerTransform() is notified when an
+// animation changes the transform of a layer.
+class LayerTreeHostAnimationTestTransformAnimationNotifiesClient
+    : public LayerTreeHostAnimationTest {
+ public:
+  void BeginTest() override {
+    AttachPlayersToTimeline();
+    Layer* layer = layer_tree_host()->root_layer();
+    layer->SetLayerClient(&layer_client_);
+    player_->AttachElement(layer->element_id());
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            base::IgnoreResult(
+                static_cast<int (*)(AnimationPlayer*, double, int, int)>(
+                    &AddAnimatedTransformToPlayer)),
+            base::Unretained(player_.get()), 0.0, 2, 2));
+    EXPECT_CALL(layer_client_, DidChangeLayerTransform());
+  }
+
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                               int target_property,
+                               int group) override {
+    Animation* animation = player_->GetAnimation(TargetProperty::TRANSFORM);
+    if (animation)
+      player_->RemoveAnimation(animation->id());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  MockLayerClient layer_client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestTransformAnimationNotifiesClient);
+
 // Ensures that when opacity is being animated, this value does not cause the
 // subtree to be skipped.
 class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
