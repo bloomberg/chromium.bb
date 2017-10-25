@@ -185,8 +185,8 @@ component("views") {
     "mouse_watcher_view_host.h",
     "native_cursor.h",
     "native_theme_delegate.h",
-    "painter.h",
     "paint_info.h",
+    "painter.h",
     "pointer_watcher.h",
     "rect_based_targeting_utils.h",
     "repeat_controller.h",
@@ -697,6 +697,10 @@ component("views") {
     ]
   } else {
     sources += [ "accessibility/native_view_accessibility_stub.cc" ]
+  }
+
+  if (is_fuchsia) {
+    sources += [ "controls/menu/menu_config_fuchsia.cc" ]
   }
 }
 
