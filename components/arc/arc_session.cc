@@ -218,7 +218,23 @@ class ArcSessionImpl : public ArcSession,
     STOPPED,
   };
 
-  explicit ArcSessionImpl(ArcBridgeService* arc_bridge_service);
+  // Delegate interface to emulate ArcBridgeHost mojo connection establishment.
+  class Delegate {
+   public:
+    // Used for ConnectMojo completion callback.
+    using ConnectMojoCallback =
+        base::OnceCallback<void(std::unique_ptr<mojom::ArcBridgeHost>)>;
+
+    virtual ~Delegate() = default;
+
+    // Connects ArcBridgeHost via |socket_fd|, and invokes |callback| with
+    // connected ArcBridgeHost instance if succeeded (or nullptr if failed).
+    // Returns a FD which cancels the current connection on close(2).
+    virtual base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
+                                       ConnectMojoCallback callback) = 0;
+  };
+
+  explicit ArcSessionImpl(std::unique_ptr<Delegate> delegate);
   ~ArcSessionImpl() override;
 
   // ArcSession overrides:
@@ -253,12 +269,9 @@ class ArcSessionImpl : public ArcSession,
                              const std::string& container_instance_id,
                              base::ScopedFD socket_fd);
 
-  // Synchronously accepts a connection on |socket_fd| and then processes the
-  // connected socket's file descriptor.
-  static mojo::ScopedMessagePipeHandle ConnectMojo(
-      mojo::edk::ScopedPlatformHandle socket_fd,
-      base::ScopedFD cancel_fd);
-  void OnMojoConnected(mojo::ScopedMessagePipeHandle server_pipe);
+  // Called when Mojo connection is established (or canceled during the
+  // connect.)
+  void OnMojoConnected(std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host);
 
   // Request to stop ARC instance via DBus.
   void StopArcInstance();
@@ -280,8 +293,8 @@ class ArcSessionImpl : public ArcSession,
   // created.
   THREAD_CHECKER(thread_checker_);
 
-  // Owned by ArcServiceManager.
-  ArcBridgeService* const arc_bridge_service_;
+  // Delegate implementation.
+  std::unique_ptr<Delegate> delegate_;
 
   // The state of the session.
   State state_ = State::NOT_STARTED;
@@ -311,8 +324,138 @@ class ArcSessionImpl : public ArcSession,
   DISALLOW_COPY_AND_ASSIGN(ArcSessionImpl);
 };
 
-ArcSessionImpl::ArcSessionImpl(ArcBridgeService* arc_bridge_service)
-    : arc_bridge_service_(arc_bridge_service), weak_factory_(this) {
+// Real Delegate implementation to connect Mojo.
+class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
+ public:
+  explicit ArcSessionDelegateImpl(ArcBridgeService* arc_bridge_service);
+  ~ArcSessionDelegateImpl() override = default;
+
+  // ArcSessionImpl::Delegate override.
+  base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
+                             ConnectMojoCallback callback) override;
+
+ private:
+  // Synchronously accepts a connection on |socket_fd| and then processes the
+  // connected socket's file descriptor. This is designed to run on a
+  // blocking thread.
+  static mojo::ScopedMessagePipeHandle ConnectMojoInternal(
+      mojo::edk::ScopedPlatformHandle socket_fd,
+      base::ScopedFD cancel_fd);
+
+  // Called when Mojo connection is established or canceled.
+  // In case of cancel or error, |server_pipe| is invalid.
+  void OnMojoConnected(ConnectMojoCallback callback,
+                       mojo::ScopedMessagePipeHandle server_pipe);
+
+  // Owned by ArcServiceManager.
+  ArcBridgeService* const arc_bridge_service_;
+
+  // WeakPtrFactory to use callbacks.
+  base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionDelegateImpl);
+};
+
+ArcSessionDelegateImpl::ArcSessionDelegateImpl(
+    ArcBridgeService* arc_bridge_service)
+    : arc_bridge_service_(arc_bridge_service), weak_factory_(this) {}
+
+base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
+    base::ScopedFD socket_fd,
+    ConnectMojoCallback callback) {
+  // Prepare a pipe so that AcceptInstanceConnection can be interrupted on
+  // Stop().
+  base::ScopedFD cancel_fd;
+  base::ScopedFD return_fd;
+  if (!CreatePipe(&cancel_fd, &return_fd)) {
+    LOG(ERROR) << "Failed to create a pipe to cancel accept()";
+    return base::ScopedFD();
+  }
+
+  // For production, |socket_fd| passed from session_manager is either a valid
+  // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
+  // might be invalid.
+  mojo::edk::PlatformHandle raw_handle(socket_fd.release());
+  raw_handle.needs_connection = true;
+
+  mojo::edk::ScopedPlatformHandle mojo_socket_fd(raw_handle);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&ArcSessionDelegateImpl::ConnectMojoInternal,
+                     std::move(mojo_socket_fd), std::move(cancel_fd)),
+      base::BindOnce(&ArcSessionDelegateImpl::OnMojoConnected,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  return return_fd;
+}
+
+// static
+mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
+    mojo::edk::ScopedPlatformHandle socket_fd,
+    base::ScopedFD cancel_fd) {
+  if (!WaitForSocketReadable(socket_fd.get().handle, cancel_fd.get())) {
+    VLOG(1) << "Mojo connection was cancelled.";
+    return mojo::ScopedMessagePipeHandle();
+  }
+
+  mojo::edk::ScopedPlatformHandle scoped_fd;
+  if (!mojo::edk::ServerAcceptConnection(socket_fd.get(), &scoped_fd,
+                                         /* check_peer_user = */ false) ||
+      !scoped_fd.is_valid()) {
+    return mojo::ScopedMessagePipeHandle();
+  }
+
+  // Hardcode pid 0 since it is unused in mojo.
+  const base::ProcessHandle kUnusedChildProcessHandle = 0;
+  mojo::edk::PlatformChannelPair channel_pair;
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
+
+  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
+
+  invitation.Send(
+      kUnusedChildProcessHandle,
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  channel_pair.PassServerHandle()));
+
+  mojo::edk::ScopedPlatformHandleVectorPtr handles(
+      new mojo::edk::PlatformHandleVector{
+          channel_pair.PassClientHandle().release()});
+
+  // We need to send the length of the message as a single byte, so make sure it
+  // fits.
+  DCHECK_LT(token.size(), 256u);
+  uint8_t message_length = static_cast<uint8_t>(token.size());
+  struct iovec iov[] = {{&message_length, sizeof(message_length)},
+                        {const_cast<char*>(token.c_str()), token.size()}};
+  ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
+      scoped_fd.get(), iov, sizeof(iov) / sizeof(iov[0]), handles->data(),
+      handles->size());
+  if (result == -1) {
+    PLOG(ERROR) << "sendmsg";
+    return mojo::ScopedMessagePipeHandle();
+  }
+
+  return pipe;
+}
+
+void ArcSessionDelegateImpl::OnMojoConnected(
+    ConnectMojoCallback callback,
+    mojo::ScopedMessagePipeHandle server_pipe) {
+  if (!server_pipe.is_valid()) {
+    LOG(ERROR) << "Invalid pipe";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  mojom::ArcBridgeInstancePtr instance;
+  instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
+      std::move(server_pipe), 0u));
+  std::move(callback).Run(std::make_unique<ArcBridgeHostImpl>(
+      arc_bridge_service_, std::move(instance)));
+}
+
+ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)), weak_factory_(this) {
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client == nullptr)
     return;
@@ -457,29 +600,14 @@ void ArcSessionImpl::OnFullInstanceStarted(
 
   VLOG(2) << "Connecting mojo...";
   state_ = State::CONNECTING_MOJO;
-
-  // Prepare a pipe so that AcceptInstanceConnection can be interrupted on
-  // Stop().
-  base::ScopedFD cancel_fd;
-  if (!CreatePipe(&cancel_fd, &accept_cancel_pipe_)) {
-    LOG(ERROR) << "Failed to create a pipe to cancel accept()";
+  accept_cancel_pipe_ = delegate_->ConnectMojo(
+      std::move(socket_fd), base::BindOnce(&ArcSessionImpl::OnMojoConnected,
+                                           weak_factory_.GetWeakPtr()));
+  if (!accept_cancel_pipe_.is_valid()) {
+    // Failed to post a task to accept() the request.
     StopArcInstance();
     return;
   }
-
-  // For production, |socket_fd| passed from session_manager is either a valid
-  // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
-  // might be invalid.
-  mojo::edk::PlatformHandle raw_handle(socket_fd.release());
-  raw_handle.needs_connection = true;
-
-  mojo::edk::ScopedPlatformHandle mojo_socket_fd(raw_handle);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&ArcSessionImpl::ConnectMojo, std::move(mojo_socket_fd),
-                     std::move(cancel_fd)),
-      base::BindOnce(&ArcSessionImpl::OnMojoConnected,
-                     weak_factory_.GetWeakPtr()));
 }
 
 // static
@@ -519,58 +647,8 @@ void ArcSessionImpl::SendStartArcInstanceDBusMessage(
       native_bridge_experiment, std::move(callback));
 }
 
-// static
-mojo::ScopedMessagePipeHandle ArcSessionImpl::ConnectMojo(
-    mojo::edk::ScopedPlatformHandle socket_fd,
-    base::ScopedFD cancel_fd) {
-  if (!WaitForSocketReadable(socket_fd.get().handle, cancel_fd.get())) {
-    VLOG(1) << "Mojo connection was cancelled.";
-    return mojo::ScopedMessagePipeHandle();
-  }
-
-  mojo::edk::ScopedPlatformHandle scoped_fd;
-  if (!mojo::edk::ServerAcceptConnection(socket_fd.get(), &scoped_fd,
-                                         /* check_peer_user = */ false) ||
-      !scoped_fd.is_valid()) {
-    return mojo::ScopedMessagePipeHandle();
-  }
-
-  // Hardcode pid 0 since it is unused in mojo.
-  const base::ProcessHandle kUnusedChildProcessHandle = 0;
-  mojo::edk::PlatformChannelPair channel_pair;
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-
-  std::string token = mojo::edk::GenerateRandomToken();
-  mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
-
-  invitation.Send(
-      kUnusedChildProcessHandle,
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  channel_pair.PassServerHandle()));
-
-  mojo::edk::ScopedPlatformHandleVectorPtr handles(
-      new mojo::edk::PlatformHandleVector{
-          channel_pair.PassClientHandle().release()});
-
-  // We need to send the length of the message as a single byte, so make sure it
-  // fits.
-  DCHECK_LT(token.size(), 256u);
-  uint8_t message_length = static_cast<uint8_t>(token.size());
-  struct iovec iov[] = {{&message_length, sizeof(message_length)},
-                        {const_cast<char*>(token.c_str()), token.size()}};
-  ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-      scoped_fd.get(), iov, sizeof(iov) / sizeof(iov[0]), handles->data(),
-      handles->size());
-  if (result == -1) {
-    PLOG(ERROR) << "sendmsg";
-    return mojo::ScopedMessagePipeHandle();
-  }
-
-  return pipe;
-}
-
 void ArcSessionImpl::OnMojoConnected(
-    mojo::ScopedMessagePipeHandle server_pipe) {
+    std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::CONNECTING_MOJO);
   accept_cancel_pipe_.reset();
@@ -580,17 +658,12 @@ void ArcSessionImpl::OnMojoConnected(
     return;
   }
 
-  if (!server_pipe.is_valid()) {
-    LOG(ERROR) << "Invalid pipe";
+  if (!arc_bridge_host.get()) {
+    LOG(ERROR) << "Invalid pipe.";
     StopArcInstance();
     return;
   }
-
-  mojom::ArcBridgeInstancePtr instance;
-  instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
-      std::move(server_pipe), 0u));
-  arc_bridge_host_ = std::make_unique<ArcBridgeHostImpl>(arc_bridge_service_,
-                                                         std::move(instance));
+  arc_bridge_host_ = std::move(arc_bridge_host);
 
   VLOG(0) << "ARC ready.";
   state_ = State::RUNNING_FULL_INSTANCE;
@@ -762,7 +835,8 @@ void ArcSession::RemoveObserver(Observer* observer) {
 // static
 std::unique_ptr<ArcSession> ArcSession::Create(
     ArcBridgeService* arc_bridge_service) {
-  return std::make_unique<ArcSessionImpl>(arc_bridge_service);
+  return std::make_unique<ArcSessionImpl>(
+      std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service));
 }
 
 }  // namespace arc
