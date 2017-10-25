@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -810,6 +811,30 @@ TEST_P(MouseWheelEventQueueTest, WheelScrollLatching) {
   EXPECT_EQ(0U, sent_gesture_event(0)->data.scroll_update.delta_x);
   EXPECT_EQ(1U, sent_gesture_event(0)->data.scroll_update.delta_y);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
+}
+
+TEST_P(MouseWheelEventQueueTest, WheelScrollingWasLatchedHistogramCheck) {
+  base::HistogramTester histogram_tester;
+  const char latching_histogram_name[] = "WheelScrolling.WasLatched";
+
+  SendMouseWheelPossiblyIncludingPhase(
+      !scroll_latching_enabled_, kWheelScrollX, kWheelScrollY,
+      kWheelScrollGlobalX, kWheelScrollGlobalY, 1, 1, 0, false,
+      WebMouseWheelEvent::kPhaseBegan, WebMouseWheelEvent::kPhaseNone);
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  histogram_tester.ExpectBucketCount(latching_histogram_name, 0, 1);
+
+  SendMouseWheelPossiblyIncludingPhase(
+      !scroll_latching_enabled_, kWheelScrollX, kWheelScrollY,
+      kWheelScrollGlobalX, kWheelScrollGlobalY, 1, 1, 0, false,
+      WebMouseWheelEvent::kPhaseChanged, WebMouseWheelEvent::kPhaseNone);
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  if (scroll_latching_enabled_) {
+    histogram_tester.ExpectBucketCount(latching_histogram_name, 0, 1);
+    histogram_tester.ExpectBucketCount(latching_histogram_name, 1, 1);
+  } else {
+    histogram_tester.ExpectBucketCount(latching_histogram_name, 0, 2);
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(MouseWheelEventQueueTests,

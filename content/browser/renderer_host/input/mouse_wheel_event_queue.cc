@@ -180,6 +180,10 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     bool needs_update = scroll_update.data.scroll_update.delta_x != 0 ||
                         scroll_update.data.scroll_update.delta_y != 0;
 
+    // For every GSU event record whether it is latched or not.
+    if (needs_update)
+      RecordLatchingUmaMetric(!needs_scroll_begin_);
+
     if (enable_scroll_latching_) {
       if (event_sent_for_gesture_ack_->event.phase ==
           blink::WebMouseWheelEvent::kPhaseBegan) {
@@ -343,6 +347,10 @@ void MouseWheelEventQueue::SendScrollBegin(
   needs_scroll_end_ = true;
   client_->ForwardGestureEventWithLatencyInfo(
       scroll_begin, ui::LatencyInfo(ui::SourceEventType::WHEEL));
+}
+
+void MouseWheelEventQueue::RecordLatchingUmaMetric(bool latched) {
+  UMA_HISTOGRAM_BOOLEAN("WheelScrolling.WasLatched", latched);
 }
 
 }  // namespace content
