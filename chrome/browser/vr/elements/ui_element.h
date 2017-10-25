@@ -204,7 +204,7 @@ class UiElement : public cc::AnimationTarget {
   // Transformations are applied relative to the parent element, rather than
   // absolutely.
   void AddChild(std::unique_ptr<UiElement> child);
-  void RemoveChild(UiElement* child);
+  std::unique_ptr<UiElement> RemoveChild(UiElement* to_remove);
   UiElement* parent() { return parent_; }
   const UiElement* parent() const { return parent_; }
 

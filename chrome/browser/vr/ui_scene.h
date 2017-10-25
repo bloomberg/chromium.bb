@@ -35,7 +35,7 @@ class UiScene {
 
   void AddUiElement(UiElementName parent, std::unique_ptr<UiElement> element);
 
-  void RemoveUiElement(int element_id);
+  std::unique_ptr<UiElement> RemoveUiElement(int element_id);
 
   // Handles per-frame updates, giving each element the opportunity to update,
   // if necessary (eg, for animations). NB: |current_time| is the shared,

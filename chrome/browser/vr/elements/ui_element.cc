@@ -234,15 +234,21 @@ void UiElement::AddChild(std::unique_ptr<UiElement> child) {
   children_.push_back(std::move(child));
 }
 
-void UiElement::RemoveChild(UiElement* to_remove) {
+std::unique_ptr<UiElement> UiElement::RemoveChild(UiElement* to_remove) {
   DCHECK_EQ(this, to_remove->parent_);
   to_remove->parent_ = nullptr;
   size_t old_size = children_.size();
-  base::EraseIf(children_,
-                [to_remove](const std::unique_ptr<UiElement>& child) {
-                  return child.get() == to_remove;
-                });
+
+  auto it = std::find_if(std::begin(children_), std::end(children_),
+                         [to_remove](const std::unique_ptr<UiElement>& child) {
+                           return child.get() == to_remove;
+                         });
+  DCHECK(it != std::end(children_));
+
+  std::unique_ptr<UiElement> removed(it->release());
+  children_.erase(it);
   DCHECK_NE(old_size, children_.size());
+  return removed;
 }
 
 void UiElement::AddBinding(std::unique_ptr<BindingBase> binding) {

@@ -71,14 +71,12 @@ class UiInputManager {
                               gfx::PointF* out_target_local_point) const;
 
   UiScene* scene_;
-  // TODO(mthiesse): We need to handle elements being removed, and update this
-  // state appropriately.
-  UiElement* hover_target_ = nullptr;
+  int hover_target_id_ = 0;
   // TODO(mthiesse): We shouldn't have a fling target. Elements should fling
   // independently and we should only cancel flings on the relevant element
   // when we do cancel flings.
-  UiElement* fling_target_ = nullptr;
-  UiElement* input_locked_element_ = nullptr;
+  int fling_target_id_ = 0;
+  int input_locked_element_id_ = 0;
   bool in_click_ = false;
   bool in_scroll_ = false;
 
