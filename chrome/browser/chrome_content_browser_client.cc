@@ -1443,9 +1443,13 @@ std::vector<url::Origin>
 ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   std::vector<url::Origin> isolated_origin_list;
 
+// Sign-in process isolation is not needed on Android, see
+// https://crbug.com/739418.
+#if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kSignInProcessIsolation))
     isolated_origin_list.emplace_back(
         url::Origin::Create(GaiaUrls::GetInstance()->gaia_url()));
+#endif
 
   return isolated_origin_list;
 }
