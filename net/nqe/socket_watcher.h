@@ -91,6 +91,10 @@ class NET_EXPORT_PRIVATE SocketWatcher : public SocketPerformanceWatcher {
 
   base::ThreadChecker thread_checker_;
 
+  // True if the first RTT notification from the QUIC connection has been
+  // received.
+  bool first_quic_rtt_notification_received_;
+
   // A unique identifier for the remote host that this socket connects to.
   const base::Optional<IPHash> host_;
 
