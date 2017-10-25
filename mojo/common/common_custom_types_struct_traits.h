@@ -19,7 +19,6 @@
 #include "mojo/common/process_id.mojom-shared.h"
 #include "mojo/common/string16.mojom-shared.h"
 #include "mojo/common/text_direction.mojom-shared.h"
-#include "mojo/common/time.mojom-shared.h"
 #include "mojo/common/unguessable_token.mojom-shared.h"
 #include "mojo/common/version.mojom-shared.h"
 
@@ -84,19 +83,6 @@ struct StructTraits<common::mojom::ProcessIdDataView, base::ProcessId> {
   static bool Read(common::mojom::ProcessIdDataView data,
                    base::ProcessId* process_id) {
     *process_id = static_cast<base::ProcessId>(data.pid());
-    return true;
-  }
-};
-
-template <>
-struct StructTraits<common::mojom::TimeDeltaDataView, base::TimeDelta> {
-  static int64_t microseconds(const base::TimeDelta& delta) {
-    return delta.InMicroseconds();
-  }
-
-  static bool Read(common::mojom::TimeDeltaDataView data,
-                   base::TimeDelta* delta) {
-    *delta = base::TimeDelta::FromMicroseconds(data.microseconds());
     return true;
   }
 };

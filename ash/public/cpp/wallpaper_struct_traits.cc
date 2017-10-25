@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/wallpaper_struct_traits.h"
 
-#include "ipc/ipc_message_utils.h"
+#include "mojo/common/time_struct_traits.h"
 
 namespace mojo {
 

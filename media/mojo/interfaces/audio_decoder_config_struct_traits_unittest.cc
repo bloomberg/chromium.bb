@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_util.h"
+#include "mojo/common/time_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

@@ -6,7 +6,7 @@ mojom = "//mojo/common/time.mojom"
 public_headers = [ "//third_party/WebKit/Source/platform/wtf/Time.h" ]
 traits_headers = [
   "//ipc/ipc_message_utils.h",
-  "//mojo/common/common_custom_types_struct_traits.h",
+  "//mojo/common/time_struct_traits.h",
 ]
 public_deps = [
   "//ipc",
