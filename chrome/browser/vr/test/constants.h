@@ -31,7 +31,6 @@ static const gfx::Transform kPixelDaydreamProjMatrix(1.03317f,
 
 static const gfx::Vector3dF kForwardVector(0.0f, 0.0f, -1.0f);
 static const gfx::Vector3dF kBackwardVector(0.0f, 0.0f, 1.0f);
-static const gfx::Vector3dF kRightVector(1.0f, 0.0f, 0.0f);
 
 constexpr float kEpsilon = 1e-5f;
 

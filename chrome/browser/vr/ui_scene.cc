@@ -43,12 +43,12 @@ void UiScene::AddUiElement(UiElementName parent,
   is_dirty_ = true;
 }
 
-void UiScene::RemoveUiElement(int element_id) {
+std::unique_ptr<UiElement> UiScene::RemoveUiElement(int element_id) {
   UiElement* to_remove = GetUiElementById(element_id);
   CHECK_NE(nullptr, to_remove);
   CHECK_NE(nullptr, to_remove->parent());
-  to_remove->parent()->RemoveChild(to_remove);
   is_dirty_ = true;
+  return to_remove->parent()->RemoveChild(to_remove);
 }
 
 bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,

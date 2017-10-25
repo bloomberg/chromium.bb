@@ -68,11 +68,13 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_NE(scene.GetUiElementById(child_id), nullptr);
   EXPECT_EQ(scene.GetUiElementById(-1), nullptr);
 
-  scene.RemoveUiElement(child_id);
+  auto removed_child = scene.RemoveUiElement(child_id);
+  EXPECT_EQ(removed_child.get(), child);
   EXPECT_EQ(NumElementsInSubtree(&scene.root_element()), 2u);
   EXPECT_EQ(scene.GetUiElementById(child_id), nullptr);
 
-  scene.RemoveUiElement(parent_id);
+  auto removed_parent = scene.RemoveUiElement(parent_id);
+  EXPECT_EQ(removed_parent.get(), parent);
   EXPECT_EQ(NumElementsInSubtree(&scene.root_element()), 1u);
   EXPECT_EQ(scene.GetUiElementById(parent_id), nullptr);
 
