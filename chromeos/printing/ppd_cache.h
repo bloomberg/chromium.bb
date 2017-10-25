@@ -39,7 +39,7 @@ class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
     std::string contents;
   };
 
-  using FindCallback = base::Callback<void(const FindResult& result)>;
+  using FindCallback = base::OnceCallback<void(const FindResult& result)>;
 
   // Create and return a Ppdcache that uses cache_dir to store state.  If
   // cache_base_dir does not exist, it will be lazily created the first time the
@@ -48,7 +48,7 @@ class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
 
   // Start a Find, looking, for an entry with the given key that is at most
   // |max_age| old.  |cb| will be invoked on the calling thread.
-  virtual void Find(const std::string& key, const FindCallback& cb) = 0;
+  virtual void Find(const std::string& key, FindCallback cb) = 0;
 
   // Store the given contents at the given key.  If cb is non-null, it will
   // be invoked on completion.
