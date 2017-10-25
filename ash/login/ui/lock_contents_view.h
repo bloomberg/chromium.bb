@@ -13,6 +13,7 @@
 #include "ash/login/lock_screen_apps_focus_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/session/session_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -48,7 +49,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                     public LoginDataDispatcher::Observer,
                                     public SystemTrayFocusObserver,
                                     public display::DisplayObserver,
-                                    public views::StyledLabelListener {
+                                    public views::StyledLabelListener,
+                                    public SessionObserver {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -101,6 +103,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override{};
+  // SessionObserver:
+  void OnLockStateChanged(bool locked) override;
 
  private:
   class UserState {
@@ -226,6 +230,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   std::vector<OnRotate> rotation_actions_;
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
+  ScopedSessionObserver session_observer_;
 
   std::unique_ptr<LoginBubble> error_bubble_;
   std::unique_ptr<LoginBubble> tooltip_bubble_;

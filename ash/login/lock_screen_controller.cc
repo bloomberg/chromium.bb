@@ -146,6 +146,9 @@ void LockScreenController::AttemptUnlock(const AccountId& account_id) {
   if (!lock_screen_client_)
     return;
   lock_screen_client_->AttemptUnlock(account_id);
+
+  Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
+      LoginMetricsRecorder::AuthMethod::kSmartlock);
 }
 
 void LockScreenController::HardlockPod(const AccountId& account_id) {
@@ -247,6 +250,9 @@ void LockScreenController::DoAuthenticateUser(
         account_id.GetUserEmail(), account_id.GetObjGuid(), password);
   }
 
+  Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
+      is_pin ? LoginMetricsRecorder::AuthMethod::kPin
+             : LoginMetricsRecorder::AuthMethod::kPassword);
   lock_screen_client_->AuthenticateUser(account_id, hashed_password, is_pin,
                                         std::move(callback));
 }

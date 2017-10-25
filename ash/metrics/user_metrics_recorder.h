@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/metrics/login_metrics_recorder.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "base/macros.h"
@@ -31,6 +32,10 @@ class ASH_EXPORT UserMetricsRecorder {
 
   virtual ~UserMetricsRecorder();
 
+  // Record interesting user clicks on lock screen.
+  static void RecordUserClick(
+      LoginMetricsRecorder::LockScreenUserClickTarget target);
+
   // Records an Ash owned user action.
   void RecordUserMetricsAction(UserMetricsAction action);
 
@@ -43,6 +48,10 @@ class ASH_EXPORT UserMetricsRecorder {
 
   // Informs |this| that the Shell is going to be shut down.
   void OnShellShuttingDown();
+
+  LoginMetricsRecorder* login_metrics_recorder() {
+    return login_metrics_recorder_.get();
+  }
 
  private:
   friend class UserMetricsRecorderTestAPI;
@@ -77,6 +86,9 @@ class ASH_EXPORT UserMetricsRecorder {
 
   // Metric recorder to track pointer down events.
   std::unique_ptr<PointerMetricsRecorder> pointer_metrics_recorder_;
+
+  // Metric recorder to track login authentication activity.
+  std::unique_ptr<LoginMetricsRecorder> login_metrics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorder);
 };

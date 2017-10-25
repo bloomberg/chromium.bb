@@ -354,6 +354,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
 
   DCHECK(!on_auth_complete_);
   on_auth_complete_ = std::move(callback);
+  unlock_attempt_type_ = AUTH_PASSWORD;
 
   authentication_start_time_ = base::Time::Now();
   delegate_->SetPasswordInputEnabled(false);

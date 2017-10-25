@@ -219,7 +219,8 @@ LockContentsView::LockContentsView(
     LoginDataDispatcher* data_dispatcher)
     : NonAccessibleView(kLockContentsViewName),
       data_dispatcher_(data_dispatcher),
-      display_observer_(this) {
+      display_observer_(this),
+      session_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->lock_screen_controller()->AddLockScreenAppsFocusObserver(this);
@@ -249,6 +250,14 @@ LockContentsView::~LockContentsView() {
   Shell::Get()->lock_screen_controller()->RemoveLockScreenAppsFocusObserver(
       this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
+
+  if (unlock_attempt_ > 0) {
+    // Times a password was incorrectly entered until user gives up (sign out
+    // current session or shutdown the device). For a successful unlock,
+    // unlock_attempt_ should already be reset by OnLockStateChanged.
+    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
+        unlock_attempt_, false /*success*/);
+  }
 }
 
 void LockContentsView::Layout() {
@@ -436,6 +445,15 @@ void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
   DoLayout();
 }
 
+void LockContentsView::OnLockStateChanged(bool locked) {
+  if (!locked) {
+    // Successfully unlock the screen.
+    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
+        unlock_attempt_, true /*success*/);
+    unlock_attempt_ = 0;
+  }
+}
+
 void LockContentsView::FocusNextWidget(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   // Tell the focus direction to the status area or the shelf so they can focus
@@ -605,7 +623,6 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
 
 void LockContentsView::OnAuthenticate(bool auth_success) {
   if (auth_success) {
-    unlock_attempt_ = 0;
     error_bubble_->Close();
   } else {
     ShowErrorMessage();
@@ -674,8 +691,15 @@ void LockContentsView::OnAuthUserChanged() {
   Shell::Get()->lock_screen_controller()->OnFocusPod(new_auth_user);
   UpdateEasyUnlockIconForUser(new_auth_user);
 
-  // Reset unlock attempt when the auth user changes.
-  unlock_attempt_ = 0;
+  if (unlock_attempt_ > 0) {
+    // Times a password was incorrectly entered until user gives up (change
+    // user pod).
+    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
+        unlock_attempt_, false /*success*/);
+
+    // Reset unlock attempt when the auth user changes.
+    unlock_attempt_ = 0;
+  }
 }
 
 void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
