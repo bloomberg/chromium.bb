@@ -658,11 +658,6 @@ IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(content::SourceLocation, source_location)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(FrameMsg_CommitDataNetworkService_Params)
-  IPC_STRUCT_MEMBER(mojo::DataPipeConsumerHandle, handle)
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, url_loader_factory)
-IPC_STRUCT_END()
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
@@ -960,20 +955,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
                     std::vector<int> /* selected indices */)
 #endif
 #endif
-
-// PlzNavigate
-// Tells the renderer that a navigation is ready to commit.  The renderer should
-// request |stream_url| to get access to the stream containing the body of the
-// response. When --enable-network-service is in effect, |stream_url| is not
-// used, and instead the data is passed to the renderer in |commit_data.handle|.
-// When --enable-network-service, a URLLoaderFactory is optionally passed in
-// |commit_data| too.
-IPC_MESSAGE_ROUTED5(FrameMsg_CommitNavigation,
-                    content::ResourceResponseHead,            /* response */
-                    GURL,                                     /* stream_url */
-                    FrameMsg_CommitDataNetworkService_Params, /* commit_data */
-                    content::CommonNavigationParams, /* common_params */
-                    content::RequestNavigationParams /* request_params */)
 
 // PlzNavigate
 // Tells the renderer that a navigation failed with the error code |error_code|

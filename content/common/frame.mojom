@@ -4,6 +4,8 @@
 
 module content.mojom;
 
+import "content/public/common/url_loader.mojom";
+import "content/public/common/url_loader_factory.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
@@ -19,6 +21,31 @@ const string kNavigation_FrameSpec = "navigation:frame";
 // Implemented by the frame provider (e.g. renderer processes).
 interface Frame {
   GetInterfaceProvider(service_manager.mojom.InterfaceProvider& interfaces);
+};
+
+// See src/content/common/navigation_params.h
+[Native]
+struct CommonNavigationParams;
+
+// See src/content/common/navigation_params.h
+[Native]
+struct RequestNavigationParams;
+
+// Implemented by the frame provider and currently must be associated with the
+// legacy IPC channel.
+interface FrameNavigationControl {
+  // Tells the renderer that a navigation is ready to commit.  The renderer
+  // should request |body_url| to get access to the stream containing the body
+  // of the response. When the Network Service is enabled, |body_url| is not
+  // used and instead the data is passed to the renderer via |body_data|. In
+  // that case |default_subresource_url_loader_factory| may also be provided by
+  // the browser as a means for the renderer to load subresources.
+  CommitNavigation(URLResponseHead head,
+                   url.mojom.Url body_url,
+                   CommonNavigationParams common_params,
+                   RequestNavigationParams request_params,
+                   handle<data_pipe_consumer>? body_data,
+                   URLLoaderFactory? default_subresource_url_loader_factory);
 };
 
 // Implemented by the frame (e.g. renderer processes).

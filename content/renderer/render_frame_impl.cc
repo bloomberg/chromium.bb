@@ -1261,6 +1261,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       frame_binding_(this),
       host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
+      frame_navigation_control_binding_(this),
       has_accessed_initial_document_(false),
       media_factory_(this,
                      base::Bind(&RenderFrameImpl::RequestOverlayRoutingToken,
@@ -1720,7 +1721,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSnapshotAccessibilityTree)
     IPC_MESSAGE_HANDLER(FrameMsg_ExtractSmartClipData, OnExtractSmartClipData)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
-    IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
@@ -1816,6 +1816,11 @@ void RenderFrameImpl::BindFrame(
 void RenderFrameImpl::BindFrameBindingsControl(
     mojom::FrameBindingsControlAssociatedRequest request) {
   frame_bindings_control_binding_.Bind(std::move(request));
+}
+
+void RenderFrameImpl::BindFrameNavigationControl(
+    mojom::FrameNavigationControlAssociatedRequest request) {
+  frame_navigation_control_binding_.Bind(std::move(request));
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
@@ -2974,6 +2979,67 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 
   // Keep track of the total bindings accumulated in this process.
   RenderProcess::current()->AddBindings(enabled_bindings_flags);
+}
+
+// mojom::FrameNavigationControl implementation --------------------------------
+
+void RenderFrameImpl::CommitNavigation(
+    const ResourceResponseHead& head,
+    const GURL& body_url,
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    mojo::ScopedDataPipeConsumerHandle body_data,
+    mojom::URLLoaderFactoryPtr default_subresource_url_loader_factory) {
+  CHECK(IsBrowserSideNavigationEnabled());
+  // If this was a renderer-initiated navigation (nav_entry_id == 0) from this
+  // frame, but it was aborted, then ignore it.
+  if (!browser_side_navigation_pending_ &&
+      !browser_side_navigation_pending_url_.is_empty() &&
+      browser_side_navigation_pending_url_ == request_params.original_url &&
+      request_params.nav_entry_id == 0) {
+    browser_side_navigation_pending_url_ = GURL();
+    return;
+  }
+
+  // This will override the url requested by the WebURLLoader, as well as
+  // provide it with the response to the request.
+  std::unique_ptr<StreamOverrideParameters> stream_override(
+      new StreamOverrideParameters());
+  stream_override->stream_url = body_url;
+  stream_override->consumer_handle = std::move(body_data);
+  stream_override->response = head;
+  stream_override->redirects = request_params.redirects;
+  stream_override->redirect_responses = request_params.redirect_response;
+  stream_override->redirect_infos = request_params.redirect_infos;
+
+  // Used to notify the browser that it can release its |stream_handle_| when
+  // the |stream_override| object isn't used anymore.
+  // TODO(clamy): Remove this when we switch to Mojo streams.
+  stream_override->on_delete = base::BindOnce(
+      [](base::WeakPtr<RenderFrameImpl> weak_self, const GURL& url) {
+        if (RenderFrameImpl* self = weak_self.get()) {
+          self->Send(
+              new FrameHostMsg_StreamHandleConsumed(self->routing_id_, url));
+        }
+      },
+      weak_factory_.GetWeakPtr());
+
+  SetCustomURLLoaderFactory(std::move(default_subresource_url_loader_factory));
+
+  // If the request was initiated in the context of a user gesture then make
+  // sure that the navigation also executes in the context of a user gesture.
+  std::unique_ptr<blink::WebScopedUserGesture> gesture(
+      request_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
+                                      : nullptr);
+
+  browser_side_navigation_pending_ = false;
+  browser_side_navigation_pending_url_ = GURL();
+
+  NavigateInternal(common_params, StartNavigationParams(), request_params,
+                   std::move(stream_override));
+
+  // Don't add code after this since NavigateInternal may have destroyed this
+  // RenderFrameImpl.
 }
 
 // mojom::HostZoom implementation ----------------------------------------------
@@ -5293,66 +5359,6 @@ void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
 }
 
 // PlzNavigate
-void RenderFrameImpl::OnCommitNavigation(
-    const ResourceResponseHead& response,
-    const GURL& stream_url,
-    const FrameMsg_CommitDataNetworkService_Params& commit_data,
-    const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params) {
-  CHECK(IsBrowserSideNavigationEnabled());
-  // If this was a renderer-initiated navigation (nav_entry_id == 0) from this
-  // frame, but it was aborted, then ignore it.
-  if (!browser_side_navigation_pending_ &&
-      !browser_side_navigation_pending_url_.is_empty() &&
-      browser_side_navigation_pending_url_ == request_params.original_url &&
-      request_params.nav_entry_id == 0) {
-    browser_side_navigation_pending_url_ = GURL();
-    return;
-  }
-
-  // This will override the url requested by the WebURLLoader, as well as
-  // provide it with the response to the request.
-  std::unique_ptr<StreamOverrideParameters> stream_override(
-      new StreamOverrideParameters());
-  stream_override->stream_url = stream_url;
-  stream_override->consumer_handle =
-      mojo::ScopedDataPipeConsumerHandle(commit_data.handle);
-  stream_override->response = response;
-  stream_override->redirects = request_params.redirects;
-  stream_override->redirect_responses = request_params.redirect_response;
-  stream_override->redirect_infos = request_params.redirect_infos;
-
-  // Used to notify the browser that it can release its |stream_handle_| when
-  // the |stream_override| object isn't used anymore.
-  // TODO(clamy): Remove this when we switch to Mojo streams.
-  stream_override->on_delete = base::BindOnce(
-      [](base::WeakPtr<RenderFrameImpl> weak_self, const GURL& url) {
-        if (RenderFrameImpl* self = weak_self.get()) {
-          self->Send(
-              new FrameHostMsg_StreamHandleConsumed(self->routing_id_, url));
-        }
-      },
-      weak_factory_.GetWeakPtr());
-
-  SetCustomURLLoadeFactory(commit_data.url_loader_factory);
-
-  // If the request was initiated in the context of a user gesture then make
-  // sure that the navigation also executes in the context of a user gesture.
-  std::unique_ptr<blink::WebScopedUserGesture> gesture(
-      request_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
-                                      : nullptr);
-
-  browser_side_navigation_pending_ = false;
-  browser_side_navigation_pending_url_ = GURL();
-
-  NavigateInternal(common_params, StartNavigationParams(), request_params,
-                   std::move(stream_override));
-
-  // Don't add code after this since NavigateInternal may have destroyed this
-  // RenderFrameImpl.
-}
-
-// PlzNavigate
 void RenderFrameImpl::OnFailedNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
@@ -6449,13 +6455,9 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
   GetRenderWidget()->UpdateSelectionBounds();
 }
 
-void RenderFrameImpl::SetCustomURLLoadeFactory(
-    mojo::MessagePipeHandle custom_loader_factory_handle) {
-  // Chrome doesn't use interface versioning.
-  mojom::URLLoaderFactoryPtr url_loader_factory;
-  url_loader_factory.Bind(mojom::URLLoaderFactoryPtrInfo(
-      mojo::ScopedMessagePipeHandle(custom_loader_factory_handle), 0u));
-  custom_url_loader_factory_ = std::move(url_loader_factory);
+void RenderFrameImpl::SetCustomURLLoaderFactory(
+    mojom::URLLoaderFactoryPtr factory) {
+  custom_url_loader_factory_ = std::move(factory);
 }
 
 void RenderFrameImpl::InitializeUserMediaClient() {
@@ -6828,6 +6830,10 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &RenderFrameImpl::BindFrameBindingsControl, weak_factory_.GetWeakPtr()));
+
+  GetAssociatedInterfaceRegistry()->AddInterface(
+      base::Bind(&RenderFrameImpl::BindFrameNavigationControl,
+                 weak_factory_.GetWeakPtr()));
 
   registry_.AddInterface(base::Bind(&FrameInputHandlerImpl::CreateMojoService,
                                     weak_factory_.GetWeakPtr()));

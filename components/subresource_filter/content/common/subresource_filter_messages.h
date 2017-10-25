@@ -55,7 +55,7 @@ IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
 // requirement. The message will have no effect if the provisional load fails.
 //
 // With browser-side navigation enabled, the message must arrive just before
-// FrameMsg_CommitNavigation.
+// mojom::FrameNavigationControl::CommitNavigation.
 //
 // If no message arrives, the default behavior is ActivationLevel::DISABLED.
 IPC_MESSAGE_ROUTED1(SubresourceFilterMsg_ActivateForNextCommittedLoad,
