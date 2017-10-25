@@ -462,6 +462,7 @@ TEST_F(DownloadServiceControllerImplTest,
                                     base::Bind(&NotifyTaskFinished));
 
   task_runner_->RunUntilIdle();
+  controller_->OnStopScheduledTask(DownloadTaskType::CLEANUP_TASK);
 }
 
 TEST_F(DownloadServiceControllerImplTest, GetOwnerOfDownload) {
@@ -1537,7 +1538,7 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxRunning) {
 
   // Hit the max running configuration threshold, nothing should be called.
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(0);
-  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
 
@@ -1578,7 +1579,7 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxConcurrent) {
   ON_CALL(*scheduler_, Next(_, _))
       .WillByDefault(Return(model_->Get(entry2.guid)));
 
-  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
 

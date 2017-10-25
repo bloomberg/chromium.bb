@@ -53,7 +53,6 @@ void SchedulerImpl::Reschedule(const Model::EntryList& entries) {
   }
 
   // TODO(xingliu): Support NetworkRequirements::OPTIMISTIC.
-  task_scheduler_->CancelTask(DownloadTaskType::DOWNLOAD_TASK);
 
   Criteria criteria = util::GetSchedulingCriteria(entries);
   task_scheduler_->ScheduleTask(

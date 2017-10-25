@@ -417,7 +417,7 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
 
   Criteria criteria;
   EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
-      .RetiresOnSaturation();
+      .Times(0);
   EXPECT_CALL(task_scheduler_,
               ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
                            criteria.requires_unmetered_network,
@@ -429,7 +429,7 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
       SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE;
   criteria.requires_battery_charging = false;
   EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
-      .RetiresOnSaturation();
+      .Times(0);
   EXPECT_CALL(task_scheduler_,
               ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
                            criteria.requires_unmetered_network,
@@ -441,13 +441,17 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
       SchedulingParams::NetworkRequirements::NONE;
   criteria.requires_unmetered_network = false;
   EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
-      .RetiresOnSaturation();
+      .Times(0);
   EXPECT_CALL(task_scheduler_,
               ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
                            criteria.requires_unmetered_network,
                            criteria.requires_battery_charging, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
+
+  EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
+      .RetiresOnSaturation();
+  scheduler_->Reschedule(Model::EntryList());
 }
 
 }  // namespace

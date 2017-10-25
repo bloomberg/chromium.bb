@@ -104,7 +104,7 @@ class DeviceStatusListenerTest : public testing::Test {
   base::PowerMonitorTestSource* power_source_;
 };
 
-// Verifies the initial state that the observer should not be notified.
+// Verifies the initial state that the observer should be notified.
 TEST_F(DeviceStatusListenerTest, InitialNoOptState) {
   ChangeNetworkType(ConnectionType::CONNECTION_NONE);
   SimulateBatteryChange(true); /* Not charging. */
@@ -112,8 +112,8 @@ TEST_F(DeviceStatusListenerTest, InitialNoOptState) {
 
   listener_->Start(&mock_observer_);
 
-  // We are in no opt state, don't notify the observer.
-  EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(0);
+  // We are in no opt state, notify the observer.
+  EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(1);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceStatus(), listener_->CurrentDeviceStatus());
 }

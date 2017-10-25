@@ -48,6 +48,7 @@ DeviceStatusListener::DeviceStatusListener(const base::TimeDelta& startup_delay,
                                            const base::TimeDelta& online_delay)
     : observer_(nullptr),
       listening_(false),
+      is_valid_state_(false),
       startup_delay_(startup_delay),
       online_delay_(online_delay) {}
 
@@ -88,11 +89,10 @@ void DeviceStatusListener::StartAfterDelay() {
   status_.network_status =
       ToNetworkStatus(network_listener_->GetConnectionType());
   listening_ = true;
+  is_valid_state_ = true;
 
   // Notify the current status if we are online or charging.
-  // TODO(xingliu): Do we need to notify if we are disconnected?
-  if (status_ != DeviceStatus())
-    NotifyStatusChange();
+  NotifyStatusChange();
 }
 
 void DeviceStatusListener::Stop() {
@@ -126,6 +126,7 @@ void DeviceStatusListener::OnNetworkChanged(
   // to the observer after a delay.
   // Android network change listener still need this delay.
   if (change_to_online) {
+    is_valid_state_ = false;
     timer_.Start(FROM_HERE, online_delay_,
                  base::Bind(&DeviceStatusListener::NotifyNetworkChange,
                             base::Unretained(this), new_network_status));
@@ -147,6 +148,7 @@ void DeviceStatusListener::NotifyStatusChange() {
 }
 
 void DeviceStatusListener::NotifyNetworkChange(NetworkStatus network_status) {
+  is_valid_state_ = true;
   status_.network_status = network_status;
   NotifyStatusChange();
 }
