@@ -7,6 +7,9 @@
 
 #include "components/previews/core/previews_experiments.h"
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "net/nqe/effective_connection_type.h"
 
