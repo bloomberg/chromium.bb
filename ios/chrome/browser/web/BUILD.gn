@@ -11,6 +11,8 @@ source_set("web") {
     "dom_altering_lock.mm",
     "legacy_mailto_url_rewriter.h",
     "legacy_mailto_url_rewriter.mm",
+    "load_timing_tab_helper.h",
+    "load_timing_tab_helper.mm",
     "mailto_handler.h",
     "mailto_handler.mm",
     "mailto_handler_gmail.h",
@@ -76,6 +78,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "legacy_mailto_url_rewriter_unittest.mm",
+    "load_timing_tab_helper_unittest.mm",
     "mailto_handler_gmail_unittest.mm",
     "mailto_handler_inbox_unittest.mm",
     "mailto_handler_system_mail_unittest.mm",
@@ -99,6 +102,7 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base:base",
