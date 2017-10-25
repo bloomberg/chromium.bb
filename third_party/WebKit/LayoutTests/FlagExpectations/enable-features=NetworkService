@@ -117,7 +117,7 @@ crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.html [ Fai
 crbug.com/721408 http/tests/devtools/sdk/network-interception-wildcard-pattern-matching.js [ Failure ]
 crbug.com/721408 http/tests/devtools/sources/debugger-async/async-callstack-xhrs.js [ Failure Timeout ]
 Bug(none) http/tests/loading/307-after-303-after-post.html [ Failure ]
-Bug(none) http/tests/loading/doc-write-sync-third-party-script-reload.html [ Crash ]
+Bug(none) http/tests/doc-write-intervention/doc-write-sync-third-party-script-reload.html [ Crash ]
 Bug(none) http/tests/loading/bad-scheme-subframe.html [ Failure ]
 Bug(none) http/tests/local/fileapi/send-sliced-dragged-file.html [ Failure Timeout ]
 Bug(none) http/tests/local/serviceworker/fetch-request-body-file.html [ Crash Timeout ]
