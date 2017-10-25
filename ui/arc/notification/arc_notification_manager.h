@@ -41,6 +41,10 @@ class ArcNotificationManager
       const AccountId& main_profile_id,
       message_center::MessageCenter* message_center);
 
+  // Sets the factory function to create ARC notification views. Exposed for
+  // testing.
+  static void SetCustomNotificationViewFactory();
+
   // TODO(hidehiko): Make ctor private to enforce all service users should
   // use GetForBrowserContext().
   ArcNotificationManager(content::BrowserContext* context,
