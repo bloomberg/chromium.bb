@@ -41,7 +41,7 @@ namespace {
 
 class PrerenderExtraDataContainer : public Prerender::ExtraData {
  public:
-  static RefPtr<PrerenderExtraDataContainer> Create(
+  static scoped_refptr<PrerenderExtraDataContainer> Create(
       WebPrerender::ExtraData* extra_data) {
     return WTF::AdoptRef(new PrerenderExtraDataContainer(extra_data));
   }
@@ -98,7 +98,8 @@ void WebPrerender::SetExtraData(WebPrerender::ExtraData* extra_data) {
 }
 
 const WebPrerender::ExtraData* WebPrerender::GetExtraData() const {
-  RefPtr<Prerender::ExtraData> webcore_extra_data = private_->GetExtraData();
+  scoped_refptr<Prerender::ExtraData> webcore_extra_data =
+      private_->GetExtraData();
   if (!webcore_extra_data)
     return nullptr;
   return static_cast<PrerenderExtraDataContainer*>(webcore_extra_data.get())

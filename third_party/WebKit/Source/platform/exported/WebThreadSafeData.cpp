@@ -59,10 +59,10 @@ const char* WebThreadSafeData::Data() const {
   return private_->data();
 }
 
-WebThreadSafeData::WebThreadSafeData(RefPtr<RawData> data)
+WebThreadSafeData::WebThreadSafeData(scoped_refptr<RawData> data)
     : private_(std::move(data)) {}
 
-WebThreadSafeData::WebThreadSafeData(RefPtr<RawData>&& data)
+WebThreadSafeData::WebThreadSafeData(scoped_refptr<RawData>&& data)
     : private_(std::move(data)) {}
 
 WebThreadSafeData::WebThreadSafeData(const WebThreadSafeData& other) {
@@ -75,7 +75,7 @@ WebThreadSafeData& WebThreadSafeData::operator=(
   return *this;
 }
 
-WebThreadSafeData& WebThreadSafeData::operator=(RefPtr<RawData> data) {
+WebThreadSafeData& WebThreadSafeData::operator=(scoped_refptr<RawData> data) {
   private_ = std::move(data);
   return *this;
 }

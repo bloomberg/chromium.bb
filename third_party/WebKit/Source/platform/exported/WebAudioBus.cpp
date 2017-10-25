@@ -32,7 +32,8 @@ namespace blink {
 void WebAudioBus::Initialize(unsigned number_of_channels,
                              size_t length,
                              double sample_rate) {
-  RefPtr<AudioBus> audio_bus = AudioBus::Create(number_of_channels, length);
+  scoped_refptr<AudioBus> audio_bus =
+      AudioBus::Create(number_of_channels, length);
   audio_bus->SetSampleRate(sample_rate);
 
   if (private_)
@@ -82,8 +83,8 @@ float* WebAudioBus::ChannelData(unsigned channel_index) {
   return private_->Channel(channel_index)->MutableData();
 }
 
-RefPtr<AudioBus> WebAudioBus::Release() {
-  RefPtr<AudioBus> audio_bus(private_);
+scoped_refptr<AudioBus> WebAudioBus::Release() {
+  scoped_refptr<AudioBus> audio_bus(private_);
   private_->Release();
   private_ = nullptr;
   return audio_bus;

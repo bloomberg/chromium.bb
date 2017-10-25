@@ -39,8 +39,9 @@ namespace blink {
 class WebRTCSessionDescriptionPrivate final
     : public RefCounted<WebRTCSessionDescriptionPrivate> {
  public:
-  static RefPtr<WebRTCSessionDescriptionPrivate> Create(const WebString& type,
-                                                        const WebString& sdp);
+  static scoped_refptr<WebRTCSessionDescriptionPrivate> Create(
+      const WebString& type,
+      const WebString& sdp);
 
   WebString GetType() { return type_; }
   void SetType(const WebString& type) { type_ = type; }
@@ -55,9 +56,9 @@ class WebRTCSessionDescriptionPrivate final
   WebString sdp_;
 };
 
-RefPtr<WebRTCSessionDescriptionPrivate> WebRTCSessionDescriptionPrivate::Create(
-    const WebString& type,
-    const WebString& sdp) {
+scoped_refptr<WebRTCSessionDescriptionPrivate>
+WebRTCSessionDescriptionPrivate::Create(const WebString& type,
+                                        const WebString& sdp) {
   return WTF::AdoptRef(new WebRTCSessionDescriptionPrivate(type, sdp));
 }
 
