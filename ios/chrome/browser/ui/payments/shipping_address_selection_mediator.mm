@@ -102,7 +102,8 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 
 - (CollectionViewItem*)addButtonItem {
   PaymentsTextItem* addButtonItem = [[PaymentsTextItem alloc] init];
-  addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
+  addButtonItem.text = base::SysUTF16ToNSString(
+      GetAddShippingAddressButtonLabel(self.paymentRequest->shipping_type()));
   addButtonItem.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
                                           [[MDCPalette greyPalette] tint400]);
   addButtonItem.cellType = PaymentsTextCellTypeCallToAction;

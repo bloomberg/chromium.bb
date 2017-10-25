@@ -420,6 +420,9 @@
     <message name="IDS_PAYMENT_REQUEST_ADD_CONTACT_INFO" desc="The name of the Add Contact Info button in the Payment Sheet of the Payment Request dialog. Title-Cased.">
       Add Contact Info
     </message>
+    <message name="IDS_PAYMENTS_ADD_BILLING_ADDRESS_LABEL" desc="The title for the button that lets the user add a billing address. Title-Cased.">
+      Add Billing Address
+    </message>
     <message name="IDS_PAYMENTS_CHOOSE_SHIPPING_ADDRESS_LABEL" desc="The title for the button that lets the user select the address where the product should be shipped. Shipping is typically used for packages. Title-Cased.">
       Choose Shipping Address
     </message>
