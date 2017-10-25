@@ -65,7 +65,7 @@ void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
   }
 
   if (tray_bubble_height_ > 0)
-    tray_bubble_height_ += message_center::kMarginBetweenItems;
+    tray_bubble_height_ += message_center::kMarginBetweenPopups;
   else
     tray_bubble_height_ = 0;
 

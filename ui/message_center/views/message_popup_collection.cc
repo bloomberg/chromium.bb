@@ -43,7 +43,7 @@ const int kMouseExitedDeferTimeoutMs = 200;
 
 // The margin between messages (and between the anchor unless
 // first_item_has_no_margin was specified).
-const int kToastMarginY = kMarginBetweenItems;
+const int kToastMarginY = kMarginBetweenPopups;
 
 }  // namespace.
 

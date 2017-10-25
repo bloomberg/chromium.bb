@@ -23,8 +23,6 @@ constexpr int kEmptyLabelSize = 12;
 constexpr gfx::Insets kActionIconPadding(14);
 constexpr gfx::Insets kEmptyIconPadding(0, 0, 4, 0);
 
-constexpr int kMarginBetweenItems = 8;
-
 constexpr int kScrollShadowOffsetY = 2;
 constexpr int kScrollShadowBlur = 2;
 

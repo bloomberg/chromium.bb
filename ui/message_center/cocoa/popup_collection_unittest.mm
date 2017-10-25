@@ -85,8 +85,8 @@ class PopupCollectionTest : public ui::CocoaTest {
     CGFloat minY = NSMinY([[upper window] frame]);
     CGFloat maxY = NSMaxY([[lower window] frame]);
     CGFloat delta = minY - maxY;
-    EXPECT_EQ(message_center::kMarginBetweenItems, delta);
-    return delta == message_center::kMarginBetweenItems;
+    EXPECT_EQ(message_center::kMarginBetweenPopups, delta);
+    return delta == message_center::kMarginBetweenPopups;
   }
 
   void WaitForAnimationEnded() {
@@ -154,7 +154,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
   AddThreeNotifications();
   NSArray* popups = [collection_ popups];
 
-  EXPECT_EQ(message_center::kMarginBetweenItems,
+  EXPECT_EQ(message_center::kMarginBetweenPopups,
             kScreenSize - NSMaxY([[[popups objectAtIndex:0] window] frame]));
 
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:0],
@@ -186,7 +186,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
   // Remove "1".
   center_->RemoveNotification("2", true);
   WaitForAnimationEnded();
-  EXPECT_EQ(message_center::kMarginBetweenItems,
+  EXPECT_EQ(message_center::kMarginBetweenPopups,
             kScreenSize - NSMaxY([[[popups objectAtIndex:0] window] frame]));
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:0],
                                   [popups objectAtIndex:1]));

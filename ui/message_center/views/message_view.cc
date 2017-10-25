@@ -29,7 +29,6 @@
 namespace {
 
 #if defined(OS_CHROMEOS)
-const int kBorderThickness = 1;
 const int kBorderCorderRadius = 2;
 const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 #else
@@ -98,7 +97,7 @@ void MessageView::SetIsNested() {
   is_nested_ = true;
 
 #if defined(OS_CHROMEOS)
-  SetBorder(views::CreateRoundedRectBorder(kBorderThickness,
+  SetBorder(views::CreateRoundedRectBorder(kNotificationBorderThickness,
                                            kBorderCorderRadius, kBorderColor));
 #else
   const auto& shadow =
