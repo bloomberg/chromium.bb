@@ -159,7 +159,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   for (int i = 0; i < *eob; ++i) {
     c = *eob - 1 - i;
     int is_nz;
-    int coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, 1);
+    int coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
 
     if (c < *eob - 1) {
       is_nz = av1_read_record_bin(

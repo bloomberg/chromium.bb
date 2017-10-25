@@ -45,9 +45,6 @@ static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format on*/
 };
 
-// TODO(linfengz): Some functions have coeff_is_byte_flag to handle different
-// types of input coefficients. If possible, unify types to uint8_t* later.
-
 static INLINE void get_base_count_mag(int *mag, int *count,
                                       const tran_low_t *tcoeffs, int bwl,
                                       int height, int row, int col) {
@@ -333,9 +330,10 @@ static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
 };
 
 #if USE_CAUSAL_BASE_CTX
-static INLINE int get_nz_count_mag(const void *tcoeffs, int bwl, int height,
-                                   int row, int col, TX_CLASS tx_class,
-                                   const int coeff_is_byte_flag, int *mag) {
+static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
+                                   const int height, const int row,
+                                   const int col, const TX_CLASS tx_class,
+                                   int *const mag) {
   int count = 0;
   *mag = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
@@ -355,8 +353,7 @@ static INLINE int get_nz_count_mag(const void *tcoeffs, int bwl, int height,
         ref_col >= (1 << bwl))
       continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
-    int level = abs(coeff_is_byte_flag ? ((const uint8_t *)tcoeffs)[nb_pos]
-                                       : ((const tran_low_t *)tcoeffs)[nb_pos]);
+    const int level = levels[nb_pos];
     count += (level != 0);
 #if 1
     if (idx < 5) {
@@ -367,9 +364,9 @@ static INLINE int get_nz_count_mag(const void *tcoeffs, int bwl, int height,
   return count;
 }
 #endif
-static INLINE int get_nz_count(const void *tcoeffs, int bwl, int height,
-                               int row, int col, TX_CLASS tx_class,
-                               const int coeff_is_byte_flag) {
+static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
+                               const int height, const int row, const int col,
+                               const TX_CLASS tx_class) {
   int count = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     const int ref_row = row + ((tx_class == TX_CLASS_2D)
@@ -386,9 +383,7 @@ static INLINE int get_nz_count(const void *tcoeffs, int bwl, int height,
         ref_col >= (1 << bwl))
       continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
-    count +=
-        ((coeff_is_byte_flag ? ((const uint8_t *)tcoeffs)[nb_pos]
-                             : ((const tran_low_t *)tcoeffs)[nb_pos]) != 0);
+    count += (levels[nb_pos] != 0);
   }
   return count;
 }
@@ -468,10 +463,10 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   }
 }
 
-static INLINE int get_nz_map_ctx(const void *const tcoeffs, const int scan_idx,
-                                 const int16_t *const scan, const int bwl,
-                                 const int height, const TX_TYPE tx_type,
-                                 const int coeff_is_byte_flag) {
+static INLINE int get_nz_map_ctx(const uint8_t *const levels,
+                                 const int scan_idx, const int16_t *const scan,
+                                 const int bwl, const int height,
+                                 const TX_TYPE tx_type) {
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
@@ -479,12 +474,10 @@ static INLINE int get_nz_map_ctx(const void *const tcoeffs, const int scan_idx,
   int tx_class = get_tx_class(tx_type);
 #if USE_CAUSAL_BASE_CTX
   int mag = 0;
-  int count = get_nz_count_mag(tcoeffs, bwl, height, row, col, tx_class,
-                               coeff_is_byte_flag, &mag);
+  int count = get_nz_count_mag(levels, bwl, height, row, col, tx_class, &mag);
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, height, mag, tx_type);
 #else
-  int count = get_nz_count(tcoeffs, bwl, height, row, col, tx_class,
-                           coeff_is_byte_flag);
+  int count = get_nz_count(levels, bwl, height, row, col, tx_class);
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, height, tx_type);
 #endif
 }
