@@ -374,16 +374,9 @@ void HTMLImageElement::AttachLayoutTree(AttachContext& context) {
   if (GetLayoutObject() && GetLayoutObject()->IsImage()) {
     LayoutImage* layout_image = ToLayoutImage(GetLayoutObject());
     LayoutImageResource* layout_image_resource = layout_image->ImageResource();
-    if (is_fallback_image_) {
-      float device_scale_factor =
-          blink::DeviceScaleFactorDeprecated(layout_image->GetFrame());
-      std::pair<Image*, float> broken_image_and_image_scale_factor =
-          ImageResourceContent::BrokenImage(device_scale_factor);
-      ImageResourceContent* new_image_resource =
-          ImageResourceContent::CreateLoaded(
-              broken_image_and_image_scale_factor.first);
-      layout_image->ImageResource()->SetImageResource(new_image_resource);
-    }
+    if (is_fallback_image_)
+      layout_image_resource->UseBrokenImage();
+
     if (layout_image_resource->HasImage())
       return;
 

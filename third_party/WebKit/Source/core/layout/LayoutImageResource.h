@@ -58,6 +58,10 @@ class LayoutImageResource
     return cached_image_ && cached_image_->ErrorOccurred();
   }
 
+  // Replace the resource this object references with a reference to
+  // the "broken image".
+  void UseBrokenImage();
+
   virtual bool ImageHasRelativeSize() const {
     return cached_image_ ? cached_image_->ImageHasRelativeSize() : false;
   }
@@ -70,6 +74,12 @@ class LayoutImageResource
 
  protected:
   LayoutImageResource();
+
+  // Device scale factor for the associated LayoutObject.
+  float DeviceScaleFactor() const;
+  // Returns an image based on the passed device scale factor.
+  static Image* BrokenImage(float device_scale_factor);
+
   LayoutObject* layout_object_;
   Member<ImageResourceContent> cached_image_;
 };
