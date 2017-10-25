@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing/db/v4_get_hash_interceptor.h"
-
 #include <memory>
 #include <utility>
 
@@ -15,23 +13,24 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/util.h"
+#include "components/safe_browsing/db/v4_embedded_test_server_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mapped_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace safe_browsing {
 
 // This harness tests test-only code for correctness. This ensures that other
 // test classes which want to use the V4 interceptor are testing the right
 // thing.
-class V4GetHashInterceptorBrowserTest : public InProcessBrowserTest {
+class V4EmbeddedTestServerBrowserTest : public InProcessBrowserTest {
  public:
-  V4GetHashInterceptorBrowserTest() {}
-  ~V4GetHashInterceptorBrowserTest() override {}
+  V4EmbeddedTestServerBrowserTest() {}
+  ~V4EmbeddedTestServerBrowserTest() override {}
 
   void SetUp() override {
     // We only need to mock a local database. The tests will use a true real V4
@@ -42,6 +41,8 @@ class V4GetHashInterceptorBrowserTest : public InProcessBrowserTest {
     auto v4_db_factory = base::MakeUnique<TestV4DatabaseFactory>();
     v4_db_factory_ = v4_db_factory.get();
     V4Database::RegisterDatabaseFactoryForTest(std::move(v4_db_factory));
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
   }
   void TearDown() override {
@@ -58,23 +59,17 @@ class V4GetHashInterceptorBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  std::unique_ptr<net::MappedHostResolver> mapped_host_resolver_;
+
   // Owned by the V4Database.
   TestV4DatabaseFactory* v4_db_factory_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(V4GetHashInterceptorBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(V4EmbeddedTestServerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(V4GetHashInterceptorBrowserTest, SimpleTest) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
+IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest, SimpleTest) {
   const char kMalwarePage[] = "/safe_browsing/malware.html";
   const GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  ui_test_utils::NavigateToURL(browser(), bad_url);
-  EXPECT_FALSE(contents->GetInterstitialPage());
 
   ThreatMatch match;
   FullHash full_hash = GetFullHash(bad_url);
@@ -84,26 +79,21 @@ IN_PROC_BROWSER_TEST_F(V4GetHashInterceptorBrowserTest, SimpleTest) {
   match.set_threat_type(ThreatType::MALWARE_THREAT);
   match.mutable_threat()->set_hash(full_hash);
   match.mutable_cache_duration()->set_seconds(300);
-  V4GetHashInterceptor::Register(
-      base::MakeUnique<V4GetHashInterceptor>(bad_url, match),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+
+  std::map<GURL, safe_browsing::ThreatMatch> response_map{{bad_url, match}};
+  StartRedirectingV4RequestsForTesting(response_map, embedded_test_server());
+  embedded_test_server()->StartAcceptingConnections();
 
   ui_test_utils::NavigateToURL(browser(), bad_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(contents->GetInterstitialPage());
 }
 
-IN_PROC_BROWSER_TEST_F(V4GetHashInterceptorBrowserTest,
+IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
                        WrongFullHash_NoInterstitial) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   const char kMalwarePage[] = "/safe_browsing/malware.html";
   const GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  ui_test_utils::NavigateToURL(browser(), bad_url);
-  EXPECT_FALSE(contents->GetInterstitialPage());
 
   // Return a different full hash, so there will be no match and no
   // interstitial.
@@ -115,11 +105,14 @@ IN_PROC_BROWSER_TEST_F(V4GetHashInterceptorBrowserTest,
   match.set_threat_type(ThreatType::MALWARE_THREAT);
   match.mutable_threat()->set_hash(full_hash);
   match.mutable_cache_duration()->set_seconds(300);
-  V4GetHashInterceptor::Register(
-      base::MakeUnique<V4GetHashInterceptor>(bad_url, match),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+
+  std::map<GURL, safe_browsing::ThreatMatch> response_map{{bad_url, match}};
+  StartRedirectingV4RequestsForTesting(response_map, embedded_test_server());
+  embedded_test_server()->StartAcceptingConnections();
 
   ui_test_utils::NavigateToURL(browser(), bad_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(contents->GetInterstitialPage());
 }
 

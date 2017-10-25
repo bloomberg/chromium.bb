@@ -21,6 +21,12 @@ using base::Time;
 using base::TimeDelta;
 
 namespace safe_browsing {
+
+// Can be overriden by tests.
+const char* g_sbv4_url_prefix_for_testing = nullptr;
+
+const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
+
 const base::FilePath::CharType kStoreSuffix[] = FILE_PATH_LITERAL(".store");
 
 namespace {
@@ -64,6 +70,10 @@ std::string Escape(const std::string& url) {
 }
 
 }  // namespace
+
+void SetSbV4UrlPrefixForTesting(const char* url_prefix) {
+  g_sbv4_url_prefix_for_testing = url_prefix;
+}
 
 std::ostream& operator<<(std::ostream& os, const ListIdentifier& id) {
   os << "{hash: " << id.hash() << "; platform_type: " << id.platform_type()
@@ -260,8 +270,11 @@ void V4ProtocolManagerUtil::GetRequestUrlAndHeaders(
     const V4ProtocolConfig& config,
     GURL* gurl,
     net::HttpRequestHeaders* headers) {
-  *gurl = GURL(ComposeUrl(kSbV4UrlPrefix, method_name, request_base64,
-                          config.key_param));
+  const char* url_prefix = g_sbv4_url_prefix_for_testing
+                               ? g_sbv4_url_prefix_for_testing
+                               : kSbV4UrlPrefix;
+  *gurl = GURL(
+      ComposeUrl(url_prefix, method_name, request_base64, config.key_param));
   UpdateHeaders(headers);
 }
 
