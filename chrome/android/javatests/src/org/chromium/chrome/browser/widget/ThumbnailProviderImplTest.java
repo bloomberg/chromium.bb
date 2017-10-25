@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.widget;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -186,13 +188,17 @@ public class ThumbnailProviderImplTest {
         }
 
         @Override
-        public String getFilePath() {
+        public @Nullable String getFilePath() {
             return mTestFilePath;
         }
 
         @Override
-        public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
-            Assert.assertEquals(mTestFilePath, filePath);
+        public @Nullable String getContentId() {
+            return "contentId"; // None-null value for ThumbnailProviderImpl to work
+        }
+
+        @Override
+        public void onThumbnailRetrieved(@NonNull String contentId, @Nullable Bitmap thumbnail) {
             mRetrievedThumbnail = thumbnail;
             mThumbnailRetrievedCallbackHelper.notifyCalled();
         }
