@@ -72,23 +72,12 @@ DEFAULT_PULL_LIBS_DIR=/tmp/$USER-adb-gdb-libs
 # environment variables. This is only for cosmetic reasons, i.e. to
 # display proper
 
-# Allow wrapper scripts to set the default activity through
-# the ADB_GDB_ACTIVITY variable. Users are still able to change the
-# final activity name through --activity=<name> option.
-#
-# This is only for cosmetic reasons, i.e. to display the proper default
-# in the --help output.
-#
-DEFAULT_ACTIVITY=${ADB_GDB_ACTIVITY:-".Main"}
-
 # Allow wrapper scripts to set the program name through ADB_GDB_PROGNAME
 PROGNAME=${ADB_GDB_PROGNAME:-$(basename "$0")}
 
-ACTIVITY=$DEFAULT_ACTIVITY
 ADB=
 ANNOTATE=
 FORCE=
-GDBEXEPOSTFIX=gdb
 CGDB=
 GDBINIT=
 GDBSERVER=
@@ -98,15 +87,9 @@ NO_PULL_LIBS=
 PACKAGE_NAME=
 PID=
 PORT=
-PRIVILEGED=
-PRIVILEGED_INDEX=
 PROGRAM_NAME="activity"
 PULL_LIBS=
 PULL_LIBS_DIR=
-SANDBOXED=
-SANDBOXED_INDEX=
-START=
-START_URL=
 ATTACH_DELAY=1
 SU_PREFIX=
 SYMBOL_DIR=
@@ -122,9 +105,6 @@ for opt; do
       ;;
     --device=*)
       export ANDROID_SERIAL=$optarg
-      ;;
-    --activity=*)
-      ACTIVITY=$optarg
       ;;
     --annotate=3)
       ANNOTATE=$optarg
@@ -156,13 +136,6 @@ for opt; do
     --port=*)
       PORT=$optarg
       ;;
-    --privileged)
-      PRIVILEGED=true
-      ;;
-    --privileged=*)
-      PRIVILEGED=true
-      PRIVILEGED_INDEX=$optarg
-      ;;
     --program-name=*)
       PROGRAM_NAME=$optarg
       ;;
@@ -172,21 +145,8 @@ for opt; do
     --pull-libs-dir=*)
       PULL_LIBS_DIR=$optarg
       ;;
-    --sandboxed)
-      SANDBOXED=true
-      ;;
-    --sandboxed=*)
-      SANDBOXED=true
-      SANDBOXED_INDEX=$optarg
-      ;;
     --script=*)
       GDBINIT=$optarg
-      ;;
-    --start=*)
-      START_URL=$optarg
-      ;& # fallthrough
-    --start)
-      START=true
       ;;
     --attach-delay=*)
       ATTACH_DELAY=$optarg
@@ -205,9 +165,6 @@ for opt; do
       ;;
     --toolchain=*)
       TOOLCHAIN=$optarg
-      ;;
-    --ui)
-      GDBEXEPOSTFIX=gdbtui
       ;;
     --cgdb)
       CGDB=cgdb
@@ -255,9 +212,6 @@ EOF
   cat <<EOF
 
 This script is used to debug a running $PROGRAM_NAME process.
-This can be a regular Android application process, sandboxed (if you use the
---sandboxed or --sandboxed=<num> option) or a privileged (--privileged or
---privileged=<num>) service.
 
 This script needs several things to work properly. It will try to pick
 them up automatically for you though:
@@ -316,22 +270,15 @@ Valid options:
   --verbose             Increase verbosity.
 
   --cgdb[=<file>]       Use cgdb (an interface for gdb that shows the code).
-  --sandboxed           Debug first sandboxed process we find.
-  --sandboxed=<num>     Debug specific sandboxed process.
   --symbol-dir=<path>   Specify directory with symbol shared libraries.
   --output-directory=<path> Specify the output directory (e.g. "out/Debug").
   --package-name=<name> Specify package name (alternative to 1st argument).
-  --privileged          Debug first privileged process we find.
-  --privileged=<num>    Debug specific privileged process.
   --program-name=<name> Specify program name (cosmetic only).
   --pid=<pid>           Specify application process pid.
   --force               Kill any previous debugging session, if any.
-  --start[=<url>]       Start package's activity on device.
   --attach-delay=<num>  Seconds to wait for gdbserver to attach to the
                         remote process before starting gdb. Default 1.
                         <num> may be a float if your sleep(1) supports it.
-  --ui                  Use gdbtui instead of gdb
-  --activity=<name>     Activity name for --start [$DEFAULT_ACTIVITY].
   --annotate=<num>      Enable gdb annotation.
   --script=<file>       Specify extra GDB init script.
 
@@ -748,14 +695,6 @@ if [ "$FORCE" ]; then
   done
 fi
 
-if [ "$START" ]; then
-  log "Starting $PROGRAM_NAME on device."
-  adb_shell am start -n $PACKAGE_NAME/$ACTIVITY ${START_URL:+-d "$START_URL"}
-  adb_shell ps | grep -q $PACKAGE_NAME
-  fail_panic "Could not start $PROGRAM_NAME on device. Are you sure the \
-package is installed?"
-fi
-
 # Return the timestamp of a given file, as number of seconds since epoch.
 # $1: file path
 # Out: file timestamp
@@ -826,7 +765,6 @@ fi
 
 # If requested, work for M-x gdb.  The gdb indirections make it
 # difficult to pass --annotate=3 to the gdb binary itself.
-GDB_ARGS=
 if [ "$ANNOTATE" ]; then
   GDB_ARGS=$GDB_ARGS" --annotate=$ANNOTATE"
 fi
@@ -835,36 +773,14 @@ fi
 # browser process.
 if [ -z "$PID" ]; then
   PROCESSNAME=$PACKAGE_NAME
-  if [ "$SANDBOXED_INDEX" ]; then
-    PROCESSNAME=$PROCESSNAME:sandboxed_process$SANDBOXED_INDEX
-  elif [ "$SANDBOXED" ]; then
-    PROCESSNAME=$PROCESSNAME:sandboxed_process
-    PID=$(adb_shell ps | \
-          awk '$9 ~ /^'$PROCESSNAME'/ { print $2; }' | head -1)
-  elif [ "$PRIVILEGED_INDEX" ]; then
-    PROCESSNAME=$PROCESSNAME:privileged_process$PRIVILEGED_INDEX
-  elif [ "$PRIVILEGED" ]; then
-    PROCESSNAME=$PROCESSNAME:privileged_process
-    PID=$(adb_shell ps | \
-          awk '$9 ~ /^'$PROCESSNAME'/ { print $2; }' | head -1)
-  fi
   if [ -z "$PID" ]; then
     PID=$(adb_shell ps | \
           awk '$9 == "'$PROCESSNAME'" { print $2; }' | head -1)
   fi
   if [ -z "$PID" ]; then
-    if [ "$START" ]; then
-      panic "Can't find application process PID, did it crash?"
-    else
-      panic "Can't find application process PID, are you sure it is \
-running? Try using --start."
-    fi
+    panic "Can't find application process PID."
   fi
   log "Found process PID: $PID"
-elif [ "$SANDBOXED" ]; then
-  echo "WARNING: --sandboxed option ignored due to use of --pid."
-elif [ "$PRIVILEGED" ]; then
-  echo "WARNING: --privileged option ignored due to use of --pid."
 fi
 
 # Determine if 'adb shell' runs as root or not.

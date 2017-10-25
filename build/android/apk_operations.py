@@ -80,9 +80,9 @@ def _UninstallApk(devices, install_dict, package_name):
   device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
 
 
-def _LaunchUrl(devices, input_args, device_args_file, url, apk, package_name,
-               wait_for_java_debugger):
-  if input_args and device_args_file is None:
+def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
+               url=None, apk=None, wait_for_java_debugger=False):
+  if argv and command_line_flags_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
     # TODO(agrieve): Launch could be changed to require only package name by
@@ -106,11 +106,11 @@ def _LaunchUrl(devices, input_args, device_args_file, url, apk, package_name,
     device.RunShellCommand(cmd, check_return=False)
 
     # The flags are first updated with input args.
-    if device_args_file:
-      changer = flag_changer.FlagChanger(device, device_args_file)
+    if command_line_flags_file:
+      changer = flag_changer.FlagChanger(device, command_line_flags_file)
       flags = []
-      if input_args:
-        flags = shlex.split(input_args)
+      if argv:
+        flags = shlex.split(argv)
       changer.ReplaceFlags(flags)
     # Then launch the apk.
     if url is None:
@@ -126,13 +126,14 @@ def _LaunchUrl(devices, input_args, device_args_file, url, apk, package_name,
   device_utils.DeviceUtils.parallel(devices).pMap(launch)
 
 
-def _ChangeFlags(devices, input_args, device_args_file):
-  if input_args is None:
-    _DisplayArgs(devices, device_args_file)
+def _ChangeFlags(devices, argv, command_line_flags_file):
+  if argv is None:
+    _DisplayArgs(devices, command_line_flags_file)
   else:
-    flags = shlex.split(input_args)
+    flags = shlex.split(argv)
     def update(device):
-      flag_changer.FlagChanger(device, device_args_file).ReplaceFlags(flags)
+      changer = flag_changer.FlagChanger(device, command_line_flags_file)
+      changer.ReplaceFlags(flags)
     device_utils.DeviceUtils.parallel(devices).pMap(update)
 
 
@@ -144,8 +145,17 @@ def _TargetCpuToTargetArch(target_cpu):
   return target_cpu
 
 
-def _RunGdb(device, package_name, output_directory, target_cpu, extra_args,
+def _RunGdb(device, package_name, pid, output_directory, target_cpu, extra_args,
             verbose):
+  if not pid:
+    pid = _GetPackagePids(device, package_name).get(package_name, [0])[0]
+  if not pid:
+    logging.warning('App not running. Sending launch intent.')
+    _LaunchUrl([device], package_name)
+    pid = _GetPackagePids(device, package_name).get(package_name, [0])[0]
+    if not pid:
+      raise Exception('Unable to launch application (check logcat)')
+
   gdb_script_path = os.path.dirname(__file__) + '/adb_gdb'
   cmd = [
       gdb_script_path,
@@ -153,6 +163,7 @@ def _RunGdb(device, package_name, output_directory, target_cpu, extra_args,
       '--output-directory=%s' % output_directory,
       '--adb=%s' % adb_wrapper.AdbWrapper.GetAdbPath(),
       '--device=%s' % device.serial,
+      '--pid=%s' % pid,
       # Use one lib dir per device so that changing between devices does require
       # refetching the device libs.
       '--pull-libs-dir=/tmp/adb-gdb-libs-%s' % device.serial,
@@ -605,14 +616,15 @@ def _GenerateMissingAllFlagMessage(devices):
           _GenerateAvailableDevicesMessage(devices))
 
 
-def _DisplayArgs(devices, device_args_file):
+def _DisplayArgs(devices, command_line_flags_file):
   def flags_helper(d):
-    changer = flag_changer.FlagChanger(d, device_args_file)
+    changer = flag_changer.FlagChanger(d, command_line_flags_file)
     return changer.GetCurrentFlags()
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   outputs = parallel_devices.pMap(flags_helper).pGet(None)
-  print 'Existing flags per-device (via /data/local/tmp/%s):' % device_args_file
+  print 'Existing flags per-device (via /data/local/tmp/{}):'.format(
+      command_line_flags_file)
   for flags in _PrintPerDeviceOutput(devices, outputs, single_line=True):
     quoted_flags = ' '.join(pipes.quote(f) for f in flags)
     print quoted_flags or 'No flags set.'
@@ -861,9 +873,10 @@ class _LaunchCommand(_Command):
     group.add_argument('url', nargs='?', help='A URL to launch with.')
 
   def Run(self):
-    _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
-               self.args.url, self.apk_helper, self.args.package_name,
-               self.args.wait_for_java_debugger)
+    _LaunchUrl(self.devices, self.args.package_name, argv=self.args.args,
+               command_line_flags_file=self.args.command_line_flags_file,
+               url=self.args.url, apk=self.apk_helper,
+               wait_for_java_debugger=self.args.wait_for_java_debugger)
 
 
 class _StopCommand(_Command):
@@ -903,6 +916,13 @@ class _ArgvCommand(_Command):
 class _GdbCommand(_Command):
   name = 'gdb'
   description = 'Runs //build/android/adb_gdb with apk-specific args.'
+  long_description = description + """
+
+To attach to a process other than the APK's main process, use --pid=1234.
+To list all PIDs, use the "ps" command.
+
+If no apk process is currently running, sends a launch intent.
+"""
   needs_package_name = True
   needs_output_directory = True
   accepts_args = True
@@ -911,8 +931,14 @@ class _GdbCommand(_Command):
 
   def Run(self):
     extra_args = shlex.split(self.args.args or '')
-    _RunGdb(self.devices[0], self.args.package_name, self.args.output_directory,
-            self.args.target_cpu, extra_args, bool(self.args.verbose_count))
+    _RunGdb(self.devices[0], self.args.package_name, self.args.pid,
+            self.args.output_directory, self.args.target_cpu, extra_args,
+            bool(self.args.verbose_count))
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument('--pid',
+                       help='The process ID to attach to. Defaults to '
+                            'the main process for the package.')
 
 
 class _LogcatCommand(_Command):
