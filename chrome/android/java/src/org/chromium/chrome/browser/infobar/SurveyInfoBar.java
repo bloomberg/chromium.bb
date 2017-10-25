@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -67,6 +68,8 @@ public class SurveyInfoBar extends InfoBar {
         NoUnderlineClickableSpan clickableSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
+                RecordUserAction.record("Android.ChromeHome.AcceptedSurvey");
+
                 SurveyController.getInstance().showSurveyIfAvailable(
                         nativeGetTab(getNativeInfoBarPtr()).getActivity(), mSiteId,
                         mShowAsBottomSheet, mDisplayLogoResId);

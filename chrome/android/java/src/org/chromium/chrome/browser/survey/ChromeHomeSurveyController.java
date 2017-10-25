@@ -133,6 +133,7 @@ public class ChromeHomeSurveyController {
     }
 
     private boolean hasInfoBarBeenDisplayed() {
+        // TODO(danielpark) Refine logic for whether user has seen a survey (crbug.com/772081).
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
             return sharedPreferences.getBoolean(SURVEY_INFO_BAR_DISPLAYED, false);

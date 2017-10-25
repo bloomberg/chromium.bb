@@ -725,6 +725,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The reason the Chrome Home promo was shown.</summary>
 </histogram>
 
+<histogram name="Android.ChromeHome.Survey.DownloadResponseCode"
+    enum="SurveyDownloadResponseCodes">
+  <owner>danielpark@chromium.org</owner>
+  <summary>The response code of the completed survey download request.</summary>
+</histogram>
+
+<histogram name="Android.ChromeHome.Survey.ShowSurvey" enum="BooleanSuccess">
+  <owner>danielpark@chromium.org</owner>
+  <summary>
+    Whether or not the survey was successfully shown after its download.
+  </summary>
+</histogram>
+
 <histogram name="Android.ChromeHome.TimeBetweenCloseAndNextOpen" units="ms">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -8983,6 +8996,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     In &quot;Herb&quot; mode shows time between the intent arrival in a Chrome
     generated custom tab and the first &quot;page loaded&quot; event, if the
     navigation is successful.
+  </summary>
+</histogram>
+
+<histogram name="ChromeHomeSurvey.DownloadResponseCode"
+    enum="SurveyDownloadResponseCodes">
+  <owner>danielpark@chromium.org</owner>
+  <summary>The response code of the completed survey download request.</summary>
+</histogram>
+
+<histogram name="ChromeHomeSurvey.ShowSurveySuccess" enum="Boolean">
+  <owner>danielpark@chromium.org</owner>
+  <summary>
+    Whether or not the survey was successfully shown after its download.
   </summary>
 </histogram>
 
