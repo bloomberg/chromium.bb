@@ -701,12 +701,23 @@ static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
 }
 
 static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols) {
-  // We assume 3 planes all at full resolution. We assume up to 1 token per
-  // pixel, and then allow a head room of 1 EOSB token per 4x4 block per plane,
-  // plus EOSB_TOKEN per plane.
-  // ALIGN_POWER_OF_TWO is used to round image size up to multipel of SBs
-  return ALIGN_POWER_OF_TWO(mb_rows, MAX_SB_SIZE_LOG2 - 4) *
-         ALIGN_POWER_OF_TWO(mb_cols, MAX_SB_SIZE_LOG2 - 4) * (16 * 16 + 17) * 3;
+  // Calculate the maximum number of max superblocks in the image.
+  const int shift = MAX_SB_SIZE_LOG2 - 4;
+  const int sb_rows = ALIGN_POWER_OF_TWO(mb_rows, shift) >> shift;
+  const int sb_cols = ALIGN_POWER_OF_TWO(mb_cols, shift) >> shift;
+
+  // For transform coefficients, assume 3 planes with no subsampling. We assume
+  // up to 1 token per pixel, and then allow a head room of 1 EOSB token per
+  // 4x4 block per plane, plus EOSB_TOKEN per plane.
+  const int sb_coeff_toks = 3 * (MAX_SB_SQUARE + (MAX_SB_SQUARE / 16) + 1);
+
+  // For palette coefficients, there can be at most one palette for each 8x8
+  // block. If w, h are the width and height of the block, the palette has at
+  // most 1 + h * w tokens (65 for an 8x8 block) without (see
+  // cost_and_tokenize_map). At most, there can be palettes on two planes.
+  const int sb_palette_toks = 2 * (1 + 64) * (MAX_SB_SQUARE / 64);
+
+  return sb_rows * sb_cols * (sb_coeff_toks + sb_palette_toks);
 }
 
 // Get the allocated token size for a tile. It does the same calculation as in
