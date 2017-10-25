@@ -12,6 +12,8 @@ source_set("declarative_net_request") {
     "indexed_rule.h",
     "parse_info.cc",
     "parse_info.h",
+    "ruleset_manager.cc",
+    "ruleset_manager.h",
     "ruleset_matcher.cc",
     "ruleset_matcher.h",
     "utils.cc",
@@ -25,9 +27,13 @@ source_set("declarative_net_request") {
 
   deps = [
     "//base",
+    "//components/web_cache/browser:browser",
+    "//content/public/browser:browser",
+    "//extensions/browser:browser_sources",
     "//extensions/browser/api/declarative_net_request/flat:extension_ruleset",
     "//extensions/common",
     "//extensions/common/api",
+    "//net",
     "//url",
   ]
 }
