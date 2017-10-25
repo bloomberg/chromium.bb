@@ -966,22 +966,9 @@ function unownedFormElementsAndFieldSetsToFormData_(
     }
   }
 
-  // Since it's not a checkout flow, only add fields that have a non-"off"
-  // autocomplete attribute to the formless autofill.
-  var controlElementsWithAutocomplete = [];
-  for (var index = 0; index < controlElements.length; index++) {
-    if (controlElements[index].hasAttribute('autocomplete') &&
-        controlElements[index].getAttribute('autocomplete') !== 'off') {
-      controlElementsWithAutocomplete += controlElements[index];
-    }
-  }
-
-  if (controlElementsWithAutocomplete.length == 0) {
-    return false;
-  }
   return formOrFieldsetsToFormData_(
       null /* formElement*/, null /* formControlElement */, fieldsets,
-      controlElementsWithAutocomplete, extractMask, form, null /* field */);
+      controlElements, extractMask, form, null /* field */);
 }
 
 /**
