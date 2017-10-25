@@ -6,7 +6,6 @@
 
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/inline/ng_line_breaker.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
@@ -41,10 +40,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
             .SetAvailableSize({available_width, NGSizeIndefinite})
             .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
 
-    NGLineBoxFragmentBuilder container_builder(
-        node, &node.Style(), space->WritingMode(), space->Direction());
-    container_builder.SetBfcOffset(NGBfcOffset{LayoutUnit(), LayoutUnit()});
-
+    Vector<NGPositionedFloat> positioned_floats;
     Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
 
     scoped_refptr<NGInlineBreakToken> break_token;
@@ -53,10 +49,9 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     NGExclusionSpace exclusion_space;
     NGLineInfo line_info;
     while (!break_token || !break_token->IsFinished()) {
-      NGLineBreaker line_breaker(node, *space, &container_builder,
+      NGLineBreaker line_breaker(node, *space, &positioned_floats,
                                  &unpositioned_floats, break_token.get());
-      if (!line_breaker.NextLine(NGLogicalOffset(), exclusion_space,
-                                 &line_info))
+      if (!line_breaker.NextLine(exclusion_space, &line_info))
         break;
 
       break_token = line_breaker.CreateBreakToken(nullptr);
