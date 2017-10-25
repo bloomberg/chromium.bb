@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/ignore_errors_cert_verifier.h"
+#include "content/public/network/ignore_errors_cert_verifier.h"
 
 #include <iterator>
 #include <utility>
@@ -36,7 +36,7 @@ std::unique_ptr<CertVerifier> IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
     const base::CommandLine& command_line,
     const char* user_data_dir_switch,
     std::unique_ptr<CertVerifier> verifier) {
-  if (!command_line.HasSwitch(user_data_dir_switch) ||
+  if ((user_data_dir_switch && !command_line.HasSwitch(user_data_dir_switch)) ||
       !command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList)) {
     return verifier;
   }

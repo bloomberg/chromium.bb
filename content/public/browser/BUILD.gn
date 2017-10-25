@@ -137,7 +137,6 @@ source_set("browser_sources") {
     "guest_mode.cc",
     "guest_mode.h",
     "histogram_fetcher.h",
-    "ignore_errors_cert_verifier.h",
     "indexed_db_context.h",
     "indexed_db_info.h",
     "interstitial_page.h",

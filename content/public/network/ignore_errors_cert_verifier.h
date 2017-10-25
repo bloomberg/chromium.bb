@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_IGNORE_ERRORS_CERT_VERIFIER_H_
-#define CONTENT_PUBLIC_BROWSER_IGNORE_ERRORS_CERT_VERIFIER_H_
+#ifndef CONTENT_PUBLIC_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_
+#define CONTENT_PUBLIC_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_
 
 #include <memory>
 #include <string>
@@ -30,13 +30,15 @@ class CONTENT_EXPORT IgnoreErrorsCertVerifier : public net::CertVerifier {
   using SPKIHashSet =
       base::flat_set<net::SHA256HashValue, net::SHA256HashValueLessThan>;
 
-  // MaybeWrapCertVerifier returns an IgnoreErrorsCertVerifier wrapping the
-  // supplied verifier using the whitelist from the
-  // --ignore-certificate-errors-spki-list flag of the command line if the
-  // --user-data-dir flag is also present. If either of these flags are missing,
-  // it returns the supplied verifier.
+  // If the |user_data_dir_switch| is passed in as a valid pointer but
+  // --user-data-dir flag is missing, or --ignore-certificate-errors-spki-list
+  // flag is missing then MaybeWrapCertVerifier returns the supplied verifier.
+  // Otherwise it returns an IgnoreErrorsCertVerifier wrapping the supplied
+  // verifier using the whitelist from the
+  // --ignore-certificate-errors-spki-list flag.
+  //
   // As the --user-data-dir flag is embedder defined, the flag to check for
-  // needs to be passed in.
+  // needs to be passed in from |user_data_dir_switch|.
   static std::unique_ptr<net::CertVerifier> MaybeWrapCertVerifier(
       const base::CommandLine& command_line,
       const char* user_data_dir_switch,
@@ -75,4 +77,4 @@ class CONTENT_EXPORT IgnoreErrorsCertVerifier : public net::CertVerifier {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_IGNORE_ERRORS_CERT_VERIFIER_H_
+#endif  // CONTENT_PUBLIC_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_
