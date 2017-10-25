@@ -332,7 +332,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     @Override
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
+
         if (SuggestionsConfig.scrollToLoad()) mRecyclerView.clearScrollToLoadListener();
+
+        mRecyclerView = null;
     }
 
     @Override
