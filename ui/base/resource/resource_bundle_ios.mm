@@ -90,7 +90,7 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check to see if the image is already in the cache.
   ImageMap::iterator found = images_.find(resource_id);
@@ -164,7 +164,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
     image = gfx::Image(ui_image);
   }
 
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto inserted = images_.insert(std::make_pair(resource_id, image));
   DCHECK(inserted.second);
