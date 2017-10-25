@@ -169,7 +169,7 @@ WebSize WebImage::Size() const {
   return WebSize(bitmap_.width(), bitmap_.height());
 }
 
-WebImage::WebImage(RefPtr<Image> image) {
+WebImage::WebImage(scoped_refptr<Image> image) {
   if (!image)
     return;
 

@@ -157,15 +157,15 @@ void WebHTTPBody::SetContainsPasswordData(bool contains_password_data) {
   private_->SetContainsPasswordData(contains_password_data);
 }
 
-WebHTTPBody::WebHTTPBody(RefPtr<EncodedFormData> data)
+WebHTTPBody::WebHTTPBody(scoped_refptr<EncodedFormData> data)
     : private_(std::move(data)) {}
 
-WebHTTPBody& WebHTTPBody::operator=(RefPtr<EncodedFormData> data) {
+WebHTTPBody& WebHTTPBody::operator=(scoped_refptr<EncodedFormData> data) {
   private_ = std::move(data);
   return *this;
 }
 
-WebHTTPBody::operator RefPtr<EncodedFormData>() const {
+WebHTTPBody::operator scoped_refptr<EncodedFormData>() const {
   return private_.Get();
 }
 

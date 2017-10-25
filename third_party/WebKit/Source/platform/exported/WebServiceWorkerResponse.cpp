@@ -25,7 +25,7 @@ class WebServiceWorkerResponsePrivate
   WebString status_text;
   network::mojom::FetchResponseType response_type;
   HTTPHeaderMap headers;
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
   WebServiceWorkerResponseError error;
   Time response_time;
   WebString cache_storage_cache_name;
@@ -182,11 +182,12 @@ const HTTPHeaderMap& WebServiceWorkerResponse::Headers() const {
 }
 
 void WebServiceWorkerResponse::SetBlobDataHandle(
-    RefPtr<BlobDataHandle> blob_data_handle) {
+    scoped_refptr<BlobDataHandle> blob_data_handle) {
   private_->blob_data_handle = std::move(blob_data_handle);
 }
 
-RefPtr<BlobDataHandle> WebServiceWorkerResponse::GetBlobDataHandle() const {
+scoped_refptr<BlobDataHandle> WebServiceWorkerResponse::GetBlobDataHandle()
+    const {
   return private_->blob_data_handle;
 }
 

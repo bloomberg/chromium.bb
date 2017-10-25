@@ -38,14 +38,14 @@
 
 namespace blink {
 
-static RefPtr<SharedBuffer> ReadFile(const char* file_name) {
+static scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
   String file_path = testing::CoreTestDataPath(file_name);
 
   return testing::ReadFromFile(file_path);
 }
 
 TEST(WebImageTest, PNGImage) {
-  RefPtr<SharedBuffer> data = ReadFile("white-1x1.png");
+  scoped_refptr<SharedBuffer> data = ReadFile("white-1x1.png");
   ASSERT_TRUE(data.get());
 
   WebImage image = WebImage::FromData(WebData(data), WebSize());
@@ -55,7 +55,7 @@ TEST(WebImageTest, PNGImage) {
 }
 
 TEST(WebImageTest, ICOImage) {
-  RefPtr<SharedBuffer> data = ReadFile("black-and-white.ico");
+  scoped_refptr<SharedBuffer> data = ReadFile("black-and-white.ico");
   ASSERT_TRUE(data.get());
 
   WebVector<WebImage> images = WebImage::FramesFromData(WebData(data));
@@ -69,7 +69,8 @@ TEST(WebImageTest, ICOImage) {
 }
 
 TEST(WebImageTest, ICOValidHeaderMissingBitmap) {
-  RefPtr<SharedBuffer> data = ReadFile("valid_header_missing_bitmap.ico");
+  scoped_refptr<SharedBuffer> data =
+      ReadFile("valid_header_missing_bitmap.ico");
   ASSERT_TRUE(data.get());
 
   WebVector<WebImage> images = WebImage::FramesFromData(WebData(data));

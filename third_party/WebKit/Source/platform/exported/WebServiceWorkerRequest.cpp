@@ -29,7 +29,7 @@ class WebServiceWorkerRequestPrivate
   WebURL url_;
   WebString method_;
   HTTPHeaderMap headers_;
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
   Referrer referrer_;
   WebURLRequest::FetchRequestMode mode_;
   bool is_main_resource_load_;
@@ -118,7 +118,8 @@ void WebServiceWorkerRequest::SetBlob(const WebString& uuid,
       BlobDataHandle::Create(uuid, String(), size, std::move(blob_info));
 }
 
-RefPtr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle() const {
+scoped_refptr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle()
+    const {
   return private_->blob_data_handle;
 }
 

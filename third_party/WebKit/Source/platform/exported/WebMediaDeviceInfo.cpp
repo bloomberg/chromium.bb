@@ -34,7 +34,7 @@ namespace blink {
 class WebMediaDeviceInfoPrivate final
     : public RefCounted<WebMediaDeviceInfoPrivate> {
  public:
-  static RefPtr<WebMediaDeviceInfoPrivate> Create(
+  static scoped_refptr<WebMediaDeviceInfoPrivate> Create(
       const WebString& device_id,
       WebMediaDeviceInfo::MediaDeviceKind,
       const WebString& label,
@@ -57,7 +57,7 @@ class WebMediaDeviceInfoPrivate final
   WebString group_id_;
 };
 
-RefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::Create(
+scoped_refptr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::Create(
     const WebString& device_id,
     WebMediaDeviceInfo::MediaDeviceKind kind,
     const WebString& label,

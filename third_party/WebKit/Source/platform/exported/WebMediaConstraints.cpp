@@ -75,8 +75,8 @@ void MaybeEmitNamedBoolean(StringBuilder& builder,
 class WebMediaConstraintsPrivate final
     : public ThreadSafeRefCounted<WebMediaConstraintsPrivate> {
  public:
-  static RefPtr<WebMediaConstraintsPrivate> Create();
-  static RefPtr<WebMediaConstraintsPrivate> Create(
+  static scoped_refptr<WebMediaConstraintsPrivate> Create();
+  static scoped_refptr<WebMediaConstraintsPrivate> Create(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
@@ -94,13 +94,13 @@ class WebMediaConstraintsPrivate final
   WebVector<WebMediaTrackConstraintSet> advanced_;
 };
 
-RefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
+scoped_refptr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
   return WTF::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
-RefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
+scoped_refptr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
   return WTF::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));

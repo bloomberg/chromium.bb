@@ -46,7 +46,7 @@ namespace {
 
 class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
  public:
-  static RefPtr<URLRequestExtraDataContainer> Create(
+  static scoped_refptr<URLRequestExtraDataContainer> Create(
       WebURLRequest::ExtraData* extra_data) {
     return WTF::AdoptRef(new URLRequestExtraDataContainer(extra_data));
   }
@@ -370,7 +370,8 @@ void WebURLRequest::SetPreviewsState(
 }
 
 WebURLRequest::ExtraData* WebURLRequest::GetExtraData() const {
-  RefPtr<ResourceRequest::ExtraData> data = resource_request_->GetExtraData();
+  scoped_refptr<ResourceRequest::ExtraData> data =
+      resource_request_->GetExtraData();
   if (!data)
     return nullptr;
   return static_cast<URLRequestExtraDataContainer*>(data.get())->GetExtraData();

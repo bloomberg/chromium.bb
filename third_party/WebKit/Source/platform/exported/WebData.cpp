@@ -56,15 +56,16 @@ size_t WebData::GetSomeData(const char*& data, size_t position) const {
   return private_.IsNull() ? 0 : private_->GetSomeData(data, position);
 }
 
-WebData::WebData(RefPtr<SharedBuffer> buffer) : private_(std::move(buffer)) {}
+WebData::WebData(scoped_refptr<SharedBuffer> buffer)
+    : private_(std::move(buffer)) {}
 
-WebData& WebData::operator=(RefPtr<SharedBuffer> buffer) {
+WebData& WebData::operator=(scoped_refptr<SharedBuffer> buffer) {
   private_ = std::move(buffer);
   return *this;
 }
 
-WebData::operator RefPtr<SharedBuffer>() const {
-  return RefPtr<SharedBuffer>(private_.Get());
+WebData::operator scoped_refptr<SharedBuffer>() const {
+  return scoped_refptr<SharedBuffer>(private_.Get());
 }
 
 WebData::operator const SharedBuffer&() const {

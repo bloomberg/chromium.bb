@@ -49,7 +49,7 @@ namespace {
 
 class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
  public:
-  static RefPtr<URLResponseExtraDataContainer> Create(
+  static scoped_refptr<URLResponseExtraDataContainer> Create(
       WebURLResponse::ExtraData* extra_data) {
     return WTF::AdoptRef(new URLResponseExtraDataContainer(extra_data));
   }
@@ -125,7 +125,8 @@ void WebURLResponse::SetConnectionReused(bool connection_reused) {
 }
 
 void WebURLResponse::SetLoadTiming(const WebURLLoadTiming& timing) {
-  RefPtr<ResourceLoadTiming> load_timing = RefPtr<ResourceLoadTiming>(timing);
+  scoped_refptr<ResourceLoadTiming> load_timing =
+      scoped_refptr<ResourceLoadTiming>(timing);
   resource_response_->SetResourceLoadTiming(std::move(load_timing));
 }
 
@@ -368,7 +369,8 @@ void WebURLResponse::SetEncodedDataLength(long long length) {
 }
 
 WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
-  RefPtr<ResourceResponse::ExtraData> data = resource_response_->GetExtraData();
+  scoped_refptr<ResourceResponse::ExtraData> data =
+      resource_response_->GetExtraData();
   if (!data)
     return nullptr;
   return static_cast<URLResponseExtraDataContainer*>(data.get())
