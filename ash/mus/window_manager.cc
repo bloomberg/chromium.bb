@@ -26,6 +26,7 @@
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/public/interfaces/window_actions.mojom.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/root_window_controller.h"
@@ -35,6 +36,7 @@
 #include "ash/shell_init_params.h"
 #include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
@@ -499,6 +501,12 @@ bool WindowManager::IsWindowActive(aura::Window* window) {
 
 void WindowManager::OnWmDeactivateWindow(aura::Window* window) {
   Shell::Get()->activation_client()->DeactivateWindow(window);
+}
+
+void WindowManager::OnWmPerformAction(aura::Window* window,
+                                      const std::string& action) {
+  if (action == mojom::kAddWindowToTabletMode)
+    ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
 }
 
 void WindowManager::OnEventBlockedByModalWindow(aura::Window* window) {

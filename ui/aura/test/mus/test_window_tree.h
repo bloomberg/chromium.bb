@@ -103,6 +103,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
     return last_set_window_bounds_;
   }
 
+  const std::string& last_wm_action() const { return last_wm_action_; }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -206,6 +208,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void StackAbove(uint32_t change_id, uint32_t above_id,
                   uint32_t below_id) override;
   void StackAtTop(uint32_t change_id, uint32_t window_id) override;
+  void PerformWmAction(uint32_t window_id, const std::string& action) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<ui::mojom::WindowManagerClient> internal)
       override;
@@ -252,6 +255,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
 
   gfx::Rect last_set_window_bounds_;
+
+  std::string last_wm_action_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

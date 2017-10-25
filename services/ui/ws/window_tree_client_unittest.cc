@@ -537,6 +537,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void WmStackAtTop(uint32_t change_id, uint32_t window_id) override {
     NOTIMPLEMENTED();
   }
+  void WmPerformWmAction(uint32_t window_id,
+                         const std::string& action) override {
+    NOTIMPLEMENTED();
+  }
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override {

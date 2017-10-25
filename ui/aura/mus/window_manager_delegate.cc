@@ -15,6 +15,9 @@ ui::mojom::EventResult WindowManagerDelegate::OnAccelerator(
   return ui::mojom::EventResult::UNHANDLED;
 }
 
+void WindowManagerDelegate::OnWmPerformAction(Window* window,
+                                              const std::string& action) {}
+
 void WindowManagerDelegate::OnEventBlockedByModalWindow(Window* window) {}
 
 }  // namespace aura

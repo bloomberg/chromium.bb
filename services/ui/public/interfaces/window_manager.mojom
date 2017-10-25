@@ -238,6 +238,9 @@ interface WindowManager {
   // window manager owned parent.
   WmStackAtTop(uint32 change_id, uint32 window_id);
 
+  // Asks the WindowManager to perform |action| on |window_id|.
+  WmPerformWmAction(uint32 window_id, string action);
+
   // An accelerator registered via AddAccelerator() has been triggered. If
   // |ack_id| is non-zero the accelerator matches a PRE_TARGET and must be
   // acknowledged by WindowManagerClient::OnAcceleratorAck().

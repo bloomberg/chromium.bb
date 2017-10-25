@@ -2054,6 +2054,43 @@ TEST_F(WindowTreeTest, EmbedFlagEmbedderControlsVisibility) {
   EXPECT_TRUE(tree1->SetWindowVisibility(child_window_id, true));
 }
 
+TEST_F(WindowTreeTest, PerformWmAction) {
+  TestWindowManager wm_internal;
+  set_window_manager_internal(wm_tree(), &wm_internal);
+
+  TestWindowTreeBinding* child_binding = nullptr;
+  WindowTree* child_tree = CreateNewTree(wm_tree()->user_id(), &child_binding);
+
+  // Create a new top level window.
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
+  const uint32_t initial_change_id = 17;
+  // Explicitly use an id that does not contain the client id.
+  const ClientWindowId embed_window_id2_in_child(child_tree->id(), 27);
+  static_cast<mojom::WindowTree*>(child_tree)
+      ->NewTopLevelWindow(
+          initial_change_id,
+          child_tree->ClientWindowIdToTransportId(embed_window_id2_in_child),
+          properties);
+
+  // Create the window for |embed_window_id2_in_child|.
+  const ClientWindowId embed_window_id2 = BuildClientWindowId(wm_tree(), 2);
+  EXPECT_TRUE(
+      wm_tree()->NewWindow(embed_window_id2, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id2, true));
+  EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id2));
+
+  // Ack the change, which should resume the binding.
+  static_cast<mojom::WindowManagerClient*>(wm_tree())
+      ->OnWmCreatedTopLevelWindow(
+          0u, wm_tree()->ClientWindowIdToTransportId(embed_window_id2));
+
+  static_cast<mojom::WindowTree*>(child_tree)
+      ->PerformWmAction(
+          child_tree->ClientWindowIdToTransportId(embed_window_id2_in_child),
+          "test-action");
+  EXPECT_EQ("test-action", wm_internal.last_wm_action());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

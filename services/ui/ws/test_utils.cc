@@ -275,6 +275,11 @@ void TestWindowManager::WmStackAbove(uint32_t change_id,
 
 void TestWindowManager::WmStackAtTop(uint32_t change_id, uint32_t window_id) {}
 
+void TestWindowManager::WmPerformWmAction(uint32_t window_id,
+                                          const std::string& action) {
+  last_wm_action_ = action;
+}
+
 void TestWindowManager::OnAccelerator(uint32_t ack_id,
                                       uint32_t accelerator_id,
                                       std::unique_ptr<ui::Event> event) {

@@ -564,6 +564,9 @@ bool SimpleWM::IsWindowActive(aura::Window* window) { return false; }
 
 void SimpleWM::OnWmDeactivateWindow(aura::Window* window) {}
 
+void SimpleWM::OnWmPerformAction(aura::Window* window,
+                                 const std::string& action) {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleWM, wm::BaseFocusRules implementation:
 

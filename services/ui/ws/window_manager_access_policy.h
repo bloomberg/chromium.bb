@@ -58,6 +58,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanStackAbove(const ServerWindow* above,
                      const ServerWindow* below) const override;
   bool CanStackAtTop(const ServerWindow* window) const override;
+  bool CanPerformWmAction(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;
   bool CanInitiateDragLoop(const ServerWindow* window) const override;
   bool CanInitiateMoveLoop(const ServerWindow* window) const override;

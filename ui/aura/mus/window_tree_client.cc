@@ -1945,6 +1945,16 @@ void WindowTreeClient::WmStackAtTop(uint32_t wm_change_id, uint32_t window_id) {
     window_manager_client_->WmResponse(wm_change_id, true);
 }
 
+void WindowTreeClient::WmPerformWmAction(Id window_id,
+                                         const std::string& action) {
+  if (!window_manager_delegate_)
+    return;
+
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (window)
+    window_manager_delegate_->OnWmPerformAction(window->GetWindow(), action);
+}
+
 void WindowTreeClient::OnAccelerator(uint32_t ack_id,
                                      uint32_t accelerator_id,
                                      std::unique_ptr<ui::Event> event) {
@@ -2216,6 +2226,13 @@ void WindowTreeClient::OnWindowTreeHostStackAtTop(
   const uint32_t change_id = ScheduleInFlightChange(
       std::make_unique<CrashInFlightChange>(window, ChangeType::REORDER));
   tree_->StackAtTop(change_id, window->server_id());
+}
+
+void WindowTreeClient::OnWindowTreeHostPerformWmAction(
+    WindowTreeHostMus* window_tree_host,
+    const std::string& action) {
+  WindowMus* window = WindowMus::Get(window_tree_host->window());
+  tree_->PerformWmAction(window->server_id(), action);
 }
 
 void WindowTreeClient::OnWindowTreeHostPerformWindowMove(

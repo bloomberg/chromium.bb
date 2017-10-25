@@ -379,6 +379,7 @@ class TestWindowManager : public mojom::WindowManager {
     on_accelerator_called_ = false;
   }
 
+  const std::string& last_wm_action() const { return last_wm_action_; }
   bool on_perform_move_loop_called() { return on_perform_move_loop_called_; }
   bool on_accelerator_called() { return on_accelerator_called_; }
   uint32_t on_accelerator_id() { return on_accelerator_id_; }
@@ -431,11 +432,15 @@ class TestWindowManager : public mojom::WindowManager {
   void WmStackAbove(uint32_t change_id, uint32_t above_id,
                     uint32_t below_id) override;
   void WmStackAtTop(uint32_t change_id, uint32_t window_id) override;
+  void WmPerformWmAction(uint32_t window_id,
+                         const std::string& action) override;
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnEventBlockedByModalWindow(uint32_t window_id) override;
+
+  std::string last_wm_action_;
 
   bool on_perform_move_loop_called_ = false;
   bool on_set_modal_type_called_ = false;
