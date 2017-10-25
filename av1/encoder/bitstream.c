@@ -666,16 +666,10 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
 #if !CONFIG_COEF_INTERLEAVE
 #if CONFIG_LV_MAP
-static void pack_txb_tokens(aom_writer *w,
-#if CONFIG_LV_MAP
-                            AV1_COMMON *cm,
-#endif  // CONFIG_LV_MAP
+static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
                             const TOKENEXTRA **tp,
-                            const TOKENEXTRA *const tok_end,
-#if CONFIG_LV_MAP
-                            MACROBLOCK *const x,
-#endif
-                            MACROBLOCKD *xd, MB_MODE_INFO *mbmi, int plane,
+                            const TOKENEXTRA *const tok_end, MACROBLOCKD *xd,
+                            MB_MODE_INFO *mbmi, int plane,
                             BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth,
                             int block, int blk_row, int blk_col,
                             TX_SIZE tx_size, TOKEN_STATS *token_stats) {
@@ -721,16 +715,8 @@ static void pack_txb_tokens(aom_writer *w,
 
       if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      pack_txb_tokens(w,
-#if CONFIG_LV_MAP
-                      cm,
-#endif
-                      tp, tok_end,
-#if CONFIG_LV_MAP
-                      x,
-#endif
-                      xd, mbmi, plane, plane_bsize, bit_depth, block, offsetr,
-                      offsetc, sub_txs, token_stats);
+      pack_txb_tokens(w, cm, x, tp, tok_end, xd, mbmi, plane, plane_bsize,
+                      bit_depth, block, offsetr, offsetc, sub_txs, token_stats);
       block += step;
     }
   }
@@ -2286,15 +2272,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
               for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
                 pack_txb_tokens(w,
 #if CONFIG_LV_MAP
-                                cm,
+                                cm, x,
 #endif
-                                tok, tok_end,
-#if CONFIG_LV_MAP
-                                x,
-#endif
-                                xd, mbmi, plane, plane_bsize, cm->bit_depth,
-                                block, blk_row, blk_col, max_tx_size,
-                                &token_stats);
+                                tok, tok_end, xd, mbmi, plane, plane_bsize,
+                                cm->bit_depth, block, blk_row, blk_col,
+                                max_tx_size, &token_stats);
                 block += step;
               }
             }
