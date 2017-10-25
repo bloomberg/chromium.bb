@@ -43,7 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"

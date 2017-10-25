@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"

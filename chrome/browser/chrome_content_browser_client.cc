@@ -168,7 +168,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/task_scheduler_util/browser/initialization.h"

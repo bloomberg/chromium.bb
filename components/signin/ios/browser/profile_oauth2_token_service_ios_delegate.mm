@@ -22,7 +22,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_request_status.h"

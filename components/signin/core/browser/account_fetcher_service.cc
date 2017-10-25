@@ -18,7 +18,7 @@
 #include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/common/signin_switches.h"
+#include "components/signin/core/browser/signin_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {

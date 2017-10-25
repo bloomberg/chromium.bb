@@ -72,7 +72,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_io_data.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"

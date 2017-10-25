@@ -27,7 +27,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image.h"

@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"

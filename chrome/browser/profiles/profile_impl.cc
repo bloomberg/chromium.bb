@@ -110,7 +110,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"

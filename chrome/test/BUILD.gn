@@ -3856,7 +3856,7 @@ test("unit_tests") {
       "../utility/importer/safari_importer_unittest.mm",
     ]
     deps += [
-      "//components/signin/core/common:signin_features",
+      "//components/signin/core/browser:signin_features",
       "//ipc",
       "//third_party/libaddressinput",
     ]

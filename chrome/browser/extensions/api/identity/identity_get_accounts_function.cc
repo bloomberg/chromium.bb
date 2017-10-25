@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/identity.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/identity/public/interfaces/account.mojom.h"
 #include "services/identity/public/interfaces/constants.mojom.h"

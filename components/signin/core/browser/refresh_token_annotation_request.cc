@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/common/signin_switches.h"
+#include "components/signin/core/browser/signin_switches.h"
 
 namespace switches {
 

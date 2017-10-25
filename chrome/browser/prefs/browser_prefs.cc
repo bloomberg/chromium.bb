@@ -99,7 +99,7 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"

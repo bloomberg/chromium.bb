@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"

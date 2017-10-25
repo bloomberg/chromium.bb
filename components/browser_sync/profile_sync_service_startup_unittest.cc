@@ -14,7 +14,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_data_type_controller.h"

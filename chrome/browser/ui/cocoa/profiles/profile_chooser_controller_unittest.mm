@@ -35,11 +35,11 @@
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 
 using ::testing::Return;

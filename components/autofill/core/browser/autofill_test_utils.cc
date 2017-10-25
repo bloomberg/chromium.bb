@@ -27,7 +27,7 @@
 #include "components/prefs/testing_pref_store.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

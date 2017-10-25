@@ -12,7 +12,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"

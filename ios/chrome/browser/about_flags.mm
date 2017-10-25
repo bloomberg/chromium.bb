@@ -32,7 +32,7 @@
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/features.h"
 #include "components/security_state/core/switches.h"
-#include "components/signin/core/common/signin_switches.h"
+#include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
