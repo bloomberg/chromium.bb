@@ -10,13 +10,25 @@ import sys
 # This script executes libool and filters out logspam lines like:
 #    '/path/to/libtool: file: foo.o has no symbols'
 
+BLACKLIST_PATTERNS = map(re.compile, [
+    r'^.*libtool: (?:for architecture: \S* )?file: .* has no symbols$',
+    r'^.*libtool: warning for library: .* the table of contents is empty '
+        r'\(no object file members in the library define global symbols\)$',
+    r'^.*libtool: warning same member name \(\S*\) in output file used for '
+        r'input files: \S* and: \S* \(due to use of basename, truncation, '
+        r'blank padding or duplicate input files\)$',
+])
+
+
+def IsBlacklistedLine(line):
+  """Returns whether the line should be filtered out."""
+  for pattern in BLACKLIST_PATTERNS:
+    if pattern.match(line):
+      return True
+  return False
+
+
 def Main(cmd_list):
-  libtool_re = re.compile(r'^.*libtool: (?:for architecture: \S* )?'
-                          r'file: .* has no symbols$')
-  libtool_re5 = re.compile(
-      r'^.*libtool: warning for library: ' +
-      r'.* the table of contents is empty ' +
-      r'\(no object file members in the library define global symbols\)$')
   env = os.environ.copy()
   # Ref:
   # http://www.opensource.apple.com/source/cctools/cctools-809/misc/libtool.c
@@ -26,7 +38,7 @@ def Main(cmd_list):
   libtoolout = subprocess.Popen(cmd_list, stderr=subprocess.PIPE, env=env)
   _, err = libtoolout.communicate()
   for line in err.splitlines():
-    if not libtool_re.match(line) and not libtool_re5.match(line):
+    if not IsBlacklistedLine(line):
       print >>sys.stderr, line
   # Unconditionally touch the output .a file on the command line if present
   # and the command succeeded. A bit hacky.
