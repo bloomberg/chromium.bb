@@ -29,6 +29,7 @@
 -WebViewTests/WebViewDPITest.Shim_TestAutosizeRemoveAttributes/1
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
 -WebViewTests/WebViewSizeTest.AutoSize/0
+-WebViewTests/WebViewSizeTest.AutoSize/1
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/0
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/1
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/0
