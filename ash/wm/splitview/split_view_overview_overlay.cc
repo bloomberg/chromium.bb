@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -69,16 +70,15 @@ std::unique_ptr<views::Widget> CreateWidget() {
   return widget;
 }
 
-// Computes the transform which rotates the labels 90 degrees clockwise or
-// anti-clockwise based on |clockwise|. The point of rotation is the relative
-// center point of |bounds|.
+// Computes the transform which rotates the labels |angle| degrees. The point
+// of rotation is the relative center point of |bounds|.
 gfx::Transform ComputeRotateAroundCenterTransform(const gfx::Rect& bounds,
-                                                  bool clockwise) {
+                                                  double angle) {
   gfx::Transform transform;
   const gfx::Vector2dF center_point_vector =
       bounds.CenterPoint() - bounds.origin();
   transform.Translate(center_point_vector);
-  transform.Rotate(clockwise ? 90.0 : -90.0);
+  transform.Rotate(angle);
   transform.Translate(-center_point_vector);
   return transform;
 }
@@ -139,10 +139,11 @@ class SplitViewOverviewOverlay::RotatedImageLabelView : public views::View {
 
   void SetIconVisible(bool visible) { icon_->SetVisible(visible); }
 
-  // Called when the view's bounds are altered. Handles rotating the view.
-  void OnBoundsUpdated(const gfx::Rect& bounds, bool clockwise) {
+  // Called when the view's bounds are altered. Rotates the view by |angle|
+  // degrees.
+  void OnBoundsUpdated(const gfx::Rect& bounds, double angle) {
     SetBoundsRect(bounds);
-    SetTransform(ComputeRotateAroundCenterTransform(bounds, clockwise));
+    SetTransform(ComputeRotateAroundCenterTransform(bounds, angle));
   }
 
  private:
@@ -154,7 +155,9 @@ class SplitViewOverviewOverlay::RotatedImageLabelView : public views::View {
 
 // View which contains two highlights on each side indicator where a user should
 // drag a selected window in order to initiate splitview. Each highlight has a
-// label with instructions to further guide users.
+// label with instructions to further guide users. The highlights are on the
+// left and right of the display in landscape mode, and on the top and bottom of
+// the display in landscape mode.
 class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     : public views::View {
  public:
@@ -179,22 +182,6 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   }
 
   ~SplitViewOverviewOverlayView() override = default;
-
-  void Layout() override {
-    left_hightlight_view_->SetBounds(0, 0, kHighlightScreenWidth, height());
-    right_hightlight_view_->SetBounds(width() - kHighlightScreenWidth, 0,
-                                      kHighlightScreenWidth, height());
-
-    const int rotated_bounds_height =
-        kLabelHeightDp +
-        (left_rotated_view_->icon_visible() ? kWarningIconSizeDp : 0);
-    const gfx::Rect rotated_bounds(0, height() / 2 - rotated_bounds_height / 2,
-                                   kHighlightScreenWidth,
-                                   rotated_bounds_height);
-
-    left_rotated_view_->OnBoundsUpdated(rotated_bounds, false /* clockwise */);
-    right_rotated_view_->OnBoundsUpdated(rotated_bounds, true /* clockwise */);
-  }
 
   void OnIndicatorTypeChanged(IndicatorType indicator_type) {
     if (indicator_type_ == indicator_type)
@@ -224,6 +211,39 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     }
 
     NOTREACHED();
+  }
+
+  // views::View:
+  void Layout() override {
+    const bool landscape = Shell::Get()
+                               ->split_view_controller()
+                               ->IsCurrentScreenOrientationLandscape();
+
+    // Calculate the bounds of the two highlight regions.
+    const int highlight_width = landscape ? kHighlightScreenWidth : width();
+    const int highlight_height = landscape ? height() : kHighlightScreenWidth;
+    const gfx::Point right_bottom_origin(
+        landscape ? width() - kHighlightScreenWidth : 0,
+        landscape ? 0 : height() - kHighlightScreenWidth);
+    left_hightlight_view_->SetBounds(0, 0, highlight_width, highlight_height);
+    right_hightlight_view_->SetBounds(right_bottom_origin.x(),
+                                      right_bottom_origin.y(), highlight_width,
+                                      highlight_height);
+
+    // Calculate the bounds of the views which contain the guidance text and
+    // icon. Rotate the two views in landscape mode.
+    const int rotated_bounds_height =
+        kLabelHeightDp +
+        (left_rotated_view_->icon_visible() ? kWarningIconSizeDp : 0);
+    const int rotated_x =
+        landscape ? 0 : width() / 2 - kHighlightScreenWidth / 2;
+    const gfx::Rect rotated_bounds(
+        rotated_x, highlight_height / 2 - rotated_bounds_height / 2,
+        kHighlightScreenWidth, rotated_bounds_height);
+    left_rotated_view_->OnBoundsUpdated(rotated_bounds,
+                                        landscape ? -90.0 : 0.0 /* angle */);
+    right_rotated_view_->OnBoundsUpdated(rotated_bounds,
+                                         landscape ? 90.0 : 0.0 /* angle */);
   }
 
  private:
@@ -291,6 +311,10 @@ void SplitViewOverviewOverlay::SetIndicatorType(
   widget_->SetBounds(root_window->GetBoundsInScreen());
   widget_->Show();
   overlay_view_->OnIndicatorTypeChanged(current_indicator_type_);
+}
+
+void SplitViewOverviewOverlay::OnDisplayBoundsChanged() {
+  overlay_view_->Layout();
 }
 
 }  // namespace ash

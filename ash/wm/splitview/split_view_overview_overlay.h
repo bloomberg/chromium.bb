@@ -36,6 +36,10 @@ class ASH_EXPORT SplitViewOverviewOverlay {
     return current_indicator_type_;
   }
 
+  // Called by owner of this class when display bounds changes are observed, so
+  // that this class can relayout accordingly.
+  void OnDisplayBoundsChanged();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            SplitViewOverviewOverlayWidgetReparenting);
