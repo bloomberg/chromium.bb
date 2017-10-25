@@ -420,6 +420,18 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     // Initialize the share menu.
     [self initShareMenu];
   }
+
+  // Remove "Enable Javascript in Apple Events" if the feature is disabled.
+  if (!base::FeatureList::IsEnabled(
+          features::kAppleScriptExecuteJavaScriptMenuItem)) {
+    NSMenu* mainMenu = [NSApp mainMenu];
+    NSMenu* viewMenu = [[mainMenu itemWithTag:IDC_VIEW_MENU] submenu];
+    NSMenu* devMenu = [[viewMenu itemWithTag:IDC_DEVELOPER_MENU] submenu];
+    NSMenuItem* javascriptAppleEventItem =
+        [devMenu itemWithTag:IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS];
+    if (javascriptAppleEventItem)
+      [devMenu removeItem:javascriptAppleEventItem];
+  }
 }
 
 - (void)applicationWillHide:(NSNotification*)notification {

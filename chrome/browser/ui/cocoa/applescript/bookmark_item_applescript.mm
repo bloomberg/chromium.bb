@@ -4,10 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#import "chrome/browser/ui/cocoa/applescript/apple_event_util.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "chrome/common/chrome_features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
 using bookmarks::BookmarkModel;
@@ -47,7 +49,10 @@ using bookmarks::BookmarkNode;
 
 - (void)setURL:(NSString*)aURL {
   GURL url(base::SysNSStringToUTF8(aURL));
-  if (!base::FeatureList::IsEnabled(features::kAppleScriptExecuteJavaScript) &&
+
+  AppController* appDelegate =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+  if (!chrome::mac::IsJavaScriptEnabledForProfile([appDelegate lastProfile]) &&
       url.SchemeIs(url::kJavaScriptScheme)) {
     AppleScript::SetError(AppleScript::errJavaScriptUnsupported);
     return;

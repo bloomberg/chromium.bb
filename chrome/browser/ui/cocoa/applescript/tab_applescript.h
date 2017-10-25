@@ -13,10 +13,15 @@ namespace content {
 class WebContents;
 }
 
+class Profile;
+
 // Represents a tab scriptable item in applescript.
 @interface TabAppleScript : ElementAppleScript {
  @private
   content::WebContents* webContents_;  // weak.
+
+  Profile* profile_;  // weak.
+
   // Contains the temporary URL when a user creates a new folder/item with
   // url specified like
   // |make new tab with properties {url:"http://google.com"}|.
@@ -26,10 +31,10 @@ class WebContents;
 // Doesn't actually create the tab here but just assigns the ID, tab is created
 // when it calls insertInTabs: of a particular window, it is used in cases
 // where user assigns a tab to a variable like |set var to make new tab|.
-- (id)init;
+- (instancetype)init;
 
 // Does not create a new tab but uses an existing one.
-- (id)initWithWebContents:(content::WebContents*)webContents;
+- (instancetype)initWithWebContents:(content::WebContents*)webContents;
 
 // Assigns a tab, sets its unique ID and also copies temporary values.
 - (void)setWebContents:(content::WebContents*)webContents;

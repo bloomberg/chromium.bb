@@ -10,6 +10,10 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace chrome {
 namespace mac {
@@ -95,6 +99,15 @@ NSAppleEventDescriptor* ValueToAppleEventDescriptor(const base::Value* value) {
   }
 
   return descriptor;
+}
+
+bool IsJavaScriptEnabledForProfile(Profile* profile) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAppleScriptExecuteJavaScriptMenuItem))
+    return YES;
+
+  PrefService* prefs = profile->GetPrefs();
+  return prefs->GetBoolean(prefs::kAllowJavascriptAppleEvents);
 }
 
 }  // namespace mac

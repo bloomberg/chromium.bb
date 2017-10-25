@@ -173,6 +173,7 @@
 #define IDC_TOGGLE_FULLSCREEN_TOOLBAR   40250
 #define IDC_CUSTOMIZE_TOUCH_BAR         40251
 #define IDC_SHOW_BETA_FORUM             40252
+#define IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS 40253
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
