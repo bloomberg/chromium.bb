@@ -30,6 +30,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -133,9 +134,11 @@ class PendingReadbackLock : public base::RefCounted<PendingReadbackLock> {
 using base::android::ApplicationState;
 using base::android::ApplicationStatusListener;
 
-class GLHelperHolder {
+class GLHelperHolder : public viz::ContextLostObserver {
  public:
   static GLHelperHolder* Create();
+
+  ~GLHelperHolder() override;
 
   viz::GLHelper* gl_helper() { return gl_helper_.get(); }
   bool IsLost() {
@@ -148,9 +151,12 @@ class GLHelperHolder {
 
  private:
   GLHelperHolder();
+
   void Initialize();
-  void OnContextLost();
   void OnApplicationStatusChanged(ApplicationState new_state);
+
+  // viz::ContextLostObserver implementation.
+  void OnContextLost() override;
 
   scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
@@ -169,6 +175,11 @@ GLHelperHolder::GLHelperHolder()
            base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) ||
           (ApplicationStatusListener::GetState() ==
            base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)) {}
+
+GLHelperHolder::~GLHelperHolder() {
+  if (provider_)
+    provider_->RemoveObserver(this);
+}
 
 GLHelperHolder* GLHelperHolder::Create() {
   GLHelperHolder* holder = new GLHelperHolder;
@@ -226,8 +237,7 @@ void GLHelperHolder::Initialize() {
       "gpu_toplevel",
       base::StringPrintf("CmdBufferImageTransportFactory-%p", provider_.get())
           .c_str());
-  provider_->SetLostContextCallback(
-      base::Bind(&GLHelperHolder::OnContextLost, base::Unretained(this)));
+  provider_->AddObserver(this);
   gl_helper_.reset(
       new viz::GLHelper(provider_->ContextGL(), provider_->ContextSupport()));
 
@@ -239,6 +249,8 @@ void GLHelperHolder::Initialize() {
 void GLHelperHolder::ReleaseIfPossible() {
   if (!has_running_or_paused_activities_ && !g_pending_readback_lock) {
     gl_helper_.reset();
+    if (provider_)
+      provider_->RemoveObserver(this);
     provider_ = nullptr;
     // Make sure this will get recreated on next use.
     DCHECK(IsLost());

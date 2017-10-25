@@ -435,8 +435,8 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
 void ContextProviderCommandBuffer::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  if (!lost_context_callback_.is_null())
-    lost_context_callback_.Run();
+  for (auto& observer : observers_)
+    observer.OnContextLost();
   if (gr_context_)
     gr_context_->OnLostContext();
 
@@ -445,11 +445,13 @@ void ContextProviderCommandBuffer::OnLostContext() {
                                                state.context_lost_reason);
 }
 
-void ContextProviderCommandBuffer::SetLostContextCallback(
-    const LostContextCallback& lost_context_callback) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(lost_context_callback_.is_null() || lost_context_callback.is_null());
-  lost_context_callback_ = lost_context_callback;
+void ContextProviderCommandBuffer::AddObserver(viz::ContextLostObserver* obs) {
+  observers_.AddObserver(obs);
+}
+
+void ContextProviderCommandBuffer::RemoveObserver(
+    viz::ContextLostObserver* obs) {
+  observers_.RemoveObserver(obs);
 }
 
 bool ContextProviderCommandBuffer::OnMemoryDump(

@@ -54,6 +54,7 @@ viz_component("common") {
     "gl_helper_scaling.h",
     "gpu/context_cache_controller.cc",
     "gpu/context_cache_controller.h",
+    "gpu/context_lost_observer.h",
     "gpu/context_provider.cc",
     "gpu/context_provider.h",
     "gpu/in_process_context_provider.cc",

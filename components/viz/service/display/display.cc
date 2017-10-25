@@ -64,7 +64,7 @@ Display::~Display() {
   // Only do this if Initialize() happened.
   if (client_) {
     if (auto* context = output_surface_->context_provider())
-      context->SetLostContextCallback(base::Closure());
+      context->RemoveObserver(this);
     if (scheduler_)
       surface_manager_->RemoveObserver(scheduler_.get());
   }
@@ -89,16 +89,11 @@ void Display::Initialize(DisplayClient* client,
   output_surface_->BindToClient(this);
   InitializeRenderer();
 
-  if (auto* context = output_surface_->context_provider()) {
-    // This depends on assumptions that Display::Initialize will happen
-    // on the same callstack as the ContextProvider being created/initialized
-    // or else it could miss a callback before setting this.
-    context->SetLostContextCallback(base::Bind(
-        &Display::DidLoseContextProvider,
-        // Unretained is safe since the callback is unset in this class'
-        // destructor and is never posted.
-        base::Unretained(this)));
-  }
+  // This depends on assumptions that Display::Initialize will happen on the
+  // same callstack as the ContextProvider being created/initialized or else it
+  // could miss a callback before setting this.
+  if (auto* context = output_surface_->context_provider())
+    context->AddObserver(this);
 }
 
 void Display::AddObserver(DisplayObserver* observer) {
@@ -234,7 +229,7 @@ void Display::UpdateRootSurfaceResourcesLocked() {
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
 }
 
-void Display::DidLoseContextProvider() {
+void Display::OnContextLost() {
   if (scheduler_)
     scheduler_->OutputSurfaceLost();
   // WARNING: The client may delete the Display in this method call. Do not

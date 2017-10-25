@@ -57,8 +57,8 @@ class InProcessContextProvider : public viz::ContextProvider {
   viz::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
-  void SetLostContextCallback(
-      const LostContextCallback& lost_context_callback) override;
+  void AddObserver(viz::ContextLostObserver* obs) override;
+  void RemoveObserver(viz::ContextLostObserver* obs) override;
 
   // Gives the GL internal format that should be used for calling CopyTexImage2D
   // on the default framebuffer.

@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -56,7 +57,8 @@ class VIZ_SERVICE_EXPORT DisplayObserver {
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
 class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
-                                   public OutputSurfaceClient {
+                                   public OutputSurfaceClient,
+                                   public ContextLostObserver {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
@@ -113,7 +115,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
  private:
   void InitializeRenderer();
   void UpdateRootSurfaceResourcesLocked();
-  void DidLoseContextProvider();
+
+  // ContextLostObserver implementation.
+  void OnContextLost() override;
 
   SharedBitmapManager* const bitmap_manager_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;

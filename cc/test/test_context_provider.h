@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/test/test_context_support.h"
@@ -56,7 +57,8 @@ class TestContextProvider : public viz::ContextProvider {
   viz::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
-  void SetLostContextCallback(const LostContextCallback& cb) override;
+  void AddObserver(viz::ContextLostObserver* obs) override;
+  void RemoveObserver(viz::ContextLostObserver* obs) override;
 
   TestWebGraphicsContext3D* TestContext3d();
 
@@ -92,7 +94,7 @@ class TestContextProvider : public viz::ContextProvider {
 
   base::Lock context_lock_;
 
-  LostContextCallback lost_context_callback_;
+  base::ObserverList<viz::ContextLostObserver> observers_;
 
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
 
