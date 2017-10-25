@@ -12,7 +12,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"

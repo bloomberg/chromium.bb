@@ -15,7 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 

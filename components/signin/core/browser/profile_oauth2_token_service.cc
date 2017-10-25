@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #if defined(OS_IOS)
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #endif
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(

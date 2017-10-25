@@ -60,7 +60,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"

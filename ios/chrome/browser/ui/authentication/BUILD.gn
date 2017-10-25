@@ -38,7 +38,6 @@ source_set("authentication") {
     "//components/infobars/core",
     "//components/prefs",
     "//components/signin/core/browser",
-    "//components/signin/core/common",
     "//components/signin/ios/browser",
     "//components/strings",
     "//google_apis",

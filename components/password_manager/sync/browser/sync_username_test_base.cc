@@ -5,7 +5,7 @@
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 
 using autofill::PasswordForm;
 

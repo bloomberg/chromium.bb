@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 
 ProcessDiceHeaderObserverImpl::ProcessDiceHeaderObserverImpl(
     content::WebContents* web_contents)

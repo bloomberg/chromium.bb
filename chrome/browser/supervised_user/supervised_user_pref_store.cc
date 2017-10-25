@@ -20,7 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_value_map.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_source.h"
 
 namespace {

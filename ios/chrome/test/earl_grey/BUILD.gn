@@ -186,7 +186,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/signin/core/common",
+    "//components/signin/core/browser",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",

@@ -21,7 +21,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 
 // Space between the avatar icon and the avatar menu bubble.

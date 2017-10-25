@@ -16,8 +16,8 @@
 #include "components/grit/components_resources.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/common/profile_management_switches.h"
-#include "components/signin/core/common/signin_features.h"
+#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/signin_features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 

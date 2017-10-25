@@ -18,7 +18,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 
 namespace {
 

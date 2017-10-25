@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 
 #include <string>
 
@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
-#include "components/signin/core/common/signin_features.h"
-#include "components/signin/core/common/signin_switches.h"
+#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_switches.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "components/pref_registry/pref_registry_syncable.h"

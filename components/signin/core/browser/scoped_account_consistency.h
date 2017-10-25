@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 
 namespace signin {
 

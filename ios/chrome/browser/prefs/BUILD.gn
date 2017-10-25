@@ -49,7 +49,7 @@ source_set("browser_prefs") {
     "//components/proxy_config",
     "//components/rappor",
     "//components/search_engines",
-    "//components/signin/core/common",
+    "//components/signin/core/browser",
     "//components/ssl_config",
     "//components/strings",
     "//components/sync",

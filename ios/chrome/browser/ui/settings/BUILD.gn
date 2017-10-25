@@ -107,7 +107,6 @@ source_set("settings") {
     "//components/resources",
     "//components/search_engines",
     "//components/signin/core/browser",
-    "//components/signin/core/common",
     "//components/signin/ios/browser",
     "//components/strings",
     "//components/sync",

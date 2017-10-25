@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_COMMON_SIGNIN_SWITCHES_H_
-#define COMPONENTS_SIGNIN_CORE_COMMON_SIGNIN_SWITCHES_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_SWITCHES_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_SWITCHES_H_
 
-#include "components/signin/core/common/signin_features.h"
+#include "components/signin/core/browser/signin_features.h"
 
 namespace switches {
 
@@ -30,4 +30,4 @@ extern const char kAccountConsistencyDice[];
 
 }  // namespace switches
 
-#endif  // COMPONENTS_SIGNIN_CORE_COMMON_SIGNIN_SWITCHES_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_SWITCHES_H_

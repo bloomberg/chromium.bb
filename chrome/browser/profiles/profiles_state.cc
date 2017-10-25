@@ -28,7 +28,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -10,8 +10,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync/driver/fake_sync_service.h"
 
 namespace ntp_snippets {

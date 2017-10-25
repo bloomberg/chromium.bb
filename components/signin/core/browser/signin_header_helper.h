@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "components/signin/core/common/signin_features.h"
+#include "components/signin/core/browser/signin_features.h"
 #include "url/gurl.h"
 
 namespace content_settings {
