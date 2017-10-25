@@ -33278,7 +33278,6 @@
     { "name": "golser.info", "include_subdomains": true, "mode": "force-https" },
     { "name": "fashionoutfits24.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "highlnk.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "history.pe", "include_subdomains": true, "mode": "force-https" },
     { "name": "hitmanstat.us", "include_subdomains": true, "mode": "force-https" },
     { "name": "hack.club", "include_subdomains": true, "mode": "force-https" },
     { "name": "hacker.club", "include_subdomains": true, "mode": "force-https" },
@@ -38757,6 +38756,23 @@
       "mode": "force-https", "include_subdomains": false,
       "include_subdomains_for_pinning": true, "pins": "tumblr"
     },
+    {
+      "name": "history.pe",
+      "mode": "force-https", "include_subdomains": true,
+      "expect_staple": true, "include_subdomains_for_expect_staple": true,
+      "expect_staple_report_uri": "https://history.report-uri.io/r/default/staple/reportOnly",
+      "expect_ct": true,
+      "expect_ct_report_uri": "https://history.report-uri.io/r/default/ct/reportOnly"
+    },
+    {
+      "name": "www.history.pe",
+      "mode": "force-https", "include_subdomains": true,
+      "expect_staple": true, "include_subdomains_for_expect_staple": true,
+      "expect_staple_report_uri": "https://history.report-uri.io/r/default/staple/reportOnly",
+      "expect_ct": true,
+      "expect_ct_report_uri": "https://history.report-uri.io/r/default/ct/reportOnly"
+    },
+
     // END OF MANUAL ENTRIES
 
     // TODO(lgarron): hstspreload.org can't scan IPv6-only sites due to Google
