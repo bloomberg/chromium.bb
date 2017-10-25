@@ -18,8 +18,8 @@
   [self showAlert:@"dismissModalDialogs"];
 }
 
-- (void)showSettings {
-  [self showAlert:@"showSettings"];
+- (void)showSettingsFromViewController:(UIViewController*)baseViewController {
+  [self showAlert:@"showSettingsFromViewController:"];
 }
 
 - (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)newTabCommand {

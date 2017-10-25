@@ -124,7 +124,8 @@
   ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
   [self addChildCoordinator:toolsCoordinator];
   ToolsMenuConfiguration* menuConfiguration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:nil
+                                       baseViewController:nil];
   menuConfiguration.inTabSwitcher = YES;
   menuConfiguration.noOpenedTabs = self.browser->web_state_list().empty();
   menuConfiguration.inNewTabPage = NO;

@@ -28,6 +28,7 @@ TEST_F(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
 
   EXPECT_NE(nil, [provider keyCommandsForConsumer:mockConsumer
+                               baseViewController:nil
                                        dispatcher:dispatcher
                                       editingText:YES]);
 }
@@ -41,6 +42,7 @@ TEST_F(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
 
   for (id element in [provider keyCommandsForConsumer:mockConsumer
+                                   baseViewController:nil
                                            dispatcher:dispatcher
                                           editingText:YES]) {
     EXPECT_TRUE([element isKindOfClass:[UIKeyCommand class]]);
@@ -57,6 +59,7 @@ TEST_F(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
   NSUInteger numberOfKeyCommandsWithoutTabs =
       [[provider keyCommandsForConsumer:mockConsumer
+                     baseViewController:nil
                              dispatcher:dispatcher
                             editingText:NO] count];
 
@@ -64,6 +67,7 @@ TEST_F(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
   NSUInteger numberOfKeyCommandsWithTabs =
       [[provider keyCommandsForConsumer:mockConsumer
+                     baseViewController:nil
                              dispatcher:dispatcher
                             editingText:NO] count];
 
@@ -80,6 +84,7 @@ TEST_F(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
   NSUInteger numberOfKeyCommandsWhenNotEditingText =
       [[provider keyCommandsForConsumer:mockConsumer
+                     baseViewController:nil
                              dispatcher:dispatcher
                             editingText:NO] count];
 
@@ -87,6 +92,7 @@ TEST_F(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
   NSUInteger numberOfKeyCommandsWhenEditingText =
       [[provider keyCommandsForConsumer:mockConsumer
+                     baseViewController:nil
                              dispatcher:dispatcher
                             editingText:YES] count];
 

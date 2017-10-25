@@ -3887,6 +3887,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
   return [self.keyCommandsProvider
       keyCommandsForConsumer:self
+          baseViewController:self
                   dispatcher:self.dispatcher
                  editingText:![self isFirstResponder]];
 }
@@ -4216,7 +4217,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self updateFindBar:NO shouldFocus:NO];
 
   ToolsMenuConfiguration* configuration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]];
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]
+                                       baseViewController:self];
   configuration.requestStartTime =
       showToolsMenuPopupRequestDate.timeIntervalSinceReferenceDate;
   if ([_model count] == 0)

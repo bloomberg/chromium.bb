@@ -21,6 +21,10 @@
   return NO;
 }
 
+- (BOOL)canExecuteCommand {
+  return YES;
+}
+
 - (void)executeCommandWithDispatcher:
     (id<ApplicationCommands, BrowserCommands>)dispatcher {
   UIView* view = self.tableViewCell;

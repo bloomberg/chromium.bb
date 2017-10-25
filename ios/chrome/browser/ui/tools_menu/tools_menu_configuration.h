@@ -41,6 +41,8 @@ class Tracker;
 // If DESKTOP, shows "Request Mobile Site" in enabled state.
 @property(nonatomic, assign) web::UserAgentType userAgentType;
 
+// The view controller from which to present other view controllers.
+@property(nonatomic, weak, readonly) UIViewController* baseViewController;
 // View that the menu will be displayed in.
 @property(nonatomic, weak, readonly) UIView* displayView;
 // Button from which popup menu will be opened.
@@ -64,8 +66,10 @@ class Tracker;
 
 // Initialize a ToolsMenuContext instance with default values. |displayView| is
 // the weakly-held parent view within which the popup tools menu using this
-// context will be displayed.
+// context will be displayed. |baseViewController| is a weakly-held view
+// controller from which to present other view controllers.
 - (instancetype)initWithDisplayView:(UIView*)displayView
+                 baseViewController:(UIViewController*)baseViewController
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

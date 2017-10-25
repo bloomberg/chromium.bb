@@ -27,6 +27,10 @@
                          selector:(SEL)selector
                           command:(int)commandID;
 
+// Returns YES if it is valid to call -executeCommandWithDispatcher: on this
+// item.
+- (BOOL)canExecuteCommand;
+
 // Execute the command associated with this item using |dispatcher|. |selector|
 // must be defined on the receiver.
 - (void)executeCommandWithDispatcher:
