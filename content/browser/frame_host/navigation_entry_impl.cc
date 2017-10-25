@@ -34,7 +34,7 @@ namespace {
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
-int GetUniqueIDInConstructor() {
+int CreateUniqueEntryID() {
   static int unique_id_counter = 0;
   return ++unique_id_counter;
 }
@@ -255,7 +255,7 @@ NavigationEntryImpl::NavigationEntryImpl(
                                                         PageState(),
                                                         "GET",
                                                         -1))),
-      unique_id_(GetUniqueIDInConstructor()),
+      unique_id_(CreateUniqueEntryID()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
