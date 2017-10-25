@@ -134,7 +134,7 @@ IconBundle GetEasyUnlockResources(mojom::EasyUnlockIconId id) {
     case mojom::EasyUnlockIconId::SPINNER:
       return IconBundle(IDR_EASY_UNLOCK_SPINNER,
                         base::TimeDelta::FromSeconds(2), 45 /*num_frames*/);
-  };
+  }
 
   NOTREACHED();
   return IconBundle(IDR_EASY_UNLOCK_LOCKED, IDR_EASY_UNLOCK_LOCKED_HOVER,
@@ -280,7 +280,8 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     // Image to show. It may or may not be an animation, depending on
     // |resources.duration|.
     gfx::ImageSkia* image =
-        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(active_resource);
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            active_resource);
 
     if (!resources.duration.is_zero()) {
       // Only change the animation if the state itself has changed, otherwise

@@ -20,7 +20,6 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "build/build_config.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/font_list.h"
@@ -309,7 +308,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
   struct FontKey;
 
-  typedef base::hash_map<int, base::string16> IdToStringMap;
+  using IdToStringMap = base::hash_map<int, base::string16>;
 
   // Ctor/dtor are private, since we're a singleton.
   explicit ResourceBundle(Delegate* delegate);
@@ -412,7 +411,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Cached images. The ResourceBundle caches all retrieved images and keeps
   // ownership of the pointers.
-  typedef std::map<int, gfx::Image> ImageMap;
+  using ImageMap = std::map<int, gfx::Image>;
   ImageMap images_;
 
   gfx::Image empty_image_;
@@ -429,14 +428,11 @@ class UI_BASE_EXPORT ResourceBundle {
 
   bool is_test_resources_ = false;
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };
 
 }  // namespace ui
-
-// TODO(beng): Someday, maybe, get rid of this.
-using ui::ResourceBundle;
 
 #endif  // UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
