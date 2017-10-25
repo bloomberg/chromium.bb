@@ -10,6 +10,11 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+// Some arch's (arm64 for instance) unistd.h don't pull in symbols used here
+// unless these are defined.
+#define __ARCH_WANT_SYSCALL_NO_AT
+#define __ARCH_WANT_SYSCALL_DEPRECATED
 #include <unistd.h>
 
 #include <memory>
