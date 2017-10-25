@@ -115,9 +115,11 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     }
     if (process_type == content::PROCESS_TYPE_RENDERER) {
       if (termination_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
+        // |increase_crash_count| is designed to log foreground crash.
         // There is a delay for OOM flag to be removed when app goes to
         // background, so we can't just check for OOM_PROTECTED flag.
-        increase_crash_count = is_running || is_paused;
+        increase_crash_count = (exit_status == VALID_MINIDUMP_WHILE_RUNNING) ||
+                               (exit_status == VALID_MINIDUMP_WHILE_PAUSED);
         UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
                                   exit_status,
                                   ExitStatus::MINIDUMP_STATUS_COUNT);
