@@ -319,39 +319,6 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   const icu::UnicodeSet* inclusion_set = uspoof_getInclusionUnicodeSet(status);
   allowed_set.addAll(*inclusion_set);
 
-// Five aspirational scripts are taken from UTR 31 Table 6 at
-// http://www.unicode.org/reports/tr31/#Aspirational_Use_Scripts .
-// Not all the characters of aspirational scripts are suitable for
-// identifiers. Therefore, only characters belonging to
-// [:Identifier_Type=Aspirational:] (listed in 'Status/Type=Aspirational'
-// section at
-// http://www.unicode.org/Public/security/latest/xidmodifications.txt) are
-// are added to the allowed set. The list has to be updated when a new
-// version of Unicode is released. The current version is 9.0.0 and ICU 60
-// will have Unicode 10.0 data.
-#if U_ICU_VERSION_MAJOR_NUM < 60
-  const icu::UnicodeSet aspirational_scripts(
-      icu::UnicodeString(
-          // Unified Canadian Syllabics
-          "[\\u1401-\\u166C\\u166F-\\u167F"
-          // Mongolian
-          "\\u1810-\\u1819\\u1820-\\u1877\\u1880-\\u18AA"
-          // Unified Canadian Syllabics
-          "\\u18B0-\\u18F5"
-          // Tifinagh
-          "\\u2D30-\\u2D67\\u2D7F"
-          // Yi
-          "\\uA000-\\uA48C"
-          // Miao
-          "\\U00016F00-\\U00016F44\\U00016F50-\\U00016F7E"
-          "\\U00016F8F-\\U00016F9F]",
-          -1, US_INV),
-      *status);
-  allowed_set.addAll(aspirational_scripts);
-#else
-#error "Update aspirational_scripts per Unicode 10.0"
-#endif
-
   // The sections below refer to Mozilla's IDN blacklist:
   // http://kb.mozillazine.org/Network.IDN.blacklist_chars
   //

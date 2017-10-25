@@ -132,22 +132,24 @@ const IDNTestCase idn_cases[] = {
     {"xn---123-kbjl2j0bl2k.in", L"\x0939\x093f\x0928\x094d\x0926\x0940-123.in",
      true},
 
-    // 5 Aspirational scripts
+    // What used to be 5 Aspirational scripts in the earlier versions of UAX 31.
+    // UAX 31 does not define aspirational scripts any more.
+    // See http://www.unicode.org/reports/tr31/#Aspirational_Use_Scripts .
     // Unifieid Canadian Syllabary
-    {"xn--dfe0tte.ca", L"\x1456\x14c2\x14ef.ca", true},
+    {"xn--dfe0tte.ca", L"\x1456\x14c2\x14ef.ca", false},
     // Tifinagh
     {"xn--4ljxa2bb4a6bxb.ma", L"\x2d5c\x2d49\x2d3c\x2d49\x2d4f\x2d30\x2d56.ma",
-     true},
+     false},
     // Tifinagh with a disallowed character(U+2D6F)
     {"xn--hmjzaby5d5f.ma", L"\x2d5c\x2d49\x2d3c\x2d6f\x2d49\x2d4f.ma", false},
     // Yi
-    {"xn--4o7a6e1x64c.cn", L"\xa188\xa320\xa071\xa0b7.cn", true},
+    {"xn--4o7a6e1x64c.cn", L"\xa188\xa320\xa071\xa0b7.cn", false},
     // Mongolian - 'ordu' (place, camp)
-    {"xn--56ec8bp.cn", L"\x1823\x1837\x1833\x1824.cn", true},
+    {"xn--56ec8bp.cn", L"\x1823\x1837\x1833\x1824.cn", false},
     // Mongolian with a disallowed character
     {"xn--95e5de3ds.cn", L"\x1823\x1837\x1804\x1833\x1824.cn", false},
     // Miao/Pollad
-    {"xn--2u0fpf0a.cn", L"\U00016f04\U00016f62\U00016f59.cn", true},
+    {"xn--2u0fpf0a.cn", L"\U00016f04\U00016f62\U00016f59.cn", false},
 
     // Script mixing tests
     // The following script combinations are allowed.
@@ -614,7 +616,7 @@ const IDNTestCase idn_cases[] = {
      L"a\x144a"
      L"b.com",
      false},
-    {"xn--xcec9s.com", L"\x1401\x144a\x1402.com", true},
+    {"xn--xcec9s.com", L"\x1401\x144a\x1402.com", false},
 
     // Custom dangerous patterns
     // Two Katakana-Hiragana combining mark in a row
