@@ -1101,7 +1101,7 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
     return RespondNow(Error(keys::kNoHighlightedTabError));
 
   selection.set_active(active_index);
-  browser->tab_strip_model()->SetSelectionFromModel(selection);
+  browser->tab_strip_model()->SetSelectionFromModel(std::move(selection));
   return RespondNow(OneArgument(
       browser->extension_window_controller()->CreateWindowValueWithTabs(
           extension())));

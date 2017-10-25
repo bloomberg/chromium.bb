@@ -12,9 +12,6 @@
 
 namespace ui {
 
-// static
-const int ListSelectionModel::kUnselectedIndex = -1;
-
 namespace {
 
 void IncrementFromImpl(int index, int* value) {
@@ -57,12 +54,24 @@ void MoveToLowerIndexImpl(int old_start,
 
 }  // namespace
 
-ListSelectionModel::ListSelectionModel()
-    : active_(kUnselectedIndex),
-      anchor_(kUnselectedIndex) {
+ListSelectionModel::ListSelectionModel() = default;
+ListSelectionModel::ListSelectionModel(const ListSelectionModel&) = default;
+ListSelectionModel::ListSelectionModel(ListSelectionModel&&) noexcept = default;
+
+ListSelectionModel::~ListSelectionModel() = default;
+
+ListSelectionModel& ListSelectionModel::operator=(const ListSelectionModel&) =
+    default;
+ListSelectionModel& ListSelectionModel::operator=(ListSelectionModel&&) =
+    default;
+
+bool ListSelectionModel::operator==(const ListSelectionModel& other) const {
+  return active() == other.active() && anchor() == other.anchor() &&
+         selected_indices() == other.selected_indices();
 }
 
-ListSelectionModel::~ListSelectionModel() {
+bool ListSelectionModel::operator!=(const ListSelectionModel& other) const {
+  return !operator==(other);
 }
 
 void ListSelectionModel::IncrementFrom(int index) {
@@ -196,18 +205,6 @@ void ListSelectionModel::Clear() {
   anchor_ = active_ = kUnselectedIndex;
   SelectedIndices empty_selection;
   selected_indices_.swap(empty_selection);
-}
-
-void ListSelectionModel::Copy(const ListSelectionModel& source) {
-  selected_indices_ = source.selected_indices_;
-  active_ = source.active_;
-  anchor_ = source.anchor_;
-}
-
-bool ListSelectionModel::Equals(const ListSelectionModel& rhs) const {
-  return active_ == rhs.active() &&
-      anchor_ == rhs.anchor() &&
-      selected_indices() == rhs.selected_indices();
 }
 
 }  // namespace ui

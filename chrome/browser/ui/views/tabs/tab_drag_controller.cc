@@ -240,15 +240,14 @@ TabDragController::~TabDragController() {
   }
 }
 
-void TabDragController::Init(
-    TabStrip* source_tabstrip,
-    Tab* source_tab,
-    const std::vector<Tab*>& tabs,
-    const gfx::Point& mouse_offset,
-    int source_tab_offset,
-    const ui::ListSelectionModel& initial_selection_model,
-    MoveBehavior move_behavior,
-    EventSource event_source) {
+void TabDragController::Init(TabStrip* source_tabstrip,
+                             Tab* source_tab,
+                             const std::vector<Tab*>& tabs,
+                             const gfx::Point& mouse_offset,
+                             int source_tab_offset,
+                             ui::ListSelectionModel initial_selection_model,
+                             MoveBehavior move_behavior,
+                             EventSource event_source) {
   DCHECK(!tabs.empty());
   DCHECK(base::ContainsValue(tabs, source_tab));
   source_tabstrip_ = source_tabstrip;
@@ -293,7 +292,7 @@ void TabDragController::Init(
         static_cast<float>(source_tab->width());
   }
   InitWindowCreatePoint();
-  initial_selection_model_.Copy(initial_selection_model);
+  initial_selection_model_ = std::move(initial_selection_model);
 
   // Gestures don't automatically do a capture. We don't allow multiple drags at
   // the same time, so we explicitly capture.
@@ -885,7 +884,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
     // Transitioning from detached to attached to a new tabstrip. Add tabs to
     // the new model.
 
-    selection_model_before_attach_.Copy(attached_tabstrip->GetSelectionModel());
+    selection_model_before_attach_ = attached_tabstrip->GetSelectionModel();
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
     // user moves the tab immediately after attaching it.
@@ -1419,8 +1418,7 @@ void TabDragController::RestoreInitialSelection() {
   // initial_selection_model_. Before resetting though we have to remove all
   // the tabs from initial_selection_model_ as it was created with the tabs
   // still there.
-  ui::ListSelectionModel selection_model;
-  selection_model.Copy(initial_selection_model_);
+  ui::ListSelectionModel selection_model = initial_selection_model_;
   for (DragData::const_reverse_iterator i(drag_data_.rbegin());
        i != drag_data_.rend(); ++i) {
     selection_model.DecrementFrom(i->source_model_index);

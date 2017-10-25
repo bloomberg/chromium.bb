@@ -9,29 +9,40 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-// Selection model represented as a list of ints. Used by the TabStrip. In
-// addition to the set of selected indices ListSelectionModel maintains the
-// following:
-// active: the index of the currently visible tab in the tab strip.
-// anchor: the index of the last tab the user clicked on. Extending the
-// selection extends it from this index.
+// Selection model represented as a list of ints. In addition to the set of
+// selected indices ListSelectionModel maintains the following:
+//
+// active: The index of the currently visible item in the list. This will be
+//         kUnselectedIndex if nothing is selected.
+//
+// anchor: The index of the last item the user clicked on. Extending the
+//         selection extends it from this index. This will be kUnselectedIndex
+//         if nothing is selected.
 //
 // Typically there is only one selected item, in which case the anchor and
 // active index correspond to the same thing.
 class UI_BASE_EXPORT ListSelectionModel {
  public:
-  typedef std::vector<int> SelectedIndices;
+  using SelectedIndices = std::vector<int>;
 
   // Used to identify no selection.
-  static const int kUnselectedIndex;
+  static constexpr int kUnselectedIndex = -1;
 
   ListSelectionModel();
+  ListSelectionModel(const ListSelectionModel& other);
+  ListSelectionModel(ListSelectionModel&& other) noexcept;
+
   ~ListSelectionModel();
+
+  ListSelectionModel& operator=(const ListSelectionModel&);
+  ListSelectionModel& operator=(ListSelectionModel&&);
+
+  bool operator==(const ListSelectionModel& other) const;
+  bool operator!=(const ListSelectionModel& other) const;
 
   // See class description for details of the anchor.
   void set_anchor(int anchor) { anchor_ = anchor; }
@@ -50,13 +61,13 @@ class UI_BASE_EXPORT ListSelectionModel {
   // Increments all indices >= |index|. For example, if the selection consists
   // of [0, 1, 5] and this is invoked with 1, it results in [0, 2, 6]. This also
   // updates the anchor and active indices.
-  // This is used when a new tab is inserted into the tabstrip.
+  // This is used when a new item is inserted into the model.
   void IncrementFrom(int index);
 
   // Shifts all indices > |index| down by 1. If |index| is selected, it is
   // removed. For example, if the selection consists of [0, 1, 5] and this is
-  // invoked with 1, it results in [0, 4]. This is used when a tab is removed
-  // from the tabstrip.
+  // invoked with 1, it results in [0, 4]. This is used when an item is
+  // removed.
   void DecrementFrom(int index);
 
   // Sets the anchor, active and selection to |index|.
@@ -84,11 +95,10 @@ class UI_BASE_EXPORT ListSelectionModel {
   // Invoked when an item moves. |old_index| is the original index, |new_index|
   // is the target index, and |length| is the number of items that are moving.
   //
-  // NOTE: this matches the TabStripModel API. If moving to a greater index,
-  // |new_index| should be the index *after* removing the elements at the index
-  // range [old_index, old_index + length). For example, consider three tabs 'A
-  // B C', to move A to the end of the list, this should be invoked with '0, 2,
-  // 1'.
+  // If moving to a greater index, |new_index| should be the index *after*
+  // removing the elements at the index range [old_index, old_index + length).
+  // For example, consider three list items 'A B C', to move A to the end of
+  // the list, this should be invoked with '0, 2, 1'.
   void Move(int old_index, int new_index, int length);
 
   // Sets the anchor and active to kUnselectedIndex, and removes all the
@@ -99,20 +109,12 @@ class UI_BASE_EXPORT ListSelectionModel {
   // order.
   const SelectedIndices& selected_indices() const { return selected_indices_; }
 
-  // Copies the selection from |source| to this.
-  void Copy(const ListSelectionModel& source);
-
-  // Compares this selection with |rhs|.
-  bool Equals(const ListSelectionModel& rhs) const;
-
  private:
   SelectedIndices selected_indices_;
 
-  int active_;
+  int active_ = kUnselectedIndex;
 
-  int anchor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ListSelectionModel);
+  int anchor_ = kUnselectedIndex;
 };
 
 }  // namespace ui

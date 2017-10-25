@@ -892,7 +892,7 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() ||
       (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
     ui::ListSelectionModel original_selection;
-    original_selection.Copy(controller_->GetSelectionModel());
+    original_selection = controller_->GetSelectionModel();
     // Changing the selection may cause our bounds to change. If that happens
     // the location of the event may no longer be valid. Create a copy of the
     // event in the parents coordinate, which won't change, and recreate an
@@ -1006,7 +1006,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       ui::GestureEvent event_in_parent(*event, static_cast<View*>(this),
                                        parent());
       ui::ListSelectionModel original_selection;
-      original_selection.Copy(controller_->GetSelectionModel());
+      original_selection = controller_->GetSelectionModel();
       tab_activated_with_last_tap_down_ = !IsActive();
       if (!IsSelected())
         controller_->SelectTab(this);

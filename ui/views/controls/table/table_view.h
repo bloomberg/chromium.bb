@@ -277,7 +277,7 @@ class VIEWS_EXPORT TableView
   void SelectByViewIndex(int view_index);
 
   // Sets the selection model to |new_selection|.
-  void SetSelectionModel(const ui::ListSelectionModel& new_selection);
+  void SetSelectionModel(ui::ListSelectionModel new_selection);
 
   // Advances the selection (from the active index) in the specified direction.
   void AdvanceSelection(AdvanceDirection direction);

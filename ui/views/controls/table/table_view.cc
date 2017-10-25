@@ -367,7 +367,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
         selection_model.SetSelectedIndex(selection_model_.active());
         for (int i = 0; i < RowCount(); ++i)
           selection_model.AddIndexToSelection(i);
-        SetSelectionModel(selection_model);
+        SetSelectionModel(std::move(selection_model));
         return true;
       }
       break;
@@ -414,7 +414,7 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
   } else if (event.GetClickCount() == 1) {
     ui::ListSelectionModel new_model;
     ConfigureSelectionModelForEvent(event, &new_model);
-    SetSelectionModel(new_model);
+    SetSelectionModel(std::move(new_model));
   }
 
   return true;
@@ -433,7 +433,7 @@ void TableView::OnGestureEvent(ui::GestureEvent* event) {
   event->StopPropagation();
   ui::ListSelectionModel new_model;
   ConfigureSelectionModelForEvent(*event, &new_model);
-  SetSelectionModel(new_model);
+  SetSelectionModel(std::move(new_model));
 }
 
 bool TableView::GetTooltipText(const gfx::Point& p,
@@ -846,15 +846,15 @@ void TableView::SelectByViewIndex(int view_index) {
     new_selection.set_active(ViewToModel(view_index));
   }
 
-  SetSelectionModel(new_selection);
+  SetSelectionModel(std::move(new_selection));
 }
 
-void TableView::SetSelectionModel(const ui::ListSelectionModel& new_selection) {
-  if (new_selection.Equals(selection_model_))
+void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
+  if (new_selection == selection_model_)
     return;
 
   SchedulePaintForSelection();
-  selection_model_.Copy(new_selection);
+  selection_model_ = std::move(new_selection);
   SchedulePaintForSelection();
 
   // Scroll the group for the active item to visible.
@@ -907,7 +907,7 @@ void TableView::ConfigureSelectionModelForEvent(
     // shift: reset selection so that only rows between anchor and |view_index|
     // are selected.
     if (IsCmdOrCtrl(event) && event.IsShiftDown())
-      model->Copy(selection_model_);
+      *model = selection_model_;
     else
       model->set_anchor(selection_model_.anchor());
     for (int i = std::min(view_index, ModelToView(model->anchor())),
@@ -920,7 +920,7 @@ void TableView::ConfigureSelectionModelForEvent(
     DCHECK(IsCmdOrCtrl(event));
     // Toggle the selection state of |view_index| and set the anchor/active to
     // it and don't change the state of any other rows.
-    model->Copy(selection_model_);
+    *model = selection_model_;
     model->set_anchor(ViewToModel(view_index));
     model->set_active(ViewToModel(view_index));
     SelectRowsInRangeFrom(view_index,
