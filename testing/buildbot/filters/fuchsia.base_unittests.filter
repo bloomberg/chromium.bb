@@ -55,3 +55,6 @@
 
 # https://crbug.com/751894
 -ConditionVariableTest.LargeFastTaskTest
+
+# https://crbug.com/752368.
+-FieldTrialListTest.ClearParamsFromSharedMemory
