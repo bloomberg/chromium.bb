@@ -197,8 +197,8 @@ cr.define('print_preview', function() {
      */
     getNativeColorModel_(destination, color) {
       // For non-local printers native color model is ignored anyway.
-      var option = destination.isLocal ? color.getSelectedOption() : null;
-      var nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
+      const option = destination.isLocal ? color.getSelectedOption() : null;
+      const nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
       if (isNaN(nativeColorModel)) {
         return color.getValue() ? NativeLayer.ColorMode_.COLOR :
                                   NativeLayer.ColorMode_.GRAY;
@@ -228,7 +228,7 @@ cr.define('print_preview', function() {
           printTicketStore.isTicketValidForPreview(),
           'Trying to generate preview when ticket is not valid');
 
-      var ticket = {
+      const ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
         'mediaSize': printTicketStore.mediaSize.getValue(),
         'landscape': printTicketStore.landscape.getValue(),
@@ -274,8 +274,8 @@ cr.define('print_preview', function() {
       if (printTicketStore.marginsType.isCapabilityAvailable() &&
           printTicketStore.marginsType.getValue() ==
               print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
-        var customMargins = printTicketStore.customMargins.getValue();
-        var orientationEnum =
+        const customMargins = printTicketStore.customMargins.getValue();
+        const orientationEnum =
             print_preview.ticket_items.CustomMarginsOrientation;
         ticket['marginsCustom'] = {
           'marginTop': customMargins.get(orientationEnum.TOP),
@@ -319,7 +319,7 @@ cr.define('print_preview', function() {
       // Note: update
       // chrome/browser/ui/webui/print_preview/print_preview_handler_unittest.cc
       // with any changes to ticket creation.
-      var ticket = {
+      const ticket = {
         'mediaSize': printTicketStore.mediaSize.getValue(),
         'pageCount': printTicketStore.pageRange.getPageNumberSet().size,
         'landscape': printTicketStore.landscape.getValue(),
@@ -364,8 +364,8 @@ cr.define('print_preview', function() {
       if (printTicketStore.marginsType.isCapabilityAvailable() &&
           printTicketStore.marginsType.isValueEqual(
               print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
-        var customMargins = printTicketStore.customMargins.getValue();
-        var orientationEnum =
+        const customMargins = printTicketStore.customMargins.getValue();
+        const orientationEnum =
             print_preview.ticket_items.CustomMarginsOrientation;
         ticket['marginsCustom'] = {
           'marginTop': customMargins.get(orientationEnum.TOP),
@@ -494,7 +494,7 @@ cr.define('print_preview', function() {
   }
 
   /** @private {?print_preview.NativeLayer} */
-  var currentInstance = null;
+  let currentInstance = null;
 
   /**
    * Constant values matching printing::DuplexMode enum.

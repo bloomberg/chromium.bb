@@ -163,7 +163,7 @@ cr.define('print_preview', function() {
           !this.destinationStore_.selectedDestination) {
         return {id: -1, request: null};
       }
-      var previewChanged = this.hasPreviewChanged_();
+      const previewChanged = this.hasPreviewChanged_();
       if (!previewChanged && !this.hasPreviewPageRangeChanged_()) {
         // Changes to these ticket items might not trigger a new preview, but
         // they still need to be recorded.
@@ -207,7 +207,7 @@ cr.define('print_preview', function() {
      * @private
      */
     dispatchPageReadyEvent_(previewIndex, pageNumber, previewUid) {
-      var pageGenEvent = new Event(PreviewGenerator.EventType.PAGE_READY);
+      const pageGenEvent = new Event(PreviewGenerator.EventType.PAGE_READY);
       pageGenEvent.previewIndex = previewIndex;
       pageGenEvent.previewUrl = 'chrome://print/' + previewUid.toString() +
           '/' + (pageNumber - 1) + '/print.pdf';
@@ -222,7 +222,7 @@ cr.define('print_preview', function() {
      * @private
      */
     dispatchPreviewStartEvent_(previewUid, index) {
-      var previewStartEvent =
+      const previewStartEvent =
           new Event(PreviewGenerator.EventType.PREVIEW_START);
       if (!this.documentInfo_.isModifiable) {
         index = -1;
@@ -239,7 +239,7 @@ cr.define('print_preview', function() {
      * @private
      */
     hasPreviewChanged_() {
-      var ticketStore = this.printTicketStore_;
+      const ticketStore = this.printTicketStore_;
       return this.inFlightRequestId_ == -1 ||
           !ticketStore.mediaSize.isValueEqual(this.mediaSize_) ||
           !ticketStore.landscape.isValueEqual(this.isLandscapeEnabled_) ||
@@ -295,18 +295,18 @@ cr.define('print_preview', function() {
       // NOTE: A request ID is not specified, so assuming its for the current
       // in-flight request.
 
-      var origin = new print_preview.Coordinate2d(
+      const origin = new print_preview.Coordinate2d(
           pageLayout.printableAreaX, pageLayout.printableAreaY);
-      var size = new print_preview.Size(
+      const size = new print_preview.Size(
           pageLayout.printableAreaWidth, pageLayout.printableAreaHeight);
 
-      var margins = new print_preview.Margins(
+      const margins = new print_preview.Margins(
           Math.round(pageLayout.marginTop), Math.round(pageLayout.marginRight),
           Math.round(pageLayout.marginBottom),
           Math.round(pageLayout.marginLeft));
 
-      var o = print_preview.ticket_items.CustomMarginsOrientation;
-      var pageSize = new print_preview.Size(
+      const o = print_preview.ticket_items.CustomMarginsOrientation;
+      const pageSize = new print_preview.Size(
           pageLayout.contentWidth + margins.get(o.LEFT) + margins.get(o.RIGHT),
           pageLayout.contentHeight + margins.get(o.TOP) +
               margins.get(o.BOTTOM));
@@ -347,10 +347,10 @@ cr.define('print_preview', function() {
       if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
-      var pageNumber = pageIndex + 1;
-      var pageNumberSet = this.printTicketStore_.pageRange.getPageNumberSet();
+      const pageNumber = pageIndex + 1;
+      const pageNumberSet = this.printTicketStore_.pageRange.getPageNumberSet();
       if (pageNumberSet.hasPageNumber(pageNumber)) {
-        var previewIndex = pageNumberSet.getPageNumberIndex(pageNumber);
+        const previewIndex = pageNumberSet.getPageNumberIndex(pageNumber);
         if (previewIndex == 0) {
           this.dispatchPreviewStartEvent_(previewUid, pageIndex);
         }

@@ -40,7 +40,7 @@ print_preview.PrintAttemptResult_ = {
 cr.define('print_preview', function() {
   'use strict';
 
-  var PrintPreviewUiState_ = print_preview.PrintPreviewUiState_;
+  const PrintPreviewUiState_ = print_preview.PrintPreviewUiState_;
 
   /**
    * Container class for Chromium's print preview.
@@ -229,7 +229,7 @@ cr.define('print_preview', function() {
         new print_preview.AdvancedSettings(this.printTicketStore_);
     this.addChild(this.advancedSettings_);
 
-    var settingsSections = [
+    const settingsSections = [
       this.destinationSettings_, this.pageSettings_, this.copiesSettings_,
       this.mediaSizeSettings_, this.layoutSettings_, this.marginSettings_,
       this.colorSettings_, this.dpiSettings_, this.scalingSettings_,
@@ -516,7 +516,7 @@ cr.define('print_preview', function() {
       }
       this.setIsEnabled_(false);
       this.printHeader_.isCancelButtonEnabled = true;
-      var printAttemptResult = this.printIfReady_();
+      const printAttemptResult = this.printIfReady_();
       if (printAttemptResult ==
           print_preview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
         if ((this.destinationStore_.selectedDestination.isLocal &&
@@ -538,7 +538,7 @@ cr.define('print_preview', function() {
      * @private
      */
     printIfReady_: function() {
-      var okToPrint =
+      const okToPrint =
           (this.uiState_ == PrintPreviewUiState_.PRINTING ||
            this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW ||
            this.uiState_ == PrintPreviewUiState_.FILE_SELECTION ||
@@ -562,8 +562,8 @@ cr.define('print_preview', function() {
                 print_preview.Metrics.PrintSettingsUiBucket
                     .PRINT_WITH_SETTINGS_COLLAPSED);
       }
-      var destination = assert(this.destinationStore_.selectedDestination);
-      var whenPrintDone = this.nativeLayer_.print(
+      const destination = assert(this.destinationStore_.selectedDestination);
+      const whenPrintDone = this.nativeLayer_.print(
           destination, this.printTicketStore_, this.cloudPrintInterface_,
           this.documentInfo_,
           this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
@@ -575,7 +575,7 @@ cr.define('print_preview', function() {
                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF)) {
         // Local printers resolve when print is ready to start. Hide the
         // dialog. Mac "Open in Preview" is treated as a local printer.
-        var boundHideDialog = () => {
+        const boundHideDialog = () => {
           this.nativeLayer_.hidePreview();
         };
         whenPrintDone.then(boundHideDialog, boundHideDialog);
@@ -861,7 +861,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintRegisterPromoClick_: function(e) {
-      var devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
+      const devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
       this.nativeLayer_.forceOpenNewTab(devicesUrl);
       this.destinationStore_.waitForRegister(e.destination.id);
     },
@@ -912,7 +912,7 @@ cr.define('print_preview', function() {
         assert(
             this.uiState_ == PrintPreviewUiState_.READY,
             'Trying to print when not in ready state: ' + this.uiState_);
-        var activeElementTag = document.activeElement.tagName.toUpperCase();
+        const activeElementTag = document.activeElement.tagName.toUpperCase();
         if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT' &&
             activeElementTag != 'A') {
           this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
@@ -954,7 +954,7 @@ cr.define('print_preview', function() {
      */
     onTicketChange_: function() {
       this.printHeader_.onTicketChange();
-      var disable = !this.printHeader_.isPrintButtonEnabled;
+      const disable = !this.printHeader_.isPrintButtonEnabled;
       if (cr.isWindows && $('system-dialog-link'))
         $('system-dialog-link').disabled = disable;
       if ($('open-pdf-in-preview-link'))
@@ -1109,9 +1109,9 @@ cr.define('print_preview', function() {
         return;
       }
 
-      var destinations = this.destinationStore_.destinations();
-      var pdfDestination = null;
-      for (var i = 0; i < destinations.length; i++) {
+      const destinations = this.destinationStore_.destinations();
+      let pdfDestination = null;
+      for (let i = 0; i < destinations.length; i++) {
         if (destinations[i].id ==
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
           pdfDestination = destinations[i];
@@ -1133,7 +1133,7 @@ cr.define('print_preview', function() {
      * @private
      */
     setLayoutSettingsForTest_: function(portrait) {
-      var combobox = document.querySelector('.layout-settings-select');
+      const combobox = document.querySelector('.layout-settings-select');
       if (combobox.value == 'portrait') {
         this.nativeLayer_.uiLoadedForTest();
       } else {
@@ -1150,7 +1150,7 @@ cr.define('print_preview', function() {
      * @private
      */
     setPageRangeForTest_: function(pageRange) {
-      var textbox = document.querySelector('.page-settings-custom-input');
+      const textbox = document.querySelector('.page-settings-custom-input');
       if (textbox.value == pageRange) {
         this.nativeLayer_.uiLoadedForTest();
       } else {
@@ -1167,7 +1167,7 @@ cr.define('print_preview', function() {
      * @private
      */
     setHeadersAndFootersForTest_: function(headersAndFooters) {
-      var checkbox = document.querySelector('.header-footer-checkbox');
+      const checkbox = document.querySelector('.header-footer-checkbox');
       if (headersAndFooters == checkbox.checked)
         this.nativeLayer_.uiLoadedForTest();
       else
@@ -1182,7 +1182,7 @@ cr.define('print_preview', function() {
      * @private
      */
     setBackgroundColorsAndImagesForTest_: function(backgroundColorsAndImages) {
-      var checkbox = document.querySelector('.css-background-checkbox');
+      const checkbox = document.querySelector('.css-background-checkbox');
       if (backgroundColorsAndImages == checkbox.checked)
         this.nativeLayer_.uiLoadedForTest();
       else
@@ -1197,7 +1197,7 @@ cr.define('print_preview', function() {
      * @private
      */
     setMarginsForTest_: function(margins) {
-      var combobox = document.querySelector('.margin-settings-select');
+      const combobox = document.querySelector('.margin-settings-select');
       if (margins == combobox.selectedIndex) {
         this.nativeLayer_.uiLoadedForTest();
       } else if (margins >= 0 && margins < combobox.length) {
@@ -1218,7 +1218,7 @@ cr.define('print_preview', function() {
         return false;
       if (!cr.isWindows)
         return true;
-      var selectedDest = this.destinationStore_.selectedDestination;
+      const selectedDest = this.destinationStore_.selectedDestination;
       return !!selectedDest &&
           selectedDest.origin == print_preview.DestinationOrigin.LOCAL &&
           selectedDest.id !=
@@ -1333,9 +1333,9 @@ cr.define('print_preview', function() {
 // <include src="search/provisional_destination_resolver.js">
 
 window.addEventListener('DOMContentLoaded', function() {
-  var previewWindow = /** @type {{isTest: boolean}} */ (window);
+  const previewWindow = /** @type {{isTest: boolean}} */ (window);
   if (!previewWindow.isTest) {
-    var printPreview = new print_preview.PrintPreview();
+    const printPreview = new print_preview.PrintPreview();
     printPreview.initialize();
   }
 });

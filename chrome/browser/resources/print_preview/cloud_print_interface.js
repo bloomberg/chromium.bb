@@ -24,7 +24,7 @@ cloudprint.CloudPrintInterfaceEventType = {
 cr.define('cloudprint', function() {
   'use strict';
 
-  var CloudPrintInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
+  const CloudPrintInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
 
   class CloudPrintInterface extends cr.EventTarget {
     /**
@@ -116,8 +116,8 @@ cr.define('cloudprint', function() {
      *     searches for all origins.
      */
     search(opt_account, opt_origin) {
-      var account = opt_account || '';
-      var origins = opt_origin && [opt_origin] || CLOUD_ORIGINS_;
+      const account = opt_account || '';
+      let origins = opt_origin && [opt_origin] || CLOUD_ORIGINS_;
       if (this.isInAppKioskMode_) {
         origins = origins.filter(function(origin) {
           return origin != print_preview.DestinationOrigin.COOKIES;
@@ -140,7 +140,7 @@ cr.define('cloudprint', function() {
      * @private
      */
     search_(isRecent, account, origins) {
-      var params = [
+      const params = [
         new HttpParam('connection_status', 'ALL'),
         new HttpParam('client', 'chrome'), new HttpParam('use_cdd', 'true')
       ];
@@ -148,7 +148,7 @@ cr.define('cloudprint', function() {
         params.push(new HttpParam('q', '^recent'));
       }
       origins.forEach(function(origin) {
-        var cpRequest = this.buildRequest_(
+        const cpRequest = this.buildRequest_(
             'GET', 'search', params, origin, account,
             this.onSearchDone_.bind(this, isRecent));
         this.outstandingCloudSearchRequests_.push(cpRequest);
@@ -161,7 +161,7 @@ cr.define('cloudprint', function() {
      * @param {string} account Account the request is sent for.
      */
     invites(account) {
-      var params = [
+      const params = [
         new HttpParam('client', 'chrome'),
       ];
       this.sendOrQueueRequest_(this.buildRequest_(
@@ -175,7 +175,7 @@ cr.define('cloudprint', function() {
      * @param {boolean} accept Whether to accept this invitation.
      */
     processInvite(invitation, accept) {
-      var params = [
+      const params = [
         new HttpParam('printerid', invitation.destination.id),
         new HttpParam('email', invitation.scopeId),
         new HttpParam('accept', accept ? 'true' : 'false'),
@@ -197,12 +197,12 @@ cr.define('cloudprint', function() {
      * @param {string} data Base64 encoded data of the document.
      */
     submit(destination, printTicketStore, documentInfo, data) {
-      var result = VERSION_REGEXP_.exec(navigator.userAgent);
-      var chromeVersion = 'unknown';
+      const result = VERSION_REGEXP_.exec(navigator.userAgent);
+      let chromeVersion = 'unknown';
       if (result && result.length == 2) {
         chromeVersion = result[1];
       }
-      var params = [
+      const params = [
         new HttpParam('printerid', destination.id),
         new HttpParam('contentType', 'dataUrl'),
         new HttpParam('title', documentInfo.title),
@@ -212,7 +212,7 @@ cr.define('cloudprint', function() {
         new HttpParam('tag', '__google__chrome_version=' + chromeVersion),
         new HttpParam('tag', '__google__os=' + navigator.platform)
       ];
-      var cpRequest = this.buildRequest_(
+      const cpRequest = this.buildRequest_(
           'POST', 'submit', params, destination.origin, destination.account,
           this.onSubmitDone_.bind(this));
       this.sendOrQueueRequest_(cpRequest);
@@ -229,7 +229,7 @@ cr.define('cloudprint', function() {
      *     requested, {@code account} is activated and printer request reissued.
      */
     printer(printerId, origin, account) {
-      var params = [
+      const params = [
         new HttpParam('printerid', printerId), new HttpParam('use_cdd', 'true'),
         new HttpParam('printer_connection_status', 'true')
       ];
@@ -254,9 +254,9 @@ cr.define('cloudprint', function() {
      * @private
      */
     buildRequest_(method, action, params, origin, account, callback) {
-      var url = this.baseUrl_ + '/' + action + '?xsrf=';
+      let url = this.baseUrl_ + '/' + action + '?xsrf=';
       if (origin == print_preview.DestinationOrigin.COOKIES) {
-        var xsrfToken = this.xsrfTokens_[account];
+        const xsrfToken = this.xsrfTokens_[account];
         if (!xsrfToken) {
           // TODO(rltoscano): Should throw an error if not a read-only action or
           // issue an xsrf token request.
@@ -264,13 +264,13 @@ cr.define('cloudprint', function() {
           url = url + xsrfToken;
         }
         if (account) {
-          var index = this.userSessionIndex_[account] || 0;
+          const index = this.userSessionIndex_[account] || 0;
           if (index > 0) {
             url += '&authuser=' + index;
           }
         }
       }
-      var body = null;
+      let body = null;
       if (params) {
         if (method == 'GET') {
           url = params.reduce(function(partialUrl, param) {
@@ -286,7 +286,7 @@ cr.define('cloudprint', function() {
         }
       }
 
-      var headers = {};
+      const headers = {};
       headers['X-CloudPrint-Proxy'] = 'ChromePrintPreview';
       if (method == 'GET') {
         headers['Content-Type'] = URL_ENCODED_CONTENT_TYPE_;
@@ -294,10 +294,10 @@ cr.define('cloudprint', function() {
         headers['Content-Type'] = MULTIPART_CONTENT_TYPE_;
       }
 
-      var xhr = new XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
       xhr.open(method, url, true);
       xhr.withCredentials = (origin == print_preview.DestinationOrigin.COOKIES);
-      for (var header in headers) {
+      for (const header in headers) {
         xhr.setRequestHeader(header, headers[header]);
       }
 
@@ -347,7 +347,7 @@ cr.define('cloudprint', function() {
      * @private
      */
     createErrorEvent_(type, request) {
-      var errorEvent = new Event(type);
+      const errorEvent = new Event(type);
       errorEvent.status = request.xhr.status;
       if (request.xhr.status == 200) {
         errorEvent.errorCode = request.result['errorCode'];
@@ -368,9 +368,9 @@ cr.define('cloudprint', function() {
      */
     setUsers_(request) {
       if (request.origin == print_preview.DestinationOrigin.COOKIES) {
-        var users = request.result['request']['users'] || [];
+        const users = request.result['request']['users'] || [];
         this.userSessionIndex_ = {};
-        for (var i = 0; i < users.length; i++) {
+        for (let i = 0; i < users.length; i++) {
           this.userSessionIndex_[users[i]] = i;
         }
         this.userInfo_.setUsers(request.result['request']['user'], users);
@@ -446,7 +446,7 @@ cr.define('cloudprint', function() {
      * @private
      */
     onSearchDone_(isRecent, request) {
-      var lastRequestForThisOrigin = true;
+      let lastRequestForThisOrigin = true;
       this.outstandingCloudSearchRequests_ =
           this.outstandingCloudSearchRequests_.filter(function(item) {
             if (item != request && item.origin == request.origin) {
@@ -454,16 +454,16 @@ cr.define('cloudprint', function() {
             }
             return item != request;
           });
-      var activeUser = '';
+      let activeUser = '';
       if (request.origin == print_preview.DestinationOrigin.COOKIES) {
         activeUser = request.result && request.result['request'] &&
             request.result['request']['user'];
       }
-      var event = null;
+      let event = null;
       if (request.xhr.status == 200 && request.result['success']) {
         // Extract printers.
-        var printerListJson = request.result['printers'] || [];
-        var printerList = [];
+        const printerListJson = request.result['printers'] || [];
+        const printerList = [];
         printerListJson.forEach(function(printerJson) {
           try {
             printerList.push(cloudprint.parseCloudDestination(
@@ -495,14 +495,14 @@ cr.define('cloudprint', function() {
      * @private
      */
     onInvitesDone_(request) {
-      var event = null;
-      var activeUser = (request.result && request.result['request'] &&
-                        request.result['request']['user']) ||
+      let event = null;
+      const activeUser = (request.result && request.result['request'] &&
+                          request.result['request']['user']) ||
           '';
       if (request.xhr.status == 200 && request.result['success']) {
         // Extract invitations.
-        var invitationListJson = request.result['invites'] || [];
-        var invitationList = [];
+        const invitationListJson = request.result['invites'] || [];
+        const invitationList = [];
         invitationListJson.forEach(function(invitationJson) {
           try {
             invitationList.push(
@@ -531,9 +531,9 @@ cr.define('cloudprint', function() {
      * @private
      */
     onProcessInviteDone_(invitation, accept, request) {
-      var event = null;
-      var activeUser = (request.result && request.result['request'] &&
-                        request.result['request']['user']) ||
+      let event = null;
+      const activeUser = (request.result && request.result['request'] &&
+                          request.result['request']['user']) ||
           '';
       if (request.xhr.status == 200 && request.result['success']) {
         event = new Event(CloudPrintInterfaceEventType.PROCESS_INVITE_DONE);
@@ -563,12 +563,12 @@ cr.define('cloudprint', function() {
      */
     onSubmitDone_(request) {
       if (request.xhr.status == 200 && request.result['success']) {
-        var submitDoneEvent =
+        const submitDoneEvent =
             new Event(CloudPrintInterfaceEventType.SUBMIT_DONE);
         submitDoneEvent.jobId = request.result['job']['id'];
         this.dispatchEvent(submitDoneEvent);
       } else {
-        var errorEvent = this.createErrorEvent_(
+        const errorEvent = this.createErrorEvent_(
             CloudPrintInterfaceEventType.SUBMIT_FAILED, request);
         this.dispatchEvent(errorEvent);
       }
@@ -604,12 +604,12 @@ cr.define('cloudprint', function() {
       }
       // Process response.
       if (request.xhr.status == 200 && request.result['success']) {
-        var activeUser = '';
+        let activeUser = '';
         if (request.origin == print_preview.DestinationOrigin.COOKIES) {
           activeUser = request.result['request']['user'];
         }
-        var printerJson = request.result['printers'][0];
-        var printer;
+        const printerJson = request.result['printers'][0];
+        let printer;
         try {
           printer = cloudprint.parseCloudDestination(
               printerJson, request.origin, activeUser);
@@ -619,12 +619,12 @@ cr.define('cloudprint', function() {
               JSON.stringify(printerJson));
           return;
         }
-        var printerDoneEvent =
+        const printerDoneEvent =
             new Event(CloudPrintInterfaceEventType.PRINTER_DONE);
         printerDoneEvent.printer = printer;
         this.dispatchEvent(printerDoneEvent);
       } else {
-        var errorEvent = this.createErrorEvent_(
+        const errorEvent = this.createErrorEvent_(
             CloudPrintInterfaceEventType.PRINTER_FAILED, request);
         errorEvent.destinationId = destinationId;
         errorEvent.destinationOrigin = request.origin;
@@ -638,7 +638,7 @@ cr.define('cloudprint', function() {
    * @const {string}
    * @private
    */
-  var URL_ENCODED_CONTENT_TYPE_ = 'application/x-www-form-urlencoded';
+  const URL_ENCODED_CONTENT_TYPE_ = 'application/x-www-form-urlencoded';
 
   /**
    * Multi-part POST request boundary used in communication with Google
@@ -646,14 +646,14 @@ cr.define('cloudprint', function() {
    * @const {string}
    * @private
    */
-  var MULTIPART_BOUNDARY_ = '----CloudPrintFormBoundaryjc9wuprokl8i';
+  const MULTIPART_BOUNDARY_ = '----CloudPrintFormBoundaryjc9wuprokl8i';
 
   /**
    * Content type header value for a multipart HTTP request.
    * @const {string}
    * @private
    */
-  var MULTIPART_CONTENT_TYPE_ =
+  const MULTIPART_CONTENT_TYPE_ =
       'multipart/form-data; boundary=' + MULTIPART_BOUNDARY_;
 
   /**
@@ -661,14 +661,14 @@ cr.define('cloudprint', function() {
    * @const {!RegExp}
    * @private
    */
-  var VERSION_REGEXP_ = /.*Chrome\/([\d\.]+)/i;
+  const VERSION_REGEXP_ = /.*Chrome\/([\d\.]+)/i;
 
   /**
    * Could Print origins used to search printers.
    * @const {!Array<!print_preview.DestinationOrigin>}
    * @private
    */
-  var CLOUD_ORIGINS_ = [
+  const CLOUD_ORIGINS_ = [
     print_preview.DestinationOrigin.COOKIES,
     print_preview.DestinationOrigin.DEVICE
   ];

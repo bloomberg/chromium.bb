@@ -80,7 +80,7 @@ cr.define('print_preview', function() {
 
     /** @param {string} message Error message to display in the print header. */
     setErrorMessage: function(message) {
-      var summaryEl = this.getChildElement('.summary');
+      const summaryEl = this.getChildElement('.summary');
       summaryEl.innerHTML = '';
       summaryEl.textContent = message;
       this.getChildElement('button.print').classList.toggle('loading', false);
@@ -144,24 +144,24 @@ cr.define('print_preview', function() {
         return;
       }
 
-      var saveToPdfOrDrive = this.destinationStore_.selectedDestination &&
+      const saveToPdfOrDrive = this.destinationStore_.selectedDestination &&
           (this.destinationStore_.selectedDestination.id ==
                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
            this.destinationStore_.selectedDestination.id ==
                print_preview.Destination.GooglePromotedId.DOCS);
 
-      var numPages = this.printTicketStore_.pageRange.getPageNumberSet().size;
-      var numSheets = numPages;
+      let numPages = this.printTicketStore_.pageRange.getPageNumberSet().size;
+      let numSheets = numPages;
       if (!saveToPdfOrDrive && this.printTicketStore_.duplex.getValue()) {
         numSheets = Math.ceil(numPages / 2);
       }
 
-      var copies = this.printTicketStore_.copies.getValueAsNumber();
+      const copies = this.printTicketStore_.copies.getValueAsNumber();
       numSheets *= copies;
       numPages *= copies;
 
-      var pagesLabel = loadTimeData.getString('printPreviewPageLabelPlural');
-      var summaryLabel;
+      const pagesLabel = loadTimeData.getString('printPreviewPageLabelPlural');
+      let summaryLabel;
       if (numSheets > 1) {
         summaryLabel = saveToPdfOrDrive ?
             pagesLabel :
@@ -172,8 +172,8 @@ cr.define('print_preview', function() {
                                'printPreviewSheetsLabelSingular');
       }
 
-      var html;
-      var label;
+      let html;
+      let label;
       if (numPages != numSheets) {
         html = loadTimeData.getStringF(
             'printPreviewSummaryFormatLong',
@@ -196,7 +196,7 @@ cr.define('print_preview', function() {
       // Removing extra spaces from within the string.
       html = html.replace(/\s{2,}/g, ' ');
 
-      var summary = this.getChildElement('.summary');
+      const summary = this.getChildElement('.summary');
       summary.innerHTML = html;
       summary.setAttribute('aria-label', label);
     },
@@ -211,7 +211,7 @@ cr.define('print_preview', function() {
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
         this.getChildElement('button.print').classList.add('loading');
         this.getChildElement('button.cancel').classList.add('loading');
-        var isSaveLabel =
+        const isSaveLabel =
             (this.destinationStore_.selectedDestination.id ==
              print_preview.Destination.GooglePromotedId.DOCS);
         this.getChildElement('.summary').innerHTML =
@@ -235,7 +235,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationSelect_: function() {
-      var isSaveLabel = this.destinationStore_.selectedDestination &&
+      const isSaveLabel = this.destinationStore_.selectedDestination &&
           (this.destinationStore_.selectedDestination.id ==
                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
            this.destinationStore_.selectedDestination.id ==

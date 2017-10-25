@@ -8,7 +8,7 @@
  *     whitespace is allowed.
  */
 function isInteger(toTest) {
-  var numericExp = /^\s*[0-9]+\s*$/;
+  const numericExp = /^\s*[0-9]+\s*$/;
   return numericExp.test(toTest);
 }
 
@@ -30,7 +30,7 @@ function isPositiveInteger(value) {
 function areArraysEqual(array1, array2) {
   if (array1.length != array2.length)
     return false;
-  for (var i = 0; i < array1.length; i++)
+  for (let i = 0; i < array1.length; i++)
     if (array1[i] !== array2[i])
       return false;
   return true;
@@ -45,7 +45,7 @@ function areArraysEqual(array1, array2) {
 function areRangesEqual(array1, array2) {
   if (array1.length != array2.length)
     return false;
-  for (var i = 0; i < array1.length; i++)
+  for (let i = 0; i < array1.length; i++)
     if (array1[i].from != array2[i].from || array1[i].to != array2[i].to) {
       return false;
     }
@@ -59,20 +59,24 @@ function areRangesEqual(array1, array2) {
  * @return {!Array<number>} The array after processing.
  */
 function removeDuplicates(inArray) {
-  var out = [];
+  const out = [];
 
   if (inArray.length == 0)
     return out;
 
   out.push(inArray[0]);
-  for (var i = 1; i < inArray.length; ++i)
+  for (let i = 1; i < inArray.length; ++i)
     if (inArray[i] != inArray[i - 1])
       out.push(inArray[i]);
   return out;
 }
 
 /** @enum {number} */
-var PageRangeStatus = {NO_ERROR: 0, SYNTAX_ERROR: -1, LIMIT_ERROR: -2};
+const PageRangeStatus = {
+  NO_ERROR: 0,
+  SYNTAX_ERROR: -1,
+  LIMIT_ERROR: -2
+};
 
 /**
  * Returns a list of ranges in |pageRangeText|. The ranges are
@@ -105,23 +109,23 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
     return [];
   }
 
-  var MAX_PAGE_NUMBER = 1000000000;
-  var totalPageCount =
+  const MAX_PAGE_NUMBER = 1000000000;
+  const totalPageCount =
       opt_totalPageCount ? opt_totalPageCount : MAX_PAGE_NUMBER;
 
-  var regex = /^\s*([0-9]*)\s*-\s*([0-9]*)\s*$/;
-  var parts = pageRangeText.split(/,/);
+  const regex = /^\s*([0-9]*)\s*-\s*([0-9]*)\s*$/;
+  const parts = pageRangeText.split(/,/);
 
-  var pageRanges = [];
-  for (var i = 0; i < parts.length; ++i) {
-    var match = parts[i].match(regex);
+  const pageRanges = [];
+  for (let i = 0; i < parts.length; ++i) {
+    const match = parts[i].match(regex);
     if (match) {
       if (!isPositiveInteger(match[1]) && match[1] !== '')
         return PageRangeStatus.SYNTAX_ERROR;
       if (!isPositiveInteger(match[2]) && match[2] !== '')
         return PageRangeStatus.SYNTAX_ERROR;
-      var from = match[1] ? parseInt(match[1], 10) : 1;
-      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
+      const from = match[1] ? parseInt(match[1], 10) : 1;
+      const to = match[2] ? parseInt(match[2], 10) : totalPageCount;
       if (from > to)
         return PageRangeStatus.SYNTAX_ERROR;
       if (to > totalPageCount)
@@ -130,7 +134,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
     } else {
       if (!isPositiveInteger(parts[i]))
         return PageRangeStatus.SYNTAX_ERROR;
-      var singlePageNumber = parseInt(parts[i], 10);
+      const singlePageNumber = parseInt(parts[i], 10);
       if (singlePageNumber > totalPageCount)
         return PageRangeStatus.LIMIT_ERROR;
       pageRanges.push({'from': singlePageNumber, 'to': singlePageNumber});
@@ -150,18 +154,18 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
  * @return {!Array<number>} A list of all pages.
  */
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
-  var pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);
-  var pageList = [];
+  const pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);
+  const pageList = [];
   if (Array.isArray(pageRanges)) {
-    for (var i = 0; i < pageRanges.length; ++i) {
-      for (var j = pageRanges[i].from;
+    for (let i = 0; i < pageRanges.length; ++i) {
+      for (let j = pageRanges[i].from;
            j <= Math.min(pageRanges[i].to, totalPageCount); ++j) {
         pageList.push(j);
       }
     }
   }
   if (pageList.length == 0) {
-    for (var j = 1; j <= totalPageCount; ++j)
+    for (let j = 1; j <= totalPageCount; ++j)
       pageList.push(j);
   }
   return pageList;
@@ -173,7 +177,7 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
  *     without any duplicates. |pageList| is not affected.
  */
 function pageListToPageSet(pageList) {
-  var pageSet = [];
+  let pageSet = [];
   if (pageList.length == 0)
     return pageSet;
   pageSet = pageList.slice(0);
@@ -219,7 +223,7 @@ function arrayContains(array, item) {
  */
 function getStringForLocale(localizedStrings, locale) {
   locale = locale.toLowerCase();
-  for (var i = 0; i < localizedStrings.length; i++) {
+  for (let i = 0; i < localizedStrings.length; i++) {
     if (localizedStrings[i].locale.toLowerCase() == locale)
       return localizedStrings[i].value;
   }
