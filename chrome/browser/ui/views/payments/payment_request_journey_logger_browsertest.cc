@@ -5,11 +5,13 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/journey_logger.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace payments {
@@ -248,10 +250,117 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_COMPLETED);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED);
   EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED);
+
+  // When the payment apps feature is enabled, the checkout funnel is aborted
+  // before checking for initial form of payment and the necessary complete
+  // suggestions, because querying for available payment apps is asynchronous.
+  EXPECT_FALSE(buckets[0].min &
+               JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT);
+  EXPECT_FALSE(buckets[0].min &
+               JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS);
+
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_SHIPPING);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
+  // This is for the first (completed) request.
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_SHOWN);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_PAY_CLICKED);
+  EXPECT_TRUE(buckets[1].min &
+              JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_COMPLETED);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_USER_ABORTED);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_OTHER_ABORTED);
+  EXPECT_TRUE(buckets[1].min &
+              JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT);
+  EXPECT_TRUE(buckets[1].min &
+              JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_SHIPPING);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SELECTED_GOOGLE);
+  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SELECTED_OTHER);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
+                       StartNewRequestWithoutPaymentAppsFeature) {
+  // Disable payment handlers, also known as service worker payment apps. The
+  // rest of the test is identical to "StartNewRequest" testcase above.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kServiceWorkerPaymentApps);
+
+  base::HistogramTester histogram_tester;
+
+  // Setup a credit card with an associated billing address.
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // Visa.
+
+  // Start a Payment Request.
+  InvokePaymentRequestUI();
+
+  // Get the dialog view of the first request, since the one cached for the
+  // tests will be replaced by the second Payment Request.
+  PaymentRequestDialogView* first_dialog_view = dialog_view();
+
+  // Try to show a second request.
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_buy_button_js =
+      "(function() { document.getElementById('showSecondRequest').click(); "
+      "})();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_buy_button_js));
+  WaitForObservedEvent();
+
+  // Complete the original Payment Request.
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("123"), first_dialog_view);
+
+  // There is one no show and one shown (verified below).
+  histogram_tester.ExpectBucketCount(
+      "PaymentRequest.CheckoutFunnel.NoShow",
+      JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS, 1);
+
+  // Make sure the correct events were logged.
+  // The first set of events is for the second (never shown) request.
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(2U, buckets.size());
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SHOWN);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_PAY_CLICKED);
+  EXPECT_FALSE(buckets[0].min &
+               JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_COMPLETED);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED);
+
+  // When the payment apps feature is disabled, the checkout funnel is aborted
+  // after checking for initial form of payment and the necessary complete
+  // suggestions, because querying for available autofill cards is synchronous.
   EXPECT_TRUE(buckets[0].min &
               JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT);
   EXPECT_TRUE(buckets[0].min &
               JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS);
+
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_SHIPPING);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
