@@ -33,7 +33,9 @@ class OfflinePageMetadataStoreTestUtil {
   void BuildStore();
   // Builds the store in memory (no disk storage).
   void BuildStoreInMemory();
-  // Releases the ownership of currently controlled store.
+  // Releases the ownership of currently controlled store. But still keeps a raw
+  // pointer to the previously owned store in |store_ptr|, until the next time
+  // BuildStore*() is called.
   std::unique_ptr<OfflinePageMetadataStoreSQL> ReleaseStore();
   // Deletes the currently held store that was previously built.
   void DeleteStore();
@@ -47,7 +49,7 @@ class OfflinePageMetadataStoreTestUtil {
   // Gets offline page by offline_id.
   std::unique_ptr<OfflinePageItem> GetPageByOfflineId(int64_t offline_id);
 
-  OfflinePageMetadataStoreSQL* store() { return store_.get(); }
+  OfflinePageMetadataStoreSQL* store() { return store_ptr_; }
 
   base::SimpleTestClock* clock() { return &clock_; }
 
@@ -56,7 +58,11 @@ class OfflinePageMetadataStoreTestUtil {
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_directory_;
+  // TODO(romax): Refactor the test util along with the similar one used in
+  // Prefetching, to remove the ownership to the store. And clean up related
+  // usage of |store_ptr_|.
   std::unique_ptr<OfflinePageMetadataStoreSQL> store_;
+  OfflinePageMetadataStoreSQL* store_ptr_;
   base::SimpleTestClock clock_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMetadataStoreTestUtil);

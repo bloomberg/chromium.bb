@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -152,7 +153,7 @@ TEST_F(DeletePageTaskTest, DeletePageByOfflineId) {
   // The pages with the offline ids will be removed from the store.
   std::vector<int64_t> offline_ids({page1.offline_id, page3.offline_id});
   auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
-      store(), offline_ids, delete_page_callback());
+      store(), delete_page_callback(), offline_ids);
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -181,7 +182,7 @@ TEST_F(DeletePageTaskTest, DeletePageByOfflineIdNotFound) {
   // constant value defined above.
   std::vector<int64_t> offline_ids({kTestOfflineIdNoMatch});
   auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
-      store(), offline_ids, delete_page_callback());
+      store(), delete_page_callback(), offline_ids);
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -209,7 +210,7 @@ TEST_F(DeletePageTaskTest, DeletePageByClientId) {
 
   std::vector<ClientId> client_ids({page1.client_id, page3.client_id});
   auto task = DeletePageTask::CreateTaskMatchingClientIds(
-      store(), client_ids, delete_page_callback());
+      store(), delete_page_callback(), client_ids);
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -237,7 +238,7 @@ TEST_F(DeletePageTaskTest, DeletePageByClientIdNotFound) {
   // will be success since there's no NOT_FOUND anymore.
   std::vector<ClientId> client_ids({kTestClientIdNoMatch});
   auto task = DeletePageTask::CreateTaskMatchingClientIds(
-      store(), client_ids, delete_page_callback());
+      store(), delete_page_callback(), client_ids);
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -269,7 +270,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
   });
 
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
-      store(), policy_controller(), predicate, delete_page_callback());
+      store(), delete_page_callback(), policy_controller(), predicate);
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -302,7 +303,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
       base::Bind([](const GURL& url) -> bool { return false; });
 
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
-      store(), policy_controller(), predicate, delete_page_callback());
+      store(), delete_page_callback(), policy_controller(), predicate);
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -310,6 +311,66 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
   EXPECT_FALSE(CheckPageDeleted(page1));
   EXPECT_FALSE(CheckPageDeleted(page2));
   EXPECT_FALSE(CheckPageDeleted(page3));
+}
+
+TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
+  // Add 3 pages, the kTestNamespace has a limit of 1 for page per url.
+  generator()->SetNamespace(kTestNamespace);
+  generator()->SetUrl(kTestUrl1);
+  // Guarantees that page1 will be deleted by making it older.
+  base::Time now = base::Time::Now();
+  generator()->SetLastAccessTime(now - base::TimeDelta::FromMinutes(5));
+  OfflinePageItem page1 = generator()->CreateItemWithTempFile();
+  generator()->SetLastAccessTime(now);
+  OfflinePageItem page2 = generator()->CreateItemWithTempFile();
+  OfflinePageItem page = generator()->CreateItem();
+  generator()->SetUrl(kTestUrl2);
+  OfflinePageItem page3 = generator()->CreateItemWithTempFile();
+
+  store_test_util()->InsertItem(page1);
+  store_test_util()->InsertItem(page2);
+  store_test_util()->InsertItem(page3);
+
+  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
+  EXPECT_TRUE(base::PathExists(page1.file_path));
+  EXPECT_TRUE(base::PathExists(page2.file_path));
+  EXPECT_TRUE(base::PathExists(page3.file_path));
+
+  auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
+      store(), delete_page_callback(), policy_controller(), page);
+  runner()->RunTask(std::move(task));
+
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
+  EXPECT_EQ(1UL, last_deleted_page_infos().size());
+  EXPECT_TRUE(CheckPageDeleted(page1));
+  EXPECT_FALSE(CheckPageDeleted(page2));
+  EXPECT_FALSE(CheckPageDeleted(page3));
+}
+
+TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
+  // Add 3 pages, the kTestNamespace has a limit of 1 for page per url.
+  generator()->SetNamespace(kDownloadNamespace);
+  generator()->SetUrl(kTestUrl1);
+  OfflinePageItem page1 = generator()->CreateItemWithTempFile();
+  OfflinePageItem page2 = generator()->CreateItemWithTempFile();
+  OfflinePageItem page = generator()->CreateItem();
+  generator()->SetUrl(kTestUrl2);
+  OfflinePageItem page3 = generator()->CreateItemWithTempFile();
+
+  store_test_util()->InsertItem(page1);
+  store_test_util()->InsertItem(page2);
+  store_test_util()->InsertItem(page3);
+
+  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
+  EXPECT_TRUE(base::PathExists(page1.file_path));
+  EXPECT_TRUE(base::PathExists(page2.file_path));
+  EXPECT_TRUE(base::PathExists(page3.file_path));
+
+  auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
+      store(), delete_page_callback(), policy_controller(), page);
+  // Since there's no limit for page per url of Download Namespace, the task
+  // should be nullptr.
+  EXPECT_FALSE(task);
 }
 
 }  // namespace offline_pages
