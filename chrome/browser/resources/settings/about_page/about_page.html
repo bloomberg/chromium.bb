@@ -104,7 +104,8 @@
                   src="[[getIconSrc_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
               </iron-icon>
               <div class="start padded">
-                <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]"
+                <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]">
+                  <div
 <if expr="not chromeos">
                     inner-h-t-m-l="[[getUpdateStatusMessage_(
                         currentUpdateStatusEvent_)]]">
@@ -113,6 +114,12 @@
                     inner-h-t-m-l="[[getUpdateStatusMessage_(
                         currentUpdateStatusEvent_, targetChannel_)]]">
 </if>
+                  </div>
+                  <a hidden$="[[!shouldShowLearnMoreLink_(
+                      currentUpdateStatusEvent_)]]" target="_blank"
+                      href="https://support.google.com/chrome?p=update_error">
+                    $i18n{learnMore}
+                  </a>
                 </div>
                 <span id="deprecationWarning"
                     hidden="[[!obsoleteSystemInfo_.obsolete]]">

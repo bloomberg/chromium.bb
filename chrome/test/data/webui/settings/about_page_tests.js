@@ -241,7 +241,7 @@ cr.define('settings_about_page', function() {
       test('IconAndMessageUpdates', function() {
         var icon = page.$$('iron-icon');
         assertTrue(!!icon);
-        var statusMessageEl = page.$.updateStatusMessage;
+        var statusMessageEl = page.$$('#updateStatusMessage div');
         var previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.CHECKING);
@@ -288,8 +288,18 @@ cr.define('settings_about_page', function() {
         var htmlError = 'hello<br>there<br>was<pre>an</pre>error';
         fireStatusChanged(
             UpdateStatus.FAILED, {message: htmlError});
-        var statusMessageEl = page.$.updateStatusMessage;
+        var statusMessageEl = page.$$('#updateStatusMessage div');
         assertEquals(htmlError, statusMessageEl.innerHTML);
+      });
+
+      test('FailedLearnMoreLink', function() {
+        // Check that link is shown when update failed.
+        fireStatusChanged(UpdateStatus.FAILED, {message: 'foo'});
+        assertTrue(!!page.$$('#updateStatusMessage a:not([hidden])'));
+
+        // Check that link is hidden when update hasn't failed.
+        fireStatusChanged(UpdateStatus.UPDATED, {message: ''});
+        assertTrue(!!page.$$('#updateStatusMessage a[hidden]'));
       });
 
       /**

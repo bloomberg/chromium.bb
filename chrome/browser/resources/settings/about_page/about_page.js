@@ -283,6 +283,14 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowLearnMoreLink_: function() {
+    return this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
+  },
+
+  /**
    * @return {string}
    * @private
    */
