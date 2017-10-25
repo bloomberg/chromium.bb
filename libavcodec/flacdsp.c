@@ -43,14 +43,6 @@
 #define PLANAR 1
 #include "flacdsp_template.c"
 
-// For debuging we use signed operations so overflows can be detected (by ubsan)
-// For production we use unsigned so there are no undefined operations
-#ifdef DEBUG
-#define SUINT   int
-#else
-#define SUINT   unsigned
-#endif
-
 static void flac_lpc_16_c(int32_t *decoded, const int coeffs[32],
                           int pred_order, int qlevel, int len)
 {

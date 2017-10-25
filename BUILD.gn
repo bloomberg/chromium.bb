@@ -6,6 +6,7 @@ import("ffmpeg_options.gni")
 import("ffmpeg_generated.gni")
 
 import("//build/buildflag_header.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 
 # Path to platform configuration files.
 platform_config_root =
@@ -198,6 +199,12 @@ target(link_target_type, "ffmpeg_internal") {
   # Disable internal ffmpeg logs in the official build; this saves ~158kb.
   if (is_official_build) {
     defines += [ "CHROMIUM_NO_LOGGING" ]
+  }
+
+  # Affects definition of SUINT and SUINT32 #defines; allows sanitizers to find
+  # overflows. See libavutil/internal.h for more information.
+  if (using_sanitizer) {
+    defines +=  [ "CHECKED" ]
   }
 
   # So we can append below and assume they're defined.

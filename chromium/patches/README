@@ -47,9 +47,6 @@ Current patches:
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
 
-  libavcodec/flacdsp.c
-    #define SUINT for better overflow detection
-
   libavcodec/libopusdec.c, libavcodec/opus.c
     Changes to support ambisonic_channels.
 
