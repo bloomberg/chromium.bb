@@ -10,6 +10,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/containers/stack_container.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
@@ -840,7 +841,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     OffsetIterator(const PaintOpBuffer* buffer,
                    const std::vector<size_t>* offsets)
         : buffer_(buffer), ptr_(buffer_->data_.get()), offsets_(offsets) {
-      if (offsets->empty()) {
+      if (!offsets || offsets->empty()) {
         *this = end();
         return;
       }
@@ -939,6 +940,38 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     bool using_offsets_ = false;
     base::Optional<OffsetIterator> offset_iter_;
     base::Optional<Iterator> iter_;
+  };
+
+  class PlaybackFoldingIterator {
+   public:
+    PlaybackFoldingIterator(const PaintOpBuffer* buffer,
+                            const std::vector<size_t>* offsets);
+    ~PlaybackFoldingIterator();
+
+    const PaintOp* operator->() const { return current_op_; }
+    const PaintOp* operator*() const { return current_op_; }
+
+    PlaybackFoldingIterator& operator++() {
+      FindNextOp();
+      return *this;
+    }
+
+    operator bool() const { return !!current_op_; }
+
+    // Guaranteed to be 255 for all ops without flags.
+    uint8_t alpha() const { return current_alpha_; }
+
+   private:
+    void FindNextOp();
+    const PaintOp* NextUnfoldedOp();
+
+    PaintOpBuffer::CompositeIterator iter_;
+
+    // FIFO queue of paint ops that have been peeked at.
+    base::StackVector<const PaintOp*, 3> stack_;
+    DrawColorOp folded_draw_color_;
+    const PaintOp* current_op_ = nullptr;
+    uint8_t current_alpha_ = 255;
   };
 
  private:

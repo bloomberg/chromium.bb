@@ -2605,10 +2605,6 @@ TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
   buffer.push<ClipRectOp>(SkRect::MakeXYWH(0, 0, 100, 100),
                           SkClipOp::kIntersect, false);
 
-  SkRect rect = SkRect::MakeXYWH(0, 0, 100, 100);
-  uint8_t alpha = 220;
-  buffer.push<SaveLayerAlphaOp>(&rect, alpha, false);
-
   PaintFlags flags;
   PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   buffer.push<DrawImageOp>(paint_image, 105.0f, 105.0f, &flags);
@@ -2618,12 +2614,11 @@ TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
                              SkShader::TileMode::kRepeat_TileMode, nullptr));
   buffer.push<DrawRectOp>(SkRect::MakeXYWH(110, 110, 100, 100), image_flags);
 
+  SkRect rect = SkRect::MakeXYWH(0, 0, 100, 100);
   buffer.push<DrawRectOp>(rect, PaintFlags());
-  buffer.push<RestoreOp>();
 
-  // Using a strict mock to ensure that skipping image ops optimizes the
-  // save/restore sequences. The single save/restore call is from the
-  // PaintOpBuffer's use of SkAutoRestoreCanvas.
+  // The single save/restore call is from the PaintOpBuffer's use of
+  // SkAutoRestoreCanvas.
   testing::StrictMock<MockCanvas> canvas;
   testing::Sequence s;
   EXPECT_CALL(canvas, willSave()).InSequence(s);
