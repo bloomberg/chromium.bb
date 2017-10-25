@@ -42,6 +42,7 @@ mojom::ReportingMode FakePlatformSensor::GetReportingMode() {
 double FakePlatformSensor::GetMaximumSupportedFrequency() {
   return 50.0;
 }
+
 double FakePlatformSensor::GetMinimumSupportedFrequency() {
   return 1.0;
 }
@@ -54,37 +55,7 @@ void FakePlatformSensorProvider::CreateSensorInternal(
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback) {
   DCHECK(type >= mojom::SensorType::FIRST && type <= mojom::SensorType::LAST);
-  if (request_result_ == kFailure) {
-    request_result_ = kSuccess;
-    callback.Run(nullptr);
-    return;
-  }
-
-  if (request_result_ == kPending) {
-    request_result_ = kSuccess;
-    return;
-  }
-
-  switch (type) {
-    case mojom::SensorType::ACCELEROMETER:
-      if (!accelerometer_is_available_) {
-        callback.Run(nullptr);
-        return;
-      }
-      break;
-    case mojom::SensorType::MAGNETOMETER:
-      if (!magnetometer_is_available_) {
-        callback.Run(nullptr);
-        return;
-      }
-      break;
-    default:
-      break;
-  }
-
-  auto sensor =
-      base::MakeRefCounted<FakePlatformSensor>(type, std::move(mapping), this);
-  callback.Run(sensor);
+  DoCreateSensorInternal(type, mapping.release(), callback);
 }
 
 }  // namespace device

@@ -24,6 +24,9 @@
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 
+using ::testing::_;
+using ::testing::Invoke;
+
 namespace device {
 
 using mojom::SensorType;
@@ -171,6 +174,17 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
 
   void SetUpOnIOThread() {
     fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
+    // Default
+    ON_CALL(*fake_platform_sensor_provider_, DoCreateSensorInternal(_, _, _))
+        .WillByDefault(Invoke(
+            [this](mojom::SensorType type, void* buffer,
+                   const FakePlatformSensorProvider::CreateSensorCallback&
+                       callback) {
+              auto sensor = base::MakeRefCounted<FakePlatformSensor>(
+                  type, mojo::ScopedSharedBufferMapping(buffer),
+                  fake_platform_sensor_provider_);
+              callback.Run(sensor);
+            }));
     PlatformSensorProvider::SetProviderForTesting(
         fake_platform_sensor_provider_);
     io_loop_finished_event_.Signal();
