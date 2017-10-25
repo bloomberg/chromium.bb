@@ -701,6 +701,10 @@ _lakitu_boards = frozenset([
     'lakitu_next',
 ])
 
+_lassen_boards = frozenset([
+    'lassen',
+])
+
 _loonix_boards = frozenset([
     'cobblepot',
     'gonzo',
@@ -1137,6 +1141,12 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk=False,
       afdo_use=False,
       dev_installer_prebuilts=False,
+  )
+
+  site_config.AddTemplate(
+      'lassen',
+      sync_chrome=False,
+      chrome_sdk=False,
   )
 
   site_config.AddTemplate(
@@ -1682,6 +1692,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.brillo)
     if board in _lakitu_boards:
       board_config.apply(site_config.templates.lakitu)
+    if board in _lassen_boards:
+      board_config.apply(site_config.templates.lassen)
     if board in _loonix_boards:
       board_config.apply(site_config.templates.loonix)
     if board in _moblab_boards:

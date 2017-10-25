@@ -15653,29 +15653,21 @@
             "chrome_internal"
         ]
     },
-    "lassen-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "lassen"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "lassen-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
             "lassen"
-        ]
+        ],
+        "sync_chrome": false
     },
     "lassen-full": {
         "_template": "full",
         "boards": [
             "lassen"
         ],
+        "chrome_sdk": false,
         "prebuilts": "public",
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -15685,14 +15677,17 @@
         "_template": "no_vmtest_pre_cq",
         "boards": [
             "lassen"
-        ]
+        ],
+        "sync_chrome": false
     },
     "lassen-paladin": {
         "_template": "paladin",
         "boards": [
             "lassen"
         ],
+        "chrome_sdk": false,
         "important": false,
+        "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -15701,6 +15696,7 @@
         "boards": [
             "lassen"
         ],
+        "sync_chrome": false,
         "vm_tests": []
     },
     "lassen-release": {
@@ -15709,25 +15705,18 @@
         "boards": [
             "lassen"
         ],
+        "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
+        "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "lassen-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "lassen"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "lassen-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
             "lassen"
-        ]
+        ],
+        "sync_chrome": false
     },
     "leon-chrome-pfq": {
         "_template": "chrome_pfq",
