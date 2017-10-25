@@ -190,7 +190,9 @@ const char kImsiProperty[] = "Cellular.IMSI";
 const char kEsnProperty[] = "Cellular.ESN";
 const char kMdnProperty[] = "Cellular.MDN";
 const char kMinProperty[] = "Cellular.MIN";
+// TODO(ejcaruso): remove this when the correctly-cased name is used in chrome
 const char kModelIDProperty[] = "Cellular.ModelID";
+const char kModelIdProperty[] = "Cellular.ModelID";
 const char kManufacturerProperty[] = "Cellular.Manufacturer";
 const char kFirmwareRevisionProperty[] = "Cellular.FirmwareRevision";
 const char kHardwareRevisionProperty[] = "Cellular.HardwareRevision";
