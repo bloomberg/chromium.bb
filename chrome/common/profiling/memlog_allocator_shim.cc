@@ -7,7 +7,6 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/features.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/atomicops.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugging_flags.h"
 #include "base/debug/stack_trace.h"
@@ -30,12 +29,15 @@ using base::allocator::AllocatorDispatch;
 
 MemlogSenderPipe* g_sender_pipe = nullptr;
 
+// Matches the native buffer size on the pipe.
+// On Windows and Linux, the default pipe buffer size is 65536.
+// On macOS, the default pipe buffer size is 16 * 1024, but grows to 64 * 1024
+// for large writes.
+constexpr int kSendBufferSize = 65536;
+
 // Prime since this is used like a hash table. Numbers of this magnitude seemed
 // to provide sufficient parallelism to avoid lock overhead in ad-hoc testing.
 constexpr int kNumSendBuffers = 17;
-
-// If writing to the MemlogSenderPipe ever takes longer than 10s, just give up.
-constexpr int kTimeoutMs = 10000;
 
 // Functions set by a callback if the GC heap exists in the current process.
 // This function pointers can be used to hook or unhook the oilpan allocations.
@@ -52,13 +54,13 @@ base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_prevent_reentrancy =
 
 class SendBuffer {
  public:
-  SendBuffer() : buffer_(new char[MemlogSenderPipe::kPipeSize]) {}
+  SendBuffer() : buffer_(new char[kSendBufferSize]) {}
   ~SendBuffer() { delete[] buffer_; }
 
   void Send(const void* data, size_t sz) {
     base::AutoLock lock(lock_);
 
-    if (used_ + sz > MemlogSenderPipe::kPipeSize)
+    if (used_ + sz > kSendBufferSize)
       SendCurrentBuffer();
 
     memcpy(&buffer_[used_], data, sz);
@@ -73,15 +75,8 @@ class SendBuffer {
 
  private:
   void SendCurrentBuffer() {
-    MemlogSenderPipe::Result result =
-        g_sender_pipe->Send(buffer_, used_, kTimeoutMs);
+    g_sender_pipe->Send(buffer_, used_);
     used_ = 0;
-    if (result == MemlogSenderPipe::Result::kError)
-      StopAllocatorShimDangerous();
-    if (result == MemlogSenderPipe::Result::kTimeout) {
-      StopAllocatorShimDangerous();
-      // TODO(erikchen): Emit a histogram. https://crbug.com/777546.
-    }
   }
 
   base::Lock lock_;
@@ -92,39 +87,14 @@ class SendBuffer {
   DISALLOW_COPY_AND_ASSIGN(SendBuffer);
 };
 
-// It's safe to call Read() before Write(). Read() will either return nullptr or
-// a valid SendBuffer.
-class AtomicallyConsistentSendBufferArray {
- public:
-  void Write(SendBuffer* buffer) {
-    base::subtle::Release_Store(
-        &send_buffers, reinterpret_cast<base::subtle::AtomicWord>(buffer));
-  }
-
-  SendBuffer* Read() {
-    return reinterpret_cast<SendBuffer*>(
-        base::subtle::Acquire_Load(&send_buffers));
-  }
-
- private:
-  // This class is used as a static global. This will be linker-initialized to
-  // 0.
-  base::subtle::AtomicWord send_buffers;
-};
-
-// The API guarantees that Read() will either return a valid object or a
-// nullptr.
-AtomicallyConsistentSendBufferArray g_send_buffers;
+SendBuffer* g_send_buffers = nullptr;
 
 // "address" is the address in question, which is used to select which send
 // buffer to use.
-void DoSend(const void* address,
-            const void* data,
-            size_t size,
-            SendBuffer* send_buffers) {
+void DoSend(const void* address, const void* data, size_t size) {
   base::trace_event::AllocationRegister::AddressHasher hasher;
   int bin_to_use = hasher(address) % kNumSendBuffers;
-  send_buffers[bin_to_use].Send(data, size);
+  g_send_buffers[bin_to_use].Send(data, size);
 }
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -252,7 +222,7 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
   // Must be done before hooking any functions that make stack traces.
   base::debug::EnableInProcessStackDumping();
 
-  g_send_buffers.Write(new SendBuffer[kNumSendBuffers]);
+  g_send_buffers = new SendBuffer[kNumSendBuffers];
   g_sender_pipe = sender_pipe;
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -272,9 +242,7 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
 }
 
 void StopAllocatorShimDangerous() {
-  // This ShareBuffer array is leaked on purpose to avoid races on Stop.
-  g_send_buffers.Write(nullptr);
-
+  g_send_buffers = nullptr;
   base::PartitionAllocHooks::SetAllocationHook(nullptr);
   base::PartitionAllocHooks::SetFreeHook(nullptr);
 
@@ -282,17 +250,13 @@ void StopAllocatorShimDangerous() {
     g_hook_gc_alloc(nullptr);
     g_hook_gc_free(nullptr);
   }
-
-  if (g_sender_pipe)
-    g_sender_pipe->Close();
 }
 
 void AllocatorShimLogAlloc(AllocatorType type,
                            void* address,
                            size_t sz,
                            const char* context) {
-  SendBuffer* send_buffers = g_send_buffers.Read();
-  if (!send_buffers)
+  if (!g_send_buffers)
     return;
   if (UNLIKELY(g_prevent_reentrancy.Pointer()->Get()))
     return;
@@ -302,7 +266,7 @@ void AllocatorShimLogAlloc(AllocatorType type,
     constexpr size_t max_message_size = sizeof(AllocPacket) +
                                         kMaxStackEntries * sizeof(uint64_t) +
                                         kMaxContextLen;
-    static_assert(max_message_size < MemlogSenderPipe::kPipeSize,
+    static_assert(max_message_size < kSendBufferSize,
                   "We can't have a message size that exceeds the pipe write "
                   "buffer size.");
     char message[max_message_size];
@@ -344,15 +308,14 @@ void AllocatorShimLogAlloc(AllocatorType type,
       message_end += context_len;
     }
 
-    DoSend(address, message, message_end - message, send_buffers);
+    DoSend(address, message, message_end - message);
   }
 
   g_prevent_reentrancy.Pointer()->Set(false);
 }
 
 void AllocatorShimLogFree(void* address) {
-  SendBuffer* send_buffers = g_send_buffers.Read();
-  if (!send_buffers)
+  if (!g_send_buffers)
     return;
   if (UNLIKELY(g_prevent_reentrancy.Pointer()->Get()))
     return;
@@ -363,27 +326,21 @@ void AllocatorShimLogFree(void* address) {
     free_packet.op = kFreePacketType;
     free_packet.address = (uint64_t)address;
 
-    DoSend(address, &free_packet, sizeof(FreePacket), send_buffers);
+    DoSend(address, &free_packet, sizeof(FreePacket));
   }
 
   g_prevent_reentrancy.Pointer()->Set(false);
 }
 
 void AllocatorShimFlushPipe(uint32_t barrier_id) {
-  SendBuffer* send_buffers = g_send_buffers.Read();
-  if (!send_buffers)
+  if (!g_send_buffers)
     return;
   for (int i = 0; i < kNumSendBuffers; i++)
-    send_buffers[i].Flush();
+    g_send_buffers[i].Flush();
 
   BarrierPacket barrier;
   barrier.barrier_id = barrier_id;
-  MemlogSenderPipe::Result result =
-      g_sender_pipe->Send(&barrier, sizeof(barrier), kTimeoutMs);
-  if (result != MemlogSenderPipe::Result::kSuccess) {
-    StopAllocatorShimDangerous();
-    // TODO(erikchen): Emit a histogram. https://crbug.com/777546.
-  }
+  g_sender_pipe->Send(&barrier, sizeof(barrier));
 }
 
 void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,

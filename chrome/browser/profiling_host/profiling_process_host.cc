@@ -22,7 +22,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/constants.mojom.h"
-#include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/common/profiling/profiling_constants.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -303,7 +302,24 @@ void ProfilingProcessHost::AddClientToProfilingService(
     profiling::mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  MemlogSenderPipe::PipePair pipes;
+#if defined(OS_MACOSX)
+  // On macOS, we create a pipe() rather than a socketpair(). This causes
+  // writes to be much more performant.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=776435
+  int fds[2];
+  pipe(fds);
+  PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
+  PCHECK(fcntl(fds[0], F_SETNOSIGPIPE, 1) == 0);
+  PCHECK(fcntl(fds[1], F_SETNOSIGPIPE, 1) == 0);
+
+  profiling_service_->AddProfilingClient(
+      pid, std::move(client), mojo::WrapPlatformFile(fds[1]),
+      mojo::WrapPlatformFile(fds[0]), process_type);
+#else
+  // Writes to the data_channel must be atomic to ensure that the profiling
+  // process can demux the messages. We accomplish this by making writes
+  // synchronous, and protecting the write() itself with a Lock.
+  mojo::edk::PlatformChannelPair data_channel(true /* client_is_blocking */);
 
   // Passes the client_for_profiling directly to the profiling process.
   // The client process can not start sending data until the pipe is ready,
@@ -314,9 +330,10 @@ void ProfilingProcessHost::AddClientToProfilingService(
   // messages we need to send.
   profiling_service_->AddProfilingClient(
       pid, std::move(client),
-      mojo::WrapPlatformFile(pipes.PassSender().release().handle),
-      mojo::WrapPlatformFile(pipes.PassReceiver().release().handle),
+      mojo::WrapPlatformFile(data_channel.PassClientHandle().release().handle),
+      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
       process_type);
+#endif
 }
 
 // static
