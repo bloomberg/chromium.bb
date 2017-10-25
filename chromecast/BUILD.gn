@@ -24,6 +24,25 @@ config("playready_config") {
   }
 }
 
+# Depends on all non-test targets that should be built by the Chromecast
+# internal build infrastructure.
+group("all") {
+  deps = []
+  if (is_android && chromecast_branding == "public") {
+    deps += [ ":cast_shell_apk" ]
+  }
+  if (!is_android) {
+    deps += [ ":cast_shell" ]
+  }
+  if (chromecast_branding != "public") {
+    deps += [ "//chromecast/internal:all" ]
+  }
+  # No other targets should depend on this target, since it's just a convenience
+  # target for the Chromecast internal build infrastructure.
+  visibility = []
+  testonly = true
+}
+
 # A list of all public test() binaries. This is an organizational target that
 # cannot be depended upon or built directly. Build cast_group_test_list instead.
 cast_test_group("cast_tests") {
