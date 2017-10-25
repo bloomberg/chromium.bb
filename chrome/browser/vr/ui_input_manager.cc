@@ -170,7 +170,11 @@ void UiInputManager::HandleInput(const gfx::Vector3dF& laser_direction,
     SendHoverMove(target_local_point);
   }
   SendButtonDown(target_element, target_local_point, button_state);
-  SendButtonUp(target_element, target_local_point, button_state);
+  if (SendButtonUp(target_element, target_local_point, button_state)) {
+    target_element = *out_reticle_render_target;
+    SendHoverLeave(target_element);
+    SendHoverEnter(target_element, target_local_point);
+  }
 
   previous_button_state_ =
       (button_state == ButtonState::CLICKED) ? ButtonState::UP : button_state;
@@ -323,24 +327,25 @@ void UiInputManager::SendButtonDown(UiElement* target,
   }
 }
 
-void UiInputManager::SendButtonUp(UiElement* target,
+bool UiInputManager::SendButtonUp(UiElement* target,
                                   const gfx::PointF& target_point,
                                   ButtonState button_state) {
   if (!in_click_) {
-    return;
+    return false;
   }
   if (previous_button_state_ == button_state ||
       (button_state != ButtonState::UP &&
        button_state != ButtonState::CLICKED)) {
-    return;
+    return false;
   }
   in_click_ = false;
   if (!input_locked_element_) {
-    return;
+    return false;
   }
   DCHECK(input_locked_element_ == target);
   input_locked_element_ = nullptr;
   target->OnButtonUp(target_point);
+  return true;
 }
 
 void UiInputManager::GetVisualTargetElement(
