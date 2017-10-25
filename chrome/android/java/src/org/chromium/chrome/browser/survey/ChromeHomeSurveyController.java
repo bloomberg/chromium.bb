@@ -73,7 +73,7 @@ public class ChromeHomeSurveyController {
                 onSurveyAvailable(siteId);
             }
         };
-        surveyController.downloadSurvey(context, siteId, "", onSuccessRunnable);
+        surveyController.downloadSurvey(context, siteId, onSuccessRunnable);
     }
 
     private boolean doesUserQualifyForSurvey() {
