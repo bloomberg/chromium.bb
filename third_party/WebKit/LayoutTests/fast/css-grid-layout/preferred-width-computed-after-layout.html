@@ -16,10 +16,9 @@ input {
 
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
 
-<body onload="runTest()">
-<p>This test checks that preferred widths computations triggered after layout for flex items do not cause grid containers to shrink.</p>
+<body>
+<p>This test checks that preferred widths computations triggered after layout do not cause grid items to shrink.</p>
 <h3>Grid as flex item.</h3>
 <div class="flex">
     <div class="grid" data-expected-width="500">
@@ -39,6 +38,21 @@ input {
     <input data-expected-width="204">
 </div>
 
+<h3>Grid with auto width and input with placeholder.</h3>
+<div class="grid" style="max-width: 500px" data-expected-width="500">
+    <input placeholder="Type something here" data-expected-width="480">
+</div>
+
+<h3>Grid with auto width and input with placeholder and non-auto min-width.</h3>
+<div class="grid" style="max-width: 500px" data-expected-width="500">
+    <input style="min-width: 0px" placeholder="Type something here" data-expected-width="480">
+</div>
+
+<h3>Grid with auto width and input with placeholder and non-visible overflow.</h3>
+<div class="grid" style="max-width: 500px" data-expected-width="500">
+    <input style="overflow: hidden" placeholder="Type something here" data-expected-width="480">
+</div>
+
 <h3>Grid as a child of a flex item.</h3>
 <div class="flex">
     <div>
@@ -48,15 +62,79 @@ input {
     </div>
 </div>
 <div id="log"></div>
-</body>
-
 <script>
-function runTest() {
-    var inputs = document.getElementsByTagName("input");
-    for (i = 0; i < inputs.length; ++i) {
+'use strict';
+var inputs = document.getElementsByTagName("input");
+function doTest(i) {
+    return new Promise(resolve => {
         inputs[i].focus();
-        document.execCommand('InsertText', false, 'X');
-    }
-    checkLayout('.grid');
+        setTimeout(() => {
+            document.execCommand('InsertText', false, 'X');
+            resolve(inputs[i]);
+        }, 0);
+    });
 }
+
+function assert_tolerance(actual, expected, message)
+{
+    if (isNaN(expected) || Math.abs(actual - expected) >= 1) {
+        assert_equals(actual, Number(expected), message);
+    }
+}
+
+function checkExpectedValue(node) {
+    var expectedWidth = node.getAttribute("data-expected-width");
+    assert_tolerance(node.offsetWidth, expectedWidth, "Error");
+}
+
+promise_test(() => {
+    return doTest(0)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 1 test');
+
+promise_test(() => {
+    return doTest(1)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 2 test');
+
+promise_test(() => {
+    return doTest(2)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 3 test');
+
+promise_test(() => {
+    return doTest(3)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 4 test');
+
+promise_test(() => {
+    return doTest(4)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 5 test');
+
+promise_test(() => {
+    return doTest(5)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 6 test');
+
+promise_test(() => {
+    return doTest(6)
+        .then(function(input) {
+            checkExpectedValue(input);
+        });
+}, 'Input 7 test');
+
 </script>
+</body>
