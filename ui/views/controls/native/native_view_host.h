@@ -55,6 +55,12 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // NB: This does not interact nicely with fast_resize.
   bool SetCornerRadius(int corner_radius);
 
+  // Sets the size for the NativeView that may or may not match the size of this
+  // View when it is being captured. If the size does not match, scaling will
+  // occur. Pass an empty size to revert to the default behavior, where the
+  // NatieView's size always equals this View's size.
+  void SetNativeViewSize(const gfx::Size& size);
+
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
   // will be all wrong and content will flow offscreen). Only use this
@@ -116,6 +122,10 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // The preferred size of this View
   gfx::Size preferred_size_;
+
+  // The actual size of the NativeView, or an empty size if no scaling of the
+  // NativeView should occur.
+  gfx::Size native_view_size_;
 
   // True if the native view is being resized using the fast method described
   // in the setter/accessor above.

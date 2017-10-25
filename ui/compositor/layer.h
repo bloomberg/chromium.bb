@@ -148,7 +148,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // The transform, relative to the parent.
   void SetTransform(const gfx::Transform& transform);
-  gfx::Transform transform() const;
+  const gfx::Transform& transform() const { return cc_layer_->transform(); }
 
   gfx::PointF position() const { return cc_layer_->position(); }
 

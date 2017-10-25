@@ -167,6 +167,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   gfx::Rect GetBoundsInScreen() const;
 
   void SetTransform(const gfx::Transform& transform);
+  const gfx::Transform& transform() const { return layer()->transform(); }
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.

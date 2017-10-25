@@ -100,6 +100,23 @@ TEST_F(NativeViewHostMacTest, Attach) {
   DestroyHost();
 }
 
+// Test that the content windows' bounds are set to the correct values while the
+// native size is equal or not equal to the View size.
+TEST_F(NativeViewHostMacTest, ContentViewPositionAndSize) {
+  CreateHost();
+  toplevel()->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  // TODO(amp): Update expect rect after Mac native size is implemented.
+  // For now the native size is ignored on mac.
+  native_host()->ShowWidget(5, 10, 100, 100, 200, 200);
+  EXPECT_NSEQ(NSMakeRect(5, -32, 100, 100), [native_view_ frame]);
+
+  native_host()->ShowWidget(10, 25, 50, 50, 50, 50);
+  EXPECT_NSEQ(NSMakeRect(10, 3, 50, 50), [native_view_ frame]);
+
+  DestroyHost();
+}
+
 // Ensure the native view is hidden along with its host, and when detaching, or
 // when attaching to a host that is already hidden.
 TEST_F(NativeViewHostMacTest, NativeViewHidden) {
