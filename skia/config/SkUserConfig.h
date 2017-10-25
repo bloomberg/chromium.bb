@@ -212,6 +212,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_BLUR_IMAGE
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_GPU_GRADIENT_TABLE
+#define SK_SUPPORT_LEGACY_GPU_GRADIENT_TABLE
+#endif
+
 #ifndef SK_SUPPORT_LEGACY_DELTA_AA
 #define SK_SUPPORT_LEGACY_DELTA_AA
 #endif
