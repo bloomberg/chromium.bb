@@ -151,6 +151,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 
   if (speed >= 2) {
+    sf->selective_ref_frame = 1;
+
     if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
         av1_internal_image_edge(cpi)) {
       sf->use_square_partition_only = !frame_is_boosted(cpi);
@@ -398,6 +400,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->tx_type_search.use_skip_flag_prediction = 1;
   sf->tx_type_search.fast_intra_tx_type_search = 0;
   sf->tx_type_search.fast_inter_tx_type_search = 0;
+  sf->selective_ref_frame = 0;
   sf->less_rectangular_check = 0;
   sf->use_square_partition_only = 0;
   sf->auto_min_max_partition_size = NOT_IN_USE;

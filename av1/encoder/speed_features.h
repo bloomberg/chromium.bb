@@ -324,6 +324,9 @@ typedef struct SPEED_FEATURES {
   // Used if partition_search_type = FIXED_SIZE_PARTITION
   BLOCK_SIZE always_this_block_size;
 
+  // Drop less likely picked reference frames in the RD search
+  int selective_ref_frame;
+
   // Skip rectangular partition test when partition type none gives better
   // rd than partition type split.
   int less_rectangular_check;

@@ -9947,6 +9947,25 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
 #endif  // CONFIG_INTERINTRA
 
+#if CONFIG_FRAME_MARKER
+    if (sf->selective_ref_frame) {
+      if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
+          mbmi->ref_frame[1] == ALTREF2_FRAME)
+        if (cm->cur_frame->alt2_frame_offset < cm->frame_offset) continue;
+      if (mbmi->ref_frame[0] == BWDREF_FRAME ||
+          mbmi->ref_frame[1] == BWDREF_FRAME)
+        if (cm->cur_frame->bwd_frame_offset < cm->frame_offset) continue;
+      if (mbmi->ref_frame[0] == LAST3_FRAME ||
+          mbmi->ref_frame[1] == LAST3_FRAME)
+        if (cm->cur_frame->lst3_frame_offset <= cm->cur_frame->gld_frame_offset)
+          continue;
+      if (mbmi->ref_frame[0] == LAST2_FRAME ||
+          mbmi->ref_frame[1] == LAST2_FRAME)
+        if (cm->cur_frame->lst2_frame_offset <= cm->cur_frame->gld_frame_offset)
+          continue;
+    }
+#endif
+
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;
       TX_SIZE uv_tx;

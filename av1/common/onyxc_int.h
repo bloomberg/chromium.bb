@@ -122,14 +122,14 @@ typedef struct {
   int ref_count;
 
 #if CONFIG_FRAME_MARKER
-  int cur_frame_offset;
-  int lst_frame_offset;
-  int alt_frame_offset;
-  int gld_frame_offset;
-  int lst2_frame_offset;
-  int lst3_frame_offset;
-  int bwd_frame_offset;
-  int alt2_frame_offset;
+  unsigned int cur_frame_offset;
+  unsigned int lst_frame_offset;
+  unsigned int alt_frame_offset;
+  unsigned int gld_frame_offset;
+  unsigned int lst2_frame_offset;
+  unsigned int lst3_frame_offset;
+  unsigned int bwd_frame_offset;
+  unsigned int alt2_frame_offset;
 #endif  // CONFIG_FRAME_MARKER
 
   MV_REF *mvs;
