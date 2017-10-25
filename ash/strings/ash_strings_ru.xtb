@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">слабый сигнал</translation>
 <translation id="1293264513303784526">Устройство USB-C (порт слева)</translation>
 <translation id="1346748346194534595">Справа</translation>
 <translation id="1383876407941801731">Поиск</translation>
@@ -69,6 +70,8 @@
 <translation id="2532589005999780174">Режим высокой контрастности</translation>
 <translation id="2597972630681408282">Ночной режим: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Отправить</translation>
+<translation id="2675319268637823299">Администратор отключил множественный вход для аккаунта <ph name="USER_EMAIL" />.
+Чтобы вы смогли войти в этот аккаунт, все остальные пользователи должны выйти из него.</translation>
 <translation id="2700058918926273959">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />. После этого будет выполнен выход.</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -79,6 +82,7 @@
 <translation id="2844169650293029770">Устройство USB-C (ближний порт слева)</translation>
 <translation id="2865888419503095837">Информация о сети</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
+<translation id="2903844815300039659">Подключено к сети <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Ваш экран виден другим участникам</translation>
 <translation id="2942516765047364088">Положение панели запуска</translation>
 <translation id="2946119680249604491">Добавить подключение</translation>
@@ -94,6 +98,7 @@
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="315116470104423982">Мобильное подключение</translation>
+<translation id="3153444934357957346">Для множественного входа можно использовать не более <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтов.</translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
 <translation id="3294437725009624529">Гость</translation>
 <translation id="332587331255250389">Замените батарею в стилусе</translation>
@@ -102,6 +107,7 @@
 <translation id="3371140690572404006">Устройство USB-C (ближний порт справа)</translation>
 <translation id="3400357268283240774">Дополнительные настройки</translation>
 <translation id="3445925074670675829">Устройство USB-C</translation>
+<translation id="3465566417615315331">Нажмите на свое фото</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3510164367642747937">Выделять указатель мыши</translation>
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
@@ -110,10 +116,10 @@
 <translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="3621202678540785336">Вход</translation>
 <translation id="3626281679859535460">Яркость</translation>
+<translation id="3631369015426612114">Разрешить уведомления из следующих источников</translation>
 <translation id="3712407551474845318">Снимок области</translation>
 <translation id="371370241367527062">Фронтальный микрофон</translation>
 <translation id="3771549900096082774">Режим высокой контрастности</translation>
-<translation id="3775358506042162758">Множественный вход поддерживает не более трех аккаунтов.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Заблокировать</translation>
 <translation id="3798670284305777884">Динамик (встроенный)</translation>
@@ -126,11 +132,13 @@
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4017989525502048489">Лазерная указка</translation>
+<translation id="4072264167173457037">сигнал средней мощности</translation>
 <translation id="4279490309300973883">Отражение</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Загрузка Ассистента…</translation>
 <translation id="4378551569595875038">Подключение…</translation>
+<translation id="4379531060876907730">Инструменты для работы со стилусом</translation>
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -200,6 +208,7 @@
 <translation id="632744581670418035">Накладка на клавиатуру</translation>
 <translation id="639644700271529076">CAPS LOCK отключен</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Уведомлений больше нет</translation>
 <translation id="6452181791372256707">Отклонить</translation>
 <translation id="6453179446719226835">Язык изменен</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME" /></translation>
@@ -256,6 +265,7 @@
 <translation id="776344839111254542">Нажмите, чтобы просмотреть информацию об обновлении</translation>
 <translation id="7798302898096527229">Для отмены нажмите SEARCH или SHIFT.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">хороший сигнал</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7977927628060636163">Поиск мобильных сетей...</translation>
 <translation id="7982789257301363584">Сеть</translation>
@@ -274,7 +284,6 @@
 <translation id="8308637677604853869">Предыдущее меню</translation>
 <translation id="8351131234907093545">Создать заметку</translation>
 <translation id="8392234662362215700">Нажмите Ctrl + Shift + ПРОБЕЛ, чтобы переключить раскладку клавиатуры.</translation>
-<translation id="8392688371657486010">Оповещений нет</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки сети</translation>
 <translation id="8433977262951327081">Быстрые клавиши для вызова всплывающего окна с параметрами ввода на панели запуска изменились. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -293,6 +302,7 @@
 <translation id="8825534185036233643">Зеркалирование более двух дисплеев не поддерживается.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Клавиша поиска + Esc</translation>
+<translation id="8870509716567206129">Приложение не поддерживает разделение экрана.</translation>
 <translation id="8878886163241303700">Раскрытый экран</translation>
 <translation id="8921624153894383499">Google Ассистент не говорит на этом языке</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
@@ -304,6 +314,7 @@
 <translation id="9091626656156419976">Удален экран "<ph name="DISPLAY_NAME" />"</translation>
 <translation id="9111102763498581341">Разблокировать</translation>
 <translation id="9151726767154816831">Чтобы обновить систему, перезапустите ее и выполните Powerwash</translation>
+<translation id="9181036778675416867">Нажмите кнопку стилуса на панели запуска, чтобы создать заметку, запустить Ассистента или использовать стилус в качестве лупы или лазерной указки.</translation>
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
 <translation id="9201131092683066720">Батарея заряжена на <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>

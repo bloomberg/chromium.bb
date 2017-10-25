@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">पूर्णविराम</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 महिना}one{# महिना}other{# महिने}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144"><ph name="RATING_SCORE" /> तारे रेटिंग</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 तास आणि }one{# तास आणि }other{# तास आणि }}</translation>
 <translation id="1842960171412779397">निवडा</translation>
 <translation id="1860796786778352021">सूचना बंद</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">सर्व अ‍ॅप्स</translation>
 <translation id="4320177379694898372">कोणतेही इंटरनेट कनेक्शन नाही</translation>
 <translation id="4588090240171750605">उजवे स्क्रोल करा</translation>
+<translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> न वाचलेल्या सूचना</translation>
 <translation id="4730374152663651037">वारंवार वापरलेले</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 महिना राहिला}one{# महिना राहिला}other{# महिने राहिले}}</translation>
 <translation id="4820616160060340806">आदेश+<ph name="KEY_COMBO_NAME" /></translation>

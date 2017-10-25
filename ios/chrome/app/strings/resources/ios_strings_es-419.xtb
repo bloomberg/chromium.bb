@@ -67,7 +67,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
 <translation id="213900355088104901">Para navegar de forma privada, abre una pestaña de incógnito</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
 <translation id="2256128224215992540">Sugerencias de sitios y búsqueda</translation>
 <translation id="2267753748892043616">Agregar cuenta</translation>
@@ -145,14 +144,10 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3567664240939803299">¿Deseas que Google Smart Lock guarde tu contraseña para este sitio?</translation>
 <translation id="3588820906588687999">Abrir imagen en nueva pestaña</translation>
 <translation id="3603009562372709545">Copiar URL del vínculo</translation>
-<translation id="360480449234699036">Obtén información acerca de temas en sitios web sin salir de la página. Tocar para buscar envía una palabra y el contexto en el que se encuentra a la Búsqueda de Google, y muestra definiciones, fotos, resultados de la búsqueda y otros detalles.
-
-Para ajustar el término de búsqueda, mantén presionado el texto y selecciónalo. Para perfeccionar la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
 <translation id="3607167657931203000">Autocompletar datos</translation>
 <translation id="3628119975092896051">Tu lista de lectura está disponible sin conexión. Para agregar una página, presiona <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precargar pág. web</translation>
 <translation id="3691593122358196899">Se agregó a favoritos en <ph name="FOLDER_TITLE" /></translation>
-<translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3771033907050503522">Pestañas de incógnito</translation>
 <translation id="3779810277399252432">Sin conexión a Internet</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
@@ -209,7 +204,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5010803260590204777">Abre una pestaña de incógnito para navegar por la Web de forma privada.</translation>
 <translation id="5011684439661633295">Hola, <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">Permitir</translation>
 <translation id="5062321486222145940">Instalar Google Drive</translation>
 <translation id="5083464117946352670">Tamaño de archivo desconocido</translation>
 <translation id="5094827893301452931">Tweet publicado</translation>
@@ -312,7 +306,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6797885426782475225">Búsqueda por voz</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Elemento creado</translation>
-<translation id="6871663519944855400">Abrir en incógnito</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
@@ -340,7 +333,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7456847797759667638">Abrir ubicación...</translation>
 <translation id="7464701184726199289">Esta opción borra los datos sincronizados en todos los dispositivos. Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nombre de empresa</translation>
-<translation id="7473891865547856676">No, gracias</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="750493650310597496">0 seleccionados</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -370,7 +362,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="806745655614357130">Mantener mis datos separados</translation>
 <translation id="8076014560081431679">Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Cerrar todas las pestañas</translation>
-<translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imágenes y archivos almacenados en caché</translation>
 <translation id="8261506727792406068">Borrar</translation>

@@ -49,6 +49,12 @@
 
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
 <translation id="1160939557934457296">Huwag paganahin ang pagpapatuloy mula sa pahina ng babala sa Ligtas na Pag-browse</translation>
+<translation id="1166377463685560145">Tumutukoy sa mga printer na hindi magagamit ng user.
+
+      Ginagamit lang ang patakarang ito kung napili ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
+      </translation>
 <translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
@@ -81,6 +87,12 @@
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
+<translation id="1420281424655200442">Kumokontrol sa kung aling mga printer mula sa <ph name="DEVICE_PRINTERS_POLICY" /> ang available sa mga user.
+
+      Nagtatalaga sa kung aling patakaran sa pag-access ang gagamitin para sa maramihang pag-configure ng printer. Kung pipiliin ang <ph name="PRINTERS_ALLOW_ALL" />, ipapakita ang lahat ng printer. Kung pipiliin ang <ph name="PRINTERS_BLACKLIST" />, gagamitin ang <ph name="DEVICE_PRINTERS_BLACKLIST" /> upang paghigpitan ang access sa mga tinukoy na printer.  Kung pipiliin ang <ph name="PRINTERS_WHITELIST" />, ang mga printer na maaaring piliin lang ang itatalaga ng <ph name="DEVICE_PRINTERS_WHITELIST" />.
+
+      Kung hindi nakatakda ang patakarang ito, ipagpapalagay ang <ph name="PRINTERS_BLACKLIST" />.
+      </translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
@@ -102,6 +114,11 @@
 
       Kung iniwanang hindi nakatakda ang patakaran, malalapat ang default na value na 'MultiProfileUserBehaviorMustBePrimary' para sa mga user na pinapamahalaan ng enterprise at gagamitin ang 'MultiProfileUserBehaviorUnrestricted' para sa mga user na hindi pinapamahalaan.</translation>
 <translation id="1465619815762735808">I-click upang i-play</translation>
+<translation id="1466133662354365542">Nag-e-enable sa feature na Autofill ng <ph name="PRODUCT_NAME" /> at nagbibigay-daan sa mga user na awtomatikong kumpletuhin ang impormasyon ng credit card at address sa mga web form gamit ang dati nang naka-store na impormasyon.
+
+      Kung idi-disable mo ang setting na ito, hindi kailanman magmumungkahi o maglalagay ang Autofill ng impormasyon ng credit card, o magse-save ng karagdagang impormasyon ng credit card na maaaring isumite ng user habang nagba-browse sa web.
+
+      Kung ie-enable mo ang setting na ito o kung hindi ka magtatakda ng value, makokontrol ng user ang pangkalahatang feature na autofill (kabilang ang mga credit card) sa UI.</translation>
 <translation id="1468307069016535757">Itakda ang default na katayuan ng tampok na pagiging naa-access ng high contrast mode sa screen sa pag-login.
 
           Kung nakatakda sa true ang patakarang ito, i-e-enable ang high contrast mode kapag ipinakita ang screen sa pag-login.
@@ -143,6 +160,19 @@
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1561967320164410511">U2F kasama ang mga extension para sa pagpapatunay ng indibidwal</translation>
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
+<translation id="1603058613431276040">Nagbibigay ng mga configuration para sa mga enterprise printer na naka-bind sa mga device.
+
+      Pinapayagan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga <ph name="PRODUCT_OS_NAME" /> device. Hindi dapat lumampas ang laki ng file sa 5MB at dapat ay naka-encode ito sa JSON. Pareho ang format sa format ng diksyunaryo ng NativePrinters.  Tinatantyang ang isang file na may humigit-kumulang 21,000 printer ay mae-encode bilang 5MB na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng download.
+
+      Ida-download at ika-cache ang file. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
+
+      Kung nakatakda ang patakarang ito, ida-download ng <ph name="PRODUCT_OS_NAME" /> ang file para sa mga pag-configure ng printer at gagawin nitong available ang mga printer alinsunod sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" />, at <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nakalaan itong maging dagdag sa pag-configure ng mga indibidwal na user sa mga printer.
+
+      Karagdagan ang patakarang ito sa <ph name="BULK_PRINTERS_POLICY" />.
+
+      Kung hindi nakatakda ang patakarang ito, walang magiging device printer at babalewalain ang iba pang patakaran ng <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.</translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="163200210584085447">Itutugma ang mga pattern na nasa listahang ito sa security
@@ -247,6 +277,12 @@
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="203096360153626918">Ang patakarang ito ay walang epekto sa mga Android app. Makakapunta ang mga ito sa fullscreen mode kahit na nakatakda ang patakaran sa <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Mga naka-disable na printer ng enterprise</translation>
+<translation id="2063380907529983889">Kumokontrol sa kung aling mga printer mula sa <ph name="BULK_PRINTERS_POLICY" /> ang available sa mga user.
+
+      Nagtatalaga sa kung aling patakaran sa pag-access ang gagamitin para sa maramihang pag-configure ng printer. Kung pipiliin ang <ph name="PRINTERS_ALLOW_ALL" />, ipapakita ang lahat ng printer. Kung pipiliin ang <ph name="PRINTERS_BLACKLIST" />, gagamitin ang <ph name="BULK_PRINTERS_BLACKLIST" /> upang paghigpitan ang access sa mga tinukoy na printer.  Kung pipiliin ang <ph name="PRINTERS_WHITELIST" />, ang mga printer na maaaring piliin lang ang itatalaga ng <ph name="BULK_PRINTERS_WHITELIST" />.
+
+      Kung hindi nakatakda ang patakarang ito, ipagpapalagay ang <ph name="PRINTERS_BLACKLIST" />.
+      </translation>
 <translation id="206623763829450685">Tinutukoy kung aling mga scheme ng pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
 
           Ang mga posibleng value ay 'basic,' 'digest,' 'ntlm' at 'negotiate.' Paghiwa-hiwalayin ang maraming value gamit ang mga kuwit.
@@ -338,6 +374,7 @@
 <translation id="2294382669900758280">Hindi isinasaalang-alang ang pag-play ng Video sa mga Android app, kahit nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">I-configure ang default na page ng Bagong Tab sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
+<translation id="2303795211377219696">I-enable ang AutoFill para sa mga credit card</translation>
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
 <translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
@@ -506,6 +543,12 @@
 <translation id="2762164719979766599">Tinutukoy ang listahan ng mga account na lokal sa device na ipapakita sa screen ng pag-login.
 
       Tumutukoy ng identifier ang bawat entry sa listahan, na panloob na ginagamit upang hiwalay na tukuyin ang iba't ibang mga account na lokal sa device.</translation>
+<translation id="2766302473082018239">Tumutukoy sa mga printer na magagamit ng user.
+
+      Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Kung ginagamit ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga entry sa file na tinukoy sa <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
 <translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
@@ -664,6 +707,12 @@
 
           Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
+<translation id="3395348522300156660">Tumutukoy sa mga printer na magagamit ng user.
+
+      Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      Kung ginagamit ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga entry sa file na tinukoy sa <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
       Kung nakatakda sa false ang patakarang ito, hindi papayagan ng <ph name="PRODUCT_OS_NAME" /> na masimulan ang mga session ng bisita.</translation>
@@ -874,6 +923,7 @@
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
 <translation id="4105989332710272578">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng mga URL</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
+<translation id="4133144443101280166">Mga off hour na pagitan kapag na-release ang OffHours |ignored_policy_proto_tags| ng device</translation>
 <translation id="4157003184375321727">I-ulat ang bersyon ng OS at firmware.</translation>
 <translation id="4183229833636799228">Default na setting ng <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para sa pagva-validate ng token ng pagpapatotoo ng client sa malayuang pag-access</translation>
@@ -1096,6 +1146,7 @@
           Ang value ay dapat na isang array ng stringified na mga diksyunaryong JSON. Ang bawat diksyunaryo ay dapat na mayroong anyong { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kung saan ang $URL_PATTERN ay isang pattern ng setting ng content. Nililimitahan ng $FILTER kung aling mga client certificate ang awtomatikong pipiliin ng browser. Anuman ang filter, ang mga certificate na tumutugma sa kahilingan sa certificate ng server ang pipiliin. Kung ang $FILTER ay may anyong { "ISSUER": { "CN": "$ISSUER_CN" } }, mga client certificate na ibinigay ng isang certificate na may CommonName $ISSUER_CN lang ang pipiliin. Kung ang $FILTER ay ang walang lamang diksyunaryo na {}, hindi na nililimitahan ang pagpili ng mga client certificate.
 
           Kung hindi nakatakda ang patakarang ito, walang gagawing awtomatikong pagpili para sa anumang site.</translation>
+<translation id="4978405676361550165">Kung nakatakda ang patakarang "OffHours," babalewalain ang mga tinukoy na patakaran sa device (gagamitin ang mga default na setting ng mga patakarang ito) sa mga tinukoy na pagitan ng oras. Muling ilalapat ng Chrome ang mga patakaran sa device sa bawat kaganapan kapag nagsimula o natapos ang "OffHours" na yugto. Aabisuhan at sapilitang isa-sign out ang user kapag natapos ang oras ng "OffHours" at kapag nabago ang mga setting ng patakaran sa device (hal., kapag sa hindi pinapayagang account naka-log in ang user).</translation>
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
@@ -1109,6 +1160,7 @@
 <translation id="5067143124345820993">White list ng user sa pag-login</translation>
 <translation id="5068140065960598044">Ino-override ng patakaran sa cloud ng <ph name="PRODUCT_NAME" /> ang patakaran sa Machine.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
+<translation id="5090209345759901501">I-extend ang setting ng Flash content sa lahat ng content</translation>
 <translation id="5105313908130842249">Delay ng pag-lock ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="5108031557082757679">Mga naka-disable na printer ng device ng enterprise</translation>
 <translation id="5130288486815037971">Kung naka-enable ang mga RC4 na cipher suite sa TLS o hindi</translation>
@@ -1280,6 +1332,24 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5728154254076636808">I-enable ang paggawa ng mga roaming na kopya para sa data ng profile sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">I-import ang data ng form ng autofill mula sa default na browser sa unang pagtakbo</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
+<translation id="5768309557753179144">Sinusuportahan ng Chromium at Google Chrome ang iisang hanay ng
+      mga patakaran. Pakitandaan na ang dokumentong ito ay maaaring may kasamang hindi pa nailalabas na patakaran
+      (ibig sabihin, ang entry na 'Sinusuportahan sa' nito ay tungkol sa isang hindi pa nare-release na bersyon ng
+      <ph name="PRODUCT_NAME" />) na maaaring
+      mabago o matanggal nang walang abiso at walang garantiyang
+      ibinibigay para rito, kasama ang mga garantiya tungkol sa seguridad
+      at privacy nito.
+
+      Ang mga patakarang ito ay mahigpit na inilaan para gamitin sa pag-configure ng mga instance ng
+      <ph name="PRODUCT_NAME" /> sa loob ng iyong organisasyon. Ang paggamit sa mga patakarang ito sa labas ng organisasyon mo (halimbawa,
+      sa isang program na ipinamamahagi sa publiko) ay ituturing na malware at malamang na ituturing ng Google at mga anti-virus vendor bilang malware.
+
+      Hindi kinakailangang i-configure nang manual ang mga setting na ito! May
+      mga template na madaling gamitin para sa Windows, Mac at Linux na available i-download sa <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Ang inirerekomendang paraan para ma-configure ang patakaran sa Windows ay sa pamamagitan ng GPO, bagama't
+      ang pag-provision ng patakaran sa pamamagitan ng registry ay sinusuportahan pa rin para sa mga instance sa Windows
+      na kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5770738360657678870">Dev channel (maaaring hindi stable)</translation>
 <translation id="5774856474228476867">URL sa paghahanap ng default na provider ng paghahanap</translation>
 <translation id="5776485039795852974">Magtanong sa tuwing gustong ipakita ng site ang mga notification sa desktop</translation>
@@ -1383,6 +1453,53 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakarang ito o nakatakda sa false, iti-trigger ng mga command sa pag-print ang screen ng preview sa pag-print.</translation>
 <translation id="6022948604095165524">Pagkilos sa startup</translation>
+<translation id="6023030044732320798">Tumutukoy ng hanay ng mga patakarang ipapasa sa runtime ng ARC. Dapat ay valid na JSON ang value.
+
+      Magagamit ang patakarang ito upang i-configure kung aling mga Android app ang awtomatikong ii-install sa device:
+
+      {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "description": "Identifier ng Android app, hal., "com.google.android.gm" para sa Gmail",
+                  "type": "string"
+                },
+                "installType": {
+                  "description": "Tumutukoy sa kung paano ii-install ang isang app. OPTIONAL: Hindi awtomatikong ii-install ang app, ngunit maaari itong i-install ng user. Ito ang default kung hindi tutukuyin ang patakarang ito. PRELOAD: Awtomatikong ii-install ang app, ngunit maaari itong i-uninstall ng user. FORCE_INSTALLED: Awtomatikong ii-install ang app at hindi ito maaaring i-uninstall ng user. BLOCKED: Naka-block ang app at hindi maaaring i-install. Kung na-install ang app alinsunod sa dating patakaran, maa-uninstall ito.",
+                  "type": "string",
+                  "enum": [
+                    "OPTIONAL",
+                    "PRELOAD",
+                    "FORCE_INSTALLED",
+                    "BLOCKED"
+                  ]
+                },
+                "defaultPermissionPolicy": {
+                  "description": "Patakaran sa pagbibigay ng mga kahilingan sa pahintulot sa mga app. PERMISSION_POLICY_UNSPECIFIED: Hindi tinukoy ang patakaran. Kung walang tutukuying patakaran para sa isang pahintulot sa anumang antas, gagamitin bilang default ang `PROMPT` na gawi. PROMPT: Nagpa-prompt sa user na magbigay ng pahintulot. GRANT: Awtomatikong nagbibigay ng pahintulot. DENY: Awtomatikong hindi nagbibigay ng pahintulot.",
+                  "type": "string",
+                  "enum": [
+                    "PERMISSION_POLICY_UNSPECIFIED",
+                    "PROMPT",
+                    "GRANT",
+                    "DENY"
+                  ]
+                },
+                "managedConfiguration": {
+                  "description": "Partikular sa app na object ng configuration ng JSON na may hanay ng mga key-value na pares, hal., '"managedConfiguration": { "key1": value1, "key2": value2 }'. Tinutukoy ang mga key sa manifest ng app.",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Upang mag-pin ng mga app sa launcher, tingnan ang PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
@@ -1496,6 +1613,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pipiliin mong gumamit ng isang .pac proxy script, ibibigay sa mga Android app ang script URL.</translation>
 <translation id="6491139795995924304">Payagan ang bluetooth sa device</translation>
 <translation id="6520802717075138474">Mag-import ng mga search engine mula sa default na browser sa unang pagtakbo</translation>
+<translation id="6525955212636890608">Kung ie-enable mo ang setting na ito, ang lahat ng Flash content na naka-embed sa mga website na itinakdang payagan ang Flash sa mga setting ng content -- ng user man o ng patakaran ng enterprise -- ay papatakbuhin, kabilang ang content mula sa iba pang pinagmulan o maliit na content.
+
+      Upang makontrol kung aling mga website ang pinapayagang magpatakbo ng Flash, tingnan ang mga patakarang "DefaultPluginsSetting," "PluginsAllowedForUrls," at "PluginsBlockedForUrls."
+
+      Kung naka-disable o hindi nakatakda ang setting na ito, maaaring ma-block ang Flash content mula sa iba pang pinagmulan o maliit na content.</translation>
 <translation id="653608967792832033">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay mala-lock ang screen kapag tumatakbo gamit ang power ng baterya.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-lock ng <ph name="PRODUCT_OS_NAME" /> ang screen.
@@ -2077,6 +2199,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8493645415242333585">Huwag paganahin ang pag-save ng kasaysayan ng browser</translation>
 <translation id="8499172469244085141">Mga Default na Setting (maaaring i-override ng mga user)</translation>
 <translation id="8519264904050090490">Mga pinapamahalaang URL ng manu-manong exception ng user</translation>
+<translation id="8527932539502116028">Tumutukoy sa mga printer na hindi magagamit ng user.
+
+      Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
+      </translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
@@ -2154,6 +2282,18 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa idle delay ang mga halaga.</translation>
 <translation id="891435090623616439">naka-encode bilang JSON string, para sa mga detalye, tingnan ang <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8927384992072706174">Nagbibigay ng mga configuration para sa mga enterprise printer.
+
+      Pinapayagan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga <ph name="PRODUCT_OS_NAME" /> device. Hindi dapat lumampas ang laki ng file sa 5MB at dapat ay naka-encode ito sa JSON.  Pareho ang format sa format ng diksyunaryo ng NativePrinters.  Tinatantyang ang isang file na may humigit-kumulang 21,000 printer ay mae-encode bilang 5MB na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng download.
+
+      Ida-download at ika-cach file. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
+
+      Kung nakatakda ang patakarang ito, ida-download ng <ph name="PRODUCT_OS_NAME" /> ang file para sa mga configuration ng printer at gagawin nitong available ang mga printer alinsunod sa <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" />, at <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
+
+      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nakalaan itong maging dagdag sa pag-configure ng mga indibidwal na user sa mga printer.
+      </translation>
 <translation id="8947415621777543415">I-ulat ang lokasyon ng device</translation>
 <translation id="8951350807133946005">Itakda ang direktoryo ng cache ng disk</translation>
 <translation id="8952317565138994125">Dini-disable ang pag-synchronize ng data sa <ph name="PRODUCT_NAME" /> gamit ang mga serbisyo sa pag-synchronize na hino-host ng Google at pinipigilan ang mga user na baguhin ang setting na ito.

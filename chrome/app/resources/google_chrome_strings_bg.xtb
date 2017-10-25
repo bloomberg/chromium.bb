@@ -149,7 +149,6 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Общи условия<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (копирано в Chrome)</translation>
 <translation id="5251420635869119124">Гостите могат да използват Chrome, без да оставят следи.</translation>
-<translation id="5253588388888612165">Ако споделяте компютъра с/ъс <ph name="PROFILE_NAME" />, добавете се към Chrome, за да сърфирате отделно. В противен случай прекратете връзката с профила в Google на този потребител.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ще се рестартира след 1 секунда.}other{Google Chrome ще се рестартира след # секунди.}}</translation>
 <translation id="5334545119300433702">За този модул е известно, че влиза в конфликт с Google Chrome.</translation>
 <translation id="5386244825306882791">То също контролира коя страница се показва при стартиране на Chrome или при търсене от полето за всичко.</translation>
@@ -163,7 +162,6 @@
 <translation id="557283862590186398">Chrome се нуждае от разрешение за достъп до микрофона ви за този сайт.</translation>
 <translation id="5620765574781326016">Научете за темите в уебсайтовете, без да излизате от страницата.</translation>
 <translation id="565744775970812598">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
-<translation id="568643307450491754">Намерете отметките си в менюто на Chrome или в лентата на отметките.</translation>
 <translation id="573759479754913123">Всичко за Chrome OS</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
 <translation id="5774845247549698882">Chrome OS се показва на този език</translation>

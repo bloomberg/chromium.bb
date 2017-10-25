@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">دوره زمانی</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> مگابایت/ثانیه</translation>
+<translation id="1812519734428420144">رتبه‌بندی ستاره‌ای <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{۱ ساعت و }one{# ساعت و }other{# ساعت و }}</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="1860796786778352021">بستن اعلان</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
 <translation id="4320177379694898372">اتصال اینترنتی ندارید</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
+<translation id="4724120544754982507">مرکز اعلان، <ph name="UNREAD_NOTIFICATION_COUNT" /> اعلان خوانده‌نشده</translation>
 <translation id="4730374152663651037">مکرراً استفاده‌شده</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{۱ ماه باقی مانده است}one{# ماه باقی مانده است}other{# ماه باقی مانده است}}</translation>
 <translation id="4820616160060340806">فرمان+<ph name="KEY_COMBO_NAME" /></translation>

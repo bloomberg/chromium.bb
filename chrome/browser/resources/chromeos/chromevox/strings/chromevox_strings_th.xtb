@@ -4,6 +4,7 @@
 <translation id="100812568230599391">เปลี่ยนรูปแบบการแสดงผลเป็นข้อความแทรก</translation>
 <translation id="1012173283529841972">รายการ</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">คุณใช้การอธิบายและอ่านออกเสียงของ ChromeVox เป็นครั้งแรกใช่ไหม บทแนะนำย่อนี้ช่วยอธิบายสิ่งที่ควรทราบสำหรับการเริ่มต้นใช้งาน ChromeVox</translation>
 <translation id="1023866615269196768">มีการขยาย</translation>
 <translation id="1025074108959230262">ปิดโหมดติดหนึบแล้ว</translation>
 <translation id="1031961866430398710">จากนั้น</translation>
@@ -29,6 +30,7 @@
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1206619573307042055">ตัวอักษรวิ่ง</translation>
 <translation id="1213216066620407844">ChromeVox - ทำให้ Chrome สามารถพูดได้</translation>
+<translation id="1225437811932752266">ยินดีด้วย คุณได้เรียนรู้สิ่งที่ควรทราบในการใช้ ChromeVox เรียบร้อยแล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกด Search+จุด หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ให้ดูบทความต่อไปนี้ หากคุณดูบทแนะนำเสร็จแล้ว ให้ใช้ ChromeVox ไปยังปุ่ม "ปิด" แล้วคลิก</translation>
 <translation id="1229276918471378188">การข้ามก่อนหน้า</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">ส่วนหัวระดับ 6 ถัดไป</translation>
@@ -40,6 +42,7 @@
 <translation id="1339428534620983148">คอลัมน์ตารางก่อนหน้า</translation>
 <translation id="1342835525016946179">บทความ</translation>
 <translation id="1346748346194534595">ขวา</translation>
+<translation id="135978014023467274">ระบบอัปเดตเป็น ChromeVox 63 ให้แล้ว</translation>
 <translation id="136718599399906424">แถวตารางถัดไป</translation>
 <translation id="1377925789329510816">นี่เป็นส่วนหัวสุดท้าย กด Search+H เพื่อตัดข้อความไปยังส่วนหัวแรกหรือกด Search+Shift+H เพื่อไปที่ส่วนหัวที่ 2 ในหน้านี้</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
@@ -166,6 +169,7 @@
 <translation id="2770781857296573485">ป้อนการสำรวจกลุ่ม</translation>
 <translation id="2777845298774924149">ออกแล้ว</translation>
 <translation id="2781264313200109999">ส่วนต้นของลิงก์</translation>
+<translation id="2784959586797362050">คุณส่งความคิดเห็นถึงเราได้ตามปกติด้วยการกด Search+a แล้วกด i เรายินดีอย่างยิ่งที่จะได้รับฟังความคิดเห็นจากคุณ</translation>
 <translation id="2800204403141299078">ไม่มีองค์ประกอบที่ต่างกันเพิ่มเติม</translation>
 <translation id="2800780099804980316">ไม่มีส่วนหัวระดับ 1 ก่อนหน้า</translation>
 <translation id="280499067616661124">การค้นหาในหน้าของ ChromeVox</translation>
@@ -231,6 +235,7 @@
 <translation id="3241638166094654466">จำนวนเซลล์ในแต่ละบรรทัด:</translation>
 <translation id="3286390186030710347">แถบเลื่อน</translation>
 <translation id="3299925995433437805">ไม่มีลิงก์ที่เคยเข้าชมถัดไป</translation>
+<translation id="3300348286427369683">สนับสนุนรูปแบบ Rich Text ขณะนี้ ChromeVox สนับสนุนช่องแบบ Rich Text ซึ่งรวมถึงคำสั่งข้าม การกำหนดเส้นทางเคอร์เซอร์เบรลล์ การเลือก และอื่นๆ</translation>
 <translation id="3307886118343381874">ไปที่ด้านล่างของตาราง</translation>
 <translation id="3311969765485641742">กด Alt+Shift+A เพื่อดูการแจ้งเตือน</translation>
 <translation id="3312997241656799641">ลิงก์ที่เคยเข้าชมถัดไป</translation>
@@ -334,6 +339,7 @@
 <translation id="3897092660631435901">เมนู</translation>
 <translation id="3909320334364316587">ส่วนหัวระดับ 6 ก่อนหน้า</translation>
 <translation id="3914173277599553213">จำเป็น</translation>
+<translation id="3914732343065571127">ข้อมูลอ้างอิงเกี่ยวกับคำสั่ง ChromeVox</translation>
 <translation id="3962990492275676168">เริ่มอ่านจากตำแหน่งปัจจุบัน</translation>
 <translation id="4004802134384979325">เลือกแล้ว</translation>
 <translation id="4006140876663370126">รูปภาพ</translation>
@@ -404,7 +410,9 @@
 <translation id="4601367666219428522">ตร.<ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">เพิกเฉยการกดแป้นครั้งถัดไป</translation>
 <translation id="461613135510474570">ประโยค</translation>
+<translation id="463135993322337640">กด ChromeVox o, n เพื่อดูเวอร์ชันใหม่</translation>
 <translation id="4647836961514597010">ตัวเลือกสี</translation>
+<translation id="4660783501463101648">นำเวอร์ชันคลาสสิกออกแล้ว ระบบนำการสลับแป้นพิมพ์เพื่อสลับกลับไปยัง ChromeVox คลาสสิกออกแล้ว</translation>
 <translation id="4661075872484491155">แผนผัง</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">ตาราง</translation>
@@ -424,6 +432,7 @@
 <translation id="4827410568042294688">ไม่ได้เลือก</translation>
 <translation id="4842108708071771135">ไม่มีข้อความที่ยกมาถัดไป</translation>
 <translation id="4844625982113518938">กดปุ่มใดก็ได้เพื่อเรียนรู้ชื่อของปุ่มนั้น Ctrl+W จะปิดโหมดการเรียนรู้</translation>
+<translation id="4846428657345567687">ยินดีต้อนรับสู่ ChromeVox</translation>
 <translation id="4846487886195635104">สิ้นสุดส่วนที่ขีดฆ่า</translation>
 <translation id="4848993367330139335">เครื่องตั้งเวลา</translation>
 <translation id="4850023505158945298">เอลิเมนต์ที่คล้ายกันก่อนหน้า</translation>
@@ -461,6 +470,7 @@
 <translation id="5098541983634824365">ออกจากตาราง</translation>
 <translation id="5102981729317424850">แถบเครื่องมือ</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">เรามีการเปลี่ยนแปลงที่น่าตื่นเต้นบางอย่างในเวอร์ชันใหม่ ต่อไปนี้คือเวอร์ชันใหม่</translation>
 <translation id="5110983769041734144">ไม่มีช่องฟอร์มก่อนหน้า</translation>
 <translation id="5111640677200759579">ส่วนหัวของคอลัมน์</translation>
 <translation id="5136967254288895616">ไม่มีลิงก์ก่อนหน้า</translation>
@@ -577,6 +587,7 @@
 <translation id="6065293622157674001">เริ่มข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="6082768461603900813">การนำทางเบื้องต้น</translation>
 <translation id="6092707270915298410">ส่วนท้ายของลิงก์</translation>
+<translation id="6118126368611144850">แอป Android สำหรับ Chrome ถ้าคุณมี Play Store ในอุปกรณ์ ลองใช้ ChromeVox กับแอป Android และลองใช้การสนับสนุนเชิงทดสอบด้วยการดาวน์โหลด Google Chrome Canary จาก Play Store</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">สิ้นสุดเซลล์</translation>
 <translation id="6122013438240733403">ปุ่ม</translation>
@@ -617,6 +628,7 @@
 <translation id="6493991254603208962">ลดความสว่าง</translation>
 <translation id="6508059270146105198">เลื่อนการแสดงผลเบรลล์ไปที่ด้านล่างของหน้า</translation>
 <translation id="6536864053412760904">โทเค็น ML คณิตศาสตร์</translation>
+<translation id="6540201937398578274">ใน ChromeVox ปุ่ม Search คือคีย์ตัวปรับแต่ง ซึ่งแป้นพิมพ์ลัด ChromeVox ส่วนใหญ่จะเริ่มต้นด้วยปุ่ม Search และใช้ปุ่มลูกศรสำหรับการนำทาง</translation>
 <translation id="6550720799683018100">เปลี่ยนรูปแบบแป้นปัจจุบันด้วยการเลือกจากรายการตัวเลือกด้านล่างนี้</translation>
 <translation id="6561818612645211875">ไปที่ด้านบนของแถวปัจจุบัน</translation>
 <translation id="6587021927234520429">ไม่มีส่วนหัวระดับ 4 ถัดไป</translation>

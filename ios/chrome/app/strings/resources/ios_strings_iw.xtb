@@ -67,7 +67,6 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים הועברו</translation>
 <translation id="213900355088104901">כדי לגלוש באופן פרטי יש לפתוח כרטיסיית גלישה בסתר</translation>
 <translation id="2149973817440762519">ערוך סימניות</translation>
-<translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="2230173723195178503">דף האינטרנט נטען</translation>
 <translation id="2256128224215992540">הצעות למונחי חיפוש ולאתרים</translation>
 <translation id="2267753748892043616">הוסף חשבון</translation>
@@ -145,14 +144,10 @@
 <translation id="3567664240939803299">‏האם אתה מעוניין ש-Google Smart Lock ישמור את הסיסמה לאתר זה?</translation>
 <translation id="3588820906588687999">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="3603009562372709545">העתק כתובת אתר של קישור</translation>
-<translation id="360480449234699036">‏קבל מידע על נושאים באתרים מבלי לצאת מהדף. התכונה 'גע כדי לחפש' שולחת מילה ואת ההקשר שלה אל חיפוש Google, המחזיר הגדרות, תמונות, תוצאות חיפוש ופרטים אחרים.
-
-כדי לשנות את מונח החיפוש, גע נגיעה ארוכה במונח כדי לבחור בו. כדי לצמצם את החיפוש, הסט את החלונית עד למעלה וגע בתיבת החיפוש.</translation>
 <translation id="3607167657931203000">נתוני מילוי אוטומטי</translation>
 <translation id="3628119975092896051">אפשר לגשת לרשימת הקריאה במצב לא מקוון. כדי להוסיף דף לרשימת הקריאה, הקש על <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">טעינה מראש של דפי אינטרנט</translation>
 <translation id="3691593122358196899">התווסף לסימניות ב-<ph name="FOLDER_TITLE" /></translation>
-<translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
 <translation id="3779810277399252432">אין חיבור לאינטרנט.</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
@@ -209,7 +204,6 @@
 <translation id="5005498671520578047">העתק סיסמה</translation>
 <translation id="5010803260590204777">פתח כרטיסייה של גלישה בסתר כדי לגלוש בפרטיות באינטרנט.</translation>
 <translation id="5011684439661633295">שלום, <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">אפשר</translation>
 <translation id="5062321486222145940">‏התקן את Google Drive</translation>
 <translation id="5083464117946352670">גודל הקובץ אינו ידוע.</translation>
 <translation id="5094827893301452931">הציוץ בוצע.</translation>
@@ -312,7 +306,6 @@
 <translation id="6797885426782475225">חיפוש קולי</translation>
 <translation id="6807889908376551050">הצג הכל...</translation>
 <translation id="681368974849482173">הפריט נוצר</translation>
-<translation id="6871663519944855400">פתח במצב גלישה בסתר</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6945221475159498467">בחר</translation>
@@ -340,7 +333,6 @@
 <translation id="7456847797759667638">פתח מיקום...</translation>
 <translation id="7464701184726199289">פעולה זו מוחקת נתונים מסונכרנים מכל המכשירים. הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">שם החברה</translation>
-<translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="750493650310597496">0 נבחרו</translation>
 <translation id="7514365320538308">הורד</translation>
@@ -370,7 +362,6 @@
 <translation id="806745655614357130">שמור בנפרד את הנתונים שלי</translation>
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">סגור את כל הכרטיסיות</translation>
-<translation id="8137558756159375272">‏'גע כדי לחפש' שולח אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. תוכל לכבות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">בטל</translation>
 <translation id="8225985093977202398">תמונות וקבצים בקובץ השמור</translation>
 <translation id="8261506727792406068">מחיקה</translation>

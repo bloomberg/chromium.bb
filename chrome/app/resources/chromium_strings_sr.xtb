@@ -86,7 +86,6 @@
 <translation id="3762167353400286894">Chromium ОС се приказује на овом језику</translation>
 <translation id="378917192836375108">Chromium вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3849925841547750267">Нажалост, Mozilla Firefox подешавања нису доступна док тај прегледач ради. Да бисте увезли та подешавања у Chromium, сачувајте рад и затворите све Firefox прозоре. Затим кликните на Настави.</translation>
 <translation id="3852700440713538496">Закачите Chromium на траку задатака</translation>
 <translation id="3889543394854987837">Кликните на име да бисте отворили Chromium и почните да прегледате.</translation>
 <translation id="390894725198123737">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chromium-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
@@ -170,7 +169,6 @@
 <translation id="6505742536731484931">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом.</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>
 <translation id="6526111688217511984">Chromium-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
-<translation id="6638567566961868659">Пронађите обележиваче у Chromium менију или на траци са обележивачима.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6717134281241384636">Профил не може да се користи јер је из новије верзије Chromium-а.
 
@@ -224,7 +222,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7975919845073681630">Ово је секундарна инсталација Chromium-а па не можете да га подесите као подразумевани прегледач.</translation>
 <translation id="7979877361127045932">Сакриј у Chromium менију</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8134284582177628525">Ако делите овај рачунар са корисником <ph name="PROFILE_NAME" />, додајте себе у Chromium да бисте прегледали одвојено. У супротном, прекините везу са Google налогом овог корисника.</translation>
 <translation id="8157153840442649507">Chromium се приказује на овом језику</translation>
 <translation id="81770708095080097">Ова датотека је опасна, па ју је Chromium блокирао.</translation>
 <translation id="8222496066431494154">Инсталирајте Chromium на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу: <ph name="PHONE_NUMBER" /></translation>

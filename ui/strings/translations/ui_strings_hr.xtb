@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">Razdoblje</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mjesec}one{# mjesec}few{# mjeseca}other{# mjeseci}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">Broj zvjezdica: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 sat i }one{# sat i }few{# sata i }other{# sati i }}</translation>
 <translation id="1842960171412779397">odaberi</translation>
 <translation id="1860796786778352021">Zatvaranje obavijesti</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">SVE APLIKACIJE</translation>
 <translation id="4320177379694898372">Nema internetske veze</translation>
 <translation id="4588090240171750605">Pomakni se desno</translation>
+<translation id="4724120544754982507">Centar za obavijesti, nepročitanih obavijesti: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČESTO KORIŠTENO</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Još mjesec dana}one{Još # mjesec}few{Još # mjeseca}other{Još # mjeseci}}</translation>
 <translation id="4820616160060340806">Naredba + <ph name="KEY_COMBO_NAME" /></translation>

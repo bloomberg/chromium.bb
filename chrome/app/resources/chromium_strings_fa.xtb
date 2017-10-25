@@ -83,7 +83,6 @@
 <translation id="3762167353400286894">‏سیستم عامل Chromium به این زبان نشان داده می‌شود</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">‏متأسفانه تنظیمات Chromium شما هنگام باز بودن مرورگر در دسترس نیست. برای وارد کردن این تنظیمات در Chromium، کارهای خود را ذخیره کنید و همه پنجره‌های Firefox را ببندید. سپس "ادامه" را کلیک کنید.</translation>
 <translation id="3852700440713538496">‏Chromium به نوار وظیفه شما پین شود</translation>
 <translation id="3889543394854987837">‏برای باز کردن Chromium و شروع به مرور، روی نامتان کلیک کنید.</translation>
 <translation id="390894725198123737">‏در Mac ممکن است گذرواژه‌ها در Keychain شما ذخیره شوند و سایر کاربران Chromium که این حساب OS X را دارند به آن دسترسی داشته باشند یا بتوانند همگام‌سازی کنند.</translation>
@@ -167,7 +166,6 @@
 <translation id="6505742536731484931">‏Chromium برای اشتراک‌گذاری مکانتان با این سایت باید به مکانتان دسترسی داشته باشد.</translation>
 <translation id="6510925080656968729">‏حذف نصب Chromium </translation>
 <translation id="6526111688217511984">‏Chromium برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
-<translation id="6638567566961868659">‏نشانک‌های خود را در منوی Chromium یا از نوار نشانک‌ها پیدا کنید.</translation>
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
 <translation id="6717134281241384636">‏از نمایهٔ شما نمی‌توان استفاده کرد زیرا دارای نسخه جدیدتری از Chromium است.
 
@@ -220,7 +218,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7975919845073681630">‏این نصب ثانویه Chromium است و نمی‌تواند مرورگر پیش‌فرضتان شود.</translation>
 <translation id="7979877361127045932">‏پنهان در منوی Chromium</translation>
 <translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8134284582177628525">‏اگر این رایانه را با <ph name="PROFILE_NAME" /> به اشتراک می‌گذارید، خودتان را به Chromium اضافه کنید تا جداگانه مرور کنید. در غیر این صورت اتصال حساب Google این شخص را قطع کنید.</translation>
 <translation id="8157153840442649507">‏Chromium به این زبان نشان داده می‌شود</translation>
 <translation id="81770708095080097">‏این فایل خطرناک است، بنابراین Chromium آن را مسدود کرده است.</translation>
 <translation id="8222496066431494154">‏Chromium را در تلفنتان نصب کنید. پیامکی به شماره تلفن بازیابی حساب شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>

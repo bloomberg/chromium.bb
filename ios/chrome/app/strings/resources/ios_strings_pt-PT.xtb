@@ -67,7 +67,6 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
 <translation id="213900355088104901">Para navegar em privado, abra um separador de navegação anónima.</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
 <translation id="2256128224215992540">Sugestões de pesquisa e de sites</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
@@ -145,14 +144,10 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="3567664240939803299">Pretende que o Google Smart Lock guarde a palavra-passe p/ este site?</translation>
 <translation id="3588820906588687999">Abrir imagem num novo separador</translation>
 <translation id="3603009562372709545">Copiar URL do Link</translation>
-<translation id="360480449234699036">Saiba mais acerca dos tópicos nos Sites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
-
-Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
 <translation id="3628119975092896051">A sua lista de leitura está disponível offline. Para adicionar uma página à mesma, toque em <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
-<translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3779810277399252432">Sem ligação à Internet.</translation>
 <translation id="3783017676699494206">Guardar Imagem</translation>
@@ -209,7 +204,6 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
 <translation id="5010803260590204777">Abra um separador de navegação anónima para navegar na Web de forma privada.</translation>
 <translation id="5011684439661633295">Olá, <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">Permitir</translation>
 <translation id="5062321486222145940">Instalar o Google Drive</translation>
 <translation id="5083464117946352670">Não é poss. deter. tam. fich.</translation>
 <translation id="5094827893301452931">Tweet concluído.</translation>
@@ -312,7 +306,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6797885426782475225">Pesquisa por voz</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
-<translation id="6871663519944855400">Abrir no modo de navegação anónima</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6945221475159498467">Selecionar</translation>
@@ -340,7 +333,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7456847797759667638">Abrir localização...</translation>
 <translation id="7464701184726199289">Esta ação limpa os dados sincronizados de todos os dispositivos. As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
-<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="750493650310597496">0 selecionados</translation>
 <translation id="7514365320538308">Transferir</translation>
@@ -370,7 +362,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="806745655614357130">Manter os meus dados separados</translation>
 <translation id="8076014560081431679">As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Fechar Todos os Separadores</translation>
-<translation id="8137558756159375272">Tocar para pesquisar envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Pode desativá-la em <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imagens e ficheiros em cache</translation>
 <translation id="8261506727792406068">Eliminar</translation>
@@ -383,6 +374,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8458397775385147834">1 item eliminado</translation>
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
+<translation id="850600235656508448">Abrir no modo de navegação anónima</translation>
 <translation id="8517375800490286174">Licenças de Código Aberto</translation>
 <translation id="8524799873541103884">Separadores <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8532105204136943229">Ano de validade</translation>

@@ -84,7 +84,6 @@
 <translation id="3762167353400286894">Chromium 作業系統的介面文字已設為這種語言</translation>
 <translation id="378917192836375108">透過 Chromium，你只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">抱歉，我們無法在 Mozilla Firefox 執行時取得瀏覽器設定。如要將這些設定匯入 Chromium，請儲存你的工作並關閉所有 Firefox 視窗，然後按一下 [繼續]。</translation>
 <translation id="3852700440713538496">將 Chromium 固定至工作列</translation>
 <translation id="3889543394854987837">按一下你的名稱即可開啟 Chromium 並開始瀏覽。</translation>
 <translation id="390894725198123737">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chromium 使用者都能存取或同步處理這些密碼。</translation>
@@ -168,7 +167,6 @@
 <translation id="6505742536731484931">Chromium 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6526111688217511984">Chromium 必須取得儲存空間的存取權才能下載檔案。</translation>
-<translation id="6638567566961868659">你的書籤會顯示在 Chromium 選單中或書籤列上。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="6717134281241384636">由於你的設定檔是來自較新版本的 Chromium，所以系統無法使用該檔案。
 
@@ -222,7 +220,6 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7975919845073681630">這是以並存形式安裝的次要 Chromium，無法設為您的預設瀏覽器。</translation>
 <translation id="7979877361127045932">在 Chromium 選單中隱藏</translation>
 <translation id="8030318113982266900">正在將裝置更新至「<ph name="CHANNEL_NAME" />」版...</translation>
-<translation id="8134284582177628525">如果你和「<ph name="PROFILE_NAME" />」共用這台電腦，只要在 Chromium 新增個人身分，就能享有專屬的瀏覽環境。如果你並未與對方共用電腦，請解除其 Google 帳戶的連結。</translation>
 <translation id="8157153840442649507">Chromium 的介面文字已設為這種語言</translation>
 <translation id="81770708095080097">這個檔案並不安全，因此遭到 Chromium 封鎖。</translation>
 <translation id="8222496066431494154">在手機上安裝 Chromium。我們會傳送簡訊到你的帳戶備援電話號碼：<ph name="PHONE_NUMBER" /></translation>

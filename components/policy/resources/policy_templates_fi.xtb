@@ -49,6 +49,12 @@
 
       Jos käytännön arvo on epätosi, kehittäjätilaa (käytössä / ei käytössä) ei ilmoiteta.</translation>
 <translation id="1160939557934457296">Estä eteneminen Selaussuojan varoitussivulta</translation>
+<translation id="1166377463685560145">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
+
+      Tätä käytäntöä käytetään vain, jos <ph name="DEVICE_PRINTERS_ACCESS_MODE" />-tilaksi on valittu <ph name="PRINTERS_BLACKLIST" />.
+
+      Jos tämä käytäntö on käytössä, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä, joiden tunnukset on lueteltu tässä.
+      </translation>
 <translation id="1198465924256827162">Laitteen tilatietojen lähetystiheys millisekunteina.
 
       Jos tätä käytäntöä ei aseteta, käytetään oletustiheyttä 3 tuntia.
@@ -81,11 +87,18 @@
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
 <translation id="1397855852561539316">Oletushakupalvelun ehdottama URL-osoite</translation>
+<translation id="1420281424655200442">Hallinnoi, mitkä tulostimet <ph name="DEVICE_PRINTERS_POLICY" />-määrityksestä ovat käyttäjien käytettävissä.
+
+      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen. Jos <ph name="PRINTERS_ALLOW_ALL" /> on valittu, kaikki tulostimet näytetään. Jos <ph name="PRINTERS_BLACKLIST" /> on valittu, <ph name="DEVICE_PRINTERS_BLACKLIST" />-arvoa käytetään määritettyjen tulostimien käytön rajoittamiseen. Jos <ph name="PRINTERS_WHITELIST" /> on valittu, <ph name="DEVICE_PRINTERS_WHITELIST" /> määrittää valittavissa olevat tulostimet.
+
+      Jos käytäntöä ei ole määritetty, oletuksena käytetään <ph name="PRINTERS_BLACKLIST" />-arvoa.
+      </translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
 <translation id="1435659902881071157">Laitetason verkon määritys</translation>
 <translation id="1438739959477268107">Oletusavaimen luomisasetus</translation>
 <translation id="1454846751303307294">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="1456822151187621582">Windows (käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivat asiakkaat):</translation>
 <translation id="1464848559468748897">Hallinnoi käyttäjien toimia monen profiilin käyttökerralla tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävillä laitteilla.
 
       Jos käytännön arvoksi asetetaan MultiProfileUserBehaviorUnrestricted, käyttäjä voi olla joko monen profiilin käyttökerran ensi- tai toissijainen käyttäjä.
@@ -100,6 +113,11 @@
 
       Jos käytäntöä ei määritetä, oletusarvoa MultiProfileUserBehaviorMustBePrimary käytetään yrityksen valvomille käyttäjille ja arvoa MultiProfileUserBehaviorUnrestricted käytetään valvomattomille käyttäjille.</translation>
 <translation id="1465619815762735808">Käynnistä klikkaamalla</translation>
+<translation id="1466133662354365542">Kun tämä on käytössä, <ph name="PRODUCT_NAME" /> voi täyttää kenttiä automaattisesti. Käyttäjät voivat täyttää verkkolomakkeita aiemmin tallennetuilla luottokortti- tai osoitetiedoilla.
+
+      Jos poistat asetuksen käytöstä, automaattinen täyttö ei ehdota luottokorttitietoja, täytä niitä tai tallenna uusia luottokorttitietoja myöhempää käyttöä varten selailun yhteydessä.
+
+      Jos tämä asetus on käytössä tai sille ei ole määritetty arvoa, käyttäjä voi hallita yleistä luottokortti- ja muiden tietojen automaattista täyttöä käyttöliittymässä.</translation>
 <translation id="1468307069016535757">Määritä suuri kontrasti -tilan käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 
           Jos tämän käytännön arvoksi on määritetty tosi, suuri kontrasti -tila on käytössä kirjautumisnäytössä.
@@ -141,6 +159,19 @@
 <translation id="1561424797596341174">Käytäntöjen ohitus etäkäytön isännän vianetsintäversioissa</translation>
 <translation id="1561967320164410511">U2F ja laajennukset, yksilöllinen todennus mahdollista</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
+<translation id="1603058613431276040">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
+
+      Tämän käytännön avulla voit tarjota tulostinmäärityksiä laitteille, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />. Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä. Muoto on sama kuin NativePrinters-sanakirjan muoto. Noin 21 000 tulostinta sisältävä tiedosto koodautuu arviolta 5 Mt:n tiedostona. Lataus todennetaan hajautusarvon avulla.
+
+      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun URL-osoite tai hajautusarvo muuttuu.
+
+      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> lataa tiedoston tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien mukaisesti: <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> ja <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tulostinmääritysten lisäksi.
+
+      Tämä käytäntö on voimassa <ph name="BULK_PRINTERS_POLICY" />-arvon lisäksi.
+
+      Jos tätä käytäntöä ei ole määritetty, laitetulostimia ei ole ja muut <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />-käytännöt ohitetaan.</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="163200210584085447">Tämän luettelon osoitemalleja verrataan pyytävän URL-osoitteen
@@ -241,6 +272,12 @@
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Käytöstä poistetut yritystulostimet</translation>
+<translation id="2063380907529983889">Hallinnoi, mitkä tulostimet <ph name="BULK_PRINTERS_POLICY" />-määrityksestä ovat käyttäjien käytettävissä.
+
+      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen. Jos <ph name="PRINTERS_ALLOW_ALL" /> on valittu, kaikki tulostimet näytetään. Jos <ph name="PRINTERS_BLACKLIST" /> on valittu, <ph name="BULK_PRINTERS_BLACKLIST" />-arvoa käytetään määritettyjen tulostimien käytön rajoittamiseen. Jos <ph name="PRINTERS_WHITELIST" /> on valittu, <ph name="BULK_PRINTERS_WHITELIST" /> määrittää valittavissa olevat tulostimet.
+
+      Jos käytäntöä ei ole määritetty, oletuksena käytetään <ph name="PRINTERS_BLACKLIST" />-arvoa.
+      </translation>
 <translation id="206623763829450685">Määrittää, mitä HTTP-todennustapoja <ph name="PRODUCT_NAME" /> tukee.
  
           Mahdollisia arvoja ovat basic, digest, ntlm ja negotiate. Erota arvot toisistaan pilkuilla.
@@ -330,6 +367,7 @@
 <translation id="2294382669900758280">Videoiden toistamista Android-sovelluksissa ei oteta huomioon, vaikka tämän käytännön arvoksi olisi määritetty <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Määritä oletusarvoinen Uusi välilehti ‑sivu kohteessa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Määritä käytössä olevat laajennukset</translation>
+<translation id="2303795211377219696">Salli luottokorttitietojen automaattinen täyttö</translation>
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
@@ -484,6 +522,12 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2762164719979766599">Määrittää kirjautumisruudussa näytettävät laitteeseen lisätyt tilit.
 
 Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteeseen lisätyt tilit toisistaan.</translation>
+<translation id="2766302473082018239">Määrittää tulostimet, joita käyttäjä voi käyttää.
+
+      Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" />-tilaksi on valittu <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja. Tunnusten on vastattava <ph name="BULK_PRINTERS_POLICY" />-kohdassa määritetyn tiedoston merkintöjä.
+      </translation>
 <translation id="2769952903507981510">Määritä vaadittu verkkotunnuksen nimi etäisännille</translation>
 <translation id="2787173078141616821">Raportoi tietoja Androidin tilasta</translation>
 <translation id="2801230735743888564">Anna käyttäjien pelata dinosauruspeliä laitteen ollessa offline-tilassa.
@@ -497,6 +541,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien asiakaskoneiden yhteydet.
 
       Jos käytäntöä ei määritetä, asetus on käytössä.</translation>
+<translation id="2823870601012066791">Käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivien asiakkaiden sijainti Windows-rekisterissä:</translation>
 <translation id="2824715612115726353">Ota incognito-tila käyttöön</translation>
 <translation id="2838830882081735096">Estä tietojen siirtäminen ja ARC</translation>
 <translation id="2844404652289407061">Määrittää, näyttääkö <ph name="PRODUCT_NAME" /> Koskettamalla hakemisen sisältönäkymässä.
@@ -637,6 +682,12 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos tämän käytännön arvo on ei-tyhjä merkkijono, <ph name="PRODUCT_NAME" /> näyttää kyseisen merkkijonon kohdenimenä. Muussa tapauksessa kohdenimenä käytetään laitteen nimeä. Jos tätä käytäntöä ei ole määritetty, kohdenimenä käytetään laitteen nimeä ja laitteen omistaja (tai laitetta hallinnoivan verkkotunnuksen käyttäjä) voi vaihtaa nimen. Nimen enimmäispituus on 24 merkkiä.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
+<translation id="3395348522300156660">Määrittää tulostimet, joita käyttäjä voi käyttää.
+
+      Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" />-tilaksi on valittu <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja. Tunnusten on vastattava <ph name="DEVICE_PRINTERS_POLICY" />-kohdassa määritetyn tiedoston merkintöjä.
+      </translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
       Jos tälle käytännölle asetetaan epätosi-arvo, <ph name="PRODUCT_OS_NAME" /> ei salli vieraskirjautumista.</translation>
@@ -843,6 +894,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
 <translation id="4105989332710272578">Poista Certificate Transparency ‑vaatimus tietyiltä URL-osoitteilta</translation>
 <translation id="4121350739760194865">Estä sovelluskampanjoita näkymästä uusi välilehti -sivulla</translation>
+<translation id="4133144443101280166">Käytöstä poiston aikavälit, kun laitteen OffHours |ignored_policy_proto_tags| ‑käytännöt julkaistaan</translation>
 <translation id="4157003184375321727">Ilmoita käyttöjärjestelmän ja laiteohjelmiston versio</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" />-oletusasetus</translation>
 <translation id="4192388905594723944">URL-osoite etäkäytön isännän todennustunnuksen varmentamista varten</translation>
@@ -1056,6 +1108,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Arvon täytyy olla joukko merkkijonoina annettuja JSON-sanakirjamerkintöjä. Jokaisen merkinnän muoto on { "pattern": "$URL_PATTERN", "filter" : $FILTER }. Tässä $URL_PATTERN on sisältöasetuksen malli. Suodatusarvo $FILTER määrittää, mitkä asiakasvarmenteet ovat selaimen valittavissa automaattisesti. Suodatusarvosta huolimatta selain voi valita vain varmenteita, jotka vastaavat palvelimen varmennepyyntöä. Lisäksi jos $FILTER annetaan muodossa { "ISSUER": { "CN": "$ISSUER_CN" } }, selain valitsee vain asiakasvarmenteita, joihin liittyvään varmenteeseen merkitty nimi on $ISSUER_CN. Jos $FILTER on tyhjä sanastomerkintä {}, asiakasvarmenteiden valintaan ei sovelleta lisärajoituksia.
 
           Jos tätä käytäntöä ei aseteta, varmenteiden automaattista valintaa ei käytetä millään sivustolla.</translation>
+<translation id="4978405676361550165">Jos OffHours-käytäntö on määritetty, valitut laitekäytännöt ohitetaan (tällöin käytössä ovat niiden oletusasetukset) määritettyjen ajanjaksojen aikana. Chrome ottaa laitekäytännöt uudelleen käyttöön aina, kun OffHours-ajanjakso alkaa tai päättyy. Käyttäjä saa ilmoituksen ja pakotetaan kirjautumaan ulos, kun OffHours-ajan päättymiseen ja laitekäytäntöihin liittyviä asetuksia muutetaan (esimerkiksi silloin, kun käyttäjä ei ole kirjautuneena sisään sallitulla tilillä).</translation>
 <translation id="4980635395568992380">Tietotyyppi:</translation>
 <translation id="4983201894483989687">Salli vanhentuneiden laajennuksien käyttö</translation>
 <translation id="4988291787868618635">Toiminto, joka suoritetaan käyttämättömyysajan kuluttua</translation>
@@ -1065,6 +1118,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="5067143124345820993">Sallittujen käyttäjien luettelo</translation>
 <translation id="5068140065960598044">Palvelun <ph name="PRODUCT_NAME" /> pilvikäytäntö ohittaa laitekäytännön.</translation>
 <translation id="5085647276663819155">Poista tulostusesikatselu käytöstä</translation>
+<translation id="5090209345759901501">Sovella Flash-sisällön asetusta koko sisältöön</translation>
 <translation id="5105313908130842249">Ruudun lukituksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="5108031557082757679">Käytöstä poistetut yrityslaitteiden tulostimet</translation>
 <translation id="5130288486815037971">TLS:n RC4-salaustekniikoiden käyttöönotto</translation>
@@ -1217,6 +1271,24 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5728154254076636808">Salli roaming-kopioiden luominen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
 <translation id="5732972008943405952">Tuo automaattisen täytön lomaketiedot oletusselaimesta ensimmäisen käynnistyksen yhteydessä</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
+<translation id="5768309557753179144">Chromium ja Google Chrome tukevat samoja
+      käytäntöjä. Huomaa, että tämä dokumentti voi sisältää julkaisemattomia
+      käytäntöjä (niiden tukimerkintä viittaa tuotteen <ph name="PRODUCT_NAME" /> versioon, jota ei ole vielä
+      julkaistu), joita voidaan muuttaa tai poistaa ilman erillistä ilmoitusta ja
+      joille ei tarjota minkäänlaisia takuita, kuten niiden tietoturva-
+      tai tietosuojaominaisuuksiin liittyviä takuita.
+
+      Näiden käytäntöjen tarkoituksena on tuotteen <ph name="PRODUCT_NAME" /> esiintymien määrittäminen
+      organisaation sisäistä käyttöä varten. Näiden käytäntöjen käyttöä organisaation
+      ulkopuolella (esimerkiksi julkisesti jaeltavassa ohjelmassa) käsitellään
+      samalla tavoin kuin haittaohjelmia, ja Google ja virustorjuntapalvelujen tarjoajat todennäköisesti merkitsevät tällaisen käytön haitalliseksi.
+
+      Näitä asetuksia ei tarvitse määrittää manuaalisesti! Voit ladata
+      helppokäyttöisiä malleja Windowsille, Macille ja Linuxille täältä: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekteina,
+      mutta <ph name="MS_AD_NAME" /> ‑verkkotunnukseen yhdistetyt Windows-esiintymät tukevat
+      myös käytäntöjen jakelua rekisterin avulla.</translation>
 <translation id="5770738360657678870">Kehittäjäversio (saattaa olla epävakaa)</translation>
 <translation id="5774856474228476867">Oletushakupalvelun haku-URL-osoite</translation>
 <translation id="5776485039795852974">Kysy minulta aina, kun sivusto haluaa näyttää työpöytäilmoituksia</translation>
@@ -1314,6 +1386,51 @@ Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> avaa järjestelmän
 
 Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento avaa tulostuksen esikatseluruudun.</translation>
 <translation id="6022948604095165524">Toiminto käynnistettäessä</translation>
+<translation id="6023030044732320798">Määrittää ARC-suorituspalvelulle toimitettavat käytännöt. Arvon on oltava kelvollinen JSON-tiedosto.
+
+      Tällä käytännöllä voidaan määritellä laitteelle automaattisesti asennettavat Android-sovellukset:
+
+     {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+              "description": "Android-sovelluksen tunniste, esimerkiksi com.google.android.gm Gmailin tapauksessa",
+              "type": "string"
+            },
+            "installType": {
+              "description": "Kuvailee sovelluksen asennustapaa. OPTIONAL: Sovellusta ei asenneta automaattisesti, mutta käyttäjä voi asentaa sen. Tämä on oletuksena käytössä, jos käytäntöä ei ole määritetty. PRELOAD: Sovellus asennetaan automaattisesti, mutta käyttäjä voi poistaa sen. FORCE_INSTALLED: Sovellus asennetaan automaattisesti, eikä käyttäjä voi poistaa sitä. BLOCKED: Sovellus on estetty eikä sitä voi asentaa. Jos sovellus on asennettu aiemman käytännön johdosta, se poistetaan.",
+              "type": "string",
+              "enum": [
+                "OPTIONAL"
+                "PRELOAD",
+                "FORCE_INSTALLED",
+                "BLOCKED"
+              ]
+            },
+            "defaultPermissionPolicy": {
+              "description": "Sovellusten käyttöoikeuspyyntöihin sovellettava käytäntö. PERMISSION_POLICY_UNSPECIFIED: Käytäntöä ei ole määritetty. Jos sitä ei ole määritetty millään tasolla, PROMPT-valintaa sovelletaan oletuksena. PROMPT: Kysy käyttäjältä, myönnetäänkö käyttöoikeus. GRANT: Myönnä käyttöoikeus automaattisesti. DENY: Evää käyttöoikeus automaattisesti.",
+              "type": "string",
+              "enum": [
+                "PERMISSION_POLICY_UNSPECIFIED",
+                "PROMPT",
+                "GRANT",
+                "DENY"
+              ]
+            },
+            "managedConfiguration": {
+              "description": "Sovelluskohtainen JSON-määrityksen merkkijono, jolla on tietyt avainarvoparit, esimerkiksi '"managedConfiguration": { "key1": value1, "key2": value2 }'. Avaimet määritellään luettelotiedostossa.",
+              "type": "string"
+            }
+          }
+        }
+      }
+
+      Sovellusten kiinnittämistä käynnistysohjelmaan hallinnoi PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Oletushakupalvelun Instant-URL-osoite</translation>
 <translation id="603410445099326293">POST-metodia käyttävän ehdotushaun URL-osoitteen parametrit</translation>
 <translation id="6036523166753287175">Ota käyttöön palomuurin siirto etäisännästä</translation>
@@ -1322,6 +1439,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6076099373507468537">Tämä käytäntö määrittää USB-laitteet, joita voidaan irrottaa kernel-ajurista ja käyttää suoraan verkkosovelluksessa chrome.usb-sovellusliittymän kautta. Kukin merkintä sisältää USB-toimittajan tunnuksen ja tuotetunnuksen, joita käytetään laitteiden tunnistamiseen.
 
       Jos tätä käytäntöä ei määritetä, irrotettavien USB-laitteiden luettelo on tyhjä.</translation>
+<translation id="6083631234867522991">Windows (Windows-asiakkaat):</translation>
 <translation id="6093156968240188330">Salli etätukea antavien etäkäyttäjien käyttää järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita</translation>
 <translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
 
@@ -1414,6 +1532,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Jos otat käyttöön .pac-välityspalvelinskriptin, sen URL-osoite toimitetaan Android-sovelluksille.</translation>
 <translation id="6491139795995924304">Salli Bluetoothin käyttäminen laitteella</translation>
 <translation id="6520802717075138474">Tuo hakukoneet oletusselaimesta ensimmäisellä käyttökerralla</translation>
+<translation id="6525955212636890608">Jos otat tämän asetuksen käyttöön, kaikki sellainen Flash-sisältö toimii, joka on upotettu verkkosivustolle, jonka sisältöasetuksissa on sallittu Flashin käyttö (olipa sallija käyttäjä tai yrityskäytäntö), mukaan lukien muista lähteistä tullut sisältö tai pieni sisältö.
+
+      Jos haluat hallinnoida, mitkä verkkosivustot saavat suorittaa Flash-sisältöä, tutustu DefaultPluginsSetting-, PluginsAllowedForUrls- ja PluginsBlockedForUrls-käytäntöihin.
+
+      Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, muista lähteistä tuleva tai pieni Flash-sisältö saattaa olla estetty.</translation>
 <translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään akkuvirralla.
 
           Kun tämän käytännön arvo on yli nolla, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME" /> lukitsee näytön.
@@ -1785,6 +1908,39 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7841880500990419427">TLS:n käytettävä vähimmäisversio</translation>
 <translation id="7842869978353666042">Määritä Google Driven asetukset</translation>
 <translation id="7843525027689416831">Määrittää merkinnät, joita käytetään sovelluksessa <ph name="PRODUCT_NAME" /> sen käynnistyksen yhteydessä. Määritettyjä merkintöjä käytetään vain kirjautumisnäytöllä. Tämän käytännön kautta määritettyjä merkintöjä ei oteta yleisesti käyttöön käyttäjäistunnoissa.</translation>
+<translation id="7844537954833753199">Tämä määrittää laajennusten hallinta-asetuksia, joita <ph name="PRODUCT_NAME" /> käyttää.
+
+          Tämä käytäntö hallitsee useita asetuksia, mukaan lukien nykyisten laajennuksiin liittyvien käytäntöjen hallitsemia asetuksia. Tämä käytäntö ohittaa mahdolliset aiemmin määritetyt käytännöt.
+
+          Tämä käytäntö yhdistää määritykseen laajennustunnuksen tai päivitys-URL-osoitteen. Laajennustunnuksen avulla määritys kohdistetaan vain tiettyyn laajennukseen. Erikoistunnus <ph name="DEFAULT_SCOPE" /> voi käyttää oletusmääritystä, ja kyseinen tunnus yhdistetään kaikkiin laajennuksiin, joille ei aseteta tässä käytännössä muokattua määritystä. Päivitys-URL-osoitteen avulla määritys kohdistetaan kaikkiin laajennuksiin, joiden päivitys-URL-osoite vastaa tarkasti tämän laajennuksen teknisissä tiedoissa olevaa osoitetta. Tarkempi kuvaus on luettavissa täällä: <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Kunkin laajennuksen (tai samaa päivitys-URL-osoitetta käyttävien laajennusten) määritys on erillinen tietohakemisto, joka voi sisältää alla luetellut kentät.
+
+          <ph name="INSTALLATION_MODE" />: Tämä yhdistetään merkkijonoon, joka kertoo laajennuksen asennustilan. Kelvollisia merkkijonoja ovat:
+          * <ph name="ALLOWED" />: Tämä antaa käyttäjälle oikeuden laajennuksen asentamiseen. Tätä valintaa käytetään oletuksena.
+          * <ph name="BLOCKED" />: Tämä estää laajennuksen asentamisen.
+          * <ph name="FORCE_INSTALLED" />: Laajennus asennetaan automaattisesti, eikä käyttäjä voi poistaa sitä.
+          * <ph name="NORMAL_INSTALLED" />: Laajennus asennetaan automaattisesti, mutta käyttäjä voi poistaa sen käytöstä.
+
+          <ph name="INSTALLTION_MODE" /> on määritettävissä myös useita laajennuksia varten, jolloin sitä voivat käyttää <ph name="DEFAULT_SCOPE" /> (oletusasetuksina) ja samaa päivitys-URL-osoitetta käyttävät laajennukset. Tällöin <ph name="ALLOWED" /> ja <ph name="BLOCKED" /> ovat ainoat kelvolliset arvot.
+
+          Jos tila on <ph name="FORCE_INSTALLED" /> tai <ph name="NORMAL_INSTALLED" />, myös <ph name="UPDATE_URL" /> täytyy määrittää. Huomaa, että tässä käytännössä asetettua päivitys-URL-osoitetta käytetään vain ensimmäisellä asennuskerralla, ja laajennuksen myöhemmillä päivityskerroilla käytetään laajennuksen teknisissä tiedoissa olevaa päivitys-URL-osoitetta. Kuten yllä todetaan, päivitys-URL-osoitteen tulee johtaa tekniset päivitystiedot sisältävään XML-tiedostoon (Update Manifest XML).
+
+          <ph name="BLOCKED_PERMISSIONS" />: Tämä yhdistetään merkkijonoluetteloon, joka sisältää laajennukselta estetyt API-käyttöoikeudet. Käyttöoikeuksien nimet vastaavat laajennuksen teknisissä tiedoissa olevia käyttöoikeusmerkkijonoja, mistä on saatavilla lisätietoja täällä: <ph name="LINK_TO_EXTENSION_DOC3" />. Tämä asetus on määritettävissä myös laajennusta <ph name="DEFAULT_SCOPE" /> varten. Jos laajennus tarvitsee estoluettelossa olevaa käyttöoikeutta, laajennuksen latautuminen estetään. Jos laajennus tarvitsee estettyä käyttöoikeutta vain valinnaisesti, se käsitellään tavalliseen tapaan, mutta ristiriitaiset käyttöoikeuspyynnöt hylätään automaattisesti laajennuksen suorituksen aikana.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Tämä toimii samaan tapaan kuin <ph name="BLOCKED_PERMISSIONS" />, mutta se nimenomaisesti sallii joitakin käyttöoikeuksia, joiden käyttö voi olla estetty yleisen estoluettelon mukaan. Tällöin käyttöoikeuksia ei voida määrittää laajennusta <ph name="DEFAULT_SCOPE" /> varten. Huomaa, että tämä asetus ei myönnä hyväksyttyjä käyttöoikeuksia laajennuksille automaattisesti.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Tämä yhdistetään versiomerkkijonoon. Versiomerkkijono on samassa muodossa kuin laajennuksen teknisissä tiedoissa oleva merkkijono, mistä on saatavilla lisätietoja täällä: <ph name="LINK_TO_EXTENSION_DOC4" />. Laajennus poistetaan käytöstä, jos sen versio on määritettyä vähimmäisversiota vanhempi. Tämä koskee myös automaattisesti asennettavia laajennuksia, joita käyttäjät eivät voi poistaa käytöstä.
+
+          Seuraavat asetukset ovat käytettävissä vain, kun käytössä on <ph name="DEFAULT_SCOPE" /> ja se on määritetty oletusasetuksiin:
+
+          <ph name="INSTALL_SOURCES" />: Kukin tämän luettelon kohde on laajennuksen kaltainen vastaavuusmalli (<ph name="LINK_TO_MATCH_PATTERNS" />). Käyttäjät voivat helposti asentaa kohteita URL-osoitteista, jotka vastaavat tässä luettelossa olevia kohteita. Sekä tiedoston <ph name="EXTENSION_SUFFIX_WILDCARD" /> sijainnin että latauksen aloitussivun (eli viittaavan sivun) täytyy olla sallittuja näiden mallien perusteella.
+
+          <ph name="ALLOWED_TYPES" />: Tämä asetus lisää sallittujen luetteloon kaikki laajennukset/sovellukset, joiden asentamisen <ph name="PRODUCT_NAME" /> sallii. Asetuksen arvo on merkkijonoluettelo, jonka kunkin kohteen tulee olla jokin seuraavista: <ph name="VALID_ALLOWED_TYPES" />. Lisätietoja tyypeistä on saatavilla tuotteen <ph name="PRODUCT_NAME" /> laajennusdokumentaatiosta.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jos käyttäjä yrittää asentaa laajennuksen, mutta asennus estetään käytännön perusteella, Chrome Web Store näyttää käyttäjälle yleisen virheilmoituksen. Tämän asetuksen avulla voit lisätä tekstiä virheilmoitukseen, jolloin voit esimerkiksi ohjata käyttäjän asiakastukeen tai kertoa, miksi laajennus on estetty. Virheilmoituksen tekstiä ei näytetä kokonaan, jos sen pituus on yli 1 000 merkkiä.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tämä hyväksyy luettelon isännistä, joiden toiminta laajennuksen kanssa estetään. Tällaiseen toimintaan sisältyvät JavaScript-koodin syöttäminen, webRequest- ja webNavigation-kohteiden katselu ja muuttaminen sekä evästeiden katselu ja muuttaminen. Luettelokohteiden muoto muistuttaa vastaavuusmalleja (<ph name="LINK_TO_MATCH_PATTERNS" />), mutta ne eivät saa sisältää polkuja, kuten "*://*.example.com". Tämä asetus tukee myös TLD-jokerimerkkien käyttöä. Esimerkiksi: "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Tämä hyväksyy luettelon isännistä, joiden toiminta laajennuksen kanssa sallitaan riippumatta siitä, sisältääkö <ph name="RUNTIME_BLOCKED_HOSTS" /> niitä. Tämä asetus ja <ph name="RUNTIME_BLOCKED_HOSTS" /> käyttävät samanlaista luettelokohteiden muotoilua.
+          </translation>
 <translation id="787125417158068494">Jos tämän käytännön arvo on SyncDisabled tai sitä ei ole määritetty, ARC-sovellukset eivät voi käyttää <ph name="PRODUCT_OS_NAME" /> -varmenteita.
 
       Jos tämän käytännön arvo on CopyCaCerts, ARC-sovellukset voivat käyttää kaikkia ONC-asennettuja CA-varmenteita, joissa on <ph name="WEB_TRUSTED_BIT" />.</translation>
@@ -1953,6 +2109,12 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8493645415242333585">Poista selainhistorian tallentaminen käytöstä</translation>
 <translation id="8499172469244085141">Oletusasetukset (käyttäjät voivat ohittaa)</translation>
 <translation id="8519264904050090490">Hallinnoidun käyttäjän manuaalisten poikkeuksien URL-osoitteet</translation>
+<translation id="8527932539502116028">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
+
+      Tätä käytäntöä käytetään vain, jos <ph name="BULK_PRINTERS_ACCESS_MODE" />-tilaksi on valittu <ph name="PRINTERS_BLACKLIST" />.
+
+      Jos tämä käytäntö on käytössä, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä, joiden tunnukset on lueteltu tässä.
+      </translation>
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
@@ -1965,6 +2127,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Jos tämän asetuksen arvoksi on asetettu epätosi, laite ei käytä etävahvistusta sisällön suojaamiseen eikä laite välttämättä voi toistaa suojattua sisältöä.
 
           Jos tämän asetuksen arvoksi on asetettu tosi tai jos sitä ei ole asetettu, etävahvistusta voidaan käyttää sisällön suojaamiseen.</translation>
+<translation id="8650974590712548439">Windows-asiakkaiden sijainti Windows-rekisterissä:</translation>
 <translation id="8654286232573430130">Määrittää integroidun todennuksen sallittujen luetteloon lisättävät palvelimet. Integroitu todennus on käytössä vain, kun <ph name="PRODUCT_NAME" /> saa todennushaasteen välityspalvelimelta tai palvelimelta, joka on tässä sallittujen luettelossa.
 
           Erota palvelinten nimet pilkulla. Jokerimerkit (*) sallitaan.
@@ -2022,6 +2185,18 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="891435090623616439">koodattu JSON-merkkijonoksi; lisätietoja on osoitteessa <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8927384992072706174">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
+
+      Tämän käytännön avulla voit tarjota tulostinmäärityksiä laitteille, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />. Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä. Muoto on sama kuin NativePrinters-sanakirjan muoto. Noin 21 000 tulostinta sisältävä tiedosto koodautuu arviolta 5 Mt:n tiedostona. Lataus todennetaan hajautusarvon avulla.
+
+      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun URL-osoite tai hajautusarvo muuttuu.
+
+      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> lataa tiedoston tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien mukaisesti: <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> ja <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
+
+      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tulostinmääritysten lisäksi.
+      </translation>
 <translation id="8947415621777543415">Ilmoita laitteen sijainti</translation>
 <translation id="8951350807133946005">Aseta levyn välimuistihakemisto</translation>
 <translation id="8952317565138994125">Tämän seurauksena <ph name="PRODUCT_NAME" /> ei voi synkronoida tietoja Googlen isännöimien synkronointipalvelujen kanssa, eivätkä käyttäjät voi muuttaa tätä asetusta.

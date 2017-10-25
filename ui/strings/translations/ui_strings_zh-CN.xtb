@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">期间</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 个月}other{# 个月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">星级：<ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 小时 }other{# 小时 }}</translation>
 <translation id="1842960171412779397">选中</translation>
 <translation id="1860796786778352021">关闭通知</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">所有应用</translation>
 <translation id="4320177379694898372">未连接到互联网</translation>
 <translation id="4588090240171750605">向右滚动</translation>
+<translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
 <translation id="4730374152663651037">常用应用</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{还有 1 个月的时间}other{还有 # 个月的时间}}</translation>
 <translation id="4820616160060340806">命令键 + <ph name="KEY_COMBO_NAME" /></translation>

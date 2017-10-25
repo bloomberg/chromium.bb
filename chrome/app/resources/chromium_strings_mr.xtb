@@ -85,7 +85,6 @@
 <translation id="3762167353400286894">Chromium OS या भाषेत प्रदर्शित केले आहे</translation>
 <translation id="378917192836375108">Chromium आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">दुर्दैवाने, तो ब्राउझर चालू असताना आपली Mozilla Firefox सेटिंग्ज उपलब्ध नाहीत. Chromium मध्‍ये ती सेटिंग्‍ज आयात करताना, आपले कार्य जतन करा आणि सर्व Firefox विंडो बंद करा. नंतर सुरू ठेवा क्‍लिक करा.</translation>
 <translation id="3852700440713538496">Chromium ला आपल्या टास्कबारवर पिन करा</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="390894725198123737">Mac वर, संकेतशब्द हे आपल्या किचेनमध्ये जतन केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
@@ -169,7 +168,6 @@
 <translation id="6505742536731484931">या साइटसह तुमचे स्थान शेअर करण्यासाठी Chromium ला तुमच्या स्थानामध्ये अॅक्सेस हवा आहे.</translation>
 <translation id="6510925080656968729">Chromium विस्‍थापित करा</translation>
 <translation id="6526111688217511984">Chromium ला फायली डाउनलोड करण्यासाठी संचय प्रवेश आवश्यक आहे.</translation>
-<translation id="6638567566961868659">Chromium मेनू मध्ये किंवा बुकमार्क बारवर आपले बुकमार्क शोधा.</translation>
 <translation id="6676384891291319759">इंटरनेटमध्ये प्रवेश करा</translation>
 <translation id="6717134281241384636">आपले प्रोफाइल वापरले जाऊ शकत नाही कारण ते Chromium च्‍या नवीनतम आवृत्तीमधील आहे.
 
@@ -222,7 +220,6 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="7975919845073681630">ही Chromium ची दुय्यम स्थापना असून त्यास आपला डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
 <translation id="7979877361127045932">Chromium मेनूमध्‍ये लपवा</translation>
 <translation id="8030318113982266900"><ph name="CHANNEL_NAME" /> चॅनेलवर आपले डीव्हाइस अपडेट करत आहे...</translation>
-<translation id="8134284582177628525">आपण <ph name="PROFILE_NAME" /> सोबत हा संगणक सामायिक केल्यास, स्वतंत्रपणे ब्राउझ करण्यासाठी आपल्या स्वतःस Chromium वर जोडा. अन्यथा त्यांचे Google खाते डिस्कनेक्ट करा.</translation>
 <translation id="8157153840442649507">Chromium या भाषेत प्रदर्शित केले आहे</translation>
 <translation id="81770708095080097">ही फाईल धोकादायक आहे, त्यामुळे Chromium ने अवरोधित केली आहे.</translation>
 <translation id="8222496066431494154">आपल्या फोनवर Chromium इंस्टॉल करा. आम्ही आपल्या या खाते पुनर्प्राप्ती फोन नंबरवर एक SMS पाठवू: <ph name="PHONE_NUMBER" /></translation>

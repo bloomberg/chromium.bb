@@ -9,6 +9,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> was previously using Chrome</translation>
 <translation id="1104959162601287462">About &amp;Chrome OS</translation>
 <translation id="110877069173485804">This is your Chrome</translation>
+<translation id="1142745911746664600">Can't update Chrome</translation>
 <translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="127345590676626841">Chrome updates automatically so that you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
@@ -124,6 +125,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4480040274068703980">Chrome OS could not sync your data due to an error signing in.</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
+<translation id="4600710005438004015">Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="4664415150087723341">A special security update for Google Chrome was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
@@ -153,7 +155,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (copied to Chrome)</translation>
 <translation id="5251420635869119124">Guests can use Chrome without leaving anything behind.</translation>
-<translation id="5253588388888612165">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome will restart in 1 second.}other{Google Chrome will restart in # seconds.}}</translation>
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
 <translation id="5386244825306882791">It also controls what page is shown when you start Chrome or search from the Omnibox.</translation>
@@ -169,7 +170,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="557283862590186398">Chrome needs permission to access your microphone for this site.</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> may be dangerous, so Chrome has blocked it.</translation>
-<translation id="568643307450491754">Find your bookmarks in the Chrome menu or on the bookmarks bar.</translation>
 <translation id="573759479754913123">About Chrome OS</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5774845247549698882">Chrome OS is displayed in this language</translation>

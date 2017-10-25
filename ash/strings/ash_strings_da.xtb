@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Svagt signal</translation>
 <translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="1383876407941801731">Søg</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C-enhed (porten foran i venstre side)</translation>
 <translation id="2865888419503095837">Netværksoplysninger</translation>
 <translation id="2872961005593481000">Sluk</translation>
+<translation id="2903844815300039659">Der er forbindelse til <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Du deler din skærm</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="2946119680249604491">Tilføj forbindelse</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
+<translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
 <translation id="3400357268283240774">Yderligere indstillinger</translation>
 <translation id="3445925074670675829">USB-C-enhed</translation>
+<translation id="3465566417615315331">Klik på dit foto</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="3510164367642747937">Fremhæv musemarkør</translation>
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
+<translation id="3631369015426612114">Tillad underretninger fra følgende</translation>
 <translation id="3712407551474845318">Tag et screenshot af området</translation>
 <translation id="371370241367527062">Mikrofon på forsiden</translation>
 <translation id="3771549900096082774">Tilstanden Høj kontrast</translation>
-<translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Højttaler (indbygget)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="4017989525502048489">Laserpegepind</translation>
+<translation id="4072264167173457037">Middel signal</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Forstørrelsesglas</translation>
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
+<translation id="4379531060876907730">Dette er dine penneværktøjer</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="776344839111254542">Klik for at se opdateringsoplysninger</translation>
 <translation id="7798302898096527229">Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Stærkt signal</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7977927628060636163">Søger efter mobilnetværk...</translation>
 <translation id="7982789257301363584">Netværk</translation>
@@ -274,7 +281,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
 <translation id="8351131234907093545">Opret note</translation>
 <translation id="8392234662362215700">Tryk på Ctrl+Shift+mellemrumstasten for at skifte tastaturlayout.</translation>
-<translation id="8392688371657486010">Du har ingen underretninger</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433186206711564395">Netværksindstillinger</translation>
 <translation id="8433977262951327081">Genvejen til menuboblen med indtastningsmuligheder på hylden har ændret sig. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skri
 <translation id="9091626656156419976">Skærmen <ph name="DISPLAY_NAME" /> blev fjernet</translation>
 <translation id="9111102763498581341">Lås op</translation>
 <translation id="9151726767154816831">Genstart, og udfør en powerwash for at opdatere</translation>
+<translation id="9181036778675416867">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge assistenten, laserpegepinden eller luppen.</translation>
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % opladet.</translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>

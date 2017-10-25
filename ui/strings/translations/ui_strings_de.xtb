@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">Zeitraum</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 Monat}other{# Monate}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">Bewertung <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 Stunde und  }other{# Stunden und  }}</translation>
 <translation id="1842960171412779397">auswählen</translation>
 <translation id="1860796786778352021">Benachrichtigung schließen</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4320177379694898372">Keine Internetverbindung</translation>
 <translation id="4588090240171750605">Nach rechts blättern</translation>
+<translation id="4724120544754982507">Benachrichtigungscenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> ungelesene Benachrichtigungen</translation>
 <translation id="4730374152663651037">HÄUFIG VERWENDET</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{noch 1 Monat}other{noch # Monate}}</translation>
 <translation id="4820616160060340806">Befehltaste+<ph name="KEY_COMBO_NAME" /></translation>

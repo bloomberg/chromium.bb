@@ -67,7 +67,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on teisaldatud</translation>
 <translation id="213900355088104901">Privaatselt sirvimiseks avage inkognito vaheleht</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
-<translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2256128224215992540">Otsingu- ja saidisoovitused</translation>
 <translation id="2267753748892043616">Lisa konto</translation>
@@ -145,14 +144,10 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="3567664240939803299">Kas soovite, et Smart Lock salvestaks selle saidi puhul teie parooli?</translation>
 <translation id="3588820906588687999">Ava kujutis uuel vahelehel</translation>
 <translation id="3603009562372709545">Kopeeri lingi URL</translation>
-<translation id="360480449234699036">Vaadake veebisaidil olevaid teemasid lehelt lahkumata. Funktsioon Puuduta otsimiseks saadab sõna ja seda ümbritseva konteksti Google'i otsingusse, tagastades definitsioonid, pildid, otsingutulemused ning muud üksikasjad.
-
-Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamiseks libistage paneel täiesti üles ja puudutage otsingukasti.</translation>
 <translation id="3607167657931203000">Automaattäite andmed</translation>
 <translation id="3628119975092896051">Teie lugemisloend on võrguühenduseta saadaval. Lugemisloendisse lehe lisamiseks puudutage ikooni <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Lehtede eellaadimine</translation>
 <translation id="3691593122358196899">Lisatud järjehoidjana kausta <ph name="FOLDER_TITLE" /></translation>
-<translation id="3738139272394829648">Puudutage otsimiseks</translation>
 <translation id="3771033907050503522">Inkogn. vahelehed</translation>
 <translation id="3779810277399252432">Interneti-ühendus puudub.</translation>
 <translation id="3783017676699494206">Salvesta kujutis</translation>
@@ -209,7 +204,6 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 <translation id="5005498671520578047">Parooli kopeerimine</translation>
 <translation id="5010803260590204777">Avage inkognito vaheleht ja sirvige veebi privaatselt.</translation>
 <translation id="5011684439661633295">Tere, <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">Luba</translation>
 <translation id="5062321486222145940">Installi Google Drive</translation>
 <translation id="5083464117946352670">Failisuurust ei saa tuvastada.</translation>
 <translation id="5094827893301452931">Säuts on valmis.</translation>
@@ -312,7 +306,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6797885426782475225">Häälotsing</translation>
 <translation id="6807889908376551050">Kuva kõik ...</translation>
 <translation id="681368974849482173">Üksus on loodud</translation>
-<translation id="6871663519944855400">Ava inkognito režiimis</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
 <translation id="6903907808598579934">Lülita sünkroonimine sisse</translation>
 <translation id="6945221475159498467">Vali</translation>
@@ -340,7 +333,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7456847797759667638">Ava asukoht...</translation>
 <translation id="7464701184726199289">See kustutab sünkroonitud andmed kõikidest seadmetest. Saitide salvestatud seadeid ei kustutata ja need võivad kajastada teie sirvimisharjumusi. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Ettevõtte nimi</translation>
-<translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="750493650310597496">0 valitud</translation>
 <translation id="7514365320538308">Laadi alla</translation>
@@ -370,7 +362,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="806745655614357130">Hoia minu andmed eraldi</translation>
 <translation id="8076014560081431679">Saitide salvestatud seadeid ei kustutata ja need võivad kajastada teie sirvimisharjumusi. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Sule kõik vahelehed</translation>
-<translation id="8137558756159375272">Puudutamine otsimiseks saadab valitud sõna ja praeguse lehe kontekstina Google'i otsingusse. Saate selle välja lülitada jaotises <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Tühista</translation>
 <translation id="8225985093977202398">Vahem. salv. kujut. ja failid</translation>
 <translation id="8261506727792406068">Kustuta</translation>

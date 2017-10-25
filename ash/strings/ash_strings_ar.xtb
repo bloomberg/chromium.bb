@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">تم تعطيل لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">إشارة ضعيفة</translation>
 <translation id="1293264513303784526">‏جهاز USB-C (المنفذ الأيسر)</translation>
 <translation id="1346748346194534595">يمين</translation>
 <translation id="1383876407941801731">البحث</translation>
@@ -69,6 +70,8 @@
 <translation id="2532589005999780174">وضع التباين العالي</translation>
 <translation id="2597972630681408282">إضاءة ليلية: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">إرسال</translation>
+<translation id="2675319268637823299">منع أحد المشرفين <ph name="USER_EMAIL" /> من الدخول المتعدد.
+    يجب على جميع المستخدمين تسجيل الخروج للمتابعة.</translation>
 <translation id="2700058918926273959">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />. وسيتم إخراجك.</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
@@ -79,6 +82,7 @@
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
 <translation id="2865888419503095837">معلومات الشبكة</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
+<translation id="2903844815300039659">تم الاتصال بشبكة <ph name="NAME" />، <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">أنت تشارك شاشتك حاليًا</translation>
 <translation id="2942516765047364088">وضع الرف</translation>
 <translation id="2946119680249604491">إضافة اتصال</translation>
@@ -94,6 +98,7 @@
 <translation id="3126069444801937830">إعادة التشغيل للتحديث</translation>
 <translation id="3147142846278915599">‏Launcher (مزامنة التطبيقات...)</translation>
 <translation id="315116470104423982">بيانات الجوال</translation>
+<translation id="3153444934357957346">يمكنك الحصول فقط على ما يصل إلى <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب في الدخول المتعدد.</translation>
 <translation id="3236488194889173876">ليست هناك شبكة جوّال متاحة</translation>
 <translation id="3294437725009624529">ضيف</translation>
 <translation id="332587331255250389">يُرجى استبدال البطارية</translation>
@@ -102,6 +107,7 @@
 <translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
 <translation id="3400357268283240774">إعدادات إضافية</translation>
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
+<translation id="3465566417615315331">انقر على صورتك</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
 <translation id="3510164367642747937">تمييز مؤشر الماوس</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
@@ -110,10 +116,10 @@
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="3621202678540785336">الإدخال</translation>
 <translation id="3626281679859535460">السطوع</translation>
+<translation id="3631369015426612114">السماح بالإشعارات من المصادر التالية</translation>
 <translation id="3712407551474845318">التقاط منطقة</translation>
 <translation id="371370241367527062">الميكروفون الأمامي</translation>
 <translation id="3771549900096082774">وضع التباين العالي</translation>
-<translation id="3775358506042162758">يُمكنك تسجيل الدخول المتعدد باستخدام ثلاثة حسابات كحد أقصى.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">قفل</translation>
 <translation id="3798670284305777884">سماعة (داخلية)</translation>
@@ -126,11 +132,13 @@
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
+<translation id="4072264167173457037">إشارة متوسطة</translation>
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">العدسة المكبرة</translation>
 <translation id="4351433414020964307">جارٍ تحميل المساعد...</translation>
 <translation id="4378551569595875038">جارٍ الاتصال...</translation>
+<translation id="4379531060876907730">هذه هي أدوات قلم الشاشة</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
@@ -200,6 +208,7 @@
 <translation id="632744581670418035">تراكب لوحة المفاتيح</translation>
 <translation id="639644700271529076">‏مفتاح CAPS LOCK قيد الإيقاف</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">ليس لديك أي إشعارات</translation>
 <translation id="6452181791372256707">رفض</translation>
 <translation id="6453179446719226835">تم تغيير اللغة</translation>
 <translation id="6459472438155181876">تمديد الشاشة إلى <ph name="DISPLAY_NAME" /></translation>
@@ -256,6 +265,7 @@
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
 <translation id="7798302898096527229">‏اضغط على مفتاح البحث أو المفتاح Shift للإلغاء.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و<ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">إشارة قوية</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7977927628060636163">جارٍ البحث عن شبكات الجوّال...</translation>
 <translation id="7982789257301363584">الشبكة</translation>
@@ -274,7 +284,6 @@
 <translation id="8308637677604853869">القائمة السابقة</translation>
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8392234662362215700">‏انقر على Control-Shift-Space لتبديل تخطيط لوحة المفاتيح.</translation>
-<translation id="8392688371657486010">ليس لديك أي إشعارات</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433186206711564395">إعدادات الشبكة</translation>
 <translation id="8433977262951327081">تم تغيير اختصار عرض الفقاعة التفسيرية لقائمة خيارات الإدخال في الرف. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
@@ -293,6 +302,7 @@
 <translation id="8825534185036233643">النسخ المطابق بأكثر من عرضين غير مدعوم.</translation>
 <translation id="8828714802988429505">90 درجة</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">التطبيق لا يتيح تقسيم الشاشة.</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
@@ -304,6 +314,7 @@
 <translation id="9091626656156419976">تمت إزالة عرض <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">إلغاء التأمين</translation>
 <translation id="9151726767154816831">‏إعادة التشغيل وإجراء Powerwash للتحديث</translation>
+<translation id="9181036778675416867">انقر على زر قلم الشاشة على الرف لكتابة ملاحظة أو الحصول على لقطة شاشة أواستخدام المساعد أو مؤشر الليزر أو العدسة المكبرة.</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية.</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>

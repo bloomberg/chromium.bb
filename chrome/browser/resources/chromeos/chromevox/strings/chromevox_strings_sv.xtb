@@ -155,7 +155,7 @@
 <translation id="2644542693584024604">felstavat</translation>
 <translation id="267442004702508783">uppdatera</translation>
 <translation id="2684412629217766642">Stäng självstudiekursen för ChromeVox</translation>
-<translation id="2697408785920771974">autoslutförande på raden</translation>
+<translation id="2697408785920771974">autoslutför på raden</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{vänsterparentes}other{# vänsterparenteser}}</translation>
 <translation id="2705875883745373140">Inte nedtryckt</translation>
 <translation id="2706462751667573066">Upp</translation>
@@ -324,7 +324,7 @@
 <translation id="3777255250339039212">rubr1</translation>
 <translation id="3793710123303304873">Dialogrutan stängdes.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
-<translation id="3801735343383419236">Autoslutförande med lista</translation>
+<translation id="3801735343383419236">Autoslutför med lista</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3812237531158591503">klistra in $1.</translation>
 <translation id="3816633764618089385">Nästa media</translation>
@@ -482,7 +482,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komman}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, textruta</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, länk</translation>
-<translation id="5336381510091010269">autoslutförande på raden och i lista</translation>
+<translation id="5336381510091010269">autoslutför på raden och i lista</translation>
 <translation id="536031132345979795">Hoppa bakåt under kontinuerlig uppläsning</translation>
 <translation id="5368000168321181111">Ljudikoner har inaktiverats</translation>
 <translation id="5374320867641260420">Det finns inga fler knappar.</translation>
@@ -516,7 +516,7 @@
 <translation id="5597933780944041114">Det finns inga fler rubriker.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, omarkerad alternativknapp</translation>
 <translation id="5601172225407283979">Utför standardåtgärd</translation>
-<translation id="5608798115546226984">Autoslutförande med direktinfogning</translation>
+<translation id="5608798115546226984">Autoslutför med direktinfogning</translation>
 <translation id="561939826962581046">tid</translation>
 <translation id="5623778242535476823">alternativknapp</translation>
 <translation id="5623842676595125836">Logg</translation>
@@ -728,7 +728,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7684431668231950609">Textinmatning, webbadress</translation>
 <translation id="7685589220304187312">verktygsfält</translation>
 <translation id="7693840228159394336">Föregående alternativknapp</translation>
-<translation id="7701196182766842984">autoslutförande i lista</translation>
+<translation id="7701196182766842984">autoslutför i lista</translation>
 <translation id="7712273827621319827">Understrykning börjar</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, lösenordsruta</translation>
 <translation id="7773125101284285285">Understrykning slutar</translation>
@@ -781,7 +781,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8345569862449483843">{COUNT,plural, =1{nummertecken}other{# nummertecken}}</translation>
 <translation id="8374154622594089836">månad</translation>
 <translation id="8378855320830505539">Område</translation>
-<translation id="8382679411218029383">Autoslutförande med både direktinfogning och lista</translation>
+<translation id="8382679411218029383">Autoslutför med både direktinfogning och lista</translation>
 <translation id="8384907037845425279">Fetstil börjar</translation>
 <translation id="8428603554127842284">nivå <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Det finns inga fler rubriker på nivå 3.</translation>
