@@ -97,7 +97,7 @@ cr.define('md_history', function() {
      */
     recordAction: function(action) {
       if (action.indexOf('_') == -1)
-        action = 'HistoryPage_' + action;
+        action = `HistoryPage_${action}`;
       chrome.send('metricsHandler:recordAction', [action]);
     },
 

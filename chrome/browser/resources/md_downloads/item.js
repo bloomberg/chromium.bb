@@ -119,7 +119,7 @@ cr.define('downloads', function() {
       if (!this.data.by_ext_id || !this.data.by_ext_name)
         return '';
 
-      const url = 'chrome://extensions#' + this.data.by_ext_id;
+      const url = `chrome://extensions#${this.data.by_ext_id}`;
       const name = this.data.by_ext_name;
       return loadTimeData.getStringF('controlledByUrl', url, HTMLEscape(name));
     },
@@ -260,8 +260,8 @@ cr.define('downloads', function() {
       } else {
         this.$.url.href = assert(this.data.url);
         const filePath = encodeURIComponent(this.data.file_path);
-        const scaleFactor = '?scale=' + window.devicePixelRatio + 'x';
-        this.$['file-icon'].src = 'chrome://fileicon/' + filePath + scaleFactor;
+        const scaleFactor = `?scale=${window.devicePixelRatio}x`;
+        this.$['file-icon'].src = `chrome://fileicon/${filePath}${scaleFactor}`;
       }
     },
 
