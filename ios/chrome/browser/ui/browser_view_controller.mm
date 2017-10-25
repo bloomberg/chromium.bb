@@ -1912,6 +1912,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)addConstraintsToToolbar {
+  NSLayoutYAxisAnchor* topAnchor;
+  // On iPad, the toolbar is underneath the tab strip.
+  // On iPhone, it is underneath the top of the screen.
+  if (IsIPadIdiom()) {
+    topAnchor = self.tabStripView.bottomAnchor;
+  } else {
+    topAnchor = [self view].topAnchor;
+  }
+
   [_toolbarCoordinator.webToolbarController heightConstraint].constant =
       [_toolbarCoordinator.webToolbarController
               preferredToolbarHeightWhenAlignedToTopOfScreen];
@@ -1920,8 +1929,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [NSLayoutConstraint activateConstraints:@[
     [[_toolbarCoordinator view].leadingAnchor
         constraintEqualToAnchor:[self view].leadingAnchor],
-    [[_toolbarCoordinator view].topAnchor
-        constraintEqualToAnchor:[self view].topAnchor],
+    [[_toolbarCoordinator view].topAnchor constraintEqualToAnchor:topAnchor],
     [[_toolbarCoordinator view].trailingAnchor
         constraintEqualToAnchor:[self view].trailingAnchor],
   ]];
