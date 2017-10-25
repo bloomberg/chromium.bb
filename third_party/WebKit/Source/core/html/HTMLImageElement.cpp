@@ -526,12 +526,12 @@ const String& HTMLImageElement::currentSrc() const {
   // Return the picked URL string in case of load error.
   if (GetImageLoader().HadError())
     return best_fit_image_url_;
-  // Initially, the pending request turns into current request when it is either
-  // available or broken.  We use the image's dimensions as a proxy to it being
-  // in any of these states.
+  // Initially, the pending request turns into current request when it is
+  // either available or broken. Check for the resource being in error or
+  // having an image to determine these states.
   ImageResourceContent* image_content = GetImageLoader().GetContent();
-  if (!image_content || !image_content->GetImage() ||
-      !image_content->GetImage()->width())
+  if (!image_content ||
+      (!image_content->ErrorOccurred() && !image_content->HasImage()))
     return g_empty_atom;
 
   return image_content->Url().GetString();
