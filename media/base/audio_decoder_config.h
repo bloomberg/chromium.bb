@@ -59,8 +59,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // Note: The contents of |extra_data_| are compared not the raw pointers.
   bool Matches(const AudioDecoderConfig& config) const;
 
-  // Returns a human-readable string describing |*this|.  For debugging & test
-  // output only.
+  // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString() const;
 
   // Sets the number of channels if |channel_layout_| is CHANNEL_LAYOUT_DISCRETE

@@ -201,6 +201,9 @@ class VideoFrameStreamTest
       return;
     }
 
+    // Ensure there's a media log created whenever selecting a decoder.
+    EXPECT_MEDIA_LOG(HasSubstr("for video decoding, config"));
+
     std::string name = decoder->GetDisplayName();
     ASSERT_TRUE(GetDecoderName(0) == name || GetDecoderName(1) == name ||
                 GetDecoderName(2) == name);
@@ -364,8 +367,10 @@ class VideoFrameStreamTest
   void SatisfyPendingCallback(PendingState state) {
     DCHECK_NE(state, NOT_PENDING);
     switch (state) {
-      case DEMUXER_READ_NORMAL:
       case DEMUXER_READ_CONFIG_CHANGE:
+        EXPECT_MEDIA_LOG(HasSubstr("decoder config changed"))
+            .Times(testing::AtLeast(1));
+      case DEMUXER_READ_NORMAL:
         demuxer_stream_->SatisfyRead();
         break;
 

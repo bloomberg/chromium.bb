@@ -70,8 +70,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Note: The contents of |extra_data_| are compared not the raw pointers.
   bool Matches(const VideoDecoderConfig& config) const;
 
-  // Returns a human-readable string describing |*this|.  For debugging & test
-  // output only.
+  // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString() const;
 
   std::string GetHumanReadableCodecName() const;

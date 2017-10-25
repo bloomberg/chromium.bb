@@ -333,6 +333,11 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   media_log_->SetStringProperty(GetStreamTypeString() + "_decoder",
                                 decoder_->GetDisplayName());
 
+  MEDIA_LOG(INFO, media_log_)
+      << "Selected " << decoder_->GetDisplayName() << " for "
+      << GetStreamTypeString() << " decoding, config: "
+      << StreamTraits::GetDecoderConfig(stream_).AsHumanReadableString();
+
   if (state_ == STATE_REINITIALIZING_DECODER) {
     CompleteDecoderReinitialization(true);
     return;
@@ -673,6 +678,11 @@ void DecoderStream<StreamType>::OnBufferReady(
 
     const DecoderConfig& config = StreamTraits::GetDecoderConfig(stream_);
     traits_.OnConfigChanged(config);
+
+    MEDIA_LOG(INFO, media_log_)
+        << GetStreamTypeString()
+        << " decoder config changed midstream, new config: "
+        << config.AsHumanReadableString();
 
     if (!config_change_observer_cb_.is_null())
       config_change_observer_cb_.Run(config);
