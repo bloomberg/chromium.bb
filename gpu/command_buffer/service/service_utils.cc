@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(USE_EGL)
@@ -70,7 +71,8 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
     return false;
   } else {
     // Unrecognized or missing switch, use the default.
-    return false;
+    return base::FeatureList::IsEnabled(
+        features::kDefaultPassthroughCommandDecoder);
   }
 }
 

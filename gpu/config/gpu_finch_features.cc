@@ -23,4 +23,9 @@ const base::Feature kDefaultEnableGpuRasterization{
 const base::Feature kGpuScheduler{"GpuScheduler",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use the passthrough command decoder by default.  This can be overridden with
+// the --use-cmd-decoder=passthrough or --use-cmd-decoder=validating flags.
+const base::Feature kDefaultPassthroughCommandDecoder{
+    "DefaultPassthroughCommandDecoder", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
