@@ -47,3 +47,12 @@ td {
   padding: 15px;
   text-align: left;
 }
+
+.error-header {
+  font-size: 150%;
+  font-weight: bold;
+}
+
+.error-message {
+  font-style: italic;
+}
