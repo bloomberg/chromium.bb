@@ -78,7 +78,66 @@ EGLSyncKHR DeleteEglSyncTraits::InvalidValue() {
 void DeleteEglSyncTraits::Free(EGLSyncKHR sync) {
   eglDestroySyncKHR(eglGetCurrentDisplay(), sync);
 }
-#endif
+
+#if defined(USE_VULKAN)
+VkInstance DeleteVkInstanceTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkInstanceTraits::Free(VkInstance instance) {
+  vkDestroyInstance(instance, nullptr);
+}
+
+VkDevice DeleteVkDeviceTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkDeviceTraits::Free(VkDevice device) {
+  vkDestroyDevice(device, nullptr);
+}
+
+VkCommandPool DeleteVkCommandPoolTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkCommandPoolTraits::Free(VkCommandPool command_pool) {
+  vkDestroyCommandPool(vk_device, command_pool, nullptr);
+}
+
+VkRenderPass DeleteVkRenderPassTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkRenderPassTraits::Free(VkRenderPass render_pass) {
+  vkDestroyRenderPass(vk_device, render_pass, nullptr);
+}
+
+VkDeviceMemory DeleteVkDeviceMemoryTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkDeviceMemoryTraits::Free(VkDeviceMemory device_memory) {
+  vkFreeMemory(vk_device, device_memory, nullptr);
+}
+
+VkImage DeleteVkImageTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkImageTraits::Free(VkImage image) {
+  vkDestroyImage(vk_device, image, nullptr);
+}
+
+VkImageView DeleteVkImageViewTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkImageViewTraits::Free(VkImageView image_view) {
+  vkDestroyImageView(vk_device, image_view, nullptr);
+}
+
+VkFramebuffer DeleteVkFramebufferTraits::InvalidValue() {
+  return VK_NULL_HANDLE;
+}
+void DeleteVkFramebufferTraits::Free(VkFramebuffer framebuffer) {
+  vkDestroyFramebuffer(vk_device, framebuffer, nullptr);
+}
+
+#endif  // defined(USE_VULKAN)
+#endif  // defined(USE_GBM)
 
 }  // namespace clients
 }  // namespace wayland
