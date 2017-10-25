@@ -47,7 +47,7 @@
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1917,7 +1917,7 @@ bool LayoutText::ShouldUseNGAlternatives() const {
          EnclosingNGBlockFlow();
 }
 
-const NGOffsetMappingResult& LayoutText::GetNGOffsetMapping() const {
+const NGOffsetMapping& LayoutText::GetNGOffsetMapping() const {
   DCHECK(EnclosingNGBlockFlow());
   return NGInlineNode(EnclosingNGBlockFlow()).ComputeOffsetMappingIfNeeded();
 }
@@ -1974,7 +1974,7 @@ unsigned LayoutText::ResolvedTextLength() const {
     DCHECK(!IsTextFragment());
     if (!GetNode())
       return 0;
-    const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
+    const NGOffsetMapping& mapping = GetNGOffsetMapping();
     Optional<unsigned> start = mapping.GetTextContentOffset(*GetNode(), 0);
     Optional<unsigned> end =
         mapping.GetTextContentOffset(*GetNode(), TextLength());
@@ -2003,7 +2003,7 @@ bool LayoutText::ContainsCaretOffset(int text_offset) const {
     DCHECK(!IsTextFragment());
     if (!GetNode())
       return false;
-    const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
+    const NGOffsetMapping& mapping = GetNGOffsetMapping();
     if (mapping.IsBeforeNonCollapsedCharacter(*GetNode(), text_offset))
       return true;
     if (!mapping.IsAfterNonCollapsedCharacter(*GetNode(), text_offset))

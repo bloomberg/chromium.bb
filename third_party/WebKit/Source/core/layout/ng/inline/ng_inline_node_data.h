@@ -12,12 +12,12 @@
 namespace blink {
 
 class LayoutBox;
-class NGOffsetMappingResult;
+class NGOffsetMapping;
 
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData {
   // The constructor and destructor can't be implicit or inlined, because they
-  // need full definition of NGOffsetMappingResult.
+  // need full definition of NGOffsetMapping.
   NGInlineNodeData();
   ~NGInlineNodeData();
 
@@ -44,7 +44,7 @@ struct CORE_EXPORT NGInlineNodeData {
   std::unique_ptr<Vector<NGInlineItem>> first_line_items_;
 
   // The DOM to text content offset mapping of this inline node.
-  std::unique_ptr<NGOffsetMappingResult> offset_mapping_;
+  std::unique_ptr<NGOffsetMapping> offset_mapping_;
 
   // next_sibling_ is only valid after NGInlineNode::PrepareLayout is called.
   // Calling NGInlineNode::NextSibling will trigger this.

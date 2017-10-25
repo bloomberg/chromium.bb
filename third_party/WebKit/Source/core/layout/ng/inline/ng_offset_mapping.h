@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGOffsetMappingResult_h
-#define NGOffsetMappingResult_h
+#ifndef NGOffsetMapping_h
+#define NGOffsetMapping_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -81,19 +81,19 @@ class NGMappingUnitRange {
   const NGOffsetMappingUnit* end_;
 };
 
-// An NGOffsetMappingResult stores the units of a LayoutNGBlockFlow in sorted
+// An NGOffsetMapping stores the units of a LayoutNGBlockFlow in sorted
 // order in a vector. For each text node, the index range of the units owned by
 // the node is also stored.
 // See design doc https://goo.gl/CJbxky for details.
-class CORE_EXPORT NGOffsetMappingResult {
+class CORE_EXPORT NGOffsetMapping {
  public:
   using UnitVector = Vector<NGOffsetMappingUnit>;
   using RangeMap =
       HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
-  NGOffsetMappingResult(NGOffsetMappingResult&&);
-  NGOffsetMappingResult(UnitVector&&, RangeMap&&, String);
-  ~NGOffsetMappingResult();
+  NGOffsetMapping(NGOffsetMapping&&);
+  NGOffsetMapping(UnitVector&&, RangeMap&&, String);
+  ~NGOffsetMapping();
 
   const UnitVector& GetUnits() const { return units_; }
   const RangeMap& GetRanges() const { return ranges_; }
@@ -148,11 +148,11 @@ class CORE_EXPORT NGOffsetMappingResult {
   RangeMap ranges_;
   String text_;
 
-  DISALLOW_COPY_AND_ASSIGN(NGOffsetMappingResult);
+  DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };
 
-const NGOffsetMappingResult* GetNGOffsetMappingFor(const Node&, unsigned);
+const NGOffsetMapping* GetNGOffsetMappingFor(const Node&, unsigned);
 
 }  // namespace blink
 
-#endif  // NGOffsetMappingResult_h
+#endif  // NGOffsetMapping_h

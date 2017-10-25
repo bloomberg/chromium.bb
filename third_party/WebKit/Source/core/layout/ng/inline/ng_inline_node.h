@@ -28,7 +28,7 @@ using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 struct NGInlineNodeData;
 class NGLayoutResult;
-class NGOffsetMappingResult;
+class NGOffsetMapping;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -74,7 +74,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
   // This funciton must be called with clean layout.
-  const NGOffsetMappingResult& ComputeOffsetMappingIfNeeded();
+  const NGOffsetMapping& ComputeOffsetMappingIfNeeded();
 
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
   TextDirection BaseDirection() const { return Data().BaseDirection(); }

@@ -13,7 +13,7 @@
 namespace blink {
 
 class LayoutObject;
-class NGOffsetMappingResult;
+class NGOffsetMapping;
 
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
@@ -70,7 +70,7 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   void SetDestinationString(String);
 
   // Finalize and return the offset mapping.
-  NGOffsetMappingResult Build() const;
+  NGOffsetMapping Build() const;
 
   // Exposed for testing only.
   Vector<unsigned> DumpOffsetMappingForTesting() const;
