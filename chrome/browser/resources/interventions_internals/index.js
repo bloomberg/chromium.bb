@@ -68,6 +68,21 @@ function setupLogSearch() {
   });
 }
 
+/**
+ * Initialize the button to clear out all the log messages. This button only
+ * remove the logs from the UI, and does not effect any decision made.
+ */
+function setupLogClear() {
+  $('clear-log-button').addEventListener('click', () => {
+    // Remove hosts from table.
+    let logsTable = $('message-logs-table');
+    let rows = logsTable.querySelectorAll('.log-message');
+    for (let row = rows.length - 1; row > 0; row--) {
+      logsTable.deleteRow(row);
+    }
+  });
+}
+
 /** @constructor */
 let InterventionsInternalPageImpl = function(request) {
   this.binding_ =
@@ -84,7 +99,8 @@ InterventionsInternalPageImpl.prototype = {
    */
   logNewMessage: function(log) {
     let logsTable = $('message-logs-table');
-    let tableRow = document.createElement('tr');
+
+    let tableRow = logsTable.insertRow(1);  // Index 0 belongs to header row.
     tableRow.setAttribute('class', 'log-message');
 
     let timeTd = document.createElement('td');
@@ -109,8 +125,6 @@ InterventionsInternalPageImpl.prototype = {
     urlTd.setAttribute('class', 'log-url');
     urlTd.textContent = log.url.url;
     tableRow.appendChild(urlTd);
-
-    logsTable.appendChild(tableRow);
   },
 };
 
@@ -162,6 +176,7 @@ window.setupFn = window.setupFn || function() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTabControl();
   setupLogSearch();
+  setupLogClear();
   let pageHandler = null;
   let pageImpl = null;
 

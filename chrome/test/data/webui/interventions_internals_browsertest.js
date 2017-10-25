@@ -148,7 +148,10 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
 
     logs.forEach((log, index) => {
       let expectedTime = new Date(log.time).toISOString();
-      let row = rows[index];
+      let row = rows[logs.length - index - 1];  // Expecting reversed order.
+                                                // (i.e. a new log message is
+                                                // appended to the top of the
+                                                // log table).
 
       expectEquals(expectedTime, row.querySelector('.log-time').textContent);
       expectEquals(log.type, row.querySelector('.log-type').textContent);
