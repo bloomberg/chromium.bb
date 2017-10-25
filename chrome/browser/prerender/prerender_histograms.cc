@@ -55,8 +55,6 @@ std::string GetHistogramName(Origin origin, const std::string& name) {
       return ComposeHistogramName("webcross", name);
     case ORIGIN_EXTERNAL_REQUEST:
       return ComposeHistogramName("externalrequest", name);
-    case ORIGIN_INSTANT:
-      return ComposeHistogramName("Instant", name);
     case ORIGIN_LINK_REL_NEXT:
       return ComposeHistogramName("webnext", name);
     case ORIGIN_GWS_PRERENDER:

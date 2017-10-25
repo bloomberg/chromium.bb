@@ -154,14 +154,6 @@ class PrerenderManager : public content::NotificationObserver,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Rect& bounds);
 
-  // Adds a prerender for Instant Search |url| if valid. The
-  // |session_storage_namespace| matches the namespace of the active tab at the
-  // time the prerender is generated. Returns a PrerenderHandle or NULL.
-  std::unique_ptr<PrerenderHandle> AddPrerenderForInstant(
-      const GURL& url,
-      content::SessionStorageNamespace* session_storage_namespace,
-      const gfx::Size& size);
-
   // Cancels all active prerenders.
   void CancelAllPrerenders();
 
@@ -222,7 +214,6 @@ class PrerenderManager : public content::NotificationObserver,
   static PrerenderManagerMode GetMode(Origin origin);
   static void SetMode(PrerenderManagerMode mode);
   static void SetOmniboxMode(PrerenderManagerMode mode);
-  static void SetInstantMode(PrerenderManagerMode mode);
   static bool IsAnyPrerenderingPossible();
   static bool IsNoStatePrefetch(Origin origin);
   static bool IsSimpleLoadExperiment(Origin origin);
@@ -578,7 +569,6 @@ class PrerenderManager : public content::NotificationObserver,
   std::unique_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
-  static PrerenderManagerMode instant_mode_;
   static PrerenderManagerMode omnibox_mode_;
 
   // RepeatingTimer to perform periodic cleanups of pending prerendered

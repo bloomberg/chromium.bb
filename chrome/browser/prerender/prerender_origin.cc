@@ -24,7 +24,7 @@ const char* kOriginNames[] = {
     "Link Rel Prerender (cross domain)",
     "[Deprecated] Local Predictor",
     "External Request",
-    "Instant",
+    "[Deprecated] Instant",
     "[Deprecated] Link Rel Next",
     "External Request Forced Cellular",
     "[Deprecated] Offline",
