@@ -15,17 +15,28 @@
 // callers should copy any objects which they wish to use later. Non-requested
 // fields will be set to null, empty, or false.
 struct InstallableData {
+  InstallableData(InstallableStatusCode error_code,
+                  GURL manifest_url,
+                  const content::Manifest* manifest,
+                  GURL primary_icon_url,
+                  const SkBitmap* primary_icon,
+                  GURL badge_icon_url,
+                  const SkBitmap* badge_icon,
+                  bool valid_manifest,
+                  bool has_worker);
+  ~InstallableData();
+
   // NO_ERROR_DETECTED if there were no issues.
-  const InstallableStatusCode error_code;
+  const InstallableStatusCode error_code = NO_ERROR_DETECTED;
 
   // Empty if the site has no <link rel="manifest"> tag.
-  const GURL& manifest_url;
+  const GURL manifest_url;
 
   // Empty if the site has an unparseable manifest.
-  const content::Manifest& manifest;
+  const content::Manifest* manifest;
 
   // Empty if no primary_icon was requested.
-  const GURL& primary_icon_url;
+  const GURL primary_icon_url;
 
   // nullptr if the most appropriate primary icon couldn't be determined or
   // downloaded. The underlying primary icon is owned by the InstallableManager;
@@ -35,7 +46,7 @@ struct InstallableData {
   const SkBitmap* primary_icon;
 
   // Empty if no badge_icon was requested.
-  const GURL& badge_icon_url;
+  const GURL badge_icon_url;
 
   // nullptr if the most appropriate badge icon couldn't be determined or
   // downloaded. The underlying badge icon is owned by the InstallableManager;
@@ -48,11 +59,11 @@ struct InstallableData {
   // true if the site has a viable web app manifest. If valid_manifest or
   // has_worker was true and the site isn't installable, the reason will be in
   // error_code.
-  const bool valid_manifest;
+  const bool valid_manifest = false;
 
   // true if the site has a service worker with a fetch handler. If has_worker
   // was true and the site isn't installable, the reason will be in error_code.
-  const bool has_worker;
+  const bool has_worker = false;
 };
 
 using InstallableCallback = base::Callback<void(const InstallableData&)>;

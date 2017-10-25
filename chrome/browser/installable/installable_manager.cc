@@ -363,7 +363,7 @@ void InstallableManager::RunCallback(const InstallableTask& task,
   InstallableData data = {
       code,
       manifest_url(),
-      manifest(),
+      &manifest(),
       primary_icon->url,
       primary_icon->icon.get(),
       badge_icon->url,

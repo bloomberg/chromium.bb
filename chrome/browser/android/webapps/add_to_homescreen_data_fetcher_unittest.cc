@@ -175,7 +175,7 @@ class TestInstallableManager : public InstallableManager {
     if (params.valid_manifest && params.has_worker && is_installable)
       ResolveMetrics(params, is_installable);
 
-    callback.Run({code, GURL(kDefaultManifestUrl), manifest_,
+    callback.Run({code, GURL(kDefaultManifestUrl), &manifest_,
                   params.valid_primary_icon ? primary_icon_url_ : GURL(),
                   params.valid_primary_icon ? primary_icon_.get() : nullptr,
                   params.valid_badge_icon ? badge_icon_url_ : GURL(),
