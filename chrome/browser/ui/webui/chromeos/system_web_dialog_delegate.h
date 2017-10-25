@@ -40,11 +40,10 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // shell container.
   void ShowSystemDialog();
 
- protected:
+ private:
   GURL gurl_;
   base::string16 title_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(SystemWebDialogDelegate);
 };
 

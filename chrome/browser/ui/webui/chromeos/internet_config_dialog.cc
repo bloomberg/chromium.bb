@@ -89,11 +89,9 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
       chrome::kChromeUIInternetConfigDialogHost);
 
   AddInternetStrings(source);
-
+  source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_HTML);
-  source->DisableContentSecurityPolicy();
-
   source->AddResourcePath("internet_config_dialog.js",
                           IDR_INTERNET_CONFIG_DIALOG_JS);
 
