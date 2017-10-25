@@ -21,6 +21,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -112,7 +113,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       case ResponseMode::kDefault:
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
-        return;
+        break;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(
             ServiceWorkerResponse(
@@ -128,13 +129,13 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
             std::move(stream_handle_), base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
-        return;
+        break;
       case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::Time::Now());
-        return;
+        break;
       case ResponseMode::kErrorResponse:
         response_callback->OnResponse(
             ServiceWorkerResponse(
@@ -152,7 +153,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::REJECTED,
             base::Time::Now());
-        return;
+        break;
       case ResponseMode::kRedirectResponse: {
         auto headers = base::MakeUnique<ServiceWorkerHeaderMap>();
         (*headers)["Location"] = redirect_location_header_;
@@ -169,14 +170,20 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
             base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
-      }
-        return;
+      } break;
     }
-    NOTREACHED();
+    if (fetch_event_callback_)
+      std::move(fetch_event_callback_).Run();
   }
 
   void Clone(mojom::ControllerServiceWorkerRequest request) override {
     bindings_.AddBinding(this, std::move(request));
+  }
+
+  void RunUntilFetchEvent() {
+    base::RunLoop loop;
+    fetch_event_callback_ = loop.QuitClosure();
+    loop.Run();
   }
 
   int fetch_event_count() const { return fetch_event_count_; }
@@ -197,7 +204,9 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   int fetch_event_count_ = 0;
   ServiceWorkerFetchRequest fetch_event_request_;
+  base::OnceClosure fetch_event_callback_;
   mojo::BindingSet<mojom::ControllerServiceWorker> bindings_;
+
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
@@ -255,8 +264,7 @@ class FakeServiceWorkerContainerHost
 class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
  protected:
   ServiceWorkerSubresourceLoaderTest()
-      : fake_container_host_(&fake_controller_),
-        url_loader_client_(base::MakeUnique<TestURLLoaderClient>()) {}
+      : fake_container_host_(&fake_controller_) {}
   ~ServiceWorkerSubresourceLoaderTest() override = default;
 
   void SetUp() override {
@@ -268,35 +276,38 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     loader_factory_getter_ =
         base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(
             std::move(fake_loader_factory), nullptr);
-    controller_connector_ =
-        base::MakeRefCounted<ControllerServiceWorkerConnector>(
-            &fake_container_host_);
   }
 
-  void TearDown() override {
-    controller_connector_->OnContainerHostConnectionClosed();
-  }
-
-  void TestRequest(std::unique_ptr<ResourceRequest> request) {
-    ServiceWorkerSubresourceLoaderFactory loader_factory(
-        controller_connector_, loader_factory_getter_, request->url.GetOrigin(),
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory>
+  CreateSubresourceLoaderFactory(const GURL& controller_origin) {
+    auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
+        &fake_container_host_);
+    return std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
+        connector, loader_factory_getter_, controller_origin,
         base::MakeRefCounted<
             base::RefCountedData<blink::mojom::BlobRegistryPtr>>());
-    loader_factory.CreateLoaderAndStart(
-        mojo::MakeRequest(&url_loader_), 0, 0, mojom::kURLLoadOptionNone,
-        *request, url_loader_client_->CreateInterfacePtr(),
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(request->url, fake_controller_.fetch_event_request().url);
-    EXPECT_EQ(request->method, fake_controller_.fetch_event_request().method);
   }
 
-  std::unique_ptr<ResourceRequest> CreateRequest(const GURL& url) {
-    std::unique_ptr<ResourceRequest> request =
-        base::MakeUnique<ResourceRequest>();
-    request->url = url;
-    request->method = "GET";
+  // Starts |request| using |loader_factory| and sets |out_loader| and
+  // |out_loader_client| to the resulting URLLoader and its URLLoaderClient. The
+  // caller can then use functions like client.RunUntilComplete() to wait for
+  // completion. Calling fake_controller_->RunUntilFetchEvent() also advances
+  // the load to until |fake_controller_| receives the fetch event.
+  void StartRequest(ServiceWorkerSubresourceLoaderFactory* loader_factory,
+                    const ResourceRequest& request,
+                    mojom::URLLoaderPtr* out_loader,
+                    std::unique_ptr<TestURLLoaderClient>* out_loader_client) {
+    *out_loader_client = std::make_unique<TestURLLoaderClient>();
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(out_loader), 0, 0, mojom::kURLLoadOptionNone, request,
+        (*out_loader_client)->CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+  }
+
+  ResourceRequest CreateRequest(const GURL& url) {
+    ResourceRequest request;
+    request.url = url;
+    request.method = "GET";
     return request;
   }
 
@@ -305,39 +316,78 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   FakeServiceWorkerContainerHost fake_container_host_;
   FakeControllerServiceWorker fake_controller_;
-  scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
   base::test::ScopedFeatureList feature_list_;
-
-  mojom::URLLoaderPtr url_loader_;
-  std::unique_ptr<TestURLLoaderClient> url_loader_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderTest);
 };
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  fake_controller_.RunUntilFetchEvent();
+
+  EXPECT_EQ(request.url, fake_controller_.fetch_event_request().url);
+  EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
   EXPECT_EQ(1, fake_controller_.fetch_event_count());
   EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
-  url_loader_client_->Unbind();
-  EXPECT_EQ(1, fake_controller_.fetch_event_count());
-  EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo2.png")));
-  url_loader_client_->Unbind();
-  EXPECT_EQ(2, fake_controller_.fetch_event_count());
-  EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+  {
+    ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/foo.png"));
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<TestURLLoaderClient> client;
+    StartRequest(factory.get(), request, &loader, &client);
+    fake_controller_.RunUntilFetchEvent();
+
+    EXPECT_EQ(request.url, fake_controller_.fetch_event_request().url);
+    EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
+    EXPECT_EQ(1, fake_controller_.fetch_event_count());
+    EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+  }
+
+  {
+    ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/foo2.png"));
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<TestURLLoaderClient> client;
+    StartRequest(factory.get(), request, &loader, &client);
+    fake_controller_.RunUntilFetchEvent();
+
+    EXPECT_EQ(request.url, fake_controller_.fetch_event_request().url);
+    EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
+    EXPECT_EQ(2, fake_controller_.fetch_event_count());
+    EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+  }
 
   // Drop the connection to the ControllerServiceWorker.
   fake_controller_.CloseAllBindings();
   base::RunLoop().RunUntilIdle();
 
-  // This should re-obtain the ControllerServiceWorker.
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo3.png")));
-  EXPECT_EQ(3, fake_controller_.fetch_event_count());
-  EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
+  {
+    // This should re-obtain the ControllerServiceWorker.
+    ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/foo3.png"));
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<TestURLLoaderClient> client;
+    StartRequest(factory.get(), request, &loader, &client);
+    fake_controller_.RunUntilFetchEvent();
+
+    EXPECT_EQ(request.url, fake_controller_.fetch_event_request().url);
+    EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
+    EXPECT_EQ(3, fake_controller_.fetch_event_count());
+    EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
+  }
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
@@ -348,10 +398,19 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
                                      std::move(data_pipe.consumer_handle));
 
-  // Perform the request.
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
 
-  const ResourceResponseHead& info = url_loader_client_->response_head();
+  // Perform the request.
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  client->RunUntilResponseReceived();
+
+  const ResourceResponseHead& info = client->response_head();
   EXPECT_EQ(200, info.headers->response_code());
   EXPECT_EQ(true, info.was_fetched_via_service_worker);
   EXPECT_EQ(false, info.was_fallback_required_by_service_worker);
@@ -373,14 +432,14 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   stream_callback->OnCompleted();
   data_pipe.producer_handle.reset();
 
-  url_loader_client_->RunUntilComplete();
-  EXPECT_EQ(net::OK, url_loader_client_->completion_status().error_code);
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
 
   // Test the body.
   std::string response;
-  EXPECT_TRUE(url_loader_client_->response_body().is_valid());
+  EXPECT_TRUE(client->response_body().is_valid());
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      url_loader_client_->response_body_release(), &response));
+      client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
 }
 
@@ -389,56 +448,80 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
 TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
   fake_controller_.RespondWithFallback();
 
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+
   // Perform the request.
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
-  // TODO(emim): It should add some expression to check whether this actually
-  // performed the fallback.
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  client->RunUntilComplete();
+
+  // OnFallback() should complete the network request using network loader.
+  EXPECT_TRUE(client->has_received_completion());
+  EXPECT_FALSE(client->response_head().was_fetched_via_service_worker);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
   fake_controller_.RespondWithError();
 
-  // Perform the request.
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
 
-  EXPECT_EQ(net::ERR_FAILED,
-            url_loader_client_->completion_status().error_code);
+  // Perform the request.
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  client->RunUntilComplete();
+
+  EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   fake_controller_.RespondWithRedirect("https://www.example.com/bar.png");
 
-  // Perform the request.
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
 
-  EXPECT_EQ(net::OK, url_loader_client_->completion_status().error_code);
-  EXPECT_TRUE(url_loader_client_->has_received_redirect());
+  // Perform the request.
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  client->RunUntilRedirectReceived();
+
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_TRUE(client->has_received_redirect());
   {
-    const net::RedirectInfo& redirect_info =
-        url_loader_client_->redirect_info();
+    const net::RedirectInfo& redirect_info = client->redirect_info();
     EXPECT_EQ(302, redirect_info.status_code);
     EXPECT_EQ("GET", redirect_info.new_method);
     EXPECT_EQ(GURL("https://www.example.com/bar.png"), redirect_info.new_url);
   }
-
-  url_loader_client_->ClearHasReceivedRedirect();
+  client->ClearHasReceivedRedirect();
 
   // Redirect once more.
   fake_controller_.RespondWithRedirect("https://other.example.com/baz.png");
-  url_loader_->FollowRedirect();
-  base::RunLoop().RunUntilIdle();
+  loader->FollowRedirect();
+  client->RunUntilRedirectReceived();
 
-  EXPECT_EQ(net::OK, url_loader_client_->completion_status().error_code);
-  EXPECT_TRUE(url_loader_client_->has_received_redirect());
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_TRUE(client->has_received_redirect());
   {
-    const net::RedirectInfo& redirect_info =
-        url_loader_client_->redirect_info();
+    const net::RedirectInfo& redirect_info = client->redirect_info();
     EXPECT_EQ(302, redirect_info.status_code);
     EXPECT_EQ("GET", redirect_info.new_method);
     EXPECT_EQ(GURL("https://other.example.com/baz.png"), redirect_info.new_url);
   }
-
-  url_loader_client_->ClearHasReceivedRedirect();
+  client->ClearHasReceivedRedirect();
 
   // Give the final response.
   const char kResponseBody[] = "Here is sample text for the Stream.";
@@ -446,9 +529,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   mojo::DataPipe data_pipe;
   fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
                                      std::move(data_pipe.consumer_handle));
-  url_loader_->FollowRedirect();
-  base::RunLoop().RunUntilIdle();
-  const ResourceResponseHead& info = url_loader_client_->response_head();
+  loader->FollowRedirect();
+  client->RunUntilResponseReceived();
+
+  const ResourceResponseHead& info = client->response_head();
   EXPECT_EQ(200, info.headers->response_code());
   EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
             info.response_type_via_service_worker);
@@ -462,14 +546,14 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   stream_callback->OnCompleted();
   data_pipe.producer_handle.reset();
 
-  url_loader_client_->RunUntilComplete();
-  EXPECT_EQ(net::OK, url_loader_client_->completion_status().error_code);
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
 
   // Test the body.
   std::string response;
-  EXPECT_TRUE(url_loader_client_->response_body().is_valid());
+  EXPECT_TRUE(client->response_body().is_valid());
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      url_loader_client_->response_body_release(), &response));
+      client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
 }
 
@@ -480,41 +564,54 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
       base::IntToString(count);
   fake_controller_.RespondWithRedirect(redirect_location);
 
+  // Perform the request
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+
   // Perform the request.
-  TestRequest(CreateRequest(GURL("https://www.example.com/foo.png")));
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
 
   // The Fetch spec says: "If request’s redirect count is twenty, return a
   // network error." https://fetch.spec.whatwg.org/#http-redirect-fetch
   // So fetch can follow the redirect response until 20 times.
   for (; count < 21; ++count) {
-    EXPECT_TRUE(url_loader_client_->has_received_redirect());
-    EXPECT_EQ(net::OK, url_loader_client_->completion_status().error_code);
-    const net::RedirectInfo& redirect_info1 =
-        url_loader_client_->redirect_info();
-    EXPECT_EQ(302, redirect_info1.status_code);
-    EXPECT_EQ("GET", redirect_info1.new_method);
-    EXPECT_EQ(GURL(redirect_location), redirect_info1.new_url);
+    client->RunUntilRedirectReceived();
 
-    url_loader_client_->ClearHasReceivedRedirect();
+    EXPECT_TRUE(client->has_received_redirect());
+    EXPECT_EQ(net::OK, client->completion_status().error_code);
+    const net::RedirectInfo& redirect_info = client->redirect_info();
+    EXPECT_EQ(302, redirect_info.status_code);
+    EXPECT_EQ("GET", redirect_info.new_method);
+    EXPECT_EQ(GURL(redirect_location), redirect_info.new_url);
+
+    client->ClearHasReceivedRedirect();
 
     // Redirect more.
     redirect_location = std::string("https://www.example.com/redirect_") +
                         base::IntToString(count);
     fake_controller_.RespondWithRedirect(redirect_location);
-    url_loader_->FollowRedirect();
-    base::RunLoop().RunUntilIdle();
+    loader->FollowRedirect();
   }
-
-  EXPECT_FALSE(url_loader_client_->has_received_redirect());
+  client->RunUntilComplete();
 
   // Fetch can't follow the redirect response 21 times.
+  EXPECT_FALSE(client->has_received_redirect());
   EXPECT_EQ(net::ERR_TOO_MANY_REDIRECTS,
-            url_loader_client_->completion_status().error_code);
+            client->completion_status().error_code);
 }
 
 // Test when the service worker responds with network fallback to CORS request.
 TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
   fake_controller_.RespondWithFallback();
+
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
 
   struct TestCase {
     FetchRequestMode fetch_request_mode;
@@ -556,20 +653,21 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
         << " request_initiator: "
         << (test.request_initiator ? test.request_initiator->Serialize()
                                    : std::string("null")));
-    std::unique_ptr<ResourceRequest> request =
-        CreateRequest(GURL("https://www.example.com/foo.png"));
-    request->fetch_request_mode = test.fetch_request_mode;
-    request->request_initiator = test.request_initiator;
-
     // Perform the request.
-    TestRequest(std::move(request));
+    ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/foo.png"));
+    request.fetch_request_mode = test.fetch_request_mode;
+    request.request_initiator = test.request_initiator;
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<TestURLLoaderClient> client;
+    StartRequest(factory.get(), request, &loader, &client);
+    client->RunUntilResponseReceived();
 
-    const ResourceResponseHead& info = url_loader_client_->response_head();
+    const ResourceResponseHead& info = client->response_head();
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
               info.was_fetched_via_service_worker);
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
               info.was_fallback_required_by_service_worker);
-    url_loader_client_ = base::MakeUnique<TestURLLoaderClient>();
   }
 }
 
