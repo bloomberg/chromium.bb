@@ -1130,11 +1130,11 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 583;
     case CSSPropertyScrollSnapStop:
       return 584;
-    case CSSPropertyScrollBoundaryBehavior:
+    case CSSPropertyOverscrollBehavior:
       return 585;
-    case CSSPropertyScrollBoundaryBehaviorX:
+    case CSSPropertyOverscrollBehaviorX:
       return 586;
-    case CSSPropertyScrollBoundaryBehaviorY:
+    case CSSPropertyOverscrollBehaviorY:
       return 587;
     case CSSPropertyFontVariantEastAsian:
       return 588;
