@@ -1296,6 +1296,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   service_manager_context_.reset();
   mojo_ipc_support_.reset();
 
+  if (save_file_manager_)
+    save_file_manager_->Shutdown();
+
   {
     base::ThreadRestrictions::ScopedAllowWait allow_wait_for_join;
 
@@ -1326,10 +1329,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
         }
         case BrowserThread::FILE: {
           TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
-          // Clean up state that lives on or uses the FILE thread before it goes
-          // away.
-          if (save_file_manager_)
-            save_file_manager_->Shutdown();
           ResetThread_FILE();
           break;
         }

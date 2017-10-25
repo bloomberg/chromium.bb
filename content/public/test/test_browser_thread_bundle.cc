@@ -124,22 +124,10 @@ void TestBrowserThreadBundle::Init() {
 void TestBrowserThreadBundle::CreateBrowserThreads() {
   CHECK(!threads_created_);
 
-  if (options_ & REAL_DB_THREAD) {
-    db_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::DB);
-    db_thread_->Start();
-  } else {
-    db_thread_ = base::MakeUnique<TestBrowserThread>(
-        BrowserThread::DB, base::MessageLoop::current());
-  }
-
-  if (options_ & REAL_FILE_THREAD) {
-    file_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::FILE);
-    file_thread_->Start();
-  } else {
-    file_thread_ = base::MakeUnique<TestBrowserThread>(
-        BrowserThread::FILE, base::MessageLoop::current());
-  }
-
+  db_thread_ = base::MakeUnique<TestBrowserThread>(
+      BrowserThread::DB, base::MessageLoop::current());
+  file_thread_ = base::MakeUnique<TestBrowserThread>(
+      BrowserThread::FILE, base::MessageLoop::current());
   file_user_blocking_thread_ = base::MakeUnique<TestBrowserThread>(
       BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current());
   process_launcher_thread_ = base::MakeUnique<TestBrowserThread>(

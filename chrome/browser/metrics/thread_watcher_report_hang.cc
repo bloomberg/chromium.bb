@@ -86,24 +86,27 @@ NOINLINE void ThreadUnresponsive_IO() {
   ReportThreadHang();
 }
 
-NOINLINE void CrashBecauseThreadWasUnresponsive(int thread_id) {
-  // TODO(rtenneti): The following is a temporary change to check thread_id
-  // numbers explicitly so that we will have minimum code. Will change after the
-  // test run to use content::BrowserThread::ID enum.
-  if (thread_id == 0)
-    return ThreadUnresponsive_UI();
-  else if (thread_id == 1)
-    return ThreadUnresponsive_DB();
-  else if (thread_id == 2)
-    return ThreadUnresponsive_FILE();
-  else if (thread_id == 3)
-    return ThreadUnresponsive_FILE_USER_BLOCKING();
-  else if (thread_id == 4)
-    return ThreadUnresponsive_PROCESS_LAUNCHER();
-  else if (thread_id == 5)
-    return ThreadUnresponsive_CACHE();
-  else if (thread_id == 6)
-    return ThreadUnresponsive_IO();
+NOINLINE void CrashBecauseThreadWasUnresponsive(
+    content::BrowserThread::ID thread_id) {
+  switch (thread_id) {
+    case content::BrowserThread::UI:
+      return ThreadUnresponsive_UI();
+    case content::BrowserThread::DB:
+      return ThreadUnresponsive_DB();
+    case content::BrowserThread::FILE:
+      return ThreadUnresponsive_FILE();
+    case content::BrowserThread::FILE_USER_BLOCKING:
+      return ThreadUnresponsive_FILE_USER_BLOCKING();
+    case content::BrowserThread::PROCESS_LAUNCHER:
+      return ThreadUnresponsive_PROCESS_LAUNCHER();
+    case content::BrowserThread::CACHE:
+      return ThreadUnresponsive_CACHE();
+    case content::BrowserThread::IO:
+      return ThreadUnresponsive_IO();
+    case content::BrowserThread::ID_COUNT:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace metrics
