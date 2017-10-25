@@ -6,9 +6,22 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
+#include "core/editing/Position.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 
 namespace blink {
+
+namespace {
+
+Position CreatePositionForOffsetMapping(const Node& node, unsigned dom_offset) {
+  if (node.IsTextNode())
+    return Position(&node, dom_offset);
+  // For non-text-anchored position, the offset must be either 0 or 1.
+  DCHECK_LE(dom_offset, 1u);
+  return dom_offset ? Position::AfterNode(node) : Position::BeforeNode(node);
+}
+
+}  // namespace
 
 NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
                                          const Node& node,
@@ -40,6 +53,32 @@ unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
     return text_content_start_;
   // Handle has identity mapping.
   return offset - dom_start_ + text_content_start_;
+}
+
+unsigned NGOffsetMappingUnit::ConvertTextContentToFirstDOMOffset(
+    unsigned offset) const {
+  DCHECK_GE(offset, text_content_start_);
+  DCHECK_LE(offset, text_content_end_);
+  // Always return DOM start for collapsed units.
+  if (text_content_start_ == text_content_end_)
+    return dom_start_;
+  // Handle identity mapping.
+  if (type_ == NGOffsetMappingUnitType::kIdentity)
+    return dom_start_ + offset - text_content_start_;
+  // Handle expanded mapping.
+  return offset < text_content_end_ ? dom_start_ : dom_end_;
+}
+
+unsigned NGOffsetMappingUnit::ConvertTextContentToLastDOMOffset(
+    unsigned offset) const {
+  DCHECK_GE(offset, text_content_start_);
+  DCHECK_LE(offset, text_content_end_);
+  // Always return DOM end for collapsed units.
+  if (text_content_start_ == text_content_end_)
+    return dom_end_;
+  // In a non-collapsed unit, mapping between DOM and text content offsets is
+  // one-to-one. Reuse existing code.
+  return ConvertTextContentToFirstDOMOffset(offset);
 }
 
 // static
@@ -182,6 +221,42 @@ Optional<UChar> NGOffsetMapping::GetCharacterBefore(const Node& node,
   if (!text_content_offset || !*text_content_offset)
     return WTF::nullopt;
   return text_[*text_content_offset - 1];
+}
+
+Position NGOffsetMapping::GetFirstPosition(unsigned offset) const {
+  // Find the first unit where |unit.TextContentEnd() >= offset|
+  if (units_.IsEmpty() || units_.back().TextContentEnd() < offset)
+    return {};
+  const NGOffsetMappingUnit* result =
+      std::lower_bound(units_.begin(), units_.end(), offset,
+                       [](const NGOffsetMappingUnit& unit, unsigned offset) {
+                         return unit.TextContentEnd() < offset;
+                       });
+  DCHECK_NE(result, units_.end());
+  if (result->TextContentStart() > offset)
+    return {};
+  const Node& node = result->GetOwner();
+  const unsigned dom_offset =
+      result->ConvertTextContentToFirstDOMOffset(offset);
+  return CreatePositionForOffsetMapping(node, dom_offset);
+}
+
+Position NGOffsetMapping::GetLastPosition(unsigned offset) const {
+  // Find the last unit where |unit.TextContentStart() <= offset|
+  if (units_.IsEmpty() || units_.front().TextContentStart() > offset)
+    return {};
+  const NGOffsetMappingUnit* result =
+      std::upper_bound(units_.begin(), units_.end(), offset,
+                       [](unsigned offset, const NGOffsetMappingUnit& unit) {
+                         return offset < unit.TextContentStart();
+                       });
+  DCHECK_NE(result, units_.begin());
+  result = std::prev(result);
+  if (result->TextContentEnd() < offset)
+    return {};
+  const Node& node = result->GetOwner();
+  const unsigned dom_offset = result->ConvertTextContentToLastDOMOffset(offset);
+  return CreatePositionForOffsetMapping(node, dom_offset);
 }
 
 }  // namespace blink

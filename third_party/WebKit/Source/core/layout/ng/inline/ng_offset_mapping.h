@@ -6,6 +6,7 @@
 #define NGOffsetMapping_h
 
 #include "core/CoreExport.h"
+#include "core/editing/Forward.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
@@ -54,6 +55,9 @@ class CORE_EXPORT NGOffsetMappingUnit {
 
   unsigned ConvertDOMOffsetToTextContent(unsigned) const;
 
+  unsigned ConvertTextContentToFirstDOMOffset(unsigned) const;
+  unsigned ConvertTextContentToLastDOMOffset(unsigned) const;
+
  private:
   const NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
@@ -98,6 +102,8 @@ class CORE_EXPORT NGOffsetMapping {
   const UnitVector& GetUnits() const { return units_; }
   const RangeMap& GetRanges() const { return ranges_; }
   const String& GetText() const { return text_; }
+
+  // ------ Mapping APIs from DOM to text content ------
 
   // TODO(xiaochengh): Change the functions to take Positions instead of (node,
   // offset) pairs.
@@ -144,7 +150,22 @@ class CORE_EXPORT NGOffsetMapping {
   // content character before the offset. Returns nullopt if it does not exist.
   Optional<UChar> GetCharacterBefore(const Node&, unsigned offset) const;
 
-  // TODO(xiaochengh): Add APIs for reverse mapping.
+  // ------ Mapping APIs from text content to DOM ------
+
+  // These APIs map a text content offset to DOM positions, or return null when
+  // both characters next to the offset are in generated content (list markers,
+  // ::before/after, generated BiDi control characters, ...). The returned
+  // position is either offset in a text node, or before/after an atomic inline
+  // (IMG, BR, ...).
+  // Note 1: there can be multiple positions mapped to the same offset when,
+  // for example, there are collapsed whitespaces. Hence, we have two APIs to
+  // return the first/last one of them.
+  // Note 2: there is a corner case where Shadow DOM changes the ordering of
+  // nodes in the flat tree, so that they are not laid out in the same order as
+  // in the DOM tree. In this case, "first" and "last" position are defined on
+  // the layout order, aka the flat tree order.
+  Position GetFirstPosition(unsigned) const;
+  Position GetLastPosition(unsigned) const;
 
  private:
   UnitVector units_;
