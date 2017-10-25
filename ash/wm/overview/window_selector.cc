@@ -838,6 +838,8 @@ void WindowSelector::OnDisplayBoundsChanged() {
   }
   PositionWindows(/* animate */ false);
   RepositionTextFilterOnDisplayMetricsChange();
+  if (split_view_overview_overlay_)
+    split_view_overview_overlay_->OnDisplayBoundsChanged();
 }
 
 }  // namespace ash
