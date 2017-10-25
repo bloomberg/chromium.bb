@@ -682,7 +682,14 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
   const Extension* extension = GetExtensionById(update.extension_id);
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
-  if (!user_gesture())
+
+  // The chrome://extensions page uses toggles which, when dragged, do not
+  // invoke a user gesture. Work around this for the chrome://extensions page.
+  // TODO(dpapad): Remove this exemption when sliding a toggle counts as a
+  // gesture.
+  bool allowed =
+      source_context_type() == Feature::WEBUI_CONTEXT || user_gesture();
+  if (!allowed)
     return RespondNow(Error(kRequiresUserGestureError));
 
   if (update.file_access) {

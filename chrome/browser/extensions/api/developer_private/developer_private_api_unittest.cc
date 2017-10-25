@@ -224,6 +224,11 @@ void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
     EXPECT_FALSE(RunFunction(function, args)) << key;
     EXPECT_EQ("This action requires a user gesture.", function->GetError());
 
+    function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
+    function->set_source_context_type(Feature::WEBUI_CONTEXT);
+    EXPECT_TRUE(RunFunction(function, args)) << key;
+    EXPECT_TRUE(has_pref.Run()) << key;
+
     ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
     function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
     EXPECT_TRUE(RunFunction(function, args)) << key;
