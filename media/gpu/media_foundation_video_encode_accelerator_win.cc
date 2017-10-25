@@ -479,7 +479,7 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples(
   hr = encoder_->SetInputType(input_stream_id_, imf_input_media_type_.Get(), 0);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set input media type", false);
 
-  return SUCCEEDED(hr);
+  return true;
 }
 
 bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
@@ -493,18 +493,31 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
   var.vt = VT_UI4;
   var.ulVal = eAVEncCommonRateControlMode_CBR;
   hr = codec_api_->SetValue(&CODECAPI_AVEncCommonRateControlMode, &var);
-  RETURN_ON_HR_FAILURE(hr, "Couldn't set CommonRateControlMode", false);
+  if (!compatible_with_win7_) {
+    // Though CODECAPI_AVEncCommonRateControlMode is supported by Windows 7, but
+    // according to a discussion on MSDN,
+    // https://social.msdn.microsoft.com/Forums/windowsdesktop/en-US/6da521e9-7bb3-4b79-a2b6-b31509224638/win7-h264-encoder-imfsinkwriter-cant-use-quality-vbr-encoding?forum=mediafoundationdevelopment
+    // setting it on Windows 7 returns error.
+    RETURN_ON_HR_FAILURE(hr, "Couldn't set CommonRateControlMode", false);
+  }
   var.ulVal = target_bitrate_;
   hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMeanBitRate, &var);
-  RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", false);
+  if (!compatible_with_win7_) {
+    RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", false);
+  }
   var.ulVal = eAVEncAdaptiveMode_Resolution;
   hr = codec_api_->SetValue(&CODECAPI_AVEncAdaptiveMode, &var);
-  RETURN_ON_HR_FAILURE(hr, "Couldn't set FrameRate", false);
+  if (!compatible_with_win7_) {
+    RETURN_ON_HR_FAILURE(hr, "Couldn't set FrameRate", false);
+  }
   var.vt = VT_BOOL;
   var.boolVal = VARIANT_TRUE;
   hr = codec_api_->SetValue(&CODECAPI_AVLowLatencyMode, &var);
-  RETURN_ON_HR_FAILURE(hr, "Couldn't set LowLatencyMode", false);
-  return SUCCEEDED(hr);
+  if (!compatible_with_win7_) {
+    RETURN_ON_HR_FAILURE(hr, "Couldn't set LowLatencyMode", false);
+  }
+
+  return true;
 }
 
 bool MediaFoundationVideoEncodeAccelerator::IsResolutionSupported(
@@ -577,7 +590,7 @@ void MediaFoundationVideoEncodeAccelerator::EncodeTask(
     var.vt = VT_UI4;
     var.ulVal = 1;
     hr = codec_api_->SetValue(&CODECAPI_AVEncVideoForceKeyFrame, &var);
-    if (!SUCCEEDED(hr)) {
+    if (!compatible_with_win7_ && !SUCCEEDED(hr)) {
       LOG(WARNING) << "Failed to set CODECAPI_AVEncVideoForceKeyFrame, "
                       "HRESULT: 0x" << std::hex << hr;
     }
@@ -732,7 +745,9 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     var.vt = VT_UI4;
     var.ulVal = target_bitrate_;
     HRESULT hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMeanBitRate, &var);
-    RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", );
+    if (!compatible_with_win7_) {
+      RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", );
+    }
   }
 }
 
