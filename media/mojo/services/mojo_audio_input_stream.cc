@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_audio_output_stream.h"
+#include "media/mojo/services/mojo_audio_input_stream.h"
 
 #include <memory>
 #include <utility>
@@ -14,9 +14,9 @@
 
 namespace media {
 
-MojoAudioOutputStream::MojoAudioOutputStream(
-    mojom::AudioOutputStreamRequest request,
-    mojom::AudioOutputStreamClientPtr client,
+MojoAudioInputStream::MojoAudioInputStream(
+    mojom::AudioInputStreamRequest request,
+    mojom::AudioInputStreamClientPtr client,
     CreateDelegateCallback create_delegate_callback,
     StreamCreatedCallback stream_created_callback,
     base::OnceClosure deleter_callback)
@@ -30,9 +30,9 @@ MojoAudioOutputStream::MojoAudioOutputStream(
   DCHECK(deleter_callback_);
   // |this| owns |binding_|, so unretained is safe.
   binding_.set_connection_error_handler(
-      base::BindOnce(&MojoAudioOutputStream::OnError, base::Unretained(this)));
+      base::BindOnce(&MojoAudioInputStream::OnError, base::Unretained(this)));
   client_.set_connection_error_handler(
-      base::BindOnce(&MojoAudioOutputStream::OnError, base::Unretained(this)));
+      base::BindOnce(&MojoAudioInputStream::OnError, base::Unretained(this)));
   delegate_ = std::move(create_delegate_callback).Run(this);
   if (!delegate_) {
     // Failed to initialize the stream. We cannot call |deleter_callback_| yet,
@@ -40,29 +40,24 @@ MojoAudioOutputStream::MojoAudioOutputStream(
     binding_.Close();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&MojoAudioOutputStream::OnStreamError,
+        base::BindOnce(&MojoAudioInputStream::OnStreamError,
                        weak_factory_.GetWeakPtr(), /* not used */ 0));
   }
 }
 
-MojoAudioOutputStream::~MojoAudioOutputStream() {
+MojoAudioInputStream::~MojoAudioInputStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void MojoAudioOutputStream::Play() {
+void MojoAudioInputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  delegate_->OnPlayStream();
+  delegate_->OnRecordStream();
 }
 
-void MojoAudioOutputStream::Pause() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  delegate_->OnPauseStream();
-}
-
-void MojoAudioOutputStream::SetVolume(double volume) {
+void MojoAudioInputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (volume < 0 || volume > 1) {
-    LOG(ERROR) << "MojoAudioOutputStream::SetVolume(" << volume
+    LOG(ERROR) << "MojoAudioInputStream::SetVolume(" << volume
                << ") out of range.";
     OnStreamError(/*not used*/ 0);
     return;
@@ -70,10 +65,11 @@ void MojoAudioOutputStream::SetVolume(double volume) {
   delegate_->OnSetVolume(volume);
 }
 
-void MojoAudioOutputStream::OnStreamCreated(
+void MojoAudioInputStream::OnStreamCreated(
     int stream_id,
     const base::SharedMemory* shared_memory,
-    std::unique_ptr<base::CancelableSyncSocket> foreign_socket) {
+    std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
+    bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(stream_created_callback_);
   DCHECK(shared_memory);
@@ -95,16 +91,21 @@ void MojoAudioOutputStream::OnStreamCreated(
   DCHECK(socket_handle.is_valid());
 
   base::ResetAndReturn(&stream_created_callback_)
-      .Run(std::move(buffer_handle), std::move(socket_handle));
+      .Run(std::move(buffer_handle), std::move(socket_handle), initially_muted);
 }
 
-void MojoAudioOutputStream::OnStreamError(int stream_id) {
+void MojoAudioInputStream::OnMuted(int stream_id, bool is_muted) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  client_->OnMutedStateChanged(is_muted);
+}
+
+void MojoAudioInputStream::OnStreamError(int stream_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   client_->OnError();
   OnError();
 }
 
-void MojoAudioOutputStream::OnError() {
+void MojoAudioInputStream::OnError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(deleter_callback_);
   std::move(deleter_callback_).Run();  // Deletes |this|.
