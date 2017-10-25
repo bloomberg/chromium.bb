@@ -284,8 +284,8 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingNamespace(
 std::unique_ptr<GetPagesTask>
 GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
-    ClientPolicyController* policy_controller) {
+    ClientPolicyController* policy_controller,
+    const MultipleOfflinePageItemCallback& callback) {
   return std::unique_ptr<GetPagesTask>(new GetPagesTask(
       store,
       base::BindOnce(&ReadPagesByMultipleNamespacesSync,
@@ -297,8 +297,8 @@ GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
 std::unique_ptr<GetPagesTask>
 GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
-    ClientPolicyController* policy_controller) {
+    ClientPolicyController* policy_controller,
+    const MultipleOfflinePageItemCallback& callback) {
   return std::unique_ptr<GetPagesTask>(new GetPagesTask(
       store,
       base::BindOnce(&ReadPagesByMultipleNamespacesSync,

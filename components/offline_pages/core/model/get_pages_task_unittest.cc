@@ -274,7 +274,7 @@ TEST_F(GetPagesTaskTest, GetPagesSupportedByDownloads) {
   store_util()->InsertItem(ntp_suggestion_item);
 
   runner()->RunTask(GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
-      store(), get_pages_callback(), &policy_controller));
+      store(), &policy_controller, get_pages_callback()));
 
   std::set<OfflinePageItem> result_set;
   result_set.insert(read_result().begin(), read_result().end());
@@ -294,7 +294,7 @@ TEST_F(GetPagesTaskTest, GetPagesRemovedOnCacheReset) {
   store_util()->InsertItem(generator()->CreateItem());
 
   runner()->RunTask(GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
-      store(), get_pages_callback(), &policy_controller));
+      store(), &policy_controller, get_pages_callback()));
 
   std::set<OfflinePageItem> result_set;
   result_set.insert(read_result().begin(), read_result().end());

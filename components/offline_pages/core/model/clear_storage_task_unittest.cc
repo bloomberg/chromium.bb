@@ -88,7 +88,9 @@ class ClearStorageTaskTest
   void Initialize(const std::vector<PageSettings>& settings,
                   base::SimpleTestClock* clock,
                   TestOptions options = TestOptions::DEFAULT);
-  void OnClearStorageDone(size_t cleared_page_count, ClearStorageResult result);
+  void OnClearStorageDone(const base::Time& start_time,
+                          size_t cleared_page_count,
+                          ClearStorageResult result);
   void AddPages(const PageSettings& setting, base::SimpleTestClock* clock_ptr);
   void RunClearStorageTask(const base::Time& start_time);
 
@@ -172,8 +174,10 @@ void ClearStorageTaskTest::Initialize(
   archive_manager_.reset(new TestArchiveManager(store_test_util()));
 }
 
-void ClearStorageTaskTest::OnClearStorageDone(size_t cleared_page_count,
+void ClearStorageTaskTest::OnClearStorageDone(const base::Time& start_time,
+                                              size_t cleared_page_count,
                                               ClearStorageResult result) {
+  last_start_time_ = start_time;
   last_cleared_page_count_ = cleared_page_count;
   last_clear_storage_result_ = result;
   total_cleared_times_++;
@@ -205,7 +209,6 @@ void ClearStorageTaskTest::RunClearStorageTask(const base::Time& start_time) {
       base::Bind(&ClearStorageTaskTest::OnClearStorageDone, AsWeakPtr()));
 
   runner()->RunTask(std::move(task));
-  last_start_time_ = start_time;
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {

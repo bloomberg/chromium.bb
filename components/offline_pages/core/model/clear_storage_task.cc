@@ -273,7 +273,7 @@ void ClearStorageTask::OnClearPagesDone(
 
 void ClearStorageTask::InformClearStorageDone(size_t pages_cleared,
                                               ClearStorageResult result) {
-  std::move(callback_).Run(pages_cleared, result);
+  std::move(callback_).Run(clearup_time_, pages_cleared, result);
   TaskComplete();
 }
 
