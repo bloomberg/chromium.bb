@@ -397,7 +397,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // TODO(wolenetz): Consider refactoring to reference a "buffering timestamp"
   // type (DTS for ByDts, PTS for ByPts) defined in RangeClass to reduce the
   // need for some of these helpers. See https://crbug.com/718641.
-  constexpr bool BufferingByPts();
+  static constexpr bool BufferingByPts();
   DecodeTimestamp BufferGetTimestamp(
       const scoped_refptr<StreamParserBuffer>& buffer);
   void RangeAppendBuffersToEnd(RangeClass* range,
