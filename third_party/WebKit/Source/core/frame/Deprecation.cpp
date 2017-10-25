@@ -351,7 +351,7 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
              "For more help, check https://xhr.spec.whatwg.org/.";
 
     case WebFeature::kGetMatchedCSSRules:
-      return willBeRemoved("document.getMatchedCSSRules()", M63,
+      return willBeRemoved("document.getMatchedCSSRules()", M64,
                            "4606972603138048");
 
     case WebFeature::kPrefixedWindowURL:
