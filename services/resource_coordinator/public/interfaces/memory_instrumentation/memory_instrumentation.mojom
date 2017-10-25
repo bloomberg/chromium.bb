@@ -11,11 +11,11 @@ import "mojo/common/process_id.mojom";
 enum DumpType {
   PERIODIC_INTERVAL,
   EXPLICITLY_TRIGGERED,
-  PEAK_MEMORY_USAGE,
-  SUMMARY_ONLY
+  PEAK_MEMORY_USAGE
 };
 
 enum LevelOfDetail {
+  SUMMARY_ONLY,
   BACKGROUND,
   LIGHT,
   VM_REGIONS_ONLY_FOR_HEAP_PROFILER,

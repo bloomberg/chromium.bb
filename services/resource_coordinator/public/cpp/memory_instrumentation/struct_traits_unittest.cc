@@ -41,13 +41,13 @@ void SerializeAndDeserialize(const Type& input, Type* output) {
 }  // namespace
 
 TEST_F(StructTraitsTest, MemoryDumpRequestArgs) {
-  MemoryDumpRequestArgs input{10u, MemoryDumpType::SUMMARY_ONLY,
-                              MemoryDumpLevelOfDetail::DETAILED};
+  MemoryDumpRequestArgs input{10u, MemoryDumpType::EXPLICITLY_TRIGGERED,
+                              MemoryDumpLevelOfDetail::SUMMARY_ONLY};
   MemoryDumpRequestArgs output;
   SerializeAndDeserialize<mojom::RequestArgs>(input, &output);
   EXPECT_EQ(10u, output.dump_guid);
-  EXPECT_EQ(MemoryDumpType::SUMMARY_ONLY, output.dump_type);
-  EXPECT_EQ(MemoryDumpLevelOfDetail::DETAILED, output.level_of_detail);
+  EXPECT_EQ(MemoryDumpType::EXPLICITLY_TRIGGERED, output.dump_type);
+  EXPECT_EQ(MemoryDumpLevelOfDetail::SUMMARY_ONLY, output.level_of_detail);
 }
 
 TEST_F(StructTraitsTest, MemoryAllocatorDumpEdge) {

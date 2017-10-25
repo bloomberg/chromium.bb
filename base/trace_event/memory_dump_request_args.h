@@ -31,8 +31,7 @@ enum class MemoryDumpType {
   PERIODIC_INTERVAL,     // Dumping memory at periodic intervals.
   EXPLICITLY_TRIGGERED,  // Non maskable dump request.
   PEAK_MEMORY_USAGE,     // Dumping memory at detected peak total memory usage.
-  SUMMARY_ONLY,          // Calculate just the summary & don't add to the trace.
-  LAST = SUMMARY_ONLY
+  LAST = PEAK_MEMORY_USAGE
 };
 
 // Tells the MemoryDumpProvider(s) how much detailed their dumps should be.
@@ -41,10 +40,14 @@ enum class MemoryDumpType {
 enum class MemoryDumpLevelOfDetail : uint32_t {
   FIRST,
 
+  // Similar to BACKGROUND, but restrict to a selection of few whitelisted MDPs.
+  // TODO: temporary, remove once crbug.com/768373 is fixed.
+  SUMMARY_ONLY = FIRST,
+
   // For background tracing mode. The dump time is quick, and typically just the
   // totals are expected. Suballocations need not be specified. Dump name must
   // contain only pre-defined strings and string arguments cannot be added.
-  BACKGROUND = FIRST,
+  BACKGROUND,
 
   // For the levels below, MemoryDumpProvider instances must guarantee that the
   // total size reported in the root node is consistent. Only the granularity of
