@@ -32,10 +32,10 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     // Create a mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
-    mock_bus_ = new dbus::MockBus(options);
+    mock_bus_ = base::MakeRefCounted<dbus::MockBus>(options);
 
     // Create a mock proxy that behaves as NetworkManager.
-    mock_network_manager_proxy_ = new dbus::MockObjectProxy(
+    mock_network_manager_proxy_ = base::MakeRefCounted<dbus::MockObjectProxy>(
         mock_bus_.get(), "org.freedesktop.NetworkManager",
         dbus::ObjectPath("/org/freedesktop/NetworkManager"));
     // Set an expectation so mock_network_manager_proxy_'s
@@ -47,7 +47,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
                                          CreateNetworkManagerProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/Devices/0.
-    mock_device_proxy_ = new dbus::MockObjectProxy(
+    mock_device_proxy_ = base::MakeRefCounted<dbus::MockObjectProxy>(
         mock_bus_.get(), "org.freedesktop.NetworkManager",
         dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
     EXPECT_CALL(*mock_device_proxy_.get(), CallMethodAndBlock(_, _))
@@ -56,7 +56,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
             &GeolocationWifiDataProviderLinuxTest::CreateDeviceProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/AccessPoint/0.
-    mock_access_point_proxy_ = new dbus::MockObjectProxy(
+    mock_access_point_proxy_ = base::MakeRefCounted<dbus::MockObjectProxy>(
         mock_bus_.get(), "org.freedesktop.NetworkManager",
         dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
     EXPECT_CALL(*mock_access_point_proxy_.get(), CallMethodAndBlock(_, _))
@@ -91,8 +91,8 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create the wlan API with the mock bus object injected.
-    wifi_provider_linux_ = new WifiDataProviderLinux;
-    wlan_api_ = wifi_provider_linux_->CreateWlanApiForTesting(mock_bus_.get());
+    wifi_provider_linux_ = base::MakeRefCounted<WifiDataProviderLinux>();
+    wlan_api_ = wifi_provider_linux_->CreateWlanApiForTesting(mock_bus_);
     ASSERT_TRUE(wlan_api_);
   }
 
@@ -219,7 +219,7 @@ TEST_F(GeolocationWifiDataProviderLinuxTest, GetAccessPointData) {
   ASSERT_TRUE(wlan_api_->GetAccessPointData(&access_point_data_set));
 
   ASSERT_EQ(1U, access_point_data_set.size());
-  AccessPointData access_point_data = *access_point_data_set.begin();
+  const AccessPointData& access_point_data = *access_point_data_set.begin();
 
   // Check the contents of the access point data.
   // The expected values come from CreateAccessPointProxyResponse() above.

@@ -5,7 +5,8 @@
 #ifndef DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_
 #define DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_
 
-#include "base/compiler_specific.h"
+#include <memory>
+
 #include "base/macros.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data_provider_common.h"
@@ -30,7 +31,8 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderLinux
   std::unique_ptr<WlanApiInterface> CreateWlanApi() override;
   std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() override;
 
-  std::unique_ptr<WlanApiInterface> CreateWlanApiForTesting(dbus::Bus* bus);
+  std::unique_ptr<WlanApiInterface> CreateWlanApiForTesting(
+      scoped_refptr<dbus::Bus> bus);
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderLinux);
 };

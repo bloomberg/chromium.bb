@@ -12,9 +12,11 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "dbus/bus.h"
@@ -54,7 +56,7 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   bool Init();
 
   // Similar to Init() but can inject the bus object. Used for testing.
-  bool InitWithBus(dbus::Bus* bus);
+  bool InitWithBus(scoped_refptr<dbus::Bus> bus);
 
   // WifiDataProviderCommon::WlanApiInterface
   //
@@ -73,15 +75,15 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   bool GetAccessPointsForAdapter(const dbus::ObjectPath& adapter_path,
                                  WifiData::AccessPointDataSet* data);
 
-  // Internal method used by |GetAccessPointsForAdapter|, given a wifi access
-  // point proxy retrieves the named property and returns it. Returns NULL in
-  // a scoped_ptr if the property could not be read.
+  // Internal method used by GetAccessPointsForAdapter(), given a wifi access
+  // point proxy retrieves the named property and returns it. Returns nullptr if
+  // the property could not be read.
   std::unique_ptr<dbus::Response> GetAccessPointProperty(
       dbus::ObjectProxy* proxy,
       const std::string& property_name);
 
   scoped_refptr<dbus::Bus> system_bus_;
-  dbus::ObjectProxy* network_manager_proxy_;
+  dbus::ObjectProxy* network_manager_proxy_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkManagerWlanApi);
 };
@@ -99,7 +101,7 @@ int frquency_in_khz_to_channel(int frequency_khz) {
   return AccessPointData().channel;  // invalid channel
 }
 
-NetworkManagerWlanApi::NetworkManagerWlanApi() : network_manager_proxy_(NULL) {}
+NetworkManagerWlanApi::NetworkManagerWlanApi() {}
 
 NetworkManagerWlanApi::~NetworkManagerWlanApi() {
   // Close the connection.
@@ -110,10 +112,10 @@ bool NetworkManagerWlanApi::Init() {
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SYSTEM;
   options.connection_type = dbus::Bus::PRIVATE;
-  return InitWithBus(new dbus::Bus(options));
+  return InitWithBus(base::MakeRefCounted<dbus::Bus>(options));
 }
 
-bool NetworkManagerWlanApi::InitWithBus(dbus::Bus* bus) {
+bool NetworkManagerWlanApi::InitWithBus(scoped_refptr<dbus::Bus> bus) {
   system_bus_ = bus;
   // system_bus_ will own all object proxies created from the bus.
   network_manager_proxy_ = system_bus_->GetObjectProxy(
@@ -239,7 +241,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
                      << ": " << response->ToString();
         continue;
       }
-      const uint8_t* ssid_bytes = NULL;
+      const uint8_t* ssid_bytes = nullptr;
       size_t ssid_length = 0;
       if (!variant_reader.PopArrayOfBytes(&ssid_bytes, &ssid_length)) {
         LOG(WARNING) << "Unexpected response for " << access_point_path.value()
@@ -346,7 +348,7 @@ WifiDataProviderLinux::~WifiDataProviderLinux() {}
 
 std::unique_ptr<WifiDataProviderCommon::WlanApiInterface>
 WifiDataProviderLinux::CreateWlanApi() {
-  std::unique_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
+  auto wlan_api = std::make_unique<NetworkManagerWlanApi>();
   if (wlan_api->Init())
     return std::move(wlan_api);
   return nullptr;
@@ -361,12 +363,11 @@ WifiDataProviderLinux::CreatePollingPolicy() {
 }
 
 std::unique_ptr<WifiDataProviderCommon::WlanApiInterface>
-WifiDataProviderLinux::CreateWlanApiForTesting(dbus::Bus* bus) {
-  std::unique_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
+WifiDataProviderLinux::CreateWlanApiForTesting(scoped_refptr<dbus::Bus> bus) {
+  auto wlan_api = std::make_unique<NetworkManagerWlanApi>();
   if (wlan_api->InitWithBus(bus))
     return std::move(wlan_api);
   return nullptr;
-  ;
 }
 
 }  // namespace device
