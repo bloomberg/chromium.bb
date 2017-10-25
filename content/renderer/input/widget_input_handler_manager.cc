@@ -356,7 +356,6 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
     InputEventDispatchType dispatch_type = callback.is_null()
                                                ? DISPATCH_TYPE_NON_BLOCKING
                                                : DISPATCH_TYPE_BLOCKING;
-
     HandledEventCallback handled_event =
         base::BindOnce(&WidgetInputHandlerManager::HandledInputEvent, this,
                        std::move(callback));
@@ -383,14 +382,24 @@ void WidgetInputHandlerManager::HandledInputEvent(
     base::Optional<cc::TouchAction> touch_action) {
   if (!callback)
     return;
-  if (compositor_task_runner_) {
+
+  // This method is called from either the main thread or the compositor thread.
+  bool is_compositor_thread = compositor_task_runner_ &&
+                              compositor_task_runner_->BelongsToCurrentThread();
+
+  // If there is a compositor task runner and the current thread isn't the
+  // compositor thread proxy it over to the compositor thread.
+  if (compositor_task_runner_ && !is_compositor_thread) {
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(CallCallback, std::move(callback), ack_state,
                                   latency_info, std::move(overscroll_params),
                                   touch_action));
   } else {
+    // Otherwise call the callback immediately.
     std::move(callback).Run(
-        InputEventAckSource::MAIN_THREAD, latency_info, ack_state,
+        is_compositor_thread ? InputEventAckSource::COMPOSITOR_THREAD
+                             : InputEventAckSource::MAIN_THREAD,
+        latency_info, ack_state,
         overscroll_params
             ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
             : base::nullopt,
