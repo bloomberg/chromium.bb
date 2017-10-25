@@ -34,21 +34,14 @@ bool ValidateEffects(const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
   return true;
 }
 
-bool ValidateTimelines(HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
-                       String& error_string) {
-  if (timelines.IsEmpty()) {
-    error_string = "Timelines array must be non-empty";
-    return false;
-  }
-
-  for (const auto& timeline : timelines) {
-    if (timeline.IsScrollTimeline()) {
-      DoubleOrScrollTimelineAutoKeyword time_range;
-      timeline.GetAsScrollTimeline()->timeRange(time_range);
-      if (time_range.IsScrollTimelineAutoKeyword()) {
-        error_string = "ScrollTimeline timeRange must have non-auto value";
-        return false;
-      }
+bool ValidateTimeline(const DocumentTimelineOrScrollTimeline& timeline,
+                      String& error_string) {
+  if (timeline.IsScrollTimeline()) {
+    DoubleOrScrollTimelineAutoKeyword time_range;
+    timeline.GetAsScrollTimeline()->timeRange(time_range);
+    if (time_range.IsScrollTimelineAutoKeyword()) {
+      error_string = "ScrollTimeline timeRange must have non-auto value";
+      return false;
     }
   }
   return true;
@@ -58,7 +51,7 @@ bool ValidateTimelines(HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
 WorkletAnimation* WorkletAnimation::Create(
     String animator_name,
     const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
-    HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
+    DocumentTimelineOrScrollTimeline timeline,
     scoped_refptr<SerializedScriptValue> options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -69,14 +62,14 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  if (!ValidateTimelines(timelines, error_string)) {
+  if (!ValidateTimeline(timeline, error_string)) {
     exception_state.ThrowDOMException(kNotSupportedError, error_string);
     return nullptr;
   }
 
   Document& document = effects.at(0)->Target()->GetDocument();
   WorkletAnimation* animation = new WorkletAnimation(
-      animator_name, document, effects, timelines, std::move(options));
+      animator_name, document, effects, timeline, std::move(options));
   if (CompositorAnimationTimeline* compositor_timeline =
           document.Timeline().CompositorTimeline())
     compositor_timeline->PlayerAttached(*animation);
@@ -88,13 +81,13 @@ WorkletAnimation::WorkletAnimation(
     const String& animator_name,
     Document& document,
     const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
-    HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
+    DocumentTimelineOrScrollTimeline timeline,
     scoped_refptr<SerializedScriptValue> options)
     : animator_name_(animator_name),
       play_state_(Animation::kIdle),
       document_(document),
       effects_(effects),
-      timelines_(timelines),
+      timeline_(timeline),
       options_(std::move(options)) {
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
@@ -156,7 +149,7 @@ void WorkletAnimation::Dispose() {
 void WorkletAnimation::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(effects_);
-  visitor->Trace(timelines_);
+  visitor->Trace(timeline_);
   WorkletAnimationBase::Trace(visitor);
 }
 

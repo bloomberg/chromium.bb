@@ -38,7 +38,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   static WorkletAnimation* Create(
       String animator_name,
       const HeapVector<Member<KeyframeEffectReadOnly>>&,
-      HeapVector<DocumentTimelineOrScrollTimeline>&,
+      DocumentTimelineOrScrollTimeline,
       scoped_refptr<SerializedScriptValue>,
       ExceptionState&);
 
@@ -65,9 +65,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   const String& Name() { return animator_name_; }
 
-  const HeapVector<DocumentTimelineOrScrollTimeline>& Timelines() {
-    return timelines_;
-  }
+  const DocumentTimelineOrScrollTimeline& Timeline() { return timeline_; }
 
   const scoped_refptr<SerializedScriptValue> Options() { return options_; }
 
@@ -77,7 +75,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   WorkletAnimation(const String& animator_name,
                    Document&,
                    const HeapVector<Member<KeyframeEffectReadOnly>>&,
-                   HeapVector<DocumentTimelineOrScrollTimeline>&,
+                   DocumentTimelineOrScrollTimeline,
                    scoped_refptr<SerializedScriptValue>);
 
   const String animator_name_;
@@ -86,7 +84,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   Member<Document> document_;
 
   HeapVector<Member<KeyframeEffectReadOnly>> effects_;
-  HeapVector<DocumentTimelineOrScrollTimeline> timelines_;
+  DocumentTimelineOrScrollTimeline timeline_;
   scoped_refptr<SerializedScriptValue> options_;
 
   std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
