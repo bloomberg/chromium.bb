@@ -2117,6 +2117,9 @@ crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-020.html [ Fail
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 
+# This test times out on debug builds, see https://crbug.com/755810
+crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
+
 # These external tests fail after turning on color correct rendering for canvas
 # since they use a non-SRGB source image.
 crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Failure ]
@@ -3003,9 +3006,6 @@ crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/editor/
 # Sheriff failures 2017-07-28
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
-
-# Sheriff failures 2017-08-04
-crbug.com/626703 [ Win7 Mac10.11 ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
 
 # Sheriff failure 2017-08-07
 crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
