@@ -159,6 +159,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance/textures/misc/texture-attachment-formats.html',
         ['passthrough', 'opengl', 'intel'], bug=665521)
+    self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
+        ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
     self.Fail('conformance/extensions/ext-sRGB.html',
