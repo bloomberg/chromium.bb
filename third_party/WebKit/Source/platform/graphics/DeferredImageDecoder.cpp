@@ -53,7 +53,7 @@ struct DeferredFrameData {
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
-    RefPtr<SharedBuffer> data,
+    scoped_refptr<SharedBuffer> data,
     bool data_complete,
     ImageDecoder::AlphaOption alpha_option,
     const ColorBehavior& color_behavior) {
@@ -110,7 +110,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   DCHECK_GT(decoded_size.height(), 0);
 
   sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
-  RefPtr<SegmentReader> segment_reader =
+  scoped_refptr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
 
   // ImageFrameGenerator has the latest known alpha state. There will be a
@@ -136,11 +136,11 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   return generator;
 }
 
-RefPtr<SharedBuffer> DeferredImageDecoder::Data() {
+scoped_refptr<SharedBuffer> DeferredImageDecoder::Data() {
   if (!rw_buffer_)
     return nullptr;
   sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
-  RefPtr<SharedBuffer> shared_buffer = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> shared_buffer = SharedBuffer::Create();
   SkROBuffer::Iter it(ro_buffer.get());
   do {
     shared_buffer->Append(static_cast<const char*>(it.data()), it.size());
@@ -148,12 +148,12 @@ RefPtr<SharedBuffer> DeferredImageDecoder::Data() {
   return shared_buffer;
 }
 
-void DeferredImageDecoder::SetData(RefPtr<SharedBuffer> data,
+void DeferredImageDecoder::SetData(scoped_refptr<SharedBuffer> data,
                                    bool all_data_received) {
   SetDataInternal(std::move(data), all_data_received, true);
 }
 
-void DeferredImageDecoder::SetDataInternal(RefPtr<SharedBuffer> data,
+void DeferredImageDecoder::SetDataInternal(scoped_refptr<SharedBuffer> data,
                                            bool all_data_received,
                                            bool push_data_to_decoder) {
   if (metadata_decoder_) {

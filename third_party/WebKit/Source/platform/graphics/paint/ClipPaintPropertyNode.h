@@ -31,9 +31,9 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // space.
   static ClipPaintPropertyNode* Root();
 
-  static RefPtr<ClipPaintPropertyNode> Create(
-      RefPtr<const ClipPaintPropertyNode> parent,
-      RefPtr<const TransformPaintPropertyNode> local_transform_space,
+  static scoped_refptr<ClipPaintPropertyNode> Create(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
       const FloatRoundedRect& clip_rect,
       CompositingReasons direct_compositing_reasons = kCompositingReasonNone) {
     return WTF::AdoptRef(new ClipPaintPropertyNode(
@@ -41,9 +41,10 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         direct_compositing_reasons));
   }
 
-  bool Update(RefPtr<const ClipPaintPropertyNode> parent,
-              RefPtr<const TransformPaintPropertyNode> local_transform_space,
-              const FloatRoundedRect& clip_rect) {
+  bool Update(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
+      const FloatRoundedRect& clip_rect) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
 
     if (local_transform_space == local_transform_space_ &&
@@ -64,7 +65,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a clip node before it has been updated, to later detect changes.
-  RefPtr<ClipPaintPropertyNode> Clone() const {
+  scoped_refptr<ClipPaintPropertyNode> Clone() const {
     return WTF::AdoptRef(
         new ClipPaintPropertyNode(Parent(), local_transform_space_, clip_rect_,
                                   direct_compositing_reasons_));
@@ -90,8 +91,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
  private:
   ClipPaintPropertyNode(
-      RefPtr<const ClipPaintPropertyNode> parent,
-      RefPtr<const TransformPaintPropertyNode> local_transform_space,
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
       const FloatRoundedRect& clip_rect,
       CompositingReasons direct_compositing_reasons)
       : PaintPropertyNode(std::move(parent)),
@@ -113,7 +114,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     return *geometry_mapper_clip_cache_.get();
   }
 
-  RefPtr<const TransformPaintPropertyNode> local_transform_space_;
+  scoped_refptr<const TransformPaintPropertyNode> local_transform_space_;
   FloatRoundedRect clip_rect_;
   CompositingReasons direct_compositing_reasons_;
 

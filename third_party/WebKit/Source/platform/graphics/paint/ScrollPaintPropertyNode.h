@@ -38,8 +38,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // This node is really a sentinel, and does not represent a real scroll.
   static ScrollPaintPropertyNode* Root();
 
-  static RefPtr<ScrollPaintPropertyNode> Create(
-      RefPtr<const ScrollPaintPropertyNode> parent,
+  static scoped_refptr<ScrollPaintPropertyNode> Create(
+      scoped_refptr<const ScrollPaintPropertyNode> parent,
       const IntRect& container_rect,
       const IntRect& contents_rect,
       bool user_scrollable_horizontal,
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         main_thread_scrolling_reasons, compositor_element_id));
   }
 
-  bool Update(RefPtr<const ScrollPaintPropertyNode> parent,
+  bool Update(scoped_refptr<const ScrollPaintPropertyNode> parent,
               const IntRect& container_rect,
               const IntRect& contents_rect,
               bool user_scrollable_horizontal,
@@ -116,8 +116,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
-  RefPtr<ScrollPaintPropertyNode> Clone() const {
-    RefPtr<ScrollPaintPropertyNode> cloned =
+  scoped_refptr<ScrollPaintPropertyNode> Clone() const {
+    scoped_refptr<ScrollPaintPropertyNode> cloned =
         WTF::AdoptRef(new ScrollPaintPropertyNode(
             Parent(), container_rect_, contents_rect_,
             user_scrollable_horizontal_, user_scrollable_vertical_,
@@ -143,7 +143,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
  private:
   ScrollPaintPropertyNode(
-      RefPtr<const ScrollPaintPropertyNode> parent,
+      scoped_refptr<const ScrollPaintPropertyNode> parent,
       const IntRect& container_rect,
       const IntRect& contents_rect,
       bool user_scrollable_horizontal,

@@ -162,7 +162,8 @@ struct TestChunks {
 
 TEST_F(PaintChunksToCcLayerTest, EffectGroupingSimple) {
   // This test verifies effects are applied as a group.
-  RefPtr<EffectPaintPropertyNode> e1 = CreateOpacityOnlyEffect(e0(), 0.5f);
+  scoped_refptr<EffectPaintPropertyNode> e1 =
+      CreateOpacityOnlyEffect(e0(), 0.5f);
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), e1.get());
   chunks.AddChunk(t0(), c0(), e1.get());
@@ -184,9 +185,12 @@ TEST_F(PaintChunksToCcLayerTest, EffectGroupingSimple) {
 
 TEST_F(PaintChunksToCcLayerTest, EffectGroupingNested) {
   // This test verifies nested effects are grouped properly.
-  RefPtr<EffectPaintPropertyNode> e1 = CreateOpacityOnlyEffect(e0(), 0.5f);
-  RefPtr<EffectPaintPropertyNode> e2 = CreateOpacityOnlyEffect(e1.get(), 0.5f);
-  RefPtr<EffectPaintPropertyNode> e3 = CreateOpacityOnlyEffect(e1.get(), 0.5f);
+  scoped_refptr<EffectPaintPropertyNode> e1 =
+      CreateOpacityOnlyEffect(e0(), 0.5f);
+  scoped_refptr<EffectPaintPropertyNode> e2 =
+      CreateOpacityOnlyEffect(e1.get(), 0.5f);
+  scoped_refptr<EffectPaintPropertyNode> e3 =
+      CreateOpacityOnlyEffect(e1.get(), 0.5f);
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), e2.get());
   chunks.AddChunk(t0(), c0(), e3.get());
@@ -216,18 +220,18 @@ TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
   // ConversionContext.
   // Refer to PaintChunksToCcLayer.cpp for detailed explanation.
   // (Search "State management example".)
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
       c1.get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<ClipPaintPropertyNode> c3 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c3 = ClipPaintPropertyNode::Create(
       c2.get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<ClipPaintPropertyNode> c4 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c4 = ClipPaintPropertyNode::Create(
       c3.get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c2.get(), ColorFilter(), CompositorFilterOperations(), 0.5f,
       SkBlendMode::kSrcOver);
-  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
       e1.get(), t0(), c4.get(), ColorFilter(), CompositorFilterOperations(),
       0.5f, SkBlendMode::kSrcOver);
   TestChunks chunks;
@@ -275,9 +279,10 @@ TEST_F(PaintChunksToCcLayerTest, ClipSpaceInversion) {
   // <div style="position:absolute; clip:rect(...)">
   //     <div style="position:fixed;">Clipped but not scroll along.</div>
   // </div>
-  RefPtr<TransformPaintPropertyNode> t1 = TransformPaintPropertyNode::Create(
-      t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<TransformPaintPropertyNode> t1 =
+      TransformPaintPropertyNode::Create(
+          t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t1.get(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
   TestChunks chunks;
   chunks.AddChunk(t0(), c1.get(), e0());
@@ -307,9 +312,10 @@ TEST_F(PaintChunksToCcLayerTest, EffectSpaceInversion) {
   //         along.</div>
   //     </div>
   // </div>
-  RefPtr<TransformPaintPropertyNode> t1 = TransformPaintPropertyNode::Create(
-      t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
-  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+  scoped_refptr<TransformPaintPropertyNode> t1 =
+      TransformPaintPropertyNode::Create(
+          t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t1.get(), c0(), ColorFilter(), CompositorFilterOperations(), 0.5f,
       SkBlendMode::kSrcOver);
   TestChunks chunks;
@@ -335,11 +341,13 @@ TEST_F(PaintChunksToCcLayerTest, EffectSpaceInversion) {
 TEST_F(PaintChunksToCcLayerTest, NonRootLayerSimple) {
   // This test verifies a layer with composited property state does not
   // apply properties again internally.
-  RefPtr<TransformPaintPropertyNode> t1 = TransformPaintPropertyNode::Create(
-      t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<TransformPaintPropertyNode> t1 =
+      TransformPaintPropertyNode::Create(
+          t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = CreateOpacityOnlyEffect(e0(), 0.5f);
+  scoped_refptr<EffectPaintPropertyNode> e1 =
+      CreateOpacityOnlyEffect(e0(), 0.5f);
   TestChunks chunks;
   chunks.AddChunk(t1.get(), c1.get(), e1.get());
 
@@ -356,11 +364,13 @@ TEST_F(PaintChunksToCcLayerTest, NonRootLayerSimple) {
 TEST_F(PaintChunksToCcLayerTest, NonRootLayerTransformEscape) {
   // This test verifies chunks that have a shallower transform state than the
   // layer can still be painted.
-  RefPtr<TransformPaintPropertyNode> t1 = TransformPaintPropertyNode::Create(
-      t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<TransformPaintPropertyNode> t1 =
+      TransformPaintPropertyNode::Create(
+          t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = CreateOpacityOnlyEffect(e0(), 0.5f);
+  scoped_refptr<EffectPaintPropertyNode> e1 =
+      CreateOpacityOnlyEffect(e0(), 0.5f);
   TestChunks chunks;
   chunks.AddChunk(t0(), c1.get(), e1.get());
 
@@ -379,11 +389,11 @@ TEST_F(PaintChunksToCcLayerTest, NonRootLayerTransformEscape) {
 
 TEST_F(PaintChunksToCcLayerTest, EffectWithNoOutputClip) {
   // This test verifies effect with no output clip can be correctly processed.
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
       c1.get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(), 0.5,
       SkBlendMode::kSrcOver);
 
@@ -408,12 +418,12 @@ TEST_F(PaintChunksToCcLayerTest, EffectWithNoOutputClip) {
 
 TEST_F(PaintChunksToCcLayerTest,
        EffectWithNoOutputClipNestedInDecompositedEffect) {
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
       SkBlendMode::kSrcOver);
-  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
       e1.get(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(),
       0.5, SkBlendMode::kSrcOver);
 
@@ -440,12 +450,12 @@ TEST_F(PaintChunksToCcLayerTest,
 
 TEST_F(PaintChunksToCcLayerTest,
        EffectWithNoOutputClipNestedInCompositedEffect) {
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
       SkBlendMode::kSrcOver);
-  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
       e1.get(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(),
       0.5, SkBlendMode::kSrcOver);
 
@@ -470,12 +480,12 @@ TEST_F(PaintChunksToCcLayerTest,
 
 TEST_F(PaintChunksToCcLayerTest,
        EffectWithNoOutputClipNestedInCompositedEffectAndClip) {
-  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
       c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
-  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
       SkBlendMode::kSrcOver);
-  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+  scoped_refptr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
       e1.get(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(),
       0.5, SkBlendMode::kSrcOver);
 

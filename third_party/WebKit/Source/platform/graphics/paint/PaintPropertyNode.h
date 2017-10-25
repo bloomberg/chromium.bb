@@ -81,10 +81,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   }
 
  protected:
-  PaintPropertyNode(RefPtr<const NodeType> parent)
+  PaintPropertyNode(scoped_refptr<const NodeType> parent)
       : parent_(std::move(parent)), changed_(false) {}
 
-  bool Update(RefPtr<const NodeType> parent) {
+  bool Update(scoped_refptr<const NodeType> parent) {
     DCHECK(!IsRoot());
     DCHECK(parent != this);
     if (parent == parent_)
@@ -98,7 +98,7 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   void SetChanged() { changed_ = true; }
 
  private:
-  RefPtr<const NodeType> parent_;
+  scoped_refptr<const NodeType> parent_;
   mutable bool changed_;
 };
 

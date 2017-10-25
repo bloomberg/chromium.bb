@@ -23,7 +23,7 @@
 
 namespace blink {
 
-RefPtr<AcceleratedStaticBitmapImage>
+scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromSkImage(
     sk_sp<SkImage> image,
     WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
@@ -32,7 +32,7 @@ AcceleratedStaticBitmapImage::CreateFromSkImage(
       std::move(image), std::move(context_provider_wrapper)));
 }
 
-RefPtr<AcceleratedStaticBitmapImage>
+scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
@@ -126,7 +126,8 @@ IntSize AcceleratedStaticBitmapImage::Size() const {
   return texture_holder_->Size();
 }
 
-RefPtr<StaticBitmapImage> AcceleratedStaticBitmapImage::MakeUnaccelerated() {
+scoped_refptr<StaticBitmapImage>
+AcceleratedStaticBitmapImage::MakeUnaccelerated() {
   CreateImageFromMailboxIfNeeded();
   return StaticBitmapImage::Create(
       texture_holder_->GetSkImage()->makeNonTextureImage());

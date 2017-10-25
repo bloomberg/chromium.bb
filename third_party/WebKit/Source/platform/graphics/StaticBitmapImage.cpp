@@ -15,7 +15,7 @@
 
 namespace blink {
 
-RefPtr<StaticBitmapImage> StaticBitmapImage::Create(
+scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
     sk_sp<SkImage> image,
     WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
   if (image->isTextureBacked()) {
@@ -26,7 +26,7 @@ RefPtr<StaticBitmapImage> StaticBitmapImage::Create(
   return UnacceleratedStaticBitmapImage::Create(image);
 }
 
-RefPtr<StaticBitmapImage> StaticBitmapImage::Create(PaintImage image) {
+scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(PaintImage image) {
   DCHECK(!image.GetSkImage()->isTextureBacked());
   return UnacceleratedStaticBitmapImage::Create(std::move(image));
 }
@@ -47,7 +47,7 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 }
 
-RefPtr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
+scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
     sk_sp<SkColorSpace> target,
     SkTransferFunctionBehavior premulBehavior) {
   if (!target)

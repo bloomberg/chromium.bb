@@ -45,12 +45,12 @@ class PaintPropertyNodeTest : public ::testing::Test {
     EXPECT_FALSE(grandchild2->Changed(*root));
   }
 
-  RefPtr<ClipPaintPropertyNode> root;
-  RefPtr<ClipPaintPropertyNode> node;
-  RefPtr<ClipPaintPropertyNode> child1;
-  RefPtr<ClipPaintPropertyNode> child2;
-  RefPtr<ClipPaintPropertyNode> grandchild1;
-  RefPtr<ClipPaintPropertyNode> grandchild2;
+  scoped_refptr<ClipPaintPropertyNode> root;
+  scoped_refptr<ClipPaintPropertyNode> node;
+  scoped_refptr<ClipPaintPropertyNode> child1;
+  scoped_refptr<ClipPaintPropertyNode> child2;
+  scoped_refptr<ClipPaintPropertyNode> grandchild1;
+  scoped_refptr<ClipPaintPropertyNode> grandchild2;
 };
 
 TEST_F(PaintPropertyNodeTest, LowestCommonAncestor) {

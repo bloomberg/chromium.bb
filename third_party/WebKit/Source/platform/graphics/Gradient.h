@@ -58,13 +58,13 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
     kUnpremultiplied,
   };
 
-  static RefPtr<Gradient> CreateLinear(
+  static scoped_refptr<Gradient> CreateLinear(
       const FloatPoint& p0,
       const FloatPoint& p1,
       GradientSpreadMethod = kSpreadMethodPad,
       ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
-  static RefPtr<Gradient> CreateRadial(
+  static scoped_refptr<Gradient> CreateRadial(
       const FloatPoint& p0,
       float r0,
       const FloatPoint& p1,
@@ -73,7 +73,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
       GradientSpreadMethod = kSpreadMethodPad,
       ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
-  static RefPtr<Gradient> CreateConic(
+  static scoped_refptr<Gradient> CreateConic(
       const FloatPoint& position,
       float rotation,
       float start_angle,

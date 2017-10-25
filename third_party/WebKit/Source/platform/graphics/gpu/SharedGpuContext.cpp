@@ -77,7 +77,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded() {
     // SharedGpuContext encasulates the context provider: so we only have to do
     // this once per thread.
     WaitableEvent waitable_event;
-    RefPtr<WebTaskRunner> task_runner =
+    scoped_refptr<WebTaskRunner> task_runner =
         Platform::Current()->MainThread()->GetWebTaskRunner();
     task_runner->PostTask(
         BLINK_FROM_HERE,

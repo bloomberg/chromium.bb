@@ -62,7 +62,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   WTF_MAKE_NONCOPYABLE(ImageFrameGenerator);
 
  public:
-  static RefPtr<ImageFrameGenerator> Create(
+  static scoped_refptr<ImageFrameGenerator> Create(
       const SkISize& full_size,
       bool is_multi_frame,
       const ColorBehavior& color_behavior,

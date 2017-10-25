@@ -14,9 +14,8 @@ namespace blink {
 // TODO(enne): rename this
 class PLATFORM_EXPORT PaintRecordPattern final : public Pattern {
  public:
-  static RefPtr<PaintRecordPattern> Create(sk_sp<PaintRecord>,
-                                           const FloatRect& record_bounds,
-                                           RepeatMode);
+  static scoped_refptr<PaintRecordPattern>
+  Create(sk_sp<PaintRecord>, const FloatRect& record_bounds, RepeatMode);
 
   ~PaintRecordPattern() override;
 

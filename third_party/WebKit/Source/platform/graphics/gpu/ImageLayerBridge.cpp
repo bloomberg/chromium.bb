@@ -34,7 +34,7 @@ ImageLayerBridge::~ImageLayerBridge() {
     Dispose();
 }
 
-void ImageLayerBridge::SetImage(RefPtr<StaticBitmapImage> image) {
+void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   image_ = std::move(image);
   if (image_) {
     if (opacity_mode_ == kNonOpaque) {
@@ -140,9 +140,10 @@ std::unique_ptr<viz::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap() {
   return Platform::Current()->AllocateSharedBitmap(image_->Size());
 }
 
-void ImageLayerBridge::MailboxReleasedGpu(RefPtr<StaticBitmapImage> image,
-                                          const gpu::SyncToken& token,
-                                          bool lost_resource) {
+void ImageLayerBridge::MailboxReleasedGpu(
+    scoped_refptr<StaticBitmapImage> image,
+    const gpu::SyncToken& token,
+    bool lost_resource) {
   if (image && image->IsValid()) {
     DCHECK(image->IsTextureBacked());
     if (token.HasData() && image->ContextProvider() &&

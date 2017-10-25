@@ -130,7 +130,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
-  RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint, SnapshotReason);
+  scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
+                                                    SnapshotReason);
 
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
@@ -172,11 +173,11 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   struct ImageInfo;
 
   struct MailboxInfo {
-    RefPtr<StaticBitmapImage> image_;
+    scoped_refptr<StaticBitmapImage> image_;
 
     // If this mailbox wraps an GpuMemoryBuffer-backed texture, the ids of the
     // CHROMIUM image and the texture.
-    RefPtr<ImageInfo> image_info_;
+    scoped_refptr<ImageInfo> image_info_;
 
     MailboxInfo(const MailboxInfo&);
     MailboxInfo();
@@ -215,14 +216,14 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   // Creates an GpuMemoryBuffer-backed texture. Returns an ImageInfo, which is
   // empty on failure. The caller takes ownership of both the texture and the
   // image.
-  RefPtr<ImageInfo> CreateGpuMemoryBufferBackedTexture();
+  scoped_refptr<ImageInfo> CreateGpuMemoryBufferBackedTexture();
 
   // Releases all resources in the CHROMIUM image cache.
   void ClearCHROMIUMImageCache();
 
   // Returns whether the mailbox was successfully prepared from the SkImage.
   // The mailbox is an out parameter only populated on success.
-  bool PrepareMailboxFromImage(RefPtr<StaticBitmapImage>&&,
+  bool PrepareMailboxFromImage(scoped_refptr<StaticBitmapImage>&&,
                                MailboxInfo*,
                                viz::TextureMailbox*);
 
@@ -271,7 +272,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   // Each element in this vector represents an GpuMemoryBuffer-backed texture
   // that is ready to be reused.
   // Elements in this vector can safely be purged in low memory conditions.
-  Vector<RefPtr<ImageInfo>> image_info_cache_;
+  Vector<scoped_refptr<ImageInfo>> image_info_cache_;
 };
 
 }  // namespace blink

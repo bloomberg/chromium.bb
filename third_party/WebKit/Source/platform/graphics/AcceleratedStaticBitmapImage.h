@@ -23,18 +23,18 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
  public:
   ~AcceleratedStaticBitmapImage() override;
   // SkImage with a texture backing.
-  static RefPtr<AcceleratedStaticBitmapImage> CreateFromSkImage(
+  static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromSkImage(
       sk_sp<SkImage>,
       WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   // Can specify the GrContext that created the texture backing. Ideally all
   // callers would use this option. The |mailbox| is a name for the texture
   // backing, allowing other contexts to use the same backing.
-  static RefPtr<AcceleratedStaticBitmapImage> CreateFromWebGLContextImage(
-      const gpu::Mailbox&,
-      const gpu::SyncToken&,
-      unsigned texture_id,
-      WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size);
+  static scoped_refptr<AcceleratedStaticBitmapImage>
+  CreateFromWebGLContextImage(const gpu::Mailbox&,
+                              const gpu::SyncToken&,
+                              unsigned texture_id,
+                              WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
+                              IntSize mailbox_size);
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize Size() const override;
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   WebGraphicsContext3DProvider* ContextProvider() const final;
   WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const final;
-  RefPtr<StaticBitmapImage> MakeUnaccelerated() final;
+  scoped_refptr<StaticBitmapImage> MakeUnaccelerated() final;
 
   void CopyToTexture(WebGraphicsContext3DProvider*,
                      GLenum dest_target,
@@ -103,7 +103,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   // For RetainOriginalSkImageForCopyOnWrite()
   sk_sp<SkImage> original_skia_image_;
-  RefPtr<WebTaskRunner> original_skia_image_task_runner_;
+  scoped_refptr<WebTaskRunner> original_skia_image_task_runner_;
   PlatformThreadId original_skia_image_thread_id_;
   WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;

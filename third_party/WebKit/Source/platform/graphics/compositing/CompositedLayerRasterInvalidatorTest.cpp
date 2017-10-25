@@ -262,10 +262,10 @@ TEST_F(CompositedLayerRasterInvalidatorTest, PaintPropertyChange) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
   CHUNKS(chunks, Chunk(0), Chunk(1), Chunk(2));
   FloatRoundedRect clip_rect(-100000, -100000, 200000, 200000);
-  RefPtr<ClipPaintPropertyNode> clip0 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip0 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       clip_rect);
-  RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
       clip0, TransformPaintPropertyNode::Root(), clip_rect);
 
   PropertyTreeState layer_state(TransformPaintPropertyNode::Root(), clip0.get(),

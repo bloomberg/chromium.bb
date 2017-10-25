@@ -67,7 +67,7 @@ enum {
 };
 
 static void ReleaseMailboxImageResource(
-    RefPtr<blink::StaticBitmapImage>&& image,
+    scoped_refptr<blink::StaticBitmapImage>&& image,
     bool lost_resource) {
   if (lost_resource)
     image->Abandon();
@@ -301,7 +301,7 @@ bool Canvas2DLayerBridge::PrepareGpuMemoryBufferMailboxFromImage(
       context_provider_wrapper_->ContextProvider()->GetGrContext();
   gr_context->flush();
 
-  RefPtr<ImageInfo> image_info = CreateGpuMemoryBufferBackedTexture();
+  scoped_refptr<ImageInfo> image_info = CreateGpuMemoryBufferBackedTexture();
   if (!image_info)
     return false;
 
@@ -345,10 +345,11 @@ bool Canvas2DLayerBridge::PrepareGpuMemoryBufferMailboxFromImage(
   return true;
 }
 
-RefPtr<Canvas2DLayerBridge::ImageInfo>
+scoped_refptr<Canvas2DLayerBridge::ImageInfo>
 Canvas2DLayerBridge::CreateGpuMemoryBufferBackedTexture() {
   if (!image_info_cache_.IsEmpty()) {
-    RefPtr<Canvas2DLayerBridge::ImageInfo> info = image_info_cache_.back();
+    scoped_refptr<Canvas2DLayerBridge::ImageInfo> info =
+        image_info_cache_.back();
     image_info_cache_.pop_back();
     return info;
   }
@@ -401,7 +402,7 @@ void Canvas2DLayerBridge::ClearCHROMIUMImageCache() {
 }
 
 bool Canvas2DLayerBridge::PrepareMailboxFromImage(
-    RefPtr<StaticBitmapImage>&& image,
+    scoped_refptr<StaticBitmapImage>&& image,
     MailboxInfo* mailbox_info,
     viz::TextureMailbox* out_mailbox) {
   if (!context_provider_wrapper_)
@@ -967,7 +968,7 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   if ((IsHibernating() || software_rendering_while_hidden_) && IsHidden())
     return false;
 
-  RefPtr<StaticBitmapImage> image =
+  scoped_refptr<StaticBitmapImage> image =
       NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnknown);
   if (!image || !image->IsValid() || !image->IsTextureBacked())
     return false;
@@ -1024,7 +1025,7 @@ void Canvas2DLayerBridge::ReleaseFrameResources(
   }
 
   if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-    RefPtr<ImageInfo>& info = released_mailbox_info->image_info_;
+    scoped_refptr<ImageInfo>& info = released_mailbox_info->image_info_;
     if (info) {
       if (lost_resource || context_or_layer_bridge_lost) {
         DeleteCHROMIUMImage(context_provider_wrapper,
@@ -1118,7 +1119,7 @@ void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
     layer_->Layer()->InvalidateRect(EnclosingIntRect(dirty_rect));
 }
 
-RefPtr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
+scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
     AccelerationHint hint,
     SnapshotReason) {
   if (IsHibernating())
@@ -1136,7 +1137,7 @@ RefPtr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
     GetOrCreateSurface()->notifyContentWillChange(
         SkSurface::kRetain_ContentChangeMode);
   }
-  RefPtr<StaticBitmapImage> image = StaticBitmapImage::Create(
+  scoped_refptr<StaticBitmapImage> image = StaticBitmapImage::Create(
       surface_->makeImageSnapshot(), ContextProviderWrapper());
   if (image->IsTextureBacked()) {
     static_cast<AcceleratedStaticBitmapImage*>(image.get())

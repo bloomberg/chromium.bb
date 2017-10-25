@@ -78,16 +78,16 @@ bool AcceleratedImageBufferSurface::IsValid() const {
   return surface_ && context_provider_wrapper_;
 }
 
-RefPtr<StaticBitmapImage> AcceleratedImageBufferSurface::NewImageSnapshot(
-    AccelerationHint,
-    SnapshotReason) {
+scoped_refptr<StaticBitmapImage>
+AcceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint,
+                                                SnapshotReason) {
   if (!IsValid())
     return nullptr;
   // Must make a copy of the WeakPtr because CreateFromSkImage only takes
   // r-value references.
   WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       context_provider_wrapper_;
-  RefPtr<AcceleratedStaticBitmapImage> image =
+  scoped_refptr<AcceleratedStaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromSkImage(
           surface_->makeImageSnapshot(), std::move(context_provider_wrapper));
   image->RetainOriginalSkImageForCopyOnWrite();

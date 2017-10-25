@@ -14,10 +14,10 @@ namespace {
 
 constexpr unsigned kTooShortForSignature = 5;
 
-RefPtr<SegmentReader> CreateSegmentReader(char* reference_data,
-                                          size_t data_length) {
+scoped_refptr<SegmentReader> CreateSegmentReader(char* reference_data,
+                                                 size_t data_length) {
   PrepareReferenceData(reference_data, data_length);
-  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(reference_data, data_length);
   return SegmentReader::CreateFromSharedBuffer(std::move(data));
 }
@@ -27,9 +27,9 @@ RefPtr<SegmentReader> CreateSegmentReader(char* reference_data,
 class DecodingImageGeneratorTest : public ::testing::Test {};
 
 TEST_F(DecodingImageGeneratorTest, Create) {
-  RefPtr<SharedBuffer> reference_data =
+  scoped_refptr<SharedBuffer> reference_data =
       ReadFile(kDecodersTestingDir, "radient.gif");
-  RefPtr<SegmentReader> reader =
+  scoped_refptr<SegmentReader> reader =
       SegmentReader::CreateFromSharedBuffer(std::move(reference_data));
   std::unique_ptr<SkImageGenerator> generator =
       DecodingImageGenerator::CreateAsSkImageGenerator(reader->GetAsSkData());

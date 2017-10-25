@@ -29,7 +29,8 @@ namespace blink {
 
 class PLATFORM_EXPORT DistantLightSource final : public LightSource {
  public:
-  static RefPtr<DistantLightSource> Create(float azimuth, float elevation) {
+  static scoped_refptr<DistantLightSource> Create(float azimuth,
+                                                  float elevation) {
     return WTF::AdoptRef(new DistantLightSource(azimuth, elevation));
   }
 

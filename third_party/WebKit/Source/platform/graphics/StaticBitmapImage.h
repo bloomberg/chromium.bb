@@ -24,10 +24,10 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // The SkImage is texture backed, in which case it must be a reference to the
   // context provider that owns the GrContext with which the SkImage is
   // associated.
-  static RefPtr<StaticBitmapImage> Create(
+  static scoped_refptr<StaticBitmapImage> Create(
       sk_sp<SkImage>,
       WeakPtr<WebGraphicsContext3DProviderWrapper>&& = nullptr);
-  static RefPtr<StaticBitmapImage> Create(PaintImage);
+  static scoped_refptr<StaticBitmapImage> Create(PaintImage);
 
   bool IsStaticBitmapImage() const override { return true; }
 
@@ -46,7 +46,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   virtual void Abandon() {}
   // Creates a non-gpu copy of the image, or returns this if image is already
   // non-gpu.
-  virtual RefPtr<StaticBitmapImage> MakeUnaccelerated() { return this; }
+  virtual scoped_refptr<StaticBitmapImage> MakeUnaccelerated() { return this; }
 
   // Methods overridden by AcceleratedStaticBitmapImage only
   virtual void CopyToTexture(WebGraphicsContext3DProvider*,
@@ -86,8 +86,9 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods have exactly the same implementation for all sub-classes
   bool OriginClean() const { return is_origin_clean_; }
   void SetOriginClean(bool flag) { is_origin_clean_ = flag; }
-  RefPtr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>,
-                                                SkTransferFunctionBehavior);
+  scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
+      sk_sp<SkColorSpace>,
+      SkTransferFunctionBehavior);
 
  protected:
   // Helper for sub-classes

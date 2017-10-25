@@ -22,11 +22,13 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
 
   void TransferResource(viz::TransferableResource*);
   void SetTransferableResourceToSharedBitmap(viz::TransferableResource&,
-                                             RefPtr<StaticBitmapImage>);
-  void SetTransferableResourceToSharedGPUContext(viz::TransferableResource&,
-                                                 RefPtr<StaticBitmapImage>);
-  void SetTransferableResourceToStaticBitmapImage(viz::TransferableResource&,
-                                                  RefPtr<StaticBitmapImage>);
+                                             scoped_refptr<StaticBitmapImage>);
+  void SetTransferableResourceToSharedGPUContext(
+      viz::TransferableResource&,
+      scoped_refptr<StaticBitmapImage>);
+  void SetTransferableResourceToStaticBitmapImage(
+      viz::TransferableResource&,
+      scoped_refptr<StaticBitmapImage>);
 
   void ReclaimResource(unsigned resource_id);
   void ReclaimResources(const WTF::Vector<viz::ReturnedResource>& resources);
@@ -44,7 +46,7 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   unsigned next_resource_id_;
 
   struct FrameResource {
-    RefPtr<StaticBitmapImage> image_;
+    scoped_refptr<StaticBitmapImage> image_;
     std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
 
     // context_provider_wrapper_ is associated with texture_id_ and image_id.

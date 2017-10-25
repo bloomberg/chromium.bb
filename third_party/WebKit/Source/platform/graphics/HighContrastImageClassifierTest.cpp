@@ -19,7 +19,7 @@ class HighContrastImageClassifierTest : public ::testing::Test {
   bool GetFeaturesAndClassification(const std::string& file_name,
                                     std::vector<float>* features) {
     SCOPED_TRACE(file_name);
-    RefPtr<BitmapImage> image = LoadImage(file_name);
+    scoped_refptr<BitmapImage> image = LoadImage(file_name);
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
     return classifier_.ShouldApplyHighContrastFilterToImage(*image.get());
   }
@@ -43,13 +43,13 @@ class HighContrastImageClassifierTest : public ::testing::Test {
   }
 
  protected:
-  RefPtr<BitmapImage> LoadImage(const std::string& file_name) {
+  scoped_refptr<BitmapImage> LoadImage(const std::string& file_name) {
     String file_path = testing::BlinkRootDir();
     file_path.append(file_name.c_str());
-    RefPtr<SharedBuffer> image_data = testing::ReadFromFile(file_path);
+    scoped_refptr<SharedBuffer> image_data = testing::ReadFromFile(file_path);
     EXPECT_TRUE(image_data.get());
 
-    RefPtr<BitmapImage> image = BitmapImage::Create();
+    scoped_refptr<BitmapImage> image = BitmapImage::Create();
     image->SetData(image_data, true);
     return image;
   }

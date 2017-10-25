@@ -39,7 +39,7 @@ namespace blink {
 // static
 std::unique_ptr<SkImageGenerator>
 DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
-  RefPtr<SegmentReader> segment_reader =
+  scoped_refptr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSkData(std::move(data));
   // We just need the size of the image, so we have to temporarily create an
   // ImageDecoder. Since we only need the size, the premul and gamma settings
@@ -55,7 +55,7 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
       SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
                            decoder->ColorSpaceForSkImages());
 
-  RefPtr<ImageFrameGenerator> frame = ImageFrameGenerator::Create(
+  scoped_refptr<ImageFrameGenerator> frame = ImageFrameGenerator::Create(
       SkISize::Make(size.Width(), size.Height()), false,
       decoder->GetColorBehavior(), decoder->GetSupportedDecodeSizes());
   if (!frame)
@@ -71,9 +71,9 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
 
 // static
 sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
-    RefPtr<ImageFrameGenerator> frame_generator,
+    scoped_refptr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
-    RefPtr<SegmentReader> data,
+    scoped_refptr<SegmentReader> data,
     std::vector<FrameMetadata> frames,
     PaintImage::ContentId content_id,
     bool all_data_received) {
@@ -83,9 +83,9 @@ sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
 }
 
 DecodingImageGenerator::DecodingImageGenerator(
-    RefPtr<ImageFrameGenerator> frame_generator,
+    scoped_refptr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
-    RefPtr<SegmentReader> data,
+    scoped_refptr<SegmentReader> data,
     std::vector<FrameMetadata> frames,
     PaintImage::ContentId complete_frame_content_id,
     bool all_data_received)

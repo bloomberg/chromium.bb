@@ -113,7 +113,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     kDisallowChromiumImage,
   };
 
-  static RefPtr<DrawingBuffer> Create(
+  static scoped_refptr<DrawingBuffer> Create(
       std::unique_ptr<WebGraphicsContext3DProvider>,
       Client*,
       const IntSize&,
@@ -203,7 +203,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // contents of the front buffer. This is done without any pixel copies. The
   // texture in the ImageBitmap is from the active ContextProvider on the
   // DrawingBuffer.
-  RefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
   bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLenum dst_target,
@@ -240,7 +240,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     ~ScopedRGBEmulationForBlitFramebuffer();
 
    private:
-    RefPtr<DrawingBuffer> drawing_buffer_;
+    scoped_refptr<DrawingBuffer> drawing_buffer_;
     bool doing_work_ = false;
   };
 
@@ -294,7 +294,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     }
 
    private:
-    RefPtr<DrawingBuffer> drawing_buffer_;
+    scoped_refptr<DrawingBuffer> drawing_buffer_;
     // The previous state restorer, in case restorers are nested.
     ScopedStateRestorer* previous_state_restorer_ = nullptr;
     bool clear_state_dirty_ = false;
@@ -317,7 +317,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
     // by the beginDestruction method, which will eventually drain all of its
     // ColorBuffers.
-    RefPtr<DrawingBuffer> drawing_buffer;
+    scoped_refptr<DrawingBuffer> drawing_buffer;
     const IntSize size;
     const GLuint texture_id = 0;
     const GLuint image_id = 0;
@@ -374,7 +374,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   // Callbacks for mailboxes given to the compositor from
   // finishPrepareTextureMailboxGpu and finishPrepareTextureMailboxSoftware.
-  void MailboxReleasedGpu(RefPtr<ColorBuffer>,
+  void MailboxReleasedGpu(scoped_refptr<ColorBuffer>,
                           const gpu::SyncToken&,
                           bool lost_resource);
   void MailboxReleasedSoftware(std::unique_ptr<viz::SharedBitmap>,
@@ -417,10 +417,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // RuntimeEnabledFeatures::WebGLImageChromiumEnabled() is true. On failure,
   // or if the flag is false, creates a default texture. Always returns a valid
   // ColorBuffer.
-  RefPtr<ColorBuffer> CreateColorBuffer(const IntSize&);
+  scoped_refptr<ColorBuffer> CreateColorBuffer(const IntSize&);
 
   // Creates or recycles a ColorBuffer of size |m_size|.
-  RefPtr<ColorBuffer> CreateOrRecycleColorBuffer();
+  scoped_refptr<ColorBuffer> CreateOrRecycleColorBuffer();
 
   // Attaches |m_backColorBuffer| to |m_fbo|, which is always the source for
   // read operations.
@@ -487,11 +487,11 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   GLuint fbo_ = 0;
 
   // The ColorBuffer that backs |m_fbo|.
-  RefPtr<ColorBuffer> back_color_buffer_;
+  scoped_refptr<ColorBuffer> back_color_buffer_;
 
   // The ColorBuffer that was most recently presented to the compositor by
   // prepareTextureMailboxInternal.
-  RefPtr<ColorBuffer> front_color_buffer_;
+  scoped_refptr<ColorBuffer> front_color_buffer_;
 
   // True if our contents have been modified since the last presentation of this
   // buffer.
@@ -530,7 +530,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   // Mailboxes that were released by the compositor can be used again by this
   // DrawingBuffer.
-  Deque<RefPtr<ColorBuffer>> recycled_color_buffer_queue_;
+  Deque<scoped_refptr<ColorBuffer>> recycled_color_buffer_queue_;
 
   // If the width and height of the Canvas's backing store don't
   // match those that we were given in the most recent call to

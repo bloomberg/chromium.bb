@@ -24,8 +24,8 @@ class ImageObserver;
 // A generated placeholder image that shows a translucent gray rectangle.
 class PLATFORM_EXPORT PlaceholderImage final : public Image {
  public:
-  static RefPtr<PlaceholderImage> Create(ImageObserver* observer,
-                                         const IntSize& size) {
+  static scoped_refptr<PlaceholderImage> Create(ImageObserver* observer,
+                                                const IntSize& size) {
     return WTF::AdoptRef(new PlaceholderImage(observer, size));
   }
 

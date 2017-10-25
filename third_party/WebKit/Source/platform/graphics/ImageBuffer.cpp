@@ -175,7 +175,7 @@ void ImageBuffer::ResetCanvas(PaintCanvas* canvas) const {
     client_->RestoreCanvasMatrixClipStack(canvas);
 }
 
-RefPtr<StaticBitmapImage> ImageBuffer::NewImageSnapshot(
+scoped_refptr<StaticBitmapImage> ImageBuffer::NewImageSnapshot(
     AccelerationHint hint,
     SnapshotReason reason) const {
   if (snapshot_state_ == kInitialSnapshotState)
@@ -209,7 +209,7 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
   if (!IsSurfaceValid())
     return false;
 
-  RefPtr<StaticBitmapImage> image =
+  scoped_refptr<StaticBitmapImage> image =
       surface_->NewImageSnapshot(kPreferAcceleration, reason);
   if (!image || !image->IsTextureBacked() || !image->IsValid())
     return false;
@@ -347,7 +347,7 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
 
   DCHECK(Canvas());
 
-  RefPtr<StaticBitmapImage> snapshot = surface_->NewImageSnapshot(
+  scoped_refptr<StaticBitmapImage> snapshot = surface_->NewImageSnapshot(
       kPreferNoAcceleration, kSnapshotReasonGetImageData);
   if (!snapshot)
     return false;
@@ -486,7 +486,7 @@ void ImageBuffer::DisableAcceleration() {
 }
 
 void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
-  RefPtr<StaticBitmapImage> image =
+  scoped_refptr<StaticBitmapImage> image =
       surface_->NewImageSnapshot(kPreferNoAcceleration, kSnapshotReasonPaint);
 
   // image can be null if alloaction failed in which case we should just

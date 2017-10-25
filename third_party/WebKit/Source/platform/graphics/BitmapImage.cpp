@@ -105,7 +105,7 @@ void BitmapImage::DestroyDecodedData() {
   NotifyMemoryChanged();
 }
 
-RefPtr<SharedBuffer> BitmapImage::Data() {
+scoped_refptr<SharedBuffer> BitmapImage::Data() {
   return decoder_ ? decoder_->Data() : nullptr;
 }
 
@@ -194,7 +194,7 @@ bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
   return decoder_ && decoder_->HotSpot(hot_spot);
 }
 
-Image::SizeAvailability BitmapImage::SetData(RefPtr<SharedBuffer> data,
+Image::SizeAvailability BitmapImage::SetData(scoped_refptr<SharedBuffer> data,
                                              bool all_data_received) {
   if (!data)
     return kSizeAvailable;
@@ -410,7 +410,7 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
   return FrameAtIndex(current_frame_index_);
 }
 
-RefPtr<Image> BitmapImage::ImageForDefaultFrame() {
+scoped_refptr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
     PaintImage paint_image = FrameAtIndex(PaintImage::kDefaultFrameIndex);
     if (paint_image.ShouldAnimate()) {

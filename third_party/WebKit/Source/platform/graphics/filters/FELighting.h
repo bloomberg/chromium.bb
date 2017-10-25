@@ -52,10 +52,10 @@ class PLATFORM_EXPORT FELighting : public FilterEffect {
              float,
              float,
              float,
-             RefPtr<LightSource>);
+             scoped_refptr<LightSource>);
 
   LightingType lighting_type_;
-  RefPtr<LightSource> light_source_;
+  scoped_refptr<LightSource> light_source_;
 
   Color lighting_color_;
   float surface_scale_;

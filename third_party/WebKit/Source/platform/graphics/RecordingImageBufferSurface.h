@@ -51,8 +51,8 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   void FinalizeFrame() override;
   void DoPaintInvalidation(const FloatRect&) override;
   void SetImageBuffer(ImageBuffer*) override;
-  RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
-                                             SnapshotReason) override;
+  scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
+                                                    SnapshotReason) override;
   void Draw(GraphicsContext&,
             const FloatRect& dest_rect,
             const FloatRect& src_rect,

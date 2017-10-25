@@ -395,7 +395,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
 class DrawingBufferForTests : public DrawingBuffer {
  public:
-  static RefPtr<DrawingBufferForTests> Create(
+  static scoped_refptr<DrawingBufferForTests> Create(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
       DrawingBuffer::Client* client,
       const IntSize& size,
@@ -403,7 +403,7 @@ class DrawingBufferForTests : public DrawingBuffer {
       UseMultisampling use_multisampling) {
     std::unique_ptr<Extensions3DUtil> extensions_util =
         Extensions3DUtil::Create(context_provider->ContextGL());
-    RefPtr<DrawingBufferForTests> drawing_buffer =
+    scoped_refptr<DrawingBufferForTests> drawing_buffer =
         WTF::AdoptRef(new DrawingBufferForTests(std::move(context_provider),
                                                 std::move(extensions_util),
                                                 client, preserve));

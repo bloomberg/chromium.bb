@@ -55,9 +55,9 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
     kRepeatModeXY = kRepeatModeX | kRepeatModeY
   };
 
-  static RefPtr<Pattern> CreateImagePattern(RefPtr<Image>,
-                                            RepeatMode = kRepeatModeXY);
-  static RefPtr<Pattern> CreatePaintRecordPattern(
+  static scoped_refptr<Pattern> CreateImagePattern(scoped_refptr<Image>,
+                                                   RepeatMode = kRepeatModeXY);
+  static scoped_refptr<Pattern> CreatePaintRecordPattern(
       sk_sp<PaintRecord>,
       const FloatRect& record_bounds,
       RepeatMode = kRepeatModeXY);
