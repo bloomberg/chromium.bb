@@ -35,8 +35,6 @@ using storage::BlobStorageContext;
 namespace content {
 
 namespace {
-const FilePath::CharType kBlobStorageContextKeyName[] =
-    FILE_PATH_LITERAL("content_blob_storage_context");
 const FilePath::CharType kBlobStorageParentDirectory[] =
     FILE_PATH_LITERAL("blob_storage");
 
@@ -222,5 +220,7 @@ bool GetBodyBlobDataHandles(ResourceRequestBody* body,
   }
   return true;
 }
+
+const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 
 }  // namespace content

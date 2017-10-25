@@ -101,6 +101,8 @@ bool GetBodyBlobDataHandles(ResourceRequestBody* body,
                             ResourceContext* resource_context,
                             BlobHandles* blob_handles);
 
+extern const char kBlobStorageContextKeyName[];
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_FILEAPI_CHROME_BLOB_STORAGE_CONTEXT_H_
