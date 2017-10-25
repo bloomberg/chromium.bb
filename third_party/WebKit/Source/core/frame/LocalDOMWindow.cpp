@@ -946,30 +946,20 @@ int LocalDOMWindow::outerWidth() const {
   return chrome_client.RootWindowRect().Width();
 }
 
-FloatSize LocalDOMWindow::GetViewportSize(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  if (!GetFrame())
-    return FloatSize();
-
+IntSize LocalDOMWindow::GetViewportSize() const {
   LocalFrameView* view = GetFrame()->View();
   if (!view)
-    return FloatSize();
+    return IntSize();
 
   Page* page = GetFrame()->GetPage();
   if (!page)
-    return FloatSize();
+    return IntSize();
 
   // The main frame's viewport size depends on the page scale. If viewport is
   // enabled, the initial page scale depends on the content width and is set
   // after a layout, perform one now so queries during page load will use the
   // up to date viewport.
-  bool affectedByScale =
-      page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame();
-  bool affectedByScrollbars =
-      scrollbar_inclusion == kExcludeScrollbars &&
-      !page->GetScrollbarTheme().UsesOverlayScrollbars();
-
-  if (affectedByScale || affectedByScrollbars)
+  if (page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame())
     document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: This is potentially too much work. We really only need to know the
@@ -981,15 +971,14 @@ FloatSize LocalDOMWindow::GetViewportSize(
           ->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  return FloatSize(view->VisibleContentRect(scrollbar_inclusion).Size());
+  return document()->View()->Size();
 }
 
 int LocalDOMWindow::innerHeight() const {
   if (!GetFrame())
     return 0;
 
-  FloatSize viewport_size = GetViewportSize(kIncludeScrollbars);
-  return AdjustForAbsoluteZoom(ExpandedIntSize(viewport_size).Height(),
+  return AdjustForAbsoluteZoom(GetViewportSize().Height(),
                                GetFrame()->PageZoomFactor());
 }
 
@@ -997,8 +986,7 @@ int LocalDOMWindow::innerWidth() const {
   if (!GetFrame())
     return 0;
 
-  FloatSize viewport_size = GetViewportSize(kIncludeScrollbars);
-  return AdjustForAbsoluteZoom(ExpandedIntSize(viewport_size).Width(),
+  return AdjustForAbsoluteZoom(GetViewportSize().Width(),
                                GetFrame()->PageZoomFactor());
 }
 
