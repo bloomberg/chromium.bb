@@ -42,12 +42,17 @@ unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
   return offset - dom_start_ + text_content_start_;
 }
 
-const NGOffsetMapping* GetNGOffsetMappingFor(const Node& node,
-                                             unsigned offset) {
-  Optional<NGInlineNode> inline_node = GetNGInlineNodeFor(node, offset);
-  if (!inline_node)
+// static
+const NGOffsetMapping* NGOffsetMapping::GetFor(const Node& node,
+                                               unsigned offset) {
+  const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
+  if (!layout_object || !layout_object->IsInline())
     return nullptr;
-  return &inline_node->ComputeOffsetMappingIfNeeded();
+  LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();
+  if (!block_flow)
+    return nullptr;
+  DCHECK(block_flow->ChildrenInline());
+  return &NGInlineNode(block_flow).ComputeOffsetMappingIfNeeded();
 }
 
 NGOffsetMapping::NGOffsetMapping(NGOffsetMapping&& other)

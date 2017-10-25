@@ -748,21 +748,4 @@ String NGInlineNode::ToString() const {
   return String::Format("NGInlineNode");
 }
 
-// static
-Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node) {
-  return GetNGInlineNodeFor(node, 0);
-}
-
-// static
-Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
-  const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
-  if (!layout_object || !layout_object->IsInline())
-    return WTF::nullopt;
-  LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();
-  if (!block_flow)
-    return WTF::nullopt;
-  DCHECK(block_flow->ChildrenInline());
-  return NGInlineNode(block_flow);
-}
-
 }  // namespace blink
