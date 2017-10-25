@@ -400,12 +400,12 @@ class UserGroupTest(image_test_lib.ImageTestCase):
 
     if entry.home != '/dev/null':
       logging.error('Expected /dev/null for new user "%s" home dir, got "%s"',
-                    entry[0], entry.home)
+                    entry.user, entry.home)
       return False
 
     if entry.shell != '/bin/false':
       logging.error('Expected /bin/false for new user "%s" shell, got "%s"',
-                    entry[0], entry.shell)
+                    entry.user, entry.shell)
       return False
 
     return True
