@@ -1025,7 +1025,8 @@ components/rappor/rappor_parameters.h.
     The eTLD+1 of the website visited, along with the time between the initial
     creation of a touch event and the start of the frame swap on the GPU service
     caused by the generated ScrollUpdate gesture event. If no swap was induced
-    by the event, no recording is made.
+    by the event, no recording is made. The first GSU of every scrolling
+    sequence is excluded from this metric.
   </summary>
   <string-field name="Domain">
     <summary>
@@ -1035,6 +1036,30 @@ components/rappor/rappor_parameters.h.
   <uint64-field name="Latency">
     <summary>
       Latency in microseconds representing Touch.TimeToScrollUpdateSwapBegin.
+    </summary>
+  </uint64-field>
+</rappor-metric>
+
+<rappor-metric
+    name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin2"
+    type="UMA_RAPPOR_TYPE">
+  <owner>nzolghadr@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    The eTLD+1 of the website visited, along with the time between the initial
+    creation of a wheel event and the start of the frame swap on the GPU service
+    caused by the generated ScrollUpdate gesture event. If no swap was induced
+    by the event, no recording is made. The first GSU of every scrolling
+    sequence is excluded from this metric.
+  </summary>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of the URL.
+    </summary>
+  </string-field>
+  <uint64-field name="Latency">
+    <summary>
+      Latency in microseconds representing Wheel.TimeToScrollUpdateSwapBegin2.
     </summary>
   </uint64-field>
 </rappor-metric>
