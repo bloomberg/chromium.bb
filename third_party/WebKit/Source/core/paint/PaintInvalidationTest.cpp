@@ -88,13 +88,15 @@ TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(10, 10, 100, 100), child_layout_view->VisualRect());
+  EXPECT_EQ(LayoutRect(10, 10, 100, 100),
+            child_layout_view->FirstFragment().VisualRect());
 
   iframe->setAttribute(HTMLNames::styleAttr, "border: 20px solid blue");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(30, 30, 100, 100), child_layout_view->VisualRect());
+  EXPECT_EQ(LayoutRect(30, 30, 100, 100),
+            child_layout_view->FirstFragment().VisualRect());
 };
 
 // This is a simplified test case for crbug.com/704182. It ensures no repaint
@@ -220,18 +222,20 @@ TEST_P(PaintInvalidationTest, SVGHiddenContainer) {
 
   // mask_rect's visual rect is in coordinates of the mask.
   auto* mask_rect = GetLayoutObjectByElementId("mask-rect");
-  EXPECT_EQ(LayoutRect(), mask_rect->VisualRect());
+  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
 
   // real_rect's visual rect is in coordinates of its paint invalidation
   // container (the view).
   auto* real_rect = GetLayoutObjectByElementId("real-rect");
-  EXPECT_EQ(LayoutRect(155, 166, 7, 8), real_rect->VisualRect());
+  EXPECT_EQ(LayoutRect(155, 166, 7, 8),
+            real_rect->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ToElement(mask_rect->GetNode())->setAttribute("x", "20");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(LayoutRect(), mask_rect->VisualRect());
-  EXPECT_EQ(LayoutRect(155, 166, 7, 8), real_rect->VisualRect());
+  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(LayoutRect(155, 166, 7, 8),
+            real_rect->FirstFragment().VisualRect());
 
   // Should invalidate raster for real_rect only.
   const auto& raster_invalidations =

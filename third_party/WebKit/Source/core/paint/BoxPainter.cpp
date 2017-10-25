@@ -62,7 +62,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
                             layout_box_.ScrolledContentOffset());
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       PaintChunkProperties properties(
-          layout_box_.FirstFragment()->ContentsProperties());
+          layout_box_.FirstFragment().GetRarePaintData()->ContentsProperties());
       properties.backface_hidden = layout_box_.HasHiddenBackface();
       scoped_scroll_property.emplace(
           paint_info.context.GetPaintController(), layout_box_,

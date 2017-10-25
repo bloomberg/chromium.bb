@@ -40,6 +40,14 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutMultiColumnFlowThread (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutMultiColumnFlowThread (anonymous)",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },

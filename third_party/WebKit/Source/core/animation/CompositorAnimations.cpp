@@ -352,10 +352,11 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     // the DCHECK below.
     // DCHECK(document().lifecycle().state() >=
     // DocumentLifecycle::PrePaintClean);
-    if (FragmentData* fragment_data =
-            target_element.GetLayoutObject()->FirstFragment()) {
+    if (RarePaintData* rare_paint_data = target_element.GetLayoutObject()
+                                             ->FirstFragment()
+                                             .GetRarePaintData()) {
       const ObjectPaintProperties* paint_properties =
-          fragment_data->PaintProperties();
+          rare_paint_data->PaintProperties();
       const TransformPaintPropertyNode* transform_node =
           paint_properties->Transform();
       const EffectPaintPropertyNode* effect_node = paint_properties->Effect();

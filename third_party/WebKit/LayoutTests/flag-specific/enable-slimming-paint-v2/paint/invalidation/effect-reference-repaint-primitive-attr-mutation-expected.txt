@@ -7,17 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 110, 110],
-          "reason": "full"
+          "object": "LayoutBlockFlow DIV class='target'",
+          "rect": [8, 8, 100, 100],
+          "reason": "paint property change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
+      "object": "LayoutBlockFlow DIV class='target'",
+      "reason": "full"
     }
   ]
 }

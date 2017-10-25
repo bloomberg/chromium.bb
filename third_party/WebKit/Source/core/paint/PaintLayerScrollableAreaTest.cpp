@@ -698,7 +698,7 @@ TEST_F(PaintLayerScrollableAreaTest,
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
 
-  const auto* properties = scroller->FirstFragment()->PaintProperties();
+  const auto* properties = scroller->FirstFragment().PaintProperties();
 
   // No scroll offset translation is needed when scroll offset is zero.
   EXPECT_EQ(nullptr, properties->ScrollTranslation());
@@ -756,7 +756,7 @@ TEST_F(PaintLayerScrollableAreaTest, SlimmingPaintV2ScrollDoesNotInvalidate) {
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
 
-  const auto* properties = scroller->FirstFragment()->PaintProperties();
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   // Scroll offset translation is needed even when scroll offset is zero.
   EXPECT_NE(nullptr, properties->ScrollTranslation());
   EXPECT_EQ(FloatSize(0, 0), scrollable_area->GetScrollOffset());
@@ -799,7 +799,7 @@ TEST_F(PaintLayerScrollableAreaTest,
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
-  const auto* properties = scroller->FirstFragment()->PaintProperties();
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   EXPECT_NE(nullptr, properties->ScrollTranslation());
 }
 }

@@ -330,7 +330,8 @@ TEST_F(EventHandlerTest, HitOnNothingDoesNotShowIBeam) {
 TEST_F(EventHandlerTest, HitOnTextShowsIBeam) {
   SetHtmlInnerHTML("blabla");
   Node* const text = GetDocument().body()->firstChild();
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -343,7 +344,8 @@ TEST_F(EventHandlerTest, HitOnTextShowsIBeam) {
 TEST_F(EventHandlerTest, HitOnUserSelectNoneDoesNotShowIBeam) {
   SetHtmlInnerHTML("<span style='user-select: none'>blabla</span>");
   Node* const text = GetDocument().body()->firstChild()->firstChild();
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -359,7 +361,8 @@ TEST_F(EventHandlerTest, ChildCanOverrideUserSelectNone) {
       "<span style='user-select: text'>blabla</span>"
       "</div>");
   Node* const text = GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -375,7 +378,8 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectNone) {
       "<span style='user-select: text' id='bla'>blabla</span>", "host");
 
   Node* const text = shadow_root->getElementById("bla")->firstChild();
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -391,7 +395,8 @@ TEST_F(EventHandlerTest, ChildCanOverrideUserSelectText) {
       "<span style='user-select: none'>blabla</span>"
       "</div>");
   Node* const text = GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -407,7 +412,8 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectText) {
       "<span style='user-select: none' id='bla'>blabla</span>", "host");
 
   Node* const text = shadow_root->getElementById("bla")->firstChild();
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -423,7 +429,8 @@ TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
   ShadowRoot* const shadow_root = field->UserAgentShadowRoot();
 
   Element* const text = shadow_root->getElementById("inner-editor");
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -442,7 +449,8 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
       ToHTMLInputElement(GetDocument().getElementById("sample"));
   Node* const text = input->InnerEditorElement()->firstChild();
 
-  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -455,7 +463,8 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
 TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
   SetHtmlInnerHTML("<img>");
   Element* const img = ToElement(GetDocument().body()->firstChild());
-  LayoutPoint location = img->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      img->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -468,7 +477,8 @@ TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
 TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
   SetHtmlInnerHTML("<a href='bala'>link text</a>");
   Node* const link = GetDocument().body()->firstChild();
-  LayoutPoint location = link->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      link->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
@@ -493,7 +503,8 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
 TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
   SetHtmlInnerHTML("<a contenteditable='true' href='bala'>editable link</a>");
   Node* const link = GetDocument().body()->firstChild();
-  LayoutPoint location = link->GetLayoutObject()->VisualRect().Center();
+  LayoutPoint location =
+      link->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);

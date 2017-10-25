@@ -229,9 +229,9 @@ void PaintInvalidationCapableScrollableArea::
     SetScrollCornerAndResizerVisualRect(const LayoutRect& rect) {
   scroll_corner_and_resizer_visual_rect_ = rect;
   if (LayoutScrollbarPart* scroll_corner = this->ScrollCorner())
-    scroll_corner->SetVisualRect(rect);
+    scroll_corner->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
   if (LayoutScrollbarPart* resizer = this->Resizer())
-    resizer->SetVisualRect(rect);
+    resizer->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
 }
 
 void PaintInvalidationCapableScrollableArea::

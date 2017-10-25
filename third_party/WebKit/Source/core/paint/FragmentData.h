@@ -7,7 +7,7 @@
 
 #include "core/paint/ClipRects.h"
 #include "core/paint/ObjectPaintProperties.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
+#include "core/paint/RarePaintData.h"
 
 namespace blink {
 
@@ -23,78 +23,49 @@ class CORE_EXPORT FragmentData {
     return WTF::WrapUnique(new FragmentData());
   }
 
-  ObjectPaintProperties* PaintProperties() const {
-    return paint_properties_.get();
-  }
-  ObjectPaintProperties& EnsurePaintProperties();
-  void ClearPaintProperties();
-
   FragmentData* NextFragment() const { return next_fragment_.get(); }
   FragmentData& EnsureNextFragment();
   void ClearNextFragment() { next_fragment_.reset(); }
 
-  // The complete set of property nodes that should be used as a
-  // starting point to paint this fragment. See also the comment for
-  // |local_border_box_properties_|.
-  // LocalBorderBoxProperties() includes fragment clip.
-  PropertyTreeState* LocalBorderBoxProperties() const {
-    return local_border_box_properties_.get();
-  }
-
-  void ClearLocalBorderBoxProperties();
-  void SetLocalBorderBoxProperties(PropertyTreeState&);
-
-  // This is the complete set of property nodes that is inherited
-  // from the ancestor before applying any local CSS properties,
-  // but includes paint offset transform.
-  PropertyTreeState PreEffectProperties() const;
-
-  // This is the complete set of property nodes that can be used to
-  // paint the contents of this fragment. It is similar to
-  // |local_border_box_properties_| but includes properties (e.g.,
-  // overflow clip, scroll translation) that apply to contents.
-  PropertyTreeState ContentsProperties() const;
-
-  // The visual paint offset of this fragment. Similar to
-  // LayoutObject::PaintOfset, except that the one here takes into account
-  // fragmentation.
+  // Visual offset of this fragment's top-left position from the
+  // "paint offset root":
+  // - In SPv1 mode, this is the containing composited PaintLayer, or
+  //   PaintLayer with a transform, whichever is nearer along the containing
+  //   block chain.
+  // - In SPv2 mode, this is the containing root PaintLayer of the
+  //   root LocalFrameView, or PaintLayer with a transform, whichever is nearer
+  //   along the containing block chain.
   LayoutPoint PaintOffset() const { return paint_offset_; }
   void SetPaintOffset(const LayoutPoint& paint_offset) {
     paint_offset_ = paint_offset;
   }
 
-  // The pagination offset is the additional factor to add in to map
-  // from flow thread coordinates relative to the enclosing pagination
-  // layer, to visual coordiantes relative to that pagination layer.
-  LayoutPoint PaginationOffset() const { return pagination_offset_; }
-  void SetPaginationOffset(const LayoutPoint& pagination_offset) {
-    pagination_offset_ = pagination_offset;
+  LayoutRect VisualRect() const { return visual_rect_; }
+  void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
+
+  RarePaintData& EnsureRarePaintData();
+  RarePaintData* GetRarePaintData() const { return rare_paint_data_.get(); }
+  void ClearRarePaintData() { rare_paint_data_.reset(); }
+
+  LayoutPoint LocationInBacking() const {
+    return rare_paint_data_ ? rare_paint_data_->LocationInBacking()
+                            : VisualRect().Location();
+  }
+
+  void SetLocationInBacking(const LayoutPoint&);
+
+  const ObjectPaintProperties* PaintProperties() const {
+    return rare_paint_data_ ? rare_paint_data_->PaintProperties() : nullptr;
   }
 
  private:
-  const TransformPaintPropertyNode* GetPreTransform() const;
-  const TransformPaintPropertyNode* GetPostScrollTranslation() const;
-  const ClipPaintPropertyNode* GetPreCssClip() const;
-  const ClipPaintPropertyNode* GetPostOverflowClip() const;
-  const EffectPaintPropertyNode* GetPreEffect() const;
-
-  // Holds references to the paint property nodes created by this object.
-  std::unique_ptr<ObjectPaintProperties> paint_properties_;
-
-  // This is a complete set of property nodes that should be used as a
-  // starting point to paint a LayoutObject. This data is cached because some
-  // properties inherit from the containing block chain instead of the
-  // painting parent and cannot be derived in O(1) during the paint walk.
-  //
-  // For example: <div style='opacity: 0.3;'/>
-  //   The div's local border box properties would have an opacity 0.3 effect
-  //   node. Even though the div has no transform, its local border box
-  //   properties would have a transform node that points to the div's
-  //   ancestor transform space.
-  std::unique_ptr<PropertyTreeState> local_border_box_properties_;
-
+  // This stores the visual rect computed by the latest paint invalidation.
+  // This rect does *not* account for composited scrolling. See
+  // adjustVisualRectForCompositedScrolling().
+  LayoutRect visual_rect_;
   LayoutPoint paint_offset_;
-  LayoutPoint pagination_offset_;
+
+  std::unique_ptr<RarePaintData> rare_paint_data_;
 
   std::unique_ptr<FragmentData> next_fragment_;
 };

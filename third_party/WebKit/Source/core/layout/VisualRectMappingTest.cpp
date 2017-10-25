@@ -43,15 +43,18 @@ class VisualRectMappingTest : public RenderingTest {
       return;
 
     FloatClipRect geometry_mapper_rect((FloatRect(local_rect)));
-    if (FragmentData* fragment_data = object.FirstFragment()) {
-      if (fragment_data->PaintProperties() ||
-          fragment_data->LocalBorderBoxProperties()) {
-        geometry_mapper_rect.MoveBy(FloatPoint(object.PaintOffset()));
+    const FragmentData& fragment_data = object.FirstFragment();
+    if (auto* rare_paint_data = fragment_data.GetRarePaintData()) {
+      if (rare_paint_data->PaintProperties() ||
+          rare_paint_data->LocalBorderBoxProperties()) {
+        geometry_mapper_rect.MoveBy(
+            FloatPoint(object.FirstFragment().PaintOffset()));
         GeometryMapper::LocalToAncestorVisualRect(
-            *fragment_data->LocalBorderBoxProperties(),
-            ancestor.FirstFragment()->ContentsProperties(),
+            *rare_paint_data->LocalBorderBoxProperties(),
+            ancestor.FirstFragment().GetRarePaintData()->ContentsProperties(),
             geometry_mapper_rect);
-        geometry_mapper_rect.MoveBy(-FloatPoint(ancestor.PaintOffset()));
+        geometry_mapper_rect.MoveBy(
+            -FloatPoint(ancestor.FirstFragment().PaintOffset()));
       }
     }
 
@@ -67,7 +70,8 @@ class VisualRectMappingTest : public RenderingTest {
     EXPECT_TRUE(EnclosingIntRect(slow_map_rect)
                     .Contains(EnclosingIntRect(expected_visual_rect)));
 
-    if (object.FirstFragment() && object.FirstFragment()->PaintProperties()) {
+    if (object.FirstFragment().GetRarePaintData() &&
+        object.FirstFragment().GetRarePaintData()->PaintProperties()) {
       EXPECT_TRUE(EnclosingIntRect(geometry_mapper_rect.Rect())
                       .Contains(EnclosingIntRect(expected_visual_rect)));
     }
@@ -280,7 +284,8 @@ TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {
   EXPECT_EQ(LayoutRect(0, 0, 140, 70), rect);
 
   CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(222, 111, 140, 70), target->VisualRect());
+  EXPECT_EQ(LayoutRect(222, 111, 140, 70),
+            target->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
@@ -317,7 +322,8 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
   rect = target_local_visual_rect;
   target->FlipForWritingMode(rect);
   CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(322, 111, 140, 110), target->VisualRect());
+  EXPECT_EQ(LayoutRect(322, 111, 140, 110),
+            target->FirstFragment().VisualRect());
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 200, 100), container_local_visual_rect);
@@ -330,7 +336,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
   EXPECT_TRUE(
       container->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(LayoutRect(222, 111, 200, 100), rect);
-  EXPECT_EQ(rect, container->VisualRect());
+  EXPECT_EQ(rect, container->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
@@ -372,7 +378,7 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
   // (2, 3, 140, 100) is first clipped by container's overflow clip, to
   // (10, 10, 50, 80), then is by added container's offset in LayoutView
   // (222, 111).
-  EXPECT_EQ(LayoutRect(232, 121, 50, 80), target->VisualRect());
+  EXPECT_EQ(LayoutRect(232, 121, 50, 80), target->FirstFragment().VisualRect());
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -386,7 +392,8 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
   EXPECT_EQ(LayoutRect(0, 0, 70, 100), rect);
 
   CheckPaintInvalidationVisualRect(*container);
-  EXPECT_EQ(LayoutRect(222, 111, 70, 100), container->VisualRect());
+  EXPECT_EQ(LayoutRect(222, 111, 70, 100),
+            container->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
@@ -441,7 +448,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // (222, 111).
   // TODO(crbug.com/600039): rect.X() should be 262 (left + border-left), but is
   // offset by extra horizontal border-widths because of layout error.
-  EXPECT_EQ(LayoutRect(322, 121, 50, 80), target->VisualRect());
+  EXPECT_EQ(LayoutRect(322, 121, 50, 80), target->FirstFragment().VisualRect());
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -459,7 +466,8 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // extra horizontal
   // border-widths because of layout error.
   CheckPaintInvalidationVisualRect(*container);
-  EXPECT_EQ(LayoutRect(282, 111, 110, 120), container->VisualRect());
+  EXPECT_EQ(LayoutRect(282, 111, 110, 120),
+            container->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
@@ -612,7 +620,7 @@ TEST_F(VisualRectMappingTest,
   LayoutRect rect = normal_flow_visual_rect;
   EXPECT_TRUE(normal_flow->MapToVisualRectInAncestorSpace(scroller, rect));
   EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), rect);
-  EXPECT_EQ(rect, normal_flow->VisualRect());
+  EXPECT_EQ(rect, normal_flow->FirstFragment().VisualRect());
 
   LayoutBlock* stacking_context =
       ToLayoutBlock(GetLayoutObjectByElementId("stacking-context"));
@@ -622,7 +630,8 @@ TEST_F(VisualRectMappingTest,
 
   EXPECT_EQ(LayoutRect(0, 0, 50, 50), absolute->LocalVisualRect());
   CheckPaintInvalidationVisualRect(*absolute);
-  EXPECT_EQ(LayoutRect(222, 111, 50, 50), absolute->VisualRect());
+  EXPECT_EQ(LayoutRect(222, 111, 50, 50),
+            absolute->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest,
@@ -674,7 +683,7 @@ TEST_F(VisualRectMappingTest, CSSClip) {
 
   EXPECT_EQ(LayoutRect(0, 0, 400, 400), target->LocalVisualRect());
   CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->VisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainPaint) {
@@ -688,7 +697,7 @@ TEST_F(VisualRectMappingTest, ContainPaint) {
 
   EXPECT_EQ(LayoutRect(0, 0, 400, 400), target->LocalVisualRect());
   CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->VisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->FirstFragment().VisualRect());
 }
 
 TEST_F(VisualRectMappingTest, FloatUnderInline) {
@@ -710,7 +719,7 @@ TEST_F(VisualRectMappingTest, FloatUnderInline) {
   LayoutRect rect = target_visual_rect;
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(LayoutRect(66, 55, 33, 44), rect);
-  EXPECT_EQ(rect, target->VisualRect());
+  EXPECT_EQ(rect, target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
 

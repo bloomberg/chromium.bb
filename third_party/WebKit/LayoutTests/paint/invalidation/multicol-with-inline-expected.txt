@@ -10,6 +10,21 @@
           "object": "LayoutText #text",
           "rect": [488, 8, 80, 20],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [328, 28, 80, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [168, 48, 80, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 68, 80, 20],
+          "reason": "style change"
         }
       ]
     }
@@ -17,6 +32,42 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutInline SPAN id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutInline SPAN id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutInline SPAN id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutInline SPAN id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
       "reason": "style change"
     },
     {

@@ -48,8 +48,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
     kSubtreeFullInvalidationForStackedContents = 1 << 3,
     kSubtreeSVGResourceChange = 1 << 4,
 
-    // TODO(crbug.com/637313): This is temporary before we support filters in
-    // paint property tree.
+    // For repeated objects inside multicolumn.
     kSubtreeSlowPathRect = 1 << 5,
 
     // When this flag is set, no paint or raster invalidation will be issued
@@ -101,6 +100,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
   LayoutPoint old_location;
   // Use LayoutObject::LocationInBacking() to get the new location.
 
+  const FragmentData* fragment_data;
+
  private:
   friend class PaintInvalidator;
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
@@ -146,11 +147,8 @@ class PaintInvalidator {
                                                       PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdateEmptyVisualRectFlag(const LayoutObject&,
                                                PaintInvalidatorContext&);
-  ALWAYS_INLINE void UpdateVisualRectIfNeeded(
-      const LayoutObject&,
-      const PaintPropertyTreeBuilderContext*,
-      PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdateVisualRect(const LayoutObject&,
+                                      FragmentData&,
                                       PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> pending_delayed_paint_invalidations_;

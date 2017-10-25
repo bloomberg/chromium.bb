@@ -179,9 +179,9 @@ void ScrollableAreaPainter::PaintOverflowControls(
   {
     Optional<ScopedPaintChunkProperties> scoped_transform_property;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      if (auto* fragment_data = GetScrollableArea().Box().FirstFragment()) {
-        const auto* object_properties = fragment_data->PaintProperties();
-        if (object_properties && object_properties->ScrollbarPaintOffset()) {
+      if (auto* object_properties =
+              GetScrollableArea().Box().FirstFragment().PaintProperties()) {
+        if (object_properties->ScrollbarPaintOffset()) {
           PaintChunkProperties properties(
               context.GetPaintController().CurrentPaintChunkProperties());
           properties.property_tree_state.SetTransform(
