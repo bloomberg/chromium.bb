@@ -237,8 +237,11 @@ void PictureLayerTiling::SetRasterSourceAndResize(
     }
   }
   if (after_bottom > before_bottom) {
+    // Using the smallest horizontal bound here makes sure we don't
+    // create tiles twice and don't iterate into deleted tiles.
+    int boundary_right = std::min(after_right, before_right);
     DCHECK_EQ(after_bottom, before_bottom + 1);
-    for (int i = before_left; i <= before_right; ++i) {
+    for (int i = before_left; i <= boundary_right; ++i) {
       Tile::CreateInfo info = CreateInfoForTile(i, after_bottom);
       if (ShouldCreateTileAt(info))
         CreateTile(info);
