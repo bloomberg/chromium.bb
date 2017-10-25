@@ -1247,6 +1247,11 @@ void RemoteSuggestionsProviderImpl::PrependArticleSuggestion(
   }
 }
 
+void RemoteSuggestionsProviderImpl::
+    RefreshSuggestionsUponPushToRefreshRequest() {
+  RefetchInTheBackground({});
+}
+
 void RemoteSuggestionsProviderImpl::DismissSuggestionFromCategoryContent(
     CategoryContent* content,
     const std::string& id_within_category) {
@@ -1428,6 +1433,9 @@ void RemoteSuggestionsProviderImpl::
     if (!breaking_news_raw_data_provider_->IsListening()) {
       breaking_news_raw_data_provider_->StartListening(
           base::Bind(&RemoteSuggestionsProviderImpl::PrependArticleSuggestion,
+                     base::Unretained(this)),
+          base::Bind(&RemoteSuggestionsProviderImpl::
+                         RefreshSuggestionsUponPushToRefreshRequest,
                      base::Unretained(this)));
     }
   } else {
