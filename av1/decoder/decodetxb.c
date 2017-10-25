@@ -602,7 +602,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   for (c = 0; c < *eob; ++c) {
     const int16_t dqv = (c == 0) ? dequant[0] : dequant[1];
     const int level = levels[scan[c]];
-    const int16_t t = ((level + tcoeffs[scan[c]]) * dqv) >> shift;
+    const tran_low_t t = ((level + tcoeffs[scan[c]]) * dqv) >> shift;
 #if CONFIG_SYMBOLRATE
     av1_record_coeff(counts, level);
 #endif
