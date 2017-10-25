@@ -47,10 +47,6 @@ class BackwardsCharacterIteratorAlgorithm {
 
   PositionTemplate<Strategy> EndPosition() const;
 
-  bool IsInTextSecurityMode() const {
-    return text_iterator_.IsInTextSecurityMode();
-  }
-
  private:
   int offset_;
   int run_offset_;
