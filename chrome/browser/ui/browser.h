@@ -73,7 +73,6 @@ class ScopedKeepAlive;
 class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
-class ValidationMessageBubble;
 
 namespace chrome {
 class BrowserCommandController;
@@ -469,13 +468,6 @@ class Browser : public TabStripModelObserver,
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void ShowValidationMessage(content::WebContents* web_contents,
-                             const gfx::Rect& anchor_in_root_view,
-                             const base::string16& main_text,
-                             const base::string16& sub_text) override;
-  void HideValidationMessage(content::WebContents* web_contents) override;
-  void MoveValidationMessage(content::WebContents* web_contents,
-                             const gfx::Rect& anchor_in_root_view) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
   bool CanDragEnter(content::WebContents* source,
@@ -990,8 +982,6 @@ class Browser : public TabStripModelObserver,
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
-
-  base::WeakPtr<ValidationMessageBubble> validation_message_bubble_;
 
 #if !defined(OS_CHROMEOS)
   SigninViewController signin_view_controller_;

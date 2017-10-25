@@ -801,12 +801,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
-                        OnShowValidationMessage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HideValidationMessage,
-                        OnHideValidationMessage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
-                        OnMoveValidationMessage)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog, OnOpenDateTimeDialog)
 #endif
@@ -1017,8 +1011,6 @@ void WebContentsImpl::CancelActiveAndPendingDialogs() {
   }
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->CancelGuestDialogs();
-  if (delegate_)
-    delegate_->HideValidationMessage(this);
 }
 
 void WebContentsImpl::ClosePage() {
@@ -2772,31 +2764,6 @@ void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
   nfc_host_->GetNFC(std::move(request));
 }
 #endif
-
-void WebContentsImpl::OnShowValidationMessage(
-    RenderViewHostImpl* source,
-    const gfx::Rect& anchor_in_root_view,
-    const base::string16& main_text,
-    const base::string16& sub_text) {
-  // TODO(nick): Should we consider |source| here or pass it to the delegate?
-  if (delegate_)
-    delegate_->ShowValidationMessage(
-        this, anchor_in_root_view, main_text, sub_text);
-}
-
-void WebContentsImpl::OnHideValidationMessage(RenderViewHostImpl* source) {
-  // TODO(nick): Should we consider |source| here or pass it to the delegate?
-  if (delegate_)
-    delegate_->HideValidationMessage(this);
-}
-
-void WebContentsImpl::OnMoveValidationMessage(
-    RenderViewHostImpl* source,
-    const gfx::Rect& anchor_in_root_view) {
-  // TODO(nick): Should we consider |source| here or pass it to the delegate?
-  if (delegate_)
-    delegate_->MoveValidationMessage(this, anchor_in_root_view);
-}
 
 void WebContentsImpl::SetNotWaitingForResponse() {
   if (waiting_for_response_ == false)

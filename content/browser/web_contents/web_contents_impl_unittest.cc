@@ -340,18 +340,8 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
 
 class FakeWebContentsDelegate : public WebContentsDelegate {
  public:
-  FakeWebContentsDelegate()
-      : hide_validation_message_was_called_(false),
-        loading_state_changed_was_called_(false) {}
+  FakeWebContentsDelegate() : loading_state_changed_was_called_(false) {}
   ~FakeWebContentsDelegate() override {}
-
-  void HideValidationMessage(WebContents* web_contents) override {
-    hide_validation_message_was_called_ = true;
-  }
-
-  bool hide_validation_message_was_called() const {
-    return hide_validation_message_was_called_;
-  }
 
   void LoadingStateChanged(WebContents* source,
                            bool to_different_document) override {
@@ -363,7 +353,6 @@ class FakeWebContentsDelegate : public WebContentsDelegate {
   }
 
  private:
-  bool hide_validation_message_was_called_;
   bool loading_state_changed_was_called_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebContentsDelegate);
@@ -1597,22 +1586,6 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
     EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
     EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   }
-
-  contents()->SetDelegate(nullptr);
-}
-
-TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
-  FakeWebContentsDelegate fake_delegate;
-  contents()->SetDelegate(&fake_delegate);
-  EXPECT_FALSE(fake_delegate.hide_validation_message_was_called());
-
-  // Initialize the RenderFrame and then simulate crashing the renderer
-  // process.
-  main_test_rfh()->InitializeRenderFrameIfNeeded();
-  main_test_rfh()->GetProcess()->SimulateCrash();
-
-  // Confirm HideValidationMessage was called.
-  EXPECT_TRUE(fake_delegate.hide_validation_message_was_called());
 
   contents()->SetDelegate(nullptr);
 }

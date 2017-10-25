@@ -290,13 +290,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
                                      blink::WebTextDirection sub_text_hint);
-  void ShowValidationMessage(const blink::WebRect& anchor_in_viewport,
-                             const blink::WebString& main_text,
-                             blink::WebTextDirection main_text_hint,
-                             const blink::WebString& sub_text,
-                             blink::WebTextDirection hint) override;
-  void HideValidationMessage() override;
-  void MoveValidationMessage(const blink::WebRect& anchor_in_viewport) override;
   void SetMouseOverURL(const blink::WebURL& url) override;
   void SetKeyboardFocusURL(const blink::WebURL& url) override;
   bool AcceptsLoadDrops() override;

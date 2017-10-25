@@ -58,8 +58,6 @@ static_library("web_contents_delegate_android") {
   sources = [
     "color_chooser_android.cc",
     "color_chooser_android.h",
-    "validation_message_bubble_android.cc",
-    "validation_message_bubble_android.h",
     "web_contents_delegate_android.cc",
     "web_contents_delegate_android.h",
   ]
@@ -102,7 +100,6 @@ android_library("web_contents_delegate_android_java") {
     "java/src/org/chromium/components/web_contents_delegate_android/ColorPickerSimple.java",
     "java/src/org/chromium/components/web_contents_delegate_android/ColorSuggestion.java",
     "java/src/org/chromium/components/web_contents_delegate_android/ColorSuggestionListAdapter.java",
-    "java/src/org/chromium/components/web_contents_delegate_android/ValidationMessageBubble.java",
     "java/src/org/chromium/components/web_contents_delegate_android/WebContentsDelegateAndroid.java",
     "java/src/org/chromium/components/web_contents_delegate_android/OnColorChangedListener.java",
   ]
@@ -111,7 +108,6 @@ android_library("web_contents_delegate_android_java") {
 generate_jni("web_contents_delegate_android_jni_headers") {
   sources = [
     "java/src/org/chromium/components/web_contents_delegate_android/ColorChooserAndroid.java",
-    "java/src/org/chromium/components/web_contents_delegate_android/ValidationMessageBubble.java",
     "java/src/org/chromium/components/web_contents_delegate_android/WebContentsDelegateAndroid.java",
   ]
   jni_package = "web_contents_delegate_android"

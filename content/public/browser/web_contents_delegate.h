@@ -503,22 +503,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // used.
   virtual gfx::Size GetSizeForNewRenderView(WebContents* web_contents) const;
 
-  // Notification that validation of a form displayed by the |web_contents|
-  // has failed. There can only be one message per |web_contents| at a time.
-  virtual void ShowValidationMessage(WebContents* web_contents,
-                                     const gfx::Rect& anchor_in_root_view,
-                                     const base::string16& main_text,
-                                     const base::string16& sub_text) {}
-
-  // Notification that the delegate should hide any showing form validation
-  // message.
-  virtual void HideValidationMessage(WebContents* web_contents) {}
-
-  // Notification that the form element that triggered the validation failure
-  // has moved.
-  virtual void MoveValidationMessage(WebContents* web_contents,
-                                     const gfx::Rect& anchor_in_root_view) {}
-
   // Returns true if the WebContents is never visible.
   virtual bool IsNeverVisible(WebContents* web_contents);
 

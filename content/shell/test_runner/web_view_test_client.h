@@ -30,11 +30,6 @@ class WebViewTestClient : public blink::WebViewClient {
   ~WebViewTestClient() override;
 
   // WebViewClient overrides needed by WebViewTestProxy.
-  void ShowValidationMessage(const blink::WebRect& anchor_in_root_view,
-                             const blink::WebString& main_message,
-                             blink::WebTextDirection main_message_hint,
-                             const blink::WebString& sub_message,
-                             blink::WebTextDirection sub_message_hint) override;
   void DidChangeContents() override;
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
                              const blink::WebURLRequest& request,

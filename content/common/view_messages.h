@@ -771,22 +771,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_FocusedNodeTouched,
                     bool /* editable */)
 
-// Message sent from the renderer to the browser when an HTML form has failed
-// validation constraints.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowValidationMessage,
-                    gfx::Rect /* anchor rectangle in root view coordinate */,
-                    base::string16 /* validation message */,
-                    base::string16 /* supplemental text */)
-
-// Message sent from the renderer to the browser when a HTML form validation
-// message should be hidden from view.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_HideValidationMessage)
-
-// Message sent from the renderer to the browser when the suggested co-ordinates
-// of the anchor for a HTML form validation message have changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_MoveValidationMessage,
-                    gfx::Rect /* anchor rectangle in root view coordinate */)
-
 // Sent once a paint happens after the first non empty layout. In other words,
 // after the frame widget has painted something.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)

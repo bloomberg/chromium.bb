@@ -129,21 +129,6 @@ class WebViewClient : protected WebWidgetClient {
     return false;
   }
 
-  // Show a notification popup for the specified form validation messages
-  // besides the anchor rectangle. An implementation of this function should
-  // not hide the popup until hideValidationMessage call.
-  virtual void ShowValidationMessage(const WebRect& anchor_in_viewport,
-                                     const WebString& main_text,
-                                     WebTextDirection main_text_dir,
-                                     const WebString& supplemental_text,
-                                     WebTextDirection supplemental_text_dir) {}
-
-  // Hide notifation popup for form validation messages.
-  virtual void HideValidationMessage() {}
-
-  // Move the existing notifation popup to the new anchor position.
-  virtual void MoveValidationMessage(const WebRect& anchor_in_viewport) {}
-
   // UI ------------------------------------------------------------------
 
   // Called when hovering over an anchor with the given URL.

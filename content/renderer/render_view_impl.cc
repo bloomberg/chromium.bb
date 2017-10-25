@@ -1532,33 +1532,6 @@ void RenderViewImpl::SetValidationMessageDirection(
   }
 }
 
-void RenderViewImpl::ShowValidationMessage(
-    const blink::WebRect& anchor_in_viewport,
-    const blink::WebString& main_text,
-    blink::WebTextDirection main_text_hint,
-    const blink::WebString& sub_text,
-    blink::WebTextDirection sub_text_hint) {
-  base::string16 wrapped_main_text = main_text.Utf16();
-  base::string16 wrapped_sub_text = sub_text.Utf16();
-
-  SetValidationMessageDirection(
-      &wrapped_main_text, main_text_hint, &wrapped_sub_text, sub_text_hint);
-
-  Send(new ViewHostMsg_ShowValidationMessage(
-      GetRoutingID(), AdjustValidationMessageAnchor(anchor_in_viewport),
-      wrapped_main_text, wrapped_sub_text));
-}
-
-void RenderViewImpl::HideValidationMessage() {
-  Send(new ViewHostMsg_HideValidationMessage(GetRoutingID()));
-}
-
-void RenderViewImpl::MoveValidationMessage(
-    const blink::WebRect& anchor_in_viewport) {
-  Send(new ViewHostMsg_MoveValidationMessage(
-      GetRoutingID(), AdjustValidationMessageAnchor(anchor_in_viewport)));
-}
-
 void RenderViewImpl::UpdateTargetURL(const GURL& url,
                                      const GURL& fallback_url) {
   GURL latest_url = url.is_empty() ? fallback_url : url;

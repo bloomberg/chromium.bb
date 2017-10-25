@@ -10,7 +10,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/web_contents_delegate_android/color_chooser_android.h"
-#include "components/web_contents_delegate_android/validation_message_bubble_android.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/invalidate_type.h"
@@ -375,30 +374,6 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
   if (obj.is_null())
     return false;
   return Java_WebContentsDelegateAndroid_isFullscreenForTabOrPending(env, obj);
-}
-
-void WebContentsDelegateAndroid::ShowValidationMessage(
-    WebContents* web_contents,
-    const gfx::Rect& anchor_in_root_view,
-    const base::string16& main_text,
-    const base::string16& sub_text) {
-  validation_message_bubble_.reset(new ValidationMessageBubbleAndroid(
-      web_contents->GetNativeView(), main_text, sub_text));
-  MoveValidationMessage(web_contents, anchor_in_root_view);
-}
-
-void WebContentsDelegateAndroid::HideValidationMessage(
-    WebContents* web_contents) {
-  validation_message_bubble_.reset();
-}
-
-void WebContentsDelegateAndroid::MoveValidationMessage(
-    WebContents* web_contents,
-    const gfx::Rect& anchor_in_root_view) {
-  if (!validation_message_bubble_)
-    return;
-  validation_message_bubble_->ShowAtPositionRelativeToAnchor(
-      web_contents->GetNativeView(), anchor_in_root_view);
 }
 
 void WebContentsDelegateAndroid::RequestAppBannerFromDevTools(

@@ -11,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/tab_dialogs_views_mac.h"
-#import "chrome/browser/ui/cocoa/validation_message_bubble_cocoa.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "content/public/browser/web_contents.h"
 
@@ -76,12 +75,4 @@ void TabDialogsCocoa::ShowManagePasswordsBubble(bool user_action) {
 
 void TabDialogsCocoa::HideManagePasswordsBubble() {
   // The bubble is closed when it loses the focus.
-}
-
-base::WeakPtr<ValidationMessageBubble> TabDialogsCocoa::ShowValidationMessage(
-    const gfx::Rect& anchor_in_root_view,
-    const base::string16& main_text,
-    const base::string16& sub_text) {
-  return (new ValidationMessageBubbleCocoa(
-      web_contents_, anchor_in_root_view, main_text, sub_text))->AsWeakPtr();
 }
