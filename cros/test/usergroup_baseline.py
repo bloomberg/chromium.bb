@@ -44,6 +44,8 @@ USER_BASELINE = dict((e.user, e) for e in (
     UserEntry(user='chronos-access', uid=1001, gid=1001),
     UserEntry(user='sshd', uid=204, gid=204, home='/var/empty'),
     UserEntry(user='tss', uid=207, gid=207, home='/var/lib/tpm'),
+    UserEntry(user='dhcp', uid=224, gid=224,
+              home={'/var/lib/dhcp', '/dev/null'}),
     UserEntry(user='goofy', encpasswd='x', uid=248, gid=248,
               home='/home/goofy', shell='/bin/bash'),
     UserEntry(user='android-root', uid=655360, gid=655360),

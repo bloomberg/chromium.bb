@@ -446,7 +446,11 @@ class UserGroupTest(image_test_lib.ImageTestCase):
       logging.error('Expected gid %d for user "%s", got %d.',
                     expected.gid, expected.user, actual.gid)
 
-    if expected.home != actual.home:
+    if isinstance(expected.home, set):
+      valid_home = actual.home in expected.home
+    else:
+      valid_home = actual.home == expected.home
+    if not valid_home:
       matched = False
       logging.error('Expected home "%s" for user "%s", got "%s".',
                     expected.home, expected.user, actual.home)
