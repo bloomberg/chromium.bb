@@ -15,6 +15,10 @@
 
 namespace profiling {
 
+namespace {
+const int kTimeoutDurationMs = 10000;
+}  // namespace
+
 ProfilingClient::ProfilingClient() : binding_(this) {}
 
 ProfilingClient::~ProfilingClient() {
@@ -52,7 +56,12 @@ void ProfilingClient::StartProfiling(mojo::ScopedHandle memlog_sender_pipe) {
 
   StreamHeader header;
   header.signature = kStreamSignature;
-  memlog_sender_pipe_->Send(&header, sizeof(header));
+  MemlogSenderPipe::Result result =
+      memlog_sender_pipe_->Send(&header, sizeof(header), kTimeoutDurationMs);
+  if (result != MemlogSenderPipe::Result::kSuccess) {
+    memlog_sender_pipe_->Close();
+    return;
+  }
 
   InitAllocatorShim(memlog_sender_pipe_.get());
 }
