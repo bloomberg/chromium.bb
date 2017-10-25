@@ -38,11 +38,6 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
 
 NGFragmentBuilder::~NGFragmentBuilder() {}
 
-NGFragmentBuilder& NGFragmentBuilder::SetBlockSize(LayoutUnit block_size) {
-  block_size_ = block_size;
-  return *this;
-}
-
 NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
     LayoutUnit intrinsic_block_size) {
   intrinsic_block_size_ = intrinsic_block_size;

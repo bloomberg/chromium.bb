@@ -69,10 +69,6 @@ void NGLineBoxFragmentBuilder::SetMetrics(const NGLineHeightMetrics& metrics) {
   metrics_ = metrics;
 }
 
-void NGLineBoxFragmentBuilder::SetBlockSize(LayoutUnit block_size) {
-  block_size_ = block_size;
-}
-
 void NGLineBoxFragmentBuilder::AddPositionedFloat(
     const NGPositionedFloat& positioned_float) {
   positioned_floats_.push_back(positioned_float);
