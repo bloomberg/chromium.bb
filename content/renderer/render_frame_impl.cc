@@ -535,7 +535,7 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<PreviewsState>(info.url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
-      should_check_main_world_csp);
+      should_check_main_world_csp, false /* started_from_context_menu */);
 }
 
 WebFrameLoadType ReloadFrameLoadTypeFor(
@@ -3614,7 +3614,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     info.source_location = pending_navigation_info_->source_location;
 
     pending_navigation_info_.reset(nullptr);
-
     BeginNavigation(info);
   }
 

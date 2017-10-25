@@ -1800,13 +1800,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
                               WindowOpenDisposition::NEW_WINDOW,
-                              ui::PAGE_TRANSITION_LINK, "", true);
+                              ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
+                              true /* started_from_context_menu */);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       OpenURLWithExtraHeaders(params_.link_url, GURL(),
                               WindowOpenDisposition::OFF_THE_RECORD,
-                              ui::PAGE_TRANSITION_LINK, "", true);
+                              ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
+                              true /* started_from_context_menu */);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
@@ -2251,7 +2253,8 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
 void RenderViewContextMenu::ExecOpenLinkNewTab() {
   OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
                           WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                          ui::PAGE_TRANSITION_LINK, "", true);
+                          ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
+                          true /* started_from_context_menu */);
 }
 
 void RenderViewContextMenu::ExecOpenBookmarkApp() {

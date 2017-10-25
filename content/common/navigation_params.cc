@@ -35,7 +35,8 @@ CommonNavigationParams::CommonNavigationParams()
       previews_state(PREVIEWS_UNSPECIFIED),
       navigation_start(base::TimeTicks::Now()),
       method("GET"),
-      should_check_main_world_csp(CSPDisposition::CHECK) {}
+      should_check_main_world_csp(CSPDisposition::CHECK),
+      started_from_context_menu(false) {}
 
 CommonNavigationParams::CommonNavigationParams(
     const GURL& url,
@@ -53,7 +54,8 @@ CommonNavigationParams::CommonNavigationParams(
     std::string method,
     const scoped_refptr<ResourceRequestBody>& post_data,
     base::Optional<SourceLocation> source_location,
-    CSPDisposition should_check_main_world_csp)
+    CSPDisposition should_check_main_world_csp,
+    bool started_from_context_menu)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -69,7 +71,8 @@ CommonNavigationParams::CommonNavigationParams(
       method(method),
       post_data(post_data),
       source_location(source_location),
-      should_check_main_world_csp(should_check_main_world_csp) {
+      should_check_main_world_csp(should_check_main_world_csp),
+      started_from_context_menu(started_from_context_menu) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {
     NOTREACHED();

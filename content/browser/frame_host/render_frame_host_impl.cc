@@ -3183,7 +3183,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
       GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */);
+      CSPDisposition::CHECK /* should_check_main_world_csp */,
+      false /* started_from_context_menu */);
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, mojo::ScopedDataPipeConsumerHandle(),
                      common_params, RequestNavigationParams(), false,

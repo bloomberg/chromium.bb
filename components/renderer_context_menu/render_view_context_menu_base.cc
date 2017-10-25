@@ -357,8 +357,9 @@ void RenderViewContextMenuBase::OpenURL(const GURL& url,
                                         const GURL& referring_url,
                                         WindowOpenDisposition disposition,
                                         ui::PageTransition transition) {
-  OpenURLWithExtraHeaders(url, referring_url, disposition, transition, "",
-                          false);
+  OpenURLWithExtraHeaders(url, referring_url, disposition, transition,
+                          "" /* extra_headers */,
+                          false /* started_from_context_menu */);
 }
 
 void RenderViewContextMenuBase::OpenURLWithExtraHeaders(

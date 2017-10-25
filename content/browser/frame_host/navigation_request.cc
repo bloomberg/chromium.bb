@@ -552,7 +552,7 @@ void NavigationRequest::CreateNavigationHandle() {
                                        common_params_.navigation_type),
                                    common_params_.navigation_start,
                                    nav_entry_id_,
-                                   false,  // started_in_context_menu
+                                   common_params_.started_from_context_menu,
                                    common_params_.should_check_main_world_csp,
                                    begin_params_.is_form_submission);
 
