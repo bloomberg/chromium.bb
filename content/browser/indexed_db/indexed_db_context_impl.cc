@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -129,7 +130,8 @@ IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    factory_ = new IndexedDBFactoryImpl(this);
+    factory_ =
+        new IndexedDBFactoryImpl(this, base::MakeUnique<base::DefaultClock>());
   }
   return factory_.get();
 }

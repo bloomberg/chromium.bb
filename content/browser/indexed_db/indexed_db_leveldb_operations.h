@@ -9,12 +9,14 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 // Contains common operations for LevelDBTransactions and/or LevelDBDatabases.
 
 namespace content {
+class LevelDBDatabase;
 class LevelDBIterator;
 class LevelDBTransaction;
 
@@ -126,6 +128,12 @@ WARN_UNUSED_RESULT bool UpdateBlobKeyGeneratorCurrentNumber(
     LevelDBTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number);
+
+WARN_UNUSED_RESULT leveldb::Status GetEarliestSweepTime(
+    LevelDBDatabase* db,
+    base::Time* earliest_sweep);
+
+void SetEarliestSweepTime(LevelDBTransaction* txn, base::Time earliest_sweep);
 
 }  // namespace indexed_db
 }  // namespace content

@@ -9,16 +9,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/default_clock.h"
-#include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
@@ -46,17 +48,54 @@ const int kTombstoneSweeperRoundIterations = 1000;
 // The maximum total iterations for the tombstone sweeper.
 const int kTombstoneSweeperMaxIterations = 10 * 1000 * 1000;
 
+constexpr const base::TimeDelta kMinEarliestOriginSweepFromNow =
+    base::TimeDelta::FromDays(1);
+static_assert(kMinEarliestOriginSweepFromNow <
+                  IndexedDBFactoryImpl::kMaxEarliestOriginSweepFromNow,
+              "Min < Max");
+
+constexpr const base::TimeDelta kMinEarliestGlobalSweepFromNow =
+    base::TimeDelta::FromMinutes(10);
+static_assert(kMinEarliestGlobalSweepFromNow <
+                  IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow,
+              "Min < Max");
+
+base::Time GenerateNextOriginSweepTime(base::Time now) {
+  uint64_t range =
+      IndexedDBFactoryImpl::kMaxEarliestOriginSweepFromNow.InMilliseconds() -
+      kMinEarliestOriginSweepFromNow.InMilliseconds();
+  int64_t rand_millis = kMinEarliestOriginSweepFromNow.InMilliseconds() +
+                        static_cast<int64_t>(base::RandGenerator(range));
+  return now + base::TimeDelta::FromMilliseconds(rand_millis);
+}
+
+base::Time GenerateNextGlobalSweepTime(base::Time now) {
+  uint64_t range =
+      IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow.InMilliseconds() -
+      kMinEarliestGlobalSweepFromNow.InMilliseconds();
+  int64_t rand_millis = kMinEarliestGlobalSweepFromNow.InMilliseconds() +
+                        static_cast<int64_t>(base::RandGenerator(range));
+  return now + base::TimeDelta::FromMilliseconds(rand_millis);
+}
+
+}  // namespace
+
 const base::Feature kIDBTombstoneStatistics{"IDBTombstoneStatistics",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIDBTombstoneDeletion{"IDBTombstoneDeletion",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-}  // namespace
+constexpr const base::TimeDelta
+    IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow;
+constexpr const base::TimeDelta
+    IndexedDBFactoryImpl::kMaxEarliestOriginSweepFromNow;
 
-IndexedDBFactoryImpl::IndexedDBFactoryImpl(IndexedDBContextImpl* context)
-    : context_(context) {
-}
+IndexedDBFactoryImpl::IndexedDBFactoryImpl(IndexedDBContextImpl* context,
+                                           std::unique_ptr<base::Clock> clock)
+    : context_(context),
+      clock_(std::move(clock)),
+      earliest_sweep_(GenerateNextGlobalSweepTime(clock_->Now())) {}
 
 IndexedDBFactoryImpl::~IndexedDBFactoryImpl() {
 }
@@ -128,20 +167,49 @@ void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {
   if (!HasLastBackingStoreReference(origin))
     return;
 
+  base::ScopedClosureRunner maybe_close_backing_store_runner(
+      base::BindOnce(&IndexedDBFactoryImpl::MaybeCloseBackingStore,
+                     base::Unretained(this), origin));
+
+  base::Time now = clock_->Now();
+
+  // Check that the last sweep hasn't run too recently.
+  if (earliest_sweep_ > now)
+    return;
+
   bool tombstone_stats_enabled =
       base::FeatureList::IsEnabled(kIDBTombstoneStatistics);
   bool tombstone_deletion_enabled =
       base::FeatureList::IsEnabled(kIDBTombstoneDeletion);
 
-  if (tombstone_stats_enabled == tombstone_deletion_enabled) {
-    // We can't have both stats and deletion, so NOOP if both are enabled.
-    MaybeCloseBackingStore(origin);
+  // After this check, exactly one of the flags must be true.
+  if (tombstone_stats_enabled == tombstone_deletion_enabled)
     return;
-  }
+
   scoped_refptr<IndexedDBBackingStore> store = backing_store_map_[origin];
-  // TODO(next patch in this cl): Create logic about which tasks get put here.
-  // * Min time since last sweep,
-  // * Only one sweep at a time for a context (or globaly?)
+
+  base::Time origin_earliest_sweep;
+  leveldb::Status s =
+      indexed_db::GetEarliestSweepTime(store->db(), &origin_earliest_sweep);
+  // TODO(dmurph): Log this or report to UMA.
+  if (!s.ok())
+    return;
+
+  // This origin hasn't been swept too recently.
+  if (origin_earliest_sweep > now)
+    return;
+
+  // A sweep will happen now, so reset the sweep timers.
+  earliest_sweep_ = GenerateNextGlobalSweepTime(now);
+  scoped_refptr<LevelDBTransaction> txn =
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(store->db());
+  indexed_db::SetEarliestSweepTime(txn.get(), GenerateNextOriginSweepTime(now));
+  s = txn->Commit();
+
+  // TODO(dmurph): Log this or report to UMA.
+  if (!s.ok())
+    return;
+
   std::list<std::unique_ptr<PreCloseTask>> tasks;
   IndexedDBTombstoneSweeper::Mode mode =
       tombstone_stats_enabled ? IndexedDBTombstoneSweeper::Mode::STATISTICS
@@ -153,9 +221,7 @@ void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {
   // more than X deletions.
 
   store->SetPreCloseTaskList(base::MakeUnique<IndexedDBPreCloseTaskQueue>(
-      std::move(tasks),
-      base::BindOnce(&IndexedDBFactoryImpl::MaybeCloseBackingStore, this,
-                     origin),
+      std::move(tasks), maybe_close_backing_store_runner.Release(),
       base::TimeDelta::FromSeconds(kPreCloseTasksMaxRunPeriodSeconds),
       base::MakeUnique<base::OneShotTimer>()));
   store->StartPreCloseTasks();
@@ -520,10 +586,13 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
 
   const auto& it2 = backing_store_map_.find(origin);
   if (it2 != backing_store_map_.end()) {
-    it2->second->close_timer()->Stop();
+    // Grab a refptr so the completion of the preclose task list doesn't close
+    // the backing store.
+    scoped_refptr<IndexedDBBackingStore> backing_store = it2->second;
+    backing_store->close_timer()->Stop();
     if (it2->second->pre_close_task_queue()) {
-      it2->second->pre_close_task_queue()->StopForNewConnection();
-      it2->second->SetPreCloseTaskList(nullptr);
+      backing_store->pre_close_task_queue()->StopForNewConnection();
+      backing_store->SetPreCloseTaskList(nullptr);
     }
     return it2->second;
   }

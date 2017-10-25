@@ -206,6 +206,11 @@ class LiveBlobJournalKey {
   static std::string Encode();
 };
 
+class EarliestSweepKey {
+ public:
+  static std::string Encode();
+};
+
 class DatabaseFreeListKey {
  public:
   DatabaseFreeListKey();

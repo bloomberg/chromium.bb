@@ -423,5 +423,29 @@ bool UpdateBlobKeyGeneratorCurrentNumber(
   return true;
 }
 
+Status GetEarliestSweepTime(LevelDBDatabase* db, base::Time* earliest_sweep) {
+  const std::string earliest_sweep_time_key = EarliestSweepKey::Encode();
+  *earliest_sweep = base::Time();
+  bool found = false;
+  int64_t time_micros = 0;
+  Status s =
+      indexed_db::GetInt(db, earliest_sweep_time_key, &time_micros, &found);
+  if (!s.ok())
+    return s;
+  if (!found)
+    time_micros = 0;
+
+  DCHECK_GE(time_micros, 0);
+  *earliest_sweep += base::TimeDelta::FromMicroseconds(time_micros);
+
+  return s;
+}
+
+void SetEarliestSweepTime(LevelDBTransaction* txn, base::Time earliest_sweep) {
+  const std::string earliest_sweep_time_key = EarliestSweepKey::Encode();
+  int64_t time_micros = (earliest_sweep - base::Time()).InMicroseconds();
+  indexed_db::PutInt(txn, earliest_sweep_time_key, time_micros);
+}
+
 }  // namespace indexed_db
 }  // namespace content

@@ -153,6 +153,7 @@ key                                 | value
 «0, 0, 0, 2»                        | data format version (Int) [`DataVersionKey`]
 «0, 0, 0, 3»                        | primary BlobJournal [`BlobJournalKey`]
 «0, 0, 0, 4»                        | live BlobJournal [`LiveBlobJournalKey`]
+«0, 0, 0, 5»                        | earliest sweep time (microseconds) (Int) [`EarliestSweepKey`]
 «0, 0, 0, 100, database id (VarInt)» | Existence implies the database id is in the free list  [`DatabaseFreeListKey`] - _obsolete_
 «0, 0, 0, 201, origin (StringWithLength), database name (StringWithLength)» | Database id (Int) [`DatabaseNameKey`]
 

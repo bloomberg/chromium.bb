@@ -226,11 +226,13 @@ void IndexedDBTombstoneSweeper::RecordUMAStats(
     size_histogram->Add(metrics_.seen_tombstones_size);
 
   // We put our max at 20 instead of 100 to reduce the number of buckets.
-  const static int kIndexPercentageBucketCount = 20;
-  LOCAL_HISTOGRAM_ENUMERATION(
-      "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent",
-      indices_scanned_ * kIndexPercentageBucketCount / total_indices_,
-      kIndexPercentageBucketCount + 1);
+  if (total_indices_ > 0) {
+    const static int kIndexPercentageBucketCount = 20;
+    LOCAL_HISTOGRAM_ENUMERATION(
+        "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent",
+        indices_scanned_ * kIndexPercentageBucketCount / total_indices_,
+        kIndexPercentageBucketCount + 1);
+  }
 }
 
 leveldb::Status IndexedDBTombstoneSweeper::FlushDeletions() {
