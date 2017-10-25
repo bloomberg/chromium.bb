@@ -14,10 +14,6 @@
 #include "base/files/file_path.h"
 #endif  // defined(OS_MACOSX)
 
-namespace sandbox {
-struct SandboxInterfaceInfo;
-}  // namespace sandbox
-
 namespace service_manager {
 
 // Interface to the service manager sandboxes across the various platforms.
@@ -73,8 +69,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-  static bool Initialize(service_manager::SandboxType sandbox_type,
-                         sandbox::SandboxInterfaceInfo* sandbox_info);
+// TODO(tsepez): move win code here.
 #endif  // defined(OS_WIN)
 };
 
