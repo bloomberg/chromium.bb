@@ -1528,56 +1528,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("/prerender/prerender_page.html");
 }
 
-// Checks that the PrefetchTTFCP histogram is recorded across the client
-// redirect when the referring page is Google.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderLocationReplaceGWSHistograms) {
-  DisableJavascriptCalls();
-
-  // The loader page should look like Google.
-  static const char kGoogleDotCom[] = "www.google.com";
-  SetLoaderHostOverride(kGoogleDotCom);
-  set_loader_path("/prerender/prerender_loader_with_replace_state.html");
-
-  GURL dest_url =
-      GetCrossDomainTestUrl("prerender/prerender_deferred_image.html");
-
-  GURL prerender_url = embedded_test_server()->GetURL(
-      "/prerender/prerender_location_replace.html?" +
-      net::EscapeQueryParamValue(dest_url.spec(), false) + "#prerender");
-  GURL::Replacements replacements;
-  replacements.SetHostStr(kGoogleDotCom);
-  prerender_url = prerender_url.ReplaceComponents(replacements);
-
-  // The prerender will not completely load until after the swap, so wait for a
-  // title change before calling DidPrerenderPass.
-  std::unique_ptr<TestPrerender> prerender =
-      PrerenderTestURL(prerender_url, FINAL_STATUS_USED, 1);
-  WaitForASCIITitle(prerender->contents()->prerender_contents(), kReadyTitle);
-  EXPECT_TRUE(DidPrerenderPass(prerender->contents()->prerender_contents()));
-  EXPECT_EQ(1, prerender->number_of_loads());
-
-  GURL navigate_url = embedded_test_server()->GetURL(
-      "/prerender/prerender_location_replace.html?" +
-      net::EscapeQueryParamValue(dest_url.spec(), false) + "#navigate");
-  navigate_url = navigate_url.ReplaceComponents(replacements);
-
-  // Open the URL and wait for the FCP.
-  test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
-      test_utils::FirstContentfulPaintManagerWaiter::Create(
-          GetPrerenderManager());
-  current_browser()->OpenURL(OpenURLParams(navigate_url, Referrer(),
-                                           WindowOpenDisposition::CURRENT_TAB,
-                                           ui::PAGE_TRANSITION_TYPED, false));
-  fcp_waiter->Wait();
-
-  // The client redirect changes the PageLoadExtraInfo.start_url and hence the
-  // past navigation cannot be found for the histogram to be recorded as
-  // PrefetchTTFCP.Warm.
-  histogram_tester().ExpectTotalCount(
-      "Prerender.gws_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
-}
-
 // Checks that client-issued redirects work with prerendering.
 // This version navigates to the final destination page, rather than the
 // page which does the redirection via a mouse click.
