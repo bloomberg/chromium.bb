@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Submit</translation>
+<translation id="2675319268637823299">An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL" />.
+    All users must sign out to continue.</translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING" />. You will be signed out.</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -96,6 +98,7 @@
 <translation id="3126069444801937830">Restart to update</translation>
 <translation id="3147142846278915599">Launcher (syncing apps...)</translation>
 <translation id="315116470104423982">Mobile data</translation>
+<translation id="3153444934357957346">You can only have up to <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts in multiple sign-in.</translation>
 <translation id="3236488194889173876">No mobile network available</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="332587331255250389">Please replace the battery</translation>
@@ -104,6 +107,7 @@
 <translation id="3371140690572404006">USB-C device (right-hand-side front port)</translation>
 <translation id="3400357268283240774">Additional settings</translation>
 <translation id="3445925074670675829">USB-C device</translation>
+<translation id="3465566417615315331">Click your photo</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
@@ -112,10 +116,10 @@
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3626281679859535460">Brightness</translation>
+<translation id="3631369015426612114">Allow notifications from the following</translation>
 <translation id="3712407551474845318">Capture region</translation>
 <translation id="371370241367527062">Front microphone</translation>
 <translation id="3771549900096082774">High contrast mode</translation>
-<translation id="3775358506042162758">You can only have up to three accounts in multiple sign-in.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lock</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>
@@ -134,6 +138,7 @@
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Assistant is loading...</translation>
 <translation id="4378551569595875038">Connecting...</translation>
+<translation id="4379531060876907730">These are your stylus tools</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -203,6 +208,7 @@
 <translation id="632744581670418035">Keyboard overlay</translation>
 <translation id="639644700271529076">CAPS LOCK is off</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">All finished</translation>
 <translation id="6452181791372256707">Reject</translation>
 <translation id="6453179446719226835">Language has been changed</translation>
 <translation id="6459472438155181876">Extending screen to <ph name="DISPLAY_NAME" /></translation>
@@ -278,7 +284,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="8308637677604853869">Previous menu</translation>
 <translation id="8351131234907093545">Create note</translation>
 <translation id="8392234662362215700">Tap Control-Shift-Space to switch keyboard layout.</translation>
-<translation id="8392688371657486010">You have no notifications</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433186206711564395">Network settings</translation>
 <translation id="8433977262951327081">The shortcut to show the input options menu bubble in the shelf has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
@@ -297,6 +302,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="8825534185036233643">Mirroring with more than two displays is not supported.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">App does not support split-screen.</translation>
 <translation id="8878886163241303700">Extending screen</translation>
 <translation id="8921624153894383499">The Google Assistant doesn’t speak this language.</translation>
 <translation id="8938800817013097409">USB-C device (right port in the back)</translation>
@@ -308,6 +314,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="9091626656156419976">Removed display <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Unlock</translation>
 <translation id="9151726767154816831">Restart and powerwash to update</translation>
+<translation id="9181036778675416867">Tap the stylus button on the shelf to take a note or screenshot, or to use the assistant, laser pointer or magnifying glass.</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>

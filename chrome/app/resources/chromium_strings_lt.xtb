@@ -86,7 +86,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3762167353400286894">„Chromium“ OS pateikiama šia kalba</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE" />“ – „Chromium“</translation>
-<translation id="3849925841547750267">Apgailestaujame, bet „Mozilla Firefox“ nustatymai nepasiekiami, kol paleista ši naršyklė. Jei norite importuoti šiuos nustatymus į „Chromium“, išsaugokite darbą ir uždarykite visus „Firefox“ langus. Tada spustelėkite „Tęsti“.</translation>
 <translation id="3852700440713538496">„Chromium“ prisegimas prie užduočių juostos</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="390894725198123737">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chromium“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
@@ -170,7 +169,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="6505742536731484931">„Chromium“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine.</translation>
 <translation id="6510925080656968729">Pašalinti „Chromium“</translation>
 <translation id="6526111688217511984">„Chromium“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
-<translation id="6638567566961868659">Žymes rasite „Chromium“ meniu arba žymių juostoje.</translation>
 <translation id="6676384891291319759">Interneto prieiga</translation>
 <translation id="6717134281241384636">Jūsų profilis nenaudojamas, nes jis iš naujesnės versijos „Chromium“.
 
@@ -224,7 +222,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="7975919845073681630">Tai yra antrinis „Chromium“ diegimas, todėl ji negali būti nustatyta kaip numatytoji naršyklė.</translation>
 <translation id="7979877361127045932">Paslėpti „Chromium“ meniu elementą</translation>
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME" />“ kanalą...</translation>
-<translation id="8134284582177628525">Jei bendrinate šį kompiuterį su <ph name="PROFILE_NAME" />, pridėkite save prie „Chromium“, kad galėtumėte atskirai naršyti. Arba atjunkite to asmens „Google“ paskyrą.</translation>
 <translation id="8157153840442649507">„Chromium“ pateikiama šia kalba</translation>
 <translation id="81770708095080097">Šis failas pavojingas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="8222496066431494154">Įdiekite „Chromium“ telefone. Išsiųsime SMS pranešimą paskyros atkūrimo telefono numeriu: <ph name="PHONE_NUMBER" /></translation>

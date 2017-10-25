@@ -86,7 +86,6 @@
 <translation id="3762167353400286894">આ ભાષામાં Chromium OS પ્રદર્શિત થાય છે</translation>
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">દુર્ભાગ્યપણે, તમારી Mozilla Firefox સેટિંગ્સ ઉપલબ્ધ નથી જ્યારે કે બ્રાઉઝર ચાલી રહ્યું છે. તે સેટિંગ્સને Chromium પર આયાત કરવા માટે, તમારું કાર્ય સાચવો અને બધી Firefox વિંડોને બંધ કરો. પછી ચાલુ રાખો ક્લિક કરો.</translation>
 <translation id="3852700440713538496">તમારા ટાસ્કબારમાં Chromium ને પિન કરો</translation>
 <translation id="3889543394854987837">Chromium ને ખોલવા માટે તમારા નામને ક્લિક કરો અને બ્રાઉઝ કરવાનું પ્રારંભ કરો.</translation>
 <translation id="390894725198123737">Mac પર, પાસવર્ડ્સ તમારા કીચેન પર સાચવી શકાય છે અને આ OS X એકાઉન્ટ શેર કરતાં અન્ય Chromium વપરાશકર્તાઓ દ્વારા ઍક્સેસ અથવા સમન્વયિત કરી શકાય છે.</translation>
@@ -170,7 +169,6 @@
 <translation id="6505742536731484931">Chromiumને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6510925080656968729">Chromium ને અનઇન્સ્ટોલ કરો</translation>
 <translation id="6526111688217511984">ફાઇલો ડાઉનલોડ કરવા માટે Chromium ને સ્ટોરેજ ઍક્સેસની જરૂર છે.</translation>
-<translation id="6638567566961868659">Chromium મેનૂમાં અથવા બુકમાર્ક્સ બાર પર તમારા બુકમાર્ક્સ શોધો.</translation>
 <translation id="6676384891291319759">ઇંટરનેટ ઍક્સેસ કરો</translation>
 <translation id="6717134281241384636">તમારી પ્રોફાઇલનો ઉપયોગ કરી શકાતો નથી કારણ કે તે Chromium નાં નવા સંસ્કરણ તરફથી છે.
 
@@ -218,13 +216,13 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7747138024166251722">ઇન્સ્ટોલર અસ્થાયી ડાયરેક્ટરી બનાવી શક્યું નથી. કૃપા કરીને ખાલી ડિસ્ક સ્પેસ માટે અને સૉફ્ટવેર ઇન્સ્ટોલ કરવાની પરવાનગી માટે તપાસો.</translation>
 <translation id="7756122083761163394">આ વ્યક્તિનો બ્રાઉઝિંગ ડેટા આ ઉપકરણમાંથી કાઢી નાખવામાં આવશે. આ ડેટા પાછો મેળવવા માટે, Chromeમાં $2 તરીકે સાઇન ઇન કરો.</translation>
 <translation id="7774736947049807614">પ્રમાણીકરણ પ્રમાણપત્ર નિષ્ફળ થયું. કૃપા કરીને Chromiumમાં ફરીથી <ph name="USER_NAME" /> તરીકે સાઇન ઇન કરો અથવા વધુ માહિતી માટે તમારા વ્યવસ્થાપકનો સંપર્ક કરો. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7867198900892795913">Chromium નવીનતમ વર્ઝન પર અપડેટ ન કરી શક્યું, તેથી તમે નવી સુવિધાઓ અને સુરક્ષાના સુધારા ચૂકી રહ્યા છો.</translation>
 <translation id="7937630085815544518">તમે Chromium માં <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન કર્યું હતું. ફરીથી સાઇન ઇન કરવા માટે કૃપા કરીને એ જ એકાઉન્ટનો ઉપયોગ કરો.</translation>
 <translation id="795025003224538582">પુનઃપ્રારંભ કરશો નહીં</translation>
 <translation id="7962572577636132072">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા સૌથી તાજું સંસ્કરણ રહે છે.</translation>
 <translation id="7975919845073681630">આ Google Chrome નું દ્વિતીય ઇન્સ્ટૉલેશન છે અને આને તમારું ડિફૉલ્ટ બ્રાઉઝર બનાવી શકાતું નથી.</translation>
 <translation id="7979877361127045932">Chromium મેનૂમાં છુપાવો</translation>
 <translation id="8030318113982266900">તમારા ઉપકરણને <ph name="CHANNEL_NAME" /> ચેનલ પર અપડેટ કરી રહ્યાં છે...</translation>
-<translation id="8134284582177628525">જો તમે <ph name="PROFILE_NAME" /> સાથે આ કમ્પ્યુટર શેર કરો છો, તો અલગથી બ્રાઉઝ કરવા માટે તમને પોતાને Chromium પર ઉમેરો. અન્યથા તેઓનું Google એકાઉન્ટ ડિસ્કનેક્ટ કરો.</translation>
 <translation id="8157153840442649507">આ ભાષામાં Chromium પ્રદર્શિત થાય છે</translation>
 <translation id="81770708095080097">આ ફાઇલ જોખમી છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
 <translation id="8222496066431494154">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા એકાઉન્ટ પુનઃપ્રાપ્તિ ફોન નંબર પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
@@ -250,6 +248,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8862326446509486874">તમારી પાસે સિસ્ટમ-સ્તરનાં ઇન્સ્ટોલ માટે ઉચિત અધિકારો નથી. વ્યવસ્થાપક તરીકે ઇન્સ્ટોલરને ફરીથી ચલાવવનો પ્રયાસ કરો.</translation>
 <translation id="8897323336392112261">જ્યારે તમે Chromium શરૂ કરો અથવા હોમ બટન ક્લિક કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="8907580949721785412">Chromium પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે. આની મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ લખો.</translation>
+<translation id="8941642502866065432">Chromium અપડેટ કરી શકતાં નથી</translation>
 <translation id="894903460958736500">તમારા કમ્પ્યુટર પર ચાલતું સૉફ્ટવેર Chromium સાથે અસંગત છે.</translation>
 <translation id="8968921422458636175">Chromium આ પાસવર્ડ <ph name="SAVED_PASSWORD_LINK" />માં સાચવશે. તમારે તેને યાદ રાખવાની જરૂર નથી.</translation>
 <translation id="8974095189086268230">Chromium OS એ વધારાનાં <ph name="BEGIN_LINK_CROS_OSS" />ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_CROS_OSS" /> દ્વારા શક્ય બનાવ્યું છે.</translation>

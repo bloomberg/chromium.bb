@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Mahina ang signal</translation>
 <translation id="1293264513303784526">USB-C device (port sa kaliwa)</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1383876407941801731">Hanapin</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
 <translation id="2865888419503095837">Impormasyon ng network</translation>
 <translation id="2872961005593481000">Shut down</translation>
+<translation id="2903844815300039659">Nakakonekta sa <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Ibinabahagi mo ang iyong screen</translation>
 <translation id="2942516765047364088">Posisyon ng shelf</translation>
 <translation id="2946119680249604491">Magdagdag ng koneksyon</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">I-restart upang mag-update</translation>
 <translation id="3147142846278915599">Launcher (nagsi-sync ng mga app...)</translation>
 <translation id="315116470104423982">Data sa mobile</translation>
+<translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="332587331255250389">Pakipalitan ang baterya</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
 <translation id="3400357268283240774">Mga karagdagang setting</translation>
 <translation id="3445925074670675829">USB-C device</translation>
+<translation id="3465566417615315331">I-click ang iyong larawan</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3510164367642747937">I-highlight ang cursor ng mouse</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Nagkonekta ng braille display.</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3626281679859535460">Tingkad</translation>
+<translation id="3631369015426612114">Payagan ang mga notification mula sa mga sumusunod</translation>
 <translation id="3712407551474845318">I-capture ang rehiyon</translation>
 <translation id="371370241367527062">Mikropono sa harap</translation>
 <translation id="3771549900096082774">High Contrast Mode</translation>
-<translation id="3775358506042162758">Maaari ka lang magkaroon ng hanggang sa tatlong account sa multiple na pag-sign-in.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">I-lock</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
+<translation id="4072264167173457037">Katamtaman ang signal</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Naglo-load ang Assistant...</translation>
 <translation id="4378551569595875038">Kumokonekta...</translation>
+<translation id="4379531060876907730">Ito ang iyong mga stylus tool</translation>
 <translation id="4421231901400348175">Pagbabahagi ng kontrol sa iyong screen gamit ang <ph name="HELPER_NAME" /> sa pamamagitan ng Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="776344839111254542">I-click upang tingnan ang mga detalye ng update</translation>
 <translation id="7798302898096527229">Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> at <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Malakas ang signal</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7977927628060636163">Naghahanap ng mga mobile network...</translation>
 <translation id="7982789257301363584">Network</translation>
@@ -274,7 +281,6 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="8308637677604853869">Nakaraang menu</translation>
 <translation id="8351131234907093545">Gumawa ng tala</translation>
 <translation id="8392234662362215700">Pindutin ang Control-Shift-Space upang magpalit ng layout ng keyboard.</translation>
-<translation id="8392688371657486010">Wala kang mga notification</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433186206711564395">Mga setting ng network</translation>
 <translation id="8433977262951327081">Napalitan na ang shortcut para sa pagpapakita ng bubble na menu ng mga opsyon sa input sa shelf. Pakigamit ang <ph name="NEW_SHORTCUT" /> sa halip na <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Maaaring hatiin ang mga kasunod na notification, window at dialog sa pagitan ng 
 <translation id="9091626656156419976">Naalis ang display na <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">I-unlock</translation>
 <translation id="9151726767154816831">I-restart at i-powerwash upang i-update</translation>
+<translation id="9181036778675416867">I-tap ang button ng stylus sa shelf upang magsulat ng tala, mag-screenshot, gamitin ang assistant, laser pointer, o magnifying glass.</translation>
 <translation id="9194617393863864469">Mag-sign in ng isa pang user...</translation>
 <translation id="9201131092683066720">Ang baterya ay <ph name="PERCENTAGE" />% na puno.</translation>
 <translation id="9210037371811586452">Lumalabas sa unified desktop mode</translation>

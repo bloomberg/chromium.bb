@@ -84,7 +84,6 @@
 <translation id="3762167353400286894">Chromium OS vises på dette språket</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3849925841547750267">Mozilla Firefox-innstillingene dine er dessverre ikke tilgjengelige når den nettleseren brukes. Hvis du vil installere de innstillingene til Chromium, må du lagre arbeidet ditt og lukke alle Firefox-vinduer. Klikk deretter på Fortsett.</translation>
 <translation id="3852700440713538496">Fest Chromium til oppgavelinjen</translation>
 <translation id="3889543394854987837">Klikk på navnet ditt for å åpne Chromium og starte surfingen.</translation>
 <translation id="390894725198123737">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
@@ -168,7 +167,6 @@
 <translation id="6505742536731484931">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="6526111688217511984">Chromium må ha lagringstilgang for å laste ned filer.</translation>
-<translation id="6638567566961868659">Finn bokmerkene dine i Chromium-menyen eller på bokmerkeraden.</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="6717134281241384636">Profilen din kan ikke brukes fordi den kommer fra en nyere versjon av Chromium.
 
@@ -222,7 +220,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7975919845073681630">Dette er en sekundær installering av Chromium. Den kan ikke brukes som standardnettleser.</translation>
 <translation id="7979877361127045932">Skjul i Chromium-menyen</translation>
 <translation id="8030318113982266900">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen ...</translation>
-<translation id="8134284582177628525">Hvis du deler denne datamaskinen med <ph name="PROFILE_NAME" />, kan du legge deg selv til i Chromium for å holde surfingen atskilt. Eventuelt kan du koble fra vedkommendes Google-konto.</translation>
 <translation id="8157153840442649507">Chromium vises på dette språket</translation>
 <translation id="81770708095080097">Denne filen er farlig, så Chromium har blokkert den.</translation>
 <translation id="8222496066431494154">Installer Chromium på telefonen din. Vi sender en SMS til telefonnummeret ditt for kontogjenoppretting (<ph name="PHONE_NUMBER" />)</translation>

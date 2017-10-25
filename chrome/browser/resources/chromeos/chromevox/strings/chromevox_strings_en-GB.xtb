@@ -4,6 +4,7 @@
 <translation id="100812568230599391">Change display style to interleave.</translation>
 <translation id="1012173283529841972">List item</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">Are you using ChromeVox spoken feedback for the first time? This quick tutorial explains the essentials for getting started with ChromeVox.</translation>
 <translation id="1023866615269196768">Spanned.</translation>
 <translation id="1025074108959230262">Sticky mode disabled</translation>
 <translation id="1031961866430398710">then</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">Next</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – Giving Voice to Chrome</translation>
+<translation id="1225437811932752266">Congratulations! You’ve learned the essentials to use ChromeVox successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search+Full Stop. To learn even more about ChromeVox and Chrome OS, visit the following articles.
+If you've finished using the tutorial, use ChromeVox to navigate to the Close button and click it.</translation>
 <translation id="1229276918471378188">Previous jump</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Next level 6 heading</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">Previous table column</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">Right</translation>
+<translation id="135978014023467274">You've been updated to ChromeVox 63!</translation>
 <translation id="136718599399906424">Next table row</translation>
 <translation id="1377925789329510816">This is the last heading. Press Search+H to wrap to the first heading, or Search+Shift+H to go to the second heading on this page.</translation>
 <translation id="1383876407941801731">Search</translation>
@@ -167,6 +171,7 @@
 <translation id="2770781857296573485">Enter group exploration</translation>
 <translation id="2777845298774924149">Exited</translation>
 <translation id="2781264313200109999">Link start</translation>
+<translation id="2784959586797362050">As always, you can send us feedback directly by pressing Search+a then i. We're eager to hear from you.</translation>
 <translation id="2800204403141299078">No more different elements.</translation>
 <translation id="2800780099804980316">No previous level 1 heading.</translation>
 <translation id="280499067616661124">ChromeVox find in page</translation>
@@ -232,6 +237,7 @@
 <translation id="3241638166094654466">Cells in each line:</translation>
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">No next visited link.</translation>
+<translation id="3300348286427369683">Rich text support. ChromeVox now supports rich text fields including jump commands, braille cursor routing, selection and more.</translation>
 <translation id="3307886118343381874">Go to end of table</translation>
 <translation id="3311969765485641742">Press Alt+Shift+A to review alerts</translation>
 <translation id="3312997241656799641">Next visited link</translation>
@@ -335,6 +341,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Previous level 6 heading</translation>
 <translation id="3914173277599553213">Required</translation>
+<translation id="3914732343065571127">ChromeVox Command Reference</translation>
 <translation id="3962990492275676168">Start reading from current location</translation>
 <translation id="4004802134384979325">ticked</translation>
 <translation id="4006140876663370126">img</translation>
@@ -405,7 +412,9 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignoring next key press</translation>
 <translation id="461613135510474570">Sentence</translation>
+<translation id="463135993322337640">Press ChromeVox o, n to find out what's new</translation>
 <translation id="4647836961514597010">Colour picker</translation>
+<translation id="4660783501463101648">Classic removed. The keyboard toggle to switch back into ChromeVox Classic has been removed.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -425,6 +434,7 @@
 <translation id="4827410568042294688">unselected</translation>
 <translation id="4842108708071771135">No next block quote.</translation>
 <translation id="4844625982113518938">Press any key to learn its name. Ctrl+W will close learn mode.</translation>
+<translation id="4846428657345567687">Welcome to ChromeVox!</translation>
 <translation id="4846487886195635104">Strike through end</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Previous similar element.</translation>
@@ -462,6 +472,7 @@
 <translation id="5098541983634824365">Leaving grid.</translation>
 <translation id="5102981729317424850">Tool bar</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">We have some exciting changes in this new release; here's what's new:</translation>
 <translation id="5110983769041734144">No previous form field.</translation>
 <translation id="5111640677200759579">Column header</translation>
 <translation id="5136967254288895616">No previous link.</translation>
@@ -578,6 +589,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="6065293622157674001">Grammar error start</translation>
 <translation id="6082768461603900813">Basic Navigation</translation>
 <translation id="6092707270915298410">Link end</translation>
+<translation id="6118126368611144850">Android apps for Chrome. If you have Play Store on your device, get a sneak peek at ChromeVox with Android apps. Try the experimental support by downloading Google Chrome Canary from the Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">End of cell.</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -618,6 +630,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="6493991254603208962">Brightness down</translation>
 <translation id="6508059270146105198">Move braille display to bottom of page</translation>
 <translation id="6536864053412760904">Math ML Token</translation>
+<translation id="6540201937398578274">In ChromeVox, the Search key is the modifier key. Most ChromeVox shortcuts start with the Search key. You’ll also use the arrow keys for navigation.</translation>
 <translation id="6550720799683018100">Change the current keymap by selecting an option from the list below.</translation>
 <translation id="6561818612645211875">Go to beginning of the current row</translation>
 <translation id="6587021927234520429">No next level 4 heading.</translation>

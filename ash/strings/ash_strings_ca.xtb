@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Teclat en pantalla desactivat</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Senyal feble</translation>
 <translation id="1293264513303784526">Dispositiu USB-C (port esquerre)</translation>
 <translation id="1346748346194534595">A la dreta</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Dispositiu USB-C (port frontal esquerre)</translation>
 <translation id="2865888419503095837">Informació de la xarxa</translation>
 <translation id="2872961005593481000">Apaga</translation>
+<translation id="2903844815300039659">Estàs connectat a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Estàs compartint la pantalla</translation>
 <translation id="2942516765047364088">Posició del prestatge</translation>
 <translation id="2946119680249604491">Afegeix una connexió</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="315116470104423982">Dades mòbils</translation>
+<translation id="3153444934357957346">Només pots tenir <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3236488194889173876">No hi ha cap xarxa mòbil disponible</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="332587331255250389">Canvia la bateria</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Dispositiu USB-C (port frontal dret)</translation>
 <translation id="3400357268283240774">Configuració addicional</translation>
 <translation id="3445925074670675829">Dispositiu USB-C</translation>
+<translation id="3465566417615315331">Feu clic a la foto</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">S'ha connectat la pantalla Braille.</translation>
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3626281679859535460">Brillantor</translation>
+<translation id="3631369015426612114">Permet notificacions de les fonts següents:</translation>
 <translation id="3712407551474845318">Captura una part</translation>
 <translation id="371370241367527062">Micròfon frontal</translation>
 <translation id="3771549900096082774">Mode d'alt contrast</translation>
-<translation id="3775358506042162758">Només podeu tenir tres comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloqueja</translation>
 <translation id="3798670284305777884">Altaveu (intern)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
+<translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">L'Assistent s'està carregant...</translation>
 <translation id="4378551569595875038">S'està connectant...</translation>
+<translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="776344839111254542">Fes clic per veure els detalls de l'actualització</translation>
 <translation id="7798302898096527229">Prem Cerca o Maj per cancel·lar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Senyal potent</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7977927628060636163">S'estan cercant xarxes mòbils…</translation>
 <translation id="7982789257301363584">Xarxa</translation>
@@ -274,7 +281,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8351131234907093545">Crea una nota</translation>
 <translation id="8392234662362215700">Premeu Ctrl+Maj+espai per canviar la disposició del teclat.</translation>
-<translation id="8392688371657486010">No teniu cap notificació</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8433186206711564395">Configuració de la xarxa</translation>
 <translation id="8433977262951327081">La drecera per mostrar el quadre d'ajuda amb el menú d'opcions d'introducció al prestatge ha canviat. Fes servir <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="9091626656156419976">S'ha suprimit la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Desbloqueja</translation>
 <translation id="9151726767154816831">Reinicieu i feu un Powerwash per actualitzar.</translation>
+<translation id="9181036778675416867">Toca el botó del llapis òptic al prestatge per escriure una nota, fer una captura de pantalla, utilitzar l'Assistent o fer-lo servir com a punter làser o lupa.</translation>
 <translation id="9194617393863864469">Inicia la sessió amb un altre usuari...</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>

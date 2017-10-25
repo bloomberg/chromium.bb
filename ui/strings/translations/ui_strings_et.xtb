@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">Periood</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 kuu}other{# kuud}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">Tärnhinnang <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 tund ja }other{# tundi ja }}</translation>
 <translation id="1842960171412779397">vali</translation>
 <translation id="1860796786778352021">Märguande sulgemine</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">KÕIK RAKENDUSED</translation>
 <translation id="4320177379694898372">Interneti-ühendus puudub</translation>
 <translation id="4588090240171750605">Keri paremale</translation>
+<translation id="4724120544754982507">Märguandekeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lugemata märguannet</translation>
 <translation id="4730374152663651037">SAGELI KASUTATUD</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuu jäänud}other{# kuud jäänud}}</translation>
 <translation id="4820616160060340806">Käsk + <ph name="KEY_COMBO_NAME" /></translation>

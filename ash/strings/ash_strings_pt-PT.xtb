@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Teclado no ecrã desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Sinal fraco</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta esquerda)</translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
@@ -69,6 +70,8 @@
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2597972630681408282">Luz noturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Submeter</translation>
+<translation id="2675319268637823299">Um administrador não permitiu o início de sessão integrado para <ph name="USER_EMAIL" />.
+    Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. A sua sessão será terminada.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -79,6 +82,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal do lado esquerdo)</translation>
 <translation id="2865888419503095837">Informações da rede</translation>
 <translation id="2872961005593481000">Encerrar</translation>
+<translation id="2903844815300039659">Ligado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Está a partilhar o seu ecrã</translation>
 <translation id="2942516765047364088">Posição da prateleira</translation>
 <translation id="2946119680249604491">Adicionar ligação</translation>
@@ -94,6 +98,7 @@
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="3147142846278915599">Launcher (a sincronizar aplicações...)</translation>
 <translation id="315116470104423982">Dados móveis</translation>
+<translation id="3153444934357957346">Apenas pode ter, no máximo, <ph name="MULTI_PROFILE_USER_LIMIT" /> contas no início de sessão integrado.</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Convidado</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
@@ -102,6 +107,7 @@
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="3400357268283240774">Definições adicionais</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
+<translation id="3465566417615315331">Clique na sua fotografia</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
@@ -110,10 +116,10 @@
 <translation id="3606978283550408104">Visualização em braille ligada.</translation>
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3626281679859535460">Brilho</translation>
+<translation id="3631369015426612114">Permitir notificações das fontes seguintes:</translation>
 <translation id="3712407551474845318">Capturar área</translation>
 <translation id="371370241367527062">Microfone frontal</translation>
 <translation id="3771549900096082774">Modo de alto contraste</translation>
-<translation id="3775358506042162758">Só pode ter três contas no máximo no início de sessão integrado.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altifalante (interno)</translation>
@@ -126,11 +132,13 @@
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="4017989525502048489">Ponteiro de laser</translation>
+<translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">A carregar o Assistente...</translation>
 <translation id="4378551569595875038">A ligar...</translation>
+<translation id="4379531060876907730">Estas são as suas ferramentas da caneta stylus</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -200,6 +208,7 @@
 <translation id="632744581670418035">Sobreposição de teclado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Tudo concluído</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
 <translation id="6453179446719226835">O idioma foi alterado</translation>
 <translation id="6459472438155181876">A prolongar ecrã para <ph name="DISPLAY_NAME" /></translation>
@@ -256,6 +265,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="776344839111254542">Clique para ver os detalhes da atualização</translation>
 <translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7904094684485781019">O administrador desta conta removeu a permissão de início de sessão integrado.</translation>
 <translation id="7977927628060636163">A pesquisar redes móveis...</translation>
 <translation id="7982789257301363584">Rede</translation>
@@ -274,7 +284,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8351131234907093545">Criar nota</translation>
 <translation id="8392234662362215700">Prima Control-Shift-Espaço para mudar o esquema de teclado.</translation>
-<translation id="8392688371657486010">Não tem notificações</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433186206711564395">Definições da rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -293,6 +302,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8825534185036233643">O espelhamento com mais do que dois ecrãs não é suportado.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
+<translation id="8870509716567206129">A aplicação não é compatível com o ecrã dividido.</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
 <translation id="8921624153894383499">O Assistente do Google não fala este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
@@ -304,6 +314,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="9091626656156419976">Ecrã <ph name="DISPLAY_NAME" /> removido</translation>
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reiniciar e efetuar um Powerwash para atualizar</translation>
+<translation id="9181036778675416867">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente, o ponteiro de laser ou a lupa.</translation>
 <translation id="9194617393863864469">Iniciar sessão com outro utilizador...</translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% cheia.</translation>
 <translation id="9210037371811586452">A sair do Modo de ambiente de trabalho unificado</translation>

@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Señal débil</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1383876407941801731">Buscar</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
 <translation id="2865888419503095837">Información de red</translation>
 <translation id="2872961005593481000">Cerrar</translation>
+<translation id="2903844815300039659">Conectado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Estás compartiendo la pantalla</translation>
 <translation id="2942516765047364088">Posición de la biblioteca</translation>
 <translation id="2946119680249604491">Agregar conexión</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Reinicia para actualizar.</translation>
 <translation id="3147142846278915599">Selector (sincronizando aplicaciones…)</translation>
 <translation id="315116470104423982">Datos móviles</translation>
+<translation id="3153444934357957346">Solo puedes tener un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas en un acceso múltiple.</translation>
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Dispositivo USB-C (puerto lateral derecho delantero)</translation>
 <translation id="3400357268283240774">Configuración adicional</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
+<translation id="3465566417615315331">Haz clic en tu foto.</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Dispositivo braille conectado</translation>
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3626281679859535460">Brillo</translation>
+<translation id="3631369015426612114">Permitir notificaciones de las siguientes fuentes</translation>
 <translation id="3712407551474845318">Captura parcial de pantalla</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
 <translation id="3771549900096082774">Modo de contraste alto</translation>
-<translation id="3775358506042162758">Solo puedes tener un máximo de tres cuentas en un acceso múltiple.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altavoz (interno)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
+<translation id="4072264167173457037">Señal media</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">El Asistente se está cargando…</translation>
 <translation id="4378551569595875038">Conectando…</translation>
+<translation id="4379531060876907730">Estas son las herramientas de tu pluma stylus</translation>
 <translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME" /> mediante la Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
 <translation id="7798302898096527229">Presiona mayúscula o la tecla de búsqueda para cancelarlo.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Señal fuerte</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
@@ -274,7 +281,6 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8351131234907093545">Crear nota</translation>
 <translation id="8392234662362215700">Presiona Control-Mayúscula-Espacio para cambiar el diseño del teclado.</translation>
-<translation id="8392688371657486010">No tienes notificaciones</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433186206711564395">Opciones de red</translation>
 <translation id="8433977262951327081">El acceso directo para mostrar el cuadro con el menú de opciones de entrada en la biblioteca cambió. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Es posible que las notificaciones, las ventanas y los diálogos posteriores se d
 <translation id="9091626656156419976">Se quitó la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reiniciar y aplicar Powerwash para actualizar</translation>
+<translation id="9181036778675416867">Presiona el botón de la pluma stylus en la biblioteca para tomar notas y capturas de pantalla, usar el asistente y activar las funciones de puntero láser o lupa.</translation>
 <translation id="9194617393863864469">Acceder con otro usuario…</translation>
 <translation id="9201131092683066720">La batería tiene un <ph name="PERCENTAGE" /> % de carga.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>

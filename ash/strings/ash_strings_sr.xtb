@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Тастатура на екрану је онемогућена</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Слаб сигнал</translation>
 <translation id="1293264513303784526">Уређај са USB прикључком типа C (леви порт)</translation>
 <translation id="1346748346194534595">Удесно</translation>
 <translation id="1383876407941801731">Претражи</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Уређај са USB прикључком типа C (леви предњи порт)</translation>
 <translation id="2865888419503095837">Информације о мрежи</translation>
 <translation id="2872961005593481000">Искључи</translation>
+<translation id="2903844815300039659">Повезано на мрежу <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Делите екран</translation>
 <translation id="2942516765047364088">Положај полице</translation>
 <translation id="2946119680249604491">Додај везу</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
+<translation id="3153444934357957346">Можете да имате највише <ph name="MULTI_PROFILE_USER_LIMIT" /> налога за вишеструко пријављивање.</translation>
 <translation id="3236488194889173876">Није доступна ниједна мобилна мрежа</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="332587331255250389">Замените батерију</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
 <translation id="3400357268283240774">Додатна подешавања</translation>
 <translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
+<translation id="3465566417615315331">Кликните на своју слику</translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
 <translation id="3510164367642747937">Истакни курсор миша</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
 <translation id="3621202678540785336">Улаз</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
+<translation id="3631369015426612114">Дозволи обавештења из следећих извора</translation>
 <translation id="3712407551474845318">Сними област</translation>
 <translation id="371370241367527062">Предњи микрофон</translation>
 <translation id="3771549900096082774">Режим високог контраста</translation>
-<translation id="3775358506042162758">Можете да имате највише три налога за вишеструко пријављивање.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Закључај</translation>
 <translation id="3798670284305777884">Звучник (интерни)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
+<translation id="4072264167173457037">Сигнал средње јачине</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Помоћник се учитава...</translation>
 <translation id="4378551569595875038">Повезује се...</translation>
+<translation id="4379531060876907730">Ово су алатке за писаљку</translation>
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
 <translation id="4479639480957787382">Етернет</translation>
@@ -256,6 +262,7 @@
 <translation id="776344839111254542">Кликните за приказ детаља ажурирања</translation>
 <translation id="7798302898096527229">Притисните тастер за претрагу или Shift да бисте отказали.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Јак сигнал</translation>
 <translation id="7904094684485781019">Администратор за овај налог је забранио вишеструко пријављивање.</translation>
 <translation id="7977927628060636163">Траже се мобилне мреже…</translation>
 <translation id="7982789257301363584">Мрежа</translation>
@@ -274,7 +281,6 @@
 <translation id="8308637677604853869">Претходни мени</translation>
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8392234662362215700">Притисните тастере Control-Shift-Space да бисте променили распоред тастатуре.</translation>
-<translation id="8392688371657486010">Немате ниједно обавештење</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433186206711564395">Мрежна подешавања</translation>
 <translation id="8433977262951327081">Промењена је пречица за приказивање облачића за мени Опције уноса на полици. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@
 <translation id="9091626656156419976">Уклоњен је приказ <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Откључај</translation>
 <translation id="9151726767154816831">Поново покрените и обавите Powerwash да бисте ажурирали</translation>
+<translation id="9181036778675416867">Додирните дугме писаљке на полици да бисте направили белешку и снимак екрана и да бисте користили помоћника, ласерски показивач или лупу.</translation>
 <translation id="9194617393863864469">Пријавите другог корисника...</translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE" />% пуна.</translation>
 <translation id="9210037371811586452">Излазак из режима спојених радних површина</translation>

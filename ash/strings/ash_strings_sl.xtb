@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Zaslonska tipkovnica onemogočena</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Šibek signal</translation>
 <translation id="1293264513303784526">Naprava USB-C (leva vrata)</translation>
 <translation id="1346748346194534595">V desno</translation>
 <translation id="1383876407941801731">Išči</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Naprava USB-C (vrata levo spredaj)</translation>
 <translation id="2865888419503095837">Podatki o omrežju</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
+<translation id="2903844815300039659">Vzpostavljena povezava z omrežjem <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Trenutno imate zaslon v skupni rabi.</translation>
 <translation id="2942516765047364088">Položaj police</translation>
 <translation id="2946119680249604491">Dodaj povezavo</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
 <translation id="3147142846278915599">Zaganjalnik (sinhronizacija aplikacij ...)</translation>
 <translation id="315116470104423982">Prenos podatkov v mobilnih omrežjih</translation>
+<translation id="3153444934357957346">S prijavo z več računi lahko uporabljate največ toliko računov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3236488194889173876">Mobilno omrežje ni na voljo</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="332587331255250389">Zamenjajte baterijo</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
 <translation id="3400357268283240774">Dodatne nastavitve</translation>
 <translation id="3445925074670675829">Naprava USB-C</translation>
+<translation id="3465566417615315331">Kliknite fotografijo</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Označitev miškinega kazalca</translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Povezava z braillovo vrstico je vzpostavljena.</translation>
 <translation id="3621202678540785336">Vhod</translation>
 <translation id="3626281679859535460">Svetlost</translation>
+<translation id="3631369015426612114">Omogočanje obvestil teh virov</translation>
 <translation id="3712407551474845318">Zajem območja</translation>
 <translation id="371370241367527062">Sprednji mikrofon</translation>
 <translation id="3771549900096082774">Visokokontrastni način</translation>
-<translation id="3775358506042162758">S prijavo z več računi lahko uporabljate samo tri račune.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zakleni</translation>
 <translation id="3798670284305777884">Zvočnik (vgrajeni)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="4017989525502048489">Laserski kazalnik</translation>
+<translation id="4072264167173457037">Srednje močan signal</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Povečevalno steklo</translation>
 <translation id="4351433414020964307">Pomočnik se nalaga ...</translation>
 <translation id="4378551569595875038">Povezovanje ...</translation>
+<translation id="4379531060876907730">To so vaša orodja pisala</translation>
 <translation id="4421231901400348175">Deljenje nadzora nad zaslonom z osebo <ph name="HELPER_NAME" /> prek pomoči na daljavo.</translation>
 <translation id="4430019312045809116">Glasnost</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="776344839111254542">Kliknite, če si želite ogledati podrobnosti o posodobitvi</translation>
 <translation id="7798302898096527229">Za preklic pritisnite tipko za iskanje ali Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> in <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Močan signal</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7977927628060636163">Iskanje mobilnih omrežij ...</translation>
 <translation id="7982789257301363584">Omrežje</translation>
@@ -274,7 +281,6 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392234662362215700">Pritisnite Control + Shift + preslednico, če želite preklopiti razporeditev tipkovnice.</translation>
-<translation id="8392688371657486010">Nimate obvestil</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433186206711564395">Omrežne nastavitve</translation>
 <translation id="8433977262951327081">Bližnjica za prikaz oblačka menija z možnostmi vnosa na polici se je spremenila. Namesto <ph name="OLD_SHORTCUT" /> uporabite <ph name="NEW_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</tr
 <translation id="9091626656156419976">Odstranjen zaslon <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Odkleni</translation>
 <translation id="9151726767154816831">Če želite posodobiti, znova zaženite in uporabite funkcijo Powerwash</translation>
+<translation id="9181036778675416867">Dotaknite se gumba pisala na polici, če želite ustvariti zapisek, posneti posnetek zaslona ali uporabiti Pomočnika, laserski kazalnik ali povečevalno steklo.</translation>
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>

@@ -82,7 +82,6 @@
 <translation id="3762167353400286894">O Chromium OS é exibido neste idioma</translation>
 <translation id="378917192836375108">O Chromium permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">Suas configurações do Mozilla Firefox não ficam disponíveis enquanto esse navegador é executado. Para importar essas configurações para o Chromium, salve seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em Continuar.</translation>
 <translation id="3852700440713538496">Fixar o Chromium na barra de tarefas</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="390894725198123737">No Mac, as senhas podem ser salvas no seu Keychain e acessadas ou sincronizadas por outros usuários do Chromium que compartilhem essa conta OS X.</translation>
@@ -166,7 +165,6 @@
 <translation id="6505742536731484931">O Chromium precisa acessar sua localização para compartilhá-la com este site.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6526111688217511984">O Chromium precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
-<translation id="6638567566961868659">Encontre seus favoritos no menu do Chromium ou na barra de favoritos.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
 <translation id="6717134281241384636">Seu perfil não pode ser usado porque é de uma versão mais recente do Chromium. Alguns recursos podem não estar disponíveis. Especifique outro diretório de perfil ou use uma versão mais recente do Chromium.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
@@ -217,7 +215,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7975919845073681630">Como esta é uma instalação secundária do Chromium, ele não pode se tornar seu navegador padrão.</translation>
 <translation id="7979877361127045932">Esconder no menu do Chromium</translation>
 <translation id="8030318113982266900">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8134284582177628525">Se você compartilha este computador com <ph name="PROFILE_NAME" />, adicione seu perfil ao Chromium para navegar separadamente. Caso contrário, desconecte sua Conta do Google.</translation>
 <translation id="8157153840442649507">O Chromium é exibido neste idioma</translation>
 <translation id="81770708095080097">Esse arquivo é perigoso, por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="8222496066431494154">Instale o Chromium no seu smartphone. Enviaremos um SMS para o número de recuperação da sua conta: <ph name="PHONE_NUMBER" /></translation>

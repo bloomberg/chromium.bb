@@ -100,6 +100,7 @@
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> clients):</translation>
 <translation id="1464848559468748897">Control the user behaviour in a multi-profile session on <ph name="PRODUCT_OS_NAME" /> devices.
 
       If this policy is set to 'Multi-ProfileUserBehaviourUnrestricted', the user can be either the primary or secondary user in a multi-profile session.
@@ -114,6 +115,11 @@
 
       If the policy is left not set, the default value 'Multi-ProfileUserBehaviourMustBePrimary' applies for enterprise-managed users and 'Multi-ProfileUserBehaviourUnrestricted' will be used for non-managed users.</translation>
 <translation id="1465619815762735808">Click to play</translation>
+<translation id="1466133662354365542">Enables <ph name="PRODUCT_NAME" />'s AutoFill feature and allows users to auto complete credit card and address information in web forms using previously stored information.
+
+      If you disable this setting, Autofill will never suggest, or fill credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
+
+      If you enable this setting or do not set a value, then user will be able to control the overall AutoFill feature (including credit cards) in the UI.</translation>
 <translation id="1468307069016535757">Set the default state of the high contrast mode accessibility feature on the login screen.
 
           If this policy is set to true, high contrast mode will be enabled when the login screen is shown.
@@ -371,6 +377,7 @@
 <translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configure the default New Tab page in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
+<translation id="2303795211377219696">Enable AutoFill for credit cards</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
 
@@ -560,6 +567,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.
 
           If this policy is not set, the setting will be enabled.</translation>
+<translation id="2823870601012066791">Windows registry location for <ph name="PRODUCT_OS_NAME" /> clients:</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="2838830882081735096">Disallow data migration and ARC</translation>
 <translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
@@ -1151,6 +1159,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
 
           If this policy is left not set, no auto-selection will be done for any site.</translation>
+<translation id="4978405676361550165">If 'OffHours' policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when 'OffHours' period starts or ends. User will be notified and forced to sign out when 'OffHours' time end and device policy settings are changed (e.g. when user is logged in with an unallowed account).</translation>
 <translation id="4980635395568992380">Data Types</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
@@ -1340,6 +1349,26 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5728154254076636808">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
 <translation id="5765780083710877561">Description:</translation>
+<translation id="5768309557753179144">Both Chromium and Google Chrome support the same set of
+      policies. Please note that this document may include unreleased policies
+      (i.e. their 'Supported on' entry refers to a not-yet released version of
+      <ph name="PRODUCT_NAME" />) which are subject
+      to change or removal without notice and for which no guarantees of any
+      kind are provided, including no guarantees with respect to their security
+      and privacy properties.
+
+      These policies are strictly intended to be used to configure instances of
+      <ph name="PRODUCT_NAME" /> internal to your
+      organisation. Use of these policies outside of your organisation (for
+      example, in a publicly distributed program) is considered malware and will
+      likely be labelled as malware by Google and anti-virus vendors.
+
+      These settings don't need to be configured manually! Easy-to-use
+      templates for Windows, Mac and Linux are available for download from <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      The recommended way to configure policy on Windows is via GPO, although
+      provisioning policy via registry is still supported for Windows instances
+      that are joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
 <translation id="5776485039795852974">Ask every time a site wants to show desktop notifications</translation>
@@ -1443,6 +1472,53 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set or is set to false, print commands trigger the print preview screen.</translation>
 <translation id="6022948604095165524">Action on start-up</translation>
+<translation id="6023030044732320798">Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
+
+      This policy can be used to configure which Android apps are automatically installed on the device:
+
+      {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "description": "Android app identifier, e.g. "com.google.android.gm" for Gmail",
+                  "type": "string"
+                },
+                "installType": {
+                  "description": 'Specifies how an app is installed. OPTIONAL: The app is not installed automatically, but the user can install it. This is the default if this policy is not specified. PRELOAD: The app is installed automatically, but the user can uninstall it. FORCE_INSTALLED: The app is installed automatically and the user cannot uninstall it. BLOCKED: The app is blocked and cannot be installed. If the app was installed under a previous policy it will be uninstalled.',
+                  "type": "string",
+                  "enum": [
+                    "OPTIONAL",
+                    "PRELOAD",
+                    "FORCE_INSTALLED",
+                    "BLOCKED"
+                  ]
+                },
+                "defaultPermissionPolicy": {
+                  "description": 'Policy for granting permission requests to apps. PERMISSION_POLICY_UNSPECIFIED: Policy not specified. If no policy is specified for a permission at any level, then the `PROMPT` behaviour is used by default. PROMPT: Prompt the user to grant a permission. GRANT: Automatically grant a permission. DENY: Automatically deny a permission.',
+                  "type": "string",
+                  "enum": [
+                    "PERMISSION_POLICY_UNSPECIFIED",
+                    "PROMPT",
+                    "GRANT",
+                    "DENY"
+                  ]
+                },
+                "managedConfiguration": {
+                  "description": 'App-specific JSON configuration object with a set of key-value pairs, e.g. '"managedConfiguration": { "key1": value1, "key2": value2 }'. The keys are defined in the app manifest.',
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      To pin apps to the launcher, see PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="603410445099326293">Parameters for suggest URL which uses POST</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
@@ -1451,6 +1527,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6076099373507468537">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
 
       If this policy is not configured, the list of a detachable USB devices is empty.</translation>
+<translation id="6083631234867522991">Windows (Windows clients):</translation>
 <translation id="6093156968240188330">Allow remote users to interact with elevated windows in remote assistance sessions</translation>
 <translation id="6095999036251797924">Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
 
@@ -1955,6 +2032,39 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7841880500990419427">Minimum TLS version to fallback to</translation>
 <translation id="7842869978353666042">Configure Google Drive options</translation>
 <translation id="7843525027689416831">Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied on the login screen only. Flags that are set via this policy do not propagate into user sessions.</translation>
+<translation id="7844537954833753199">Configures extension management settings for <ph name="PRODUCT_NAME" />.
+
+          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
+
+          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
+
+          <ph name="INSTALLATION_MODE" />:  Maps to a string indicating the installation mode for the extension. The valid strings are:
+          * <ph name="ALLOWED" />: Allows the extension to be installed by the user. This is the default behaviour.
+          * <ph name="BLOCKED" />: Blocks installation of the extension.
+          * <ph name="FORCE_INSTALLED" />: The extension is automatically installed and can't be removed by the user.
+          * <ph name="NORMAL_INSTALLED" />: The extension is automatically installed but can be disabled by the user.
+
+          The <ph name="INSTALLTION_MODE" /> can also be configured for multiple extensions as well, including the <ph name="DEFAULT_SCOPE" /> extension (as default settings) and extensions with same update URL. Only the <ph name="ALLOWED" /> and <ph name="BLOCKED" /> values can be used in this case.
+
+          If the mode is set to <ph name="FORCE_INSTALLED" /> or <ph name="NORMAL_INSTALLED" /> then an <ph name="UPDATE_URL" /> must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting can also be configured for <ph name="DEFAULT_SCOPE" /> extension. If the extension requires a permission which is on the block list, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Similar to <ph name="BLOCKED_PERMISSIONS" />, but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for <ph name="DEFAULT_SCOPE" /> extension. Note that this setting doesn't give granted permissions to extensions automatically.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
+
+          The following settings can be used only for the default <ph name="DEFAULT_SCOPE" /> configuration:
+
+          <ph name="INSTALL_SOURCES" />: Each item in this list is an extension-style match pattern (<ph name="LINK_TO_MATCH_PATTERNS" />). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the <ph name="EXTENSION_SUFFIX_WILDCARD" /> file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
+
+          <ph name="ALLOWED_TYPES" />: This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />. The value is a list of strings, each of which should be one of the following: <ph name="VALID_ALLOWED_TYPES" />. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: If a user tries to install an extension, but it is blocked by policy, the Chrome Web Store displays a generic error message. This setting allows you to append text to the error message. This could be used to direct users to your help desk, explain why a particular extension is blocked, or something else. This error message will be truncated if longer than 1,000 characters.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests/ webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" /> except no paths may be defined. e.g. "*://*.example.com". This also supports effective TLD wildcarding e.g. "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepts a list of hosts that an extension can interact with, regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS" />. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
 
       If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT" /> are available for ARC-apps.</translation>
@@ -2154,6 +2264,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
 
           If this setting is true, or if it is not set, remote attestation may be used for content protection.</translation>
+<translation id="8650974590712548439">Windows registry location for Windows clients:</translation>
 <translation id="8654286232573430130">Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME" /> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
           Separate multiple server names with commas. Wildcards (*) are allowed.

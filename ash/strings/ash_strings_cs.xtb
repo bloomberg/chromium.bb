@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Slabý signál</translation>
 <translation id="1293264513303784526">Zařízení USB Type-C (levý port)</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
 <translation id="2865888419503095837">Informace o síti</translation>
 <translation id="2872961005593481000">Vypnout</translation>
+<translation id="2903844815300039659">Jste připojeni k síti <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Sdílíte svou obrazovku</translation>
 <translation id="2942516765047364088">Pozice poličky</translation>
 <translation id="2946119680249604491">Přidat připojení</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
 <translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
+<translation id="3153444934357957346">Počet účtů, které lze v rámci vícenásobného přihlášení používat, je omezen na <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3236488194889173876">Není k dispozici žádná mobilní síť</translation>
 <translation id="3294437725009624529">Host</translation>
 <translation id="332587331255250389">Vyměňte prosím baterii</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
 <translation id="3400357268283240774">Další nastavení</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
+<translation id="3465566417615315331">Klikněte na svou fotku</translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="3621202678540785336">Vstup</translation>
 <translation id="3626281679859535460">Jas</translation>
+<translation id="3631369015426612114">Povolit oznámení z následujících zdrojů</translation>
 <translation id="3712407551474845318">Pořídit snímek oblasti</translation>
 <translation id="371370241367527062">Přední mikrofon</translation>
 <translation id="3771549900096082774">Režim vysokého kontrastu</translation>
-<translation id="3775358506042162758">V rámci vícenásobného přihlášení lze používat maximálně tři účty.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Uzamknout</translation>
 <translation id="3798670284305777884">Reproduktor (interní)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="4017989525502048489">Laserové ukazovátko</translation>
+<translation id="4072264167173457037">Střední signál</translation>
 <translation id="4279490309300973883">Zrcadlení</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Asistent se načítá...</translation>
 <translation id="4378551569595875038">Připojování...</translation>
+<translation id="4379531060876907730">Toto jsou nástroje pro dotykové pero</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizaci</translation>
 <translation id="7798302898096527229">Vypnete jej stisknutím klávesy Hledat nebo Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Silný signál</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
 <translation id="7982789257301363584">Síť</translation>
@@ -274,7 +281,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="8351131234907093545">Vytvořit poznámku</translation>
 <translation id="8392234662362215700">Rozložení klávesnice přepnete stisknutím kláves Ctrl + Shift + mezerník.</translation>
-<translation id="8392688371657486010">Nemáte žádná oznámení.</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433186206711564395">Nastavení sítě</translation>
 <translation id="8433977262951327081">Klávesová zkratka k zobrazení bubliny s možnostmi vstupu na poličce se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="9091626656156419976">Obrazovka <ph name="DISPLAY_NAME" /> byla odebrána</translation>
 <translation id="9111102763498581341">Odemknout</translation>
 <translation id="9151726767154816831">Chcete-li zařízení aktualizovat, restartujte je a resetujte pomocí funkce Powerwash</translation>
+<translation id="9181036778675416867">Klepnutím na tlačítko dotykového pera na poličce můžete pořídit poznámku nebo snímek obrazovky, případně použít Asistenta, laserové ukazovátko nebo lupu.</translation>
 <translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
 <translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>

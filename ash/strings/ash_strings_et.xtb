@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Ekraanil kuvatav klaviatuur on keelatud</translation>
 <translation id="1272079795634619415">Peata</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Nõrk signaal</translation>
 <translation id="1293264513303784526">C-tüüpi USB-seade (vasakpoolne port)</translation>
 <translation id="1346748346194534595">Paremale</translation>
 <translation id="1383876407941801731">Otsi</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">C-tüüpi USB-seade (eesmine vasakpoolne port)</translation>
 <translation id="2865888419503095837">Võrguteave</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
+<translation id="2903844815300039659">Ühendatud võrguga <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Jagate oma ekraani</translation>
 <translation id="2942516765047364088">Riiuli positsioon</translation>
 <translation id="2946119680249604491">Lisa ühendus</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Taaskäivitage värskendamiseks</translation>
 <translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="315116470104423982">Mobiilne andmeside</translation>
+<translation id="3153444934357957346">Saate korraga sisse logida kuni <ph name="MULTI_PROFILE_USER_LIMIT" /> kontole.</translation>
 <translation id="3236488194889173876">Ühtegi mobiilsidevõrku pole saadaval</translation>
 <translation id="3294437725009624529">Külaline</translation>
 <translation id="332587331255250389">Vahetage akut</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
 <translation id="3400357268283240774">Lisaseaded</translation>
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
+<translation id="3465566417615315331">Klõpsake oma fotol</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
 <translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="3621202678540785336">Sisend</translation>
 <translation id="3626281679859535460">Eredus</translation>
+<translation id="3631369015426612114">Luba märguanded järgmistest kohtadest</translation>
 <translation id="3712407551474845318">Jäädvusta piirkond</translation>
 <translation id="371370241367527062">Eesmine mikrofon</translation>
 <translation id="3771549900096082774">Suure kontrastsusega režiim</translation>
-<translation id="3775358506042162758">Saate korraga sisse logida kuni kolmele kontole.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lukusta</translation>
 <translation id="3798670284305777884">Kõlar (sisemine)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4017989525502048489">Laserkursor</translation>
+<translation id="4072264167173457037">Keskmine signaal</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Suurendusklaas</translation>
 <translation id="4351433414020964307">Assistenti laaditakse …</translation>
 <translation id="4378551569595875038">Ühendamine ...</translation>
+<translation id="4379531060876907730">Need on teie elektronpliiatsi tööriistad</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="776344839111254542">Klõpsake värskenduse üksikasjade vaatamiseks</translation>
 <translation id="7798302898096527229">Tühistamiseks vajutage otsinguklahvi või tõstuklahvi.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ja <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Tugev signaal</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
 <translation id="7977927628060636163">Mobiilsidevõrkude otsimine …</translation>
 <translation id="7982789257301363584">Võrk</translation>
@@ -274,7 +281,6 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
 <translation id="8351131234907093545">Märkme loomine</translation>
 <translation id="8392234662362215700">Klaviatuuripaigutuse vahetamiseks vajutage korraga juhtklahvi, tõstuklahvi ja tühikut.</translation>
-<translation id="8392688371657486010">Teile pole märguandeid</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8433186206711564395">Võrguseaded</translation>
 <translation id="8433977262951327081">Otsetee sisestusvalikute menüü mulli kuvamiseks riiulil on muutunud. Kasutage otsetee <ph name="OLD_SHORTCUT" /> asemel otseteed <ph name="NEW_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vah
 <translation id="9091626656156419976">Ekraan <ph name="DISPLAY_NAME" /> eemaldati</translation>
 <translation id="9111102763498581341">Ava lukk</translation>
 <translation id="9151726767154816831">Värskendamiseks tuleb arvuti taaskäivitada ja teha Powerwash</translation>
+<translation id="9181036778675416867">Puudutage riiulil elektronpliiatsi nuppu, et teha märkmeid, jäädvustada ekraanipilti, kasutada assistenti, laserkursorit või suurendusklaasi.</translation>
 <translation id="9194617393863864469">Logi sisse teine kasutaja ...</translation>
 <translation id="9201131092683066720">Aku on <ph name="PERCENTAGE" />% täis.</translation>
 <translation id="9210037371811586452">Ühendatud töölaua režiimist väljumine</translation>

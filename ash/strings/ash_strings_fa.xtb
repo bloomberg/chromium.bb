@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">سیگنال ضعیف</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
 <translation id="1346748346194534595">راست</translation>
 <translation id="1383876407941801731">جستجو</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">‏دستگاه USB-C (درگاه جلوی سمت چپ)</translation>
 <translation id="2865888419503095837">اطلاعات شبکه</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
+<translation id="2903844815300039659">متصل به <ph name="NAME" /> با <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">شما در حال هم‌رسانی صفحه‌تان هستید</translation>
 <translation id="2942516765047364088">موقعیت قفسه</translation>
 <translation id="2946119680249604491">افزودن اتصال</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">راه‌اندازی مجدد برای به‌روزرسانی</translation>
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="315116470104423982">داده‌های تلفن همراه</translation>
+<translation id="3153444934357957346">در ورود چندگانه به سیستم، می‌توانید حداکثر از <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب استفاده کنید.</translation>
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
 <translation id="3294437725009624529">مهمان</translation>
 <translation id="332587331255250389">لطفاً باتری را تعویض کنید</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
 <translation id="3400357268283240774">تنظیمات بیشتر</translation>
 <translation id="3445925074670675829">‏دستگاه USB-C</translation>
+<translation id="3465566417615315331">روی عکستان کلیک کنید</translation>
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
 <translation id="3510164367642747937">برجسته کردن نشانگر موشواره</translation>
 <translation id="3573179567135747900">به "<ph name="FROM_LOCALE" />" تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">صفحه‌نمایش بریل متصل شد.</translation>
 <translation id="3621202678540785336">ورودی</translation>
 <translation id="3626281679859535460">روشنایی</translation>
+<translation id="3631369015426612114">مجاز کردن اعلان‌های منابع زیر</translation>
 <translation id="3712407551474845318">محدوده گرفتن عکس</translation>
 <translation id="371370241367527062">میکروفون جلو</translation>
 <translation id="3771549900096082774">حالت تضاد بالا</translation>
-<translation id="3775358506042162758">در ورود چندگانه به سیستم حداکثر می‌توانید از سه حساب استفاده کنید.</translation>
 <translation id="3783640748446814672">دگرساز</translation>
 <translation id="3784455785234192852">قفل</translation>
 <translation id="3798670284305777884">بلندگو (داخلی)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4017989525502048489">اشاره‌گر لیزری</translation>
+<translation id="4072264167173457037">سیگنال متوسط</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
 <translation id="4321179778687042513">مهار</translation>
 <translation id="4338109981321384717">ذره‌بین</translation>
 <translation id="4351433414020964307">دستیار درحال بار کردن است...</translation>
 <translation id="4378551569595875038">در حال اتصال...</translation>
+<translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
 <translation id="4421231901400348175">به اشتراک گذاشتن کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی از راه دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4479639480957787382">اترنت</translation>
@@ -256,6 +262,7 @@
 <translation id="776344839111254542">برای مشاهده جزئیات به‌روزرسانی کلیک کنید</translation>
 <translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">سیگنال قوی</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="7977927628060636163">درحال جستجوی شبکه‌های تلفن همراه…</translation>
 <translation id="7982789257301363584">شبکه</translation>
@@ -274,7 +281,6 @@
 <translation id="8308637677604853869">منوی قبلی</translation>
 <translation id="8351131234907093545">یادداشت ایجاد کنید</translation>
 <translation id="8392234662362215700">‏برای تغییر طرح کلی صفحه‌کلید، Control-Shift و فاصله را فشار دهید.</translation>
-<translation id="8392688371657486010">اعلانی ندارید</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433186206711564395">تنظیمات شبکه</translation>
 <translation id="8433977262951327081">میان‌بر نمایش ابزارک اعلان گزینه‌های ورودی در قفسه تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
@@ -304,6 +310,7 @@
 <translation id="9091626656156419976">نمایشگر <ph name="DISPLAY_NAME" /> برداشته شد</translation>
 <translation id="9111102763498581341">باز کردن قفل</translation>
 <translation id="9151726767154816831">‏راه‌اندازی مجدد و Powerwash برای به‌روزرسانی</translation>
+<translation id="9181036778675416867">برای یادداشت‌برداری، گرفتن عکس صفحه‌نمایش، استفاده از دستیار، نشانگر لیزری یا ذره‌بین، روی دکمه قلم در قفسه ضربه بزنید.</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>

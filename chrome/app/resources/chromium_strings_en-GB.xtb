@@ -86,7 +86,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3762167353400286894">Chromium OS is displayed in this language</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">Unfortunately, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="3852700440713538496">Pin Chromium to your taskbar</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="390894725198123737">On Mac, passwords may be saved to your Keychain and accessed or synced by other Chromium users sharing this OS X account.</translation>
@@ -170,7 +169,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6505742536731484931">Chromium needs access to your location to share your location with this site.</translation>
 <translation id="6510925080656968729">Uninstall Chromium</translation>
 <translation id="6526111688217511984">Chromium needs storage access to download files.</translation>
-<translation id="6638567566961868659">Find your bookmarks in the Chromium menu or on the bookmarks bar.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6717134281241384636">Your profile can not be used because it is from a newer version of Chromium.
 
@@ -218,13 +216,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7756122083761163394">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as $2.</translation>
 <translation id="7774736947049807614">Authentication certificate failed. Please sign in to Chromium again as <ph name="USER_NAME" /> or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7867198900892795913">Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="795025003224538582">Don't restart</translation>
 <translation id="7962572577636132072">Chromium updates automatically so you always have the freshest version.</translation>
 <translation id="7975919845073681630">This is a secondary installation of Chromium, and cannot be made your default browser.</translation>
 <translation id="7979877361127045932">Hide in Chromium menu</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
-<translation id="8134284582177628525">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chromium to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="8157153840442649507">Chromium is displayed in this language</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
 <translation id="8222496066431494154">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
@@ -250,6 +248,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="8897323336392112261">It also controls what page is shown when you start Chromium or click the Home button.</translation>
 <translation id="8907580949721785412">Chromium is trying to show passwords. Type your Windows password to allow this.</translation>
+<translation id="8941642502866065432">Can't update Chromium</translation>
 <translation id="894903460958736500">Software running on your computer is incompatible with Chromium.</translation>
 <translation id="8968921422458636175">Chromium will save this password with <ph name="SAVED_PASSWORD_LINK" />. You don’t have to remember it.</translation>
 <translation id="8974095189086268230">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />.</translation>

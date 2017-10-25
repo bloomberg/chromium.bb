@@ -49,6 +49,12 @@
 
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
 <translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari halaman peringatan Safe Browsing</translation>
+<translation id="1166377463685560145">Menentukan printer yang tidak dapat digunakan pengguna.
+
+      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini.
+      </translation>
 <translation id="1198465924256827162">Frekuensi upload status perangkat dikirimkan, dalam milidetik.
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
@@ -81,11 +87,18 @@
 <translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
+<translation id="1420281424655200442">Mengontrol printer mana dari <ph name="DEVICE_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
+
+      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan. Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> akan menetapkan hanya printer yang dapat dipilih.
+
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_BLACKLIST" /> akan diterapkan.
+      </translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
 <translation id="1438739959477268107">Setelan pembuatan kunci default</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
+<translation id="1456822151187621582">Windows (klien <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke 'MultiProfileUserBehaviorUnrestricted', pengguna dapat menjadi pengguna utama atau sekunder di sesi multi profil.
@@ -100,6 +113,11 @@
 
       Jika kebijakan dibiarkan tidak disetel, nilai default 'MultiProfileUserBehaviorMustBePrimary' berlaku untuk pengguna yang dikelola oleh perusahaan dan 'MultiProfileUserBehaviorUnrestricted' akan digunakan untuk pengguna yang tidak dikelola.</translation>
 <translation id="1465619815762735808">Klik untuk memainkan</translation>
+<translation id="1466133662354365542">Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan memungkinkan pengguna mengisi otomatis informasi alamat dan kartu kredit di formulir web menggunakan informasi yang disimpan sebelumnya.
+
+      Jika Anda menonaktifkan setelan ini, IsiOtomatis tidak akan menyarankan atau mengisi informasi kartu kredit, serta tidak akan menyimpan informasi kartu kredit tambahan yang mungkin dikirim oleh pengguna saat browsing web.
+
+      Jika Anda mengaktifkan setelan ini atau tidak menyetel nilai, pengguna dapat mengontrol fitur IsiOtomatis secara keseluruhan (termasuk kartu kredit) di UI.</translation>
 <translation id="1468307069016535757">Menyetel status default fitur aksesibilitas mode kontras tinggi di layar masuk.
 
           Jika kebijakan ini disetel ke true, mode kontras tinggi akan diaktifkan saat layar masuk ditampilkan.
@@ -141,6 +159,19 @@
 <translation id="1561424797596341174">Penggantian kebijakan untuk versi Debug host akses jarak jauh</translation>
 <translation id="1561967320164410511">U2F ditambah beberapa ekstensi untuk masing-masing pengesahan</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> jika tidak diubah</translation>
+<translation id="1603058613431276040">Memberikan konfigurasi untuk printer perusahaan yang terkait dengan perangkat.
+
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON. Format ini sama dengan yang ada di kamus NativePrinters. Diperkirakan file yang berisi kira-kira 21.000 printer akan dienkode menjadi file 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      File tersebut didownload dan disimpan dalam cache. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan kebijakan <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" />, dan <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat. Kebijakan ini ditujukan sebagai tambahan terhadap konfigurasi printer yang diberikan oleh tiap pengguna.
+
+      Kebijakan ini merupakan tambahan untuk kebijakan <ph name="BULK_PRINTERS_POLICY" />.
+
+      Jika kebijakan ini tidak disetel, tidak akan ada printer perangkat dan kebijakan <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> lainnya yang akan diabaikan.</translation>
 <translation id="1608755754295374538">URL yang akan diberi akses ke perangkat perekam audio tanpa peringatan</translation>
 <translation id="1617235075406854669">Aktifkan penghapusan riwayat download atau browser</translation>
 <translation id="163200210584085447">Pola dalam daftar ini akan dicocokkan dengan
@@ -241,6 +272,12 @@
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="203096360153626918">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi akan dapat memasuki mode layar penuh meski kebijakan ini disetel ke <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Menonaktifkan printer perusahaan</translation>
+<translation id="2063380907529983889">Mengontrol printer mana dari <ph name="BULK_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
+
+      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="BULK_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan. Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="BULK_PRINTERS_WHITELIST" /> hanya akan menetapkan printer yang dapat dipilih.
+
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_BLACKLIST" /> akan diterapkan.
+      </translation>
 <translation id="206623763829450685">Menentukan skema autentikasi HTTP yang didukung oleh <ph name="PRODUCT_NAME" />.
 
           Nilai yang mungkin adalah 'basic', 'digest', 'ntlm', dan 'negotiate'. Pisahkan beberapa nilai dengan koma.
@@ -330,6 +367,7 @@
 <translation id="2294382669900758280">Pemutaran video di aplikasi Android tidak dipertimbangkan, meski kebijakan ini disetel ke <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Mengonfigurasi halaman Tab Baru di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tentukan daftar plugin yang diaktifkan</translation>
+<translation id="2303795211377219696">Mengaktifkan IsiOtomatis untuk kartu kredit</translation>
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi halaman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2337466621458842053">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menampilkan gambar. Jika kebijakan ini dibiarkan tanpa disetel, nilai global default akan digunakan untuk semua situs, baik dari kebijakan 'DefaultImagesSetting', jika disetel, maupun konfigurasi pribadi pengguna.</translation>
@@ -484,6 +522,12 @@
 <translation id="2762164719979766599">Menentukan daftar akun lokal perangkat untuk ditampilkan di layar masuk.
 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
+<translation id="2766302473082018239">Menentukan printer yang dapat digunakan pengguna.
+
+      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan entri dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
 <translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
@@ -497,6 +541,7 @@
           Jika setelan ini dinonaktifkan dan koneksi UDP yang keluar disaring oleh firewall, komputer ini hanya akan mengizinkan koneksi dari komputer klien dalam jaringan lokal.
 
           Jika kebijakan ini dibiarkan tidak disetel, setelan tersebut akan diaktifkan.</translation>
+<translation id="2823870601012066791">Lokasi registry Windows untuk klien <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
 <translation id="2838830882081735096">Jangan izinkan migrasi data dan ARC</translation>
 <translation id="2844404652289407061">Mengaktifkan ketersediaan Sentuh untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
@@ -637,6 +682,12 @@
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
+<translation id="3395348522300156660">Menentukan printer yang dapat digunakan pengguna.
+
+      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan entri dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
       Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan mengizinkan dimulainya sesi tamu.</translation>
@@ -844,6 +895,7 @@
           Nilai kebijakan harus ditetapkan dalam milidetik.</translation>
 <translation id="4105989332710272578">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar URL</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
+<translation id="4133144443101280166">Interval di luar jam kerja saat OffHours |ignored_policy_proto_tags| perangkat dirilis</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4183229833636799228">Setelan <ph name="FLASH_PLUGIN_NAME" /> default</translation>
 <translation id="4192388905594723944">URL untuk memvalidasi token autentikasi klien akses jarak jauh</translation>
@@ -1056,6 +1108,7 @@
           Nilai harus berupa rangkaian kamus dengan string JSON. Setiap kamus harus memiliki bentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN yang merupakan pola setelan konten. $FILTER membatasi asal sertifikat klien yang akan dipilih browser secara otomatis. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Selain itu, jika $FILTER memiliki bentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, hanya sertifikat klien yang dikeluarkan oleh sertifikat dengan CommonName $ISSUER_CN yang akan dipilih. Jika $FILTER berupa kamus kosong {}, pemilihan sertifikat klien tidak lagi dibatasi.
 
           Jika kebijakan ini tidak disetel, tidak akan ada pemilihan otomatis untuk situs apa pun.</translation>
+<translation id="4978405676361550165">Jika kebijakan "OffHours" disetel, kebijakan yang ditentukan untuk perangkat akan diabaikan (gunakan setelan default kebijakan tersebut) selama rentang waktu yang ditentukan. Kebijakan perangkat akan diterapkan kembali oleh Chrome pada setiap aktivitas saat periode "OffHours" dimulai atau berakhir. Pengguna akan diberi tahu dan dipaksa logout saat waktu "OffHours" berakhir dan setelan kebijakan perangkat diubah (misalnya, saat pengguna login menggunakan akun yang tidak diizinkan).</translation>
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
@@ -1065,6 +1118,7 @@
 <translation id="5067143124345820993">Daftar putih pengguna masuk</translation>
 <translation id="5068140065960598044">Kebijakan cloud <ph name="PRODUCT_NAME" /> mengganti kebijakan Perangkat.</translation>
 <translation id="5085647276663819155">Nonaktifkan Pratinjau Cetak</translation>
+<translation id="5090209345759901501">Memperluas setelan konten Flash untuk semua konten</translation>
 <translation id="5105313908130842249">Penundaan penguncian layar saat menggunakan daya baterai</translation>
 <translation id="5108031557082757679">Menonaktifkan printer yang merupakan perangkat perusahaan</translation>
 <translation id="5130288486815037971">Untuk mengetahui apakah cipher suite RC4 di TLS diaktifkan</translation>
@@ -1217,6 +1271,26 @@
 <translation id="5728154254076636808">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Mengimpor data formulir isi-otomatis dari browser default saat pertama kali dijalankan</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
+<translation id="5768309557753179144">Chromium dan Google Chrome mendukung rangkaian kebijakan
+      yang sama. Harap diperhatikan bahwa dokumen ini dapat berisi kebijakan yang belum dirilis
+      (yaitu entri 'Didukung di' merujuk ke versi <ph name="PRODUCT_NAME" />
+      yang belum dirilis) yang dapat berubah atau
+      dihapus tanpa pemberitahuan sebelumnya dan tidak ada jaminan
+      apa pun yang diberikan, termasuk tidak ada jaminan sehubungan dengan properti
+      privasi dan keamanan.
+
+      Kebijakan ini hanya khusus ditujukan untuk mengonfigurasi instance
+      internal <ph name="PRODUCT_NAME" /> ke
+      organisasi Anda. Penggunaan kebijakan ini di luar organisasi (
+      misalnya, dalam program yang didistribusikan secara publik) dianggap sebagai malware dan kemungkinan
+      akan diberi label sebagai malware oleh Google dan vendor anti-virus.
+
+      Setelan ini tidak perlu dikonfigurasi secara manual. Template
+      untuk Windows, Mac, dan Linux yang mudah digunakan dapat didownload dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Cara yang direkomendasikan untuk mengonfigurasi kebijakan di Windows adalah melalui GPO, meskipun
+      menyediakan kebijakan melalui registry tetap didukung untuk instance Windows
+      yang bergabung dalam domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
 <translation id="5774856474228476867">URL penelusuran penyedia penelusuran default</translation>
 <translation id="5776485039795852974">Tanyakan setiap kali situs ingin menampilkan pemberitahuan desktop</translation>
@@ -1314,6 +1388,53 @@
 
       Jika kebijakan ini tidak disetel atau disetel ke salah, perintah cetak memicu layar pratinjau cetak.</translation>
 <translation id="6022948604095165524">Tindakan saat permulaan</translation>
+<translation id="6023030044732320798">Menentukan kumpulan kebijakan yang akan diteruskan ke waktu proses ARC. Nilainya harus JSON yang valid.
+
+      Kebijakan ini dapat digunakan untuk mengonfigurasi aplikasi Android mana yang dapat diinstal secara otomatis di perangkat: 
+
+      {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "description": "ID aplikasi Android, misalnya "com.google.android.gm" untuk Gmail",
+                  "type": "string"
+                },
+                "installType": {
+                  "description": "Menentukan cara aplikasi diinstal. OPTIONAL: Aplikasi tersebut tidak diinstal secara otomatis, namun pengguna dapat menginstalnya. Ini merupakan default jika kebijakan tidak ditentukan. PRELOAD: Aplikasi diinstal secara otomatis, namun pengguna dapat meng-uninstalnya. FORCE_INSTALLED: Aplikasi diinstal secara otoamtis dan pengguna tidak dapat meng-uninstalnya. BLOCKED: Aplikasi diblokir dan tidak dapat diinstal. Jika aplikasi diinstal saat menggunakan kebijakan sebelumnya, aplikasi akan di-uninstal".,
+                  "type": "string",
+                  "enum": [
+                    "OPTIONAL",
+                    "PRELOAD",
+                    "FORCE_INSTALLED",
+                    "BLOCKED"
+                  ]
+                },
+                "defaultPermissionPolicy": {
+                  "description": "Kebijakan untuk memberi permintaan izin ke aplikasi. PERMISSION_POLICY_UNSPECIFIED: Kebijakan tidak ditentukan. Jika tidak ada kebijakan yang ditentukan untuk izin pada tingkat apa pun, perilaku `PROMPT` akan digunakan secara default. PROMPT: Meminta pengguna untuk memberi izin. GRANT: Memberi izin secara otomatis. DENY: Menolak izin secara otomatis".,
+                  "type": "string",
+                  "enum": [
+                    "PERMISSION_POLICY_UNSPECIFIED",
+                    "PROMPT",
+                    "GRANT",
+                    "DENY"
+                  ]
+                },
+                "managedConfiguration": {
+                  "description": "Objek konfigurasi JSON khusus aplikasi dengan kumpulan pasangan kunci-nilai, misalnya '"managedConfiguration": { "key1": value1, "key2": value2 }'. Kunci ditentukan dalam manifes aplikasi".,
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Untuk menyematkan aplikasi ke peluncur, lihat PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL sekejap penyedia penelusuran default</translation>
 <translation id="603410445099326293">Parameter untuk URL yang disarankan yang menggunakan POST</translation>
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
@@ -1322,6 +1443,7 @@
 <translation id="6076099373507468537">Menjelaskan daftar perangkat USB yang diizinkan untuk dilepas dari driver kernelnya, agar dapat langsung digunakan melalui API chrome.usb dalam aplikasi web. Entri berupa pasangan Pengenal Vendor USB dan Pengenal Produk untuk mengidentifikasi hardware tertentu.
 
       Jika kebijakan ini tidak dikonfigurasi, daftar perangkat USB yang dapat dilepas akan kosong.</translation>
+<translation id="6083631234867522991">Windows (klien Windows):</translation>
 <translation id="6093156968240188330">Memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di sesi bantuan jarak jauh</translation>
 <translation id="6095999036251797924">Menentukan lamanya waktu tanpa masukan pengguna sebelum layar dikunci saat berjalan menggunakan daya AC atau baterai.
 
@@ -1414,6 +1536,11 @@
           Jika Anda memilih untuk menggunakan skrip proxy .pac, URL skrip akan diberikan pada aplikasi Android.</translation>
 <translation id="6491139795995924304">Izinkan bluetooth di perangkat</translation>
 <translation id="6520802717075138474">Impor mesin telusur dari browser default saat pertama kali dijalankan</translation>
+<translation id="6525955212636890608">Jika Anda mengaktifkan setelan ini, semua konten Flash yang disematkan di situs yang telah ditetapkan untuk mengizinkan Flash di setelan konten -- oleh kebijakan pengguna atau kebijakan perusahaan -- akan dijalankan, termasuk konten dari asal lain atau konten kecil.
+
+      Untuk mengontrol situs yang diizinkan untuk menjalankan Flash, lihat kebijakan "DefaultPluginsSetting", "PluginsAllowedForUrls", dan "PluginsBlockedForUrls".
+
+      Jika setelan ini dinonaktifkan atau tidak disetel, konten Flash dari asal lainnya atau konten kecil dapat diblokir.</translation>
 <translation id="653608967792832033">Menentukan panjang waktu tanpa masukan pengguna sebelum layar terkunci ketika menggunakan daya baterai.
 
           Saat kebijakan ini disetel ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan panjang waktu pengguna tetap menganggur sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
@@ -1787,6 +1914,39 @@
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>
 <translation id="7842869978353666042">Konfigurasi opsi Google Drive</translation>
 <translation id="7843525027689416831">Tentukan tanda yang harus diterapkan ke <ph name="PRODUCT_NAME" /> saat dimulai. Tanda yang ditentukan hanya diterapkan di layar masuk. Tanda yang disetel melalui kebijakan ini tidak diterapkan ke dalam sesi pengguna.</translation>
+<translation id="7844537954833753199">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
+
+          Kebijakan ini mengontrol beberapa setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang sudah ada mana pun. Kebijakan ini akan menggantikan kebijakan lama apa pun jika keduanya disetel.
+
+          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi akan diterapkan ke ekstensi yang ditentukan saja. Konfigurasi default dapat disetel untuk ID khusus <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom yang disetel dalam kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update persis yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurasi untuk setiap ekstensi (atau ekstensi dengan URL update yang sama) adalah kamus lain yang dapat berisi kolom yang didokumentasikan di bawah.
+
+          <ph name="INSTALLATION_MODE" />: memetakan ke string yang menunjukkan mode penginstalan untuk ekstensi. String yang valid adalah:
+          * <ph name="ALLOWED" />: mengizinkan ekstensi diinstal oleh pengguna. Konfigurasi ini adalah perilaku default.
+          * <ph name="BLOCKED" />: memblokir penginstalan ekstensi.
+          * <ph name="FORCE_INSTALLED" />: ekstensi akan otomatis diinstal dan tidak dapat dihapus oleh pengguna.
+          * <ph name="NORMAL_INSTALLED" />: ekstensi akan otomatis diinstal, tapi dapat dinonaktifkan oleh pengguna.
+
+          <ph name="INSTALLTION_MODE" /> juga dapat dikonfigurasikan untuk beberapa ekstensi, termasuk ekstensi <ph name="DEFAULT_SCOPE" /> (sebagai setelan default) dan ekstensi dengan URL update yang sama. Dalam kasus ini, hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> yang dapat digunakan.
+
+          Jika mode disetel ke <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, <ph name="UPDATE_URL" /> harus dikonfigurasikan juga. Perhatikan bahwa URL update yang disetel di dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan di manifes ekstensi. URL update harus mengarahkan ke dokumen XML Manifes Update seperti yang dijelaskan di atas.
+
+          <ph name="BLOCKED_PERMISSIONS" />: memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasikan untuk ekstensi <ph name="DEFAULT_SCOPE" />. Jika ekstensi mewajibkan izin yang berada di daftar blokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, tapi permintaan izin yang menimbulkan bentrok akan ditolak secara otomatis saat waktu proses.
+
+          <ph name="ALLOWED_PERMISSIONS" />: mirip dengan <ph name="BLOCKED_PERMISSIONS" />, namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar izin yang diblokir secara global, sehingga tidak dapat dikonfigurasikan untuk ekstensi <ph name="DEFAULT_SCOPE" />. Perhatikan bahwa setelan ini tidak memberikan izin yang dijamin ke ekstensi secara otomatis.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: memetakan ke string versi. Format string versi sama dengan format yang digunakan dalam manifes ekstensi, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC4" />. Ekstensi dengan versi yang lebih lama daripada versi minimum yang ditentukan akan dinonaktifkan. Hal ini juga berlaku pada ekstensi yang diinstal paksa.
+
+          Setelan berikut dapat digunakan hanya untuk konfigurasi <ph name="DEFAULT_SCOPE" /> default:
+
+          <ph name="INSTALL_SOURCES" />: Setiap item dalam daftar ini adalah pola pencocokan gaya ekstensi (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item di daftar ini. Baik lokasi halaman maupun file <ph name="EXTENSION_SUFFIX_WILDCARD" /> tempat download dimulai (yaitu perujuk) harus diizinkan oleh pola ini.
+
+          <ph name="ALLOWED_TYPES" />: Setelan ini memberi akses jenis ekstensi/aplikasi yang diizinkan yang dapat diinstal di <ph name="PRODUCT_NAME" />. Nilainya adalah daftar string, masing-masing terdiri dari: <ph name="VALID_ALLOWED_TYPES" />. Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi selengkapnya tentang jenis ini.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna mencoba menginstal ekstensi namun diblokir oleh kebijakan, Toko Web Chrome akan menampilkan pesan error umum. Setelan ini mengizinkan Anda menambahkan teks ke pesan error. Setelan ini dapat digunakan untuk mengarahkan pengguna ke layanan bantuan, menjelaskan alasan ekstensi tertentu diblokir, atau hal-hal lain. Pesan error ini akan terpotong jika lebih dari 1000 karakter.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Menerima daftar host yang interaksinya dengan ekstensi akan diblokir. Hal ini termasuk melakukan injeksi JavaScript, mengubah dan melihat webRequests/webNavigation, serta melihat dan mengubah cookie. Formatnya mirip dengan Pola Pencocokan <ph name="LINK_TO_MATCH_PATTERNS" />, kecuali tidak ada path yang dapat ditentukan. Mis. "*://*.example.com". Format ini juga mendukung penulisan karakter pengganti TLD yang efektif, misalnya "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima daftar host yang dapat berinteraksi dengan ekstensi terlepas dari apakah host terdaftar di dalam <ph name="RUNTIME_BLOCKED_HOSTS" /> atau tidak. Formatnya sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
 
       Jika disetel ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk aplikasi ARC.</translation>
@@ -1955,6 +2115,12 @@
 <translation id="8493645415242333585">Menonaktifkan penyimpanan riwayat browser</translation>
 <translation id="8499172469244085141">Setelan Default (pengguna dapat menggantinya)</translation>
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
+<translation id="8527932539502116028">Menentukan printer yang tidak dapat digunakan pengguna.
+
+      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini.
+      </translation>
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Laman Tab Baru dan peluncur aplikasi</translation>
@@ -1967,6 +2133,7 @@
           Jika disetel ke false, perangkat tidak akan menggunakan atestasi perlindungan konten jarak jauh dan tidak dapat memutar konten yang dilindungi.
 
           Jika disetel ke true, atau tidak disetel, atestasi jarak jauh dapat digunakan untuk perlindungan konten.</translation>
+<translation id="8650974590712548439">Lokasi registry Windows untuk klien Windows:</translation>
 <translation id="8654286232573430130">Menentukan server mana yang harus dimasukkan ke daftar putih untuk autentikasi yang terintegrasi. Autentikasi yang terintegrasi hanya diaktifkan saat <ph name="PRODUCT_NAME" /> menerima tantangan autentikasi dari proxy atau dari server yang ada dalam daftar yang diizinkan ini.
 
           Pisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
@@ -2024,6 +2191,18 @@
 
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8927384992072706174">Memberikan konfigurasi untuk printer perusahan.
+
+      Kebijakan ini memungkinkan Anda memberikan kebijakan printer ke perangkat <ph name="PRODUCT_OS_NAME" />. Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON. Format ini sama dengan yang ada di kamus NativePrinters. Diperkirakan file yang berisi kira-kira 21.000 printer akan dienkode menjadi file 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      File tersebut didownload dan disimpan dalam cache. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" />, dan <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Jika Anda menetapkan kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat. Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang diberikan oleh tiap pengguna.
+      </translation>
 <translation id="8947415621777543415">Laporkan lokasi perangkat</translation>
 <translation id="8951350807133946005">Setel direktori cache disk</translation>
 <translation id="8952317565138994125">Menonaktifkan sinkronisasi data di <ph name="PRODUCT_NAME" /> menggunakan layanan sinkronisasi yang dihosting Google dan mencegah pengguna mengganti setelan ini.

@@ -67,7 +67,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
 <translation id="213900355088104901">To browse privately, open an incognito tab</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
-<translation id="2154710561487035718">Copy URL</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
 <translation id="2256128224215992540">Search and Site Suggestions</translation>
 <translation id="2267753748892043616">Add Account</translation>
@@ -145,14 +144,10 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="3567664240939803299">Do you want Google Smart Lock to save your password for this site?</translation>
 <translation id="3588820906588687999">Open Image in New Tab</translation>
 <translation id="3603009562372709545">Copy Link URL</translation>
-<translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
-
-To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
 <translation id="3628119975092896051">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
-<translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3779810277399252432">No Internet connection.</translation>
 <translation id="3783017676699494206">Save Image</translation>
@@ -209,7 +204,6 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
 <translation id="5011684439661633295">Hi <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">Allow</translation>
 <translation id="5062321486222145940">Install Google Drive</translation>
 <translation id="5083464117946352670">Cannot determine file size.</translation>
 <translation id="5094827893301452931">Tweet completed.</translation>
@@ -312,7 +306,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6797885426782475225">Voice Search</translation>
 <translation id="6807889908376551050">Show All...</translation>
 <translation id="681368974849482173">Item created</translation>
-<translation id="6871663519944855400">Open in incognito</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6945221475159498467">Select</translation>
@@ -340,7 +333,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7456847797759667638">Open Location...</translation>
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Company Name</translation>
-<translation id="7473891865547856676">No Thanks</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="750493650310597496">0 selected</translation>
 <translation id="7514365320538308">Download</translation>
@@ -370,7 +362,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Close All Tabs</translation>
-<translation id="8137558756159375272">Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Cancel</translation>
 <translation id="8225985093977202398">Cached Images and Files</translation>
 <translation id="8261506727792406068">Delete</translation>
@@ -383,6 +374,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8458397775385147834">1 item deleted</translation>
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8503813439785031346">Username</translation>
+<translation id="850600235656508448">Open in Incognito</translation>
 <translation id="8517375800490286174">Open-Source Licences</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tabs <ph name="FIRST_VISIBLE_TAB" /> through <ph name="LAST_VISIBLE_TAB" /> of <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8532105204136943229">Year of Expiry</translation>

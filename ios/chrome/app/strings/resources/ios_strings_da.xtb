@@ -67,7 +67,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="213900355088104901">Hvis du vil bruge nettet privat, skal du åbne en inkognitofane</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
-<translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
 <translation id="2256128224215992540">Søge- og websiteforslag</translation>
 <translation id="2267753748892043616">Tilføj konto</translation>
@@ -145,14 +144,10 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3567664240939803299">Skal Google Smart Lock gemme din adgangskode til dette website?</translation>
 <translation id="3588820906588687999">Åbn billede på ny fane</translation>
 <translation id="3603009562372709545">Kopiér linkets webadresse</translation>
-<translation id="360480449234699036">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
-
-Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke i søgefeltet.</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
 <translation id="3628119975092896051">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
-<translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3779810277399252432">Ingen internetforbindelse.</translation>
 <translation id="3783017676699494206">Gem billede</translation>
@@ -209,7 +204,6 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5010803260590204777">Åbn en inkognitofane for at søge på nettet uden at blive registreret.</translation>
 <translation id="5011684439661633295">Hej <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">Tillad</translation>
 <translation id="5062321486222145940">Installer Google Drev</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelse.</translation>
 <translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
@@ -312,7 +306,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6797885426782475225">Talesøgning</translation>
 <translation id="6807889908376551050">Vis alle...</translation>
 <translation id="681368974849482173">Elementet blev oprettet</translation>
-<translation id="6871663519944855400">Åbn i inkognito</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6945221475159498467">Vælg</translation>
@@ -340,7 +333,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7456847797759667638">Åbn placering...</translation>
 <translation id="7464701184726199289">Dette rydder synkroniserede data fra alle enheder. Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Virksomhedsnavn</translation>
-<translation id="7473891865547856676">Nej tak</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="750493650310597496">0 valgt</translation>
 <translation id="7514365320538308">Download</translation>
@@ -370,7 +362,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="806745655614357130">Hold mine data adskilt</translation>
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Luk alle faner</translation>
-<translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Annuller</translation>
 <translation id="8225985093977202398">Billeder og filer, der er gemt i cache</translation>
 <translation id="8261506727792406068">Slet</translation>

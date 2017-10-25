@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />（<ph name="ANNOTATION" />）</translation>
+<translation id="1290331692326790741">電波: 弱い</translation>
 <translation id="1293264513303784526">USB-C デバイス（左側面のポート）</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
 <translation id="2865888419503095837">ネットワーク情報</translation>
 <translation id="2872961005593481000">終了</translation>
+<translation id="2903844815300039659"><ph name="NAME" /> に接続されています（<ph name="STRENGTH" />）</translation>
 <translation id="2911940648265863620">画面を共有中です</translation>
 <translation id="2942516765047364088">シェルフの位置</translation>
 <translation id="2946119680249604491">接続を追加</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="315116470104423982">モバイル データ</translation>
+<translation id="3153444934357957346">マルチログインに使用できるのは <ph name="MULTI_PROFILE_USER_LIMIT" /> アカウントまでです。</translation>
 <translation id="3236488194889173876">利用できるモバイル ネットワークがありません</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="332587331255250389">バッテリーを交換してください</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
 <translation id="3400357268283240774">その他の設定</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
+<translation id="3465566417615315331">写真をクリックしてください</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="3621202678540785336">入力</translation>
 <translation id="3626281679859535460">輝度</translation>
+<translation id="3631369015426612114">次からの通知を許可</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="371370241367527062">前方のマイク</translation>
 <translation id="3771549900096082774">ハイ コントラスト モード</translation>
-<translation id="3775358506042162758">マルチ ログインできるアカウントは 3 つまでです。</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3798670284305777884">スピーカー（内蔵）</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4017989525502048489">レーザー ポインタ</translation>
+<translation id="4072264167173457037">電波: 中程度</translation>
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
 <translation id="4378551569595875038">接続中...</translation>
+<translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4479639480957787382">イーサネット</translation>
@@ -257,6 +263,7 @@
 <translation id="776344839111254542">クリックしてアップデートの詳細を表示する</translation>
 <translation id="7798302898096527229">キャンセルするには検索キーまたは Shift キーを押します。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">電波: 強い</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7977927628060636163">モバイル ネットワークを検索しています...</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
@@ -275,7 +282,6 @@
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8392234662362215700">キーボードのレイアウトを切り替えるには Ctrl+Shift+Space を押してください。</translation>
-<translation id="8392688371657486010">通知はありません</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">ネットワーク設定</translation>
 <translation id="8433977262951327081">シェルフに入力オプション メニューのふきだしを表示するためのショートカットが変わりました。今後は <ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> を使用してください。</translation>
@@ -305,6 +311,7 @@
 <translation id="9091626656156419976">ディスプレイ「<ph name="DISPLAY_NAME" />」を削除しました</translation>
 <translation id="9111102763498581341">ロック解除</translation>
 <translation id="9151726767154816831">更新するには、再起動して Powerwash を実行してください</translation>
+<translation id="9181036778675416867">シェルフにあるタッチペン ボタンをタップして、メモやスクリーンショットをとったり、アシスタント、レーザー ポインタ、虫メガネを使用したりすることができます。</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>

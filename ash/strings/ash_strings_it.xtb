@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Segnale debole</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta a sinistra)</translation>
 <translation id="1346748346194534595">Destra</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2865888419503095837">Informazioni di rete</translation>
 <translation id="2872961005593481000">Spegni</translation>
+<translation id="2903844815300039659">Connesso a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Stai condividendo lo schermo</translation>
 <translation id="2942516765047364088">Posizione shelf</translation>
 <translation id="2946119680249604491">Aggiungi connessione</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Riavvia per aggiornare</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="315116470104423982">Dati mobili</translation>
+<translation id="3153444934357957346">Puoi avere massimo <ph name="MULTI_PROFILE_USER_LIMIT" /> account per l'accesso simultaneo.</translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="332587331255250389">Sostituisci la batteria</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3400357268283240774">Impostazioni aggiuntive</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
+<translation id="3465566417615315331">Fai clic sulla tua foto</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="3621202678540785336">Ingresso</translation>
 <translation id="3626281679859535460">Luminosità</translation>
+<translation id="3631369015426612114">Consenti notifiche da:</translation>
 <translation id="3712407551474845318">Acquisisci area</translation>
 <translation id="371370241367527062">Microfono anteriore</translation>
 <translation id="3771549900096082774">Modalità ad alto contrasto</translation>
-<translation id="3775358506042162758">Puoi avere massimo tre account per l'accesso simultaneo.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Blocca</translation>
 <translation id="3798670284305777884">Altoparlante (interno)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4017989525502048489">Puntatore laser</translation>
+<translation id="4072264167173457037">Segnale medio</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lente d'ingrandimento</translation>
 <translation id="4351433414020964307">L'assistente è in fase di caricamento…</translation>
 <translation id="4378551569595875038">Connessione...</translation>
+<translation id="4379531060876907730">Ecco gli strumenti per il tuo stilo</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
 <translation id="7798302898096527229">Premi il tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Segnale forte</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7977927628060636163">Ricerca di reti mobili...</translation>
 <translation id="7982789257301363584">Rete</translation>
@@ -274,7 +281,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="8308637677604853869">Menu precedente</translation>
 <translation id="8351131234907093545">Crea nota</translation>
 <translation id="8392234662362215700">Premi CTRL + MAIUSC + barra spaziatrice per cambiare il layout della tastiera.</translation>
-<translation id="8392688371657486010">Nessuna notifica</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433186206711564395">Impostazioni di rete</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella shelf è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9111102763498581341">Sblocca</translation>
 <translation id="9151726767154816831">Riavvia ed esegui Powerwash per aggiornare</translation>
+<translation id="9181036778675416867">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare l'assistente, il puntatore laser o la lente d'ingrandimento.</translation>
 <translation id="9194617393863864469">Accedi a un altro utente...</translation>
 <translation id="9201131092683066720">Percentuale di caricamento della batteria: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>

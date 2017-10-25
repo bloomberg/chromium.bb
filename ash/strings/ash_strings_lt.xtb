@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Silpnas signalas</translation>
 <translation id="1293264513303784526">USB-C įrenginys (prievadas kairėje)</translation>
 <translation id="1346748346194534595">Dešinė</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C įrenginys (prievadas kairėje, priekinėje dalyje)</translation>
 <translation id="2865888419503095837">Tinklo informacija</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
+<translation id="2903844815300039659">Prisijungėte prie „<ph name="NAME" />“, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Bendrinate savo ekraną</translation>
 <translation id="2942516765047364088">Lentynos pozicija</translation>
 <translation id="2946119680249604491">Pridėti ryšį</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="315116470104423982">Duomenys mobiliesiems</translation>
+<translation id="3153444934357957346">Naudodami kelių paskyrų funkciją, galite turėti iki <ph name="MULTI_PROFILE_USER_LIMIT" /> paskyr.</translation>
 <translation id="3236488194889173876">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="332587331255250389">Pakeiskite akumuliatorių</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">USB-C įrenginys (prievadas dešinėje, priekinėje dalyje)</translation>
 <translation id="3400357268283240774">Papildomi nustatymai</translation>
 <translation id="3445925074670675829">USB-C įrenginys</translation>
+<translation id="3465566417615315331">Spustelėkite savo nuotrauką</translation>
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="3510164367642747937">Paryškinti pelės žymeklį</translation>
 <translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE" />“ (reikia paleisti iš naujo)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Brailio ekranas prijungtas.</translation>
 <translation id="3621202678540785336">Įvestis</translation>
 <translation id="3626281679859535460">Šviesumas</translation>
+<translation id="3631369015426612114">Leisti pranešimus iš toliau nurodytų šaltinių.</translation>
 <translation id="3712407551474845318">Užfiksuoti sritį</translation>
 <translation id="371370241367527062">Priekinis mikrofonas</translation>
 <translation id="3771549900096082774">Didelio kontrasto režimas</translation>
-<translation id="3775358506042162758">Naudodami kelių paskyrų funkciją, galite turėti iki trijų paskyrų.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Užrakinti</translation>
 <translation id="3798670284305777884">Garsiakalbis (vidinis)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="4017989525502048489">Lazerinis žymeklis</translation>
+<translation id="4072264167173457037">Vidutinio stiprumo signalas</translation>
 <translation id="4279490309300973883">Dubliuojama</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Didinamasis stiklas</translation>
 <translation id="4351433414020964307">Padėjėjas įkeliamas...</translation>
 <translation id="4378551569595875038">Jungiamasi...</translation>
+<translation id="4379531060876907730">Tai yra jūsų rašiklio įrankiai</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="4479639480957787382">Eternetas</translation>
@@ -256,6 +262,7 @@
 <translation id="776344839111254542">Spustelėkite ir peržiūrėkite išsamią atnaujinimo informaciją</translation>
 <translation id="7798302898096527229">Jei norite atšaukti, paspauskite paieškos klavišą arba „Shift“.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Stiprus signalas</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7977927628060636163">Ieškoma mobiliojo ryšio tinklų...</translation>
 <translation id="7982789257301363584">Tinklas</translation>
@@ -274,7 +281,6 @@
 <translation id="8308637677604853869">Ankstesnis meniu</translation>
 <translation id="8351131234907093545">Sukurti užrašą</translation>
 <translation id="8392234662362215700">Paspauskite „Control“–„Shift“–tarpo klavišą, kad perjungtumėte klaviatūros išdėstymą.</translation>
-<translation id="8392688371657486010">Neturite jokių pranešimų</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8433186206711564395">Tinklo nustatymai</translation>
 <translation id="8433977262951327081">Pakeistas įvesties parinkčių meniu debesėlio rodymo lentynoje spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose dar
 <translation id="9091626656156419976">Pašalintas vaizdas „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="9111102763498581341">Atrakinti</translation>
 <translation id="9151726767154816831">Kad atnaujintumėte, paleiskite iš naujo ir naudokite „Powerwash“</translation>
+<translation id="9181036778675416867">Palieskite rašiklio mygtuką lentynoje, kad galėtumėte sukurti užrašą, ekrano kopiją, naudoti padėjėją, lazerinį žymeklį arba didinamąjį stiklą.</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
 <translation id="9201131092683066720">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>

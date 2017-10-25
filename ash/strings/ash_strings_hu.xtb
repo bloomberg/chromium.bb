@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Gyenge jel</translation>
 <translation id="1293264513303784526">C típusú USB-vel kompatibilis eszköz (bal oldali port)</translation>
 <translation id="1346748346194534595">Jobbra</translation>
 <translation id="1383876407941801731">Keresés</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">C típusú USB-vel kompatibilis eszköz (bal első port)</translation>
 <translation id="2865888419503095837">Hálózatinformáció</translation>
 <translation id="2872961005593481000">Leállítás</translation>
+<translation id="2903844815300039659">Csatlakozva <ph name="NAME" /> hálózathoz, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">A képernyője meg van osztva</translation>
 <translation id="2942516765047364088">Polc pozíciója</translation>
 <translation id="2946119680249604491">Kapcsolat hozzáadása</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Indítsa újra a frissítéshez</translation>
 <translation id="3147142846278915599">Indító (alkalmazások szinkronizálása…)</translation>
 <translation id="315116470104423982">Mobiladatok</translation>
+<translation id="3153444934357957346">Legfeljebb <ph name="MULTI_PROFILE_USER_LIMIT" /> fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="3236488194889173876">Nem áll rendelkezésre mobilhálózat</translation>
 <translation id="3294437725009624529">Vendég</translation>
 <translation id="332587331255250389">Cserélje ki az akkumulátort</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="3400357268283240774">További beállítások</translation>
 <translation id="3445925074670675829">C típusú USB-vel kompatibilis eszköz</translation>
+<translation id="3465566417615315331">Kattintson a képére</translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
 <translation id="3510164367642747937">Egérmutató kiemelése</translation>
 <translation id="3573179567135747900">Visszatérés ehhez: "<ph name="FROM_LOCALE" />" (újraindítás szükséges)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Braille-kijelző csatlakoztatva.</translation>
 <translation id="3621202678540785336">Bemenet</translation>
 <translation id="3626281679859535460">Fényerő</translation>
+<translation id="3631369015426612114">Értesítések engedélyezése a következőktől:</translation>
 <translation id="3712407551474845318">Terület rögzítése</translation>
 <translation id="371370241367527062">Elülső mikrofon</translation>
 <translation id="3771549900096082774">Nagy kontrasztú mód</translation>
-<translation id="3775358506042162758">Legfeljebb három fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zárolás</translation>
 <translation id="3798670284305777884">Hangszóró (belső)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="4017989525502048489">Lézermutató</translation>
+<translation id="4072264167173457037">Közepes jel</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Nagyító</translation>
 <translation id="4351433414020964307">Segéd betöltése…</translation>
 <translation id="4378551569595875038">Kapcsolódás folyamatban…</translation>
+<translation id="4379531060876907730">Ezek az érintőceruza-eszközök</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="776344839111254542">Kattintson a frissítés részleteinek megtekintéséhez</translation>
 <translation id="7798302898096527229">A kikapcsoláshoz nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> és <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Erős jel</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7977927628060636163">Mobilhálózatok keresése…</translation>
 <translation id="7982789257301363584">Hálózat</translation>
@@ -274,7 +281,6 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="8308637677604853869">Előző menü</translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
 <translation id="8392234662362215700">A Control + Shift + szóköz billentyűk megnyomásával válthat a billentyűzetkiosztások között.</translation>
-<translation id="8392688371657486010">Nincsenek értesítései</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433186206711564395">Hálózati beállítások</translation>
 <translation id="8433977262951327081">Megváltozott a beviteli lehetőségek menüjének buborékját a polcon megjelenítő gyorsparancs. A(z) <ph name="OLD_SHORTCUT" /> helyett használja a(z) <ph name="NEW_SHORTCUT" /> billentyűkombinációt.</translation>
@@ -304,6 +310,7 @@ Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer 
 <translation id="9091626656156419976">A(z) <ph name="DISPLAY_NAME" /> kijelző eltávolítva</translation>
 <translation id="9111102763498581341">Feloldás</translation>
 <translation id="9151726767154816831">Indítsa újra, és végezze el a Powerwash folyamatot a frissítéshez</translation>
+<translation id="9181036778675416867">Koppintson az érintőceruza gombjára, ha jegyzetet vagy képernyőképet szeretne készíteni, illetve ha a Segédet, a lézermutatót vagy a nagyítót kívánja használni.</translation>
 <translation id="9194617393863864469">Bejelentkezés másik felhasználóként…</translation>
 <translation id="9201131092683066720">Az akkumulátor töltöttsége: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Kilépés az Egységes asztali módból</translation>

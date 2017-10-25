@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">期間</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 個月}other{# 個月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/秒</translation>
+<translation id="1812519734428420144">星級評等：<ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 小時 }other{# 小時 }}</translation>
 <translation id="1842960171412779397">選取</translation>
 <translation id="1860796786778352021">通知關閉</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">所有應用程式</translation>
 <translation id="4320177379694898372">沒有網際網路連線</translation>
 <translation id="4588090240171750605">向右捲動</translation>
+<translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 則未讀通知</translation>
 <translation id="4730374152663651037">常用的應用程式</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{還剩 1 個月}other{還剩 # 個月}}</translation>
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /> 鍵</translation>

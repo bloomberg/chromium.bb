@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">Période</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mois}one{# mois}other{# mois}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> Mo/s</translation>
+<translation id="1812519734428420144">Note : <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 heure et  }one{# heure et  }other{# heures et  }}</translation>
 <translation id="1842960171412779397">sélectionner</translation>
 <translation id="1860796786778352021">Fermer la notification</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
 <translation id="4320177379694898372">Aucune connexion Internet.</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
+<translation id="4724120544754982507">Centre de notification, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifications non lues</translation>
 <translation id="4730374152663651037">SOUVENT UTILISÉES</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 mois restant}one{# mois restant}other{# mois restants}}</translation>
 <translation id="4820616160060340806">Commande + <ph name="KEY_COMBO_NAME" /></translation>

@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Tín hiệu yếu</translation>
 <translation id="1293264513303784526">Thiết bị USB-C (cổng bên trái)</translation>
 <translation id="1346748346194534595">Phải</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
 <translation id="2865888419503095837">Thông tin mạng</translation>
 <translation id="2872961005593481000">Tắt</translation>
+<translation id="2903844815300039659">Đã kết nối tới <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Bạn đang chia sẻ màn hình của mình</translation>
 <translation id="2942516765047364088">Vị trí giá</translation>
 <translation id="2946119680249604491">Thêm kết nối</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
 <translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
 <translation id="315116470104423982">Dữ liệu di động</translation>
+<translation id="3153444934357957346">Bạn chỉ có thể có tối đa <ph name="MULTI_PROFILE_USER_LIMIT" /> tài khoản khi sử dụng tính năng đăng nhập nhiều tài khoản.</translation>
 <translation id="3236488194889173876">Không có mạng di động nào</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="332587331255250389">Vui lòng thay pin</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
 <translation id="3400357268283240774">Cài đặt bổ sung</translation>
 <translation id="3445925074670675829">Thiết bị USB-C</translation>
+<translation id="3465566417615315331">Nhấp vào ảnh của bạn</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="3510164367642747937">Đánh dấu con trỏ chuột</translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
+<translation id="3631369015426612114">Cho phép thông báo từ các nguồn sau</translation>
 <translation id="3712407551474845318">Chụp một vùng màn hình</translation>
 <translation id="371370241367527062">Micrô mặt trước</translation>
 <translation id="3771549900096082774">Chế độ tương phản cao</translation>
-<translation id="3775358506042162758">Bạn chỉ có thể có tối đa ba tài khoản khi đăng nhập nhiều tài khoản.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Khóa</translation>
 <translation id="3798670284305777884">Loa (bên trong)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
 <translation id="4017989525502048489">Con trỏ laser</translation>
+<translation id="4072264167173457037">Tín hiệu trung bình</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Kính lúp</translation>
 <translation id="4351433414020964307">Trợ lý đang tải...</translation>
 <translation id="4378551569595875038">Đang kết nối…</translation>
+<translation id="4379531060876907730">Đây là các công cụ bút cảm ứng</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="776344839111254542">Nhấp để xem chi tiết cập nhật</translation>
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Tín hiệu mạnh</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7977927628060636163">Đang tìm kiếm mạng di động...</translation>
 <translation id="7982789257301363584">Mạng</translation>
@@ -274,7 +281,6 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="8308637677604853869">Menu trước</translation>
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392234662362215700">Ấn Control-Shift-Space để chuyển đổi bố cục bàn phím.</translation>
-<translation id="8392688371657486010">Bạn không có thông báo</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8433977262951327081">Phím tắt để hiển thị bong bóng menu tùy chọn nhập trong giá đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay cho <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="9091626656156419976">Đã xóa màn hình <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Mở khóa</translation>
 <translation id="9151726767154816831">Khởi động lại và powerwash để cập nhật</translation>
+<translation id="9181036778675416867">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng trợ lý, con trỏ laser hoặc kính lúp.</translation>
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>

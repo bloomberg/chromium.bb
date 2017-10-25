@@ -147,7 +147,6 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />服務條款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (已複製到 Chrome)</translation>
 <translation id="5251420635869119124">以訪客身分使用 Chrome 不會留下任何紀錄。</translation>
-<translation id="5253588388888612165">如果你和「<ph name="PROFILE_NAME" />」共用這台電腦，只要在 Chrome 新增個人身分，就能享有專屬的瀏覽環境。如果你並未與對方共用電腦，請解除其 Google 帳戶的連結。</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 將於 1 秒後重新啟動。}other{Google Chrome 將於 # 秒後重新啟動。}}</translation>
 <translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
 <translation id="5386244825306882791">這個擴充功能也會控管 Chrome 啟動時或你使用網址列搜尋時所顯示的網頁。</translation>
@@ -163,7 +162,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="557283862590186398">Chrome 需要相關權限，才能讓這個網站使用你的麥克風。</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>
-<translation id="568643307450491754">你的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="5774845247549698882">Chrome 作業系統的介面文字已設為這種語言</translation>

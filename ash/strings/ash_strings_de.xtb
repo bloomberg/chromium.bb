@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Schwaches Signal</translation>
 <translation id="1293264513303784526">USB-C-Gerät (Port links)</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1383876407941801731">Suchen</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C-Gerät (Port vorne links)</translation>
 <translation id="2865888419503095837">Netzwerkinformationen</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
+<translation id="2903844815300039659">Verbunden mit <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Ihr Bildschirm ist momentan freigegeben</translation>
 <translation id="2942516765047364088">Ablageposition</translation>
 <translation id="2946119680249604491">Verbindung hinzufügen</translation>
@@ -94,14 +96,16 @@
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="315116470104423982">Mobilfunk</translation>
+<translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
 <translation id="3294437725009624529">Gast</translation>
-<translation id="332587331255250389">Bitte ersetzen Sie den Akku</translation>
+<translation id="332587331255250389">Bitte tauschen Sie die Batterien aus</translation>
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
 <translation id="3368922792935385530">Verbunden</translation>
 <translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
 <translation id="3400357268283240774">Zusätzliche Einstellungen</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
+<translation id="3465566417615315331">Klicken Sie auf Ihr Foto.</translation>
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="3510164367642747937">Mauszeiger hervorheben</translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
+<translation id="3631369015426612114">Alle Benachrichtigungen zulassen von:</translation>
 <translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="371370241367527062">Mikrofon auf der Vorderseite</translation>
 <translation id="3771549900096082774">Modus mit hohem Kontrast</translation>
-<translation id="3775358506042162758">Bei der Mehrfachanmeldung sind maximal drei Konten zulässig.</translation>
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3784455785234192852">Sperren</translation>
 <translation id="3798670284305777884">Lautsprecher (intern)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
+<translation id="4072264167173457037">Durchschnittliches Signal</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4338109981321384717">Lupe</translation>
 <translation id="4351433414020964307">Assistant wird geladen…</translation>
 <translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
+<translation id="4379531060876907730">Dies sind Ihre Eingabestift-Tools</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="776344839111254542">Zum Aufrufen von Aktualisierungsdetails klicken</translation>
 <translation id="7798302898096527229">Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7977927628060636163">Nach Mobilfunknetzen wird gesucht…</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
@@ -274,7 +281,6 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8392234662362215700">Drücken Sie Strg + Shift + Leertaste, um das Tastaturlayout zu ändern.</translation>
-<translation id="8392688371657486010">Sie haben keine Benachrichtigungen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
 <translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="9091626656156419976">Bildschirm <ph name="DISPLAY_NAME" /> wurde entfernt</translation>
 <translation id="9111102763498581341">Entsperren</translation>
 <translation id="9151726767154816831">Zum Aktualisieren Neustart und Powerwash durchführen</translation>
+<translation id="9181036778675416867">Tippen Sie auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, Assistent zu aktivieren oder den Laserpointer oder die Vergrößerungsfunktion zu verwenden.</translation>
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE" /> % geladen.</translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>

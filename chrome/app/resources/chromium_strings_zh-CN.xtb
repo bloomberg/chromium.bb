@@ -84,7 +84,6 @@
 <translation id="3762167353400286894">Chromium 操作系统界面目前使用的是这种语言</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="3852700440713538496">将 Chromium 固定到任务栏</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
 <translation id="390894725198123737">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐号的其他 Chromium 用户都能够访问或同步处理这些密码。</translation>
@@ -168,7 +167,6 @@
 <translation id="6505742536731484931">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6526111688217511984">Chromium 需要具备存储空间使用权限，才能下载文件。</translation>
-<translation id="6638567566961868659">在 Chromium 菜单或书签栏中查找您的书签。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6717134281241384636">您的个人资料来自更高版本的 Chromium，因此无法使用。
 
@@ -222,7 +220,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7975919845073681630">这是 Chromium 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
 <translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME" />”版…</translation>
-<translation id="8134284582177628525">如果您与<ph name="PROFILE_NAME" />共用这台计算机，将您的帐号添加到Chromium，即可在单独的环境中浏览。或者，您也可以取消与其Google帐号的关联。</translation>
 <translation id="8157153840442649507">Chromium 界面目前使用的是这种语言</translation>
 <translation id="81770708095080097">此文件存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="8222496066431494154">请在您的手机上安装 Chromium。我们会将一条短信发送到您帐号的辅助电话号码：<ph name="PHONE_NUMBER" /></translation>

@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Tastatură pe ecran dezactivată</translation>
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Semnal slab</translation>
 <translation id="1293264513303784526">Dispozitiv USB-C (portul din stânga)</translation>
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="1383876407941801731">Caută</translation>
@@ -69,6 +70,8 @@
 <translation id="2532589005999780174">Mod de contrast ridicat</translation>
 <translation id="2597972630681408282">Lumină de noapte: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Trimite</translation>
+<translation id="2675319268637823299">Un administrator a interzis conectarea multiplă pentru <ph name="USER_EMAIL" />.
+    Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="2700058918926273959">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />. Veți fi deconectat(ă).</translation>
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
 <translation id="2761704814324807722">Bară de stare, durată <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -79,6 +82,7 @@
 <translation id="2844169650293029770">Dispozitiv USB-C (portul din stânga față)</translation>
 <translation id="2865888419503095837">Informații despre rețea</translation>
 <translation id="2872961005593481000">Închide</translation>
+<translation id="2903844815300039659">Conectat la <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Acum permiți accesul la ecran</translation>
 <translation id="2942516765047364088">Poziție raft</translation>
 <translation id="2946119680249604491">Adăugați o conexiune</translation>
@@ -94,6 +98,7 @@
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
 <translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="315116470104423982">Date mobile</translation>
+<translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="332587331255250389">Înlocuiește bateria</translation>
@@ -102,6 +107,7 @@
 <translation id="3371140690572404006">Dispozitiv USB-C (portul din dreapta față)</translation>
 <translation id="3400357268283240774">Setări suplimentare</translation>
 <translation id="3445925074670675829">Dispozitiv USB-C</translation>
+<translation id="3465566417615315331">Dă clic pe fotografia ta</translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
 <translation id="3510164367642747937">Evidențiază cursorul mouse-ului</translation>
 <translation id="3573179567135747900">Modifică înapoi la „<ph name="FROM_LOCALE" />” (este necesară repornirea)</translation>
@@ -110,10 +116,10 @@
 <translation id="3606978283550408104">Afișajul Braille este conectat.</translation>
 <translation id="3621202678540785336">Intrări</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
+<translation id="3631369015426612114">Permite notificările de la</translation>
 <translation id="3712407551474845318">Capturează zona</translation>
 <translation id="371370241367527062">Microfonul din față</translation>
 <translation id="3771549900096082774">Mod de contrast ridicat</translation>
-<translation id="3775358506042162758">Conectarea multiplă acceptă maximum trei conturi.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Blocați</translation>
 <translation id="3798670284305777884">Difuzor (intern)</translation>
@@ -126,11 +132,13 @@
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
 <translation id="4017989525502048489">Indicator laser</translation>
+<translation id="4072264167173457037">Semnal mediu</translation>
 <translation id="4279490309300973883">Oglindire</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupă</translation>
 <translation id="4351433414020964307">Asistentul se încarcă...</translation>
 <translation id="4378551569595875038">Se stabilește conexiunea...</translation>
+<translation id="4379531060876907730">Acestea sunt instrumentele pentru creion</translation>
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -200,6 +208,7 @@
 <translation id="632744581670418035">Suprapunere a tastaturii</translation>
 <translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Gata</translation>
 <translation id="6452181791372256707">Respingeți</translation>
 <translation id="6453179446719226835">Limba a fost schimbată</translation>
 <translation id="6459472438155181876">Se extinde ecranul pe <ph name="DISPLAY_NAME" /></translation>
@@ -255,6 +264,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="776344839111254542">Dă clic pentru a vedea detaliile actualizării</translation>
 <translation id="7798302898096527229">Apasă pe tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Semnal puternic</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7977927628060636163">Se caută rețele mobile…</translation>
 <translation id="7982789257301363584">Rețea</translation>
@@ -273,7 +283,6 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>
 <translation id="8351131234907093545">Creează o notă</translation>
 <translation id="8392234662362215700">Apasă tastele Control-Shift-Spațiu pentru a comuta aranjamentul tastaturii.</translation>
-<translation id="8392688371657486010">Nu ai notificări</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433186206711564395">Setări de rețea</translation>
 <translation id="8433977262951327081">Comanda rapidă pentru afișarea în raft a balonului meniului cu opțiunile de introducere a textului a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împăr�
 <translation id="8825534185036233643">Oglindirea cu mai mult de două afișaje nu este acceptată.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Tasta de căutare + Esc</translation>
+<translation id="8870509716567206129">Aplicația nu acceptă ecranul împărțit.</translation>
 <translation id="8878886163241303700">Ecran extins</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>
 <translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>
@@ -303,6 +313,7 @@ Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împăr�
 <translation id="9091626656156419976">S-a eliminat afișajul <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Deblochează</translation>
 <translation id="9151726767154816831">Pentru a actualiza, repornește și folosește Powerwash</translation>
+<translation id="9181036778675416867">Atinge butonul creion de pe raft ca să creezi note și capturi de ecran, să folosești Asistentul, indicatorul laser sau lupa.</translation>
 <translation id="9194617393863864469">Conectează-te cu alt nume de utilizator...</translation>
 <translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Se iese din modul desktop unificat</translation>

@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">ระยะเวลา</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 เดือน}other{# เดือน}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/วินาที</translation>
+<translation id="1812519734428420144">เริ่มให้คะแนน <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ชั่วโมงกับอีก }other{# ชั่วโมงกับอีก }}</translation>
 <translation id="1842960171412779397">เลือก</translation>
 <translation id="1860796786778352021">ปิดการแจ้งเตือน</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">แอปทั้งหมด</translation>
 <translation id="4320177379694898372">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
+<translation id="4724120544754982507">ศูนย์การแจ้งเตือนมีการแจ้งเตือนที่ยังไม่อ่าน <ph name="UNREAD_NOTIFICATION_COUNT" /> รายการ</translation>
 <translation id="4730374152663651037">แอปที่ใช้บ่อย</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{เหลือ 1 เดือน}other{เหลือ # เดือน}}</translation>
 <translation id="4820616160060340806">คำสั่ง+<ph name="KEY_COMBO_NAME" /></translation>

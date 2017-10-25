@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1279938420744323401">„<ph name="DISPLAY_NAME" />“ (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">слаб сигнал</translation>
 <translation id="1293264513303784526">USB-C устройство (левият порт)</translation>
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1383876407941801731">Търсене</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
 <translation id="2865888419503095837">Информация за мрежата</translation>
 <translation id="2872961005593481000">Изключване</translation>
+<translation id="2903844815300039659">Установена е връзка с мрежата „<ph name="NAME" />“, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Споделяте екрана си</translation>
 <translation id="2942516765047364088">Позиция на лавицата</translation>
 <translation id="2946119680249604491">Добавяне на връзка</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
 <translation id="3147142846278915599">Стартов панел (приложенията се синхронизират...)</translation>
 <translation id="315116470104423982">Мобилни данни</translation>
+<translation id="3153444934357957346">Можете да използвате най-много <ph name="MULTI_PROFILE_USER_LIMIT" /> профила с функцията за централизиран вход.</translation>
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="332587331255250389">Моля, заменете батерията</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
 <translation id="3400357268283240774">Допълнителни настройки</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
+<translation id="3465566417615315331">Кликнете върху снимката си</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
 <translation id="3510164367642747937">Открояване на курсора на мишката</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="3621202678540785336">Вход</translation>
 <translation id="3626281679859535460">Яркост</translation>
+<translation id="3631369015426612114">Разрешаване на известията от следните източници</translation>
 <translation id="3712407551474845318">Заснемане на област</translation>
 <translation id="371370241367527062">Преден микрофон</translation>
 <translation id="3771549900096082774">Режим на висок контраст</translation>
-<translation id="3775358506042162758">В централизирания вход можете да имате най-много три профила.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Заключване</translation>
 <translation id="3798670284305777884">Високоговорител (вътрешен)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
+<translation id="4072264167173457037">умерен сигнал</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Асистент се зарежда...</translation>
 <translation id="4378551569595875038">Установява се връзка...</translation>
+<translation id="4379531060876907730">Това са инструментите ви за писане</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@
 <translation id="776344839111254542">Кликнете, за да видите подробности за актуализацията</translation>
 <translation id="7798302898096527229">Натиснете клавиша „търсене“ или Shift, за да анулирате.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">силен сигнал</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7977927628060636163">Търсят се мобилни мрежи...</translation>
 <translation id="7982789257301363584">Мрежа</translation>
@@ -274,7 +281,6 @@
 <translation id="8308637677604853869">Предишно меню</translation>
 <translation id="8351131234907093545">Създаване на бележка</translation>
 <translation id="8392234662362215700">Натиснете „Control-Shift-интервал“ за превключване на клавиатурната подредба.</translation>
-<translation id="8392688371657486010">Нямате известия</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
 <translation id="8433977262951327081">Комбинацията за показване в лавицата на балончето с менюто за опциите за въвеждане е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@
 <translation id="9091626656156419976">Екранът „<ph name="DISPLAY_NAME" />“ бе премахнат</translation>
 <translation id="9111102763498581341">Отключване</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
+<translation id="9181036778675416867">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате асистента, лазерната показалка или лупата.</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>

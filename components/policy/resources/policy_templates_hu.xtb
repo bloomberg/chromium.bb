@@ -49,6 +49,12 @@
 
       Ha a házirend értéke hamis, akkor a fejlesztői kapcsoló állapota nem lesz jelentve.</translation>
 <translation id="1160939557934457296">Biztonságos Böngészés figyelmeztetőoldal</translation>
+<translation id="1166377463685560145">Meghatározza, hogy mely nyomtatókat nem használhatja a felhasználó.
+
+      A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_BLACKLIST" /> lehetőség van kiválasztva a(z) <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> házirendnél.
+
+      Ha használatban van a házirend, akkor a felhasználó minden nyomtatót használhat, kivéve azokat, amelyek azonosítója szerepel a házirend felsorolásában.
+      </translation>
 <translation id="1198465924256827162">Milyen gyakran küld állapotfrissítéseket az eszköz (ezredmásodpercben).
 
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
@@ -81,6 +87,12 @@
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
 <translation id="1397855852561539316">Alapértelmezett keresési szolgáltató javasolt URL-je</translation>
+<translation id="1420281424655200442">Azt vezérli, hogy a(z) <ph name="DEVICE_PRINTERS_POLICY" /> házirend melyik nyomtatói állnak a felhasználók rendelkezésére.
+
+      Kijelöli, hogy melyik hozzáférési házirend van használatban a tömeges nyomtatóbeállításhoz. Ha a(z) <ph name="PRINTERS_ALLOW_ALL" /> van kiválasztva, minden nyomtató megjelenik. Ha a(z) <ph name="PRINTERS_BLACKLIST" /> van kiválasztva, a(z) <ph name="DEVICE_PRINTERS_BLACKLIST" /> házirend korlátozza a megadott nyomtatókhoz való hozzáférést. Ha a(z) <ph name="PRINTERS_WHITELIST" /> van kiválasztva, a(z) <ph name="DEVICE_PRINTERS_WHITELIST" /> csak a kiválasztható nyomtatókat jelöli ki.
+
+      Ha a házirend nincs beállítva, a(z) <ph name="PRINTERS_BLACKLIST" /> van érvényben.
+      </translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
@@ -100,6 +112,11 @@
 
       Ha a házirend nincs beállítva, akkor a vállalat által felügyelt felhasználókra a „MultiProfileUserBehaviorMustBePrimary” alapértelmezett érték vonatkozik, a nem felügyelt felhasználókra pedig a „MultiProfileUserBehaviorUnrestricted” érték vonatkozik.</translation>
 <translation id="1465619815762735808">Kattintson a lejátszáshoz</translation>
+<translation id="1466133662354365542">Engedélyezi a <ph name="PRODUCT_NAME" /> automatikus kitöltés funkcióját, és lehetővé teszi a felhasználók számára az internetes űrlapok automatikus kitöltését korábban eltárolt címekkel és hitelkártyaadatokkal.
+
+      Ha letiltja ezt a beállítást, az automatikus kitöltés funkció nem ajánlja fel és nem végzi el a hitelkártyaadatok kitöltését, és nem ment további hitelkártyaadatokat, amelyeket a felhasználó az interneten való böngészés közben ad meg.
+
+      Ha engedélyezi ezt a beállítást, vagy nem állítja be az értékét, a használó a teljes automatikus kitöltés funkciót (beleértve a hitelkártyákat is) vezérelheti a kezelőfelületen.</translation>
 <translation id="1468307069016535757">A nagy kontrasztú mód kisegítő lehetőség alapértelmezett állapotának beállítása a bejelentkezési képernyőn.
 
           Ha a házirend értéke igaz, akkor a nagy kontrasztú mód engedélyezett lesz a bejelentkezési képernyő megjelenítésekor.
@@ -140,6 +157,19 @@
 <translation id="1561424797596341174">A házirend felülírja a távoli elérésű gazdagép hibakeresés végzésére szolgáló buildjeit</translation>
 <translation id="1561967320164410511">U2F plusz bővítmények az egyéni hitelesítéshez</translation>
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
+<translation id="1603058613431276040">Eszközökhöz kötött vállalati nyomtatókhoz biztosít beállításokat.
+
+      Ez a házirend lehetővé teszi, hogy nyomtatóbeállításokat adjon meg <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz. A fájl mérete nem lépheti túl az 5 MB-ot, és JSON kódolással kell rendelkeznie. A formátum megegyezik a NativePrinters szótáréval. Becslések szerint egy kb. 21 000 nyomtatót tartalmazó kódolt fájl mérete 5 MB. A letöltés integritását a kriptográfiai kivonattal ellenőrzi a rendszer.
+
+      A rendszer letölti és gyorsítótárba helyezi a fájlt. Ha módosul az URL vagy a kivonat, a fájl újból letöltésre kerül.
+
+      Ha be van állítva a házirend, a(z) <ph name="PRODUCT_OS_NAME" /> rendszer letölti a nyomtatóbeállításokat tartalmazó fájlt, és a(z) <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, a(z) <ph name="DEVICE_PRINTERS_WHITELIST" />, valamint a(z) <ph name="DEVICE_PRINTERS_BLACKLIST" /> házirendeknek megfelelően hozzáférhetővé teszi a nyomtatókat.
+
+      A házirend nem befolyásolja, hogy a felhasználók beállíthatnak-e nyomtatókat saját eszközeiken. A házirend célja, hogy kiegészítse az egyéni felhasználók nyomtatóbeállításait.
+
+      Ez a házirend kiegészíti a(z) <ph name="BULK_PRINTERS_POLICY" /> házirendet.
+
+      Ha a házirend nincs beállítva, nem lesznek megadva eszközhöz kötött nyomtatók, a többi <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> házirendet pedig figyelmen kívül hagyja a rendszer.</translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
 <translation id="163200210584085447">A listában szereplő mintákat a rendszer egyezteti a kérelmező
@@ -240,6 +270,12 @@
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
 <translation id="203096360153626918">A házirend nincs hatással az androidos alkalmazásokra. Az androidos alkalmazások akkor is teljes képernyős módra válthatnak, ha a házirend beállítása <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Letiltott vállalati nyomtatók</translation>
+<translation id="2063380907529983889">Azt vezérli, hogy a(z) <ph name="BULK_PRINTERS_POLICY" /> házirend melyik nyomtatói állnak a felhasználók rendelkezésére.
+
+      Kijelöli, hogy melyik hozzáférési házirend van használatban a tömeges nyomtatóbeállításhoz. Ha a(z) <ph name="PRINTERS_ALLOW_ALL" /> van kiválasztva, minden nyomtató megjelenik. Ha a(z) <ph name="PRINTERS_BLACKLIST" /> van kiválasztva, a(z) <ph name="BULK_PRINTERS_BLACKLIST" /> házirend korlátozza a megadott nyomtatókhoz való hozzáférést. Ha a(z) <ph name="PRINTERS_WHITELIST" /> van kiválasztva, a(z) <ph name="BULK_PRINTERS_WHITELIST" /> csak a kiválasztható nyomtatókat jelöli ki.
+
+      Ha a házirend nincs beállítva, a(z) <ph name="PRINTERS_BLACKLIST" /> van érvényben.
+      </translation>
 <translation id="206623763829450685">Meghatározza, hogy a <ph name="PRODUCT_NAME" /> milyen HTTP-hitelesítési sémákat támogat.
 
           Lehetséges értékek: „basic”, „digest”, „ntlm” és „negotiate”. Több érték esetén az egyes értékeket vesszővel kell elválasztani.
@@ -329,6 +365,7 @@
 <translation id="2294382669900758280">Az androidos alkalmazásokban való videólejátszást a rendszer akkor is figyelmen kívül hagyja, ha a házirend beállítása <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Az alapértelmezett Új lap oldal beállítása a(z) <ph name="PRODUCT_NAME" /> böngészőben.</translation>
 <translation id="2299220924812062390">Adja meg az engedélyezett bővítmények listáját</translation>
+<translation id="2303795211377219696">Automatikus kitöltés engedélyezése hitelkártyákhoz</translation>
 <translation id="2309390639296060546">Helymeghatározás alapértelmezett beállítása</translation>
 <translation id="2312134445771258233">Lehetővé teszi az induláskor betöltött lapok beállítását. Az "Indításkor betöltendő URL-ek" listájának tartalmát figyelmen kívül hagyja, hacsak a "Teendő indításkor" részben nem az "URL-ek listájának megnyitása" lehetőséget választja.</translation>
 <translation id="2337466621458842053">Lehetővé teszi az olyan webhelyeket meghatározó URL-minták listájának összeállítását, amelyek esetében engedélyezett a képek megjelenítése. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
@@ -483,6 +520,12 @@
 <translation id="2762164719979766599">Megadja az eszközön található helyi fiókok bejelentkezési képernyőn megjelenő listáját.
 
       A lista minden bejegyzése egy azonosítót ad meg, amely az eszköz különböző helyi fiókjainak belső megkülönböztetésére szolgál.</translation>
+<translation id="2766302473082018239">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
+
+      A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_WHITELIST" /> lehetőség van kiválasztva a(z) <ph name="BULK_PRINTERS_ACCESS_MODE" /> házirendnél.
+
+      Ha használatban van a házirend, csak a házirendben lévő értékeknek megfelelő azonosítójú nyomtatók állnak a felhasználó rendelkezésére. Az azonosítóknak meg kell felelniük a(z) <ph name="BULK_PRINTERS_POLICY" /> házirend fájljában meghatározott bejegyzéseknek.
+      </translation>
 <translation id="2769952903507981510">Beállítja a távoli hozzáférésű gazdagép szükséges domainnevét</translation>
 <translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
 <translation id="2801230735743888564">A felhasználók játszhatnak a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van.
@@ -636,6 +679,12 @@
 
           Ha a házirend egy nem üres karakterláncként van meghatározva, akkor a rendszer azt a karakterláncot használja a(z) <ph name="PRODUCT_NAME" /> céljának neveként. Egyébként az eszköz neve lesz a cél neve. Ha a házirend nincs beállítva, a cél neve az eszköz neve lesz, az eszköz tulajdonosának (vagy az eszközt kezelő domain felhasználójának) pedig lehetősége lesz módosítani. A név hossza legfeljebb 24 karakter lehet.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
+<translation id="3395348522300156660">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
+
+      A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_WHITELIST" /> lehetőség van kiválasztva a(z) <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> házirendnél.
+
+      Ha használatban van a házirend, csak a házirendben lévő értékeknek megfelelő azonosítójú nyomtatók állnak a felhasználó rendelkezésére. Az azonosítóknak meg kell felelniük a(z) <ph name="DEVICE_PRINTERS_POLICY" /> házirend fájljában meghatározott bejegyzéseknek.
+      </translation>
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
 
       Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_OS_NAME" /> nem engedélyezi a vendégmunkamenetek indítását.</translation>
@@ -837,6 +886,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           A házirend értékét ezredmásodpercben kell megadni.</translation>
 <translation id="4105989332710272578">A tanúsítványok átláthatósága keretrendszer végrehajtásának kikapcsolása az URL-ek egy listájánál</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
+<translation id="4133144443101280166">A házirend figyelmen kívül hagyásának időtartama, amikor az OffHours |ignored_policy_proto_tags| érvényben van az eszközön</translation>
 <translation id="4157003184375321727">Az operációs rendszer és a firmware verziójának jelentése</translation>
 <translation id="4183229833636799228">Alapértelmezett <ph name="FLASH_PLUGIN_NAME" />-beállítás</translation>
 <translation id="4192388905594723944">URL a távoli hozzáférésű kliens hitelesítési tokenjének ellenőrzéséhez</translation>
@@ -1049,6 +1099,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Az értéknek szöveges karakterláncként megadott JSON-könyvtárak tömbjének kell lennie. A könyvtárakat a { "pattern": "$URL_PATTERN", "filter" : $FILTER } formátumban kell megadni, ahol az $URL_PATTERN egy tartalombeállítási mintát jelöl. A $FILTER korlátozza azt, hogy a böngésző melyik ügyféltanúsítványok közül választhat automatikusan. A szűrőtől függetlenül csak olyan tanúsítványokat választhat, amelyek megfelelnek a szerver tanúsítványkérelmének. Ezenkívül ha a $FILTER formátuma { "ISSUER": { "CN": "$ISSUER_CN" } }, akkor a böngésző csak olyan ügyféltanúsítványokat választ, amelyeket az $ISSUER_CN nevű tanúsítványkibocsátó adott ki. Ha a $FILTER egy üres könyvtár („{}”), akkor az ügyféltanúsítványok kiválaszthatósága nem lesz tovább korlátozva.
 
           Ha nem állítja be ezt a házirendet, akkor semmilyen webhely esetében nem történik automatikus kiválasztás.</translation>
+<translation id="4978405676361550165">Ha az „OffHours” házirend be van állítva, akkor a rendszer nem veszi figyelembe a megadott eszközházirendeket (azaz az alapértelmezés szerinti beállításokkal használja őket) a meghatározott időintervallumban. A Chrome újra beállítja az eszközszabályzatokat minden alkalommal, amikor az „OffHours” időszaka elindul vagy befejeződik. Az „OffHours” időszak végén és az eszközszabályzat beállításainak módosulásakor a felhasználók értesítést kapnak, és kijelentkezteti őket a rendszer (pl. amikor a felhasználó nem engedélyezett fiókkal van bejelentkezve).</translation>
 <translation id="4980635395568992380">Adattípus:</translation>
 <translation id="4983201894483989687">Elavult bővítmények futtatásának engedélyezése</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
@@ -1058,6 +1109,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5067143124345820993">A bejelentkezett felhasználó engedélyezőlistája</translation>
 <translation id="5068140065960598044">A(z) <ph name="PRODUCT_NAME" /> felhővel kapcsolatos házirendje felülírja a számítógép házirendjét.</translation>
 <translation id="5085647276663819155">Nyomtatási előnézet letiltása</translation>
+<translation id="5090209345759901501">A Flash-tartalmak beállításainak kiterjesztése az összes tartalomra</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
 <translation id="5108031557082757679">Eszközökhöz kötött letiltott vállalati nyomtatók</translation>
 <translation id="5130288486815037971">Engedélyezve vannak-e az RC4 rejtjelezési csomagok a TLS protokollban</translation>
@@ -1210,6 +1262,26 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5728154254076636808">Lehetővé teszi barangolási példányok létrehozását a(z) <ph name="PRODUCT_NAME" /> profiladatai számára</translation>
 <translation id="5732972008943405952">Automatikus kitöltés űrlapadatainak importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="5765780083710877561">Leírás:</translation>
+<translation id="5768309557753179144">A Chromium és a Google Chrome a házirendek azonos készletét
+      támogatja. Vegye figyelembe, hogy ez a dokumentum tartalmazhat még nem
+      kiadott házirendeket is (pl. a „Támogatott a következőkön” bejegyzés a(z) <ph name="PRODUCT_NAME" />
+      ki nem adott verziójára vonatkozik), amelyek figyelmeztetés nélkül
+      módosíthatók vagy eltávolíthatók, és amelyekre nem vonatkozik semmiféle
+      garancia, beleértve a biztonsági és adatvédelmi tulajdonságaikra vonatkozó
+      garanciákat is.
+
+      Ezek a házirendek kizárólag a(z) <ph name="PRODUCT_NAME" /> vállalatán belüli példányainak
+      konfigurálására használhatók.
+      Az irányelvek vállalatán kívül történő használata (pl. egy nyilvános
+      program keretén belül) rosszindulatú programnak minősül, így a Google
+      és más vírusirtó szolgáltatók rosszindulatú programként fogják felcímkézni.
+
+      Nincs szükség a beállítások manuális konfigurációjára! Windows, Mac és
+      Linux rendszeren egyszerűen használható sablonok letölthetők innen: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO,
+      noha a házirendek regisztrációs adatbázison keresztül történő létrehozása
+      támogatott egyes Windows-példányoknál, amelyek a(z) <ph name="MS_AD_NAME" /> domainhez csatlakoztak.</translation>
 <translation id="5770738360657678870">Fejlesztői csatorna (instabil lehet)</translation>
 <translation id="5774856474228476867">Az alapértelmezett keresési szolgáltató kereső URL-je</translation>
 <translation id="5776485039795852974">Kérdezzen rá minden alkalommal, amikor egy webhely asztali értesítéseket akar mutatni</translation>
@@ -1308,6 +1380,53 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelv nincs beállítva, vagy az értéke hamis, akkor a nyomtatási parancsok a nyomtatási előnézet képernyőt aktiválják.</translation>
 <translation id="6022948604095165524">Művelet indításkor</translation>
+<translation id="6023030044732320798">Meghatározza az ARC futási időnek átadandó házirendek készletét. Az értéknek érvényes JSON-értéknek kell lennie.
+
+      Az irányelv használható annak meghatározására, hogy milyen Android-alkalmazások települjenek automatikusan az eszközre:
+
+      {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "description": "Android-alkalmazásazonosító, pl. "com.google.android.gm" a Gmail esetében",
+                  "type": "string"
+                },
+                "installType": {
+                  "description": "Meghatározza az alkalmazás telepítésének módját. OPTIONAL: Az alkalmazás telepítése nem történik meg automatikusan, de a felhasználó elvégezheti. Ez az alapértelmezés, ha nincs meghatározva a házirend. PRELOAD: Az alkalmazás automatikusan települ, de a felhasználó eltávolíthatja. FORCE_INSTALLED: Az alkalmazás automatikusan települ, a felhasználó nem távolíthatja el. BLOCKED: Az alkalmazás le van tiltva, és nem telepíthető. Ha az alkalmazás másik házirend értelmében telepítve lett, le lesz törölve.",
+                  "type": "string",
+                  "enum": [
+                    "OPTIONAL",
+                    "PRELOAD",
+                    "FORCE_INSTALLED",
+                    "BLOCKED"
+                  ]
+                },
+                "defaultPermissionPolicy": {
+                  "description": "Ezzel a házirenddel engedélykérelmeket lehet megadni az alkalmazásoknak. PERMISSION_POLICY_UNSPECIFIED: A házirend nincs meghatározva. Ha semelyik engedélyen nincs beállítva házirend, akkor alapértelmezés szerint a rendszer a PROMPT viselkedést használja. PROMPT: A felhasználó felkérése engedély megadására. GRANT: Engedély automatikus megadása. DENY: Engedély automatikus elutasítása.",
+                  "type": "string",
+                  "enum": [
+                    "PERMISSION_POLICY_UNSPECIFIED",
+                    "PROMPT",
+                    "GRANT",
+                    "DENY"
+                  ]
+                },
+                "managedConfiguration": {
+                  "description": "Alkalmazásspecifikus JSON-konfigurációs objektum kulcsértékpár-készlettel, pl. '"managedConfiguration": { "key1": value1, "key2": value2 }'. A kulcsok az alkalmazás jegyzékében vannak meghatározva.",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Ha alkalmazást szeretne rögzíteni az indítóra, keresse meg a PinnedLauncherApps házirendet.</translation>
 <translation id="602728333950205286">Alapértelmezett keresési szolgáltató azonnali URL-je</translation>
 <translation id="603410445099326293">Paraméterek POST metódust használó javasolt URL-hez</translation>
 <translation id="6036523166753287175">Engedélyezze a tűzfalon való átjárást a távoli elérésű szerverekről</translation>
@@ -1408,6 +1527,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a .pac proxyszkriptet választja, az Android-alkalmazások a szkript-URL-t kapják meg.</translation>
 <translation id="6491139795995924304">Bluetooth engedélyezése az eszközön</translation>
 <translation id="6520802717075138474">Keresőmotorok importálása az alapértelmezett böngészőből az első indításkor</translation>
+<translation id="6525955212636890608">Ha engedélyezi ezt a beállítást, minden beágyazott Flash-tartalom futtatásra kerül (beleértve az egyéb eredetű vagy kisebb tartalmakat is) azokon a webhelyeken, ahol a tartalombeállításokban akár a felhasználó, akár a vállalati házirend engedélyezte a Flash-tartalmakat.
+
+      Ha vezérelni szeretné, mely webhelyeken van engedélyezve a Flash futtatása, tekintse meg a „DefaultPluginsSetting”, „PluginsAllowedForUrls” és a „PluginsBlockedForUrls” házirendeket.
+
+      Ha ez a beállítás ki van kapcsolva vagy nincs beállítva, előfordulhat, hogy az egyéb eredetű vagy kisebb Flash-tartalmakat a rendszer letiltja.</translation>
 <translation id="653608967792832033">Az a felhasználói bevitel nélkül eltöltött idő, amely után a rendszer lezárja a képernyőt, ha akkumulátorról működik.
 
           Ha a házirendet nullánál nagyobb értékre állítják, meghatározza azt az időtartamot, amilyen hosszan a felhasználó tétlen maradhat, mielőtt a(z) <ph name="PRODUCT_OS_NAME" /> lezárja a képernyőt.
@@ -1949,6 +2073,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8493645415242333585">Böngészési előzmények mentésének tiltása</translation>
 <translation id="8499172469244085141">Alapértelmezett beállítások (a felhasználók felülbírálhatják)</translation>
 <translation id="8519264904050090490">Felügyelt felhasználó manuális kivételi URL-jei</translation>
+<translation id="8527932539502116028">Meghatározza, hogy mely nyomtatókat nem használhatja a felhasználó.
+
+      A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_BLACKLIST" /> lehetőség van kiválasztva a(z) <ph name="BULK_PRINTERS_ACCESS_MODE" /> házirendnél.
+
+      Ha használatban van a házirend, akkor a felhasználó minden nyomtatót használhat, kivéve azokat, amelyek azonosítója szerepel a házirend felsorolásában.
+      </translation>
 <translation id="8544375438507658205">Alapértelmezett HTML-megjelenítő a <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
 <translation id="8549772397068118889">Figyelmeztetés tartalomcsomagokon kívüli webhelyek felkeresése esetén</translation>
 <translation id="8566842294717252664">Az Internetes áruház elrejtése az Új lap oldalon és az alkalmazásindítón</translation>
@@ -2018,6 +2148,18 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a tétlenségi késleltetésnél.</translation>
 <translation id="891435090623616439">JSON-karakterláncként kódolva; a részletekért lásd: <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8927384992072706174">Vállalati nyomtatókhoz biztosít beállításokat.
+
+      Ez a házirend lehetővé teszi, hogy nyomtatóbeállításokat adjon meg <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz. A fájl mérete nem lépheti túl az 5 MB-ot, és JSON kódolással kell rendelkeznie. A formátum megegyezik a NativePrinters szótáréval. Becslések szerint a kb. 21 000 nyomtatót tartalmazó kódolt fájl mérete 5 MB. A letöltés integritását a kriptográfiai kivonattal ellenőrzi a rendszer.
+
+      A rendszer letölti és gyorsítótárba helyezi a fájlt. Ha módosul az URL vagy a kivonat, a fájl újból letöltésre kerül.
+
+      Ha be van állítva a házirend, a(z) <ph name="PRODUCT_OS_NAME" /> rendszer letölti a nyomtatóbeállításokat tartalmazó fájlt, és a(z) <ph name="BULK_PRINTERS_ACCESS_MODE" />, a(z) <ph name="BULK_PRINTERS_WHITELIST" />, valamint a(z) <ph name="BULK_PRINTERS_BLACKLIST" /> házirendeknek megfelelően hozzáférhetővé teszi a nyomtatókat.
+
+      Ha beállítja a házirendet, a felhasználók nem tudják módosítani és felülírni.
+
+      A házirend nem befolyásolja, hogy a felhasználók beállíthatnak-e nyomtatókat saját eszközeiken. A házirend célja, hogy kiegészítse az egyéni felhasználók nyomtatóbeállításait.
+      </translation>
 <translation id="8947415621777543415">Eszköz helyének jelentése</translation>
 <translation id="8951350807133946005">A lemez gyorsítótár-könyvtárának beállítása</translation>
 <translation id="8952317565138994125">Letiltja az adatok szinkronizálását a Google által tárolt szinkronizálási szolgáltatások segítségével a(z) <ph name="PRODUCT_NAME" /> alkalmazásban, valamint megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.

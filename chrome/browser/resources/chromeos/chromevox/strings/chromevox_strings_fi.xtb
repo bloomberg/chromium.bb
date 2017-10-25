@@ -4,6 +4,7 @@
 <translation id="100812568230599391">Vaihda näyttötyyliksi lomittainen.</translation>
 <translation id="1012173283529841972">Luettelokohde</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">Käytätkö ChromeVoxin äänipalautetta ensimmäistä kertaa? Tämän ohjeen avulla voit tutustua ChromeVoxin perusteisiin nopeasti.</translation>
 <translation id="1023866615269196768">Kohdistettu.</translation>
 <translation id="1025074108959230262">Kiinnitetty tila pois käytöstä</translation>
 <translation id="1031961866430398710">sitten</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – Chromen ääni</translation>
+<translation id="1225437811932752266">Onneksi olkoon – nyt tunnet ChromeVoxin perusteet. Muista, että voit avata ChromeVoxin komentovalikon milloin tahansa painamalla Haku + piste. Saat lisätietoja ChromeVoxista ja Chrome-käyttöjärjestelmästä tutustumalla seuraaviin artikkeleihin.
+Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja klikkaa sitä.</translation>
 <translation id="1229276918471378188">Edellinen siirtyminen</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Seuraava tason 6 otsikko</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">Taulukon edellinen sarake</translation>
 <translation id="1342835525016946179">artikkeli</translation>
 <translation id="1346748346194534595">Oikealle</translation>
+<translation id="135978014023467274">ChromeVox päivitettiin versioon 63!</translation>
 <translation id="136718599399906424">Taulukon seuraava rivi</translation>
 <translation id="1377925789329510816">Tämä on viimeinen otsikko. Siirry ensimmäiseen otsikkoon painamalla Haku + H tai tämän sivun toiseen otsikkoon painamalla Haku + Vaihto + H.</translation>
 <translation id="1383876407941801731">Haku</translation>
@@ -167,6 +171,7 @@
 <translation id="2770781857296573485">Käytä ryhmätutkintaa</translation>
 <translation id="2777845298774924149">Suljettiin</translation>
 <translation id="2781264313200109999">Linkin alku</translation>
+<translation id="2784959586797362050">Kuten aina, voit lähettää meille palautetta painamalla ensin Haku + a ja sen jälkeen i. Mielipiteesi on meille tärkeä.</translation>
 <translation id="2800204403141299078">Ei muita erilaisia elementtejä.</translation>
 <translation id="2800780099804980316">Ei edellisiä tason 1 otsikoita.</translation>
 <translation id="280499067616661124">ChromeVox-sivulta haku</translation>
@@ -232,6 +237,7 @@
 <translation id="3241638166094654466">Kunkin rivin solut:</translation>
 <translation id="3286390186030710347">Liukusäädin</translation>
 <translation id="3299925995433437805">Ei seuraavia käytyjä linkkejä.</translation>
+<translation id="3300348286427369683">Rich Text ‑tuki. ChromeVox tukee nyt Rich Text ‑kenttiä ja niiden ominaisuuksia, kuten siirtymiskomentoja, pistekirjoitusosoittimen ohjausta ja valintaa.</translation>
 <translation id="3307886118343381874">Siirry taulukon loppuun</translation>
 <translation id="3311969765485641742">Tarkista ilmoitukset painamalla Alt+Shift+A</translation>
 <translation id="3312997241656799641">Seuraava käyty linkki</translation>
@@ -335,6 +341,7 @@
 <translation id="3897092660631435901">Valikko</translation>
 <translation id="3909320334364316587">Edellinen tason 6 otsikko</translation>
 <translation id="3914173277599553213">Pakollinen</translation>
+<translation id="3914732343065571127">ChromeVoxin komennot</translation>
 <translation id="3962990492275676168">Aloita lukeminen nykyisestä sijainnista</translation>
 <translation id="4004802134384979325">valittu</translation>
 <translation id="4006140876663370126">kuva</translation>
@@ -405,7 +412,9 @@
 <translation id="4601367666219428522">taul <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Seuraava näppäimen painallus ohitetaan</translation>
 <translation id="461613135510474570">Virke</translation>
+<translation id="463135993322337640">Saat tietoja uusista ominaisuuksista painamalla ChromeVox + o + n</translation>
 <translation id="4647836961514597010">Värinvalitsin</translation>
+<translation id="4660783501463101648">Classic poistettiin. ChromeVox Classicin käyttöönoton pikanäppäin poistettiin.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">ruud.</translation>
@@ -425,6 +434,7 @@
 <translation id="4827410568042294688">ei valittu</translation>
 <translation id="4842108708071771135">Ei seuraavia lainauksia.</translation>
 <translation id="4844625982113518938">Opi nimi painamalla mitä tahansa näppäintä. Ctrl + W sulkee opettelutilan.</translation>
+<translation id="4846428657345567687">Tervetuloa käyttämään ChromeVoxia!</translation>
 <translation id="4846487886195635104">Yliviivauksen loppu</translation>
 <translation id="4848993367330139335">ajast.</translation>
 <translation id="4850023505158945298">Edellinen samankaltainen elementti.</translation>
@@ -462,6 +472,7 @@
 <translation id="5098541983634824365">Poistutaan ruudukosta.</translation>
 <translation id="5102981729317424850">Työkalupalkki</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">Tämä julkaisu sisältää joitakin jännittäviä muutoksia. Tässä uudet ominaisuudet:</translation>
 <translation id="5110983769041734144">Ei edellisiä lomakkeen kenttiä.</translation>
 <translation id="5111640677200759579">Sarakkeen otsikko</translation>
 <translation id="5136967254288895616">Ei edellisiä linkkejä.</translation>
@@ -578,6 +589,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="6065293622157674001">Kielioppivirheen alku</translation>
 <translation id="6082768461603900813">Siirtymisen perustoiminnot</translation>
 <translation id="6092707270915298410">Linkin loppu</translation>
+<translation id="6118126368611144850">Android-sovellusten käyttö Chromessa. Jos laitteellasi on Play Kauppa, voit testata ChromeVoxin käyttöä Android-sovellusten kanssa etukäteen. Ominaisuus on vielä kehitysvaiheessa, mutta voit kokeilla sitä lataamalla Google Chrome Canaryn Play Kaupasta.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Solu päättyi.</translation>
 <translation id="6122013438240733403">pain.</translation>
@@ -618,6 +630,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="6493991254603208962">Vähennä kirkkautta.</translation>
 <translation id="6508059270146105198">Siirrä pistenäyttö sivun alareunaan</translation>
 <translation id="6536864053412760904">Math ML -tunnus</translation>
+<translation id="6540201937398578274">Hakunäppäin toimii ChromeVoxissa myös muokkausnäppäimenä. Haku aloittaa useimmat ChromeVoxin pikanäppäinyhdistelmät. Voit käyttää siirtymiseen myös nuolia.</translation>
 <translation id="6550720799683018100">Vaihda näppäinasettelua valitsemalla vaihtoehto alla olevasta luettelosta.</translation>
 <translation id="6561818612645211875">Siirry nykyisen rivin alkuun</translation>
 <translation id="6587021927234520429">Ei seuraavia tason 4 otsikoita.</translation>

@@ -67,7 +67,6 @@
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="213900355088104901">За да сърфирате частно, отворете раздел в режим „инкогнито“</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
-<translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2230173723195178503">Уеб страницата се зареди</translation>
 <translation id="2256128224215992540">Предлагани сайтове и търсене</translation>
 <translation id="2267753748892043616">Добавяне на профил</translation>
@@ -145,14 +144,10 @@
 <translation id="3567664240939803299">Искате ли Google Smart Lock да запази паролата ви за този сайт?</translation>
 <translation id="3588820906588687999">Отваряне на изображението в нов раздел</translation>
 <translation id="3603009562372709545">Копиране на URL адреса на връзката</translation>
-<translation id="360480449234699036">Научавайте за темите в уебсайтовете, без да напускате страницата. Функцията за търсене с докосване изпраща до Google Търсене определени думи и заобикалящия ги текст и така извежда определения, снимки, резултати и други подробности.
-
-За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="3607167657931203000">Автоматично попълване на данни</translation>
 <translation id="3628119975092896051">Списъкът ви за четене е налице офлайн. За да добавите страница към него, докоснете „<ph name="SHARE_OPENING_ICON" />“.</translation>
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
-<translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3779810277399252432">Няма връзка с интернет.</translation>
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
@@ -209,7 +204,6 @@
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5010803260590204777">Отворете раздел в режим „инкогнито“, за да сърфирате частно в мрежата.</translation>
 <translation id="5011684439661633295">Здравейте, <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5062321486222145940">Инсталиране на Google Диск</translation>
 <translation id="5083464117946352670">Неизвестен файлов размер.</translation>
 <translation id="5094827893301452931">Съобщението в Twitter е завършено.</translation>
@@ -312,7 +306,6 @@
 <translation id="6797885426782475225">Гласово търсене</translation>
 <translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="681368974849482173">Елементът е създаден</translation>
-<translation id="6871663519944855400">Отваряне в режим „инкогнито“</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
 <translation id="6945221475159498467">Изберете</translation>
@@ -340,7 +333,6 @@
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7464701184726199289">Синхронизираните данни ще се изчистят от всички устройства. Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Име на фирмата</translation>
-<translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7481312909269577407">Препращане</translation>
 <translation id="750493650310597496">Избрахте 0</translation>
 <translation id="7514365320538308">Изтегляне</translation>
@@ -370,7 +362,6 @@
 <translation id="806745655614357130">Оставяне на данните отделно</translation>
 <translation id="8076014560081431679">Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Затваряне на разделите</translation>
-<translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Отказ</translation>
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
 <translation id="8261506727792406068">Изтриване</translation>

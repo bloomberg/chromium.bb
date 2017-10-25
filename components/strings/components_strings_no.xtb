@@ -46,7 +46,6 @@
 <translation id="1263231323834454256">Leseliste</translation>
 <translation id="1264126396475825575">Programstopprapport fra <ph name="CRASH_TIME" /> (ignorert eller ikke lastet opp ennå)</translation>
 <translation id="1270502636509132238">Hentemåte</translation>
-<translation id="1281526147609854549">Utstedt av <ph name="ISSUER" /></translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Prøv å slette informasjonskapslene dine<ph name="END_LINK" /></translation>
@@ -69,12 +68,14 @@
 <translation id="14171126816530869">Identiteten til <ph name="ORGANIZATION" /> på <ph name="LOCALITY" /> er verifisert av <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
+<translation id="1484290072879560759">Velg leveringsadresse</translation>
 <translation id="1506687042165942984">Vis en lagret kopi av denne siden (dvs. en kopi du vet at er utdatert).</translation>
 <translation id="1517433312004943670">Det kreves et telefonnummer</translation>
 <translation id="1517500485252541695">Godkjente kreditt- og debetkort</translation>
 <translation id="1519264250979466059">Versjonsdato</translation>
 <translation id="1527263332363067270">Venter på tilkobling …</translation>
 <translation id="153384715582417236">Det var alt for denne gangen</translation>
+<translation id="154408704832528245">Velg leveringsadresse</translation>
 <translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
 <translation id="1559528461873125649">Finner ingen slik fil eller katalog</translation>
 <translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
@@ -153,6 +154,7 @@
 <translation id="214556005048008348">Avbryt betalingen</translation>
 <translation id="2147827593068025794">Bakgrunnssynkronisering</translation>
 <translation id="2148613324460538318">Legg til et kort</translation>
+<translation id="2149973817440762519">Rediger bokmerke</translation>
 <translation id="2154054054215849342">Synkronisering er ikke tilgjengelig for domenet ditt</translation>
 <translation id="2154484045852737596">Endre kortet</translation>
 <translation id="2166049586286450108">Full administratortilgang</translation>
@@ -190,6 +192,7 @@
 <translation id="2396249848217231973">&amp;Angre slettingen</translation>
 <translation id="2413528052993050574">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan være trukket tilbake. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2463739503403862330">Fyll ut</translation>
+<translation id="2465655957518002998">Velg leveringsmåte</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Kjør Nettverksdiagnose<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Ugyldig nettadresse for søk.</translation>
 <translation id="2482878487686419369">Varsler</translation>
@@ -211,12 +214,12 @@
 <translation id="2609632851001447353">Varianter</translation>
 <translation id="262424810616849754">{COUNT,plural, =0{Ingen}=1{1 app ($1)}=2{2 apper ($1, $2)}other{# apper ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Klokken går for fort</translation>
+<translation id="2634124572758952069">Fant ikke IP-adressen til tjeneren for <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Tilgang til filen ble nektet</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2666117266261740852">Lukk andre faner eller apper</translation>
-<translation id="2670429602441959756">Denne siden inneholder funksjoner som ikke støttes i VR ennå. Avslutter …</translation>
 <translation id="2674170444375937751">Er du sikker på at du vil slette disse sidene fra loggen?</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2702801445560668637">Leseliste</translation>
@@ -230,6 +233,7 @@
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kjør Tilkoblingsdiagnostikk<ph name="END_LINK" /></translation>
+<translation id="2738330467931008676">Velg henteadresse</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
 <translation id="277133753123645258">Leveringsmetode</translation>
@@ -277,6 +281,7 @@
 <translation id="3064966200440839136">Går ut av inkognitomodus for å betale via en ekstern app. Vil du fortsette?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 passord}other{# passord}}</translation>
 <translation id="3093245981617870298">Du er ikke tilkoblet Internett.</translation>
+<translation id="3096100844101284527">Legg til henteadresse</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="3109728660330352905">Du har ikke autorisasjon til å se denne siden.</translation>
 <translation id="3120730422813725195">Elo</translation>
@@ -392,6 +397,7 @@
 <translation id="3778403066972421603">Vil du lagre dette kortet i Google-kontoen din og på denne enheten?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Utløper <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3808375843007691220">Advarsel: eksperimentelle funksjoner!</translation>
 <translation id="382518646247711829">Hvis du bruker en mellomtjener...</translation>
 <translation id="3828924085048779000">Tom passordfrase er ikke tillatt.</translation>
 <translation id="385051799172605136">Tilbake</translation>
@@ -447,6 +453,7 @@
 <translation id="4269787794583293679">(Uten brukernavn)</translation>
 <translation id="4275830172053184480">Start enheten din på nytt</translation>
 <translation id="4280429058323657511">, utløper <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="4292213515608230699">Ingen samsvarende eksperimenter</translation>
 <translation id="4304224509867189079">Logg på</translation>
 <translation id="4312866146174492540">Blokkér (standard)</translation>
 <translation id="4325863107915753736">Artikkelen ble ikke funnet</translation>
@@ -517,6 +524,7 @@
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Utvid liste</translation>
 <translation id="4974590756084640048">Slå på advarsler på nytt</translation>
+<translation id="4989542687859782284">Utilgjengelig</translation>
 <translation id="4989809363548539747">Dette programtillegget støttes ikke</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
 <translation id="5018422839182700155">Kan ikke åpne denne siden</translation>
@@ -565,11 +573,13 @@
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5308689395849655368">Rapportering av programstopp er deaktivert.</translation>
 <translation id="5317780077021120954">Lagre</translation>
+<translation id="5324080437450482387">Velg kontaktinformasjon</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5332219387342487447">Leveringsmetode</translation>
 <translation id="5355557959165512791">Du kan ikke gå til <ph name="SITE" /> akkurat nå, siden sertifikatet for nettstedet er trukket tilbake. Nettverksfeil- og angrep er vanligvis midlertidige, så denne siden fungerer sannsynligvis senere.</translation>
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
 <translation id="5386426401304769735">Sertifikatkjeden for dette nettstedet inneholder et sertifikat som er signert med SHA-1.</translation>
+<translation id="5401815295726769233">Søkeflagg</translation>
 <translation id="5402410679244714488">Utløper: <ph name="EXPIRATION_DATE_ABBR" />. Sist brukt for over et år siden</translation>
 <translation id="540969355065856584">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke gyldig for øyeblikket. Dette kan være forårsaket av en feilkonfigurasjon eller en angriper som lytter på tilkoblingen din.</translation>
 <translation id="5421136146218899937">Slett nettlesingsdata...</translation>
@@ -603,6 +613,7 @@
 <translation id="5580958916614886209">Kontrollér utløpsmåneden, og prøv igjen</translation>
 <translation id="5586446728396275693">Ingen adresser er lagret</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="5598944008576757369">Velg betalingsmåte</translation>
 <translation id="560412284261940334">Administrering støttes ikke</translation>
 <translation id="5610142619324316209">Sjekk tilkoblingen</translation>
 <translation id="5610807607761827392">Du kan administrere kort og adresser i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
@@ -615,6 +626,7 @@
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5669703222995421982">Få innhold med et personlig preg</translation>
 <translation id="5675650730144413517">Denne siden fungerer ikke</translation>
+<translation id="5685654322157854305">Legg til leveringsadresse</translation>
 <translation id="5689199277474810259">Eksportér til JSON</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5719499550583120431">Forhåndsbetalte kort godtas.</translation>
@@ -622,6 +634,7 @@
 <translation id="5732392974455271431">Foreldrene dine kan oppheve blokkeringen for deg</translation>
 <translation id="5763042198335101085">Angi en gyldig e-postadresse</translation>
 <translation id="5765072501007116331">For å se leveringsmetoder og -krav, velg en adresse</translation>
+<translation id="5770114862687765385">Filen ser ut til å være skadet. Klikk på «Tilbakestill»-knappen for å tilbakestille økten.</translation>
 <translation id="5778550464785688721">Full kontroll av MIDI-enheter</translation>
 <translation id="5784606427469807560">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
 <translation id="5785756445106461925">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på utseendet til siden.</translation>
@@ -635,6 +648,7 @@
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
+<translation id="5909194079078764042">Hvis du slår på disse funksjonene, kan du miste nettlesingsdata eller sette sikkerheten eller personvernet på spill. Funksjoner som er slått på, gjelder for alle brukere av denne nettleseren.</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5959728338436674663">Send automatisk noe <ph name="BEGIN_WHITEPAPER_LINK" />systeminformasjon og sideinnhold<ph name="END_WHITEPAPER_LINK" /> til Google for å bidra til å oppdage farlige apper og nettsteder. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -650,6 +664,7 @@
 <translation id="6017850046339264347">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere villedende apper som ser ut til å være noe annet, eller samle inn data som kan brukes til å spore deg. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> og <ph name="TYPE_3" /> (synkronisert)</translation>
 <translation id="6027201098523975773">Skriv inn et navn</translation>
+<translation id="6039846035001940113">Hvis problemet fortsetter, kan du kontakte nettstedseieren.</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6047233362582046994">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til dette nettstedet<ph name="END_LINK" /> før de skadelige appene er fjernet.</translation>
 <translation id="6047927260846328439">Dette innholdet kan prøve å lure deg til å installere programvare eller oppgi personopplysninger. <ph name="BEGIN_LINK" />Vis det likevel<ph name="END_LINK" /></translation>
@@ -681,6 +696,7 @@
 <translation id="6305205051461490394"><ph name="URL" /> er ikke tilgjengelig.</translation>
 <translation id="6319915415804115995">Sist brukt for over et år siden</translation>
 <translation id="6321917430147971392">Kontrollér DNS-innstillingene dine</translation>
+<translation id="6325286409953503969">Er du interessert i nye, kule Chrome-funksjoner? Prøv <ph name="BEGIN_LINK" />utviklerkanalen<ph name="END_LINK" />.</translation>
 <translation id="6328639280570009161">Prøv å slå av nettverksforutsigelse</translation>
 <translation id="6328786501058569169">Dette nettstedet er villedende</translation>
 <translation id="6337133576188860026">Frigjør mindre enn <ph name="SIZE" />. Det kan hende enkelte nettsteder lastes inn tregere neste gang du besøker dem.</translation>
@@ -783,6 +799,7 @@
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="7309308571273880165">Programstopprapport opprettet <ph name="CRASH_TIME" /> (opplasting er forespurt av brukeren, men den har ikke blitt utført ennå)</translation>
 <translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
+<translation id="7337706099755338005">Ikke tilgjengelig på plattformen din.</translation>
 <translation id="733923710415886693">Tjenerens sertifikat er ikke vist i henhold til regelen for sertifikatåpenhet.</translation>
 <translation id="7353601530677266744">Kommandolinje </translation>
 <translation id="7372973238305370288">søkeresultat</translation>
@@ -790,6 +807,7 @@
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Bekreft kortet</translation>
+<translation id="739697976928952788">Vis alle lagrede passord</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7419106976560586862">Profilbane</translation>
 <translation id="7424977062513257142">En innebygd side på denne nettsiden sier:</translation>
@@ -836,6 +854,7 @@
 <translation id="7668654391829183341">Ukjent enhet</translation>
 <translation id="7669271284792375604">Angripere på dette nettstedet kan forsøke å lure deg til å installere programmer som ødelegger surfeopplevelsen din (for eksempel ved å endre startsiden din eller vise ekstra annonser på nettstedene du besøker).</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
+<translation id="7695552107151968219">Er du interessert i nye, kule Chrome-funksjoner? Prøv <ph name="BEGIN_LINK" />betakanalen<ph name="END_LINK" />.</translation>
 <translation id="7699293099605015246">Artikler er ikke tilgjengelige for øyeblikket</translation>
 <translation id="7701040980221191251">Ingen</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsett til <ph name="SITE" /> (usikker side)<ph name="END_LINK" /></translation>
@@ -884,6 +903,7 @@
 <translation id="8037357227543935929">Spør (standard)</translation>
 <translation id="8041089156583427627">Send tilbakemelding</translation>
 <translation id="8041940743680923270">Bruk global standardinnstilling (Spør)</translation>
+<translation id="8042918947222776840">Velg hentemåte</translation>
 <translation id="8057711352706143257">«<ph name="SOFTWARE_NAME" />» er ikke riktig konfigurert. Avinstallering av «<ph name="SOFTWARE_NAME" />» løser vanligvis problemet. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
 <translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
@@ -1000,6 +1020,7 @@
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9137248913990643158">Du må starte og logge på Chrome før du bruker denne appen.</translation>
+<translation id="9148088599418889305">Velg leveringsmåte</translation>
 <translation id="9148507642005240123">&amp;Angre endringen</translation>
 <translation id="9154194610265714752">Oppdatert</translation>
 <translation id="9157595877708044936">Konfigurerer ...</translation>
@@ -1016,6 +1037,7 @@
 <translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>
+<translation id="973773823069644502">Legg til leveringsadresse</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ingen}=1{1 element}other{# elementer}}</translation>
 <translation id="981121421437150478">Uten nett</translation>
 <translation id="988159990683914416">Utviklerversjon</translation>

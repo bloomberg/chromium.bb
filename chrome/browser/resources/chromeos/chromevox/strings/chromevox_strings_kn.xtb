@@ -4,6 +4,7 @@
 <translation id="100812568230599391">ಶೈಲಿ ಪ್ರದರ್ಶನವನ್ನು ನಡುಪುಟಕ್ಕೆ ಬದಲಾಯಿಸಿ.</translation>
 <translation id="1012173283529841972">ಪಟ್ಟಿಯ ಐಟಂ</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">ನೀವು ಮೊದಲ ಬಾರಿಗೆ ChromeVox ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಬಳಸುತ್ತಿರುವಿರಾ? ChromeVox ಪ್ರಾರಂಭಿಸುವ ಮೂಲಭೂತ ಅಂಶಗಳ ಕುರಿತು ಈ ತ್ವರಿತ ಟ್ಯುಟೋರಿಯಲ್ ವಿವರಿಸುತ್ತದೆ.</translation>
 <translation id="1023866615269196768">ಸ್ಪ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1025074108959230262">ಸ್ಟಿಕಿ ಮೋಡ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1031961866430398710">ನಂತರ</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
 <translation id="1206619573307042055">ಮಾರ್ಕ್ಯೂ</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ಗೆ ಧ್ವನಿ ನೀಡುವುದು</translation>
+<translation id="1225437811932752266">ಅಭಿನಂದನೆಗಳು! ನೀವು ChromeVox ಬಳಸುವ ಮೂಲಭೂತ ಅಂಶಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ತಿಳಿದುಕೊಂಡಿರುವಿರಿ. ನೀವು ಹುಡುಕಾಟ+ಪಿರಿಯಡ್ ಒತ್ತುವ ಮೂಲಕ ಯಾವ ಸಮಯದಲ್ಲಾದರೂ ChromeVox ಆದೇಶ ಮೆನುವನ್ನು ತೆರೆಯಬಹುದು ಎಂಬುದನ್ನು ನೆನಪಿಡಿ. ChromeVox ಮತ್ತು Chrome OS ಕುರಿತು ಮತ್ತಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಲು, ಈ ಲೇಖನಗಳಿಗೆ ಭೇಟಿ ನೀಡಿ.
+ನೀವು ಟ್ಯುಟೋರಿಯಲ್ ಮುಗಿಸಿದಾಗ, ಮುಚ್ಚು ಬಟನ್‌ಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ChromeVox ಬಳಸಿ ಮತ್ತು ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="1229276918471378188">ಹಿಂದಿನ ಜಂಪ್</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">ಮುಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">ಹಿಂದಿನ ಕೋಷ್ಟಕದ ಕಾಲಮ್</translation>
 <translation id="1342835525016946179">ಲೇಖನ</translation>
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
+<translation id="135978014023467274">ನೀವು ChromeVox 63 ಗೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಿರುವಿರಿ!</translation>
 <translation id="136718599399906424">ಮುಂದಿನ ಕೋಷ್ಟಕ ಸಾಲು</translation>
 <translation id="1377925789329510816">ಇದು ಕೊನೆಯ ಶಿರೋನಾಮೆ. ಈ ಪುಟದಲ್ಲಿ ಮೊದಲ ಶಿರೋನಾಮೆಗೆ ವ್ರ್ಯಾಪ್ ಮಾಡಲು ಹುಡುಕಾಟ+H ಅಥವಾ ಎರಡನೇ ಶಿರೋನಾಮಗೆ ಹೋಗಲು ಹುಡುಕಾಟ+Shift+H ಒತ್ತಿ.</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
@@ -167,6 +171,7 @@
 <translation id="2770781857296573485">ಗುಂಪು ಪರಿಶೋಧನೆಯನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="2777845298774924149">ನಿರ್ಗಮಿಸಲಾಗಿದೆ</translation>
 <translation id="2781264313200109999">ಲಿಂಕ್‌ ಅನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
+<translation id="2784959586797362050">ಎಂದಿನಂತೆಯೇ ಹುಡುಕಾಟ+a ನಂತರ i ಒತ್ತುವ ಮೂಲಕ ನೇರವಾಗಿ ನಮಗೆ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನೀವು ಕಳುಹಿಸಬಹುದು. ನಿಮ್ಮಿಂದ ಕೇಳಲು ನಾವು ಉತ್ಸುಕರಾಗಿದ್ದೇವೆ.</translation>
 <translation id="2800204403141299078">ಹೆಚ್ಚಿನ ವಿಭಿನ್ನ ಅಂಶಗಳಿಲ್ಲ.</translation>
 <translation id="2800780099804980316">ಹಿಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="280499067616661124">ChromeVox ಪುಟದಲ್ಲಿ ಹುಡುಕಿ</translation>
@@ -232,6 +237,7 @@
 <translation id="3241638166094654466">ಪ್ರತಿಯೊಂದು ಸಾಲಿನಲ್ಲಿರುವ ಸೆಲ್‌ಗಳು:</translation>
 <translation id="3286390186030710347">ಸ್ಲೈಡರ್</translation>
 <translation id="3299925995433437805">ಮುಂದೆ ಯಾವುದೇ ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್ ಇಲ್ಲ.</translation>
+<translation id="3300348286427369683">ಸಮೃದ್ಧ ಪಠ್ಯ ಬೆಂಬಲ. ಜಂಪ್ ಆದೇಶಗಳು, ಬ್ರೈಲ್ ಕರ್ಸರ್ ರೌಟಿಂಗ್, ಆಯ್ಕೆ, ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ಒಳಗೊಂಡಂತೆ ಸೇರಿದಂತೆ ಸಮೃದ್ಧ ಪಠ್ಯ ಕ್ಷೇತ್ರಗಳನ್ನು ಇದೀಗ ChromeVox ಬೆಂಬಲಿಸುತ್ತದೆ.</translation>
 <translation id="3307886118343381874">ಕೋಷ್ಟಕದ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="3311969765485641742">ಎಚ್ಚರಿಕೆಗಳನ್ನು ಪರಿಶೀಸಲು Alt+Shift+A ಒತ್ತಿರಿ</translation>
 <translation id="3312997241656799641">ಮುಂದಿನ ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್</translation>
@@ -335,6 +341,7 @@
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3909320334364316587">ಹಿಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="3914173277599553213">ಅಗತ್ಯವಿರುವುದು</translation>
+<translation id="3914732343065571127">ChromeVox ಆದೇಶ ಉಲ್ಲೇಖ</translation>
 <translation id="3962990492275676168">ಪ್ರಸ್ತುತ ಸ್ಥಾನದಿಂದ ಓದುವಿಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4004802134384979325">ಗುರುತಿಸಲಾಗಿದೆ</translation>
 <translation id="4006140876663370126">img</translation>
@@ -405,7 +412,9 @@
 <translation id="4601367666219428522">ಕೋಷ್ಠಕ <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ಮುಂದಿನ ಕೀ ಒತ್ತುವಿಕೆಯನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="461613135510474570">ವಾಕ್ಯ</translation>
+<translation id="463135993322337640">ಹೊಸದೇನಿದೆ ಎಂಬುದನ್ನು ಕಂಡುಕೊಳ್ಳಲು ChromeVox o, n ಅನ್ನು ಒತ್ತಿ</translation>
 <translation id="4647836961514597010">ಬಣ್ಣ ಆಯ್ಕೆಮಾಡುವಿಕೆ</translation>
+<translation id="4660783501463101648">ಕ್ಲಾಸಿಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ChromeVox ಕ್ಲಾಸಿಕ್‌ಗೆ ಹಿಂತಿರುಗಲು ಕೀಬೋರ್ಡ್ ಟಾಗಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
 <translation id="4661075872484491155">ಮರ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -425,6 +434,7 @@
 <translation id="4827410568042294688">ಆಯ್ಕೆ ಮಾಡಲಾಗಿಲ್ಲ</translation>
 <translation id="4842108708071771135">ಯಾವುದೇ ಮುಂದಿನ ಬ್ಲಾಕ್‌ಕೋಟ್ ಇಲ್ಲ.</translation>
 <translation id="4844625982113518938">ಈ ಹೆಸರನ್ನು ತಿಳಿಯಲು ಯಾವುದೇ ಕೀಯನ್ನು ಒತ್ತಿರಿ. Ctrl+W ಕಲಿಕೆ ಮೋಡ್‌ ಮುಚ್ಚುತ್ತದೆ.</translation>
+<translation id="4846428657345567687">ChromeVox ಗೆ ಸ್ವಾಗತ!</translation>
 <translation id="4846487886195635104">ಸ್ಟ್ರೈಕ್‌ ಮೂಲಕ ಮುಕ್ತಾಯ</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">ಹಿಂದಿನ ಒಂದೇ ರೀತಿಯ ಅಂಶ.</translation>
@@ -462,6 +472,7 @@
 <translation id="5098541983634824365">ಗ್ರಿಡ್ ತೊರೆಯಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="5102981729317424850">ಪರಿಕರ ಪಟ್ಟಿ</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">ಈ ಹೊಸ ಬಿಡುಗಡೆಯಲ್ಲಿ ನಾವು ಕೆಲವೊಂದು ಉತ್ತೇಜಕ ಬದಲಾವಣೆಗಳನ್ನು ಹೊಂದಿದ್ದೇವೆ; ಹೊಸದೇನಿದೆ ಎಂಬುದು ಇಲ್ಲಿದೆ:</translation>
 <translation id="5110983769041734144">ಯಾವುದೇ ಹಿಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರವಿಲ್ಲ.</translation>
 <translation id="5111640677200759579">ಕಾಲಮ್ ಶಿರೋನಾಮೆ</translation>
 <translation id="5136967254288895616">ಯಾವುದೇ ಹಿಂದಿನ ಲಿಂಕ್ ಇಲ್ಲ.</translation>
@@ -578,6 +589,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="6065293622157674001">ವ್ಯಾಕರಣ ದೋಷಗಳ ಆರಂಭ</translation>
 <translation id="6082768461603900813">ಬೇಸಿಕ್ ನ್ಯಾವಿಗೇಶನ್</translation>
 <translation id="6092707270915298410">ಲಿಂಕ್‌ ಅನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಿ</translation>
+<translation id="6118126368611144850">Chrome ಗಾಗಿ Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳು. ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ನೀವು Play ಸ್ಟೋರ್ ಅನ್ನು ಹೊಂದಿದ್ದರೆ, Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳೊಂದಿಗೆ ChromeVox ನಲ್ಲಿ ಸ್ನೀಕ್ ಪೀಕ್ ಅನ್ನು ಪಡೆದುಕೊಳ್ಳಿ. Play ಸ್ಟೋರ್‌ನಿಂದ Google Chrome Canary ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಮೂಲಕ ಪ್ರಾಯೋಗಿಕ ಬೆಂಬಲವನ್ನು ಬಳಸಿ ನೋಡಿ.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">ಸೆಲ್‌ನ ಅಂತ್ಯ.</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -618,6 +630,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="6493991254603208962">ಪ್ರಖರತೆ ಕಡಿಮೆ ಮಾಡಿ</translation>
 <translation id="6508059270146105198">ಬ್ರೈಲಿ ಪ್ರದರ್ಶನವನ್ನು ಪುಟದ ಕೆಳಭಾಗಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="6536864053412760904">ಗಣಿತ ML ಟೋಕನ್</translation>
+<translation id="6540201937398578274">ChromeVox ನಲ್ಲಿ, ಹುಡುಕಾಟ ಕೀ ಎನ್ನುವುದು ಮಾರ್ಪಡಿಸುವ ಕೀ ಆಗಿದೆ. ಹೆಚ್ಚಿನ ChromeVox ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಹುಡುಕಾಟ ಕೀ ಜೊತೆಗೆ ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತವೆ. ನೀವು ನ್ಯಾವಿಗೇಶನ್‌ಗೆ ಬಾಣದ ಕೀಲಿಗಳನ್ನು ಸಹ ಬಳಸುತ್ತೀರಿ.</translation>
 <translation id="6550720799683018100">ಕೆಳಗಿನ ಪಟ್ಟಿಯಿಂದ ಆಯ್ಕೆವೊಂದನ್ನು ಆಯ್ಕೆ‌ಮಾಡುವುದರ ಮೂಲಕ ಪ್ರಸ್ತುತ ಕೀಮ್ಯಾಪ್ ಅನ್ನು ಬದಲಾಯಿಸಿ.</translation>
 <translation id="6561818612645211875">ಪ್ರಸ್ತುತ ಸಾಲಿನ ಆರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="6587021927234520429">ಯಾವುದೇ ಮುಂದಿನ ಮಟ್ಟದ 4 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>

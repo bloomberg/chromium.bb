@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">Punt</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# mesos}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">Puntuació en estrelles: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hora i }other{# hores i }}</translation>
 <translation id="1842960171412779397">selecciona</translation>
 <translation id="1860796786778352021">Tanca la notificació</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
 <translation id="4320177379694898372">No hi ha connexió a Internet</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
+<translation id="4724120544754982507">Centre de notificacions, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificacions no llegides</translation>
 <translation id="4730374152663651037">UTILITZADES FREQÜENTMENT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{D'aquí a 1 mes}other{D'aquí a # mesos}}</translation>
 <translation id="4820616160060340806">Ordre+<ph name="KEY_COMBO_NAME" /></translation>
@@ -122,7 +124,7 @@
 <translation id="7130207228079676353">LES MÉS PROBABLES</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restant}other{# min restants}}</translation>
-<translation id="7319740667687257810">Launcher, visualització parcial</translation>
+<translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>

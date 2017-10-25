@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">ऑन-स्क्रीन कीबोर्ड अक्षम</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">खराब सिग्नल</translation>
 <translation id="1293264513303784526">USB-C डिव्‍हाइस (डावे पोर्ट)</translation>
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="1383876407941801731">शोधा</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C डिव्‍हाइस (डाव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="2865888419503095837">नेटवर्क माहिती</translation>
 <translation id="2872961005593481000">बंद करा</translation>
+<translation id="2903844815300039659"><ph name="NAME" />, <ph name="STRENGTH" /> शी कनेक्ट केलेले</translation>
 <translation id="2911940648265863620">तुम्ही तुमची स्क्रीन शेअर करत आहात</translation>
 <translation id="2942516765047364088">शेल्फ स्थिती</translation>
 <translation id="2946119680249604491">कनेक्शन जोडा</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">अद्यतनासाठी पुनर्प्रारंभ करा</translation>
 <translation id="3147142846278915599">लाँचर (संकालन अॅप्स...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
+<translation id="3153444934357957346">मल्टिपल साइन इन मध्ये तुमच्याकडे जास्तीत जास्त फक्त <ph name="MULTI_PROFILE_USER_LIMIT" /> खाती असू शकतात.</translation>
 <translation id="3236488194889173876">कोणतेही मोबाइल नेटवर्क उपलब्ध नाही</translation>
 <translation id="3294437725009624529">अतिथी</translation>
 <translation id="332587331255250389">कृपया बॅटरी बदला</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">USB-C डिव्‍हाइस (उजव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="3400357268283240774">अतिरिक्त सेटिंग्ज</translation>
 <translation id="3445925074670675829">USB-C डिव्‍हाइस</translation>
+<translation id="3465566417615315331">आपला फोटो क्लिक करा</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">ब्रेल प्रदर्शन कनेक्ट केले.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
 <translation id="3626281679859535460">ब्राइटनेस</translation>
+<translation id="3631369015426612114">यांना सूचना पाठवू द्या</translation>
 <translation id="3712407551474845318">विभाग कॅप्‍चर करा</translation>
 <translation id="371370241367527062">समोरील मायक्रोफोन</translation>
 <translation id="3771549900096082774">उच्च कॉन्ट्रास्ट मोड</translation>
-<translation id="3775358506042162758">आपल्याकडे एकाधिक साइन इनमध्ये फक्त तीन पर्यंत खाती असू शकतात.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करा</translation>
 <translation id="3798670284305777884">स्पीकर (अंतर्गत)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
+<translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
 <translation id="4378551569595875038">कनेक्ट करीत आहे...</translation>
+<translation id="4379531060876907730">ही तुमची स्टायलस टूल आहेत</translation>
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME" /> सह आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
@@ -256,6 +262,7 @@
 <translation id="776344839111254542">अपडेट तपशील पाहण्यासाठी क्लिक करा</translation>
 <translation id="7798302898096527229">रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">मजबूत सिग्नल</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क शोधत आहे...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
@@ -274,7 +281,6 @@
 <translation id="8308637677604853869">मागील मेनू</translation>
 <translation id="8351131234907093545">टीप तयार करा</translation>
 <translation id="8392234662362215700">कीबोर्ड लेआउट वरून स्विच करण्यासाठी Control-Shift-Space दाबा.</translation>
-<translation id="8392688371657486010">आपल्याकडे कोणत्याही सूचना नाहीत</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433186206711564395">नेटवर्क सेटिंग्ज</translation>
 <translation id="8433977262951327081">शेल्फमधील इनपुट पर्याय मेनू दर्शविण्यासाठीचा शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
@@ -304,6 +310,7 @@
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> प्रदर्शन काढले</translation>
 <translation id="9111102763498581341">अनलॉक करा</translation>
 <translation id="9151726767154816831">अद्यतनासाठी रीस्टार्ट करा आणि powerwash करा</translation>
+<translation id="9181036778675416867">नोट, स्क्रीनशॉट घेण्यासाठी व साहाय्यक, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="9194617393863864469">दुसरा वापरकर्ता साइन इन करा...</translation>
 <translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE" />% भरली आहे.</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोड मधून बाहेर पडत आहे</translation>

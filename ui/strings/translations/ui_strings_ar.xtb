@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">الفترة</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{شهر واحد}zero{# شهر}two{شهران (#)}few{# أشهر}many{# شهرًا}other{# شهر}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> ميغابايات/ثانية</translation>
+<translation id="1812519734428420144">تقييم بالنجوم <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ساعة واحدة و }zero{# من الساعات و }two{ساعتان (#) و }few{# ساعات و }many{# ساعة و }other{# من الساعات و }}</translation>
 <translation id="1842960171412779397">الاختيار</translation>
 <translation id="1860796786778352021">إغلاق الإشعار</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">جميع التطبيقات</translation>
 <translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
+<translation id="4724120544754982507">مركز الإشعارات، <ph name="UNREAD_NOTIFICATION_COUNT" /> من الإشعارات غير المقروءة</translation>
 <translation id="4730374152663651037">التطبيقات المستخدمة بشكل متكرر</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{يتبقى شهر واحد}zero{يتبقى # شهر}two{يتبقى شهرين (#)}few{يتبقى # أشهر}many{يتبقى # شهرًا}other{يتبقى # شهر}}</translation>
 <translation id="4820616160060340806">‏المفتاح Command+<ph name="KEY_COMBO_NAME" /></translation>

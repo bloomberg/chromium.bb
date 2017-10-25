@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Sinyal lemah</translation>
 <translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1383876407941801731">Telusuri</translation>
@@ -69,6 +70,8 @@
 <translation id="2532589005999780174">Mode kontras tinggi</translation>
 <translation id="2597972630681408282">Cahaya Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Kirim</translation>
+<translation id="2675319268637823299">Administrator tidak mengizinkan penggunaan login multipel untuk <ph name="USER_EMAIL" />.
+    Semua pengguna harus logout untuk melanjutkan.</translation>
 <translation id="2700058918926273959">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />. Anda akan keluar.</translation>
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
 <translation id="2761704814324807722">Baki status, waktu <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -79,6 +82,7 @@
 <translation id="2844169650293029770">Perangkat USB-C (port depan sebelah kiri)</translation>
 <translation id="2865888419503095837">Info jaringan</translation>
 <translation id="2872961005593481000">Matikan</translation>
+<translation id="2903844815300039659">Terhubung ke <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Anda berbagi layar</translation>
 <translation id="2942516765047364088">Posisi rak</translation>
 <translation id="2946119680249604491">Tambahkan koneksi</translation>
@@ -94,6 +98,7 @@
 <translation id="3126069444801937830">Mulai ulang untuk memperbarui</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="315116470104423982">Data seluler</translation>
+<translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="332587331255250389">Harap ganti baterai</translation>
@@ -102,6 +107,7 @@
 <translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
 <translation id="3400357268283240774">Setelan tambahan</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
+<translation id="3465566417615315331">Klik foto Anda</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
@@ -110,10 +116,10 @@
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
+<translation id="3631369015426612114">Izinkan notifikasi dari sumber berikut</translation>
 <translation id="3712407551474845318">Tangkap wilayah</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
 <translation id="3771549900096082774">Mode Kontras Tinggi</translation>
-<translation id="3775358506042162758">Anda hanya dapat memiliki paling banyak tiga akun dalam fitur masuk multipel.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kunci</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>
@@ -126,11 +132,13 @@
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
+<translation id="4072264167173457037">Sinyal sedang</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Kaca pembesar</translation>
 <translation id="4351433414020964307">Asisten sedang dimuat...</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
+<translation id="4379531060876907730">Ini adalah fitur stilus</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -200,6 +208,7 @@
 <translation id="632744581670418035">Hamparan keyboard</translation>
 <translation id="639644700271529076">CAPS LOCK tidak aktif</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Selesai</translation>
 <translation id="6452181791372256707">Tolak</translation>
 <translation id="6453179446719226835">Bahasa telah diubah</translation>
 <translation id="6459472438155181876">Memperpanjang layar ke <ph name="DISPLAY_NAME" /></translation>
@@ -256,6 +265,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="776344839111254542">Klik untuk melihat detail update</translation>
 <translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Sinyal kuat</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="7977927628060636163">Menelusuri jaringan seluler...</translation>
 <translation id="7982789257301363584">Jaringan</translation>
@@ -274,7 +284,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8351131234907093545">Buat catatan</translation>
 <translation id="8392234662362215700">Tekan Control-Shift-Space untuk mengubah tata letak keyboard.</translation>
-<translation id="8392688371657486010">Tidak ada notifikasi</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
 <translation id="8433977262951327081">Pintasan untuk menampilkan balon menu opsi masukan di rak telah diubah. Harap gunakan <ph name="NEW_SHORTCUT" />, bukan <ph name="OLD_SHORTCUT" />.</translation>
@@ -293,6 +302,7 @@ Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</transl
 <translation id="8825534185036233643">Pencerminan dengan lebih dari dua layar tidak didukung.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">Aplikasi tidak mendukung layar terpisah.</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
 <translation id="8921624153894383499">Asisten Google tidak berbicara dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
@@ -304,6 +314,7 @@ Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</transl
 <translation id="9091626656156419976">Tampilan <ph name="DISPLAY_NAME" /> dihapus</translation>
 <translation id="9111102763498581341">Buka kunci</translation>
 <translation id="9151726767154816831">Mulai ulang dan powerwash untuk memperbarui</translation>
+<translation id="9181036778675416867">Tap tombol stilus di rak untuk mencatat, mengambil screenshot, serta menggunakan asisten, penunjuk laser, atau kaca pembesar.</translation>
 <translation id="9194617393863864469">Masukkan pengguna lain...</translation>
 <translation id="9201131092683066720">Baterai terisi <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Keluar dari mode desktop terpadu</translation>

@@ -67,7 +67,6 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> అంశాలు తరలించబడ్డాయి</translation>
 <translation id="213900355088104901">ప్రైవేట్‌గా బ్రౌజ్ చేయాలంటే, అజ్ఞాత ట్యాబ్‌ని తెరవండి</translation>
 <translation id="2149973817440762519">బుక్‌మార్క్‌ను సవరించు</translation>
-<translation id="2154710561487035718">URLను కాపీ చెయ్యి</translation>
 <translation id="2230173723195178503">వెబ్‌పేజీ లోడ్ అయ్యింది</translation>
 <translation id="2256128224215992540">శోధన &amp; సైట్ సూచనలు</translation>
 <translation id="2267753748892043616">ఖాతాను జోడించు</translation>
@@ -145,14 +144,10 @@
 <translation id="3567664240939803299">Google Smart Lock ఈ సైట్ కోసం మీ పాస్‌వర్డ్‌ను సేవ్ చేయాలని మీరు కోరుకుంటున్నారా?</translation>
 <translation id="3588820906588687999">చిత్రాన్ని కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="3603009562372709545">లింక్ URLని కాపీ చేయి</translation>
-<translation id="360480449234699036">పేజీ నుండి నిష్క్రమించకుండానే వెబ్‌సైట్‌ల్లోని అంశాల గురించి తెలుసుకోండి. శోధించడానికి తాకండి అనే లక్షణం ఒక పదాన్ని మరియు దాని సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు, శోధన ఫలితాలు మరియు ఇతర వివరాలు అందించబడతాయి.
-
-మీ శోధన పదాన్ని సర్దుబాటు చేయడం కోసం ఎంచుకోవడానికి ఎక్కువసేపు నొక్కి ఉంచండి. మీ శోధనను మెరుగుపరచడానికి, ప్యానెల్‌ను పూర్తిగా పైకి స్లైడ్ చేసి, శోధన పెట్టెను తాకండి.</translation>
 <translation id="3607167657931203000">స్వీయపూర్తి డేటా</translation>
 <translation id="3628119975092896051">మీ పఠన జాబితా ఆఫ్‌లైన్‌లో అందుబాటులో ఉంది. మీ పఠన జాబితాకు పేజీని జోడించడానికి, <ph name="SHARE_OPENING_ICON" />ని నొక్కండి.</translation>
 <translation id="3638472932233958418">వెబ్‌పేజీలను ముందే లోడ్ చేయి</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />కి బుక్‌మార్క్ చేయబడింది</translation>
-<translation id="3738139272394829648">శోధించడానికి తాకండి</translation>
 <translation id="3771033907050503522">అజ్ఞాత ట్యాబ్‌లు</translation>
 <translation id="3779810277399252432">ఇంటర్నెట్ కనెక్షన్ లేదు.</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
@@ -209,7 +204,6 @@
 <translation id="5005498671520578047">పాస్‌వర్డ్ కాపీచేయడం</translation>
 <translation id="5010803260590204777">వెబ్‌ను ప్రైవేట్‌గా బ్రౌజ్ చేయడానికి అజ్ఞాత ట్యాబ్‌ను తెరవండి.</translation>
 <translation id="5011684439661633295">హాయ్, <ph name="FULL_ACCOUNT_NAME" /></translation>
-<translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5062321486222145940">Google డిస్క్ ఇన్‌. చేయి</translation>
 <translation id="5083464117946352670">ఫైల్ పరిమాణం గుర్తించలేకపో..</translation>
 <translation id="5094827893301452931">ట్వీట్ చేయడం పూర్తయింది.</translation>
@@ -312,7 +306,6 @@
 <translation id="6797885426782475225">వాయిస్ శోధన</translation>
 <translation id="6807889908376551050">అన్నీ చూపు...</translation>
 <translation id="681368974849482173">అంశం సృష్టించబడింది</translation>
-<translation id="6871663519944855400">అజ్ఞాతంలో తెరువు</translation>
 <translation id="6896758677409633944">కాపీ చెయ్యి</translation>
 <translation id="6903907808598579934">సమకాలీకరణను ఆన్ చేయి</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
@@ -340,7 +333,6 @@
 <translation id="7456847797759667638">స్థానాన్ని తెరువు...</translation>
 <translation id="7464701184726199289">ఇది అన్ని పరికరాల నుండి సమకాలీకరించబడిన డేటాను తీసివేస్తుంది. సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు మరియు మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">కంపెనీ పేరు</translation>
-<translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7481312909269577407">ఫార్వార్డ్</translation>
 <translation id="750493650310597496">0 ఎంచుకోబడ్డాయి</translation>
 <translation id="7514365320538308">డౌన్‌లోడ్ చేయి</translation>
@@ -370,7 +362,6 @@
 <translation id="806745655614357130">నా డేటాను విడిగా ఉంచండి</translation>
 <translation id="8076014560081431679">సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు మరియు మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">అన్ని ట్యాబ్‌లను మూసివేయి</translation>
-<translation id="8137558756159375272">శోధించడానికి తాకండి లక్షణం ఎంచుకున్న పదాన్ని మరియు ప్రస్తుత పేజీని సంబంధిత సందర్భంగా Google శోధనకు పంపుతుంది. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో దీన్ని ఆఫ్ చేయవచ్చు.</translation>
 <translation id="8205564605687841303">రద్దు చేయి</translation>
 <translation id="8225985093977202398">కాష్ చిత్రాలు, ఫైల్‌లు</translation>
 <translation id="8261506727792406068">తొలగించు</translation>

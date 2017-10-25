@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">കാലയളവ്</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{ഒരു മാസം}other{# മാസം}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">നക്ഷത്ര റേറ്റിംഗ് <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ഒരു മണിക്കൂറും }other{# മണിക്കൂറും }}</translation>
 <translation id="1842960171412779397">തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="1860796786778352021">അറിയിപ്പ് അടയ്‌ക്കൽ</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">എല്ലാ ആപ്പുകളും</translation>
 <translation id="4320177379694898372">ഇന്റർനെറ്റ് കണക്ഷനൊന്നുമില്ല</translation>
 <translation id="4588090240171750605">വലത്തോട്ട് സ്ക്രോള്‍ ചെയ്യുക</translation>
+<translation id="4724120544754982507">അറിയിപ്പ് കേന്ദ്രം, <ph name="UNREAD_NOTIFICATION_COUNT" /> വായിക്കാത്ത അറിയിപ്പുകൾ</translation>
 <translation id="4730374152663651037">പതിവായി ഉപയോഗിക്കുന്നത്</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{ഒരു മാസം ശേഷിക്കുന്നു}other{# മാസം ശേഷിക്കുന്നു}}</translation>
 <translation id="4820616160060340806">കമാൻഡ്+<ph name="KEY_COMBO_NAME" /></translation>

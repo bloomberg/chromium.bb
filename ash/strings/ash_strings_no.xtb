@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">Skjermtastaturet er deaktivert</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Svakt signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1383876407941801731">Søk</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C-enhet (porten foran på venstre side)</translation>
 <translation id="2865888419503095837">Nettverksinformasjon</translation>
 <translation id="2872961005593481000">Slå av</translation>
+<translation id="2903844815300039659">Koble til <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Du deler skjermen din</translation>
 <translation id="2942516765047364088">Hylleposisjon</translation>
 <translation id="2946119680249604491">Legg til forbindelse</translation>
@@ -94,6 +96,7 @@
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
 <translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
+<translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="332587331255250389">Bytt ut batteriet</translation>
@@ -102,6 +105,7 @@
 <translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
 <translation id="3400357268283240774">Flere innstillinger</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
+<translation id="3465566417615315331">Klikk på bildet ditt</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
@@ -110,10 +114,10 @@
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="3621202678540785336">Inndata</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
+<translation id="3631369015426612114">Tillat varsler fra følgende</translation>
 <translation id="3712407551474845318">Ta skjermdump av et område</translation>
 <translation id="371370241367527062">Mikrofon foran</translation>
 <translation id="3771549900096082774">Høykontrastmodus</translation>
-<translation id="3775358506042162758">Du kan bare ha opptil tre kontoer i flerpålogging.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Høyttaler (intern)</translation>
@@ -126,11 +130,13 @@
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
+<translation id="4072264167173457037">Middels sterkt signal</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Forstørrelsesglass</translation>
 <translation id="4351433414020964307">Assistenten lastes inn …</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
+<translation id="4379531060876907730">Dette er pekepennverktøyene dine</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -256,6 +262,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
 <translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Sterkt signal</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
@@ -274,7 +281,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8392234662362215700">Trykk på Ctrl + Shift + mellomrom for å bytte tastaturoppsett.</translation>
-<translation id="8392688371657486010">Du har ingen varsler</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>
 <translation id="8433977262951327081">Hurtigtasten for å vise boblen med menyen for valg av inndataalternativer på hyllen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -304,6 +310,7 @@ Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</t
 <translation id="9091626656156419976">Fjernet skjermen <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Lås opp</translation>
 <translation id="9151726767154816831">Start på nytt, og kjør Powerwash for å oppdatere</translation>
+<translation id="9181036778675416867">Trykk på pekepennknappen på hyllen for å ta et notat, en skjermdump, bruke assistenten, laserpekeren eller forstørrelsesglasset.</translation>
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % fullt</translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>

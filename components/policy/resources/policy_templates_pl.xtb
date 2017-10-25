@@ -47,6 +47,12 @@
 
       Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu programisty nie jest zgłaszany.</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
+<translation id="1166377463685560145">Określa drukarki, z których użytkownik nie może korzystać.
+
+      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_BLACKLIST" />.
+
+      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek z wyjątkiem tych, których identyfikatory zostały w niej określone.
+      </translation>
 <translation id="1198465924256827162">Częstotliwość wysyłania raportów o stanie urządzenia (w milisekundach).
 
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
@@ -79,11 +85,18 @@
 <translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="1420281424655200442">Steruje tym, które drukarki określone w zasadzie <ph name="DEVICE_PRINTERS_POLICY" /> są dostępne dla użytkowników.
+
+      Wskazuje zasadę dostępu, która jest używana do zbiorczego skonfigurowania drukarek. Jeśli wybrano opcję <ph name="PRINTERS_ALLOW_ALL" />, pokazywane są wszystkie drukarki. Jeśli wybrano opcję <ph name="PRINTERS_BLACKLIST" />, zasada <ph name="DEVICE_PRINTERS_BLACKLIST" /> jest używana do ograniczania dostępu do określonych drukarek. Jeśli wybrano ustawienie <ph name="PRINTERS_WHITELIST" />, zasada <ph name="DEVICE_PRINTERS_WHITELIST" /> wskazuje tylko te drukarki, które można wybrać.
+
+      Jeśli ta zasada nie jest ustawiona, domyślnie stosowana jest opcja <ph name="PRINTERS_BLACKLIST" />.
+      </translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
 <translation id="1438739959477268107">Domyślne ustawienie generowania kluczy</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="1456822151187621582">Windows (klienty <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Kontroluje zachowanie użytkownika w sesji wieloprofilowej na urządzeniach z <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli zasada ma wartość „MultiProfileUserBehaviorUnrestricted”, użytkownik może być użytkownikiem głównym lub dodatkowym w sesji wieloprofilowej.
@@ -98,6 +111,11 @@
 
       Jeśli nie ustawisz tej zasady, wartość domyślna „MultiProfileUserBehaviorMustBePrimary” jest stosowana do użytkowników zarządzanych w firmie, a wartość „MultiProfileUserBehaviorUnrestricted” – do niezarządzanych.</translation>
 <translation id="1465619815762735808">Kliknij, by uruchomić</translation>
+<translation id="1466133662354365542">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" />, umożliwiając użytkownikom automatyczne wprowadzanie wcześniej zapisanych danych karty kredytowej i adresu w formularzach na stronach internetowych.
+
+      Jeśli wyłączysz to ustawienie, autouzupełnianie nie będzie podpowiadać ani wypełniać danych karty kredytowej, jak też nie będzie zapisywać dodatkowych danych karty kredytowej, które użytkownik może podawać na stronach internetowych.
+
+      Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownik może samodzielnie skonfigurować autouzupełnianie (w tym wpisać dane kart kredytowych) w interfejsie.</translation>
 <translation id="1468307069016535757">Ustawia domyślny stan funkcji ułatwień dostępu w postaci trybu wysokiego kontrastu na ekranie logowania.
 
           Jeśli ta zasada ma wartość „prawda”, po wyświetleniu ekranu logowania tryb wysokiego kontrastu jest włączony.
@@ -139,6 +157,19 @@
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1561967320164410511">U2F i rozszerzenia do indywidualnego poświadczania</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1603058613431276040">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
+
+      Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />. Plik nie może być większy niż 5 MB i musi być zapisany w formacie JSON. Format jest taki sam jak w słowniku NativePrinters. Szacuje się, że w pliku o tym rozmiarze można zakodować około 21 000 drukarek. Do weryfikacji integralności pobranego pliku służy skrót kryptograficzny.
+
+      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej zmianie adresu URL lub skrótu jest pobierany ponownie.
+
+      Jeśli ta zasada jest ustawiona, <ph name="PRODUCT_OS_NAME" /> pobierze plik do konfiguracji drukarek i udostępni drukarki zgodnie z zasadami <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> i <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na pojedynczych urządzeniach. Jest ona uzupełnieniem konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
+
+      Ta zasada jest modyfikatorem zasady <ph name="BULK_PRINTERS_POLICY" />.
+
+      Jeśli ta zasada nie jest ustawiona, drukarki nie zostaną powiązane z urządzeniami, a inne zasady <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> będą ignorowane.</translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="163200210584085447">Wzorce na tej liście są dopasowywane do źródła zabezpieczeń adresu URL,
@@ -239,6 +270,12 @@
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Wyłączone drukarki firmowe</translation>
+<translation id="2063380907529983889">Steruje tym, które drukarki określone w zasadzie <ph name="BULK_PRINTERS_POLICY" /> są dostępne dla użytkowników.
+
+      Wskazuje zasadę dostępu, która jest używana do zbiorczego skonfigurowania drukarek. Jeśli wybrano opcję <ph name="PRINTERS_ALLOW_ALL" />, pokazywane są wszystkie drukarki. Jeśli wybrano opcję <ph name="PRINTERS_BLACKLIST" />, zasada <ph name="BULK_PRINTERS_BLACKLIST" /> jest używana do ograniczania dostępu do określonych drukarek. Jeśli wybrano ustawienie <ph name="PRINTERS_WHITELIST" />, zasada <ph name="BULK_PRINTERS_WHITELIST" /> wskazuje tylko te drukarki, które można wybrać.
+
+      Jeśli ta zasada nie jest ustawiona, domyślnie stosowana jest opcja <ph name="PRINTERS_BLACKLIST" />.
+      </translation>
 <translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
 
           Możliwe wartości to „basic”, „digest”, „NTLM” i „negotiate”. Poszczególne wartości należy rozdzielić przecinkami.
@@ -329,6 +366,7 @@
 <translation id="2294382669900758280">Odtwarzanie filmów w aplikacjach na Androida nie jest uwzględniane, nawet gdy zasada jest ustawiona na <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Skonfiguruj domyślną stronę nowej karty w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
+<translation id="2303795211377219696">Włącz autouzupełnianie kart kredytowych</translation>
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
@@ -483,6 +521,12 @@
 <translation id="2762164719979766599">Określa listę kont na urządzeniu, które będą pokazywane na ekranie logowania.
 
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
+<translation id="2766302473082018239">Określa drukarki, z których może korzystać użytkownik.
+
+      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />.
+
+      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek, których identyfikatory pasują do wartości w niej ustawionych. Identyfikatory muszą być zgodne z pozycjami w pliku określonym w zasadzie <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
 <translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
@@ -496,6 +540,7 @@
           Jeśli ustawienie jest wyłączone i zapora sieciowa filtruje wychodzące połączenia UDP, z komputerem mogą łączyć się tylko komputery klienckie w sieci lokalnej.
 
           Jeśli nie skonfigurujesz tej zasady, ustawienie jest włączone.</translation>
+<translation id="2823870601012066791">Lokalizacja w rejestrze systemu Windows dla klientów <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
 <translation id="2838830882081735096">Nie zezwalaj na migrację danych ani na działanie ARC</translation>
 <translation id="2844404652289407061">Pozwala korzystać z funkcji „Dotknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
@@ -636,6 +681,12 @@
 
           Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
+<translation id="3395348522300156660">Określa drukarki, z których może korzystać użytkownik.
+
+      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />
+
+      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek, których identyfikatory pasują do wartości w niej ustawionych. Identyfikatory muszą być zgodne z pozycjami w pliku określonym w zasadzie <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
       W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
@@ -839,6 +890,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
 <translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
+<translation id="4133144443101280166">Okresy bezczynności urządzeń, gdy aktywne są zasady OffHours |ignored_policy_proto_tags|</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4183229833636799228">Domyślne ustawienie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL pozwalający zweryfikować token uwierzytelniania klienta dostępu zdalnego</translation>
@@ -1047,6 +1099,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
 
           Jeśli ta zasada nie jest ustawiona, automatyczna selekcja nie będzie przeprowadzana w żadnej witrynie.</translation>
+<translation id="4978405676361550165">Jeśli zasada „OffHours” jest ustawiona, to określone zasady dotyczące urządzeń są ignorowane (używane są ustawienia domyślne tych zasad) w konkretnych okresach. Zasady dotyczące urządzeń są ponownie stosowane przez Chrome za każdym razem, gdy zaczyna lub kończy się okres „OffHours”. Użytkownik otrzymuje powiadomienie i następuje wymuszone wylogowanie, gdy zakończenie okresu „OffHours” i zasady dotyczące urządzeń zmienią się (np. gdy użytkownik jest zalogowany na konto, które nie ma uprawnień).</translation>
 <translation id="4980635395568992380">Typ danych:</translation>
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
@@ -1056,6 +1109,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
 <translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
+<translation id="5090209345759901501">Rozszerz ustawienie treści Flash na całą zawartość</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
@@ -1207,6 +1261,25 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5728154254076636808">Włącz tworzenie przenośnych kopii danych profilu <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importuj dane autouzupełniania formularzy z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="5765780083710877561">Opis:</translation>
+<translation id="5768309557753179144">Zarówno Chromium, jak i Google Chrome obsługują jednakowy zestaw
+      zasad. Ten dokument może zawierać nieopublikowane zasady
+      (tzn. wpis „Obsługiwana w” odnosi się do jeszcze nieopublikowanej wersji <ph name="PRODUCT_NAME" />),
+      które mogą zostać zmienione lub usunięte bez powiadomienia i nie podlegają
+      żadnej gwarancji. Między innymi nie ma żadnych gwarancji dotyczących ich zabezpieczeń
+      i właściwości związanych z prywatnością.
+
+      Zasady te są przeznaczone do konfigurowania
+      <ph name="PRODUCT_NAME" /> tylko na wewnętrzny użytek Twojej organizacji. Użycie ich poza nią
+      (np. w programie rozpowszechnianym publicznie) spowoduje uznanie
+      oprogramowania za złośliwe – prawdopodobnie tak zostanie ono oznaczone
+      przez Google i programy antywirusowe.
+
+      Nie musisz konfigurować tych ustawień ręcznie. Możesz pobrać łatwe w użyciu
+      szablony dla systemów Windows, Mac OS i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Zalecamy skonfigurowanie zasady w systemie Windows za pośrednictwem
+      obiektu zasad grupy (GPO), mimo że obsługa zasady przez rejestr jest nadal
+      możliwa w systemach Windows połączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
 <translation id="5774856474228476867">Adres URL wyszukiwarki od domyślnego dostawcy wyszukiwania</translation>
 <translation id="5776485039795852974">Pytaj za każdym razem, gdy witryna chce pokazywać powiadomienia na pulpicie</translation>
@@ -1304,6 +1377,53 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta opcja będzie nieustawiona lub wyłączona, polecenia wydruku będą wyświetlać ekran podglądu.</translation>
 <translation id="6022948604095165524">Działanie po uruchomieniu</translation>
+<translation id="6023030044732320798">Określa zestaw zasad przesyłany do środowiska wykonawczego ARC. Wartość musi być prawidłowym kodem JSON.
+
+      Za pomocą tej zasady można wskazać aplikacje na Androida, które mają być automatycznie instalowane na urządzeniu:
+
+      {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "description": "identyfikator aplikacji na Androida, np. "com.google.android.gm" w przypadku Gmaila",
+                  "type": "string"
+                },
+                "installType": {
+                  "description": "Określa sposób instalowania aplikacji. OPTIONAL: aplikacja nie jest instalowana automatycznie, ale użytkownik może ją zainstalować. To ustawienie domyślne, gdy ta zasada nie jest skonfigurowana. PRELOAD: aplikacja jest instalowana automatycznie, ale użytkownik może ją odinstalować. FORCE_INSTALLED: aplikacja jest instalowana automatycznie i użytkownik nie może jej odinstalować. BLOCKED: aplikacja jest zablokowana i nie można jej zainstalować. Jeśli aplikacja została zainstalowana podczas obowiązywania wcześniejszej zasady, zostanie odinstalowana.",
+                  "type": "string",
+                  "enum": [
+                    "OPTIONAL",
+                    "PRELOAD",
+                    "FORCE_INSTALLED",
+                    "BLOCKED"
+                  ]
+                },
+                "defaultPermissionPolicy": {
+                  "description": "Zasada przyznawania uprawnień aplikacjom. PERMISSION_POLICY_UNSPECIFIED: zasada nie jest określona. Jeśli uprawnienie nie ma zasady na żadnym poziomie, domyślnie stosowane jest zachowanie PROMPT. PROMPT: użytkownik jest proszony o przyznanie uprawnień. GRANT: automatyczne przyznanie uprawnień. DENY: automatyczna odmowa uprawnień.",
+                  "type": "string",
+                  "enum": [
+                    "PERMISSION_POLICY_UNSPECIFIED",
+                    "PROMPT",
+                    "GRANT",
+                    "DENY"
+                  ]
+                },
+                "managedConfiguration": {
+                  "description": "Obiekt JSON z konfiguracją specyficzną dla danej aplikacji w postaci par klucz-wartość, np. '"managedConfiguration": { "klucz1": wartość1, "klucz2": wartość2 }'. Klucze są zdefiniowane w manifeście aplikacji.",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Przypinanie aplikacji do menu startowego, zobacz PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
 <translation id="6036523166753287175">Włącz omijanie zapory sieciowej przez hosta dostępu zdalnego</translation>
@@ -1312,6 +1432,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6076099373507468537">Definiuje listę urządzeń USB, które można odłączać od sterownika jądra i stosować za pomocą interfejsu chrome.usb API bezpośrednio w aplikacji internetowej. W celu wskazania konkretnego urządzenia lista obejmuje pary identyfikatora dostawcy urządzenia USB i identyfikatora produktu.
 
       Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
+<translation id="6083631234867522991">Windows (klienty Windows):</translation>
 <translation id="6093156968240188330">Umożliwia użytkownikom zdalnym używanie okien z podwyższonym poziomem uprawnień w sesjach pomocy zdalnej</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
 
@@ -1404,6 +1525,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli wybierzesz używanie skryptu .pac serwera proxy, aplikacje na Androida otrzymają URL skryptu.</translation>
 <translation id="6491139795995924304">Włącz Bluetooth na urządzeniu</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
+<translation id="6525955212636890608">Jeśli włączysz to ustawienie, będzie ono miało wpływ na te strony, dla których w ustawieniach treści dozwolone są treści Flash (przez użytkownika albo przez zasady przedsiębiorstwa). Uruchamiane będą wszystkie umieszczone na tych stronach treści Flash, w tym zarówno pochodzące z innych źródeł, jak i drobne.
+
+      Aby określić strony, na których będzie dozwolone uruchamianie treści Flash, zapoznaj się z zasadami „DefaultPluginsSetting”, „PluginsAllowedForUrls” i „PluginsBlockedForUrls”.
+
+      Jeśli to ustawienie jest wyłączone lub nie jest określone, treści Flash z innych źródeł oraz treści drobne mogą być blokowane.</translation>
 <translation id="653608967792832033">Określa, po jakim czasie nieaktywności użytkownika blokowany jest ekran przy zasilaniu z baterii.
 
           Jeśli ta zasada ma wartość większą niż zero, określa czas, przez który użytkownik musi pozostać bezczynny, zanim <ph name="PRODUCT_OS_NAME" /> zablokuje ekran.
@@ -1767,6 +1893,39 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="7841880500990419427">Najniższa wersja TLS, która zostanie użyta zastępczo</translation>
 <translation id="7842869978353666042">Skonfiguruj opcje Dysku Google</translation>
 <translation id="7843525027689416831">Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi są używane tylko na ekranie logowania. Flagi ustawiane przez tę zasadę nie przechodzą na sesje użytkownika.</translation>
+<translation id="7844537954833753199">Konfiguruje ustawienia zarządzania rozszerzeniami w <ph name="PRODUCT_NAME" />.
+
+          Ta zasada zarządza wieloma ustawieniami, w tym ustawieniami objętymi istniejącymi zasadami dotyczącymi rozszerzeń. Zastępuje wszelkie poprzednie zasady, jeśli są skonfigurowane.
+
+          Zasada mapuje identyfikator rozszerzenia lub adres URL aktualizacji w jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator <ph name="DEFAULT_SCOPE" /> i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizowania konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
+
+          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizowania) stanowią kolejny słownik, który może zawierać te pola.
+
+          <ph name="INSTALLATION_MODE" />: mapuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
+          * <ph name="ALLOWED" />: pozwala na instalowanie rozszerzenia przez użytkownika. Jest to działanie domyślne.
+          * <ph name="BLOCKED" />: blokuje możliwość instalowania rozszerzenia przez użytkownika.
+          * <ph name="FORCE_INSTALLED" />: rozszerzenie jest instalowane automatycznie, a użytkownik nie może go usunąć. 
+          * <ph name="NORMAL_INSTALLED" />: rozszerzenie jest instalowane automatycznie, ale użytkownik może je wyłączyć.
+
+          Ustawienie <ph name="INSTALLTION_MODE" /> można skonfigurować również dla wielu rozszerzeń, w tym dla rozszerzenia <ph name="DEFAULT_SCOPE" /> (jako ustawienia domyślne) oraz rozszerzeń z tym samym adresem URL aktualizacji. W takim przypadku dostępne są tylko wartości <ph name="ALLOWED" /> i <ph name="BLOCKED" />.
+
+          Jeśli wybierzesz tryb <ph name="FORCE_INSTALLED" /> lub <ph name="NORMAL_INSTALLED" />, musisz skonfigurować również <ph name="UPDATE_URL" />. Pamiętaj, że adres URL aktualizowania ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL podany w pliku manifestu. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
+
+          <ph name="BLOCKED_PERMISSIONS" />: mapuje listę ciągów wskazujących zablokowane uprawnienia interfejsu API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />. To ustawienie można też skonfigurować dla rozszerzenia <ph name="DEFAULT_SCOPE" />. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na czarnej liście, nie będzie możliwe. Jeśli zablokowane uprawnienia są wymagane opcjonalnie, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
+
+          <ph name="ALLOWED_PERMISSIONS" />: działa podobnie jak <ph name="BLOCKED_PERMISSIONS" />, ale odnosi się do konkretnych uprawnień z listy zablokowanych, więc nie można skonfigurować rozszerzenia <ph name="DEFAULT_SCOPE" />. Pamiętaj, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: mapuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. Zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana.
+
+          Tych ustawień możesz użyć tylko w przypadku domyślnej konfiguracji <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: każda pozycja na liście to wzorzec dopasowania rozszerzenia (więcej informacji znajdziesz na <ph name="LINK_TO_MATCH_PATTERNS" />). Użytkownicy mogą łatwo instalować elementy z każdego adresu URL, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku <ph name="EXTENSION_SUFFIX_WILDCARD" />, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
+
+          <ph name="ALLOWED_TYPES" />: tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: <ph name="VALID_ALLOWED_TYPES" />. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: jeśli użytkownik próbuje zainstalować rozszerzenie, ale tę czynność blokuje zasada, Chrome Web Store wyświetla ogólny komunikat o błędzie. To ustawienie pozwala dołączyć tekst do komunikatu o błędzie. Można skorzystać z tej możliwości, by przekierować użytkownika do działu pomocy, wytłumaczyć przyczynę blokowania rozszerzenia lub podać inne informacje. Ten komunikat o błędzie zostanie skrócony, jeśli liczba znaków przekroczy 1000.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: akceptuje listę hostów, z którymi rozszerzenie nie będzie mogło działać. Obejmuje to wstawianie kodu JavaScript, zmienianie i wyświetlanie elementów webRequests/webNavigation, a także wyświetlanie i zmienianie plików cookie. Ten format jest podobny do wzorców dopasowania <ph name="LINK_TO_MATCH_PATTERNS" />, ale nie można zdefiniować w nich ścieżek (np. „*://*.example.com”). Obsługiwane jest wstawianie symboli zastępczych także w domenach najwyższego poziomu, np. „*://example.*”.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: akceptuje listę hostów, z którymi może działać rozszerzenie, niezależnie od tego, czy są wymienione na liście <ph name="RUNTIME_BLOCKED_HOSTS" />. Ma taki sam format jak <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">Jeśli ustawisz wartość SyncDisabled lub pozostawisz tę opcję nieskonfigurowaną, certyfikaty <ph name="PRODUCT_OS_NAME" /> nie będą dostępne dla aplikacji ARC.
 
       Jeśli ustawisz wartość CopyCaCerts, dla aplikacji ARC będą dostępne wszystkie certyfikaty CA zainstalowane w ONC z <ph name="WEB_TRUSTED_BIT" />.</translation>
@@ -1939,6 +2098,12 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
 <translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
+<translation id="8527932539502116028">Określa drukarki, z których użytkownik nie może korzystać.
+
+      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano opcję <ph name="PRINTERS_BLACKLIST" />.
+
+      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek oprócz tych, których identyfikatory w niej określono.
+      </translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
@@ -1951,6 +2116,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           Jeśli w tym ustawieniu wybierzesz wartość Fałsz, urządzenie nie będzie korzystać z zaświadczeń zdalnych do ochrony treści i może nie móc odtwarzać materiałów chronionych.
 
           Jeśli w tym ustawieniu wybierzesz wartość Prawda lub w ogóle go nie skonfigurujesz, zaświadczenia zdalne będą mogły być używane do ochrony treści.</translation>
+<translation id="8650974590712548439">Lokalizacja w rejestrze systemu Windows dla klientów systemu Windows:</translation>
 <translation id="8654286232573430130">Określa, które serwery są na białej liście zintegrowanego uwierzytelniania. Zintegrowane uwierzytelnianie działa tylko wtedy, gdy <ph name="PRODUCT_NAME" /> otrzyma wezwanie do uwierzytelnienia od serwera proxy lub serwera wymienionego na tej liście dozwolonych serwerów.
 
           Nazwy serwerów należy rozdzielić przecinkami. Można używać symboli wieloznacznych (*).
@@ -2008,6 +2174,18 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
           Wartość zasady powinna być określona w milisekundach. Wartości muszą być mniejsze niż opóźnienie bezczynności.</translation>
 <translation id="891435090623616439">zakodowane jako ciąg JSON – więcej szczegółów znajdziesz na <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8927384992072706174">Udostępnia konfiguracje drukarek firmowych.
+
+      Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />. Plik nie może być większy niż 5 MB i musi być zapisany w formacie JSON. Format jest taki sam jak w słowniku NativePrinters. Szacuje się, że w pliku o tym rozmiarze można zakodować około 21 000 drukarek. Do weryfikacji integralności pobranego pliku służy skrót kryptograficzny.
+
+      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej zmianie adresu URL lub skrótu jest pobierany ponownie.
+
+      Jeśli ta zasada jest ustawiona, <ph name="PRODUCT_OS_NAME" /> pobierze plik do konfiguracji drukarek i udostępni drukarki zgodnie z zasadami <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> i <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      W przypadku ustawienia tej zasady użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na pojedynczych urządzeniach. Jest ona uzupełnieniem konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
+      </translation>
 <translation id="8947415621777543415">Zgłoś lokalizację urządzenia</translation>
 <translation id="8951350807133946005">Ustaw katalog podręcznej pamięci dyskowej</translation>
 <translation id="8952317565138994125">Wyłącza synchronizację danych w <ph name="PRODUCT_NAME" /> przy użyciu usług synchronizacji obsługiwanych przez Google i uniemożliwia użytkownikom zmianę tego ustawienia.

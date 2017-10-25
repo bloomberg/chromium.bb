@@ -82,7 +82,6 @@
 <translation id="3762167353400286894">‏Chromium OS מוצג בשפה זו</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">‏למרבה הצער, הגדרות Mozilla Firefox שלך אינן זמינות בזמן שהדפדפן פועל. כדי לייבא הגדרות אלו ל-Chromium, שמור את עבודתך וסגור את כל חלונות Firefox. לאחר מכן לחץ על המשך.</translation>
 <translation id="3852700440713538496">‏הצמד את Chromium לשורת המשימות</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
 <translation id="390894725198123737">‏אם אתה משתמש ב-Mac, ייתכן שסיסמאות יישמרו ב-Keychain שלך, ומשתמשי Chromium אחרים החולקים את חשבון OS X הזה יוכלו לגשת אליהן או לסנכרן אותן.</translation>
@@ -166,7 +165,6 @@
 <translation id="6505742536731484931">‏Chromium זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
 <translation id="6526111688217511984">‏לצורך הורדת קבצים, Chromium זקוק לגישה לאחסון.</translation>
-<translation id="6638567566961868659">‏מצא את הסימניות שלך בתפריט Chromium או בסרגל הסימניות.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6717134281241384636">‏לא ניתן להשתמש בפרופיל שלך משום שהוא מגיע מגרסה חדשה יותר של Chromium.
 
@@ -220,7 +218,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7975919845073681630">‏זוהי התקנה משנית של Chromium, ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
 <translation id="7979877361127045932">‏הסתר בתפריט Chromium</translation>
 <translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8134284582177628525">‏אם אתם משתף את המחשב הזה עם <ph name="PROFILE_NAME" />, הוסף את עצמך ל-Chromium כדי לגלוש בנפרד. אחרת, נתק את חשבון Google שלו.</translation>
 <translation id="8157153840442649507">‏Chromium מוצג בשפה זו</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8222496066431494154">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון: <ph name="PHONE_NUMBER" /></translation>

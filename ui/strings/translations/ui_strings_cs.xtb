@@ -18,6 +18,7 @@
 <translation id="1801827354178857021">Tečka</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 měsíc}few{# měsíce}many{# měsíce}other{# měsíců}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1812519734428420144">Hodnocení hvězdičkami: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hodina a  }few{# hodiny a  }many{# hodiny a  }other{# hodin a  }}</translation>
 <translation id="1842960171412779397">zvolit</translation>
 <translation id="1860796786778352021">Zavřít oznámení</translation>
@@ -66,6 +67,7 @@
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
 <translation id="4320177379694898372">Žádné připojení k internetu</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
+<translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{zbývá 1 měsíc}few{zbývají # měsíce}many{zbývá # měsíce}other{zbývá # měsíců}}</translation>
 <translation id="4820616160060340806">Příkaz + <ph name="KEY_COMBO_NAME" /></translation>
