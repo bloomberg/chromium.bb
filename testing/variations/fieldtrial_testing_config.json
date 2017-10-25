@@ -3263,6 +3263,24 @@
             ]
         }
     ],
+    "SignInProcessIsolation": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_50_20171026",
+                    "enable_features": [
+                        "sign-in-process-isolation"
+                    ]
+                }
+            ]
+        }
+    ],
     "SimpleCacheTrial": [
         {
             "platforms": [

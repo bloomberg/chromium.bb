@@ -19,6 +19,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
@@ -723,6 +724,15 @@ class EnabledSignInIsolationBrowserTest : public SignInIsolationBrowserTest {
     SignInIsolationBrowserTest::SetUpOnMainThread();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // This test creates and tests its own field trial group, so it needs to
+    // disable the field trial testing config, which might define an
+    // incompatible trial name/group.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+    SignInIsolationBrowserTest::SetUpCommandLine(command_line);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(EnabledSignInIsolationBrowserTest);
 };
 
@@ -764,6 +774,15 @@ class DisabledSignInIsolationBrowserTest : public SignInIsolationBrowserTest {
 
     feature_list_.InitWithFeatureList(std::move(feature_list));
     SignInIsolationBrowserTest::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // This test creates and tests its own field trial group, so it needs to
+    // disable the field trial testing config, which might define an
+    // incompatible trial name/group.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+    SignInIsolationBrowserTest::SetUpCommandLine(command_line);
   }
 
   DISALLOW_COPY_AND_ASSIGN(DisabledSignInIsolationBrowserTest);
