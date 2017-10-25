@@ -597,8 +597,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
     prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
-    prerender::PrerenderManager::SetInstantMode(
-        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
     prerender::PrerenderManager::SetOmniboxMode(
         prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
     const testing::TestInfo* const test_info =

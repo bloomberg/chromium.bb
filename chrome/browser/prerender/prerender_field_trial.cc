@@ -56,7 +56,6 @@ const char kNoStatePrefetchFeatureModeParameterName[] = "mode";
 
 // The origins can have prerendering overridden differently than the rest of the
 // experiment.
-const char kNoStatePrefetchFeatureInstantModeParameterName[] = "instant_mode";
 const char kNoStatePrefetchFeatureOmniboxModeParameterName[] = "omnibox_mode";
 
 // Mode values.
@@ -74,8 +73,6 @@ void ConfigurePrerender() {
       PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
 
   PrerenderManager::SetMode(overall_mode);
-  PrerenderManager::SetInstantMode(ParsePrerenderMode(
-      kNoStatePrefetchFeatureInstantModeParameterName, overall_mode));
   PrerenderManager::SetOmniboxMode(ParsePrerenderMode(
       kNoStatePrefetchFeatureOmniboxModeParameterName, overall_mode));
 }

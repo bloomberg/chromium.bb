@@ -337,10 +337,6 @@ void PrerenderContents::StartPrerendering(
     load_url_params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_TYPED |
         ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  } else if (origin_ == ORIGIN_INSTANT) {
-    load_url_params.transition_type = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_GENERATED |
-        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   }
   load_url_params.override_user_agent =
       prerender_manager_->config().is_overriding_user_agent ?

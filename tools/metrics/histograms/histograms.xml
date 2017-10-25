@@ -98083,7 +98083,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="externalrequest" label="Externally triggered prerender."/>
   <suffix name="externalrequestforced"
       label="Forced prerender regardless of network."/>
-  <suffix name="Instant" label="Instant search prerender."/>
+  <suffix name="Instant" label="Instant search prerender.">
+    <obsolete>
+      Deprecated October 2017
+    </obsolete>
+  </suffix>
   <suffix name="localpredictor" label="Local predictor triggered prerender.">
     <obsolete>
       Deprecated April 2015
@@ -104062,7 +104066,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="externalrequest" label="Externally triggered prerender."/>
   <suffix name="externalrequestforced"
       label="Forced prerender regardless of network."/>
-  <suffix name="Instant" label="Instant search prerender."/>
+  <suffix name="Instant" label="Instant search prerender.">
+    <obsolete>
+      Deprecated October 2017
+    </obsolete>
+  </suffix>
   <suffix name="none"
       label="No origin; in the case of prefetch TTFCP this is when no
              prefetch was involved."/>

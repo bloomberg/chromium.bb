@@ -399,19 +399,16 @@ class RestorePrerenderMode {
  public:
   RestorePrerenderMode()
       : prev_mode_(PrerenderManager::GetMode(ORIGIN_NONE)),
-        prev_omnibox_mode_(PrerenderManager::GetMode(ORIGIN_OMNIBOX)),
-        prev_instant_mode_(PrerenderManager::GetMode(ORIGIN_INSTANT)) {}
+        prev_omnibox_mode_(PrerenderManager::GetMode(ORIGIN_OMNIBOX)) {}
 
   ~RestorePrerenderMode() {
     PrerenderManager::SetMode(prev_mode_);
     PrerenderManager::SetOmniboxMode(prev_omnibox_mode_);
-    PrerenderManager::SetInstantMode(prev_instant_mode_);
   }
 
  private:
   PrerenderManager::PrerenderManagerMode prev_mode_;
   PrerenderManager::PrerenderManagerMode prev_omnibox_mode_;
-  PrerenderManager::PrerenderManagerMode prev_instant_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(RestorePrerenderMode);
 };
