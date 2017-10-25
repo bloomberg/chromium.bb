@@ -53,13 +53,13 @@ bool VaapiTFPPicture::Initialize() {
     glx_image_ = new gl::GLImageGLX(size_, GL_RGB);
     if (!glx_image_->Initialize(x_pixmap_)) {
       // x_pixmap_ will be freed in the destructor.
-      LOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
+      DLOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
       return false;
     }
 
     gl::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
     if (!glx_image_->BindTexImage(GL_TEXTURE_2D)) {
-      LOG(ERROR) << "Failed to bind texture to glx image";
+      DLOG(ERROR) << "Failed to bind texture to glx image";
       return false;
     }
   }
@@ -70,7 +70,7 @@ bool VaapiTFPPicture::Initialize() {
 bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
   if (format != gfx::BufferFormat::BGRX_8888 &&
       format != gfx::BufferFormat::BGRA_8888) {
-    LOG(ERROR) << "Unsupported format";
+    DLOG(ERROR) << "Unsupported format";
     return false;
   }
 
@@ -82,7 +82,7 @@ bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
   x_pixmap_ = XCreatePixmap(x_display_, RootWindow(x_display_, screen),
                             size_.width(), size_.height(), win_attr.depth);
   if (!x_pixmap_) {
-    LOG(ERROR) << "Failed creating an X Pixmap for TFP";
+    DLOG(ERROR) << "Failed creating an X Pixmap for TFP";
     return false;
   }
 
@@ -100,6 +100,27 @@ bool VaapiTFPPicture::DownloadFromSurface(
     const scoped_refptr<VASurface>& va_surface) {
   return vaapi_wrapper_->PutSurfaceIntoPixmap(va_surface->id(), x_pixmap_,
                                               va_surface->size());
+}
+
+// static
+linked_ptr<VaapiPicture> VaapiPicture::CreatePicture(
+    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    int32_t picture_buffer_id,
+    const gfx::Size& size,
+    uint32_t texture_id,
+    uint32_t client_texture_id) {
+  linked_ptr<VaapiPicture> picture;
+  picture.reset(new VaapiTFPPicture(vaapi_wrapper, make_context_current_cb,
+                                    bind_image_cb, picture_buffer_id, size,
+                                    texture_id, client_texture_id));
+  return picture;
+}
+
+// static
+uint32_t VaapiPicture::GetGLTextureTarget() {
+  return GL_TEXTURE_2D;
 }
 
 }  // namespace media
