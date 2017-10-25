@@ -116,10 +116,6 @@ TEST_F(LockScreenSanityTest, PasswordIsInitiallyFocused) {
 
 // Verifies submitting the password invokes mojo lock screen client.
 TEST_F(LockScreenSanityTest, PasswordSubmitCallsLockScreenClient) {
-  // TODO: Renable in mash once crbug.com/725257 is fixed.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Build lock screen.
   auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
                                         data_dispatcher());

@@ -561,6 +561,9 @@ void SystemTray::ClickedOutsideBubble() {
 }
 
 bool SystemTray::PerformAction(const ui::Event& event) {
+  UserMetricsRecorder::RecordUserClick(
+      LoginMetricsRecorder::LockScreenUserClickTarget::kSystemTray);
+
   // If we're already showing a full system tray menu, either default or
   // detailed menu, hide it; otherwise, show it (and hide any popup that's
   // currently shown).

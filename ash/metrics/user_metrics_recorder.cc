@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/login/ui/lock_screen.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -170,6 +171,7 @@ void RecordShelfItemCounts() {
 
 UserMetricsRecorder::UserMetricsRecorder() {
   StartTimer();
+  login_metrics_recorder_ = std::make_unique<LoginMetricsRecorder>();
 }
 
 UserMetricsRecorder::UserMetricsRecorder(bool record_periodic_metrics) {
@@ -179,6 +181,18 @@ UserMetricsRecorder::UserMetricsRecorder(bool record_periodic_metrics) {
 
 UserMetricsRecorder::~UserMetricsRecorder() {
   timer_.Stop();
+}
+
+// static
+void UserMetricsRecorder::RecordUserClick(
+    LoginMetricsRecorder::LockScreenUserClickTarget target) {
+  DCHECK(Shell::HasInstance());
+  LoginMetricsRecorder* recorder =
+      Shell::Get()->metrics()->login_metrics_recorder();
+  if (!LockScreen::IsShown() && !recorder->enabled_for_testing())
+    return;
+
+  recorder->RecordUserClickEventOnLockScreen(target);
 }
 
 void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {

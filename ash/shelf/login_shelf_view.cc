@@ -40,6 +40,23 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
+LoginMetricsRecorder::LockScreenUserClickTarget GetUserClickTarget(
+    int button_id) {
+  switch (button_id) {
+    case LoginShelfView::kShutdown:
+      return LoginMetricsRecorder::LockScreenUserClickTarget::kShutDownButton;
+    case LoginShelfView::kRestart:
+      return LoginMetricsRecorder::LockScreenUserClickTarget::kRestartButton;
+    case LoginShelfView::kSignOut:
+      return LoginMetricsRecorder::LockScreenUserClickTarget::kSignOutButton;
+    case LoginShelfView::kCloseNote:
+      return LoginMetricsRecorder::LockScreenUserClickTarget::kCloseNoteButton;
+    case LoginShelfView::kCancel:
+      return LoginMetricsRecorder::LockScreenUserClickTarget::kTargetCount;
+  }
+  return LoginMetricsRecorder::LockScreenUserClickTarget::kTargetCount;
+}
+
 // Spacing between the button image and label.
 constexpr int kImageLabelSpacingDp = 8;
 
@@ -159,6 +176,7 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 
 void LoginShelfView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
+  UserMetricsRecorder::RecordUserClick(GetUserClickTarget(sender->id()));
   switch (sender->id()) {
     case kShutdown:
     case kRestart:

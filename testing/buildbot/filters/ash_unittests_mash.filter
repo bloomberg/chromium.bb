@@ -63,6 +63,12 @@
 -LockLayoutManagerTest.MaximizedFullscreenWindowBoundsAreEqualToScreen
 -LockLayoutManagerTest.MultipleMonitors
 -LockLayoutManagerTest.NorwmalWindowBoundsArePreserved
+# TODO: Fail because of broken input event routing. http://crbug.com/725257
+-LockScreenSanityTest.PasswordSubmitCallsLockScreenClient
+-LoginMetricsRecorderTest.UnlockAttempts
+-LoginPasswordViewTest.PasswordSubmitClearsPassword
+-LoginPasswordViewTest.PasswordSubmitIncludesPasswordText
+-LoginPasswordViewTest.PasswordSubmitViaButton
 -MagnificationControllerTest.CenterTextCaretInViewport
 -MagnificationControllerTest.CenterTextCaretNotInsideViewport
 -MagnificationControllerTest.FollowTextInputFieldFocus
