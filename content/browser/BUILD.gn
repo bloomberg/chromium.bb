@@ -1534,7 +1534,6 @@ source_set("browser") {
     "speech/speech_recognizer.h",
     "speech/speech_recognizer_impl_android.cc",
     "speech/speech_recognizer_impl_android.h",
-    "ssl/ignore_errors_cert_verifier.cc",
     "ssl/ssl_client_auth_handler.cc",
     "ssl/ssl_client_auth_handler.h",
     "ssl/ssl_error_handler.cc",

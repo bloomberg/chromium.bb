@@ -214,6 +214,7 @@ static_library("content_shell_lib") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/gpu",
+    "//content/public/network",
     "//content/public/renderer",
     "//content/public/utility",
     "//ipc",

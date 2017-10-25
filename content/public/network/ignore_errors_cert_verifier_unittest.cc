@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/ignore_errors_cert_verifier.h"
+#include "content/public/network/ignore_errors_cert_verifier.h"
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
