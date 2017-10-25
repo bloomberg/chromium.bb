@@ -16,7 +16,7 @@ void KeyboardLayoutManager::OnWindowResized() {
   if (contents_window_) {
     gfx::Rect container_bounds = controller_->GetContainerWindow()->bounds();
     // Always align container window and keyboard window.
-    SetChildBounds(contents_window_, gfx::Rect(container_bounds.size()));
+    SetChildBounds(contents_window_, container_bounds);
   }
 }
 

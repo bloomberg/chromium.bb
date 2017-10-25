@@ -9,6 +9,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/keyboard/container_behavior.h"
+#include "ui/keyboard/drag_descriptor.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -21,6 +22,7 @@ constexpr int kDefaultDistanceFromScreenRight = 20;
 
 class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
  public:
+  ContainerFloatingBehavior();
   ~ContainerFloatingBehavior() override;
 
   // ContainerBehavior overrides
@@ -35,6 +37,11 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds) override;
   bool IsOverscrollAllowed() const override;
+  bool IsDragHandle(const gfx::Vector2d& offset,
+                    const gfx::Size& keyboard_size) const override;
+  void SavePosition(const gfx::Point& position) override;
+  void HandlePointerEvent(bool isMouseButtonPressed,
+                          const gfx::Vector2d& kb_offset) override;
 
  private:
   // Ensures that the keyboard is neither off the screen nor overlapping an
@@ -57,6 +64,10 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
 
   // TODO(blakeo): cache the default_position_ on a per-display basis.
   gfx::Point default_position_ = gfx::Point(-1, -1);
+
+  // Current state of a cursor drag to move the keyboard, if one exists.
+  // Otherwise nullptr.
+  std::unique_ptr<DragDescriptor> drag_descriptor_ = nullptr;
 };
 
 }  // namespace keyboard
