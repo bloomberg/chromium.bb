@@ -2231,3 +2231,7 @@
 -PaymentManifestParserTest.UrlsAndOrigins
 -PaymentManifestParserTest.WebAppManifest
 -ManifestVerifierBrowserTest.Handler404CanUseMethodThatSupportsAllOrigins
+
+# crbug.com/778376
+-PaymentRequestCanMakePaymentQueryPMITest.QueryQuotaForDisabledPaymentAppsInIncognitoMode
+-PaymentRequestJourneyLoggerMultipleShowTest.StartNewRequestWithoutPaymentAppsFeature
