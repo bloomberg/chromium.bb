@@ -142,13 +142,25 @@ void SetWindowTypeFromProperties(
 // Create and return a MouseEvent or TouchEvent from |event| if |event| is a
 // PointerEvent, otherwise return the copy of |event|.
 std::unique_ptr<ui::Event> MapEvent(const ui::Event& event) {
-  if (event.IsMousePointerEvent()) {
-    if (event.type() == ui::ET_POINTER_WHEEL_CHANGED)
-      return std::make_unique<ui::MouseWheelEvent>(*event.AsPointerEvent());
-    return std::make_unique<ui::MouseEvent>(*event.AsPointerEvent());
+  if (event.IsPointerEvent()) {
+    const ui::PointerEvent& pointer_event = *event.AsPointerEvent();
+    // Use a switch statement in case more pointer types are added.
+    switch (pointer_event.pointer_details().pointer_type) {
+      case ui::EventPointerType::POINTER_TYPE_MOUSE:
+        if (event.type() == ui::ET_POINTER_WHEEL_CHANGED)
+          return std::make_unique<ui::MouseWheelEvent>(pointer_event);
+        return std::make_unique<ui::MouseEvent>(pointer_event);
+      case ui::EventPointerType::POINTER_TYPE_TOUCH:
+      case ui::EventPointerType::POINTER_TYPE_PEN:
+        return std::make_unique<ui::TouchEvent>(pointer_event);
+      case ui::EventPointerType::POINTER_TYPE_ERASER:
+        NOTIMPLEMENTED();
+        break;
+      case ui::EventPointerType::POINTER_TYPE_UNKNOWN:
+        NOTREACHED();
+        break;
+    }
   }
-  if (event.IsTouchPointerEvent())
-    return std::make_unique<ui::TouchEvent>(*event.AsPointerEvent());
   return ui::Event::Clone(event);
 }
 

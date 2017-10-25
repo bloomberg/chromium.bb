@@ -154,6 +154,7 @@ class EVENTS_EXPORT Event {
   // |this| is not a PointerEvent.
   bool IsMousePointerEvent() const;
   bool IsTouchPointerEvent() const;
+  bool IsPenPointerEvent() const;
 
   bool IsGestureEvent() const {
     switch (type_) {
@@ -661,6 +662,9 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   gfx::Vector2d offset_;
 };
 
+// NOTE: Pen (stylus) events use TouchEvent with POINTER_TYPE_PEN. They were
+// originally implemented as MouseEvent but switched to TouchEvent when UX
+// decided not to show hover effects for pen.
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  public:
   explicit TouchEvent(const base::NativeEvent& native_event);
