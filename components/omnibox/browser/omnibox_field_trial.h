@@ -37,8 +37,6 @@ extern const base::Feature kNewOmniboxAnswerTypes;
 extern const base::Feature kOmniboxEntitySuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kEnableClipboardProvider;
-extern const base::Feature kAndroidFakeboxDemotion;
-extern const base::Feature kAndroidFakeboxDemotionOnPhones;
 extern const base::Feature kAndroidChromeHomePersonalizedSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kSearchProviderContextAllowHttpsUrls;
