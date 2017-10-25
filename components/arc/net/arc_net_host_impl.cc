@@ -27,6 +27,7 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -889,6 +890,11 @@ void ArcNetHostImpl::AndroidVpnConnected(
     mojom::AndroidVpnConfigurationPtr cfg) {
   std::unique_ptr<base::DictionaryValue> properties =
       TranslateVpnConfigurationToOnc(*cfg);
+
+  if (!base::FeatureList::IsEnabled(arc::kVpnFeature)) {
+    VLOG(1) << "AndroidVpnConnected: feature is disabled; ignoring";
+    return;
+  }
 
   std::string service_path = LookupArcVpnServicePath();
   if (!service_path.empty()) {

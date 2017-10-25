@@ -1446,6 +1446,9 @@ extern const char kArcBootCompletedDescription[];
 extern const char kArcNativeBridgeExperimentName[];
 extern const char kArcNativeBridgeExperimentDescription[];
 
+extern const char kArcVpnName[];
+extern const char kArcVpnDescription[];
+
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 
