@@ -143,17 +143,17 @@ bool VendorCapabilityInvalid(const base::Value& val) {
   if (!val.is_dict())
     return true;
   const base::Value* option_type =
-      val.FindPathOfType({kTypeKey}, base::Value::Type::STRING);
+      val.FindKeyOfType(kTypeKey, base::Value::Type::STRING);
   if (!option_type)
     return true;
   if (option_type->GetString() != kSelectString)
     return false;
   const base::Value* select_cap =
-      val.FindPathOfType({kSelectCapKey}, base::Value::Type::DICTIONARY);
+      val.FindKeyOfType(kSelectCapKey, base::Value::Type::DICTIONARY);
   if (!select_cap)
     return true;
   const base::Value* options_list =
-      select_cap->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+      select_cap->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
   if (!options_list || options_list->GetList().empty() ||
       GetFilteredList(options_list, ValueIsNull).GetList().empty()) {
     return true;
@@ -240,7 +240,7 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
 
     const base::Value* list = nullptr;
     if (value.is_dict())
-      list = value.FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+      list = value.FindKeyOfType(kOptionKey, base::Value::Type::LIST);
     else if (value.is_list())
       list = &value;
     if (!list) {
@@ -257,14 +257,14 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
       // Need to also filter the individual capability lists.
       for (auto& vendor_option : out_list.GetList()) {
         const base::Value* option_type =
-            vendor_option.FindPathOfType({kTypeKey}, base::Value::Type::STRING);
+            vendor_option.FindKeyOfType(kTypeKey, base::Value::Type::STRING);
         if (option_type->GetString() != kSelectString)
           continue;
 
-        base::Value* options_dict = vendor_option.FindPathOfType(
-            {kSelectCapKey}, base::Value::Type::DICTIONARY);
+        base::Value* options_dict = vendor_option.FindKeyOfType(
+            kSelectCapKey, base::Value::Type::DICTIONARY);
         const base::Value* options_list =
-            options_dict->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+            options_dict->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
         options_dict->SetPath({kOptionKey},
                               GetFilteredList(options_list, ValueIsNull));
       }
@@ -275,7 +275,7 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
           base::Value::ToUniquePtrValue(std::move(out_list));
       out_caps->SetPath({path}, base::Value(option_dict));
     } else {
-      out_caps->SetPath({path}, std::move(out_list));
+      out_caps->SetKey(path, std::move(out_list));
     }
   }
   validated_cdd->SetDictionary(kPrinter, std::move(out_caps));

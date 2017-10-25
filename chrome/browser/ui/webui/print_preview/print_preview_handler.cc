@@ -1020,7 +1020,7 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetString(kAppState,
                                *sticky_settings->printer_app_state());
   } else {
-    initial_settings.SetPath({kAppState}, base::Value());
+    initial_settings.SetKey(kAppState, base::Value());
   }
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
@@ -1038,8 +1038,7 @@ void PrintPreviewHandler::SendInitialSettings(
     }
   }
   if (!set_rules) {
-    initial_settings.SetPath({kDefaultDestinationSelectionRules},
-                             base::Value());
+    initial_settings.SetKey(kDefaultDestinationSelectionRules, base::Value());
   }
 
   GetNumberFormatAndMeasurementSystem(&initial_settings);

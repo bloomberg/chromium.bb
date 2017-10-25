@@ -36,65 +36,58 @@ base::DictionaryValue GetCapabilitiesFull() {
   base::Value::ListStorage list_media;
   list_media.push_back(base::Value("Letter"));
   list_media.push_back(base::Value("A4"));
-  printer.SetPath({kMediaSizes}, base::Value(list_media));
+  printer.SetKey(kMediaSizes, base::Value(list_media));
 
   base::Value::ListStorage list_dpi;
   list_dpi.push_back(base::Value(300));
   list_dpi.push_back(base::Value(600));
 
-  base::Value::DictStorage options;
-  options[kOptionKey] = std::make_unique<base::Value>(list_dpi);
-  printer.SetPath({kDpi}, base::Value(options));
+  base::Value options(base::Value::Type::DICTIONARY);
+  options.SetKey(kOptionKey, base::Value(list_dpi));
+  printer.SetKey(kDpi, std::move(options));
 
-  printer.SetPath({kCollate}, base::Value(true));
+  printer.SetKey(kCollate, base::Value(true));
 
   base::Value::ListStorage pages_per_sheet;
   for (int i = 1; i <= 8; i *= 2) {
-    base::Value::DictStorage option;
-    option[kDisplayName] = std::make_unique<base::Value>(std::to_string(i));
-    option[kValue] = std::make_unique<base::Value>(i);
+    base::Value option(base::Value::Type::DICTIONARY);
+    option.SetKey(kDisplayName, base::Value(std::to_string(i)));
+    option.SetKey(kValue, base::Value(i));
     if (i == 1)
-      option[kIsDefault] = std::make_unique<base::Value>(true);
-    pages_per_sheet.push_back(base::Value(option));
+      option.SetKey(kIsDefault, base::Value(true));
+    pages_per_sheet.push_back(std::move(option));
   }
-  base::Value::DictStorage pages_per_sheet_option;
-  pages_per_sheet_option[kOptionKey] =
-      std::make_unique<base::Value>(pages_per_sheet);
-  base::Value::DictStorage pages_per_sheet_capability;
-  pages_per_sheet_capability[kDisplayName] =
-      std::make_unique<base::Value>(kPagesPerSheet);
-  pages_per_sheet_capability[kId] =
-      std::make_unique<base::Value>(kPagesPerSheet);
-  pages_per_sheet_capability[kTypeKey] =
-      std::make_unique<base::Value>(kSelectString);
-  pages_per_sheet_capability[kSelectCapKey] =
-      std::make_unique<base::Value>(pages_per_sheet_option);
+  base::Value pages_per_sheet_option(base::Value::Type::DICTIONARY);
+  pages_per_sheet_option.SetKey(kOptionKey, base::Value(pages_per_sheet));
+  base::Value pages_per_sheet_capability(base::Value::Type::DICTIONARY);
+  pages_per_sheet_capability.SetKey(kDisplayName, base::Value(kPagesPerSheet));
+  pages_per_sheet_capability.SetKey(kId, base::Value(kPagesPerSheet));
+  pages_per_sheet_capability.SetKey(kTypeKey, base::Value(kSelectString));
+  pages_per_sheet_capability.SetKey(kSelectCapKey,
+                                    std::move(pages_per_sheet_option));
 
   base::Value::ListStorage paper_types;
-  base::Value::DictStorage option1;
-  option1[kDisplayName] = std::make_unique<base::Value>("Plain");
-  option1[kValue] = std::make_unique<base::Value>("Plain");
-  option1[kIsDefault] = std::make_unique<base::Value>(true);
-  base::Value::DictStorage option2;
-  option2[kDisplayName] = std::make_unique<base::Value>("Photo");
-  option2[kValue] = std::make_unique<base::Value>("Photo");
-  paper_types.push_back(base::Value(option1));
-  paper_types.push_back(base::Value(option2));
-  base::Value::DictStorage paper_type_option;
-  paper_type_option[kOptionKey] = std::make_unique<base::Value>(paper_types);
-  base::Value::DictStorage paper_type_capability;
-  paper_type_capability[kDisplayName] =
-      std::make_unique<base::Value>(kPaperType);
-  paper_type_capability[kId] = std::make_unique<base::Value>(kPaperType);
-  paper_type_capability[kTypeKey] =
-      std::make_unique<base::Value>(kSelectString);
-  paper_type_capability[kSelectCapKey] =
-      std::make_unique<base::Value>(paper_type_option);
+  base::Value option1(base::Value::Type::DICTIONARY);
+  option1.SetKey(kDisplayName, base::Value("Plain"));
+  option1.SetKey(kValue, base::Value("Plain"));
+  option1.SetKey(kIsDefault, base::Value(true));
+  base::Value option2(base::Value::Type::DICTIONARY);
+  option2.SetKey(kDisplayName, base::Value("Photo"));
+  option2.SetKey(kValue, base::Value("Photo"));
+  paper_types.push_back(std::move(option1));
+  paper_types.push_back(std::move(option2));
+  base::Value paper_type_option(base::Value::Type::DICTIONARY);
+  paper_type_option.SetKey(kOptionKey, base::Value(paper_types));
+  base::Value paper_type_capability(base::Value::Type::DICTIONARY);
+  paper_type_capability.SetKey(kDisplayName, base::Value(kPaperType));
+  paper_type_capability.SetKey(kId, base::Value(kPaperType));
+  paper_type_capability.SetKey(kTypeKey, base::Value(kSelectString));
+  paper_type_capability.SetKey(kSelectCapKey, std::move(paper_type_option));
 
   base::Value::ListStorage vendor_capabilities;
-  vendor_capabilities.push_back(base::Value(pages_per_sheet_capability));
-  vendor_capabilities.push_back(base::Value(paper_type_capability));
-  printer.SetPath({kVendorCapability}, base::Value(vendor_capabilities));
+  vendor_capabilities.push_back(std::move(pages_per_sheet_capability));
+  vendor_capabilities.push_back(std::move(paper_type_capability));
+  printer.SetKey(kVendorCapability, base::Value(vendor_capabilities));
 
   return printer;
 }
@@ -113,8 +106,8 @@ bool HasValidEntry(const base::Value* list) {
 void CompareStringKeys(const base::Value& expected,
                        const base::Value& actual,
                        base::StringPiece key) {
-  EXPECT_EQ(*(expected.FindPathOfType({key}, base::Value::Type::STRING)),
-            *(actual.FindPathOfType({key}, base::Value::Type::STRING)));
+  EXPECT_EQ(*(expected.FindKeyOfType(key, base::Value::Type::STRING)),
+            *(actual.FindKeyOfType(key, base::Value::Type::STRING)));
 }
 
 void ValidateList(const base::Value* list_out, const base::Value* input_list) {
@@ -128,7 +121,7 @@ void ValidateList(const base::Value* list_out, const base::Value* input_list) {
 void ValidateMedia(const base::Value* printer_out,
                    const base::Value* expected_list) {
   const base::Value* media_out =
-      printer_out->FindPathOfType({kMediaSizes}, base::Value::Type::LIST);
+      printer_out->FindKeyOfType(kMediaSizes, base::Value::Type::LIST);
   if (!HasValidEntry(expected_list)) {
     EXPECT_FALSE(media_out);
     return;
@@ -139,34 +132,34 @@ void ValidateMedia(const base::Value* printer_out,
 void ValidateDpi(const base::Value* printer_out,
                  const base::Value* expected_dpi) {
   const base::Value* dpi_option_out =
-      printer_out->FindPathOfType({kDpi}, base::Value::Type::DICTIONARY);
+      printer_out->FindKeyOfType(kDpi, base::Value::Type::DICTIONARY);
   if (!expected_dpi) {
     EXPECT_FALSE(dpi_option_out);
     return;
   }
   const base::Value* dpi_list =
-      expected_dpi->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+      expected_dpi->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
   if (!HasValidEntry(dpi_list)) {
     EXPECT_FALSE(dpi_option_out);
     return;
   }
   ASSERT_TRUE(dpi_option_out);
   const base::Value* dpi_list_out =
-      dpi_option_out->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+      dpi_option_out->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
   ASSERT_TRUE(dpi_list_out);
   ValidateList(dpi_list_out, dpi_list);
 }
 
 void ValidateCollate(const base::Value* printer_out) {
   const base::Value* collate_out =
-      printer_out->FindPathOfType({kCollate}, base::Value::Type::BOOLEAN);
+      printer_out->FindKeyOfType(kCollate, base::Value::Type::BOOLEAN);
   ASSERT_TRUE(collate_out);
 }
 
 void ValidateVendorCaps(const base::Value* printer_out,
                         const base::Value* input_vendor_caps) {
   const base::Value* vendor_capability_out =
-      printer_out->FindPathOfType({kVendorCapability}, base::Value::Type::LIST);
+      printer_out->FindKeyOfType(kVendorCapability, base::Value::Type::LIST);
   if (!HasValidEntry(input_vendor_caps)) {
     ASSERT_FALSE(vendor_capability_out);
     return;
@@ -179,24 +172,23 @@ void ValidateVendorCaps(const base::Value* printer_out,
   for (const auto& input_entry : input_vendor_caps->GetList()) {
     if (!HasValidEntry(
             input_entry
-                .FindPathOfType({kSelectCapKey}, base::Value::Type::DICTIONARY)
-                ->FindPathOfType({kOptionKey}, base::Value::Type::LIST))) {
+                .FindKeyOfType(kSelectCapKey, base::Value::Type::DICTIONARY)
+                ->FindKeyOfType(kOptionKey, base::Value::Type::LIST))) {
       continue;
     }
     CompareStringKeys(input_entry, output_list[index], kDisplayName);
     CompareStringKeys(input_entry, output_list[index], kId);
     CompareStringKeys(input_entry, output_list[index], kTypeKey);
-    const base::Value* select_cap = output_list[index].FindPathOfType(
-        {kSelectCapKey}, base::Value::Type::DICTIONARY);
+    const base::Value* select_cap = output_list[index].FindKeyOfType(
+        kSelectCapKey, base::Value::Type::DICTIONARY);
     ASSERT_TRUE(select_cap);
     const base::Value* list =
-        select_cap->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+        select_cap->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
     ASSERT_TRUE(list);
     ValidateList(
         list,
-        input_entry
-            .FindPathOfType({kSelectCapKey}, base::Value::Type::DICTIONARY)
-            ->FindPathOfType({kOptionKey}, base::Value::Type::LIST));
+        input_entry.FindKeyOfType(kSelectCapKey, base::Value::Type::DICTIONARY)
+            ->FindKeyOfType(kOptionKey, base::Value::Type::LIST));
     index++;
   }
 }
@@ -204,20 +196,20 @@ void ValidateVendorCaps(const base::Value* printer_out,
 void ValidatePrinter(const base::DictionaryValue* cdd_out,
                      const base::DictionaryValue& printer) {
   const base::Value* printer_out =
-      cdd_out->FindPathOfType({kPrinter}, base::Value::Type::DICTIONARY);
+      cdd_out->FindKeyOfType(kPrinter, base::Value::Type::DICTIONARY);
   ASSERT_TRUE(printer_out);
 
   const base::Value* media =
-      printer.FindPathOfType({kMediaSizes}, base::Value::Type::LIST);
+      printer.FindKeyOfType(kMediaSizes, base::Value::Type::LIST);
   ValidateMedia(printer_out, media);
 
   const base::Value* dpi_dict =
-      printer.FindPathOfType({kDpi}, base::Value::Type::DICTIONARY);
+      printer.FindKeyOfType(kDpi, base::Value::Type::DICTIONARY);
   ValidateDpi(printer_out, dpi_dict);
   ValidateCollate(printer_out);
 
   const base::Value* capabilities_list =
-      printer.FindPathOfType({kVendorCapability}, base::Value::Type::LIST);
+      printer.FindKeyOfType(kVendorCapability, base::Value::Type::LIST);
   ValidateVendorCaps(printer_out, capabilities_list);
 }
 
@@ -306,7 +298,7 @@ TEST_F(PrinterCapabilitiesTest, NullCapabilitiesExcluded) {
 TEST_F(PrinterCapabilitiesTest, FullCddPassthrough) {
   base::DictionaryValue printer = GetCapabilitiesFull();
   base::DictionaryValue cdd;
-  cdd.SetPath({kPrinter}, printer.Clone());
+  cdd.SetKey(kPrinter, printer.Clone());
   auto cdd_out = ValidateCddForPrintPreview(cdd);
   ValidatePrinter(cdd_out.get(), printer);
 }
@@ -317,9 +309,9 @@ TEST_F(PrinterCapabilitiesTest, FilterBadList) {
   base::Value::ListStorage list_media;
   list_media.push_back(base::Value());
   list_media.push_back(base::Value());
-  printer.SetPath({kMediaSizes}, base::Value(list_media));
+  printer.SetKey(kMediaSizes, base::Value(list_media));
   base::DictionaryValue cdd;
-  cdd.SetPath({kPrinter}, printer.Clone());
+  cdd.SetKey(kPrinter, printer.Clone());
   auto cdd_out = ValidateCddForPrintPreview(cdd);
   ValidatePrinter(cdd_out.get(), printer);
 }
@@ -327,14 +319,14 @@ TEST_F(PrinterCapabilitiesTest, FilterBadList) {
 TEST_F(PrinterCapabilitiesTest, FilterBadOptionOneElement) {
   base::DictionaryValue printer = GetCapabilitiesFull();
   printer.RemovePath({kDpi});
-  base::Value::DictStorage options;
+  base::Value options(base::Value::Type::DICTIONARY);
   base::Value::ListStorage list_dpi;
   list_dpi.push_back(base::Value());
   list_dpi.push_back(base::Value(600));
-  options[kOptionKey] = std::make_unique<base::Value>(list_dpi);
-  printer.SetPath({kDpi}, base::Value(options));
+  options.SetKey(kOptionKey, base::Value(list_dpi));
+  printer.SetKey(kDpi, std::move(options));
   base::DictionaryValue cdd;
-  cdd.SetPath({kPrinter}, printer.Clone());
+  cdd.SetKey(kPrinter, printer.Clone());
   auto cdd_out = ValidateCddForPrintPreview(cdd);
   ValidatePrinter(cdd_out.get(), printer);
 }
@@ -342,14 +334,14 @@ TEST_F(PrinterCapabilitiesTest, FilterBadOptionOneElement) {
 TEST_F(PrinterCapabilitiesTest, FilterBadOptionAllElement) {
   base::DictionaryValue printer = GetCapabilitiesFull();
   printer.RemovePath({kDpi});
-  base::Value::DictStorage options;
+  base::Value options(base::Value::Type::DICTIONARY);
   base::Value::ListStorage list_dpi;
   list_dpi.push_back(base::Value());
   list_dpi.push_back(base::Value());
-  options[kOptionKey] = std::make_unique<base::Value>(list_dpi);
-  printer.SetPath({kDpi}, base::Value(options));
+  options.SetKey(kOptionKey, base::Value(list_dpi));
+  printer.SetKey(kDpi, std::move(options));
   base::DictionaryValue cdd;
-  cdd.SetPath({kPrinter}, printer.Clone());
+  cdd.SetKey(kPrinter, printer.Clone());
   auto cdd_out = ValidateCddForPrintPreview(cdd);
   ValidatePrinter(cdd_out.get(), printer);
 }
@@ -357,16 +349,16 @@ TEST_F(PrinterCapabilitiesTest, FilterBadOptionAllElement) {
 TEST_F(PrinterCapabilitiesTest, FilterBadVendorCapabilityAllElement) {
   base::DictionaryValue printer = GetCapabilitiesFull();
   base::Value* select_cap_0 =
-      printer.FindPathOfType({kVendorCapability}, base::Value::Type::LIST)
+      printer.FindKeyOfType(kVendorCapability, base::Value::Type::LIST)
           ->GetList()[0]
-          .FindPathOfType({kSelectCapKey}, base::Value::Type::DICTIONARY);
+          .FindKeyOfType(kSelectCapKey, base::Value::Type::DICTIONARY);
   select_cap_0->RemovePath({kOptionKey});
   base::Value::ListStorage option_list;
   option_list.push_back(base::Value());
   option_list.push_back(base::Value());
-  select_cap_0->SetPath({kOptionKey}, base::Value(option_list));
+  select_cap_0->SetKey(kOptionKey, base::Value(option_list));
   base::DictionaryValue cdd;
-  cdd.SetPath({kPrinter}, printer.Clone());
+  cdd.SetKey(kPrinter, printer.Clone());
   auto cdd_out = ValidateCddForPrintPreview(cdd);
   ValidatePrinter(cdd_out.get(), printer);
 }
@@ -374,9 +366,9 @@ TEST_F(PrinterCapabilitiesTest, FilterBadVendorCapabilityAllElement) {
 TEST_F(PrinterCapabilitiesTest, FilterBadVendorCapabilityOneElement) {
   base::DictionaryValue printer = GetCapabilitiesFull();
   base::Value* vendor_dictionary =
-      printer.FindPathOfType({kVendorCapability}, base::Value::Type::LIST)
+      printer.FindKeyOfType(kVendorCapability, base::Value::Type::LIST)
           ->GetList()[0]
-          .FindPathOfType({kSelectCapKey}, base::Value::Type::DICTIONARY);
+          .FindKeyOfType(kSelectCapKey, base::Value::Type::DICTIONARY);
   vendor_dictionary->RemovePath({kOptionKey});
   base::Value::ListStorage pages_per_sheet;
   for (int i = 1; i <= 8; i *= 2) {
@@ -384,17 +376,17 @@ TEST_F(PrinterCapabilitiesTest, FilterBadVendorCapabilityOneElement) {
       pages_per_sheet.push_back(base::Value());
       continue;
     }
-    base::Value::DictStorage option;
-    option[kDisplayName] = std::make_unique<base::Value>(std::to_string(i));
-    option[kValue] = std::make_unique<base::Value>(i);
+    base::Value option(base::Value::Type::DICTIONARY);
+    option.SetKey(kDisplayName, base::Value(std::to_string(i)));
+    option.SetKey(kValue, base::Value(i));
     if (i == 1)
-      option[kIsDefault] = std::make_unique<base::Value>(true);
-    pages_per_sheet.push_back(base::Value(option));
+      option.SetKey(kIsDefault, base::Value(true));
+    pages_per_sheet.push_back(std::move(option));
   }
-  vendor_dictionary->SetPath({kOptionKey}, base::Value(pages_per_sheet));
+  vendor_dictionary->SetKey(kOptionKey, base::Value(pages_per_sheet));
 
   base::DictionaryValue cdd;
-  cdd.SetPath({kPrinter}, printer.Clone());
+  cdd.SetKey(kPrinter, printer.Clone());
   auto cdd_out = ValidateCddForPrintPreview(cdd);
   ValidatePrinter(cdd_out.get(), printer);
 }
