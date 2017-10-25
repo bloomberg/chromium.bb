@@ -12,20 +12,25 @@
 
 namespace ntp_snippets {
 
+// Listens to pushed breaking news and refresh requests from the content
+// suggestion servers.
 class BreakingNewsListener {
  public:
   using OnNewRemoteSuggestionCallback =
       base::Callback<void(std::unique_ptr<RemoteSuggestion> remote_suggestion)>;
+  using OnRefreshRequestedCallback = base::Callback<void()>;
 
   virtual ~BreakingNewsListener() = default;
 
   // Subscribe to the breaking news service and start listening for pushed
-  // breaking news. Must not be called if already listening.
+  // messages from the content suggestion server. Must not be called if already
+  // listening.
   virtual void StartListening(
-      OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback) = 0;
+      OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback,
+      OnRefreshRequestedCallback on_refresh_requested_callback) = 0;
 
-  // Stop listening for incoming breaking news. Any further pushed breaking news
-  // will be ignored. Must be called while listening.
+  // Stop listening for pushed messages from the content suggestion server. Any
+  // further pushed messages will be ignored. Must be called while listening.
   virtual void StopListening() = 0;
 
   virtual bool IsListening() const = 0;

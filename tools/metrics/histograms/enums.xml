@@ -6179,7 +6179,19 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="chrome-search"/>
 </enum>
 
+<enum name="ContentSuggestionsBreakingNewsMessageAction">
+  <int value="0" label="No action"/>
+  <int value="1" label="Invalid action"/>
+  <int value="2" label="Push-by-value"/>
+  <int value="3" label="Push-to-refresh"/>
+</enum>
+
 <enum name="ContentSuggestionsBreakingNewsMessageContainsNews">
+  <obsolete>
+    Deprecated as of 10/2017 as
+    NewTabPage.ContentSuggestions.BreakingNews.MessageReceived is replaced by
+    NewTabPage.ContentSuggestions.BreakingNews.ReceivedMessageAction.
+  </obsolete>
   <int value="0" label="Without pushed news, handler listening"/>
   <int value="1" label="With (possibly empty) pushed news, handler listening"/>
   <int value="2" label="Without pushed news, handler not listening"/>

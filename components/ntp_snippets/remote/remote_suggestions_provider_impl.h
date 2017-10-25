@@ -309,6 +309,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void PrependArticleSuggestion(
       std::unique_ptr<RemoteSuggestion> remote_suggestion);
 
+  // Refreshes the content suggestions upon receiving a push-to-refresh request.
+  void RefreshSuggestionsUponPushToRefreshRequest();
+
   // Dismisses a suggestion within a given category content.
   // Note that this modifies the suggestion datastructures of |content|
   // invalidating iterators.

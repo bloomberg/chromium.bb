@@ -27,11 +27,12 @@ class InstanceIDDriver;
 
 namespace ntp_snippets {
 
-// Handler for pushed GCM breaking news. It retrieves a subscription token from
-// the GCM server and registers/unregisters itself with the GCM service to be
-// called upon received push breaking news. When there is a listener, the token
-// is periodically validated. The validation may happen during StartListening if
-// enough time has passed since the last validation.
+// Handler for pushed GCM breaking news and refresh requests. It retrieves a
+// subscription token from the GCM server and registers/unregisters itself with
+// the GCM service to be called upon received push breaking news or refresh
+// requests. When there is a listener, the token is periodically validated. The
+// validation may happen during StartListening if enough time has passed since
+// the last validation.
 class BreakingNewsGCMAppHandler : public BreakingNewsListener,
                                   public gcm::GCMAppHandler {
  public:
@@ -56,12 +57,13 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
       std::unique_ptr<base::OneShotTimer> token_validation_timer,
       std::unique_ptr<base::OneShotTimer> forced_subscription_timer);
 
-  // If still listening, calls StopListening()
+  // If still listening, calls StopListening().
   ~BreakingNewsGCMAppHandler() override;
 
   // BreakingNewsListener overrides.
   void StartListening(
-      OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback) override;
+      OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback,
+      OnRefreshRequestedCallback on_refresh_requested_callback) override;
   void StopListening() override;
   bool IsListening() const override;
 
@@ -108,6 +110,12 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   // If the subscription is due, it may be scheduled immediately.
   void ScheduleNextForcedSubscription();
 
+  // Called from OnMessage if the received message is push-by-value message.
+  void OnPushByValueMessage(const gcm::IncomingMessage& message);
+
+  // Called from OnMessage if the received message is push-to-refresh message.
+  void OnPushToRefreshMessage();
+
   // Called after successfully parsing the received suggestion JSON.
   void OnJsonSuccess(std::unique_ptr<base::Value> content);
 
@@ -122,9 +130,13 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   const ParseJSONCallback parse_json_callback_;
   std::unique_ptr<base::Clock> clock_;
 
-  // Called after every time a new message is received in OnMessage() to notify
-  // the content provider.
+  // Called every time a push-by-value message is received to notify the
+  // observer.
   OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback_;
+
+  // Called every time a push-to-refresh message is received to notify the
+  // observer.
+  OnRefreshRequestedCallback on_refresh_requested_callback_;
 
   std::unique_ptr<base::OneShotTimer> token_validation_timer_;
   std::unique_ptr<base::OneShotTimer> forced_subscription_timer_;

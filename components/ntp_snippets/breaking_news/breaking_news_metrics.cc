@@ -18,8 +18,8 @@ const char kHistogramSubscriptionRequestStatus[] =
 const char kHistogramUnsubscriptionRequestStatus[] =
     "NewTabPage.ContentSuggestions.BreakingNews.UnsubscriptionRequestStatus";
 
-const char kHistogramMessageReceived[] =
-    "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived";
+const char kHistogramReceivedMessageAction[] =
+    "NewTabPage.ContentSuggestions.BreakingNews.ReceivedMessageAction";
 
 const char kHistogramTokenRetrievalResult[] =
     "NewTabPage.ContentSuggestions.BreakingNews.TokenRetrievalResult";
@@ -42,23 +42,9 @@ void OnUnsubscriptionRequestCompleted(const Status& status) {
                             StatusCode::STATUS_CODE_COUNT);
 }
 
-void OnMessageReceived(bool is_handler_listening, bool contains_pushed_news) {
-  ReceivedMessageStatus status;
-  if (contains_pushed_news) {
-    status =
-        is_handler_listening
-            ? ReceivedMessageStatus::WITH_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING
-            : ReceivedMessageStatus::
-                  WITH_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING;
-  } else {
-    status = is_handler_listening
-                 ? ReceivedMessageStatus::
-                       WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING
-                 : ReceivedMessageStatus::
-                       WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING;
-  }
-  UMA_HISTOGRAM_ENUMERATION(kHistogramMessageReceived, status,
-                            ReceivedMessageStatus::COUNT);
+void OnMessageReceived(ReceivedMessageAction action) {
+  UMA_HISTOGRAM_ENUMERATION(kHistogramReceivedMessageAction, action,
+                            ReceivedMessageAction::COUNT);
 }
 
 void OnTokenRetrieved(InstanceID::Result result) {

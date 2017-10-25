@@ -285,12 +285,16 @@ class FakeBreakingNewsListener : public BreakingNewsListener {
   ~FakeBreakingNewsListener() override = default;
 
   // BreakingNewsListener implementation.
-  void StartListening(OnNewRemoteSuggestionCallback callback) override {
-    on_new_remote_suggestion_callback_ = callback;
+  void StartListening(
+      OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback,
+      OnRefreshRequestedCallback on_refresh_requested_callback) override {
+    on_new_remote_suggestion_callback_ = on_new_remote_suggestion_callback;
+    on_refresh_requested_callback_ = on_refresh_requested_callback;
   }
 
   void StopListening() override {
     on_new_remote_suggestion_callback_ = OnNewRemoteSuggestionCallback();
+    on_refresh_requested_callback_ = OnRefreshRequestedCallback();
   }
 
   bool IsListening() const override {
@@ -304,6 +308,7 @@ class FakeBreakingNewsListener : public BreakingNewsListener {
 
  private:
   OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback_;
+  OnRefreshRequestedCallback on_refresh_requested_callback_;
 };
 
 class MockRemoteSuggestionsStatusService
