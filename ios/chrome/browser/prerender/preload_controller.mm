@@ -12,10 +12,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
+#import "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prerender/preload_controller_delegate.h"
+#import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -56,7 +58,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
 }  // namespace
 
-@interface PreloadController (PrivateMethods)
+@interface PreloadController (PrivateMethods)<ManageAccountsDelegate>
 
 // Returns YES if prerendering is enabled.
 - (BOOL)isPrerenderingEnabled;
@@ -222,6 +224,12 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
     HistoryTabHelper::FromWebState(webState_.get())
         ->SetDelayHistoryServiceNotification(false);
+
+    if (AccountConsistencyService* accountConsistencyService =
+            ios::AccountConsistencyServiceFactory::GetForBrowserState(
+                browserState_)) {
+      accountConsistencyService->RemoveWebStateHandler(webState_.get());
+    }
   }
 
   return std::move(webState_);
@@ -331,6 +339,11 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   webState_->SetWebUsageEnabled(true);
   [tab setIsPrerenderTab:YES];
   [tab setDelegate:self];
+  if (AccountConsistencyService* accountConsistencyService =
+          ios::AccountConsistencyServiceFactory::GetForBrowserState(
+              browserState_)) {
+    accountConsistencyService->SetWebStateHandler(webState_.get(), self);
+  }
 
   HistoryTabHelper::FromWebState(webState_.get())
       ->SetDelayHistoryServiceNotification(true);
@@ -384,6 +397,20 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
 - (void)discardPrerender {
   [self schedulePrerenderCancel];
+}
+
+#pragma mark - ManageAccountsDelegate
+
+- (void)onManageAccounts {
+  [self discardPrerender];
+}
+
+- (void)onAddAccount {
+  [self discardPrerender];
+}
+
+- (void)onGoIncognito:(const GURL&)url {
+  [self discardPrerender];
 }
 
 @end

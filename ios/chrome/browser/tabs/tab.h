@@ -10,15 +10,12 @@
 #include <memory>
 #include <vector>
 
-#import "components/signin/ios/browser/manage_accounts_delegate.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
 
-@protocol ApplicationCommands;
 @class AutofillController;
-@protocol BrowserCommands;
 @protocol IOSCaptivePortalBlockingPageDelegate;
 @class CastController;
 @class ExternalAppLauncher;
@@ -84,8 +81,7 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Chrome's WebContents in that it encapsulates rendering. Acts as the
 // delegate for the WebState in order to process info about pages having
 // loaded.
-@interface Tab
-    : NSObject<ManageAccountsDelegate, PagePlaceholderTabHelperDelegate>
+@interface Tab : NSObject<PagePlaceholderTabHelperDelegate>
 
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
@@ -138,10 +134,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // |YES| if the tab has finished loading.
 @property(nonatomic, readonly) BOOL loadFinished;
-
-// Dispatcher that the tab can use to send commands. This should be set
-// when other delegates are set.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // Creates a new Tab with the given WebState.
 - (instancetype)initWithWebState:(web::WebState*)webState;
