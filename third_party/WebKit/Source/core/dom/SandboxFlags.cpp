@@ -69,7 +69,7 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (EqualIgnoringASCIICase(sandbox_token, "allow-modals")) {
       flags &= ~kSandboxModals;
     } else if (EqualIgnoringASCIICase(sandbox_token, "allow-presentation")) {
-      flags &= ~kSandboxPresentation;
+      flags &= ~kSandboxPresentationController;
     } else if (EqualIgnoringASCIICase(
                    sandbox_token, "allow-top-navigation-by-user-activation") &&
                RuntimeEnabledFeatures::
@@ -109,5 +109,9 @@ STATIC_ASSERT_ENUM(WebSandboxFlags::kOrientationLock, kSandboxOrientationLock);
 STATIC_ASSERT_ENUM(WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts,
                    kSandboxPropagatesToAuxiliaryBrowsingContexts);
 STATIC_ASSERT_ENUM(WebSandboxFlags::kModals, kSandboxModals);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kPresentationController,
+                   kSandboxPresentationController);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kTopNavigationByUserActivation,
+                   kSandboxTopNavigationByUserActivation);
 
 }  // namespace blink
