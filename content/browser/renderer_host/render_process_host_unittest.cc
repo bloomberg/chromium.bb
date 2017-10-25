@@ -48,7 +48,7 @@ TEST_F(RenderProcessHostUnitTest, GuestsAreNotSuitableHosts) {
       RenderProcessHost::GetExistingProcessHost(browser_context(), test_url));
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
   // This test shouldn't run with --site-per-process mode, which prohibits
   // the renderer process reuse this test explicitly exercises.
@@ -77,7 +77,7 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
 }
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroid) {
   // Disable any overrides.
   RenderProcessHostImpl::SetMaxRendererProcessCount(0);

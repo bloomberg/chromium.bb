@@ -1167,6 +1167,14 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
       ChildProcessLauncher::GetNumberOfRendererSlots();
   return kNumRendererSlots;
 #endif
+#if defined(OS_CHROMEOS)
+  // On Chrome OS new renderer processes are very cheap and there's no OS
+  // driven constraint on the number of processes, and the effectiveness
+  // of the tab discarder is very poor when we have tabs sharing a
+  // renderer process.  So, set a high limit, and based on UMA stats
+  // for CrOS the 99.9th percentile of Tabs.MaxTabsInADay is around 100.
+  return 100;
+#endif
 
   // On other platforms, we calculate the maximum number of renderer process
   // hosts according to the amount of installed memory as reported by the OS.
