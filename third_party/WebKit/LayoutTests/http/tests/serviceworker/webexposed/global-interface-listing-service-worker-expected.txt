@@ -1074,6 +1074,7 @@ interface Request
     getter credentials
     getter headers
     getter integrity
+    getter keepalive
     getter method
     getter mode
     getter redirect

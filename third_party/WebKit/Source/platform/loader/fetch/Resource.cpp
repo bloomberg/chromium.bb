@@ -756,7 +756,7 @@ void Resource::DidRemoveClientOrObserver() {
 }
 
 void Resource::AllClientsAndObserversRemoved() {
-  if (loader_)
+  if (loader_ && !detachable_)
     loader_->ScheduleCancel();
 }
 

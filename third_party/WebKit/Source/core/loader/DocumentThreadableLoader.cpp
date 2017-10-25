@@ -562,6 +562,13 @@ void DocumentThreadableLoader::Cancel() {
   DispatchDidFail(ResourceError::CancelledError(GetResource()->Url()));
 }
 
+void DocumentThreadableLoader::Detach() {
+  Resource* resource = GetResource();
+  if (resource)
+    resource->SetDetachable();
+  Clear();
+}
+
 void DocumentThreadableLoader::SetDefersLoading(bool value) {
   if (GetResource())
     GetResource()->SetDefersLoading(value);

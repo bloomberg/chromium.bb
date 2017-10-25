@@ -65,6 +65,7 @@ class MODULES_EXPORT Request final : public Body {
   String cache() const;
   String redirect() const;
   String integrity() const;
+  bool keepalive() const;
 
   // From Request.idl:
   // This function must be called with entering an appropriate V8 context.

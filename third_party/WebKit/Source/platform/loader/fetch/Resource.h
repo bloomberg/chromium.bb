@@ -145,6 +145,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void AddClient(ResourceClient*);
   void RemoveClient(ResourceClient*);
+  // Once called, this resource will not be canceled until load finishes
+  // even if associated with no client.
+  void SetDetachable() { detachable_ = true; }
 
   // If this Resource is already finished when AddFinishObserver is called, the
   // ResourceFinishObserver will be notified asynchronously by a task scheduled
@@ -455,6 +458,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool is_add_remove_client_prohibited_;
   bool is_revalidation_start_forbidden_ = false;
   bool is_unused_preload_ = false;
+  bool detachable_ = false;
 
   ResourceIntegrityDisposition integrity_disposition_;
   IntegrityMetadataSet integrity_metadata_;

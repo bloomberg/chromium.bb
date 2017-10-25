@@ -289,6 +289,9 @@ Request* Request::CreateRequestWithRequestOrString(
   if (!init.Integrity().IsNull())
     request->SetIntegrity(init.Integrity());
 
+  if (init.Keepalive().has_value())
+    request->SetKeepalive(*init.Keepalive());
+
   // "If |init|'s method member is present, let |method| be it and run these
   // substeps:"
   if (!init.Method().IsNull()) {
@@ -379,6 +382,9 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If |init|'s body member is present, run these substeps:"
   if (init.GetBody()) {
+    // TODO(yhirano): Throw if keepalive flag is set and body is a
+    // ReadableStream. We don't support body stream setting for Request yet.
+
     // Perform the following steps:
     // - "Let |stream| and |Content-Type| be the result of extracting
     //   |init|'s body member."
@@ -690,6 +696,10 @@ String Request::redirect() const {
 
 String Request::integrity() const {
   return request_->Integrity();
+}
+
+bool Request::keepalive() const {
+  return request_->Keepalive();
 }
 
 Request* Request::clone(ScriptState* script_state,
