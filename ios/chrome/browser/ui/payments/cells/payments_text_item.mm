@@ -81,8 +81,12 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 @interface PaymentsTextCell () {
   NSLayoutConstraint* _labelsLeadingAnchorConstraint;
   NSLayoutConstraint* _leadingImageLeadingAnchorConstraint;
-  NSLayoutConstraint* _trailingImageTrailingAnchorConstraint;
+  NSLayoutConstraint* _leadingImageWidthConstraint;
+  NSLayoutConstraint* _leadingImageHeightConstraint;
   NSLayoutConstraint* _labelsTrailingAnchorConstraint;
+  NSLayoutConstraint* _trailingImageTrailingAnchorConstraint;
+  NSLayoutConstraint* _trailingImageWidthConstraint;
+  NSLayoutConstraint* _trailingImageHeightConstraint;
   UIStackView* _stackView;
 }
 @end
@@ -111,6 +115,10 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   UIView* contentView = self.contentView;
   contentView.clipsToBounds = YES;
 
+  _leadingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+  _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [contentView addSubview:_leadingImageView];
+
   _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
   _stackView.axis = UILayoutConstraintAxisVertical;
   _stackView.layoutMarginsRelativeArrangement = YES;
@@ -126,10 +134,6 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 
   _detailTextLabel = [[UILabel alloc] init];
   [_stackView addArrangedSubview:_detailTextLabel];
-
-  _leadingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-  _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
-  [contentView addSubview:_leadingImageView];
 
   _trailingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
   _trailingImageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -151,14 +155,22 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 - (void)setViewConstraints {
   UIView* contentView = self.contentView;
 
-  _labelsLeadingAnchorConstraint = [_stackView.leadingAnchor
-      constraintEqualToAnchor:_leadingImageView.trailingAnchor];
   _leadingImageLeadingAnchorConstraint = [_leadingImageView.leadingAnchor
       constraintEqualToAnchor:contentView.leadingAnchor];
+  _leadingImageWidthConstraint =
+      [_leadingImageView.widthAnchor constraintEqualToConstant:0];
+  _leadingImageHeightConstraint =
+      [_leadingImageView.heightAnchor constraintEqualToConstant:0];
+  _labelsLeadingAnchorConstraint = [_stackView.leadingAnchor
+      constraintEqualToAnchor:_leadingImageView.trailingAnchor];
   _labelsTrailingAnchorConstraint = [_stackView.trailingAnchor
       constraintLessThanOrEqualToAnchor:_trailingImageView.leadingAnchor];
   _trailingImageTrailingAnchorConstraint = [_trailingImageView.trailingAnchor
       constraintEqualToAnchor:contentView.trailingAnchor];
+  _trailingImageWidthConstraint =
+      [_trailingImageView.widthAnchor constraintEqualToConstant:0];
+  _trailingImageHeightConstraint =
+      [_trailingImageView.heightAnchor constraintEqualToConstant:0];
 
   [NSLayoutConstraint activateConstraints:@[
     [_stackView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
@@ -167,8 +179,10 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
         constraintEqualToAnchor:contentView.centerYAnchor],
     [_trailingImageView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
-    _trailingImageTrailingAnchorConstraint, _labelsTrailingAnchorConstraint,
-    _labelsLeadingAnchorConstraint, _leadingImageLeadingAnchorConstraint
+    _leadingImageLeadingAnchorConstraint, _leadingImageWidthConstraint,
+    _leadingImageHeightConstraint, _labelsLeadingAnchorConstraint,
+    _labelsTrailingAnchorConstraint, _trailingImageTrailingAnchorConstraint,
+    _trailingImageWidthConstraint, _trailingImageHeightConstraint
   ]];
 }
 
@@ -189,20 +203,31 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   if (_leadingImageView.image) {
     preferredMaxLayoutWidth -= kHorizontalSpacingBetweenImageAndLabels +
                                _leadingImageView.image.size.width;
+    _leadingImageWidthConstraint.constant = _leadingImageView.image.size.width;
+    _leadingImageHeightConstraint.constant =
+        _leadingImageView.image.size.height;
     _leadingImageLeadingAnchorConstraint.constant = kHorizontalPadding;
     _labelsLeadingAnchorConstraint.constant =
         kHorizontalSpacingBetweenImageAndLabels;
   } else {
+    _leadingImageWidthConstraint.constant = 0;
+    _leadingImageHeightConstraint.constant = 0;
     _leadingImageLeadingAnchorConstraint.constant = 0;
     _labelsLeadingAnchorConstraint.constant = kHorizontalPadding;
   }
   if (_trailingImageView.image) {
     preferredMaxLayoutWidth -= kHorizontalSpacingBetweenImageAndLabels +
                                _trailingImageView.image.size.width;
+    _trailingImageWidthConstraint.constant =
+        _trailingImageView.image.size.width;
+    _trailingImageHeightConstraint.constant =
+        _trailingImageView.image.size.height;
     _trailingImageTrailingAnchorConstraint.constant = -kHorizontalPadding;
     _labelsTrailingAnchorConstraint.constant =
         -kHorizontalSpacingBetweenImageAndLabels;
   } else {
+    _trailingImageWidthConstraint.constant = 0;
+    _trailingImageHeightConstraint.constant = 0;
     _trailingImageTrailingAnchorConstraint.constant = 0;
     _labelsTrailingAnchorConstraint.constant = -kHorizontalPadding;
   }
