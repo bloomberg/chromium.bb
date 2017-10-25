@@ -4824,7 +4824,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/toolbar/toolbar_view_unittest.mm",
         "../browser/ui/cocoa/translate/translate_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
-        "../browser/ui/cocoa/validation_message_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/vertical_gradient_view_unittest.mm",
         "../browser/ui/cocoa/view_resizer_pong.h",
         "../browser/ui/cocoa/view_resizer_pong.mm",
@@ -4985,7 +4984,6 @@ test("unit_tests") {
         "../browser/ui/views/toolbar/toolbar_action_view_unittest.cc",
         "../browser/ui/views/toolbar/toolbar_actions_bar_bubble_views_unittest.cc",
         "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
-        "../browser/ui/views/validation_message_bubble_view_unittest.cc",
         "../browser/ui/views/webshare/webshare_target_picker_view_unittest.cc",
       ]
     }

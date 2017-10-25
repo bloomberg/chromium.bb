@@ -138,7 +138,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/unload_controller.h"
-#include "chrome/browser/ui/validation_message_bubble.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -996,7 +995,6 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->TabClosing(contents);
-  HideValidationMessage(contents);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(&contents->GetController()),
@@ -1267,35 +1265,6 @@ bool Browser::TabsNeedBeforeUnloadFired() {
   if (IsFastTabUnloadEnabled())
     return fast_unload_controller_->TabsNeedBeforeUnloadFired();
   return unload_controller_->TabsNeedBeforeUnloadFired();
-}
-
-void Browser::ShowValidationMessage(content::WebContents* web_contents,
-                                    const gfx::Rect& anchor_in_root_view,
-                                    const base::string16& main_text,
-                                    const base::string16& sub_text) {
-  // If the web contents is unparented (e.g. in a blocked popup) it does not
-  // make sense to show a validation message. See http://crbug.com/616990
-  if (!web_contents->GetTopLevelNativeWindow())
-    return;
-  validation_message_bubble_ =
-      TabDialogs::FromWebContents(web_contents)
-          ->ShowValidationMessage(anchor_in_root_view, main_text, sub_text);
-}
-
-void Browser::HideValidationMessage(content::WebContents* web_contents) {
-  if (validation_message_bubble_)
-    validation_message_bubble_->CloseValidationMessage();
-}
-
-void Browser::MoveValidationMessage(content::WebContents* web_contents,
-                                    const gfx::Rect& anchor_in_root_view) {
-  if (!validation_message_bubble_)
-    return;
-  RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
-  if (rwhv) {
-    validation_message_bubble_->SetPositionRelativeToAnchor(
-        rwhv->GetRenderWidgetHost(), anchor_in_root_view);
-  }
 }
 
 bool Browser::PreHandleGestureEvent(content::WebContents* source,

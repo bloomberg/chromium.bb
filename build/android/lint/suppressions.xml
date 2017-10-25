@@ -110,8 +110,6 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="chrome/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="chromecast/internal"/>
-    <ignore regexp="components/web_contents_delegate_android/java/res/drawable-xxhdpi"/>
-    <ignore regexp="components/web_contents_delegate_android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="content/public/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="content/public/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxhdpi"/>
@@ -144,6 +142,8 @@ Still reading?
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="tools/android/push_apps_to_background/res"/>
     <ignore regexp="ui/android/java/res"/>
+    <!-- crbug.com/457918 is tracking missing assets -->
+    <ignore regexp="components/web_contents_delegate_android/java/res"/>
   </issue>
   <issue id="ImpliedQuantity" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd"/>

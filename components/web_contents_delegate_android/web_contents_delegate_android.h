@@ -25,8 +25,6 @@ struct OpenURLParams;
 
 namespace web_contents_delegate_android {
 
-class ValidationMessageBubbleAndroid;
-
 enum WebContentsDelegateLogLevel {
   // Equivalent of WebCore::WebConsoleMessage::LevelDebug.
   WEB_CONTENTS_DELEGATE_LOG_LEVEL_DEBUG = 0,
@@ -114,13 +112,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override;
-  void ShowValidationMessage(content::WebContents* web_contents,
-                             const gfx::Rect& anchor_in_root_view,
-                             const base::string16& main_text,
-                             const base::string16& sub_text) override;
-  void HideValidationMessage(content::WebContents* web_contents) override;
-  void MoveValidationMessage(content::WebContents* web_contents,
-                             const gfx::Rect& anchor_in_root_view) override;
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
@@ -134,8 +125,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   // strong reference to that object as long as they want to receive callbacks
   // on it. Using a weak ref here allows it to be correctly GCed.
   JavaObjectWeakGlobalRef weak_java_delegate_;
-
-  std::unique_ptr<ValidationMessageBubbleAndroid> validation_message_bubble_;
 };
 
 }  // namespace web_contents_delegate_android
