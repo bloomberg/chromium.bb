@@ -182,7 +182,7 @@ Polymer({
    * @private
    */
   changeSelection_: function(index, selected) {
-    this.set('historyData_.' + index + '.selected', selected);
+    this.set(`historyData_.${index}.selected`, selected);
     if (selected)
       this.selectedItems.add(index);
     else
@@ -198,7 +198,7 @@ Polymer({
    */
   deleteSelected_: function() {
     var toBeRemoved = Array.from(this.selectedItems.values())
-                          .map((index) => this.get('historyData_.' + index));
+                          .map((index) => this.get(`historyData_.${index}`));
 
     md_history.BrowserService.getInstance()
         .deleteItems(toBeRemoved)
@@ -281,7 +281,7 @@ Polymer({
 
     for (var i = 0; i < this.historyData_.length; i++) {
       if (this.historyData_[i].url == url)
-        this.set('historyData_.' + i + '.starred', false);
+        this.set(`historyData_.${i}.starred`, false);
     }
   },
 

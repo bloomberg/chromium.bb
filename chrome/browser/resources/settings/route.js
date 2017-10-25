@@ -135,7 +135,7 @@ cr.define('settings', function() {
 
       // |path| extends this route's path if it doesn't have a leading slash.
       // If it does have a leading slash, it's just set as the new route's URL.
-      var newUrl = path[0] == '/' ? path : this.path + '/' + path;
+      var newUrl = path[0] == '/' ? path : `${this.path}/${path}`;
 
       var route = new Route(newUrl);
       route.parent = this;

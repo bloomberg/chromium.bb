@@ -454,6 +454,31 @@ for (let n of fibonacci) {
 
 ---
 
+## Template Literals
+
+Expression interpolation for Strings, with the ability to access raw template
+pieces.
+
+**Usage Example:**
+
+```js
+// Simple example
+let greeting = 'hello';
+let myName = {first: 'Foo', last: 'Bar'};
+let from = 1900;
+let to = 2000;
+
+var message = `${greeting}, I am ${myName.first}${myName.last},
+and I am ${to - from} years old`;
+// message == 'hello,\nI am FooBar,\nand I am 100 years old'
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-template-literals)
+
+**Discussion Notes / Link to Thread:**
+
+---
+
 # Banned Features
 
 The following features are banned for Chromium development.
@@ -599,28 +624,6 @@ console.log(clearSky.clouds());  // 0
 
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-object-initialiser)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-## Template Literals
-
-Expression interpolation for Strings, with the ability to access raw template
-pieces.
-
-**Usage Example:**
-
-```js
-// Simple example
-var greeting = 'hello';
-var myName = {first: 'Foo', last: 'Bar'};
-var message = `${greeting},
-my name is ${myName.first + myName.last}`;
-// message == 'hello,\nmy name is FooBar'
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-template-literals)
 
 **Discussion Notes / Link to Thread:**
 
