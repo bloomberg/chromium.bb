@@ -197,8 +197,9 @@ function testManipulateZoom() {
 
         return imageCapturer.track.applyConstraints({advanced : [{zoom : newZoom}]});
       })
-      .then(appliedConstraints => {
-        assertEquals(newZoom, appliedConstraints.advanced[0].zoom);
+      .then(() => {
+        assertEquals(newZoom,
+                     imageCapturer.track.getConstraints().advanced[0].zoom);
         assertTrue(Math.abs(newZoom - imageCapturer.track.getSettings().zoom)
             < zoomTolerance);
         reportTestSuccess();

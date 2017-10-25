@@ -52,16 +52,14 @@ promise_test(async function() {
     // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    let appliedConstraints;
     try {
-      let promise = videoTrack.applyConstraints(constraints);
-      GCController.collect();
-      appliedConstraints = await promise;
+      await videoTrack.applyConstraints(constraints);
     } catch (error) {
       assert_unreached('applyConstraints(): ' + error.message);
     }
 
     const constraintsDict = constraints.advanced[0];
+    let appliedConstraints = videoTrack.getConstraints();
     const appliedConstraintsDict = appliedConstraints.advanced[0];
 
     // Check that |appliedConstraints| and |constraints| are equal.
