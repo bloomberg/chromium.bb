@@ -18,7 +18,11 @@ class ViewPainterTest : public PaintControllerPaintTest {
 
 INSTANTIATE_TEST_CASE_P(All,
                         ViewPainterTest,
-                        ::testing::Values(0, kRootLayerScrolling));
+                        ::testing::Values(0,
+                                          kSlimmingPaintV175,
+                                          kRootLayerScrolling,
+                                          kSlimmingPaintV175 |
+                                              kRootLayerScrolling));
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {
@@ -46,6 +50,7 @@ void ViewPainterTest::RunFixedBackgroundTest(
   frame_view->UpdateAllLifecyclePhases();
 
   bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+  bool v175 = RuntimeEnabledFeatures::SlimmingPaintV175Enabled();
   CompositedLayerMapping* clm =
       GetLayoutView().Layer()->GetCompositedLayerMapping();
 
@@ -64,7 +69,7 @@ void ViewPainterTest::RunFixedBackgroundTest(
   const DisplayItemList& display_items =
       layer_for_background->GetPaintController().GetDisplayItemList();
   const DisplayItem& background =
-      display_items[rls && !prefer_compositing_to_lcd_text ? 2 : 0];
+      display_items[rls && !prefer_compositing_to_lcd_text && !v175 ? 2 : 0];
   EXPECT_EQ(background.GetType(), kDocumentBackgroundType);
   DisplayItemClient* expected_client;
   if (rls && !prefer_compositing_to_lcd_text)
@@ -92,6 +97,44 @@ TEST_P(ViewPainterTest, DocumentFixedBackgroundLowDPI) {
 
 TEST_P(ViewPainterTest, DocumentFixedBackgroundHighDPI) {
   RunFixedBackgroundTest(true);
+}
+
+TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
+  SetBodyInnerHTML("<div style='height: 5000px'></div>");
+
+  const DisplayItemClient* background_item_client;
+  const DisplayItemClient* background_chunk_client;
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    background_item_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+    background_chunk_client = background_item_client;
+  } else {
+    background_item_client = &GetLayoutView();
+    background_chunk_client = GetLayoutView().Layer();
+  }
+
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(*background_item_client, kDocumentBackgroundType));
+
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
+  const auto& chunks = RootPaintController().GetPaintArtifact().PaintChunks();
+  EXPECT_EQ(1u, chunks.size());
+  const auto& chunk = chunks[0];
+  EXPECT_EQ(background_chunk_client, &chunk.id.client);
+
+  const auto& tree_state = chunk.properties.property_tree_state;
+  EXPECT_EQ(EffectPaintPropertyNode::Root(), tree_state.Effect());
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    const auto* properties = GetLayoutView().FirstFragment()->PaintProperties();
+    EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
+    EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
+  } else {
+    const auto* frame_view = GetDocument().View();
+    EXPECT_EQ(frame_view->ScrollTranslation(), tree_state.Transform());
+    EXPECT_EQ(frame_view->ContentClip(), tree_state.Clip());
+  }
 }
 
 }  // namespace blink
