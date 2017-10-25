@@ -25,8 +25,8 @@ const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
 
 #if defined(OS_MACOSX)
 // Enables Javascript execution via AppleScript.
-const base::Feature kAppleScriptExecuteJavaScript{
-    "AppleScriptExecuteJavaScript", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAppleScriptExecuteJavaScriptMenuItem{
+    "AppleScriptExecuteJavaScriptMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the fullscreen toolbar to reveal itself if it's hidden.
 const base::Feature kFullscreenToolbarReveal{"FullscreenToolbarReveal",

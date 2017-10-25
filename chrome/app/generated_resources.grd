@@ -8741,7 +8741,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
                 Wrong index.
         </message>
         <message name="IDS_JAVASCRIPT_UNSUPPORTED_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when the user attempts to execute JavaScript via AppleScript. Mac-only.">
-          Executing JavaScript through AppleScript is no longer supported.
+          Executing JavaScript through AppleScript is turned off. To turn it on, visit Chrome Settings > Advanced > System. For more information: https://support.google.com/chrome/?p=applescript
         </message>
       </if> <!-- is_macosx -->
 
@@ -8949,6 +8949,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_DEV_TOOLS_CONSOLE_MAC" desc="The Mac menu item for the JavaScript console in the developer submenu of the view menu.">
           JavaScript Console
+        </message>
+        <message name="IDS_ALLOW_JAVASCRIPT_APPLE_EVENTS_MAC" desc="The Mac menu item to allow JavaScript from Apple Events in the developer submenu of the view menu.">
+          Allow JavaScript from Apple Events
         </message>
         <message name="IDS_TASK_MANAGER_MAC" desc="The Mac menu item for task manager in the developer submenu of the view menu.">
           Task Manager

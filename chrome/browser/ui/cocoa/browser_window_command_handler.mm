@@ -57,6 +57,12 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
     return;
   }
 
+  if (tag == IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS) {
+    PrefService* prefs = browser->profile()->GetPrefs();
+    SetToggleState(prefs->GetBoolean(prefs::kAllowJavascriptAppleEvents), item);
+    return;
+  }
+
   if (tag == IDC_WINDOW_MUTE_TAB) {
     TabStripModel* model = browser->tab_strip_model();
     // Menu items may be validated during browser startup, before the

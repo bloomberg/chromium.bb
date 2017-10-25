@@ -2483,6 +2483,7 @@ test("browser_tests") {
         "../browser/ui/cocoa/applescript/bookmark_folder_applescript_browsertest.mm",
         "../browser/ui/cocoa/applescript/bookmark_item_applescript_browsertest.mm",
         "../browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm",
+        "../browser/ui/cocoa/applescript/tab_applescript_browsertest.mm",
         "../browser/ui/cocoa/applescript/window_applescript_test.mm",
         "../browser/ui/cocoa/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",

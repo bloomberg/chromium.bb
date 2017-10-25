@@ -166,6 +166,7 @@ extern const char kContextualSearchEnabled[];
 #if defined(OS_MACOSX)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
+extern const char kAllowJavascriptAppleEvents[];
 #endif
 extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];

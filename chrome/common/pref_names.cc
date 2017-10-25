@@ -407,6 +407,11 @@ const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
 // in fullscreen. Mac only.
 const char kShowFullscreenToolbar[] = "browser.show_fullscreen_toolbar";
 
+// Boolean that indicates whether the browser should allow Javascript injection
+// via Apple Events. Mac only.
+const char kAllowJavascriptAppleEvents[] =
+    "browser.allow_javascript_apple_events";
+
 #endif
 
 // Boolean which specifies whether we should ask the user if we should download

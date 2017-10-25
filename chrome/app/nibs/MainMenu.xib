@@ -369,7 +369,7 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="631"/>
-                            <menuItem title="^IDS_DEVELOPER_MENU_MAC" id="501">
+                            <menuItem title="^IDS_DEVELOPER_MENU_MAC" tag="40003" id="501">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="^IDS_DEVELOPER_MENU_MAC" id="502">
                                     <items>
@@ -389,6 +389,11 @@ CA
                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                             <connections>
                                                 <action selector="commandDispatch:" target="-1" id="657"/>
+                                            </connections>
+                                        </menuItem>
+                                         <menuItem title="^IDS_ALLOW_JAVASCRIPT_APPLE_EVENTS_MAC" tag="40253" id="659">
+                                            <connections>
+                                                <action selector="commandDispatch:" target="-1" id="664"/>
                                             </connections>
                                         </menuItem>
                                     </items>
