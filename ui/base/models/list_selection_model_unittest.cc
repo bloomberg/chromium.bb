@@ -218,7 +218,7 @@ TEST_F(ListSelectionModelTest, Copy) {
   model.AddIndexToSelection(10);
   EXPECT_EQ("active=0 anchor=0 selection=0 4 10", StateAsString(model));
   ListSelectionModel model2;
-  model2.Copy(model);
+  model2 = model;
   EXPECT_EQ("active=0 anchor=0 selection=0 4 10", StateAsString(model2));
 }
 
@@ -242,12 +242,12 @@ TEST_F(ListSelectionModelTest, Equals) {
   model2.SetSelectedIndex(0);
   model2.AddSelectionFromAnchorTo(4);
 
-  EXPECT_TRUE(model1.Equals(model2));
-  EXPECT_TRUE(model2.Equals(model1));
+  EXPECT_TRUE(model1 == model2);
+  EXPECT_TRUE(model2 == model1);
 
   model2.SetSelectedIndex(0);
-  EXPECT_FALSE(model1.Equals(model2));
-  EXPECT_FALSE(model2.Equals(model1));
+  EXPECT_FALSE(model1 == model2);
+  EXPECT_FALSE(model2 == model1);
 }
 
 }  // namespace ui

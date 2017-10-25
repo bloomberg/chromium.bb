@@ -86,7 +86,7 @@ class TabDragController : public views::WidgetObserver,
             const std::vector<Tab*>& tabs,
             const gfx::Point& mouse_offset,
             int source_tab_offset,
-            const ui::ListSelectionModel& initial_selection_model,
+            ui::ListSelectionModel initial_selection_model,
             MoveBehavior move_behavior,
             EventSource event_source);
 

@@ -326,10 +326,9 @@ void TabStripModel::InsertWebContentsAt(int index,
     observer.TabInsertedAt(this, contents, index, active);
 
   if (active) {
-    ui::ListSelectionModel new_model;
-    new_model.Copy(selection_model_);
+    ui::ListSelectionModel new_model = selection_model_;
     new_model.SetSelectedIndex(index);
-    SetSelection(new_model, NOTIFY_DEFAULT);
+    SetSelection(std::move(new_model), NOTIFY_DEFAULT);
   }
 }
 
@@ -384,7 +383,7 @@ WebContents* TabStripModel::DetachWebContentsAt(int index) {
     int old_active = active_index();
     selection_model_.DecrementFrom(index);
     ui::ListSelectionModel old_model;
-    old_model.Copy(selection_model_);
+    old_model = selection_model_;
     if (index == old_active) {
       NotifyIfTabDeactivated(removed_contents);
       if (!selection_model_.empty()) {
@@ -414,18 +413,17 @@ WebContents* TabStripModel::DetachWebContentsAt(int index) {
 
 void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
   DCHECK(ContainsIndex(index));
-  ui::ListSelectionModel new_model;
-  new_model.Copy(selection_model_);
+  ui::ListSelectionModel new_model = selection_model_;
   new_model.SetSelectedIndex(index);
-  SetSelection(new_model, user_gesture ? NOTIFY_USER_GESTURE : NOTIFY_DEFAULT);
+  SetSelection(std::move(new_model),
+               user_gesture ? NOTIFY_USER_GESTURE : NOTIFY_DEFAULT);
 }
 
 void TabStripModel::AddTabAtToSelection(int index) {
   DCHECK(ContainsIndex(index));
-  ui::ListSelectionModel new_model;
-  new_model.Copy(selection_model_);
+  ui::ListSelectionModel new_model = selection_model_;
   new_model.AddIndexToSelection(index);
-  SetSelection(new_model, NOTIFY_DEFAULT);
+  SetSelection(std::move(new_model), NOTIFY_DEFAULT);
 }
 
 void TabStripModel::MoveWebContentsAt(int index,
@@ -694,16 +692,14 @@ int TabStripModel::ConstrainInsertionIndex(int index, bool pinned_tab) {
 
 void TabStripModel::ExtendSelectionTo(int index) {
   DCHECK(ContainsIndex(index));
-  ui::ListSelectionModel new_model;
-  new_model.Copy(selection_model_);
+  ui::ListSelectionModel new_model = selection_model_;
   new_model.SetSelectionFromAnchorTo(index);
-  SetSelection(new_model, NOTIFY_DEFAULT);
+  SetSelection(std::move(new_model), NOTIFY_DEFAULT);
 }
 
 void TabStripModel::ToggleSelectionAt(int index) {
   DCHECK(ContainsIndex(index));
-  ui::ListSelectionModel new_model;
-  new_model.Copy(selection_model());
+  ui::ListSelectionModel new_model = selection_model();
   if (selection_model_.IsSelected(index)) {
     if (selection_model_.size() == 1) {
       // One tab must be selected and this tab is currently selected so we can't
@@ -720,14 +716,13 @@ void TabStripModel::ToggleSelectionAt(int index) {
     new_model.set_anchor(index);
     new_model.set_active(index);
   }
-  SetSelection(new_model, NOTIFY_DEFAULT);
+  SetSelection(std::move(new_model), NOTIFY_DEFAULT);
 }
 
 void TabStripModel::AddSelectionFromAnchorTo(int index) {
-  ui::ListSelectionModel new_model;
-  new_model.Copy(selection_model_);
+  ui::ListSelectionModel new_model = selection_model_;
   new_model.AddSelectionFromAnchorTo(index);
-  SetSelection(new_model, NOTIFY_DEFAULT);
+  SetSelection(std::move(new_model), NOTIFY_DEFAULT);
 }
 
 bool TabStripModel::IsTabSelected(int index) const {
@@ -735,10 +730,9 @@ bool TabStripModel::IsTabSelected(int index) const {
   return selection_model_.IsSelected(index);
 }
 
-void TabStripModel::SetSelectionFromModel(
-    const ui::ListSelectionModel& source) {
+void TabStripModel::SetSelectionFromModel(ui::ListSelectionModel source) {
   DCHECK_NE(ui::ListSelectionModel::kUnselectedIndex, source.active());
-  SetSelection(source, NOTIFY_DEFAULT);
+  SetSelection(std::move(source), NOTIFY_DEFAULT);
 }
 
 void TabStripModel::AddWebContents(WebContents* contents,
@@ -1034,7 +1028,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       selection_model.SetSelectedIndex(context_index);
       for (size_t i = 0; i < indices.size(); ++i)
         selection_model.AddIndexToSelection(indices[i]);
-      SetSelectionFromModel(selection_model);
+      SetSelectionFromModel(std::move(selection_model));
       break;
     }
 
@@ -1298,21 +1292,20 @@ void TabStripModel::NotifyIfActiveOrSelectionChanged(
     const ui::ListSelectionModel& old_model) {
   NotifyIfActiveTabChanged(old_contents, notify_types);
 
-  if (!selection_model().Equals(old_model)) {
+  if (selection_model() != old_model) {
     for (auto& observer : observers_)
       observer.TabSelectionChanged(this, old_model);
   }
 }
 
-void TabStripModel::SetSelection(
-    const ui::ListSelectionModel& new_model,
-    NotifyTypes notify_types) {
+void TabStripModel::SetSelection(ui::ListSelectionModel new_model,
+                                 NotifyTypes notify_types) {
   WebContents* old_contents = GetActiveWebContents();
   ui::ListSelectionModel old_model;
-  old_model.Copy(selection_model_);
+  old_model = selection_model_;
   if (new_model.active() != selection_model_.active())
     NotifyIfTabDeactivated(old_contents);
-  selection_model_.Copy(new_model);
+  selection_model_ = new_model;
   NotifyIfActiveOrSelectionChanged(old_contents, notify_types, old_model);
 }
 

@@ -881,7 +881,7 @@ void TabStrip::MaybeStartDrag(
   DCHECK(base::ContainsValue(tabs, tab));
   ui::ListSelectionModel selection_model;
   if (!original_selection.IsSelected(model_index))
-    selection_model.Copy(original_selection);
+    selection_model = original_selection;
   // Delete the existing DragController before creating a new one. We do this as
   // creating the DragController remembers the WebContents delegates and we need
   // to make sure the existing DragController isn't still a delegate.
@@ -906,9 +906,9 @@ void TabStrip::MaybeStartDrag(
   }
 
   drag_controller_.reset(new TabDragController);
-  drag_controller_->Init(
-      this, tab, tabs, gfx::Point(x, y), event.x(), selection_model,
-      move_behavior, EventSourceFromEvent(event));
+  drag_controller_->Init(this, tab, tabs, gfx::Point(x, y), event.x(),
+                         std::move(selection_model), move_behavior,
+                         EventSourceFromEvent(event));
 }
 
 void TabStrip::ContinueDrag(views::View* view, const ui::LocatedEvent& event) {
