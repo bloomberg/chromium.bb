@@ -355,11 +355,11 @@ TEST(FilterOperationsTest, BlendGrayscaleFilters) {
 TEST(FilterOperationsTest, BlendGrayscaleWithNull) {
   FilterOperation filter = FilterOperation::CreateGrayscaleFilter(1.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateGrayscaleFilter(0.75f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateGrayscaleFilter(0.25f);
   EXPECT_EQ(expected, blended);
 }
@@ -384,11 +384,11 @@ TEST(FilterOperationsTest, BlendSepiaFilters) {
 TEST(FilterOperationsTest, BlendSepiaWithNull) {
   FilterOperation filter = FilterOperation::CreateSepiaFilter(1.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateSepiaFilter(0.75f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateSepiaFilter(0.25f);
   EXPECT_EQ(expected, blended);
 }
@@ -413,11 +413,11 @@ TEST(FilterOperationsTest, BlendSaturateFilters) {
 TEST(FilterOperationsTest, BlendSaturateWithNull) {
   FilterOperation filter = FilterOperation::CreateSaturateFilter(0.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateSaturateFilter(0.25f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateSaturateFilter(0.75f);
   EXPECT_EQ(expected, blended);
 }
@@ -442,11 +442,11 @@ TEST(FilterOperationsTest, BlendHueRotateFilters) {
 TEST(FilterOperationsTest, BlendHueRotateWithNull) {
   FilterOperation filter = FilterOperation::CreateHueRotateFilter(1.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateHueRotateFilter(0.75f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateHueRotateFilter(0.25f);
   EXPECT_EQ(expected, blended);
 }
@@ -471,11 +471,11 @@ TEST(FilterOperationsTest, BlendInvertFilters) {
 TEST(FilterOperationsTest, BlendInvertWithNull) {
   FilterOperation filter = FilterOperation::CreateInvertFilter(1.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateInvertFilter(0.75f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateInvertFilter(0.25f);
   EXPECT_EQ(expected, blended);
 }
@@ -500,11 +500,11 @@ TEST(FilterOperationsTest, BlendBrightnessFilters) {
 TEST(FilterOperationsTest, BlendBrightnessWithNull) {
   FilterOperation filter = FilterOperation::CreateBrightnessFilter(0.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateBrightnessFilter(0.25f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateBrightnessFilter(0.75f);
   EXPECT_EQ(expected, blended);
 }
@@ -529,11 +529,11 @@ TEST(FilterOperationsTest, BlendContrastFilters) {
 TEST(FilterOperationsTest, BlendContrastWithNull) {
   FilterOperation filter = FilterOperation::CreateContrastFilter(0.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateContrastFilter(0.25f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateContrastFilter(0.75f);
   EXPECT_EQ(expected, blended);
 }
@@ -558,11 +558,11 @@ TEST(FilterOperationsTest, BlendOpacityFilters) {
 TEST(FilterOperationsTest, BlendOpacityWithNull) {
   FilterOperation filter = FilterOperation::CreateOpacityFilter(0.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateOpacityFilter(0.25f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateOpacityFilter(0.75f);
   EXPECT_EQ(expected, blended);
 }
@@ -587,11 +587,11 @@ TEST(FilterOperationsTest, BlendBlurFilters) {
 TEST(FilterOperationsTest, BlendBlurWithNull) {
   FilterOperation filter = FilterOperation::CreateBlurFilter(1.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateBlurFilter(0.75f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateBlurFilter(0.25f);
   EXPECT_EQ(expected, blended);
 }
@@ -627,12 +627,12 @@ TEST(FilterOperationsTest, BlendDropShadowWithNull) {
   FilterOperation filter = FilterOperation::CreateDropShadowFilter(
       gfx::Point(4, 4), 4.f, SkColorSetARGB(255, 40, 0, 0));
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateDropShadowFilter(
       gfx::Point(3, 3), 3.f, SkColorSetARGB(191, 40, 0, 0));
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateDropShadowFilter(
       gfx::Point(1, 1), 1.f, SkColorSetARGB(64, 40, 0, 0));
   EXPECT_EQ(expected, blended);
@@ -658,11 +658,11 @@ TEST(FilterOperationsTest, BlendZoomFilters) {
 TEST(FilterOperationsTest, BlendZoomWithNull) {
   FilterOperation filter = FilterOperation::CreateZoomFilter(2.f, 1);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected = FilterOperation::CreateZoomFilter(1.75f, 1);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateZoomFilter(1.25f, 0);
   EXPECT_EQ(expected, blended);
 }
@@ -689,12 +689,12 @@ TEST(FilterOperationsTest, BlendSaturatingBrightnessWithNull) {
   FilterOperation filter =
       FilterOperation::CreateSaturatingBrightnessFilter(1.f);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   FilterOperation expected =
       FilterOperation::CreateSaturatingBrightnessFilter(0.75f);
   EXPECT_EQ(expected, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   expected = FilterOperation::CreateSaturatingBrightnessFilter(0.25f);
   EXPECT_EQ(expected, blended);
 }
@@ -726,14 +726,14 @@ TEST(FilterOperationsTest, BlendReferenceWithNull) {
       FilterOperation::CreateReferenceFilter(std::move(image_filter));
   FilterOperation null_filter = FilterOperation::CreateReferenceFilter(nullptr);
 
-  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  FilterOperation blended = FilterOperation::Blend(&filter, nullptr, 0.25);
   EXPECT_EQ(filter, blended);
-  blended = FilterOperation::Blend(&filter, NULL, 0.75);
+  blended = FilterOperation::Blend(&filter, nullptr, 0.75);
   EXPECT_EQ(null_filter, blended);
 
-  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.25);
   EXPECT_EQ(null_filter, blended);
-  blended = FilterOperation::Blend(NULL, &filter, 0.75);
+  blended = FilterOperation::Blend(nullptr, &filter, 0.75);
   EXPECT_EQ(filter, blended);
 }
 

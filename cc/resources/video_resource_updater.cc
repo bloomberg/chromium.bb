@@ -326,7 +326,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   DCHECK(media::IsYuvPlanar(input_frame_format) ||
          input_frame_format == media::PIXEL_FORMAT_Y16);
 
-  const bool software_compositor = context_provider_ == NULL;
+  const bool software_compositor = context_provider_ == nullptr;
 
   viz::ResourceFormat output_resource_format;
   gfx::ColorSpace output_color_space = video_frame->ColorSpace();

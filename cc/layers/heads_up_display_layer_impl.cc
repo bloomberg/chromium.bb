@@ -597,7 +597,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SkColorSetARGB(255, 0, 255, 0));
   canvas->drawArc(oval, 180, angle, true, paint);
-  paint.setShader(NULL);
+  paint.setShader(nullptr);
 
   return area;
 }

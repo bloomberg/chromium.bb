@@ -107,7 +107,7 @@ bool WebLayerImpl::MasksToBounds() const {
 
 void WebLayerImpl::SetMaskLayer(WebLayer* maskLayer) {
   layer_->SetMaskLayer(
-      maskLayer ? static_cast<WebLayerImpl*>(maskLayer)->layer() : 0);
+      maskLayer ? static_cast<WebLayerImpl*>(maskLayer)->layer() : nullptr);
 }
 
 void WebLayerImpl::SetOpacity(float opacity) {

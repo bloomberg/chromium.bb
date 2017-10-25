@@ -181,11 +181,11 @@ FilterOperations FilterOperations::Blend(const FilterOperations& from,
   if (from_is_longer) {
     for (size_t i = shorter_size; i < longer_size; i++) {
       blended_filters.Append(
-          FilterOperation::Blend(&from.at(i), NULL, progress));
+          FilterOperation::Blend(&from.at(i), nullptr, progress));
     }
   } else {
     for (size_t i = shorter_size; i < longer_size; i++)
-      blended_filters.Append(FilterOperation::Blend(NULL, &at(i), progress));
+      blended_filters.Append(FilterOperation::Blend(nullptr, &at(i), progress));
   }
 
   return blended_filters;

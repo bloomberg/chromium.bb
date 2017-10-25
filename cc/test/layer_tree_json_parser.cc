@@ -80,7 +80,7 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
 
     new_layer = nine_patch_layer;
   } else if (layer_type == "TextureLayer") {
-    new_layer = TextureLayer::CreateForMailbox(NULL);
+    new_layer = TextureLayer::CreateForMailbox(nullptr);
   } else if (layer_type == "PictureLayer") {
     new_layer = PictureLayer::Create(content_client);
   } else {  // Type "Layer" or "unknown"
@@ -134,7 +134,7 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   }
 
   if (!success)
-    return NULL;
+    return nullptr;
 
   return new_layer;
 }

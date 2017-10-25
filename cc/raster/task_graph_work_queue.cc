@@ -51,7 +51,7 @@ class DependentIterator {
       : graph_(graph),
         task_(task),
         current_index_(static_cast<size_t>(-1)),
-        current_node_(NULL) {
+        current_node_(nullptr) {
     ++(*this);
   }
 

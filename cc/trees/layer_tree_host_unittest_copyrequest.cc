@@ -298,7 +298,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 
         // Destroy the main thread layer right away.
         main_destroyed_->RemoveFromParent();
-        main_destroyed_ = NULL;
+        main_destroyed_ = nullptr;
 
         // Should callback with a NULL bitmap.
         EXPECT_EQ(1, callback_count_);
@@ -316,7 +316,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 
         // Destroy the impl thread layer.
         impl_destroyed_->RemoveFromParent();
-        impl_destroyed_ = NULL;
+        impl_destroyed_ = nullptr;
 
         // No callback yet because it's on the impl side.
         EXPECT_EQ(1, callback_count_);

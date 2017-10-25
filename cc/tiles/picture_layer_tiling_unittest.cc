@@ -639,7 +639,7 @@ TEST_F(PictureLayerTilingIteratorTest, NonContainedDestRect) {
 
 static void TileExists(bool exists, Tile* tile,
                        const gfx::Rect& geometry_rect) {
-  EXPECT_EQ(exists, tile != NULL) << geometry_rect.ToString();
+  EXPECT_EQ(exists, tile != nullptr) << geometry_rect.ToString();
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
@@ -712,7 +712,7 @@ static void TilesIntersectingRectExist(const gfx::Rect& rect,
                                        const gfx::Rect& geometry_rect) {
   bool intersects = rect.Intersects(geometry_rect);
   bool expected_exists = intersect_exists ? intersects : !intersects;
-  EXPECT_EQ(expected_exists, tile != NULL)
+  EXPECT_EQ(expected_exists, tile != nullptr)
       << "Rects intersecting " << rect.ToString() << " should exist. "
       << "Current tile rect is " << geometry_rect.ToString();
 }
@@ -960,8 +960,8 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
                                            Occlusion());
 
   // Set the second tiling as recycled.
-  active_client.set_twin_tiling(NULL);
-  recycle_client.set_twin_tiling(NULL);
+  active_client.set_twin_tiling(nullptr);
+  recycle_client.set_twin_tiling(nullptr);
 
   EXPECT_TRUE(active_tiling->TileAt(0, 0));
   EXPECT_FALSE(recycle_tiling->TileAt(0, 0));

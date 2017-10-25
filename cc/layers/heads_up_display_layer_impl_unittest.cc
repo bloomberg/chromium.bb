@@ -92,7 +92,7 @@ TEST(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
                  layer_tree_frame_sink->context_provider(), DRAW_MODE_HARDWARE);
 
   // Check SW canvas drawing is ok.
-  CheckDrawLayer(layer, host_impl.resource_provider(), NULL,
+  CheckDrawLayer(layer, host_impl.resource_provider(), nullptr,
                  DRAW_MODE_SOFTWARE);
 }
 

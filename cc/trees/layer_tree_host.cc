@@ -469,7 +469,7 @@ LayerTreeHost::CreateLayerTreeHostImpl(
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
-  task_graph_runner_ = NULL;
+  task_graph_runner_ = nullptr;
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl;
 }
