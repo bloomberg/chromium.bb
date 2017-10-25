@@ -44,12 +44,10 @@ struct ColorScheme {
   SkColor loading_indicator_background;
   SkColor exit_warning_foreground;
   SkColor exit_warning_background;
-  SkColor transient_warning_foreground;
-  SkColor transient_warning_background;
+  SkColor web_vr_transient_toast_foreground;
+  SkColor web_vr_transient_toast_background;
   SkColor exclusive_screen_toast_foreground;
   SkColor exclusive_screen_toast_background;
-  SkColor permanent_warning_foreground;
-  SkColor permanent_warning_background;
   SkColor system_indicator_foreground;
   SkColor system_indicator_background;
 
@@ -83,6 +81,14 @@ struct ColorScheme {
   // Splash screen colors.
   SkColor splash_screen_background;
   SkColor splash_screen_text_color;
+
+  // WebVr timeout spinner colors.
+  SkColor spinner_background;
+  SkColor spinner_color;
+
+  // Timeout UI colors
+  SkColor timeout_message_background;
+  SkColor timeout_message_foreground;
 };
 
 }  // namespace vr

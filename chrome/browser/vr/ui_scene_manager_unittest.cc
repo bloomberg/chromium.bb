@@ -52,6 +52,12 @@ const std::set<UiElementName> kHitTestableElements = {
     kUrlBar,
     kLoadingIndicator,
     kCloseButton,
+    kWebVrTimeoutSpinner,
+    kWebVrTimeoutMessage,
+    kWebVrTimeoutMessageIcon,
+    kWebVrTimeoutMessageText,
+    kWebVrTimeoutMessageButton,
+    kWebVrTimeoutMessageButtonText,
     kVoiceSearchButton,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
@@ -597,6 +603,59 @@ TEST_F(UiSceneManagerTest, EnforceSceneHierarchyForProjMatrixChanges) {
       browsing_foreground->IsAnimatingProperty(TargetProperty::TRANSFORM));
   EXPECT_FALSE(browsing_root->IsAnimatingProperty(TargetProperty::TRANSFORM));
   EXPECT_FALSE(root->IsAnimatingProperty(TargetProperty::TRANSFORM));
+}
+
+TEST_F(UiSceneManagerTest, WebVrTimeout) {
+  MakeManager(kNotInCct, kInWebVr);
+
+  manager_->SetWebVrMode(true, false);
+  model_->web_vr_timeout_state = kWebVrAwaitingFirstFrame;
+
+  AnimateBy(MsToDelta(500));
+  VerifyVisibility(
+      {
+          kWebVrTimeoutSpinner, kWebVrTimeoutMessage,
+          kWebVrTimeoutMessageLayout, kWebVrTimeoutMessageIcon,
+          kWebVrTimeoutMessageText, kWebVrTimeoutMessageButton,
+          kWebVrTimeoutMessageButtonText,
+      },
+      false);
+  VerifyVisibility(
+      {
+          kWebVrTimeoutSpinnerBackground,
+      },
+      true);
+
+  model_->web_vr_timeout_state = kWebVrTimeoutImminent;
+  AnimateBy(MsToDelta(500));
+  VerifyVisibility(
+      {
+          kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+          kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+          kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
+      },
+      false);
+  VerifyVisibility(
+      {
+          kWebVrTimeoutSpinner, kWebVrTimeoutSpinnerBackground,
+      },
+      true);
+
+  model_->web_vr_timeout_state = kWebVrTimedOut;
+  AnimateBy(MsToDelta(500));
+  VerifyVisibility(
+      {
+          kWebVrTimeoutSpinner,
+      },
+      false);
+  VerifyVisibility(
+      {
+          kWebVrTimeoutSpinnerBackground, kWebVrTimeoutMessage,
+          kWebVrTimeoutMessageLayout, kWebVrTimeoutMessageIcon,
+          kWebVrTimeoutMessageText, kWebVrTimeoutMessageButton,
+          kWebVrTimeoutMessageButtonText,
+      },
+      true);
 }
 
 }  // namespace vr

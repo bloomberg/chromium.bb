@@ -62,6 +62,7 @@ class AnimationPlayer final {
   }
 
   void SetTransitionedProperties(const std::set<int>& properties);
+  void SetTransitionDuration(base::TimeDelta delta);
 
   // TODO(754820): Remove duplicate code from the transition functions
   // by using templates.

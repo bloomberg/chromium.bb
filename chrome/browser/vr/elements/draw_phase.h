@@ -12,9 +12,9 @@ enum DrawPhase : int {
   // kPhaseNone is to be used for elements that do not draw. Eg, layouts.
   kPhaseNone = 0,
   kPhaseBackground,
+  kPhaseOverlayBackground,
   kPhaseFloorCeiling,
   kPhaseForeground,
-  kPhaseOverlayBackground,
   kPhaseOverlayForeground,
 };
 

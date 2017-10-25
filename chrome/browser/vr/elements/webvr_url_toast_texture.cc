@@ -60,7 +60,7 @@ void WebVrUrlToastTexture::Draw(SkCanvas* canvas,
 
   // Draw background.
   SkPaint paint;
-  paint.setColor(color_scheme().transient_warning_background);
+  paint.setColor(color_scheme().web_vr_transient_toast_background);
   paint.setAlpha(255);
   canvas->drawRoundRect(
       SkRect::MakeXYWH(0, 0, ToPixels(kWidth), ToPixels(kHeight)),
@@ -73,11 +73,11 @@ void WebVrUrlToastTexture::Draw(SkCanvas* canvas,
   // Site security state icon.
   if ((state_.security_level != security_state::NONE || state_.offline_page) &&
       state_.vector_icon != nullptr && state_.should_display_url) {
-    VectorIcon::DrawVectorIcon(&gfx_canvas, *state_.vector_icon,
-                               ToPixels(kSecurityIconSize),
-                               {ToPixels(kSecurityIconOffsetLeft),
-                                ToPixels((kHeight - kSecurityIconSize) / 2)},
-                               color_scheme().transient_warning_foreground);
+    VectorIcon::DrawVectorIcon(
+        &gfx_canvas, *state_.vector_icon, ToPixels(kSecurityIconSize),
+        {ToPixels(kSecurityIconOffsetLeft),
+         ToPixels((kHeight - kSecurityIconSize) / 2)},
+        color_scheme().web_vr_transient_toast_foreground);
   }
 
   if (state_.should_display_url) {
@@ -122,7 +122,7 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
   render_text->SetDisplayRect(text_bounds);
   render_text->SetFontList(font_list);
-  render_text->SetColor(color_scheme().transient_warning_foreground);
+  render_text->SetColor(color_scheme().web_vr_transient_toast_foreground);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetElideBehavior(gfx::ELIDE_HEAD);
   render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);

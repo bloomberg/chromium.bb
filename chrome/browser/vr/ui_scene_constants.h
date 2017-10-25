@@ -120,6 +120,41 @@ static constexpr float kUnderDevelopmentNoticeVerticalOffsetM =
     0.5f * kUnderDevelopmentNoticeHeightM + kUrlBarHeight;
 static constexpr float kUnderDevelopmentNoticeRotationRad = -0.19f;
 
+static constexpr float kSpinnerWidth = kCloseButtonWidth;
+static constexpr float kSpinnerHeight = kCloseButtonHeight;
+static constexpr float kSpinnerVerticalOffset = kSplashScreenTextVerticalOffset;
+static constexpr float kSpinnerDistance = kSplashScreenTextDistance;
+
+static constexpr float kTimeoutMessageBackgroundWidthM =
+    kUnderDevelopmentNoticeWidthM;
+static constexpr float kTimeoutMessageBackgroundHeightM =
+    kUnderDevelopmentNoticeHeightM * 0.85;
+static constexpr float kTimeoutMessageCornerRadius = kContentCornerRadius * 1.5;
+
+static constexpr float kTimeoutMessageLayoutGap = kIndicatorGap * 0.5;
+
+static constexpr float kTimeoutMessageIconWidth = kCloseButtonWidth * 0.6;
+static constexpr float kTimeoutMessageIconHeight = kCloseButtonHeight * 0.6;
+
+static constexpr float kTimeoutMessageTextFontHeightM =
+    kUnderDevelopmentNoticeFontHeightM;
+
+static constexpr float kTimeoutMessageTextHeightM =
+    kUnderDevelopmentNoticeHeightM;
+static constexpr float kTimeoutMessageTextWidthM =
+    kUnderDevelopmentNoticeWidthM * 0.7;
+
+static constexpr float kTimeoutButtonVerticalOffset = kUrlBarVerticalOffset;
+static constexpr float kTimeoutButtonDistance = kUrlBarDistance;
+static constexpr float kTimeoutButtonRotationRad = kUrlBarRotationRad;
+static constexpr float kTimeoutButtonWidth = kCloseButtonWidth;
+static constexpr float kTimeoutButtonHeight = kCloseButtonHeight;
+
+static constexpr float kTimeoutButtonTextWidth = kCloseButtonWidth;
+static constexpr float kTimeoutButtonTextHeight = kCloseButtonHeight * 0.25;
+static constexpr float kTimeoutButtonTextVerticalOffset =
+    kTimeoutButtonTextHeight;
+
 // If the screen space bounds or the aspect ratio of the content quad change
 // beyond these thresholds we propagate the new content bounds so that the
 // content's resolution can be adjusted.

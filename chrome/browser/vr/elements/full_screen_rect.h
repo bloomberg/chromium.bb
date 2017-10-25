@@ -17,10 +17,11 @@ class FullScreenRect : public Rect {
   FullScreenRect();
   ~FullScreenRect() override;
 
+ private:
   void Render(UiElementRenderer* renderer,
               const gfx::Transform& model_view_proj_matrix) const final;
+  bool IsWorldPositioned() const final;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(FullScreenRect);
 };
 

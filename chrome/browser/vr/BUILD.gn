@@ -147,6 +147,7 @@ static_library("vr_common") {
     "//cc/paint",
     "//chrome/app:generated_resources",
     "//chrome/browser/resources:vr_shell_resources",
+    "//chrome/browser/vr/vector_icons",
     "//chrome/common:constants",
     "//components/security_state/core",
     "//components/strings",

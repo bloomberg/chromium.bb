@@ -235,18 +235,19 @@ class UiElement : public cc::AnimationTarget {
       const gfx::Point3F& world_point) const;
 
   // cc::AnimationTarget
-  void NotifyClientFloatAnimated(float opacity,
-                                 int transform_property_id,
+  void NotifyClientFloatAnimated(float value,
+                                 int target_property_id,
                                  cc::Animation* animation) override;
   void NotifyClientTransformOperationsAnimated(
       const cc::TransformOperations& operations,
-      int transform_property_id,
+      int target_property_id,
       cc::Animation* animation) override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
-                                int transform_property_id,
+                                int target_property_id,
                                 cc::Animation* animation) override;
 
   void SetTransitionedProperties(const std::set<TargetProperty>& properties);
+  void SetTransitionDuration(base::TimeDelta delta);
 
   void AddAnimation(std::unique_ptr<cc::Animation> animation);
   void RemoveAnimation(int animation_id);
@@ -286,6 +287,11 @@ class UiElement : public cc::AnimationTarget {
   }
 
   void set_update_phase(UpdatePhase phase) { phase_ = phase; }
+
+  // This is true for all elements that respect the given view model matrix. If
+  // this is ignored (say for head-locked elements that draw in screen space),
+  // then this function should return false.
+  virtual bool IsWorldPositioned() const;
 
  protected:
   AnimationPlayer& animation_player() { return animation_player_; }
