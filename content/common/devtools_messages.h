@@ -116,23 +116,4 @@ IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_RequestNewWindow_ACK,
 IPC_MESSAGE_ROUTED1(DevToolsAgentHostMsg_RequestNewWindow,
                     int /* frame_route_id */)
 
-
-//-----------------------------------------------------------------------------
-// These are messages sent from the browser to the renderer.
-
-// RenderViewHostDelegate::RenderViewCreated method sends this message to a
-// new renderer to notify it that it will host developer tools UI and should
-// set up all neccessary bindings and create DevToolsClient instance that
-// will handle communication with inspected page DevToolsAgent.
-IPC_MESSAGE_ROUTED1(DevToolsMsg_SetupDevToolsClient,
-                    std::string /* compatibility script */)
-
-
-//-----------------------------------------------------------------------------
-// These are messages sent from the renderer to the browser.
-
-// Transport from Inspector frontend to frontend host.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_DispatchOnEmbedder,
-                    std::string /* message */)
-
 #endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
