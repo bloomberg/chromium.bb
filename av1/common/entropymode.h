@@ -438,6 +438,7 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_LV_MAP
 
 #if CONFIG_SYMBOLRATE
+  unsigned int superblock_num;
   unsigned int coeff_num[2];   // 0: zero coeff 1: non-zero coeff
   unsigned int symbol_num[2];  // 0: entropy symbol 1: non-entropy symbol
 #endif

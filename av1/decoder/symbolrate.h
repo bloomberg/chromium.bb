@@ -17,9 +17,9 @@
 #if CONFIG_SYMBOLRATE
 static INLINE void av1_dump_symbol_rate(struct AV1Common *cm) {
   const FRAME_COUNTS *counts = &cm->counts;
-  printf("%d %d %d %d %d %d\n", cm->current_video_frame, cm->show_frame,
-         counts->coeff_num[0], counts->coeff_num[1], counts->symbol_num[0],
-         counts->symbol_num[1]);
+  printf("%d %d %d %d %d %d %d\n", cm->current_video_frame, cm->show_frame,
+         counts->superblock_num, counts->coeff_num[0], counts->coeff_num[1],
+         counts->symbol_num[0], counts->symbol_num[1]);
 }
 static INLINE int av1_read_record_symbol(FRAME_COUNTS *counts, aom_reader *r,
                                          aom_cdf_prob *cdf, int nsymbs,
@@ -64,6 +64,10 @@ static INLINE int av1_read_record_bit(FRAME_COUNTS *counts, aom_reader *r,
 static INLINE void av1_record_coeff(FRAME_COUNTS *counts, tran_low_t qcoeff) {
   assert(qcoeff >= 0);
   if (counts) ++counts->coeff_num[qcoeff != 0];
+}
+
+static INLINE void av1_record_superblock(FRAME_COUNTS *counts) {
+  if (counts) ++counts->superblock_num;
 }
 #else  // CONFIG_SYMBOLRATE
 

@@ -2551,6 +2551,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
           alloc_ncobmc_pred_buffer(&td->xd);
           set_sb_mi_boundaries(cm, &td->xd, mi_row, mi_col);
 #endif
+#if CONFIG_SYMBOLRATE
+          av1_record_superblock(td->xd.counts);
+#endif
           decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                            cm->sb_size);
 #if NC_MODE_INFO && CONFIG_MOTION_VAR
