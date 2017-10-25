@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -28,6 +29,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/browser/print_composite_client.h"
+#include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -36,8 +39,10 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "printing/features/features.h"
 #include "printing/pdf_metafile_skia.h"
+#include "printing/print_settings.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -78,7 +83,8 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
 #if !defined(OS_MACOSX)
       expecting_first_page_(true),
 #endif
-      queue_(g_browser_process->print_job_manager()->queue()) {
+      queue_(g_browser_process->print_job_manager()->queue()),
+      weak_ptr_factory_(this) {
   DCHECK(queue_.get());
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -127,8 +133,24 @@ void PrintViewManagerBase::OnDidGetPrintedPagesCount(int cookie,
   OpportunisticallyCreatePrintJob(cookie);
 }
 
+void PrintViewManagerBase::OnComposePdfDone(
+    const PrintHostMsg_DidPrintPage_Params& params,
+    mojom::PdfCompositor::Status status,
+    mojo::ScopedSharedBufferHandle handle) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (status != mojom::PdfCompositor::Status::SUCCESS) {
+    DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    return;
+  }
+
+  UpdateForPrintedPage(
+      params, true,
+      PrintCompositeClient::GetShmFromMojoHandle(std::move(handle)));
+}
+
 void PrintViewManagerBase::OnDidPrintPage(
-  const PrintHostMsg_DidPrintPage_Params& params) {
+    const PrintHostMsg_DidPrintPage_Params& params) {
+  // Ready to composite. Starting a print job.
   if (!OpportunisticallyCreatePrintJob(params.document_cookie))
     return;
 
@@ -154,8 +176,18 @@ void PrintViewManagerBase::OnDidPrintPage(
       web_contents()->Stop();
       return;
     }
+
+    auto* client = PrintCompositeClient::FromWebContents(web_contents());
+    if (IsOopifEnabled() && !client->for_preview() &&
+        !document->settings().is_modifiable()) {
+      client->DoComposite(
+          params.metafile_data_handle, params.data_size,
+          base::BindOnce(&PrintViewManagerBase::OnComposePdfDone,
+                         weak_ptr_factory_.GetWeakPtr(), params));
+      return;
+    }
     shared_buf =
-        base::MakeUnique<base::SharedMemory>(params.metafile_data_handle, true);
+        std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
     if (!shared_buf->Map(params.data_size)) {
       NOTREACHED() << "couldn't map";
       web_contents()->Stop();
@@ -170,22 +202,24 @@ void PrintViewManagerBase::OnDidPrintPage(
     }
   }
 
-  std::unique_ptr<PdfMetafileSkia> metafile(
-      new PdfMetafileSkia(SkiaDocumentType::PDF));
-  if (metafile_must_be_valid) {
-    if (!metafile->InitFromData(shared_buf->memory(), params.data_size)) {
-      NOTREACHED() << "Invalid metafile header";
-      web_contents()->Stop();
-      return;
-    }
-  }
+  UpdateForPrintedPage(params, metafile_must_be_valid, std::move(shared_buf));
+}
+
+void PrintViewManagerBase::UpdateForPrintedPage(
+    const PrintHostMsg_DidPrintPage_Params& params,
+    bool has_valid_page_data,
+    std::unique_ptr<base::SharedMemory> shared_buf) {
+  PrintedDocument* document = print_job_->document();
+  if (!document)
+    return;
 
 #if defined(OS_WIN)
   print_job_->AppendPrintedPage(params.page_number);
-  if (metafile_must_be_valid) {
-    scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
+  if (has_valid_page_data) {
+    scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(
         reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-        params.data_size);
+        shared_buf->mapped_size()));
+
     document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
 
     const auto& settings = document->settings();
@@ -203,22 +237,27 @@ void PrintViewManagerBase::OnDidPrintPage(
       // Update : The missing letters seem to have been caused by the same
       // problem as https://crbug.com/659604 which was resolved. GDI printing
       // seems to work with the fix for this bug applied.
-      bool print_text_with_gdi = settings.print_text_with_gdi() &&
-                                 !settings.printer_is_xps() &&
-                                 base::FeatureList::IsEnabled(
-                                     features::kGdiTextPrinting);
+      bool print_text_with_gdi =
+          settings.print_text_with_gdi() && !settings.printer_is_xps() &&
+          base::FeatureList::IsEnabled(features::kGdiTextPrinting);
       print_job_->StartPdfToEmfConversion(
           bytes, params.page_size, params.content_area, print_text_with_gdi);
     }
   }
 #else
+  std::unique_ptr<PdfMetafileSkia> metafile =
+      std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
+  if (has_valid_page_data) {
+    if (!metafile->InitFromData(shared_buf->memory(),
+                                shared_buf->mapped_size())) {
+      NOTREACHED() << "Invalid metafile header";
+      web_contents()->Stop();
+      return;
+    }
+  }
+
   // Update the rendered document. It will send notifications to the listener.
-  document->SetPage(params.page_number,
-                    std::move(metafile),
-#if defined(OS_WIN)
-                    0.0f /* dummy shrink_factor */,
-#endif
-                    params.page_size,
+  document->SetPage(params.page_number, std::move(metafile), params.page_size,
                     params.content_area);
 
   ShouldQuitFromInnerMessageLoop();

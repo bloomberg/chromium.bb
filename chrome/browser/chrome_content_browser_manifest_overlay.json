@@ -44,6 +44,7 @@
         "local_state": [ "pref_client" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
+        "pdf_compositor": [ "compositor" ],
         "profile_import": [ "import" ],
         "profiling": [ "profiling" ],
         "proxy_resolver": [ "factory" ],
