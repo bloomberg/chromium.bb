@@ -67,7 +67,8 @@
 - (void)dismissTabSwitcher;
 
 // Shows the Clear Browsing Data Settings UI (part of Settings).
-- (void)showClearBrowsingDataSettings;
+- (void)showClearBrowsingDataSettingsFromViewController:
+    (UIViewController*)baseViewController;
 
 // Shows the Autofill Settings UI.
 - (void)showAutofillSettings;
