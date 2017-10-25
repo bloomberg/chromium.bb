@@ -1046,6 +1046,28 @@ String Internals::markerDescriptionForNode(Node* node,
   return ToSpellCheckMarker(marker)->Description();
 }
 
+unsigned Internals::markerBackgroundColorForNode(
+    Node* node,
+    const String& marker_type,
+    unsigned index,
+    ExceptionState& exception_state) {
+  DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
+  if (!marker || !IsStyleableMarker(*marker))
+    return 0;
+  return ToStyleableMarker(marker)->BackgroundColor().Rgb();
+}
+
+unsigned Internals::markerUnderlineColorForNode(
+    Node* node,
+    const String& marker_type,
+    unsigned index,
+    ExceptionState& exception_state) {
+  DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
+  if (!marker || !IsStyleableMarker(*marker))
+    return 0;
+  return ToStyleableMarker(marker)->UnderlineColor().Rgb();
+}
+
 static WTF::Optional<TextMatchMarker::MatchStatus> MatchStatusFrom(
     const String& match_status) {
   if (EqualIgnoringASCIICase(match_status, "kActive"))
