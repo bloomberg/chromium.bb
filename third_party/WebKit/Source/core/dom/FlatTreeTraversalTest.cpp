@@ -88,6 +88,8 @@ void FlatTreeTraversalTest::AttachOpenShadowRoot(
   GetDocument().body()->UpdateDistribution();
 }
 
+namespace {
+
 void TestCommonAncestor(Node* expected_result,
                         const Node& node_a,
                         const Node& node_b) {
@@ -100,6 +102,8 @@ void TestCommonAncestor(Node* expected_result,
       << "commonAncestor(" << node_b.textContent() << ","
       << node_a.textContent() << ")";
 }
+
+}  // namespace
 
 // Test case for
 //  - childAt
