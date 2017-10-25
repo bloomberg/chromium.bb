@@ -2,14 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("cygprofile") {
-  sources = [
-    "cygprofile.cc",
-    "cygprofile.h",
-  ]
+import("//build/config/android/config.gni")
 
-  configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
-  configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
+static_library("cygprofile") {
+  if (use_lightweight_order_profiling) {
+    assert(use_order_profiling)
+    sources = [
+      "lightweight_cygprofile.cc",
+    ]
+  } else {
+    sources = [
+      "cygprofile.cc",
+      "cygprofile.h",
+    ]
+  }
 
   deps = [
     # This adds uninstrumented symbols to the static library from base.
@@ -17,6 +23,9 @@ static_library("cygprofile") {
     # duplicates in other objects/libraries.
     "//base",
   ]
+
+  configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
+  configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
 }
 
 executable("cygprofile_unittests") {
