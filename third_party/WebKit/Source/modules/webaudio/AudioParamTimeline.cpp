@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "build/build_config.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/wtf/CPU.h"
 #include "platform/wtf/MathExtras.h"
@@ -80,7 +81,7 @@ static bool IsPositiveAudioParamTime(double time,
   return false;
 }
 
-String AudioParamTimeline::EventToString(const ParamEvent& event) {
+String AudioParamTimeline::EventToString(const ParamEvent& event) const {
   // The default arguments for most automation methods is the value and the
   // time.
   String args =
@@ -1030,7 +1031,7 @@ std::tuple<size_t, unsigned> AudioParamTimeline::HandleFirstEvent(
 bool AudioParamTimeline::IsEventCurrent(const ParamEvent* event,
                                         const ParamEvent* next_event,
                                         size_t current_frame,
-                                        double sample_rate) {
+                                        double sample_rate) const {
   // WARNING: due to round-off it might happen that nextEvent->time() is
   // just larger than currentFrame/sampleRate.  This means that we will end
   // up running the |event| again.  The code below had better be prepared
@@ -1780,6 +1781,109 @@ unsigned AudioParamTimeline::FillWithDefault(float* values,
     values[index] = default_value;
 
   return index;
+}
+
+// TODO(crbug.com/764396): Remove this when fixed.
+std::tuple<bool, size_t> AudioParamTimeline::EventAtFrame(
+    size_t current_frame,
+    float sample_rate) const {
+  MutexLocker locker(events_lock_);
+
+  size_t number_of_events = events_.size();
+  ParamEvent* event = nullptr;
+  ParamEvent* next_event = nullptr;
+  size_t current_event_index = 0;
+
+  for (current_event_index = 0; current_event_index < number_of_events;
+       ++current_event_index) {
+    event = events_[current_event_index].get();
+    next_event = current_event_index < number_of_events - 1
+                     ? events_[current_event_index + 1].get()
+                     : nullptr;
+
+    // Exit when we find a current event
+    if (IsEventCurrent(event, next_event, current_frame, sample_rate)) {
+      break;
+    }
+  }
+
+  // No current event, so no conflict.
+  if (current_event_index >= number_of_events) {
+    return std::make_tuple(false, 0);
+  }
+
+  double current_time = current_frame / sample_rate;
+
+  // Determine if setting the value at this time would overlap some
+  // event.
+  if (next_event) {
+    // There's a following event.  If the current event has ended
+    // and the next event hasn't started, then there's no conflict.
+    ParamEvent::Type next_type = next_event->GetType();
+    switch (event->GetType()) {
+      case ParamEvent::kSetValue:
+      case ParamEvent::kLinearRampToValue:
+      case ParamEvent::kExponentialRampToValue:
+        // The current event is happening right now or is in the
+        // past and is followed by some automation that starts in
+        // the future (like SetValue, SetTarget, etc.).  Then
+        // there's no overlap. Otherwise there is.
+        if (current_time < next_event->Time() &&
+            (next_type == ParamEvent::kSetValue ||
+             next_type == ParamEvent::kSetTarget ||
+             next_type == ParamEvent::kSetValueCurve)) {
+          return std::make_tuple(false, 0);
+        }
+        return std::make_tuple(true, current_event_index);
+        break;
+      default:
+        return std::make_tuple(true, current_event_index);
+    }
+  }
+
+  // No next event.
+  switch (event->GetType()) {
+    case ParamEvent::kSetValue:
+      return std::make_tuple(false, 0);
+    case ParamEvent::kSetValueCurve:
+      if (current_time <= event->Time() + event->Duration()) {
+        return std::make_tuple(true, current_event_index);
+      }
+      break;
+    case ParamEvent::kSetTarget:
+      if (current_time >= event->Time()) {
+        return std::make_tuple(true, current_event_index);
+      }
+      break;
+    default:
+      break;
+  }
+
+  return std::make_tuple(false, 0);
+}
+
+// TODO(crbug.com/764396): Remove this when fixed.
+void AudioParamTimeline::WarnSetterOverlapsEvent(
+    String param_name,
+    size_t event_index,
+    BaseAudioContext& context) const {
+  MutexLocker locker(events_lock_);
+
+  DCHECK_LT(event_index, events_.size());
+
+  ParamEvent* event = events_[event_index].get();
+  size_t next_index = event_index + 1;
+  ParamEvent* next =
+      next_index < events_.size() ? events_[next_index].get() : nullptr;
+
+  String message = EventToString(*event) +
+                   (next ? " to " + EventToString(*next) : String(""));
+
+  context.GetExecutionContext()->AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                             param_name + ".value setter called at time " +
+                                 String::Number(context.currentTime(), 16) +
+                                 " overlaps event " + message));
 }
 
 }  // namespace blink

@@ -91499,6 +91499,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.AudioParam.ValueSetterConflictCount">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The number of times the AudioParam value setter was called that also
+    conflicts with an ongoing AudioParam automation.  Updated when the realtime
+    AudioContext is closed.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioParam.ValueSetterConflictPercentage">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The percentage of number of calls to an AudioParam value setter that
+    conflicts with an ongoing AudioParam automation to the total number of calls
+    to the value setter.  Updated once when an AudioContext is closed.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioParam.ValueSetterCount">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The number of times the AudioParam value setter was called per tab. Updated
+    when the realtime AudioContext is closed.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.Autoplay" enum="WebAudioAutoplayStatus">
   <owner>mlamouri@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>

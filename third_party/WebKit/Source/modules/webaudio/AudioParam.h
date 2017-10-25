@@ -161,6 +161,9 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   float IntrinsicValue() const { return NoBarrierLoad(&intrinsic_value_); }
 
+  // TODO(crbug.com/764396): remove this when fixed.
+  void WarnSetterOverlapsEvent(int event_index, BaseAudioContext&) const;
+
  private:
   AudioParamHandler(BaseAudioContext&,
                     AudioParamType,
@@ -270,6 +273,10 @@ class AudioParam final : public ScriptWrappable {
 
   scoped_refptr<AudioParamHandler> handler_;
   Member<BaseAudioContext> context_;
+
+  // TODO(crbug.com/764396): Remove this method and attribute when fixed.
+  void WarnIfSetterOverlapsEvent();
+  static bool s_value_setter_warning_done_;
 };
 
 }  // namespace blink
