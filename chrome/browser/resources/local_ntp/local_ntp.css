@@ -38,6 +38,15 @@ body {
   overflow-x: hidden;
 }
 
+/* Button defaults vary by platform. Reset CSS so that the NTP can use buttons
+ * as a kind of clickable div. */
+button {
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
 #ntp-contents {
   margin: 0 auto;
   text-align: -webkit-center;
@@ -126,10 +135,7 @@ body.alternate-logo #logo-non-white {
 }
 
 #logo-doodle-button {
-  border: 0;
-  cursor: pointer;
   margin: 0 auto;
-  padding: 0;
 }
 
 .non-white-bg #logo-doodle-button {
