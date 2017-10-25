@@ -4488,7 +4488,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
-        assert(seg->abs_delta == SEGMENT_DELTADATA);
+        assert(cm->seg.abs_delta == SEGMENT_DELTADATA);
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
