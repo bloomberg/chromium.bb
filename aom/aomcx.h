@@ -644,10 +644,8 @@ typedef enum {
 typedef enum {
   AOM_TUNE_PSNR,
   AOM_TUNE_SSIM,
-#ifdef CONFIG_DIST_8X8
   AOM_TUNE_CDEF_DIST,
   AOM_TUNE_DAALA_DIST
-#endif
 } aom_tune_metric;
 
 /*!\cond */
