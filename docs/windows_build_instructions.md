@@ -209,8 +209,6 @@ support incremental linking for more targets. Note that if you set this but
 don't' set enable_nacl = false then build times may get worse.
 * `remove_webcore_debug_symbols = true` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
-* `win_linker_timing = true` - this should not generally be set but can be
-helpful when trying to understand build times or incremental linking failures.
 
 In addition, Google employees should consider using goma, a distributed
 compilation system. Detailed information is available internally but the
