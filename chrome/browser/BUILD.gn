@@ -545,6 +545,7 @@ split_static_library("browser") {
     "install_verification/win/module_list.h",
     "install_verification/win/module_verification_common.cc",
     "install_verification/win/module_verification_common.h",
+    "installable/installable_data.cc",
     "installable/installable_data.h",
     "installable/installable_logging.cc",
     "installable/installable_logging.h",
