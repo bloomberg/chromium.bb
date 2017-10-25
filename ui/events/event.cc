@@ -269,6 +269,11 @@ bool Event::IsTouchPointerEvent() const {
              EventPointerType::POINTER_TYPE_TOUCH;
 }
 
+bool Event::IsPenPointerEvent() const {
+  return IsPointerEvent() && AsPointerEvent()->pointer_details().pointer_type ==
+                                 EventPointerType::POINTER_TYPE_PEN;
+}
+
 CancelModeEvent* Event::AsCancelModeEvent() {
   CHECK(IsCancelModeEvent());
   return static_cast<CancelModeEvent*>(this);
@@ -849,7 +854,8 @@ TouchEvent::TouchEvent(const PointerEvent& pointer_event)
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
       pointer_details_(pointer_event.pointer_details()) {
-  DCHECK(pointer_event.IsTouchPointerEvent());
+  DCHECK(pointer_event.IsTouchPointerEvent() ||
+         pointer_event.IsPenPointerEvent());
   switch (pointer_event.type()) {
     case ET_POINTER_DOWN:
       SetType(ET_TOUCH_PRESSED);

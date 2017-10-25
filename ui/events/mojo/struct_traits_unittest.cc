@@ -21,6 +21,7 @@ namespace {
 class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
  public:
   StructTraitsTest() {}
+  ~StructTraitsTest() override = default;
 
  protected:
   mojom::TraitsTestServicePtr GetTraitsTestProxy() {
@@ -109,7 +110,7 @@ TEST_F(StructTraitsTest, PointerEvent) {
       // Touch pointer events:
       {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                      /* pointer_id*/ 1,
+                      /* pointer_id */ 1,
                       /* radius_x */ 1.0f,
                       /* radius_y */ 2.0f,
                       /* force */ 3.0f,
@@ -118,13 +119,33 @@ TEST_F(StructTraitsTest, PointerEvent) {
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(205)},
       {ET_POINTER_CANCELLED, gfx::Point(120, 120), gfx::Point(2, 3), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                      /* pointer_id*/ 2,
+                      /* pointer_id */ 2,
                       /* radius_x */ 5.5f,
                       /* radius_y */ 4.5f,
                       /* force */ 3.5f,
                       /* tilt_x */ 2.5f,
                       /* tilt_y */ 0.5f),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(206)},
+
+      // Pen pointer events:
+      {ET_POINTER_DOWN, gfx::Point(1, 2), gfx::Point(3, 4), EF_NONE, 0,
+       PointerDetails(EventPointerType::POINTER_TYPE_PEN,
+                      /* pointer_id */ 3,
+                      /* radius_x */ 1.0f,
+                      /* radius_y */ 2.0f,
+                      /* force */ 3.0f,
+                      /* tilt_x */ 4.0f,
+                      /* tilt_y */ 5.0f),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(207)},
+      {ET_POINTER_UP, gfx::Point(5, 6), gfx::Point(7, 8), EF_NONE, 0,
+       PointerDetails(EventPointerType::POINTER_TYPE_PEN,
+                      /* pointer_id */ 3,
+                      /* radius_x */ 1.0f,
+                      /* radius_y */ 2.0f,
+                      /* force */ 3.0f,
+                      /* tilt_x */ 4.0f,
+                      /* tilt_y */ 5.0f),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(208)},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

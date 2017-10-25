@@ -832,6 +832,7 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   const gfx::Point& last_native_event_location() const {
     return last_native_event_location_;
   }
+  ui::EventPointerType last_pointer_type() const { return last_pointer_type_; }
 
   // TestWindowDelegate::
   void OnMouseEvent(ui::MouseEvent* event) override {
@@ -848,6 +849,7 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
       last_native_event_location_ =
           ui::EventSystemLocationFromNative(event->native_event());
     }
+    last_pointer_type_ = event->pointer_details().pointer_type;
     event->SetHandled();
   }
 
@@ -858,6 +860,7 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
     else if (event->type() == ui::ET_TOUCH_RELEASED)
       ++release_count_;
     last_event_location_ = event->location();
+    last_pointer_type_ = event->pointer_details().pointer_type;
     event->SetHandled();
   }
 
@@ -868,6 +871,9 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
     release_count_ = 0;
     last_event_location_ = gfx::Point();
     event_id_ = 0;
+    last_mouse_event_had_native_event_ = false;
+    last_native_event_location_ = gfx::Point();
+    last_pointer_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   }
 
  private:
@@ -880,6 +886,8 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   uint32_t event_id_ = 0;
   bool last_mouse_event_had_native_event_ = false;
   gfx::Point last_native_event_location_;
+  ui::EventPointerType last_pointer_type_ =
+      ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventBasicTestWindowDelegate);
 };
@@ -989,6 +997,44 @@ TEST_F(WindowTreeClientClientTest, InputEventPointerEvent) {
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate.move_count());
   EXPECT_EQ(event_location, window_delegate.last_event_location());
+}
+
+TEST_F(WindowTreeClientClientTest, InputEventPen) {
+  // Create a root window.
+  WindowTreeHostMus window_tree_host(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+
+  // Create a child window with a test delegate to sense events.
+  InputEventBasicTestWindowDelegate window_delegate(window_tree());
+  Window child(&window_delegate);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  top_level->AddChild(&child);
+  child.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child.Show();
+
+  // Dispatch a pen event to the child window.
+  const gfx::Point event_location(2, 3);
+  const uint32_t event_id = 1;
+  window_delegate.set_event_id(event_id);
+  ui::PointerEvent pointer_event(
+      ui::ET_POINTER_DOWN, event_location, gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0),
+      ui::EventTimeForNow());
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child), window_tree_host.display_id(),
+      gfx::PointF(event_location), ui::Event::Clone(pointer_event), 0);
+
+  // Pen event was handled.
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,
+            window_delegate.last_pointer_type());
 }
 
 TEST_F(WindowTreeClientClientTest, InputEventFindTargetAndConversion) {
