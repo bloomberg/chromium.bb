@@ -3513,10 +3513,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_diff_update_prob(&r, &fc->quarter_tx_size_prob, ACCT_STR);
 #endif
 
-#if CONFIG_LV_MAP && !LV_MAP_PROB
-  av1_read_txb_probs(fc, cm->tx_mode, &r, &cm->counts);
-#endif  // CONFIG_LV_MAP && !LV_MAP_PROB
-
 #if !CONFIG_NEW_MULTISYMBOL
   if (cm->tx_mode == TX_MODE_SELECT)
     for (int i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
@@ -3968,9 +3964,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #else
       make_update_tile_list_dec(pbi, 0, num_bwd_ctxs, tile_ctxs);
 #endif
-#if CONFIG_LV_MAP
-      av1_adapt_coef_probs(cm);
-#endif  // CONFIG_LV_MAP
 #if CONFIG_SYMBOLRATE
       av1_dump_symbol_rate(cm);
 #endif

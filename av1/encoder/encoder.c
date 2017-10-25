@@ -5585,9 +5585,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                               &cm->counts);
 #endif  // CONFIG_ENTROPY_STATS
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-#if CONFIG_LV_MAP
-    av1_adapt_coef_probs(cm);
-#endif  // CONFIG_LV_MAP
     av1_adapt_intra_frame_probs(cm);
 #if CONFIG_SIMPLE_BWD_ADAPT
     make_update_tile_list_enc(cpi, cm->largest_tile_id, 1, tile_ctxs);

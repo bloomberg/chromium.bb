@@ -165,7 +165,6 @@ typedef struct frame_contexts {
   aom_prob hv_eob[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_EOB_CONTEXTS];
 #endif  // CONFIG_CTX1D
 
-#if LV_MAP_PROB
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
                          [CDF_SIZE(2)];
@@ -191,7 +190,6 @@ typedef struct frame_contexts {
   aom_cdf_prob hv_eob_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_EOB_CONTEXTS]
                          [CDF_SIZE(2)];
 #endif  // CONFIG_CTX1D
-#endif  // LV_MAP_PROB
 #endif
 
   aom_prob newmv_prob[NEWMV_MODE_CONTEXTS];

@@ -4557,9 +4557,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     av1_cond_prob_diff_update(header_bc, &cm->fc->quarter_tx_size_prob,
                               cm->counts.quarter_tx_size, probwt);
 #endif
-#if CONFIG_LV_MAP
-  av1_write_txb_probs(cpi, header_bc);
-#endif  // CONFIG_LV_MAP
 
 #if !CONFIG_NEW_MULTISYMBOL
   if (cm->tx_mode == TX_MODE_SELECT)

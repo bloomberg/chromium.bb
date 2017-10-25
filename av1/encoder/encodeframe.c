@@ -3311,7 +3311,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     MODE_INFO **mi = cm->mi_grid_visible + idx_str;
     PC_TREE *const pc_root = td->pc_root[cm->mib_size_log2 - MIN_MIB_SIZE_LOG2];
 
-#if CONFIG_LV_MAP && LV_MAP_PROB
+#if CONFIG_LV_MAP
     av1_fill_coeff_costs(&td->mb, xd->tile_ctx);
 #else
     av1_fill_token_costs_from_cdf(x->token_head_costs,

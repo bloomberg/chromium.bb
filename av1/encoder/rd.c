@@ -578,19 +578,11 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
 }
 
 #if CONFIG_LV_MAP
-#if !LV_MAP_PROB
-static void get_rate_cost(aom_prob p, int cost[2]) {
-  cost[0] = av1_cost_bit(p, 0);
-  cost[1] = av1_cost_bit(p, 1);
-}
-#endif  // !LV_MAP_PROB
-
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
   for (int tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (int plane = 0; plane < PLANE_TYPES; ++plane) {
       LV_MAP_COEFF_COST *pcost = &x->coeff_costs[tx_size][plane];
 
-#if LV_MAP_PROB
       for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->txb_skip_cost[ctx],
                                  fc->txb_skip_cdf[tx_size][ctx], NULL);
@@ -685,43 +677,6 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
               pcost->hv_eob_cost[tx_class][ctx],
               fc->hv_eob_cdf[tx_size][plane][tx_class][ctx], NULL);
 #endif  // CONFIG_CTX1D
-#else   // LV_MAP_PROB
-      for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
-        get_rate_cost(fc->txb_skip[tx_size][ctx], pcost->txb_skip_cost[ctx]);
-
-      for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
-        get_rate_cost(fc->nz_map[tx_size][plane][ctx], pcost->nz_map_cost[ctx]);
-
-      for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
-        get_rate_cost(fc->eob_flag[tx_size][plane][ctx], pcost->eob_cost[ctx]);
-
-      for (int ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
-        get_rate_cost(fc->dc_sign[plane][ctx], pcost->dc_sign_cost[ctx]);
-
-      for (int layer = 0; layer < NUM_BASE_LEVELS; ++layer)
-        for (int ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx)
-          get_rate_cost(fc->coeff_base[tx_size][plane][layer][ctx],
-                        pcost->base_cost[layer][ctx]);
-
-      for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
-        get_rate_cost(fc->coeff_lps[tx_size][plane][ctx], pcost->lps_cost[ctx]);
-
-#if CONFIG_CTX1D
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        get_rate_cost(fc->eob_mode[tx_size][plane][tx_class],
-                      pcost->eob_mode_cost[tx_class]);
-
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        for (int ctx = 0; ctx < EMPTY_LINE_CONTEXTS; ++ctx)
-          get_rate_cost(fc->empty_line[tx_size][plane][tx_class][ctx],
-                        pcost->empty_line_cost[tx_class][ctx]);
-
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        for (int ctx = 0; ctx < HV_EOB_CONTEXTS; ++ctx)
-          get_rate_cost(fc->hv_eob[tx_size][plane][tx_class][ctx],
-                        pcost->hv_eob_cost[tx_class][ctx]);
-#endif  // CONFIG_CTX1D
-#endif  // LV_MAP_PROB
     }
   }
 }

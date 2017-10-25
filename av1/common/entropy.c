@@ -2156,20 +2156,6 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_coef_pareto_cdfs(cm->fc);
 }
 
-#if CONFIG_LV_MAP
-void av1_adapt_coef_probs(AV1_COMMON *cm) {
-  unsigned int count_sat, update_factor;
-  if (!frame_is_intra_only(cm) && cm->last_frame_type == KEY_FRAME) {
-    update_factor = COEF_MAX_UPDATE_FACTOR_AFTER_KEY; /* adapt quickly */
-    count_sat = COEF_COUNT_SAT_AFTER_KEY;
-  } else {
-    update_factor = COEF_MAX_UPDATE_FACTOR;
-    count_sat = COEF_COUNT_SAT;
-  }
-  av1_adapt_txb_probs(cm, count_sat, update_factor);
-}
-#endif  // CONFIG_LV_MAP
-
 static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
                             int cdf_size, const int num_tiles) {
   int i;

@@ -6352,9 +6352,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->hv_eob, default_hv_eob);
 #endif  // CONFIG_CTX1D
 
-#if LV_MAP_PROB
   av1_init_txb_probs(fc);
-#endif  // LV_MAP_PROB
 #endif
   av1_copy(fc->comp_bwdref_prob, default_comp_bwdref_p);
 #if CONFIG_NEW_MULTISYMBOL

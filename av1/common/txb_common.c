@@ -96,7 +96,6 @@ const int16_t av1_coeff_band_32x32[1024] = {
   22, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24,
 };
 
-#if LV_MAP_PROB
 void av1_init_txb_probs(FRAME_CONTEXT *fc) {
   TX_SIZE tx_size;
   int plane, ctx, level;
@@ -219,101 +218,6 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
     }
   }
 #endif  // CONFIG_CTX1D
-}
-#endif  // LV_MAP_PROB
-
-void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
-                         unsigned int update_factor) {
-  FRAME_CONTEXT *fc = cm->fc;
-  const FRAME_CONTEXT *pre_fc = cm->pre_fc;
-  const FRAME_COUNTS *counts = &cm->counts;
-  TX_SIZE tx_size;
-  int plane, ctx, level;
-
-  // Update probability models for transform block skip flag
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size)
-    for (ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
-      fc->txb_skip[tx_size][ctx] = mode_mv_merge_probs(
-          pre_fc->txb_skip[tx_size][ctx], counts->txb_skip[tx_size][ctx]);
-
-  for (plane = 0; plane < PLANE_TYPES; ++plane)
-    for (ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
-      fc->dc_sign[plane][ctx] = mode_mv_merge_probs(
-          pre_fc->dc_sign[plane][ctx], counts->dc_sign[plane][ctx]);
-
-  // Update probability models for non-zero coefficient map and eob flag.
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size)
-    for (plane = 0; plane < PLANE_TYPES; ++plane)
-      for (level = 0; level < NUM_BASE_LEVELS; ++level)
-        for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx)
-          fc->coeff_base[tx_size][plane][level][ctx] =
-              merge_probs(pre_fc->coeff_base[tx_size][plane][level][ctx],
-                          counts->coeff_base[tx_size][plane][level][ctx],
-                          count_sat, update_factor);
-
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (plane = 0; plane < PLANE_TYPES; ++plane) {
-      for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx) {
-        fc->nz_map[tx_size][plane][ctx] = merge_probs(
-            pre_fc->nz_map[tx_size][plane][ctx],
-            counts->nz_map[tx_size][plane][ctx], count_sat, update_factor);
-      }
-
-      for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
-        fc->eob_flag[tx_size][plane][ctx] = merge_probs(
-            pre_fc->eob_flag[tx_size][plane][ctx],
-            counts->eob_flag[tx_size][plane][ctx], count_sat, update_factor);
-      }
-    }
-  }
-
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (plane = 0; plane < PLANE_TYPES; ++plane) {
-      for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
-        fc->coeff_lps[tx_size][plane][ctx] = merge_probs(
-            pre_fc->coeff_lps[tx_size][plane][ctx],
-            counts->coeff_lps[tx_size][plane][ctx], count_sat, update_factor);
-      }
-#if BR_NODE
-      for (int br = 0; br < BASE_RANGE_SETS; ++br) {
-        for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
-          fc->coeff_br[tx_size][plane][br][ctx] =
-              merge_probs(pre_fc->coeff_br[tx_size][plane][br][ctx],
-                          counts->coeff_br[tx_size][plane][br][ctx], count_sat,
-                          update_factor);
-        }
-      }
-#endif  // BR_NODE
-    }
-  }
-#if CONFIG_CTX1D
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (plane = 0; plane < PLANE_TYPES; ++plane)
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        fc->eob_mode[tx_size][plane][tx_class] =
-            merge_probs(pre_fc->eob_mode[tx_size][plane][tx_class],
-                        counts->eob_mode[tx_size][plane][tx_class], count_sat,
-                        update_factor);
-  }
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (plane = 0; plane < PLANE_TYPES; ++plane)
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        for (ctx = 0; ctx < EMPTY_LINE_CONTEXTS; ++ctx)
-          fc->empty_line[tx_size][plane][tx_class][ctx] =
-              merge_probs(pre_fc->empty_line[tx_size][plane][tx_class][ctx],
-                          counts->empty_line[tx_size][plane][tx_class][ctx],
-                          count_sat, update_factor);
-  }
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (plane = 0; plane < PLANE_TYPES; ++plane)
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        for (ctx = 0; ctx < HV_EOB_CONTEXTS; ++ctx)
-          fc->hv_eob[tx_size][plane][tx_class][ctx] =
-              merge_probs(pre_fc->hv_eob[tx_size][plane][tx_class][ctx],
-                          counts->hv_eob[tx_size][plane][tx_class][ctx],
-                          count_sat, update_factor);
-  }
-#endif
 }
 
 void av1_init_lv_map(AV1_COMMON *cm) {
