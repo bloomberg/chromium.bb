@@ -170,8 +170,8 @@
 #include <shellapi.h>
 
 #include "base/memory/memory_pressure_monitor_win.h"
-#include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/screen_win.h"
 #endif
