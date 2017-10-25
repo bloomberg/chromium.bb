@@ -38,9 +38,21 @@ package power_manager;
 message SuspendImminent {
   // Next ID to use: 2
 
+  enum Reason {
+    // The user inactivity idle timeout was reached.
+    IDLE = 0;
+    // The lid was closed.
+    LID_CLOSED = 1;
+    // Some other reason (e.g. an explicit user request).
+    OTHER = 2;
+  }
+
   // Unique ID corresponding to this suspend request. This is included in the
   // SuspendReadinessInfo message passed via HandleSuspendReadiness.
   optional int32 suspend_id = 1;
+
+  // The reason the system is suspending.
+  optional Reason reason = 2;
 }
 
 // Included in powerd's SuspendDone signal, sent after the system has completed
