@@ -85,7 +85,7 @@ bool IsDiceMigrationEnabled();
 
 // If true, then account management is done through Gaia webpages.
 // Can only be used on the UI thread.
-bool IsDiceEnabledForProfile(PrefService* user_prefs);
+bool IsDiceEnabledForProfile(const PrefService* user_prefs);
 
 // If true, then account management is done through Gaia webpages.
 // Can be called on any thread, using a pref member obtained with
@@ -99,7 +99,7 @@ bool IsDiceEnabledForProfile(PrefService* user_prefs);
 //
 // // Later, on IO thread:
 // bool dice_enabled = GetDicePrefMember(pref_member.get());
-bool IsDiceEnabled(BooleanPrefMember* dice_pref_member);
+bool IsDiceEnabled(const BooleanPrefMember* dice_pref_member);
 
 // Gets a pref member suitable to use with IsDiceEnabled().
 std::unique_ptr<BooleanPrefMember> CreateDicePrefMember(

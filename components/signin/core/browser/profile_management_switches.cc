@@ -99,7 +99,7 @@ bool IsDiceMigrationEnabled() {
          (GetAccountConsistencyMethod() == AccountConsistencyMethod::kDice);
 }
 
-bool IsDiceEnabledForProfile(PrefService* user_prefs) {
+bool IsDiceEnabledForProfile(const PrefService* user_prefs) {
   DCHECK(user_prefs);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   return IsDiceEnabledForPrefValue(
@@ -109,7 +109,7 @@ bool IsDiceEnabledForProfile(PrefService* user_prefs) {
 #endif
 }
 
-bool IsDiceEnabled(BooleanPrefMember* dice_pref_member) {
+bool IsDiceEnabled(const BooleanPrefMember* dice_pref_member) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   DCHECK(dice_pref_member);
   DCHECK_EQ(kDiceMigrationCompletePref, dice_pref_member->GetPrefName());
