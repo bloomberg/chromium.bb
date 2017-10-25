@@ -201,7 +201,7 @@ requestFullCreditCard:(const autofill::CreditCard&)card
 
   // Update the shipping section. The available shipping addresses/options and
   // the selected shipping address/option are already up-to-date.
-  [_viewController updateShippingSection];
+  [_viewController reloadSections];
 
   if (_paymentRequest->shipping_options().empty()) {
     // Display error in the shipping address selection view, if present.
@@ -373,7 +373,7 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
         didSelectContactProfile:(autofill::AutofillProfile*)contactProfile {
   DCHECK(contactProfile);
   _paymentRequest->set_selected_contact_profile(contactProfile);
-  [_viewController updateContactInfoSection];
+  [_viewController reloadSections];
 
   [_contactInfoSelectionCoordinator stop];
   _contactInfoSelectionCoordinator = nil;
@@ -391,7 +391,7 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
            didFinishEditingProfile:(autofill::AutofillProfile*)profile {
   DCHECK(profile);
   _paymentRequest->set_selected_contact_profile(profile);
-  [_viewController updateContactInfoSection];
+  [_viewController reloadSections];
 
   [_contactInfoEditCoordinator stop];
   _contactInfoEditCoordinator = nil;
@@ -462,7 +462,7 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
   DCHECK(paymentMethod);
   DCHECK(paymentMethod->IsCompleteForPayment());
   _paymentRequest->set_selected_payment_method(paymentMethod);
-  [_viewController updatePaymentMethodSection];
+  [_viewController reloadSections];
 
   [self updatePaymentSummaryItem];
 
@@ -484,7 +484,7 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
   DCHECK(paymentMethod);
   DCHECK(paymentMethod->IsCompleteForPayment());
   _paymentRequest->set_selected_payment_method(paymentMethod);
-  [_viewController updatePaymentMethodSection];
+  [_viewController reloadSections];
 
   [self updatePaymentSummaryItem];
 
