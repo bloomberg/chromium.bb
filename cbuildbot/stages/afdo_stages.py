@@ -128,7 +128,7 @@ class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
     afdo.InitGSUrls(None)
     version_info = self._run.GetVersionInfo()
     build_version = map(int, version_info.VersionString().split('.'))
-    chrome_version = version_info.chrome_branch
+    chrome_version = int(version_info.chrome_branch)
     target_version = [chrome_version] + build_version
     profile_versions = afdo.GetAvailableKernelProfiles()
     candidates = sorted(afdo.FindKernelEbuilds())
