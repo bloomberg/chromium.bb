@@ -353,6 +353,12 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
     const WebRemoteScrollProperties& properties) {
   Element* owner_element = frame_->DeprecatedLocalOwner();
   LayoutObject* owner_object = owner_element->GetLayoutObject();
+  if (!owner_object) {
+    // The LayoutObject could be nullptr by the time we get here. For instance
+    // <iframe>'s style might have been set to 'display: none' right after
+    // scrolling starts in the OOPIF's process (see https://crbug.com/777811).
+    return;
+  }
 
   // Schedule the scroll.
   auto* scroll_sequencer =
