@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -52,6 +54,31 @@ class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
   std::string json_;
 };
 
+base::trace_event::TraceConfig GetBackgroundTracingConfig() {
+  // Disable all categories other than memory-infra.
+  base::trace_event::TraceConfig trace_config(
+      "-*,disabled-by-default-memory-infra",
+      base::trace_event::RECORD_UNTIL_FULL);
+
+  // This flag is set by background tracing to filter out undesired events.
+  trace_config.EnableArgumentFilter();
+
+  // Trigger a background memory dump exactly once by setting a time-delta
+  // between dumps of 2**29.
+  base::trace_event::TraceConfig::MemoryDumpConfig memory_config;
+  memory_config.allowed_dump_modes.insert(
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
+  base::trace_event::TraceConfig::MemoryDumpConfig::Trigger trigger;
+  trigger.min_time_between_dumps_ms = 1 << 30;
+  trigger.level_of_detail =
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND;
+  trigger.trigger_type = base::trace_event::MemoryDumpType::PERIODIC_INTERVAL;
+  memory_config.triggers.clear();
+  memory_config.triggers.push_back(trigger);
+  trace_config.ResetMemoryDumpConfig(memory_config);
+  return trace_config;
+}
+
 }  // namespace
 
 namespace profiling {
@@ -60,7 +87,6 @@ bool ProfilingProcessHost::has_started_ = false;
 
 namespace {
 
-const size_t kMaxTraceSizeUploadInBytes = 10 * 1024 * 1024;
 const char kNoTriggerName[] = "";
 
 // This helper class cleans up initialization boilerplate for the callers who
@@ -125,23 +151,6 @@ void UploadTraceToCrashServer(std::string file_contents,
                      std::move(metadata),
                      content::TraceUploader::UploadProgressCallback(),
                      base::Bind(&OnTraceUploadComplete, base::Owned(uploader)));
-}
-
-void ReadTraceForUpload(base::FilePath file_path, std::string trigger_name) {
-  std::string file_contents;
-  bool success = base::ReadFileToStringWithMaxSize(file_path, &file_contents,
-                                                   kMaxTraceSizeUploadInBytes);
-  base::DeleteFile(file_path, false);
-
-  if (!success) {
-    DLOG(ERROR) << "Cannot read trace file contents.";
-    return;
-  }
-
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-      ->PostTask(FROM_HERE, base::BindOnce(&UploadTraceToCrashServer,
-                                           std::move(file_contents),
-                                           std::move(trigger_name)));
 }
 
 void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
@@ -399,12 +408,11 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
     return;
   }
 
-  const bool kNoUpload = false;
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
                      base::Unretained(this), pid, std::move(dest),
-                     kNoTriggerName, kNoUpload, std::move(done)));
+                     kNoTriggerName, std::move(done)));
 }
 
 void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
@@ -415,12 +423,39 @@ void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
     return;
   }
 
-  const bool kUpload = true;
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-      base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
-                     base::Unretained(this), pid, base::FilePath(),
-                     std::move(trigger_name), kUpload, base::OnceClosure()));
+  bool result = content::TracingController::GetInstance()->StartTracing(
+      GetBackgroundTracingConfig(), base::Closure());
+  if (!result)
+    return;
+
+  // Once the trace has stopped, upload the log to the crash server.
+  auto finish_sink_callback = base::Bind(
+      [](std::string trigger_name,
+         std::unique_ptr<const base::DictionaryValue> metadata,
+         base::RefCountedString* in) {
+        std::string result;
+        result.swap(in->data());
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::UI)
+            ->PostTask(FROM_HERE, base::BindOnce(&UploadTraceToCrashServer,
+                                                 std::move(result),
+                                                 std::move(trigger_name)));
+      },
+      std::move(trigger_name));
+
+  scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
+      content::TracingController::CreateStringEndpoint(
+          std::move(finish_sink_callback));
+  base::OnceClosure stop_tracing_closure = base::BindOnce(
+      base::IgnoreResult<bool (content::TracingController::*)(
+          const scoped_refptr<content::TracingController::TraceDataEndpoint>&)>(
+          &content::TracingController::StopTracing),
+      base::Unretained(content::TracingController::GetInstance()), sink);
+
+  // Wait 10 seconds, then end the trace.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(stop_tracing_closure),
+      base::TimeDelta::FromSeconds(10));
 }
 
 void ProfilingProcessHost::SetDumpProcessForTracingCallback(
@@ -464,24 +499,15 @@ void ProfilingProcessHost::GetOutputFileOnBlockingThread(
     base::ProcessId pid,
     base::FilePath dest,
     std::string trigger_name,
-    bool upload,
     base::OnceClosure done) {
   base::ScopedClosureRunner done_runner(std::move(done));
-  if (upload) {
-    DCHECK(dest.empty());
-    if (!CreateTemporaryFile(&dest)) {
-      DLOG(ERROR) << "Cannot create temporary file for memory dump.";
-      return;
-    }
-  }
-
   base::File file(dest,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ProfilingProcessHost::HandleDumpProcessOnIOThread,
                      base::Unretained(this), pid, std::move(dest),
-                     std::move(file), std::move(trigger_name), upload,
+                     std::move(file), std::move(trigger_name),
                      done_runner.Release()));
 }
 
@@ -489,19 +515,17 @@ void ProfilingProcessHost::HandleDumpProcessOnIOThread(base::ProcessId pid,
                                                        base::FilePath file_path,
                                                        base::File file,
                                                        std::string trigger_name,
-                                                       bool upload,
                                                        base::OnceClosure done) {
   mojo::ScopedHandle handle = mojo::WrapPlatformFile(file.TakePlatformFile());
   profiling_service_->DumpProcess(
       pid, std::move(handle), GetMetadataJSONForTrace(),
       base::BindOnce(&ProfilingProcessHost::OnProcessDumpComplete,
                      base::Unretained(this), std::move(file_path),
-                     std::move(trigger_name), upload, std::move(done)));
+                     std::move(trigger_name), std::move(done)));
 }
 
 void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
                                                  std::string trigger_name,
-                                                 bool upload,
                                                  base::OnceClosure done,
                                                  bool success) {
   base::ScopedClosureRunner done_runner(std::move(done));
@@ -513,13 +537,6 @@ void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
                        false));
     return;
-  }
-
-  if (upload) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::BindOnce(&ReadTraceForUpload, std::move(file_path),
-                       std::move(trigger_name)));
   }
 }
 
