@@ -169,6 +169,8 @@ class WindowManager : public aura::WindowManagerDelegate,
       const std::vector<gfx::Rect>& additional_client_areas) override;
   bool IsWindowActive(aura::Window* window) override;
   void OnWmDeactivateWindow(aura::Window* window) override;
+  void OnWmPerformAction(aura::Window* window,
+                         const std::string& action) override;
   void OnEventBlockedByModalWindow(aura::Window* window) override;
 
   service_manager::Connector* connector_;

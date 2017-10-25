@@ -170,6 +170,13 @@ bool WindowManagerAccessPolicy::CanStackAtTop(
   return false;
 }
 
+bool WindowManagerAccessPolicy::CanPerformWmAction(
+    const ServerWindow* window) const {
+  // This API is for clients. Window managers don't need to tell themselves to
+  // do things.
+  return false;
+}
+
 bool WindowManagerAccessPolicy::CanSetCursorProperties(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||

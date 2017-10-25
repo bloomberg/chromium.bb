@@ -9,8 +9,9 @@
 
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/public/interfaces/window_actions.mojom.h"
+#include "ash/shell.h"                                  // mash-ok
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
@@ -18,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/media_client.h"
@@ -33,6 +35,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -710,8 +713,16 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // are not user activatable. Since invisible windows are not being tracked,
   // we tell it to maximize / track this window now before it gets shown, to
   // reduce animation jank from multiple resizes.
-  if (visible)
-    ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
+  if (visible) {
+    // TODO(erg): When we get rid of the classic ash, get rid of the direct
+    // linkage on tablet_mode_controller() here.
+    if (chromeos::GetAshConfig() == ash::Config::MASH) {
+      aura::WindowTreeHostMus::ForWindow(window)->PerformWmAction(
+          ash::mojom::kAddWindowToTabletMode);
+    } else {
+      ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
+    }
+  }
 
   AnimationSetter animation_setter(
       window, GetAdjustedAnimationTimeInMS(animation_time_in_ms));

@@ -262,6 +262,10 @@ class AURA_EXPORT WindowManagerDelegate {
   // window.
   virtual void OnWmDeactivateWindow(Window* window) = 0;
 
+  // Called when a client requests that a generic action be performed. |window|
+  // can never be null.
+  virtual void OnWmPerformAction(Window* window, const std::string& action);
+
   // Called when an event is blocked by a modal window. |window| is the modal
   // window that blocked the event.
   virtual void OnEventBlockedByModalWindow(Window* window);
