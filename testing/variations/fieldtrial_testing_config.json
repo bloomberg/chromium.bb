@@ -802,6 +802,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "ChromeHomeOptOutSnackbar",
                         "ChromeHomePromo"
                     ]
                 }
