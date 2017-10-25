@@ -189,22 +189,19 @@ void WorkerThread::WillProcessTask() {
 
 void WorkerThread::DidProcessTask() {
   DCHECK(IsCurrentThread());
+  Microtask::PerformCheckpoint(GetIsolate());
+  GlobalScope()->ScriptController()->GetRejectedPromises()->ProcessQueue();
   if (GlobalScope()->IsClosing()) {
     // This WorkerThread will eventually be requested to terminate.
     GetWorkerReportingProxy().DidCloseWorkerGlobalScope();
 
     // Stop further worker tasks to run after this point.
     PrepareForShutdownOnWorkerThread();
-    return;
-  }
-  if (IsForciblyTerminated()) {
+  } else if (IsForciblyTerminated()) {
     // The script has been terminated forcibly, which means we need to
     // ask objects in the thread to stop working as soon as possible.
     PrepareForShutdownOnWorkerThread();
-    return;
   }
-  Microtask::PerformCheckpoint(GetIsolate());
-  GlobalScope()->ScriptController()->GetRejectedPromises()->ProcessQueue();
 }
 
 v8::Isolate* WorkerThread::GetIsolate() {
