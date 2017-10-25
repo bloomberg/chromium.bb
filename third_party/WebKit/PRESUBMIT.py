@@ -179,12 +179,10 @@ def CheckChangeOnCommit(input_api, output_api):
 def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
     """Checks whether CL has changes to paint or compositing directories."""
     paint_or_compositing_paths = [
-        os.path.join('third_party', 'WebKit', 'Source', 'platform', 'graphics',
-                     'compositing'),
-        os.path.join('third_party', 'WebKit', 'Source', 'platform', 'graphics',
-                     'paint'),
+        os.path.join('third_party', 'WebKit', 'Source', 'platform', 'graphics'),
         os.path.join('third_party', 'WebKit', 'Source', 'core', 'layout',
                      'compositing'),
+        os.path.join('third_party', 'WebKit', 'Source', 'core', 'svg'),
         os.path.join('third_party', 'WebKit', 'Source', 'core', 'paint'),
         os.path.join('third_party', 'WebKit', 'LayoutTests', 'FlagExpectations',
                      'enable-slimming-paint-v2'),
