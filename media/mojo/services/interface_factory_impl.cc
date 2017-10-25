@@ -36,6 +36,44 @@
 
 namespace media {
 
+namespace {
+
+constexpr base::TimeDelta kServiceContextRefReleaseDelay =
+    base::TimeDelta::FromSeconds(5);
+
+void DeleteServiceContextRef(service_manager::ServiceContextRef* ref) {
+  delete ref;
+}
+
+}  // namespace
+
+// Helper class to help delay the release of service_manager::ServiceContextRef
+// by |kServiceContextRefReleaseDelay|, which will ultimately delay MediaService
+// destruction by the same delay as well. This helps reduce service connection
+// time in cases like navigation.
+class DelayedReleaseServiceContextRef {
+ public:
+  explicit DelayedReleaseServiceContextRef(
+      std::unique_ptr<service_manager::ServiceContextRef> ref)
+      : ref_(std::move(ref)),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+
+  ~DelayedReleaseServiceContextRef() {
+    service_manager::ServiceContextRef* ref_ptr = ref_.release();
+    if (!task_runner_->PostNonNestableDelayedTask(
+            FROM_HERE, base::BindOnce(&DeleteServiceContextRef, ref_ptr),
+            kServiceContextRefReleaseDelay)) {
+      DeleteServiceContextRef(ref_ptr);
+    }
+  }
+
+ private:
+  std::unique_ptr<service_manager::ServiceContextRef> ref_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedReleaseServiceContextRef);
+};
+
 InterfaceFactoryImpl::InterfaceFactoryImpl(
     service_manager::mojom::InterfaceProviderPtr interfaces,
     MediaLog* media_log,
@@ -48,7 +86,8 @@ InterfaceFactoryImpl::InterfaceFactoryImpl(
 #if BUILDFLAG(ENABLE_MOJO_CDM)
       interfaces_(std::move(interfaces)),
 #endif
-      connection_ref_(std::move(connection_ref)),
+      connection_ref_(std::make_unique<DelayedReleaseServiceContextRef>(
+          std::move(connection_ref))),
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
