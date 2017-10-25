@@ -7,6 +7,8 @@ source_set("encoder") {
     "audio_encoder.h",
     "audio_encoder_opus.cc",
     "audio_encoder_opus.h",
+    "frame_processing_time_estimator.cc",
+    "frame_processing_time_estimator.h",
     "video_encoder.cc",
     "video_encoder.h",
     "video_encoder_helper.cc",
@@ -39,12 +41,9 @@ source_set("encoder") {
     "//ui/gfx/geometry",
   ]
 
-  defines = []
-
   # Currently, building WebrtcVideoEncoderGpu is only supported on Windows and
   # Linux, and encoding with WebrtcVideoEncoderGpu is only supported on Windows.
   if (is_win || is_linux) {
-    defines += [ "USE_H264_ENCODER" ]
     public_configs = [
       "//skia:skia_config",
     ]
@@ -126,6 +125,7 @@ source_set("unit_tests") {
     "audio_encoder_opus_unittest.cc",
     "codec_test.cc",
     "codec_test.h",
+    "frame_processing_time_estimator_unittest.cc",
     "video_decoder_vpx_unittest.cc",
     "video_encoder_helper_unittest.cc",
     "video_encoder_verbatim_unittest.cc",
