@@ -42,11 +42,11 @@ namespace {
 // Limits on the cache size and number of areas in memory, over which the areas
 // are purged.
 #if defined(OS_ANDROID)
-const unsigned kMaxStorageAreaCount = 20;
-const size_t kMaxStorageCacheSize = 2 * 1024 * 1024;
+const unsigned kMaxDomStorageAreaCount = 20;
+const size_t kMaxDomStorageCacheSize = 2 * 1024 * 1024;
 #else
-const unsigned kMaxStorageAreaCount = 100;
-const size_t kMaxStorageCacheSize = 20 * 1024 * 1024;
+const unsigned kMaxDomStorageAreaCount = 100;
+const size_t kMaxDomStorageCacheSize = 20 * 1024 * 1024;
 #endif
 
 const int kSessionStoraceScavengingSeconds = 60;
@@ -493,9 +493,9 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
     // Purging is done based on the cache sizes without including the database
     // size since it can be expensive trying to estimate the sqlite usage for
     // all databases. For low end devices purge all inactive areas.
-    if (initial_stats.total_cache_size > kMaxStorageCacheSize)
+    if (initial_stats.total_cache_size > kMaxDomStorageCacheSize)
       purge_reason = "SizeLimitExceeded";
-    else if (initial_stats.total_area_count > kMaxStorageAreaCount)
+    else if (initial_stats.total_area_count > kMaxDomStorageAreaCount)
       purge_reason = "AreaCountLimitExceeded";
     else if (is_low_end_device_)
       purge_reason = "InactiveOnLowEndDevice";
