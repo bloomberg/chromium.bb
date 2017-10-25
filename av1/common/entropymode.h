@@ -156,9 +156,7 @@ typedef struct frame_contexts {
   aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                      [COEFF_BASE_CONTEXTS];
   aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS];
-#if BR_NODE
   aom_prob coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS];
-#endif
 #if CONFIG_CTX1D
   aom_prob eob_mode[TX_SIZES][PLANE_TYPES][TX_CLASSES];
   aom_prob empty_line[TX_SIZES][PLANE_TYPES][TX_CLASSES][EMPTY_LINE_CONTEXTS];
@@ -179,10 +177,8 @@ typedef struct frame_contexts {
                              [COEFF_BASE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob coeff_lps_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
                             [CDF_SIZE(2)];
-#if BR_NODE
   aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS]
                            [LEVEL_CONTEXTS][CDF_SIZE(2)];
-#endif
 #if CONFIG_CTX1D
   aom_cdf_prob eob_mode_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES][CDF_SIZE(2)];
   aom_cdf_prob empty_line_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES]

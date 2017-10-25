@@ -794,7 +794,6 @@ int main(int argc, const char **argv) {
                      "default_coeff_lps_cdf[TX_SIZES][PLANE_TYPES][LEVEL_"
                      "CONTEXTS][CDF_SIZE(2)]");
 
-#if BR_NODE
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = PLANE_TYPES;
   cts_each_dim[2] = BASE_RANGE_SETS;
@@ -809,7 +808,6 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob "
                      "default_coeff_br_cdf[TX_SIZES][PLANE_TYPES][BASE_RANGE_"
                      "SETS][LEVEL_CONTEXTS][CDF_SIZE(2)]");
-#endif  // BR_NODE
 
 #if CONFIG_CTX1D
   cts_each_dim[0] = TX_SIZES;

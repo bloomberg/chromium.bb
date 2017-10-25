@@ -567,7 +567,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     // level is above 1.
     ctx = get_br_ctx(levels, scan[c], bwl, height);
 
-#if BR_NODE
     int base_range = level - 1 - NUM_BASE_LEVELS;
     int br_set_idx = 0;
     int br_base = 0;
@@ -600,24 +599,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
 
     if (br_set_idx < BASE_RANGE_SETS) continue;
-#else  // BR_NODE
-    for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
-      if (level == (idx + 1 + NUM_BASE_LEVELS)) {
-#if LV_MAP_PROB
-        aom_write_bin(w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
-#else
-        aom_write(w, 1, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx]);
-#endif
-        break;
-      }
-#if LV_MAP_PROB
-      aom_write_bin(w, 0, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
-#else
-      aom_write(w, 0, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx]);
-#endif
-    }
-    if (idx < COEFF_BASE_RANGE) continue;
-#endif  // BR_NODE
 
     // use 0-th order Golomb code to handle the residual level.
     write_golomb(w,
@@ -695,19 +676,10 @@ static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
   const tran_low_t max_level = 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE;
   (void)ctx;
   if (abs_qc >= min_level) {
-#if BR_NODE
     if (abs_qc >= max_level)
       return coeff_lps[COEFF_BASE_RANGE];  // COEFF_BASE_RANGE * cost0;
     else
       return coeff_lps[(abs_qc - min_level)];  //  * cost0 + cost1;
-#else
-    const int cost0 = coeff_lps[0];
-    const int cost1 = coeff_lps[1];
-    if (abs_qc >= max_level)
-      return COEFF_BASE_RANGE * cost0;
-    else
-      return (abs_qc - min_level) * cost0 + cost1;
-#endif
   } else {
     return 0;
   }
@@ -917,7 +889,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       if (level > NUM_BASE_LEVELS) {
         int ctx;
         ctx = get_br_ctx_coeff(qcoeff, scan[c], bwl, height);
-#if BR_NODE
         int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
           cost += coeff_costs->lps_cost[ctx][base_range];
@@ -925,15 +896,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
           cost += coeff_costs->lps_cost[ctx][COEFF_BASE_RANGE];
         }
 
-#else
-        for (int idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
-          if (level == (idx + 1 + NUM_BASE_LEVELS)) {
-            cost += coeff_costs->lps_cost[ctx][1];
-            break;
-          }
-          cost += coeff_costs->lps_cost[ctx][0];
-        }
-#endif
         if (level >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
           // residual cost
           int r = level - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
@@ -1411,33 +1373,20 @@ static int try_self_level_down(tran_low_t *low_coeff, int coeff_idx,
         get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
-#if BR_NODE
     cost_diff = -level_cost[0] + low_level_cost[1] - low_level_cost[0];
-#else
-    cost_diff = -level_cost[1] + low_level_cost[1] - low_level_cost[0];
-#endif
   } else if (abs_qc < 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int *level_cost =
         get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
 
-#if BR_NODE
     cost_diff = -level_cost[abs_qc - 1 - NUM_BASE_LEVELS] +
                 low_level_cost[abs(*low_coeff) - 1 - NUM_BASE_LEVELS];
-#else
-    cost_diff = -level_cost[1] + low_level_cost[1] - low_level_cost[0];
-#endif
   } else if (abs_qc == 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
-#if BR_NODE
     cost_diff = -get_golomb_cost(abs_qc) - low_level_cost[COEFF_BASE_RANGE] +
                 low_level_cost[COEFF_BASE_RANGE - 1];
-#else
-    cost_diff =
-        -get_golomb_cost(abs_qc) + low_level_cost[1] - low_level_cost[0];
-#endif
   } else {
     assert(abs_qc > 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE);
     const tran_low_t abs_low_coeff = abs(*low_coeff);
@@ -2701,7 +2650,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     // level is above 1.
     ctx = get_br_ctx(levels, scan[c], bwl, height);
 
-#if BR_NODE
     int base_range = level - 1 - NUM_BASE_LEVELS;
     int br_set_idx = base_range < COEFF_BASE_RANGE
                          ? coeff_to_br_index[base_range]
@@ -2730,22 +2678,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][0];
       update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 0, 2);
     }
-#else  // BR_NODE
-    for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
-      if (level == (idx + 1 + NUM_BASE_LEVELS)) {
-        ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][1];
-#if LV_MAP_PROB
-        update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1, 2);
-#endif
-        break;
-      }
-      ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][0];
-#if LV_MAP_PROB
-      update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0, 2);
-#endif
-    }
-    if (idx < COEFF_BASE_RANGE) continue;
-#endif  // BR_NODE
     // use 0-th order Golomb code to handle the residual level.
   }
 
