@@ -80,6 +80,7 @@ TARGET_GO_ENABLED = (
     'x86_64-cros-linux-gnu',
     'armv7a-cros-linux-gnueabi',
     'armv7a-cros-linux-gnueabihf',
+    'aarch64-cros-linux-gnu',
 )
 CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
 
@@ -1282,6 +1283,14 @@ def main(argv):
   targets_wanted = set(options.targets.split(','))
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
+
+  # pylint: disable=global-statement
+  global TARGET_GO_ENABLED
+  if options.usepkg:
+    # For bootstrapping, disable the new toolchain (aarch64-cros-linux-gnu/go)
+    # if using binary packages. Allow the sdk bot to catch up and make binary
+    # packages available.
+    TARGET_GO_ENABLED = TARGET_GO_ENABLED[:-1]
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
