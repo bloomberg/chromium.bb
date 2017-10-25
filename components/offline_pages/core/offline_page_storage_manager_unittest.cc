@@ -281,7 +281,7 @@ void OfflinePageStorageManagerTest::TryClearPages() {
 
 std::string OfflinePageStorageManagerTest::GetStorageUsageHistogramName(
     const std::string& name_space) {
-  return "OfflinePages.ClearStoragePreRunUsage." + name_space;
+  return "OfflinePages.ClearStoragePreRunUsage2." + name_space;
 }
 
 void OfflinePageStorageManagerTest::CheckTotalCountForAllStorageUsageHistograms(

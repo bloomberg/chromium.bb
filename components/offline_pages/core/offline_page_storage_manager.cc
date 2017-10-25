@@ -217,7 +217,7 @@ void OfflinePageStorageManager::ReportStorageUsageUMA(
 
   // Report usages for all namespaces known to ClientPolicyController and only
   // for those.
-  std::string base_histogram_name = "OfflinePages.ClearStoragePreRunUsage.";
+  std::string base_histogram_name = "OfflinePages.ClearStoragePreRunUsage2.";
   for (const std::string name_space : policy_controller_->GetAllNamespaces()) {
     int size_in_kib = base::saturated_cast<int>(page_sizes[name_space] / 1024);
     base::UmaHistogramCustomCounts(base_histogram_name + name_space,
