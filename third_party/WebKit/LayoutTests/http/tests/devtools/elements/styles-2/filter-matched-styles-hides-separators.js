@@ -1,34 +1,45 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<style>
-#first {
-    font-family: arial;
-    display: block;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#second {
-    font-family: helvetica;
-}
+(async function() {
+  TestRunner.addResult(`Verifies that filtering in StylesSidebarPane hides sidebar separators.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #first {
+          font-family: arial;
+          display: block;
+      }
 
-#third {
-    font-family: times;
-    display: block;
-}
+      #second {
+          font-family: helvetica;
+      }
 
-#third::before {
-    content: "uno-1";
-}
+      #third {
+          font-family: times;
+          display: block;
+      }
 
-#third::after {
-    content: "dos-2";
-    display: block;
-}
+      #third::before {
+          content: "uno-1";
+      }
 
-</style>
-<script>
-function test() {
+      #third::after {
+          content: "dos-2";
+          display: block;
+      }
+
+      </style>
+      <div id="first">
+          <div id="second">
+              <div id="third">
+              </div>
+          </div>
+      </div>
+    `);
+
   TestRunner.runTestSuite([
     function selectInitialNode(next) {
       ElementsTestRunner.selectNodeAndWaitForStyles('third', next);
@@ -67,16 +78,4 @@ function test() {
       TestRunner.addResult(text);
     }
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verifies that filtering in StylesSidebarPane hides sidebar separators.</p>
-<div id="first">
-    <div id="second">
-        <div id="third">
-        </div>
-    </div>
-</div>
-</body>
-</html>
+})();

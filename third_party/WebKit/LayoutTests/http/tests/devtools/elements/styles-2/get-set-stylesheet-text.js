@@ -1,21 +1,23 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style>
+(async function() {
+  TestRunner.addResult(`Tests that WebInspector.CSSStyleSheet methods work as expected.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
 
-/* An inline stylesheet */
-body.mainpage {
-    text-decoration: none;
-}
-</style>
+      /* An inline stylesheet */
+      body.mainpage {
+          text-decoration: none;
+      }
+      </style>
+      <h1 id="inspected">Inspect Me</h1>
+    `);
+  await TestRunner.addStylesheetTag('../styles/resources/get-set-stylesheet-text.css');
 
-<link rel="stylesheet" href="../styles/resources/get-set-stylesheet-text.css">
-
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
-
-function test() {
   var foundStyleSheetHeader;
   var foundStyleSheetText;
 
@@ -97,14 +99,4 @@ function test() {
     TestRunner.addResult((isRule ? (ruleOrStyle.selectorList.text + ': [' + ruleOrStyle.origin + ']') : 'raw style'));
     ElementsTestRunner.dumpStyle(style);
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that WebInspector.CSSStyleSheet methods work as expected.
-</p>
-<h1 id="inspected">Inspect Me</h1>
-</body>
-</html>
+})();

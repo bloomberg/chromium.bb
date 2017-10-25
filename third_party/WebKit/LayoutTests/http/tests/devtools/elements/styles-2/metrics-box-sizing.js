@@ -1,45 +1,53 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style>
-#border-box {
-    box-sizing: border-box;
-    width: 55px;
-    height: 55px;
-    margin: 1px;
-    padding: 7px;
-    border: 3px solid black;
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that content-box and border-box content area dimensions are handled property by the Metrics pane.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #border-box {
+          box-sizing: border-box;
+          width: 55px;
+          height: 55px;
+          margin: 1px;
+          padding: 7px;
+          border: 3px solid black;
+      }
 
-#content-box {
-    box-sizing: content-box;
-    width: 55px;
-    height: 55px;
-    margin: 1px;
-    padding: 7px;
-    border: 3px solid black;
-}
-</style>
+      #content-box {
+          box-sizing: content-box;
+          width: 55px;
+          height: 55px;
+          margin: 1px;
+          padding: 7px;
+          border: 3px solid black;
+      }
+      </style>
+      <div id="content-box">content-box</div>
+      <div id="border-box">border-box</div>
+      <div id="output-content">zzz</div>
+      <div id="output-border">zzz</div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      var initialize_AdditionalPreload = function() {
+          InspectorTest.preloadModule("source_frame");
+      }
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+      function dumpDimensions()
+      {
+          var element;
 
-var initialize_AdditionalPreload = function() {
-    InspectorTest.preloadModule("source_frame");
-}
+          element = document.getElementById("content-box");
+          document.getElementById("output-content").textContent = "content-box rendered dimensions: " + element.offsetWidth + " x " + element.offsetHeight;
+          element = document.getElementById("border-box");
+          document.getElementById("output-border").textContent = "border-box rendered dimensions: " + element.offsetWidth + " x " + element.offsetHeight;
+      }
+  `);
 
-function dumpDimensions()
-{
-    var element;
-
-    element = document.getElementById("content-box");
-    document.getElementById("output-content").textContent = "content-box rendered dimensions: " + element.offsetWidth + " x " + element.offsetHeight;
-    element = document.getElementById("border-box");
-    document.getElementById("output-border").textContent = "border-box rendered dimensions: " + element.offsetWidth + " x " + element.offsetHeight;
-}
-
-function test() {
   var contentWidthElement;
   var contentHeightElement;
 
@@ -140,17 +148,4 @@ function test() {
       TestRunner.evaluateInPage('dumpDimensions()', callback);
     }
   ]);
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that content-box and border-box content area dimensions are handled property by the Metrics pane.
-</p>
-<div id="content-box">content-box</div>
-<div id="border-box">border-box</div>
-<div id="output-content">zzz</div>
-<div id="output-border">zzz</div>
-</body>
-</html>
+})();

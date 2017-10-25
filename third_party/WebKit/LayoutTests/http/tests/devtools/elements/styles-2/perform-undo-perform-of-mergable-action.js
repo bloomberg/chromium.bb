@@ -1,17 +1,21 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style>
-.container {
-  font-weight: bold
-}
-</style>
+(async function() {
+  TestRunner.addResult(`Tests that perform-undo-perform of the mergeable action does not crash.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      .container {
+        font-weight: bold
+      }
+      </style>
+      <div id="container" class="container"></div>
+      <div id="other" class="container"></div>
+    `);
 
-<script>
-
-function test() {
   ElementsTestRunner.selectNodeAndWaitForStyles('container', step1);
 
   function step1() {
@@ -45,17 +49,4 @@ function test() {
     ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that perform-undo-perform of the mergeable action does not crash.
-</p>
-
-<div id="container" class="container"></div>
-<div id="other" class="container"></div>
-
-</body>
-</html>
+})();

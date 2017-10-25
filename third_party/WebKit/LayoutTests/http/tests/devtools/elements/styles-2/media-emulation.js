@@ -1,23 +1,26 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style type="text/css">
-#main { color: red; }
+(async function() {
+  TestRunner.addResult(`Tests that emulated CSS media is reflected in the Styles pane.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #main { color: red; }
 
-@media print {
-#main { color: black; }
-}
+      @media print {
+      #main { color: black; }
+      }
 
-@media tty {
-#main { color: green; }
-}
-</style>
+      @media tty {
+      #main { color: green; }
+      }
+      </style>
+      <div id="main"></div>
+    `);
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
-
-function test() {
   ElementsTestRunner.selectNodeAndWaitForStyles('main', step0);
 
   function step0() {
@@ -51,15 +54,4 @@ function test() {
     TestRunner.EmulationAgent.setEmulatedMedia(media);
     TestRunner.cssModel.mediaQueryResultChanged();
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that emulated CSS media is reflected in the Styles pane.
-</p>
-
-<div id="main"></div>
-</body>
-</html>
+})();

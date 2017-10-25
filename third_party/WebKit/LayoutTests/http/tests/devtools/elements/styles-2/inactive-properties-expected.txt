@@ -1,16 +1,15 @@
 Tests that effectively inactive properties are displayed correctly in the sidebar.
 
-Test
 display: block;
     block - div user agent stylesheet
 text-align: right;
-    right - #inspected inactive-properties.html:18 -> inactive-properties.html:18:13
+    right - #inspected <style>…</style>
     OVERLOADED -webkit-left - element.style
 [expanded] 
 element.style { ()
 
 [expanded] 
-#inspected { (inactive-properties.html:18 -> inactive-properties.html:18:13)
+#inspected { (<style>…</style>)
 /-- overloaded --/     text-align: left;
 /-- overloaded --/     text-align: bar;
     text-align: right;
