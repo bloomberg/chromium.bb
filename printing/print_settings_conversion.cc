@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -197,6 +198,7 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
       !job_settings.GetInteger(kSettingDpiVertical, &dpi_vertical)) {
     return false;
   }
+  settings->set_dpi_xy(dpi_horizontal, dpi_vertical);
 #endif
 
   settings->set_collate(collate);
@@ -207,13 +209,13 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   settings->set_color(static_cast<ColorModel>(color));
   settings->set_scale_factor(static_cast<double>(scale_factor) / 100.0);
   settings->set_rasterize_pdf(rasterize_pdf);
+  bool is_modifiable = false;
+  if (job_settings.GetBoolean(kSettingPreviewModifiable, &is_modifiable)) {
+    settings->set_is_modifiable(is_modifiable);
 #if defined(OS_WIN)
-  // Modifiable implies HTML and not other formats like PDF.
-  bool can_modify = false;
-  if (job_settings.GetBoolean(kSettingPreviewModifiable, &can_modify))
-    settings->set_print_text_with_gdi(can_modify);
-  settings->set_dpi_xy(dpi_horizontal, dpi_vertical);
+    settings->set_print_text_with_gdi(is_modifiable);
 #endif
+  }
 
   return true;
 }

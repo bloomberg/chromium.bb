@@ -184,6 +184,9 @@ class PRINTING_EXPORT PrintSettings {
   }
 #endif
 
+  void set_is_modifiable(bool is_modifiable) { is_modifiable_ = is_modifiable; }
+  bool is_modifiable() const { return is_modifiable_; }
+
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
   // correctly associated with its corresponding PrintedDocument.
@@ -254,6 +257,8 @@ class PRINTING_EXPORT PrintSettings {
 
   PrinterType printer_type_;
 #endif
+
+  bool is_modifiable_;
 
   // If margin type is custom, this is what was requested.
   PageMargins requested_custom_margins_in_points_;
