@@ -177,7 +177,7 @@ void LayoutMenuList::UpdateInnerBlockHeight() {
 void LayoutMenuList::UpdateOptionsWidth() const {
   float max_option_width = 0;
 
-  for (const auto& option : SelectElement()->GetOptionList()) {
+  for (auto* const option : SelectElement()->GetOptionList()) {
     String text = option->TextIndentedToRespectGroupLabel();
     const ComputedStyle* item_style =
         option->GetComputedStyle() ? option->GetComputedStyle() : Style();
@@ -200,7 +200,7 @@ void LayoutMenuList::UpdateFromElement() {
   if (select->IsMultiple()) {
     unsigned selected_count = 0;
     HTMLOptionElement* selected_option_element = nullptr;
-    for (const auto& option : select->GetOptionList()) {
+    for (auto* const option : select->GetOptionList()) {
       if (option->Selected()) {
         if (++selected_count == 1)
           selected_option_element = option;

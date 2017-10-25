@@ -381,7 +381,7 @@ void GridTrackSizingAlgorithmStrategy::DistributeSpaceToTracks(
 Optional<LayoutUnit>
 GridTrackSizingAlgorithmStrategy::ExtentForBaselineAlignment(
     LayoutBox& child) const {
-  auto grid = algorithm_.layout_grid_;
+  auto* grid = algorithm_.layout_grid_;
   GridAxis baseline_axis = GridLayoutUtils::IsOrthogonalChild(*grid, child)
                                ? kGridRowAxis
                                : kGridColumnAxis;
@@ -1119,7 +1119,7 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
 
   Vector<GridTrack*> grow_beyond_growth_limits_tracks;
   Vector<GridTrack*> filtered_tracks;
-  for (auto it = grid_items_with_span.range_start;
+  for (auto* it = grid_items_with_span.range_start;
        it != grid_items_with_span.range_end; ++it) {
     GridItemWithSpan& grid_item_with_span = *it;
     DCHECK_GT(grid_item_with_span.GetGridSpan().IntegerSpan(), 1u);
@@ -1192,8 +1192,8 @@ void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
               items_sorted_by_increasing_span.end());
   }
 
-  auto it = items_sorted_by_increasing_span.begin();
-  auto end = items_sorted_by_increasing_span.end();
+  auto* it = items_sorted_by_increasing_span.begin();
+  auto* end = items_sorted_by_increasing_span.end();
   while (it != end) {
     GridItemsSpanGroupRange span_group_range = {it,
                                                 std::upper_bound(it, end, *it)};

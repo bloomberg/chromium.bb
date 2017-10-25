@@ -34,12 +34,12 @@ namespace {
 
 class LayoutTableRowDeathTest : public RenderingTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     RenderingTest::SetUp();
     row_ = LayoutTableRow::CreateAnonymous(&GetDocument());
   }
 
-  virtual void TearDown() { row_->Destroy(); }
+  void TearDown() override { row_->Destroy(); }
 
   LayoutTableRow* row_;
 };

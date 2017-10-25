@@ -80,7 +80,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
         logical_width_(logical_width),
         bitfields_(first_line, constructed, dirty, extracted, is_horizontal) {}
 
-  virtual ~InlineBox();
+  ~InlineBox() override;
 
   virtual void Destroy();
 

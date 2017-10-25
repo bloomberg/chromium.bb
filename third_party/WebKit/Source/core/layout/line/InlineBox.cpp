@@ -38,7 +38,7 @@ namespace blink {
 class LayoutObject;
 
 struct SameSizeAsInlineBox : DisplayItemClient {
-  virtual ~SameSizeAsInlineBox() {}
+  ~SameSizeAsInlineBox() override {}
   void* a[4];
   LayoutPoint b;
   LayoutUnit c;

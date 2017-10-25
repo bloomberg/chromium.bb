@@ -1017,7 +1017,7 @@ void LayoutBlock::RemovePositionedObjects(
     }
   }
 
-  for (auto object : dead_objects) {
+  for (auto* object : dead_objects) {
     DCHECK_EQ(g_positioned_container_map->at(object), this);
     positioned_descendants->erase(object);
     g_positioned_container_map->erase(object);

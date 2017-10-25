@@ -253,8 +253,8 @@ static float CalculateGlyphRange(const QueryData* query_data,
                                  unsigned start,
                                  unsigned end) {
   const MetricsList& metrics_list = query_data->text_line_layout.MetricsList();
-  auto metrics = FindMetricsForCharacter(metrics_list, fragment, start);
-  auto end_metrics = FindMetricsForCharacter(metrics_list, fragment, end);
+  auto* metrics = FindMetricsForCharacter(metrics_list, fragment, start);
+  auto* end_metrics = FindMetricsForCharacter(metrics_list, fragment, end);
   float glyph_range = 0;
   for (; metrics != end_metrics; ++metrics)
     glyph_range += metrics->Advance(query_data->is_vertical_text);
@@ -480,7 +480,7 @@ static inline FloatRect CalculateGlyphBoundaries(
 
   // Use the SVGTextMetrics computed by SVGTextMetricsBuilder.
   const MetricsList& metrics_list = query_data->text_line_layout.MetricsList();
-  auto metrics =
+  auto* metrics =
       FindMetricsForCharacter(metrics_list, fragment, start_position);
 
   FloatRect extent = PhysicalGlyphExtents(query_data, *metrics, glyph_position);

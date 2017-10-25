@@ -119,7 +119,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   LayoutRect ComputeObjectFit(
       const LayoutSize* overridden_intrinsic_size = nullptr) const;
 
-  virtual LayoutUnit IntrinsicContentLogicalHeight() const {
+  LayoutUnit IntrinsicContentLogicalHeight() const override {
     return IntrinsicLogicalHeight();
   }
 
