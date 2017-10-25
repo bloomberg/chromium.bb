@@ -38327,6 +38327,16 @@ would be helpful to identify which type is being sent.
   </int>
 </enum>
 
+<enum name="SurveyDownloadResponseCodes">
+  <int value="-1" label="Response code missing"/>
+  <int value="0" label="Survey downloaded"/>
+  <int value="1" label="No survey available"/>
+  <int value="2" label="Survey library version disabled"/>
+  <int value="3" label="Max surveys already shown"/>
+  <int value="4" label="Failed to download survey"/>
+  <int value="5" label="Unknown response code"/>
+</enum>
+
 <enum name="SuspendAttempt">
   <int value="0" label="Attempted"/>
 </enum>

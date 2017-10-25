@@ -1150,6 +1150,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.ChromeHome.AcceptedSurvey">
+  <owner>danielpark@chromium.org</owner>
+  <description>
+    User clicked on the invite to take a survey in the survey infobar.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.Closed">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
