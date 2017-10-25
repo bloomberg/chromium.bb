@@ -74,6 +74,16 @@ cr.define('print_preview_test', function() {
   }
 
   /**
+   * Wait for a new printer to have capabilities set and to reset the preview.
+   */
+  function waitForPrinterToUpdatePreview() {
+    return Promise.all([
+        nativeLayer.whenCalled('getPrinterCapabilities'),
+        nativeLayer.whenCalled('getPreview'),
+    ]);
+  }
+
+  /**
    * Verify that |section| visibility matches |visible|.
    * @param {HTMLDivElement} section The section to check.
    * @param {boolean} visible The expected state of visibility.
@@ -119,6 +129,12 @@ cr.define('print_preview_test', function() {
             ]
           },
           copies: {},
+          dpi: {
+            option: [
+              {horizontal_dpi: 200, vertical_dpi: 200, is_default: true},
+              {horizontal_dpi: 100, vertical_dpi: 100},
+            ]
+          },
           duplex: {
             option: [
               {type: 'NO_DUPLEX', is_default: true},
@@ -138,7 +154,14 @@ cr.define('print_preview_test', function() {
               { name: 'NA_LETTER',
                 width_microns: 215900,
                 height_microns: 279400,
-                is_default: true
+                is_default: true,
+                custom_display_name: "Letter",
+              },
+              {
+                name: 'CUSTOM_SQUARE',
+                width_microns: 215900,
+                height_microns: 215900,
+                custom_display_name: "CUSTOM_SQUARE",
               }
             ]
           }
@@ -183,6 +206,61 @@ cr.define('print_preview_test', function() {
         }
       }
     };
+  }
+
+  /**
+   * Gets a serialized app state string with some non-default values.
+   * @return {string}
+   */
+  function getAppStateString() {
+    var origin = cr.isChromeOS ? 'chrome_os' : 'local';
+    var cdd = getCddTemplate('ID1', 'One').capabilities;
+    return JSON.stringify({
+        version: 2,
+        recentDestinations: [
+          {
+            id: 'ID1',
+            origin: origin,
+            account: '',
+            capabilities: cdd,
+            displayName: 'One',
+            extensionId: '',
+            extensionName: '',
+          }, {
+            id: 'ID2',
+            origin: origin,
+            account: '',
+            capabilities: cdd,
+            displayName: 'Two',
+            extensionId: '',
+            extensionName: '',
+          }, {
+            id: 'ID3',
+            origin: origin,
+            account: '',
+            capabilities: cdd,
+            displayName: 'Three',
+            extensionId: '',
+            extensionName: '',
+          },
+        ],
+        dpi: {horizontal_dpi: 100, vertical_dpi: 100},
+        mediaSize: {name: 'CUSTOM_SQUARE',
+                    width_microns: 215900,
+                    height_microns: 215900,
+                    custom_display_name: 'CUSTOM_SQUARE'},
+        customMargins: {top: 74, right: 74, bottom: 74, left: 74},
+        vendorOptions: {},
+        marginsType: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
+        scaling: '90',
+        isHeaderFooterEnabled: true,
+        isCssBackgroundEnabled: true,
+        isFitToPageEnabled: true,
+        isCollateEnabled: true,
+        isDuplexEnabled: true,
+        isLandscapeEnabled: true,
+        isColorEnabled: true,
+    });
   }
 
   /**
@@ -448,38 +526,7 @@ cr.define('print_preview_test', function() {
     });
 
     test('RestoreMultipleDestinations', function() {
-      var origin = cr.isChromeOS ? 'chrome_os' : 'local';
-
-      initialSettings.serializedAppStateStr = JSON.stringify({
-        version: 2,
-        recentDestinations: [
-          {
-            id: 'ID1',
-            origin: origin,
-            account: '',
-            capabilities: 0,
-            displayName: 'One',
-            extensionId: '',
-            extensionName: '',
-          }, {
-            id: 'ID2',
-            origin: origin,
-            account: '',
-            capabilities: 0,
-            displayName: 'Two',
-            extensionId: '',
-            extensionName: '',
-          }, {
-            id: 'ID3',
-            origin: origin,
-            account: '',
-            capabilities: 0,
-            displayName: 'Three',
-            extensionId: '',
-            extensionName: '',
-          },
-        ],
-      });
+      initialSettings.serializedAppStateStr = getAppStateString();
       // Set all three of these destinations in the local destination infos
       // (represents currently available printers), plus an extra destination.
       localDestinationInfos = [
@@ -520,6 +567,126 @@ cr.define('print_preview_test', function() {
             assertNotEquals(-1, idsFound.indexOf('ID2'));
             assertNotEquals(-1, idsFound.indexOf('ID3'));
           });
+    });
+
+    // Tests that the app state can be saved correctly.
+    test('SaveAppState', function() {
+      // Set all three of these destinations in the local destination infos
+      // (represents currently available printers), plus an extra destination.
+      localDestinationInfos = [
+        { printerName: 'One', deviceName: 'ID1' },
+        { printerName: 'Two', deviceName: 'ID2' },
+        { printerName: 'Three', deviceName: 'ID3' },
+        { printerName: 'Four', deviceName: 'ID4' }
+      ];
+
+      initialSettings.printerName = 'ID3';
+      var device = getCddTemplate('ID3', 'Three');
+
+      nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID1', 'One'));
+      nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID2', 'Two'));
+      return setupSettingsAndDestinationsWithCapabilities(device).then(
+          function() {
+        nativeLayer.reset();
+        // Select ID2 then ID1 so that recent destinations will be 1, 2, 3
+        var destination2 =
+            printPreview.destinationStore_.destinations().find(
+                d => d.id == 'ID2');
+        printPreview.destinationStore_.selectDestination(destination2);
+        return waitForPrinterToUpdatePreview();
+      }).then(function() {
+        nativeLayer.reset();
+        var destination1 =
+            printPreview.destinationStore_.destinations().find(
+                d => d.id == 'ID1');
+        printPreview.destinationStore_.selectDestination(destination1);
+        return waitForPrinterToUpdatePreview();
+      }).then(function() {
+        // Update the persisted ticket items.
+        printPreview.printTicketStore_.mediaSize.updateValue(
+            {name: 'CUSTOM_SQUARE',
+             width_microns: 215900,
+             height_microns: 215900,
+             custom_display_name: 'CUSTOM_SQUARE'});
+        printPreview.printTicketStore_.scaling.updateValue('90');
+        printPreview.printTicketStore_.dpi.updateValue(
+            {horizontal_dpi: 100, vertical_dpi: 100});
+        printPreview.printTicketStore_.headerFooter.updateValue(true);
+        printPreview.printTicketStore_.cssBackground.updateValue(true);
+        printPreview.printTicketStore_.fitToPage.updateValue(true);
+        printPreview.printTicketStore_.collate.updateValue(true);
+        printPreview.printTicketStore_.duplex.updateValue(true);
+        printPreview.printTicketStore_.landscape.updateValue(true);
+        printPreview.printTicketStore_.color.updateValue(true);
+        printPreview.printTicketStore_.marginsType.updateValue(
+        print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+        nativeLayer.resetResolver('saveAppState');
+        printPreview.printTicketStore_.customMargins.updateValue(
+            new print_preview.Margins(74, 74, 74, 74));
+        return nativeLayer.whenCalled('saveAppState');
+      }).then(function(state) {  // validate state serialized correctly.
+        expectEquals(getAppStateString(), state);
+      });
+    });
+
+    test('RestoreAppState', function() {
+      initialSettings.serializedAppStateStr = getAppStateString();
+      // Set up destinations from app state.
+      localDestinationInfos = [
+        { printerName: 'One', deviceName: 'ID1' },
+        { printerName: 'Two', deviceName: 'ID2' },
+        { printerName: 'Three', deviceName: 'ID3' },
+      ];
+      var device = getCddTemplate('ID1', 'One');
+
+      return Promise.all([
+          setupSettingsAndDestinationsWithCapabilities(device),
+          nativeLayer.whenCalled('getPreview')]).then(function(args) {
+            // Check printer 1 was selected.
+            assertEquals(
+                'ID1', printPreview.destinationStore_.selectedDestination.id);
+
+            // Validate the parameters for getPreview match the app state.
+            expectEquals('CUSTOM_SQUARE',
+                         args[1].printTicketStore.mediaSize.getValue().name);
+            expectEquals('90', args[1].printTicketStore.scaling.getValue());
+            expectEquals(
+                100, args[1].printTicketStore.dpi.getValue().horizontal_dpi);
+            expectTrue(args[1].printTicketStore.headerFooter.getValue());
+            expectTrue(args[1].printTicketStore.cssBackground.getValue());
+            expectTrue(args[1].printTicketStore.fitToPage.getValue());
+            expectTrue(args[1].printTicketStore.collate.getValue());
+            expectTrue(args[1].printTicketStore.duplex.getValue());
+            expectTrue(args[1].printTicketStore.landscape.getValue());
+            expectTrue(args[1].printTicketStore.color.getValue());
+            expectEquals(print_preview.ticket_items.MarginsTypeValue.CUSTOM,
+                         args[1].printTicketStore.marginsType.getValue());
+            expectEquals(
+                74,
+                args[1].printTicketStore.customMargins.getValue().get(
+                    print_preview.ticket_items.CustomMarginsOrientation.TOP));
+
+            // Change scaling (a persisted ticket item value)
+            expandMoreSettings();
+            var scalingSettings = $('scaling-settings');
+            checkSectionVisible(scalingSettings, true);
+            var scalingInput = scalingSettings.querySelector('.user-value');
+            scalingInput.stepUp(5);
+            var enterEvent = document.createEvent('Event');
+            enterEvent.initEvent('keydown');
+            enterEvent.keyCode = 'Enter';
+            scalingInput.dispatchEvent(enterEvent);
+
+            // Change back to old value.
+            nativeLayer.resetResolver('saveAppState');
+            scalingInput.stepDown(5);
+            scalingInput.dispatchEvent(enterEvent);
+
+            return nativeLayer.whenCalled('saveAppState').then(function(state) {
+              // Validate that the re-serialized app state string matches.
+              expectEquals(getAppStateString(), state);
+            });
+        });
     });
 
     test('DefaultDestinationSelectionRules', function() {
@@ -1093,8 +1260,7 @@ cr.define('print_preview_test', function() {
       ]).then(function(args) {
         expectEquals(0, args[1].requestId);
         expectEquals('FooDevice', args[1].destination.id);
-        nativeLayer.resetResolver('getPrinterCapabilities');
-        nativeLayer.resetResolver('getPreview');
+        nativeLayer.reset();
 
         // Setup capabilities for BarDevice.
         var device = getCddTemplate('BarDevice');
@@ -1107,14 +1273,9 @@ cr.define('print_preview_test', function() {
         // Select BarDevice
         var barDestination =
             printPreview.destinationStore_.destinations().find(
-                function(d) {
-                  return d.id == 'BarDevice';
-                });
+                d => d.id == 'BarDevice');
         printPreview.destinationStore_.selectDestination(barDestination);
-        return Promise.all([
-            nativeLayer.whenCalled('getPrinterCapabilities'),
-            nativeLayer.whenCalled('getPreview'),
-        ]);
+        return waitForPrinterToUpdatePreview();
       }).then(function(args) {
         expectEquals(1, args[1].requestId);
         expectEquals('BarDevice', args[1].destination.id);
@@ -1312,20 +1473,14 @@ cr.define('print_preview_test', function() {
         expectTrue(printButton.disabled);
 
         // Reset
-        nativeLayer.resetResolver('getPrinterCapabilities');
-        nativeLayer.resetResolver('getPreview');
+        nativeLayer.reset();
 
         // Select a new destination
         var barDestination =
             printPreview.destinationStore_.destinations().find(
-                function(d) {
-                  return d.id == 'BarDevice';
-                });
+                d => d.id == 'BarDevice');
         printPreview.destinationStore_.selectDestination(barDestination);
-        return Promise.all([
-            nativeLayer.whenCalled('getPrinterCapabilities'),
-            nativeLayer.whenCalled('getPreview'),
-        ]);
+        return waitForPrinterToUpdatePreview();
       }).then(function() {
         // Has active print button and successfully 'prints', indicating
         // recovery from error state.
