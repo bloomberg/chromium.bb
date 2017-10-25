@@ -117,6 +117,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       event_creator_(event_creator),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
       is_captive_portal_(false),
+      insecure_proxies_allowed_(true),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
   DCHECK(configurator);
@@ -159,6 +160,7 @@ void DataReductionProxyConfig::ReloadConfig() {
   if (enabled_by_user_ && !params::IsIncludedInHoldbackFieldTrial() &&
       !config_values_->proxies_for_http().empty()) {
     configurator_->Enable(!secure_proxy_allowed_ || is_captive_portal_,
+                          !insecure_proxies_allowed_,
                           config_values_->proxies_for_http());
   } else {
     configurator_->Disable();
@@ -365,9 +367,11 @@ bool DataReductionProxyConfig::GetIsCaptivePortal() const {
 
 void DataReductionProxyConfig::UpdateConfigForTesting(
     bool enabled,
-    bool secure_proxy_allowed) {
+    bool secure_proxies_allowed,
+    bool insecure_proxies_allowed) {
   enabled_by_user_ = enabled;
-  secure_proxy_allowed_ = secure_proxy_allowed;
+  secure_proxy_allowed_ = secure_proxies_allowed;
+  insecure_proxies_allowed_ = insecure_proxies_allowed;
 }
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
@@ -583,16 +587,33 @@ base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
   return base::TimeTicks::Now();
 }
 
+void DataReductionProxyConfig::OnInsecureProxyAllowedStatusChange(
+    bool insecure_proxies_allowed) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool old_status = insecure_proxies_allowed_;
+  insecure_proxies_allowed_ = insecure_proxies_allowed;
+
+  if (old_status == insecure_proxies_allowed_)
+    return;
+  ReloadConfig();
+}
+
 net::ProxyConfig DataReductionProxyConfig::ProxyConfigIgnoringHoldback() const {
   if (!enabled_by_user_ || config_values_->proxies_for_http().empty())
     return net::ProxyConfig::CreateDirect();
   return configurator_->CreateProxyConfig(!secure_proxy_allowed_,
+                                          !insecure_proxies_allowed_,
                                           config_values_->proxies_for_http());
 }
 
 bool DataReductionProxyConfig::secure_proxy_allowed() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return secure_proxy_allowed_;
+}
+
+bool DataReductionProxyConfig::insecure_proxies_allowed() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return insecure_proxies_allowed_;
 }
 
 std::vector<DataReductionProxyServer>

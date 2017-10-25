@@ -48,7 +48,7 @@ class DataReductionProxySettingsTest
                                             bool expected_fallback_restricted) {
     test_context_->SetDataReductionProxyEnabled(initially_enabled);
     test_context_->config()->UpdateConfigForTesting(initially_enabled,
-                                                    request_succeeded);
+                                                    request_succeeded, true);
     ExpectSetProxyPrefs(expected_enabled, false);
     settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
@@ -64,7 +64,7 @@ class DataReductionProxySettingsTest
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   InitPrefMembers();
   // The proxy is disabled initially.
-  test_context_->config()->UpdateConfigForTesting(false, true);
+  test_context_->config()->UpdateConfigForTesting(false, true, true);
 
   EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
@@ -83,7 +83,7 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
 TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
   InitPrefMembers();
   // The proxy is disabled initially.
-  test_context_->config()->UpdateConfigForTesting(false, true);
+  test_context_->config()->UpdateConfigForTesting(false, true, true);
 
   GURL http_gurl("http://url.com/");
   EXPECT_FALSE(settings_->CanUseDataReductionProxy(http_gurl));
@@ -249,7 +249,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .Build();
 
   // The proxy is enabled initially.
-  drp_test_context->config()->UpdateConfigForTesting(true, true);
+  drp_test_context->config()->UpdateConfigForTesting(true, true, true);
   drp_test_context->InitSettings();
 
   MockDataReductionProxyService* mock_service =

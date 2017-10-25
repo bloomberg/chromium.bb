@@ -32,10 +32,12 @@ DataReductionProxyConfigurator::~DataReductionProxyConfigurator() {
 
 void DataReductionProxyConfigurator::Enable(
     bool secure_transport_restricted,
+    bool insecure_proxies_restricted,
     const std::vector<DataReductionProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyConfig config =
-      CreateProxyConfig(secure_transport_restricted, proxies_for_http);
+      CreateProxyConfig(secure_transport_restricted,
+                        insecure_proxies_restricted, proxies_for_http);
   data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
       net_log_, secure_transport_restricted,
       DataReductionProxyServer::ConvertToNetProxyServers(proxies_for_http));
@@ -44,6 +46,7 @@ void DataReductionProxyConfigurator::Enable(
 
 net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     bool secure_transport_restricted,
+    bool insecure_proxies_restricted,
     const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -53,12 +56,19 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
       net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
 
   for (const auto& http_proxy : proxies_for_http) {
-    if (!secure_transport_restricted ||
-        (http_proxy.proxy_server().scheme() != net::ProxyServer::SCHEME_HTTPS &&
-         http_proxy.proxy_server().scheme() != net::ProxyServer::SCHEME_QUIC)) {
-      config.proxy_rules().proxies_for_http.AddProxyServer(
-          http_proxy.proxy_server());
+    if (secure_transport_restricted &&
+        (http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_HTTPS ||
+         http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_QUIC)) {
+      continue;
     }
+
+    if (insecure_proxies_restricted &&
+        http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_HTTP) {
+      continue;
+    }
+
+    config.proxy_rules().proxies_for_http.AddProxyServer(
+        http_proxy.proxy_server());
   }
 
   if (!config.proxy_rules().proxies_for_http.IsEmpty()) {
