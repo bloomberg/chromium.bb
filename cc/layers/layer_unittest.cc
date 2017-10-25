@@ -1513,6 +1513,32 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
   test_layer->SetLayerTreeHost(nullptr);
 }
 
+// Verify that LayerClient is notified when SetTransform() is called and the
+// layer transform changes.
+TEST_F(LayerTest, SetTransformNotifiesClient) {
+  testing::StrictMock<MockLayerClient> client;
+  scoped_refptr<Layer> layer = Layer::Create();
+  layer->SetLayerClient(&client);
+  gfx::Transform target_transform;
+  target_transform.Skew(10.0f, 5.0f);
+  EXPECT_CALL(client, DidChangeLayerTransform())
+      .WillOnce(testing::Invoke([&layer, &target_transform]() {
+        EXPECT_EQ(layer->transform(), target_transform);
+      }));
+  layer->SetTransform(target_transform);
+}
+
+// Verify that LayerClient is not notified when SetTransform() is called but the
+// transform does not change.
+TEST_F(LayerTest, SetTransformNoChangeDoesNotNotifyClient) {
+  testing::StrictMock<MockLayerClient> client;
+  scoped_refptr<Layer> layer = Layer::Create();
+  layer->SetLayerClient(&client);
+  ASSERT_EQ(layer->transform(), gfx::Transform());
+  // Since |client| is a StrictMock, the test will fail if it is notified.
+  layer->SetTransform(gfx::Transform());
+}
+
 // Verify that LayerClient::DidChangeLayerOpacity() is called when
 // Layer::SetOpacity() is called and the opacity changes.
 TEST_F(LayerTest, SetOpacityNotifiesClient) {

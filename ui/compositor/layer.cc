@@ -1078,6 +1078,11 @@ void Layer::DidChangeLayerOpacity(float old_opacity, float new_opacity) {
     delegate_->OnLayerOpacityChanged(old_opacity, new_opacity);
 }
 
+void Layer::DidChangeLayerTransform() {
+  if (delegate_)
+    delegate_->OnLayerTransformed();
+}
+
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {
   if (animator_ && animator_->is_animating())

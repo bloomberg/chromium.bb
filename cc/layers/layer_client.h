@@ -36,6 +36,9 @@ class CC_EXPORT LayerClient {
   // Invoked when the layer's opacity has changed.
   virtual void DidChangeLayerOpacity(float old_opacity, float new_opacity) = 0;
 
+  // Invoked when the layer's transform has changed.
+  virtual void DidChangeLayerTransform() = 0;
+
  protected:
   virtual ~LayerClient() {}
 };
