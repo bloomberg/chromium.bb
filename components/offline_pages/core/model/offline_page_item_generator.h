@@ -25,7 +25,6 @@ class OfflinePageItemGenerator {
   OfflinePageItem CreateItemWithTempFile();
 
   void SetNamespace(const std::string& name_space);
-  void SetId(const std::string& id);
   void SetRequestOrigin(const std::string& request_origin);
   void SetUrl(const GURL& url);
   void SetOriginalUrl(const GURL& url);
@@ -35,7 +34,6 @@ class OfflinePageItemGenerator {
 
  private:
   std::string namespace_;
-  std::string id_;
   std::string request_origin_;
   GURL url_;
   GURL original_url_;

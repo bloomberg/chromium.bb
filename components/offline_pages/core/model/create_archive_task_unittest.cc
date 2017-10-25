@@ -375,12 +375,9 @@ TEST_F(CreateArchiveTaskTest, CreateArchiveLocalFileFailed) {
   CreateArchiveWithArchiver(kFileUrl, kTestClientId1, GURL(), "", nullptr);
   EXPECT_EQ(ArchiverResult::ERROR_SKIPPED, last_create_archive_result());
 
-  const OfflinePageItem& offline_page = last_page_of_archive();
-  EXPECT_EQ(kFileUrl, offline_page.url);
-  EXPECT_EQ(OfflinePageModel::kInvalidOfflineId, offline_page.offline_id);
-  EXPECT_EQ(kTestClientId1, offline_page.client_id);
-  EXPECT_EQ(GURL(), offline_page.original_url);
-  EXPECT_EQ("", offline_page.request_origin);
+  // Since the return happens before setting the fields, the OfflinePageItem
+  // returned in the callback will be constructed by default ctor.
+  EXPECT_EQ(OfflinePageItem(), last_page_of_archive());
 }
 
 TEST_F(CreateArchiveTaskTest, CreateArchiveFailedWithNullptr) {
@@ -389,12 +386,9 @@ TEST_F(CreateArchiveTaskTest, CreateArchiveFailedWithNullptr) {
   EXPECT_EQ(ArchiverResult::ERROR_CONTENT_UNAVAILABLE,
             last_create_archive_result());
 
-  const OfflinePageItem& offline_page = last_page_of_archive();
-  EXPECT_EQ(kTestUrl, offline_page.url);
-  EXPECT_EQ(OfflinePageModel::kInvalidOfflineId, offline_page.offline_id);
-  EXPECT_EQ(kTestClientId1, offline_page.client_id);
-  EXPECT_EQ(GURL(), offline_page.original_url);
-  EXPECT_EQ("", offline_page.request_origin);
+  // Since the return happens before setting the fields, the OfflinePageItem
+  // returned in the callback will be constructed by default ctor.
+  EXPECT_EQ(OfflinePageItem(), last_page_of_archive());
 }
 
 TEST_F(CreateArchiveTaskTest, CreateArchiveInBackground) {

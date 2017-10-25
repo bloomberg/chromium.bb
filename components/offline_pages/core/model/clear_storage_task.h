@@ -44,9 +44,11 @@ class ClearStorageTask : public Task {
   };
 
   // Callback used when calling ClearPagesIfNeeded.
+  // base::Time: the starting time of this clear storage attempt.
   // size_t: the number of cleared pages.
   // ClearStorageResult: result of clearing pages in storage.
-  typedef base::OnceCallback<void(size_t, ClearStorageResult)>
+  typedef base::OnceCallback<
+      void(const base::Time&, size_t, ClearStorageResult)>
       ClearStorageCallback;
 
   ClearStorageTask(OfflinePageMetadataStoreSQL* store,

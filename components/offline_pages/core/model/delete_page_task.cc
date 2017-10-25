@@ -260,71 +260,6 @@ DeletePageTaskResult DeleteCachedPagesByUrlPredicateSync(
   return result;
 }
 
-// Gets the page information of pages whose url and name_space equal to |url|
-// and |name_space|. The pages will be deleted from old to new (by last access
-// time) until there are limit - 1 pages left.
-// TODO(romax): This might be affected by https://crbug.com/753609 for url
-// matching.
-std::vector<DeletedPageInfoWrapper>
-GetDeletedPageInfoWrappersForPageLimitDeletion(sql::Connection* db,
-                                               const GURL& url,
-                                               std::string name_space,
-                                               size_t limit) {
-  std::vector<DeletedPageInfoWrapper> info_wrappers;
-  static const char kSql[] =
-      "SELECT offline_id, client_namespace, client_id, file_path,"
-      " request_origin"
-      " FROM " OFFLINE_PAGES_TABLE_NAME
-      " WHERE client_namespace = ? AND online_url = ?"
-      " ORDER BY last_access_time ASC";
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindString(0, name_space);
-  statement.BindString(1, url.spec());
-
-  while (statement.Step()) {
-    DeletedPageInfoWrapper info_wrapper;
-    info_wrapper.offline_id = statement.ColumnInt64(0);
-    info_wrapper.client_id.name_space = statement.ColumnString(1);
-    info_wrapper.client_id.id = statement.ColumnString(2);
-    info_wrapper.file_path =
-        store_utils::FromDatabaseFilePath(statement.ColumnString(3));
-    info_wrapper.request_origin = statement.ColumnString(4);
-    info_wrappers.push_back(info_wrapper);
-  }
-
-  // Since the page information was selected by ascending order of last access
-  // time, only the first |size - limit + 1| pages needs to be deleted.
-  int page_to_delete = info_wrappers.size() - limit;
-  if (page_to_delete < 0)
-    page_to_delete = 0;
-  info_wrappers.resize(page_to_delete);
-  return info_wrappers;
-}
-
-DeletePageTaskResult DeletePagesForPageLimit(const GURL& url,
-                                             std::string name_space,
-                                             size_t limit,
-                                             sql::Connection* db) {
-  if (!db)
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-
-  // If you create a transaction but dont Commit() it is automatically
-  // rolled back by its destructor when it falls out of scope.
-  sql::Transaction transaction(db);
-  if (!transaction.Begin())
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-
-  const std::vector<DeletedPageInfoWrapper>& infos =
-      GetDeletedPageInfoWrappersForPageLimitDeletion(db, url, name_space,
-                                                     limit);
-  DeletePageTaskResult result =
-      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
-
-  if (!transaction.Commit())
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-  return result;
-}
-
 }  // namespace
 
 // DeletePageTaskResult implementations.
@@ -340,8 +275,8 @@ DeletePageTaskResult::~DeletePageTaskResult() = default;
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingOfflineIds(
     OfflinePageMetadataStoreSQL* store,
-    DeletePageTask::DeletePageTaskCallback callback,
-    const std::vector<int64_t>& offline_ids) {
+    const std::vector<int64_t>& offline_ids,
+    DeletePageTask::DeletePageTaskCallback callback) {
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
       store, base::BindOnce(&DeletePagesByOfflineIdsSync, offline_ids),
       std::move(callback)));
@@ -350,8 +285,8 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingOfflineIds(
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingClientIds(
     OfflinePageMetadataStoreSQL* store,
-    DeletePageTask::DeletePageTaskCallback callback,
-    const std::vector<ClientId>& client_ids) {
+    const std::vector<ClientId>& client_ids,
+    DeletePageTask::DeletePageTaskCallback callback) {
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
       store, base::BindOnce(&DeletePagesByClientIdsSync, client_ids),
       std::move(callback)));
@@ -361,9 +296,9 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingClientIds(
 std::unique_ptr<DeletePageTask>
 DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
     OfflinePageMetadataStoreSQL* store,
-    DeletePageTask::DeletePageTaskCallback callback,
     ClientPolicyController* policy_controller,
-    const UrlPredicate& predicate) {
+    const UrlPredicate& predicate,
+    DeletePageTask::DeletePageTaskCallback callback) {
   std::vector<std::string> temp_namespaces =
       policy_controller->GetNamespacesRemovedOnCacheReset();
   return std::unique_ptr<DeletePageTask>(
@@ -371,22 +306,6 @@ DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
                          base::BindOnce(&DeleteCachedPagesByUrlPredicateSync,
                                         temp_namespaces, predicate),
                          std::move(callback)));
-}
-
-// static
-std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskDeletingForPageLimit(
-    OfflinePageMetadataStoreSQL* store,
-    DeletePageTask::DeletePageTaskCallback callback,
-    ClientPolicyController* policy_controller,
-    const OfflinePageItem& page) {
-  std::string name_space = page.client_id.name_space;
-  size_t limit = policy_controller->GetPolicy(name_space).pages_allowed_per_url;
-  if (limit == kUnlimitedPages)
-    return nullptr;
-  return std::unique_ptr<DeletePageTask>(new DeletePageTask(
-      store,
-      base::BindOnce(&DeletePagesForPageLimit, page.url, name_space, limit),
-      std::move(callback)));
 }
 
 DeletePageTask::DeletePageTask(OfflinePageMetadataStoreSQL* store,

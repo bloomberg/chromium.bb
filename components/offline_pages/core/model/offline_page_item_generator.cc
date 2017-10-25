@@ -20,10 +20,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   OfflinePageItem item;
   item.offline_id = store_utils::GenerateOfflineId();
   item.client_id.name_space = namespace_;
-  if (id_.empty())
-    item.client_id.id = base::Int64ToString(item.offline_id);
-  else
-    item.client_id.id = id_;
+  item.client_id.id = base::Int64ToString(item.offline_id);
   item.request_origin = request_origin_;
   item.url = url_;
   item.original_url = original_url_;
@@ -45,10 +42,6 @@ OfflinePageItem OfflinePageItemGenerator::CreateItemWithTempFile() {
 
 void OfflinePageItemGenerator::SetNamespace(const std::string& name_space) {
   namespace_ = name_space;
-}
-
-void OfflinePageItemGenerator::SetId(const std::string& id) {
-  id_ = id;
 }
 
 void OfflinePageItemGenerator::SetRequestOrigin(

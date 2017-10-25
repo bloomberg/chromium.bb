@@ -19,10 +19,6 @@ OfflinePageModel::SavePageParams::SavePageParams(const SavePageParams& other) =
 
 OfflinePageModel::SavePageParams::~SavePageParams() = default;
 
-OfflinePageModel::DeletedPageInfo::DeletedPageInfo() = default;
-OfflinePageModel::DeletedPageInfo::DeletedPageInfo(
-    const DeletedPageInfo& other) = default;
-OfflinePageModel::DeletedPageInfo::~DeletedPageInfo() = default;
 OfflinePageModel::DeletedPageInfo::DeletedPageInfo(
     int64_t offline_id,
     const ClientId& client_id,
