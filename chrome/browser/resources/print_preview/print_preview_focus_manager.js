@@ -20,8 +20,8 @@ cr.define('print_preview', function() {
 
     /** @override */
     getFocusParent: function() {
-      var el = document.body;
-      var newEl = null;
+      let el = document.body;
+      let newEl = null;
       while (newEl = el.querySelector('.overlay:not([hidden])'))
         el = newEl;
       return el;
