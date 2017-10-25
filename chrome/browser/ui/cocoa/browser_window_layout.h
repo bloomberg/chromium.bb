@@ -49,6 +49,8 @@ struct LayoutParameters {
   // Whether to use the new avatar button. Only needs to be set when
   // shouldShowAvatar is YES.
   BOOL shouldUseNewAvatar;
+  // True if the avatar button is a generic avatar.
+  BOOL isGenericAvatar;
   // The size of the avatar button. Only needs to be set when shouldShowAvatar
   // is YES.
   NSSize avatarSize;
@@ -159,6 +161,7 @@ struct LayoutOutput {
 - (void)setFullscreenButtonFrame:(NSRect)frame;
 - (void)setShouldShowAvatar:(BOOL)shouldShowAvatar;
 - (void)setShouldUseNewAvatar:(BOOL)shouldUseNewAvatar;
+- (void)setIsGenericAvatar:(BOOL)isGenericAvatar;
 - (void)setAvatarSize:(NSSize)avatarSize;
 - (void)setAvatarLineWidth:(CGFloat)avatarLineWidth;
 

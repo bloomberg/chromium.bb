@@ -8,8 +8,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #import "chrome/browser/themes/theme_properties.h"
@@ -236,15 +234,7 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
   NSColor* foregroundColor =
       [self isFrameColorDark] ? [NSColor whiteColor] : [NSColor blackColor];
 
-  ProfileAttributesStorage& storage =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  // If there is a single local profile, then use the generic avatar button
-  // instead of the profile name. Never use the generic button if the active
-  // profile is Guest.
-  bool useGenericButton =
-      !browser_->profile()->IsGuestSession() &&
-      storage.GetNumberOfProfiles() == 1 &&
-      !storage.GetAllProfilesAttributes().front()->IsAuthenticated();
+  bool useGenericButton = [self shouldUseGenericButton];
 
   NSString* buttonTitle = base::SysUTF16ToNSString(useGenericButton ?
       base::string16() :
