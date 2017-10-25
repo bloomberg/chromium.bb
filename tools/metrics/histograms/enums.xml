@@ -21954,6 +21954,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Remote suggestions"/>
 </enum>
 
+<enum name="IOSRepeatedExternalAppPromptResponse">
+  <int value="0" label="Blocked">
+    User selected to block the application for the current session.
+  </int>
+  <int value="1" label="Allowed">
+    User selected to allow the application to run again.
+  </int>
+</enum>
+
 <enum name="IOSSearchExtensionAction">
   <int value="0" label="No Action"/>
   <int value="1" label="New Search"/>

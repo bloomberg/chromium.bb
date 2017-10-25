@@ -1583,6 +1583,15 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
        <message name="IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER" desc="Text on the bookmarks context menu to edit selected bookmark folder">
         Edit Folder
       </message>
+      <message name="IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP" desc="Alert to let the user know that the website is trying repeatedly to open another application. [iOS only]">
+          This website is repeatedly trying to open another application.
+      </message>
+      <message name="IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP_ALLOW" desc="Text on the button, when tapped will allow opening an external application. [iOS only]">
+          Allow
+      </message>
+      <message name="IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP_BLOCK" desc="Text on the button, when tapped will block opening an external application for this browsing session. [iOS only]">
+          Block
+      </message>
    </messages>
   </release>
 </grit>

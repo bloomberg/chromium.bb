@@ -632,7 +632,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       return NO;
   }
 
-  if ([_externalAppLauncher openURL:finalURL linkClicked:linkClicked]) {
+  if ([_externalAppLauncher requestToOpenURL:finalURL
+                               sourcePageURL:sourceURL
+                                 linkClicked:linkClicked]) {
     // Clears pending navigation history after successfully launching the
     // external app.
     DCHECK([self navigationManager]);
