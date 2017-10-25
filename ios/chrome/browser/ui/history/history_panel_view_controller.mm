@@ -325,7 +325,7 @@ CGFloat kShadowOpacity = 0.2f;
   [self exitSearchMode];
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
-  [self.dispatcher showClearBrowsingDataSettings];
+  [self.dispatcher showClearBrowsingDataSettingsFromViewController:self];
 }
 
 - (void)enterEditingMode {

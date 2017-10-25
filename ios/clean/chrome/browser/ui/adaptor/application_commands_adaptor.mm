@@ -50,8 +50,9 @@
   [self showAlert:@"dismissTabSwitcher"];
 }
 
-- (void)showClearBrowsingDataSettings {
-  [self showAlert:@"showClearBrowsingDataSettings"];
+- (void)showClearBrowsingDataSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  [self showAlert:@"showClearBrowsingDataSettingsFromViewController:"];
 }
 
 - (void)showAutofillSettings {
