@@ -18,7 +18,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/image/image.h"
 
-using message_center::Notifier;
+using message_center::NotifierUiData;
 using message_center::NotifierId;
 
 namespace {
@@ -27,8 +27,8 @@ class NotifierComparator {
  public:
   explicit NotifierComparator(icu::Collator* collator) : collator_(collator) {}
 
-  bool operator()(const std::unique_ptr<Notifier>& n1,
-                  const std::unique_ptr<Notifier>& n2) {
+  bool operator()(const std::unique_ptr<NotifierUiData>& n1,
+                  const std::unique_ptr<NotifierUiData>& n2) {
     if (n1->notifier_id.type != n2->notifier_id.type)
       return n1->notifier_id.type < n2->notifier_id.type;
 
@@ -75,7 +75,7 @@ void MessageCenterSettingsControllerChromeOs::RemoveObserver(
 }
 
 void MessageCenterSettingsControllerChromeOs::GetNotifierList(
-    std::vector<std::unique_ptr<Notifier>>* notifiers) {
+    std::vector<std::unique_ptr<NotifierUiData>>* notifiers) {
   DCHECK(notifiers);
   for (auto& source : sources_) {
     auto source_notifiers = source.second->GetNotifierList(GetProfile());
@@ -104,12 +104,6 @@ void MessageCenterSettingsControllerChromeOs::OnNotifierSettingsClosing() {
   }
 }
 
-bool MessageCenterSettingsControllerChromeOs::NotifierHasAdvancedSettings(
-    const NotifierId& notifier_id) const {
-  return sources_.find(notifier_id.type)
-      ->second->HasAdvancedSettings(GetProfile(), notifier_id);
-}
-
 void MessageCenterSettingsControllerChromeOs::
     OnNotifierAdvancedSettingsRequested(const NotifierId& notifier_id,
                                         const std::string* notification_id) {
@@ -118,7 +112,7 @@ void MessageCenterSettingsControllerChromeOs::
 }
 
 void MessageCenterSettingsControllerChromeOs::OnIconImageUpdated(
-    const message_center::NotifierId& id,
+    const NotifierId& id,
     const gfx::Image& image) {
   for (message_center::NotifierSettingsObserver& observer : observers_)
     observer.UpdateIconImage(id, image);
@@ -130,7 +124,7 @@ Profile* MessageCenterSettingsControllerChromeOs::GetProfile() const {
 }
 
 void MessageCenterSettingsControllerChromeOs::OnNotifierEnabledChanged(
-    const message_center::NotifierId& id,
+    const NotifierId& id,
     bool enabled) {
   for (message_center::NotifierSettingsObserver& observer : observers_)
     observer.NotifierEnabledChanged(id, enabled);

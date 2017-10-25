@@ -20,9 +20,9 @@ WebPageNotifierController::WebPageNotifierController(Observer* observer)
 
 WebPageNotifierController::~WebPageNotifierController() {}
 
-std::vector<std::unique_ptr<message_center::Notifier>>
+std::vector<std::unique_ptr<message_center::NotifierUiData>>
 WebPageNotifierController::GetNotifierList(Profile* profile) {
-  std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
+  std::vector<std::unique_ptr<message_center::NotifierUiData>> notifiers;
 
   ContentSettingsForOneType settings;
   DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
@@ -46,8 +46,8 @@ WebPageNotifierController::GetNotifierList(Profile* profile) {
     message_center::NotifierId notifier_id(url);
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
-    notifiers.emplace_back(new message_center::Notifier(
-        notifier_id, name,
+    notifiers.emplace_back(new message_center::NotifierUiData(
+        notifier_id, name, false,
         notifier_state_tracker->IsNotifierEnabled(notifier_id)));
     patterns_[url_pattern] = iter->primary_pattern;
     // Note that favicon service obtains the favicon from history. This means

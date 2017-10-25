@@ -200,7 +200,7 @@ TEST_F(MessageCenterSettingsControllerChromeOsTest, NotifierSortOrder) {
   extension_service->AddExtension(baf_app.Build().get());
   CreateController();
 
-  std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
+  std::vector<std::unique_ptr<message_center::NotifierUiData>> notifiers;
   controller()->GetNotifierList(&notifiers);
   EXPECT_EQ(2u, notifiers.size());
   EXPECT_EQ(kBarId, notifiers[0]->notifier_id.id);

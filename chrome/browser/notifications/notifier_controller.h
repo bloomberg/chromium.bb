@@ -14,7 +14,7 @@
 class Profile;
 
 namespace message_center {
-struct Notifier;
+struct NotifierUiData;
 }
 
 // An interface to control Notifiers, grouped by NotifierType. Controllers are
@@ -36,7 +36,7 @@ class NotifierController {
   // Returns notifiers to display in the settings UI. Not all notifiers appear
   // in settings. If the source starts loading for icon images, it needs to call
   // Observer::OnIconImageUpdated after the icon is loaded.
-  virtual std::vector<std::unique_ptr<message_center::Notifier>>
+  virtual std::vector<std::unique_ptr<message_center::NotifierUiData>>
   GetNotifierList(Profile* profile) = 0;
 
   // Set notifier enabled. |notifier_id| must have notifier type that can be
@@ -45,11 +45,6 @@ class NotifierController {
   virtual void SetNotifierEnabled(Profile* profile,
                                   const message_center::NotifierId& notifier_id,
                                   bool enabled) = 0;
-
-  // Returns true if the given notifier should have an advanced settings button.
-  virtual bool HasAdvancedSettings(
-      Profile* profile,
-      const message_center::NotifierId& notifier_id) const;
 
   // Called when the advanced settings button has been clicked.
   virtual void OnNotifierAdvancedSettingsRequested(
