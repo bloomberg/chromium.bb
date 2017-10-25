@@ -132,7 +132,7 @@ class PaymentRequestBrowserTestBase
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
-  // it's open and ready for input.
+  // it's open.
   void InvokePaymentRequestUI();
 
   // Will expect that all strings in |expected_strings| are present in output.
