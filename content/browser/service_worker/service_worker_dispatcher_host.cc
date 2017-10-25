@@ -55,8 +55,6 @@ const char kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
 const char kUserDeniedPermissionMessage[] =
     "The user denied permission to use Service Worker.";
-const char kEnableNavigationPreloadErrorPrefix[] =
-    "Failed to enable or disable navigation preload: ";
 const char kGetNavigationPreloadStateErrorPrefix[] =
     "Failed to get navigation preload state: ";
 const char kSetNavigationPreloadHeaderErrorPrefix[] =
@@ -168,8 +166,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
                         OnDecrementServiceWorkerRefCount)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_TerminateWorker, OnTerminateWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_EnableNavigationPreload,
-                        OnEnableNavigationPreload)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetNavigationPreloadState,
                         OnGetNavigationPreloadState)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetNavigationPreloadHeader,
@@ -252,81 +248,6 @@ ServiceWorkerDispatcherHost::CreateRegistrationObjectInfo(
 base::WeakPtr<ServiceWorkerDispatcherHost>
 ServiceWorkerDispatcherHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void ServiceWorkerDispatcherHost::OnEnableNavigationPreload(
-    int thread_id,
-    int request_id,
-    int provider_id,
-    int64_t registration_id,
-    bool enable) {
-  ProviderStatus provider_status;
-  ServiceWorkerProviderHost* provider_host =
-      GetProviderHostForRequest(&provider_status, provider_id);
-  switch (provider_status) {
-    case ProviderStatus::NO_CONTEXT:  // fallthrough
-    case ProviderStatus::DEAD_HOST:
-      Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
-          thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kAbort,
-          std::string(kEnableNavigationPreloadErrorPrefix) +
-              std::string(kShutdownErrorMessage)));
-      return;
-    case ProviderStatus::NO_HOST:
-      bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_ENABLE_NAVIGATION_PRELOAD_NO_HOST);
-      return;
-    case ProviderStatus::NO_URL:
-      Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
-          thread_id, request_id,
-          blink::mojom::ServiceWorkerErrorType::kSecurity,
-          std::string(kEnableNavigationPreloadErrorPrefix) +
-              std::string(kNoDocumentURLErrorMessage)));
-      return;
-    case ProviderStatus::OK:
-      break;
-  }
-
-  ServiceWorkerRegistration* registration =
-      GetContext()->GetLiveRegistration(registration_id);
-  if (!registration) {
-    // |registration| must be alive because a renderer retains a registration
-    // reference at this point.
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_ENABLE_NAVIGATION_PRELOAD_BAD_REGISTRATION_ID);
-    return;
-  }
-  if (!registration->active_version()) {
-    Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
-        thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kState,
-        std::string(kEnableNavigationPreloadErrorPrefix) +
-            std::string(kNoActiveWorkerErrorMessage)));
-    return;
-  }
-
-  std::vector<GURL> urls = {provider_host->document_url(),
-                            registration->pattern()};
-  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_ENABLE_NAVIGATION_PRELOAD_INVALID_ORIGIN);
-    return;
-  }
-
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, base::Bind(&GetWebContents, render_process_id_,
-                                        provider_host->frame_id()))) {
-    Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
-        thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kDisabled,
-        std::string(kEnableNavigationPreloadErrorPrefix) +
-            std::string(kUserDeniedPermissionMessage)));
-    return;
-  }
-
-  GetContext()->storage()->UpdateNavigationPreloadEnabled(
-      registration->id(), registration->pattern().GetOrigin(), enable,
-      base::Bind(
-          &ServiceWorkerDispatcherHost::DidUpdateNavigationPreloadEnabled, this,
-          thread_id, request_id, registration->id(), enable));
 }
 
 void ServiceWorkerDispatcherHost::OnGetNavigationPreloadState(
@@ -820,28 +741,6 @@ ServiceWorkerDispatcherHost::GetProviderHostForRequest(ProviderStatus* status,
 
   *status = ProviderStatus::OK;
   return provider_host;
-}
-
-void ServiceWorkerDispatcherHost::DidUpdateNavigationPreloadEnabled(
-    int thread_id,
-    int request_id,
-    int registration_id,
-    bool enable,
-    ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK) {
-    Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
-        thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kUnknown,
-        std::string(kEnableNavigationPreloadErrorPrefix) +
-            std::string(kDatabaseErrorMessage)));
-    return;
-  }
-  if (!GetContext())
-    return;
-  ServiceWorkerRegistration* registration =
-      GetContext()->GetLiveRegistration(registration_id);
-  if (registration)
-    registration->EnableNavigationPreload(enable);
-  Send(new ServiceWorkerMsg_DidEnableNavigationPreload(thread_id, request_id));
 }
 
 void ServiceWorkerDispatcherHost::DidUpdateNavigationPreloadHeader(

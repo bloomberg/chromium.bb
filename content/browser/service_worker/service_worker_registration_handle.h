@@ -64,6 +64,9 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   // Implements blink::mojom::ServiceWorkerRegistrationObjectHost.
   void Update(UpdateCallback callback) override;
   void Unregister(UnregisterCallback callback) override;
+  void EnableNavigationPreload(
+      bool enable,
+      EnableNavigationPreloadCallback callback) override;
 
   // Called back from ServiceWorkerContextCore when an update is complete.
   void UpdateComplete(UpdateCallback callback,
@@ -74,6 +77,12 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   // complete.
   void UnregistrationComplete(UnregisterCallback callback,
                               ServiceWorkerStatusCode status);
+  // Called back from ServiceWorkerStorage when setting navigation preload is
+  // complete.
+  void DidUpdateNavigationPreloadEnabled(
+      bool enable,
+      EnableNavigationPreloadCallback callback,
+      ServiceWorkerStatusCode status);
 
   // Sets the corresponding version field to the given version or if the given
   // version is nullptr, clears the field.

@@ -163,6 +163,10 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks,
       blink::mojom::ServiceWorkerErrorType error,
       const base::Optional<std::string>& error_msg);
+  void OnDidEnableNavigationPreload(
+      std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg);
 
   // |handle_id_| is the key to map with remote
   // content::ServiceWorkerRegistrationHandle.
