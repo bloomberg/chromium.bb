@@ -10,7 +10,6 @@
 #include "base/win/win_util.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
-#include "content/common/sandbox_win.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -18,6 +17,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
 
 namespace content {
 namespace internal {

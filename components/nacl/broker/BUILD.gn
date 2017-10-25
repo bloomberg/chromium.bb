@@ -127,8 +127,8 @@ if (current_cpu == "x86") {
     sources = [
       "//content/app/sandbox_helper_win.cc",
       "//content/common/sandbox_init_win.cc",
-      "//content/common/sandbox_win.cc",
       "//content/public/common/sandboxed_process_launcher_delegate.cc",
+      "//services/service_manager/sandbox/win/sandbox_win.cc",
     ]
 
     defines = [

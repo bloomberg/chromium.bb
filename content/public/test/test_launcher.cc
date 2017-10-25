@@ -47,10 +47,10 @@
 
 #if defined(OS_WIN)
 #include "base/base_switches.h"
-#include "content/common/sandbox_win.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
