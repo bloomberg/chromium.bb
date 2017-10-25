@@ -23,6 +23,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/tracing_controller.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -190,8 +191,12 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
                        MAYBE_MouseDownAndUpRecordedWithoutSwap) {
   LoadURL();
 
+  auto filter = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kMouseUp);
   StartTracing();
   DoSyncClick(gfx::PointF(100, 100));
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED,
+            filter->GetAckStateWaitIfNecessary());
   const base::Value& trace_data = StopTracing();
 
   const base::DictionaryValue* trace_data_dict;
@@ -237,9 +242,13 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
                        MAYBE_CoalescedMouseMovesCorrectlyTerminated) {
   LoadURL();
 
+  auto filter = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kMouseUp);
   StartTracing();
   DoSyncCoalescedMoves(gfx::PointF(100, 100), gfx::Vector2dF(150, 150),
                        gfx::Vector2dF(250, 250));
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED,
+            filter->GetAckStateWaitIfNecessary());
   const base::Value& trace_data = StopTracing();
 
   const base::DictionaryValue* trace_data_dict;

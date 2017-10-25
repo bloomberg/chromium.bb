@@ -1865,6 +1865,12 @@ InputEventAckState InputMsgWatcher::WaitForAck() {
   return ack_result_;
 }
 
+InputEventAckState InputMsgWatcher::GetAckStateWaitIfNecessary() {
+  if (HasReceivedAck())
+    return ack_result_;
+  return WaitForAck();
+}
+
 #if defined(OS_WIN)
 static void RunTaskAndSignalCompletion(const base::Closure& task,
                                        base::WaitableEvent* completion) {

@@ -713,6 +713,10 @@ class InputMsgWatcher : public RenderWidgetHost::InputEventObserver {
   // the message.
   InputEventAckState WaitForAck();
 
+  // Wait for the ack if it hasn't been received, if it has been
+  // received return the result immediately.
+  InputEventAckState GetAckStateWaitIfNecessary();
+
   InputEventAckSource last_event_ack_source() const { return ack_source_; }
 
  private:
