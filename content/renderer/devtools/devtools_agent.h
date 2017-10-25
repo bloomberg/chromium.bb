@@ -89,7 +89,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   void OnInspectElement(int session_id, int x, int y);
   void OnRequestNewWindowACK(bool success);
   void ContinueProgram();
-  void OnSetupDevToolsClient(const std::string& api_script);
 
   void GotManifest(int session_id,
                    int command_id,
@@ -98,7 +97,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                    const ManifestDebugInfo& debug_info);
 
   std::set<int> session_ids_;
-  bool is_devtools_client_;
   bool paused_;
   RenderFrameImpl* frame_;
   base::Callback<void(int, int, const std::string&, const std::string&)>
