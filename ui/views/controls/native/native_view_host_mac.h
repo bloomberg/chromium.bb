@@ -29,7 +29,8 @@ class NativeViewHostMac : public NativeViewHostWrapper {
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;
-  void ShowWidget(int x, int y, int w, int h) override;
+  void ShowWidget(int x, int y, int w, int h, int native_w, int native_h)
+      override;
   void HideWidget() override;
   void SetFocus() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -47,4 +48,4 @@ class NativeViewHostMac : public NativeViewHostWrapper {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_AURA_H_
+#endif  // UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_MAC_H_

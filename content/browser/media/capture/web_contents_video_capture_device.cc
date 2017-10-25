@@ -685,17 +685,16 @@ void WebContentsCaptureMachine::UpdateCaptureSize() {
   if (!view)
     return;
 
-  // Convert the view's size from the DIP coordinate space to the pixel
-  // coordinate space.  When the view is being rendered on a high-DPI display,
-  // this allows the high-resolution image detail to propagate through to the
-  // captured video.
-  const gfx::Size view_size = view->GetViewBounds().size();
-  const gfx::Size physical_size = gfx::ConvertSizeToPixel(
-      ui::GetScaleFactorForNativeView(view->GetNativeView()), view_size);
-  VLOG(1) << "Computed physical capture size (" << physical_size.ToString()
-          << ") from view size (" << view_size.ToString() << ").";
+  // The capture size is not the view's size in DIP coordinates, but instead
+  // based on the physical backing size. Thus, when a view is being rendered on
+  // a high-DPI display, the high-resolution image detail will propagate through
+  // in the captured video output.
+  const gfx::Size physical_size_pixels =
+      static_cast<RenderWidgetHostViewBase*>(view)->GetPhysicalBackingSize();
+  VLOG(1) << "Physical capture size pixels of view is "
+          << physical_size_pixels.ToString();
 
-  oracle_proxy_->UpdateCaptureSize(physical_size);
+  oracle_proxy_->UpdateCaptureSize(physical_size_pixels);
 }
 
 }  // namespace

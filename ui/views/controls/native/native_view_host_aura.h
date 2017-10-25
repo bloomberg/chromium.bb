@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_owner.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
 #include "ui/views/views_export.h"
 
@@ -33,7 +34,8 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;
-  void ShowWidget(int x, int y, int w, int h) override;
+  void ShowWidget(int x, int y, int w, int h, int native_w, int native_h)
+      override;
   void HideWidget() override;
   void SetFocus() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -74,6 +76,16 @@ class NativeViewHostAura : public NativeViewHostWrapper,
 
   // This mask exists for the sake of SetCornerRadius().
   std::unique_ptr<ui::LayerOwner> mask_;
+
+  // Set when AttachNativeView() is called. This is the original transform of
+  // the NativeView's layer. The NativeView's layer may be modified to scale
+  // when ShowWidget() is called with a native view size not equal to the
+  // region's size. When NativeViewDetaching() is called, the NativeView's
+  // transform is restored to this.
+  gfx::Transform original_transform_;
+
+  // True if a transform different from the original was set.
+  bool original_transform_changed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostAura);
 };

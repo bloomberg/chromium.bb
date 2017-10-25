@@ -98,6 +98,8 @@ void NativeViewHostAura::AttachNativeView() {
   host_->native_view()->AddObserver(this);
   host_->native_view()->SetProperty(views::kHostViewKey,
       static_cast<View*>(host_));
+  original_transform_ = host_->native_view()->transform();
+  original_transform_changed_ = false;
   AddClippingWindow();
   InstallMask();
 }
@@ -109,6 +111,8 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+    if (original_transform_changed_)
+      host_->native_view()->SetTransform(original_transform_);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())
       Widget::ReparentNativeView(host_->native_view(), NULL);
@@ -164,22 +168,36 @@ void NativeViewHostAura::UninstallClip() {
   clip_rect_.reset();
 }
 
-void NativeViewHostAura::ShowWidget(int x, int y, int w, int h) {
-  int width = w;
-  int height = h;
+void NativeViewHostAura::ShowWidget(int x,
+                                    int y,
+                                    int w,
+                                    int h,
+                                    int native_w,
+                                    int native_h) {
   if (host_->fast_resize()) {
     gfx::Point origin(x, y);
     views::View::ConvertPointFromWidget(host_, &origin);
     InstallClip(origin.x(), origin.y(), w, h);
-    width = host_->native_view()->bounds().width();
-    height = host_->native_view()->bounds().height();
+    native_w = host_->native_view()->bounds().width();
+    native_h = host_->native_view()->bounds().height();
+  } else {
+    gfx::Transform transform = original_transform_;
+    if (w > 0 && h > 0 && native_w > 0 && native_h > 0) {
+      transform.Scale(static_cast<SkMScalar>(w) / native_w,
+                      static_cast<SkMScalar>(h) / native_h);
+    }
+    // Only set the transform when it is actually different.
+    if (transform != host_->native_view()->transform()) {
+      host_->native_view()->SetTransform(transform);
+      original_transform_changed_ = true;
+    }
   }
+
   clipping_window_.SetBounds(clip_rect_ ? *clip_rect_
                                         : gfx::Rect(x, y, w, h));
-
   gfx::Point clip_offset = clipping_window_.bounds().origin();
   host_->native_view()->SetBounds(
-      gfx::Rect(x - clip_offset.x(), y - clip_offset.y(), width, height));
+      gfx::Rect(x - clip_offset.x(), y - clip_offset.y(), native_w, native_h));
   host_->native_view()->Show();
   clipping_window_.Show();
 }
