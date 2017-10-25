@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -52,5 +53,13 @@ public class BookmarkActivity extends SnackbarActivity {
                     INTENT_VISIT_BOOKMARK_ID));
             mBookmarkManager.openBookmark(bookmarkId, BookmarkLaunchLocation.BOOKMARK_EDITOR);
         }
+    }
+
+    /**
+     * @return The {@link BookmarkManager} for testing purposes.
+     */
+    @VisibleForTesting
+    public BookmarkManager getManagerForTesting() {
+        return mBookmarkManager;
     }
 }
