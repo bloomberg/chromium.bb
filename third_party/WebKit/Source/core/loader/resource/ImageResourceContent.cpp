@@ -202,32 +202,11 @@ bool ImageResourceContent::ShouldUpdateImageImmediately() const {
          (image_ && image_->MaybeAnimated());
 }
 
-std::pair<blink::Image*, float> ImageResourceContent::BrokenImage(
-    float device_scale_factor) {
-  if (device_scale_factor >= 2) {
-    DEFINE_STATIC_REF(blink::Image, broken_image_hi_res,
-                      (blink::Image::LoadPlatformResource("missingImage@2x")));
-    return std::make_pair(broken_image_hi_res, 2);
-  }
-
-  DEFINE_STATIC_REF(blink::Image, broken_image_lo_res,
-                    (blink::Image::LoadPlatformResource("missingImage")));
-  return std::make_pair(broken_image_lo_res, 1);
-}
-
 blink::Image* ImageResourceContent::GetImage() {
-  if (ErrorOccurred()) {
-    // Returning the 1x broken image is non-ideal, but we cannot reliably access
-    // the appropriate deviceScaleFactor from here. It is critical that callers
-    // use ImageResourceContent::brokenImage() when they need the real,
-    // deviceScaleFactor-appropriate broken image icon.
-    return BrokenImage(1).first;
-  }
+  if (!image_ || ErrorOccurred())
+    return Image::NullImage();
 
-  if (image_)
-    return image_.get();
-
-  return blink::Image::NullImage();
+  return image_.get();
 }
 
 bool ImageResourceContent::UsesImageContainerSize() const {

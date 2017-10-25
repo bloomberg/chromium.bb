@@ -59,11 +59,6 @@ class CORE_EXPORT ImageResourceContent final
   blink::Image* GetImage();
   bool HasImage() const { return image_.get(); }
 
-  static std::pair<blink::Image*, float> BrokenImage(
-      float
-          device_scale_factor);  // Returns an image and the image's resolution
-                                 // scale factor.
-
   bool UsesImageContainerSize() const;
   bool ImageHasRelativeSize() const;
   // The device pixel ratio we got from the server for this image, or 1.0.
