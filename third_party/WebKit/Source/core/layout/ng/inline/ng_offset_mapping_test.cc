@@ -5,6 +5,7 @@
 #include "core/layout/ng/inline/ng_offset_mapping.h"
 
 #include "core/dom/FirstLetterPseudoElement.h"
+#include "core/editing/Position.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -76,6 +77,14 @@ class NGOffsetMappingTest : public RenderingTest {
     return GetOffsetMapping().IsAfterNonCollapsedCharacter(node, offset);
   }
 
+  Position GetFirstPosition(unsigned offset) const {
+    return GetOffsetMapping().GetFirstPosition(offset);
+  }
+
+  Position GetLastPosition(unsigned offset) const {
+    return GetOffsetMapping().GetLastPosition(offset);
+  }
+
   scoped_refptr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
@@ -126,6 +135,16 @@ TEST_F(NGOffsetMappingTest, OneTextNode) {
   EXPECT_EQ(1u, *GetTextContentOffset(*foo_node, 1));
   EXPECT_EQ(2u, *GetTextContentOffset(*foo_node, 2));
   EXPECT_EQ(3u, *GetTextContentOffset(*foo_node, 3));
+
+  EXPECT_EQ(Position(foo_node, 0), GetFirstPosition(0));
+  EXPECT_EQ(Position(foo_node, 1), GetFirstPosition(1));
+  EXPECT_EQ(Position(foo_node, 2), GetFirstPosition(2));
+  EXPECT_EQ(Position(foo_node, 3), GetFirstPosition(3));
+
+  EXPECT_EQ(Position(foo_node, 0), GetLastPosition(0));
+  EXPECT_EQ(Position(foo_node, 1), GetLastPosition(1));
+  EXPECT_EQ(Position(foo_node, 2), GetLastPosition(2));
+  EXPECT_EQ(Position(foo_node, 3), GetLastPosition(3));
 
   EXPECT_EQ(0u, *StartOfNextNonCollapsedCharacter(*foo_node, 0));
   EXPECT_EQ(1u, *StartOfNextNonCollapsedCharacter(*foo_node, 1));
@@ -187,6 +206,9 @@ TEST_F(NGOffsetMappingTest, TwoTextNodes) {
   EXPECT_EQ(4u, *GetTextContentOffset(*bar_node, 1));
   EXPECT_EQ(5u, *GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(6u, *GetTextContentOffset(*bar_node, 3));
+
+  EXPECT_EQ(Position(foo_node, 3), GetFirstPosition(3));
+  EXPECT_EQ(Position(bar_node, 0), GetLastPosition(3));
 
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
@@ -261,6 +283,11 @@ TEST_F(NGOffsetMappingTest, BRBetweenTextNodes) {
   EXPECT_EQ(5u, *GetTextContentOffset(*bar_node, 1));
   EXPECT_EQ(6u, *GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(7u, *GetTextContentOffset(*bar_node, 3));
+
+  EXPECT_EQ(Position(foo_node, 3), GetFirstPosition(3));
+  EXPECT_EQ(Position::BeforeNode(*br_node), GetLastPosition(3));
+  EXPECT_EQ(Position::AfterNode(*br_node), GetFirstPosition(4));
+  EXPECT_EQ(Position(bar_node, 0), GetLastPosition(4));
 }
 
 TEST_F(NGOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
@@ -300,6 +327,9 @@ TEST_F(NGOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_EQ(5u, *GetTextContentOffset(*node, 6));
   EXPECT_EQ(6u, *GetTextContentOffset(*node, 7));
   EXPECT_EQ(7u, *GetTextContentOffset(*node, 8));
+
+  EXPECT_EQ(Position(node, 4), GetFirstPosition(4));
+  EXPECT_EQ(Position(node, 5), GetLastPosition(4));
 
   EXPECT_EQ(3u, *StartOfNextNonCollapsedCharacter(*node, 3));
   EXPECT_EQ(5u, *StartOfNextNonCollapsedCharacter(*node, 4));
@@ -384,6 +414,9 @@ TEST_F(NGOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   EXPECT_EQ(6u, *GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(7u, *GetTextContentOffset(*bar_node, 3));
 
+  EXPECT_EQ(Position(foo_node, 4), GetFirstPosition(4));
+  EXPECT_EQ(Position(bar_node, 0), GetLastPosition(4));
+
   EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*space_node, 1u));
   EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*space_node, 0u));
 }
@@ -444,6 +477,11 @@ TEST_F(NGOffsetMappingTest, ReplacedElement) {
   EXPECT_EQ(7u, *GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(8u, *GetTextContentOffset(*bar_node, 3));
   EXPECT_EQ(9u, *GetTextContentOffset(*bar_node, 4));
+
+  EXPECT_EQ(Position(foo_node, 4), GetFirstPosition(4));
+  EXPECT_EQ(Position::BeforeNode(*img_node), GetLastPosition(4));
+  EXPECT_EQ(Position::AfterNode(*img_node), GetFirstPosition(5));
+  EXPECT_EQ(Position(bar_node, 0), GetLastPosition(5));
 }
 
 TEST_F(NGOffsetMappingTest, FirstLetter) {
@@ -468,6 +506,9 @@ TEST_F(NGOffsetMappingTest, FirstLetter) {
   EXPECT_EQ(0u, *GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, *GetTextContentOffset(*foo_node, 1));
   EXPECT_EQ(2u, *GetTextContentOffset(*foo_node, 2));
+
+  EXPECT_EQ(Position(foo_node, 1), GetFirstPosition(1));
+  EXPECT_EQ(Position(foo_node, 1), GetLastPosition(1));
 }
 
 TEST_F(NGOffsetMappingTest, FirstLetterWithLeadingSpace) {
@@ -498,6 +539,9 @@ TEST_F(NGOffsetMappingTest, FirstLetterWithLeadingSpace) {
   EXPECT_EQ(0u, *GetTextContentOffset(*foo_node, 2));
   EXPECT_EQ(1u, *GetTextContentOffset(*foo_node, 3));
   EXPECT_EQ(2u, *GetTextContentOffset(*foo_node, 4));
+
+  EXPECT_EQ(Position(foo_node, 0), GetFirstPosition(0));
+  EXPECT_EQ(Position(foo_node, 2), GetLastPosition(0));
 }
 
 TEST_F(NGOffsetMappingTest, FirstLetterWithoutRemainingText) {
@@ -526,6 +570,9 @@ TEST_F(NGOffsetMappingTest, FirstLetterWithoutRemainingText) {
   EXPECT_EQ(0u, *GetTextContentOffset(*text_node, 1));
   EXPECT_EQ(0u, *GetTextContentOffset(*text_node, 2));
   EXPECT_EQ(1u, *GetTextContentOffset(*text_node, 3));
+
+  EXPECT_EQ(Position(text_node, 0), GetFirstPosition(0));
+  EXPECT_EQ(Position(text_node, 2), GetLastPosition(0));
 }
 
 TEST_F(NGOffsetMappingTest, FirstLetterInDifferentBlock) {
@@ -577,6 +624,11 @@ TEST_F(NGOffsetMappingTest, FirstLetterInDifferentBlock) {
   EXPECT_EQ(1u, *remaining_text_result.GetTextContentOffset(*text_node, 1));
   EXPECT_EQ(2u, *remaining_text_result.GetTextContentOffset(*text_node, 2));
   EXPECT_EQ(3u, *remaining_text_result.GetTextContentOffset(*text_node, 3));
+
+  EXPECT_EQ(Position(text_node, 1), first_letter_result.GetFirstPosition(1));
+  EXPECT_EQ(Position(text_node, 1), first_letter_result.GetLastPosition(1));
+  EXPECT_EQ(Position(text_node, 1), remaining_text_result.GetFirstPosition(1));
+  EXPECT_EQ(Position(text_node, 1), remaining_text_result.GetLastPosition(1));
 }
 
 TEST_F(NGOffsetMappingTest, WhiteSpaceTextNodeWithoutLayoutText) {
