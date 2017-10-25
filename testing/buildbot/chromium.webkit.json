@@ -594,7 +594,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-10586"
+              "os": "Windows-10-14393"
             }
           ],
           "shards": 5
