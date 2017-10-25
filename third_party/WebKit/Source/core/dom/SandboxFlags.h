@@ -54,7 +54,7 @@ enum SandboxFlag {
   kSandboxModals = 1 << 12,
   // See
   // https://w3c.github.io/presentation-api/#sandboxing-and-the-allow-presentation-keyword
-  kSandboxPresentation = 1 << 13,
+  kSandboxPresentationController = 1 << 13,
   // See https://github.com/WICG/interventions/issues/42.
   kSandboxTopNavigationByUserActivation = 1 << 14,
   kSandboxAll = -1  // Mask with all bits set to 1.

@@ -51,7 +51,8 @@ PresentationRequest* PresentationRequest::Create(
     ExecutionContext* execution_context,
     const Vector<String>& urls,
     ExceptionState& exception_state) {
-  if (ToDocument(execution_context)->IsSandboxed(kSandboxPresentation)) {
+  if (ToDocument(execution_context)
+          ->IsSandboxed(kSandboxPresentationController)) {
     exception_state.ThrowSecurityError(
         "The document is sandboxed and lacks the 'allow-presentation' flag.");
     return nullptr;
