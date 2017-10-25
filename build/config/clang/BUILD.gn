@@ -5,8 +5,7 @@
 import("clang.gni")
 
 config("find_bad_constructs") {
-  # TODO(fuchsia): Enable this on Fuchsia, crbug.com/777847
-  if (clang_use_chrome_plugins && !is_fuchsia) {
+  if (clang_use_chrome_plugins) {
     cflags = []
 
     # On Windows, the plugin is built directly into clang, so there's
@@ -36,7 +35,7 @@ config("find_bad_constructs") {
       "find-bad-constructs",
     ]
 
-    if (is_linux || is_android) {
+    if (is_linux || is_android || is_fuchsia) {
       cflags += [
         "-Xclang",
         "-plugin-arg-find-bad-constructs",
