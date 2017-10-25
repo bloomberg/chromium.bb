@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -117,6 +119,14 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
           .AppendRelativePath(path, &relative_path)) {
     *arc_url_out = GURL(kArcRemovableMediaProviderUrl)
                        .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
+    return true;
+  }
+
+  // Convert paths under /special.
+  GURL external_file_url =
+      chromeos::CreateExternalFileURLFromPath(primary_profile, path);
+  if (!external_file_url.is_empty()) {
+    *arc_url_out = arc::EncodeToChromeContentProviderUrl(external_file_url);
     return true;
   }
 
