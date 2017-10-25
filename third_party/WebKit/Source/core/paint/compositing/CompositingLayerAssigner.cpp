@@ -208,7 +208,8 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->EnclosingPaginationLayer())
     return kSquashingDisallowedReasonFragmentedContent;
 
-  if (layer->GetLayoutObject().Style()->HasBorderRadius())
+  if (layer->GetLayoutObject().Style()->HasBorderRadius() &&
+      layer->GetLayoutObject().HasOverflowClip())
     return kSquashingDisallowedReasonBorderRadiusClipsDescendants;
 
   return kSquashingDisallowedReasonsNone;
