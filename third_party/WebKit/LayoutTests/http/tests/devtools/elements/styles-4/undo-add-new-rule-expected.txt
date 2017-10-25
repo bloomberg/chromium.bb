@@ -1,6 +1,5 @@
 Tests that adding a new rule can be undone.
 
-Text
 After adding new rule:
 [expanded] 
 element.style { ()

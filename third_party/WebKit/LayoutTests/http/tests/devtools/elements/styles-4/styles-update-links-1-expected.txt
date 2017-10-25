@@ -1,6 +1,5 @@
 Tests that links are updated properly when inserting a new property.
 
-Red text here.
 
 Running: selectInitialNode
 

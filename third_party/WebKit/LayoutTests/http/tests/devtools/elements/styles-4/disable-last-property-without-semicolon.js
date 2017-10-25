@@ -1,11 +1,23 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+(async function() {
+  TestRunner.addResult(`Verifies that formatter adds a semicolon when enabling property.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
 
-function test() {
+      #formatted {
+          color: red;
+          margin: 0
+      }
+
+      </style>
+      <div id="formatted">Formatted</div>
+    `);
+
   var formattedStyle;
 
   TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
@@ -68,23 +80,4 @@ function test() {
     TestRunner.addResult('raw cssText:');
     TestRunner.addResult('{' + style.cssText + '}');
   }
-}
-</script>
-
-<style>
-
-#formatted {
-    color: red;
-    margin: 0
-}
-
-</style>
-</head>
-
-<body id="mainBody" onload="runTest()">
-<p>
-Verifies that formatter adds a semicolon when enabling property.
-</p>
-<div id="formatted">Formatted</div>
-</body>
-</html>
+})();

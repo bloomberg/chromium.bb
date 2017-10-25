@@ -1,6 +1,5 @@
 Tests that links are updated properly when editing selector.
 
-Red text here.
 
 Running: selectInitialNode
 

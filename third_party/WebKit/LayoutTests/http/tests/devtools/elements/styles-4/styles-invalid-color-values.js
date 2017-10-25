@@ -1,9 +1,13 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Tests that the displayed string for colors correctly handles clipped CSS values and RGB percentages.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+
   var colors = [
     // Each of these is red. Some may need to be clipped to [0, 255].
     'red', '#F00', '#F00F', '#FF0000', '#FF0000FF', 'rgb(255,0,0)',
@@ -80,14 +84,4 @@ function test() {
       TestRunner.addResult('  ' + colorFormat + ': ' + color.asString(colorFormat));
     }
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that the displayed string for colors correctly handles clipped CSS values and RGB percentages.
-</p>
-
-</body>
-</html>
+})();
