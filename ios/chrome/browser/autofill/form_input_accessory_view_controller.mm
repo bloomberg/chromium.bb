@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
@@ -202,7 +203,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   CGRect _keyboardFrame;
 
   // The custom view that should be shown in the input accessory view.
-  UIView* _customAccessoryView;
+  FormInputAccessoryView* _customAccessoryView;
 
   // The JS manager for interacting with the underlying form.
   JsSuggestionManager* _JSSuggestionManager;
@@ -367,12 +368,12 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
                                      &rightFrame)) {
       [self hideSubviewsInOriginalAccessoryView:inputAccessoryView];
       _customAccessoryView =
-          [[FormInputAccessoryView alloc] initWithFrame:inputAccessoryView.frame
-                                               delegate:self
-                                             customView:view
-                                              leftFrame:leftFrame
-                                             rightFrame:rightFrame];
+          [[FormInputAccessoryView alloc] initWithDelegate:self];
       [inputAccessoryView addSubview:_customAccessoryView];
+      AddSameConstraints(_customAccessoryView, inputAccessoryView);
+      [_customAccessoryView initializeViewWithCustomView:view
+                                               leftFrame:leftFrame
+                                              rightFrame:rightFrame];
     }
   }
 }
