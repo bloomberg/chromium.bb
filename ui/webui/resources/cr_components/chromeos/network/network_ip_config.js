@@ -177,6 +177,20 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  hasIpConfigFields_: function() {
+    if (!this.ipConfigFields_)
+      return false;
+    for (var i = 0; i < this.ipConfigFields_.length; ++i) {
+      if (this.get(this.ipConfigFields_[i], this.ipConfig_) != undefined)
+        return true;
+    }
+    return false;
+  },
+
+  /**
    * @return {Object} An object with the edit type for each editable field.
    * @private
    */

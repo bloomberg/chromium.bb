@@ -212,6 +212,12 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkCellularNoNetworks",
        IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_NO_NETWORKS},
       {"networkNameservers", IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS},
+      {"networkNameserversAutomatic",
+       IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_AUTOMATIC},
+      {"networkNameserversCustom",
+       IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_CUSTOM},
+      {"networkNameserversGoogle",
+       IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE},
       {"networkProxyWpad", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD},
   };
   for (const auto& entry : localized_strings)

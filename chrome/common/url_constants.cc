@@ -336,6 +336,9 @@ const char kChooserUsbOverviewURL[] =
 
 #if defined(OS_CHROMEOS)
 const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
+
+const char kGoogleNameserversLearnMoreURL[] =
+    "https://developers.google.com/speed/public-dns";
 #endif
 
 }  // namespace chrome
