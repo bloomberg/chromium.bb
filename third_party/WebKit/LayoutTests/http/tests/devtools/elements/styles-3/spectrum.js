@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script type="text/javascript">
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var test = function() {
+(async function() {
+  TestRunner.addResult(`Tests ColorPicker.Spectrum\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+
   function setColor(inputColor, format) {
     TestRunner.addResult('Testing: ' + inputColor);
     var color = Common.Color.parse(inputColor);
@@ -54,11 +56,4 @@ var test = function() {
     checkNextFormat(color.string, color.format);
 
   TestRunner.completeTest();
-};
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests ColorPicker.Spectrum</p>
-</body>
-</html>
+})();

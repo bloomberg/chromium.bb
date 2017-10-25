@@ -1,6 +1,5 @@
 Verifies that sequence of setting selector and disabling property works.
 
-Red text here.
 
 Running: selectInitialNode
 
@@ -16,7 +15,7 @@ Running: testDisableProperty
 element.style { ()
 
 [expanded] 
-#inspected, .INSERTED-OTHER-SELECTOR { (styles-disable-…r-edit.html:36 -> styles-disable-property-after-selector-edit.html:36:39)
+#inspected, .INSERTED-OTHER-SELECTOR { (<style>…</style>)
 /-- overloaded --/ /-- disabled --/     /* color: red; */
 
 [expanded] 

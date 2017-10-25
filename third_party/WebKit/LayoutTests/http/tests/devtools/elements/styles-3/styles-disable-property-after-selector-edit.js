@@ -1,10 +1,20 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verifies that sequence of setting selector and disabling property works.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #inspected {
+          color: red;
+      }
+      </style>
+      <div id="inspected">Red text here.</div>
+    `);
+
   TestRunner.runTestSuite([
     function selectInitialNode(next) {
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
@@ -30,21 +40,4 @@ function test() {
       }
     }
   ]);
-}
-</script>
-<style>
-#inspected {
-    color: red;
-}
-</style>
-</head>
-
-<body onload="runTest()">
-<p>
-Verifies that sequence of setting selector and disabling property works.
-</p>
-
-<div id="inspected">Red text here.</div>
-
-</body>
-</html>
+})();

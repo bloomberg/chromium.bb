@@ -1,14 +1,28 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var initialize_AdditionalPreload = function() {
-    InspectorTest.preloadModule("source_frame");
-}
+(async function() {
+  TestRunner.addResult(`Tests that adding a new rule works after switching nodes.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected" style="font-size: 12px">Text</div>
+      <div id="other" style="color:red"></div>
+      <div>
+          <div class="my-class"></div>
+          <div class="my-class"></div>
+          <div class="my-class"></div>
+      </div>
 
-function test() {
+      <div class=" class-1 class-2  class-3   "></div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      var initialize_AdditionalPreload = function() {
+          InspectorTest.preloadModule("source_frame");
+      }
+  `);
+
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
   var treeElement;
@@ -96,25 +110,4 @@ function test() {
     displayName = this.displayName();
     maybeCompleteTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that adding a new rule works after switching nodes.
-</p>
-
-<div id="inspected" style="font-size: 12px">Text</div>
-<div id="other" style="color:red"></div>
-<div>
-    <div class="my-class"></div>
-    <div class="my-class"></div>
-    <div class="my-class"></div>
-</div>
-
-<div class=" class-1 class-2  class-3   "></div>
-
-</body>
-</html>
+})();

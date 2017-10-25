@@ -1,10 +1,16 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that editing is canceled properly after incremental editing.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected" style="color: red">Text</div>
+      <div id="other"></div>
+    `);
+
   var treeElement;
   var treeOutline;
   var section;
@@ -70,18 +76,4 @@ function test() {
       next();
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that editing is canceled properly after incremental editing.
-</p>
-
-<div id="inspected" style="color: red">Text</div>
-<div id="other"></div>
-
-</body>
-</html>
+})();

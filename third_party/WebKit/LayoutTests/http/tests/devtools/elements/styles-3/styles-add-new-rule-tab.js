@@ -1,21 +1,33 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that adding a new rule works after switching nodes.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected" style="font-size: 12px">Text</div>
+      <div id="other" style="color:red"></div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      var initialize_AdditionalPreload = function() {
+          InspectorTest.preloadModule("source_frame");
+      }
+  `);
+
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
   TestRunner.addSniffer(Workspace.UISourceCode.prototype, 'addRevision', onRevisionAdded);
 
   var treeElement;
   var hasResourceChanged;
 
-  var revisionAdded = false;
   var testFinished = false;
+  var revisionAdded = false;
   var displayName = '';
 
   function step1() {
+    // Click "Add new rule".
     ElementsTestRunner.addNewRule('foo, div#inspected, bar', step2);
   }
 
@@ -24,31 +36,28 @@ function test() {
     var newProperty = section.addNewBlankProperty();
     newProperty.startEditing();
     textInputController.insertText('color');
-    eventSender.keyDown(':');
+    newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent('Tab'));
     textInputController.insertText('maroon');
-    ElementsTestRunner.waitForStyleApplied(step3);
-    eventSender.keyDown(';');
+    newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent('Tab'));
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step3);
   }
 
   function step3() {
-    ElementsTestRunner.selectNodeAndWaitForStyles('other', step4);
-  }
-
-  function step4() {
+    // Click "Add new rule".
     ElementsTestRunner.addNewRule(null, onRuleAdded);
 
     function onRuleAdded() {
-      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step5);
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step4);
     }
   }
 
-  function step5() {
+  function step4() {
     TestRunner.addResult('After adding new rule (inspected):');
     ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
-    ElementsTestRunner.selectNodeAndWaitForStyles('other', step6);
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step5);
   }
 
-  function step6() {
+  function step5() {
     TestRunner.addResult('After adding new rule (other):');
     ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     testFinished = true;
@@ -63,22 +72,8 @@ function test() {
   }
 
   function onRevisionAdded(revision) {
-    revisionAdded = true;
     displayName = this.displayName();
+    revisionAdded = true;
     maybeCompleteTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that adding a new rule works after switching nodes.
-</p>
-
-<div id="inspected" style="font-size: 12px">Text</div>
-<div id="other" style="color:red"></div>
-
-</body>
-</html>
+})();
