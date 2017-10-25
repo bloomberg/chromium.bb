@@ -64,8 +64,9 @@ static const unsigned char kMaxDatabaseIdTypeByte = 1;
 static const unsigned char kDataVersionTypeByte = 2;
 static const unsigned char kBlobJournalTypeByte = 3;
 static const unsigned char kLiveBlobJournalTypeByte = 4;
+static const unsigned char kEarliestSweepTimeTypeByte = 5;
 static const unsigned char kMaxSimpleGlobalMetaDataTypeByte =
-    5;  // Insert before this and increment.
+    6;  // Insert before this and increment.
 static const unsigned char kDatabaseFreeListTypeByte = 100;
 static const unsigned char kDatabaseNameTypeByte = 201;
 
@@ -1214,6 +1215,12 @@ std::string BlobJournalKey::Encode() {
 std::string LiveBlobJournalKey::Encode() {
   std::string ret = KeyPrefix::EncodeEmpty();
   ret.push_back(kLiveBlobJournalTypeByte);
+  return ret;
+}
+
+std::string EarliestSweepKey::Encode() {
+  std::string ret = KeyPrefix::EncodeEmpty();
+  ret.push_back(kEarliestSweepTimeTypeByte);
   return ret;
 }
 

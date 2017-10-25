@@ -13,8 +13,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
@@ -40,7 +43,10 @@ namespace {
 class MockIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit MockIDBFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactoryImpl(context) {}
+      : MockIDBFactory(context, base::MakeUnique<base::DefaultClock>()) {}
+  MockIDBFactory(IndexedDBContextImpl* context,
+                 std::unique_ptr<base::Clock> clock)
+      : IndexedDBFactoryImpl(context, std::move(clock)) {}
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const Origin& origin,
       const base::FilePath& data_directory) {
@@ -175,6 +181,157 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
   RunAllTasksUntilIdle();
 }
 
+TEST_F(IndexedDBFactoryTest, BackingStoreNoSweeping) {
+  context()->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBContextImpl* context) {
+            base::SimpleTestClock* clock_ptr = new base::SimpleTestClock();
+            clock_ptr->SetNow(base::Time::Now());
+
+            scoped_refptr<MockIDBFactory> factory =
+                base::MakeRefCounted<MockIDBFactory>(
+                    context, base::WrapUnique(clock_ptr));
+
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
+
+            scoped_refptr<IndexedDBBackingStore> store =
+                factory->TestOpenBackingStore(origin, context->data_path());
+
+            // Give up the local refptr so that the factory has the only
+            // outstanding reference.
+            IndexedDBBackingStore* store_ptr = store.get();
+            store = nullptr;
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+            factory->TestReleaseBackingStore(store_ptr, false);
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            EXPECT_EQ(nullptr, store_ptr->pre_close_task_queue());
+
+            // Reset the timer & stop the closing.
+            factory->TestOpenBackingStore(origin, context->data_path());
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+            factory->TestReleaseBackingStore(store_ptr, false);
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            store_ptr->close_timer()->user_task().Run();
+
+            // Backing store should be totally closed.
+            EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+
+            store = factory->TestOpenBackingStore(origin, context->data_path());
+            store_ptr = store.get();
+            store = nullptr;
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+
+            // Move the clock to start the next sweep.
+            clock_ptr->Advance(
+                IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
+            factory->TestReleaseBackingStore(store_ptr, false);
+
+            // Sweep should NOT be occurring.
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            store_ptr->close_timer()->user_task().Run();
+
+            // Backing store should be totally closed.
+            EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+          },
+          base::Unretained(context())));
+  RunAllTasksUntilIdle();
+}
+
+TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({kIDBTombstoneStatistics},
+                                {kIDBTombstoneDeletion});
+
+  context()->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBContextImpl* context) {
+            base::SimpleTestClock* clock_ptr = new base::SimpleTestClock();
+            clock_ptr->SetNow(base::Time::Now());
+
+            scoped_refptr<MockIDBFactory> factory =
+                base::MakeRefCounted<MockIDBFactory>(
+                    context, base::WrapUnique(clock_ptr));
+
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
+
+            scoped_refptr<IndexedDBBackingStore> store =
+                factory->TestOpenBackingStore(origin, context->data_path());
+
+            // Give up the local refptr so that the factory has the only
+            // outstanding reference.
+            IndexedDBBackingStore* store_ptr = store.get();
+            store = nullptr;
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+            factory->TestReleaseBackingStore(store_ptr, false);
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            EXPECT_EQ(nullptr, store_ptr->pre_close_task_queue());
+
+            // Reset the timer & stop the closing.
+            factory->TestOpenBackingStore(origin, context->data_path());
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+            factory->TestReleaseBackingStore(store_ptr, false);
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            store_ptr->close_timer()->user_task().Run();
+
+            // Backing store should be totally closed.
+            EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+
+            store = factory->TestOpenBackingStore(origin, context->data_path());
+            store_ptr = store.get();
+            store = nullptr;
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+
+            // Move the clock to start the next sweep.
+            clock_ptr->Advance(
+                IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
+            factory->TestReleaseBackingStore(store_ptr, false);
+
+            // Sweep should be occuring.
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            store_ptr->close_timer()->user_task().Run();
+            store_ptr->close_timer()->AbandonAndStop();
+            ASSERT_NE(nullptr, store_ptr->pre_close_task_queue());
+            EXPECT_TRUE(store_ptr->pre_close_task_queue()->started());
+
+            // Stop sweep by opening a connection.
+            factory->TestOpenBackingStore(origin, context->data_path());
+            EXPECT_EQ(nullptr, store_ptr->pre_close_task_queue());
+
+            // Move clock forward to trigger next sweep, but origin has longer
+            // sweep minimum, so nothing happens.
+            clock_ptr->Advance(
+                IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
+
+            factory->TestReleaseBackingStore(store_ptr, false);
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            EXPECT_EQ(nullptr, store_ptr->pre_close_task_queue());
+
+            // Reset, and move clock forward so the origin should allow a sweep.
+            factory->TestOpenBackingStore(origin, context->data_path());
+            EXPECT_EQ(nullptr, store_ptr->pre_close_task_queue());
+            clock_ptr->Advance(
+                IndexedDBFactoryImpl::kMaxEarliestOriginSweepFromNow);
+            factory->TestReleaseBackingStore(store_ptr, false);
+
+            // Sweep should be occuring.
+            EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
+            store_ptr->close_timer()->user_task().Run();
+            store_ptr->close_timer()->AbandonAndStop();
+            ASSERT_NE(nullptr, store_ptr->pre_close_task_queue());
+            EXPECT_TRUE(store_ptr->pre_close_task_queue()->started());
+
+            // Take back a ref ptr and ensure that the actual close
+            // stops a running timer.
+            store = store_ptr;
+            factory->TestCloseBackingStore(store_ptr);
+          },
+          base::Unretained(context())));
+
+  RunAllTasksUntilIdle();
+}
+
 TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   context()->TaskRunner()->PostTask(
       FROM_HERE,
@@ -254,7 +411,7 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
 class DiskFullFactory : public IndexedDBFactoryImpl {
  public:
   explicit DiskFullFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactoryImpl(context) {}
+      : IndexedDBFactoryImpl(context, base::MakeUnique<base::DefaultClock>()) {}
 
  private:
   ~DiskFullFactory() override {}
