@@ -18,7 +18,7 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
     : public V8ScriptValueSerializer {
  public:
   explicit V8ScriptValueSerializerForModules(
-      RefPtr<ScriptState> script_state,
+      scoped_refptr<ScriptState> script_state,
       const SerializedScriptValue::SerializeOptions& options)
       : V8ScriptValueSerializer(script_state, options) {}
 

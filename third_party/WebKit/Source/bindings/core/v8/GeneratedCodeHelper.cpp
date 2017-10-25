@@ -24,7 +24,7 @@ void V8ConstructorAttributeGetter(
 }
 
 v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,
-                                   RefPtr<SerializedScriptValue> value) {
+                                   scoped_refptr<SerializedScriptValue> value) {
   if (value)
     return value->Deserialize(isolate);
   return v8::Null(isolate);

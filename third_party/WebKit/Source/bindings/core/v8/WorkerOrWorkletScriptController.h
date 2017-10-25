@@ -117,12 +117,12 @@ class CORE_EXPORT WorkerOrWorkletScriptController
   // usually the main thread's isolate is used.
   v8::Isolate* isolate_;
 
-  RefPtr<ScriptState> script_state_;
-  RefPtr<DOMWrapperWorld> world_;
+  scoped_refptr<ScriptState> script_state_;
+  scoped_refptr<DOMWrapperWorld> world_;
   String disable_eval_pending_;
   bool execution_forbidden_;
 
-  RefPtr<RejectedPromises> rejected_promises_;
+  scoped_refptr<RejectedPromises> rejected_promises_;
 
   // |m_executionState| refers to a stack object that evaluate() allocates;
   // evaluate() ensuring that the pointer reference to it is removed upon

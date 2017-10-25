@@ -222,7 +222,7 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
           ->TimerTaskRunner()
           ->PostTask(BLINK_FROM_HERE,
                      WTF::Bind(&RejectedPromises::RevokeNow,
-                               RefPtr<RejectedPromises>(this),
+                               scoped_refptr<RejectedPromises>(this),
                                WTF::Passed(std::move(message))));
       reported_as_errors_.EraseAt(i);
       return;
@@ -254,9 +254,10 @@ void RejectedPromises::ProcessQueue() {
       ->CurrentThread()
       ->Scheduler()
       ->TimerTaskRunner()
-      ->PostTask(BLINK_FROM_HERE, WTF::Bind(&RejectedPromises::ProcessQueueNow,
-                                            RefPtr<RejectedPromises>(this),
-                                            WTF::Passed(std::move(queue))));
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&RejectedPromises::ProcessQueueNow,
+                           scoped_refptr<RejectedPromises>(this),
+                           WTF::Passed(std::move(queue))));
 }
 
 void RejectedPromises::ProcessQueueNow(std::unique_ptr<MessageQueue> queue) {

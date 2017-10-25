@@ -47,7 +47,7 @@ class CORE_EXPORT V8ObjectBuilder final {
  private:
   void AddInternal(const StringView& name, v8::Local<v8::Value>);
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   v8::Local<v8::Object> object_;
 };
 

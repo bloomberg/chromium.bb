@@ -273,7 +273,7 @@ void V8ContextSnapshot::EnsureInterfaceTemplates(v8::Isolate* isolate) {
 
   EnsureInterfaceTemplatesForWorld(isolate, DOMWrapperWorld::MainWorld());
   // Any world types other than |kMain| are acceptable for this.
-  RefPtr<DOMWrapperWorld> isolated_world = DOMWrapperWorld::Create(
+  scoped_refptr<DOMWrapperWorld> isolated_world = DOMWrapperWorld::Create(
       isolate, DOMWrapperWorld::WorldType::kForV8ContextSnapshotNonMain);
   EnsureInterfaceTemplatesForWorld(isolate, *isolated_world);
 }

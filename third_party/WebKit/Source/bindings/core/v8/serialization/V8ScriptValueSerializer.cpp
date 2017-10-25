@@ -56,7 +56,7 @@ namespace blink {
 // adjustment to this value.
 
 V8ScriptValueSerializer::V8ScriptValueSerializer(
-    RefPtr<ScriptState> script_state,
+    scoped_refptr<ScriptState> script_state,
     const Options& options)
     : script_state_(std::move(script_state)),
       serialized_script_value_(SerializedScriptValue::Create()),
@@ -66,7 +66,7 @@ V8ScriptValueSerializer::V8ScriptValueSerializer(
       wasm_policy_(options.wasm_policy),
       for_storage_(options.for_storage == SerializedScriptValue::kForStorage) {}
 
-RefPtr<SerializedScriptValue> V8ScriptValueSerializer::Serialize(
+scoped_refptr<SerializedScriptValue> V8ScriptValueSerializer::Serialize(
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
 #if DCHECK_IS_ON()
@@ -247,7 +247,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32Enum(ImageSerializationTag::kEndTag);
     WriteUint32(image_bitmap->width());
     WriteUint32(image_bitmap->height());
-    RefPtr<Uint8Array> pixels = image_bitmap->CopyBitmapData();
+    scoped_refptr<Uint8Array> pixels = image_bitmap->CopyBitmapData();
     WriteUint32(pixels->length());
     WriteRawBytes(pixels->Data(), pixels->length());
     return true;

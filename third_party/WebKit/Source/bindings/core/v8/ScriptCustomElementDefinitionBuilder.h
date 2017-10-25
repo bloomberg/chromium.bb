@@ -47,7 +47,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
  private:
   static ScriptCustomElementDefinitionBuilder* stack_;
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   Member<CustomElementRegistry> registry_;
   v8::Local<v8::Value> constructor_value_;
   v8::Local<v8::Object> constructor_;

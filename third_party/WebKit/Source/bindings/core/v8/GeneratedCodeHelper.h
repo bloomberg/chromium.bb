@@ -27,8 +27,9 @@ CORE_EXPORT void V8ConstructorAttributeGetter(
     const v8::PropertyCallbackInfo<v8::Value>&,
     const WrapperTypeInfo*);
 
-CORE_EXPORT v8::Local<v8::Value> V8Deserialize(v8::Isolate*,
-                                               RefPtr<SerializedScriptValue>);
+CORE_EXPORT v8::Local<v8::Value> V8Deserialize(
+    v8::Isolate*,
+    scoped_refptr<SerializedScriptValue>);
 
 // ExceptionToRejectPromiseScope converts a possible exception to a reject
 // promise and returns the promise instead of throwing the exception.

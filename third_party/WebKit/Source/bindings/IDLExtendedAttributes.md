@@ -207,7 +207,7 @@ var x = new XXX(1.0, 2.0, "hello");
 The Blink implementation must have the following method as a constructor callback:
 
 ```c++
-RefPtr<XXX> XXX::create(float x, float y, String str)
+scoped_refptr<XXX> XXX::create(float x, float y, String str)
 {
     ...;
 }
@@ -601,7 +601,7 @@ String Example::func(ScriptState* state, bool a, bool b);
 ```
 
 Be careful when you use `[CallWith=ScriptState]`.
-You should not store the passed-in ScriptState on a DOM object (using RefPtr<ScriptState>).
+You should not store the passed-in ScriptState on a DOM object (using scoped_refptr<ScriptState>).
 This is because if the stored ScriptState is used by some method called by a different
 world (note that the DOM object is shared among multiple worlds), it leaks the ScriptState
 to the world. ScriptState must be carefully maintained in a way that doesn't leak
@@ -680,14 +680,14 @@ Then XXX::create(...) can have the following signature
 ***
 
 ```c++
-RefPtr<XXX> XXX::create(ExecutionContext* context, float x, float y, String str)
+scoped_refptr<XXX> XXX::create(ExecutionContext* context, float x, float y, String str)
 {
     ...;
 }
 ```
 
 Be careful when you use `[ConstructorCallWith=ScriptState]`.
-You should not store the passed-in ScriptState on a DOM object (using RefPtr<ScriptState>).
+You should not store the passed-in ScriptState on a DOM object (using scoped_refptr<ScriptState>).
 This is because if the stored ScriptState is used by some method called by a different
 world (note that the DOM object is shared among multiple worlds), it leaks the ScriptState
 to the world. ScriptState must be carefully maintained in a way that doesn't leak
@@ -1105,7 +1105,7 @@ interface XXX {
 Blink needs to implement the following method as a constructor callback:
 
 ```c++
-RefPtr<XXX> XXX::create(float x, ExceptionState& exceptionState)
+scoped_refptr<XXX> XXX::create(float x, ExceptionState& exceptionState)
 {
     ...;
     if (...) {

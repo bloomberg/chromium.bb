@@ -226,7 +226,7 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
     kFrameIsDetached,
   };
 
-  WindowProxy(v8::Isolate*, Frame&, RefPtr<DOMWrapperWorld>);
+  WindowProxy(v8::Isolate*, Frame&, scoped_refptr<DOMWrapperWorld>);
 
   virtual void Initialize() = 0;
 
@@ -254,7 +254,7 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
  protected:
   // TODO(dcheng): Consider making these private and using getters.
-  const RefPtr<DOMWrapperWorld> world_;
+  const scoped_refptr<DOMWrapperWorld> world_;
   // |global_proxy_| is the root reference from Blink to v8::Context (a strong
   // reference to the global proxy makes the entire context alive).  In order to
   // discard the v8::Context, |global_proxy_| needs to be a weak reference or

@@ -69,7 +69,7 @@ class V8NodeFilterCondition final
  private:
   V8NodeFilterCondition(v8::Local<v8::Value> filter, ScriptState*);
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Object> filter_;
 };
 

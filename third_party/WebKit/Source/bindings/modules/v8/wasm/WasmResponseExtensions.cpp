@@ -100,7 +100,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
   v8::WasmModuleObjectBuilderStreaming builder_;
-  const RefPtr<ScriptState> script_state_;
+  const scoped_refptr<ScriptState> script_state_;
 };
 
 // TODO(mtrofin): WasmDataLoaderClient is necessary so we may provide an

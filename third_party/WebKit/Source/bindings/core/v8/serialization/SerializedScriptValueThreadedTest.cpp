@@ -46,10 +46,11 @@ TEST(SerializedScriptValueThreadedTest,
   transferables.array_buffers.push_back(array_buffer);
   SerializedScriptValue::SerializeOptions options;
   options.transferables = &transferables;
-  RefPtr<SerializedScriptValue> serialized = SerializedScriptValue::Serialize(
-      scope.GetIsolate(),
-      ToV8(array_buffer, scope.GetContext()->Global(), scope.GetIsolate()),
-      options, ASSERT_NO_EXCEPTION);
+  scoped_refptr<SerializedScriptValue> serialized =
+      SerializedScriptValue::Serialize(
+          scope.GetIsolate(),
+          ToV8(array_buffer, scope.GetContext()->Global(), scope.GetIsolate()),
+          options, ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(serialized);
   EXPECT_TRUE(array_buffer->IsNeutered());
 
@@ -65,7 +66,7 @@ TEST(SerializedScriptValueThreadedTest,
       FROM_HERE,
       CrossThreadBind(
           [](WorkerThread* worker_thread, WaitableEvent* done,
-             RefPtr<SerializedScriptValue> serialized) {
+             scoped_refptr<SerializedScriptValue> serialized) {
             WorkerOrWorkletScriptController* script =
                 worker_thread->GlobalScope()->ScriptController();
             EXPECT_TRUE(script->IsContextInitialized());

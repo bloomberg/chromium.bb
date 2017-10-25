@@ -50,7 +50,7 @@ class LocalWindowProxy final : public WindowProxy {
  public:
   static LocalWindowProxy* Create(v8::Isolate* isolate,
                                   LocalFrame& frame,
-                                  RefPtr<DOMWrapperWorld> world) {
+                                  scoped_refptr<DOMWrapperWorld> world) {
     return new LocalWindowProxy(isolate, frame, std::move(world));
   }
 
@@ -70,7 +70,7 @@ class LocalWindowProxy final : public WindowProxy {
   void UpdateSecurityOrigin(SecurityOrigin*);
 
  private:
-  LocalWindowProxy(v8::Isolate*, LocalFrame&, RefPtr<DOMWrapperWorld>);
+  LocalWindowProxy(v8::Isolate*, LocalFrame&, scoped_refptr<DOMWrapperWorld>);
 
   bool IsLocal() const override { return true; }
   void Initialize() override;
@@ -104,7 +104,7 @@ class LocalWindowProxy final : public WindowProxy {
 
   LocalFrame* GetFrame() const { return ToLocalFrame(WindowProxy::GetFrame()); }
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 };
 
 DEFINE_TYPE_CASTS(LocalWindowProxy,

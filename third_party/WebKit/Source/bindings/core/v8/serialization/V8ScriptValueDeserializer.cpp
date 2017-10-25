@@ -85,7 +85,7 @@ size_t ReadVersionEnvelope(SerializedScriptValue* serialized_script_value,
 }  // namespace
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
-    RefPtr<ScriptState> script_state,
+    scoped_refptr<ScriptState> script_state,
     UnpackedSerializedScriptValue* unpacked_value,
     const Options& options)
     : V8ScriptValueDeserializer(std::move(script_state),
@@ -94,8 +94,8 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
                                 options) {}
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
-    RefPtr<ScriptState> script_state,
-    RefPtr<SerializedScriptValue> value,
+    scoped_refptr<ScriptState> script_state,
+    scoped_refptr<SerializedScriptValue> value,
     const Options& options)
     : V8ScriptValueDeserializer(std::move(script_state),
                                 nullptr,
@@ -108,9 +108,9 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
 }
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
-    RefPtr<ScriptState> script_state,
+    scoped_refptr<ScriptState> script_state,
     UnpackedSerializedScriptValue* unpacked_value,
-    RefPtr<SerializedScriptValue> value,
+    scoped_refptr<SerializedScriptValue> value,
     const Options& options)
     : script_state_(std::move(script_state)),
       unpacked_value_(unpacked_value),
@@ -543,10 +543,10 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
                                               blob_handle);
 }
 
-RefPtr<BlobDataHandle> V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(
-    const String& uuid,
-    const String& type,
-    uint64_t size) {
+scoped_refptr<BlobDataHandle>
+V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(const String& uuid,
+                                                     const String& type,
+                                                     uint64_t size) {
   // The containing ssv may have a BDH for this uuid if this ssv is just being
   // passed from main to worker thread (for example). We use those values when
   // creating the new blob instead of cons'ing up a new BDH.

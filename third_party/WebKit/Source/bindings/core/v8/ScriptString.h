@@ -60,7 +60,7 @@ class ScriptString final {
 
  private:
   v8::Isolate* isolate_;
-  RefPtr<SharedPersistent<v8::String>> string_;
+  scoped_refptr<SharedPersistent<v8::String>> string_;
 };
 
 }  // namespace blink

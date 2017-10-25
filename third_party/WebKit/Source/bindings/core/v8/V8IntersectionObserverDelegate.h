@@ -36,7 +36,7 @@ class V8IntersectionObserverDelegate final
  private:
   TraceWrapperMember<V8IntersectionObserverCallback> callback_;
   // TODO(bashi): Use ContextClient rather than holding ScriptState.
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 };
 
 }  // namespace blink

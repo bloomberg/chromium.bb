@@ -59,10 +59,10 @@ class CORE_EXPORT UnpackedSerializedScriptValue
 
  private:
   // Private so that callers use SerializedScriptValue::Unpack.
-  explicit UnpackedSerializedScriptValue(RefPtr<SerializedScriptValue>);
+  explicit UnpackedSerializedScriptValue(scoped_refptr<SerializedScriptValue>);
 
   // The underlying serialized data.
-  RefPtr<SerializedScriptValue> value_;
+  scoped_refptr<SerializedScriptValue> value_;
 
   // These replace their corresponding members in SerializedScriptValue, once
   // set. Once the value is being deserialized, objects will be materialized

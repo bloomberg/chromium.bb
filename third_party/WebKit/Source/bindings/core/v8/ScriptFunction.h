@@ -68,7 +68,7 @@ class CORE_EXPORT ScriptFunction
   virtual ScriptValue Call(ScriptValue) = 0;
   static void CallCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 #if DCHECK_IS_ON()
   // bindToV8Function must not be called twice.
   bool bind_to_v8_function_already_called_ = false;

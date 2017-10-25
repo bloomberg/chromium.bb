@@ -244,8 +244,9 @@ void V8Window::postMessageMethodCustom(
 
   SerializedScriptValue::SerializeOptions options;
   options.transferables = &transferables;
-  RefPtr<SerializedScriptValue> message = SerializedScriptValue::Serialize(
-      info.GetIsolate(), info[0], options, exception_state);
+  scoped_refptr<SerializedScriptValue> message =
+      SerializedScriptValue::Serialize(info.GetIsolate(), info[0], options,
+                                       exception_state);
   if (exception_state.HadException())
     return;
 

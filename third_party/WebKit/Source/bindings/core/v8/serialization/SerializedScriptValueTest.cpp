@@ -20,7 +20,7 @@ TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
   V8TestingScope scope;
 
   v8::Local<v8::Value> v8OriginalTrue = v8::True(scope.GetIsolate());
-  RefPtr<SerializedScriptValue> sourceSerializedScriptValue =
+  scoped_refptr<SerializedScriptValue> sourceSerializedScriptValue =
       SerializedScriptValue::Serialize(
           scope.GetIsolate(), v8OriginalTrue,
           SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
@@ -28,7 +28,7 @@ TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
   Vector<char> wireData;
   sourceSerializedScriptValue->ToWireBytes(wireData);
 
-  RefPtr<SerializedScriptValue> serializedScriptValue =
+  scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(wireData.data(), wireData.size());
   v8::Local<v8::Value> deserialized =
       serializedScriptValue->Deserialize(scope.GetIsolate());
@@ -39,7 +39,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion17NoByteSwapping) {
   V8TestingScope scope;
 
   const uint8_t data[] = {0xFF, 0x11, 0xFF, 0x0D, 0x54, 0x00};
-  RefPtr<SerializedScriptValue> serializedScriptValue =
+  scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
                                     sizeof(data));
   v8::Local<v8::Value> deserialized =
@@ -52,7 +52,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion16ByteSwapping) {
 
   // Using UChar instead of uint8_t to get ntohs() byte swapping.
   const UChar data[] = {0xFF10, 0xFF0D, 0x5400};
-  RefPtr<SerializedScriptValue> serializedScriptValue =
+  scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
                                     sizeof(data));
   v8::Local<v8::Value> deserialized =
@@ -65,7 +65,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion13ByteSwapping) {
 
   // Using UChar instead of uint8_t to get ntohs() byte swapping.
   const UChar data[] = {0xFF0D, 0x5400};
-  RefPtr<SerializedScriptValue> serializedScriptValue =
+  scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
                                     sizeof(data));
   v8::Local<v8::Value> deserialized =
@@ -78,7 +78,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ByteSwapping) {
 
   // Using UChar instead of uint8_t to get ntohs() byte swapping.
   const UChar data[] = {0x5400};
-  RefPtr<SerializedScriptValue> serializedScriptValue =
+  scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
                                     sizeof(data));
   v8::Local<v8::Value> deserialized =
@@ -105,7 +105,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
   data.push_back(0xFC03);
   data.resize(257);  // (508 pixel data + 6 header bytes) / 2
 
-  RefPtr<SerializedScriptValue> serializedScriptValue =
+  scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data.data()),
                                     data.size() * sizeof(UChar));
   v8::Local<v8::Value> deserialized =
@@ -130,7 +130,7 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
 
   v8::Local<v8::Value> v8_original_file =
       ToV8(original_file, scope.GetContext()->Global(), scope.GetIsolate());
-  RefPtr<SerializedScriptValue> serialized_script_value =
+  scoped_refptr<SerializedScriptValue> serialized_script_value =
       SerializedScriptValue::Serialize(
           scope.GetIsolate(), v8_original_file,
           SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
@@ -146,7 +146,7 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
 
 TEST(SerializedScriptValueTest, FileConstructorFile) {
   V8TestingScope scope;
-  RefPtr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
+  scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
   File* original_file = File::Create("hello.txt", 12345678.0, blob_data_handle);
   ASSERT_FALSE(original_file->HasBackingFile());
   ASSERT_EQ(File::kIsNotUserVisible, original_file->GetUserVisibility());
@@ -154,7 +154,7 @@ TEST(SerializedScriptValueTest, FileConstructorFile) {
 
   v8::Local<v8::Value> v8_original_file =
       ToV8(original_file, scope.GetContext()->Global(), scope.GetIsolate());
-  RefPtr<SerializedScriptValue> serialized_script_value =
+  scoped_refptr<SerializedScriptValue> serialized_script_value =
       SerializedScriptValue::Serialize(
           scope.GetIsolate(), v8_original_file,
           SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
