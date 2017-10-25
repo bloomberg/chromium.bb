@@ -71,45 +71,44 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   ~PrinterConfigurerImpl() override {}
 
   void SetUpPrinter(const Printer& printer,
-                    const PrinterSetupCallback& callback) override {
+                    PrinterSetupCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!printer.id().empty());
     DCHECK(!printer.uri().empty());
 
     if (!printer.RequiresIpResolution()) {
-      StartConfiguration(printer, callback);
+      StartConfiguration(printer, std::move(callback));
       return;
     }
 
-    auto printer_copy = base::MakeUnique<Printer>(printer);
     // Resolve the uri to an ip with a mutable copy of the printer.
     endpoint_resolver_->Start(
         printer.GetHostAndPort(),
-        base::Bind(&PrinterConfigurerImpl::OnIpResolved,
-                   weak_factory_.GetWeakPtr(), base::Passed(&printer_copy),
-                   callback));
+        base::BindOnce(
+            &PrinterConfigurerImpl::OnIpResolved, weak_factory_.GetWeakPtr(),
+            std::make_unique<Printer>(printer), std::move(callback)));
   }
 
  private:
   // Run installation for a printer with a resolved uri.  |callback| is called
   // with the result of the setup when it is complete.
   void StartConfiguration(const Printer& printer,
-                          const PrinterSetupCallback& callback) {
+                          PrinterSetupCallback callback) {
     if (!printer.IsIppEverywhere()) {
       ppd_provider_->ResolvePpd(
           printer.ppd_reference(),
-          base::Bind(&PrinterConfigurerImpl::ResolvePpdDone,
-                     weak_factory_.GetWeakPtr(), printer, callback));
+          base::BindOnce(&PrinterConfigurerImpl::ResolvePpdDone,
+                         weak_factory_.GetWeakPtr(), printer,
+                         std::move(callback)));
       return;
     }
 
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
     client->CupsAddAutoConfiguredPrinter(
         printer.id(), URIForCups(printer),
-        base::Bind(&PrinterConfigurerImpl::OnAddedPrinter,
-                   weak_factory_.GetWeakPtr(), printer, callback),
-        base::Bind(&PrinterConfigurerImpl::OnDbusError,
-                   weak_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
+                       weak_factory_.GetWeakPtr(), printer,
+                       std::move(callback)));
   }
 
   // Callback for when the IP for a zeroconf printer has been resolved.  If the
@@ -117,28 +116,34 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   // |endpoint| then continues setup. |cb| is called with a result reporting the
   // success or failure of the setup operation, eventually.
   void OnIpResolved(std::unique_ptr<Printer> printer,
-                    const PrinterSetupCallback& cb,
+                    PrinterSetupCallback cb,
                     const net::IPEndPoint& endpoint) {
     if (!endpoint.address().IsValid()) {
       // |endpoint| does not have a valid address. Address was not resolved.
-      cb.Run(kPrinterUnreachable);
+      std::move(cb).Run(kPrinterUnreachable);
       return;
     }
 
     std::string effective_uri = printer->ReplaceHostAndPort(endpoint);
     printer->set_effective_uri(effective_uri);
 
-    StartConfiguration(*printer, cb);
+    StartConfiguration(*printer, std::move(cb));
   }
 
   void OnAddedPrinter(const Printer& printer,
-                      const PrinterSetupCallback& cb,
-                      int32_t result_code) {
+                      PrinterSetupCallback cb,
+                      base::Optional<int32_t> result_code) {
     // It's expected that debug daemon posts callbacks on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+    if (!result_code.has_value()) {
+      LOG(WARNING) << "Could not contact debugd";
+      std::move(cb).Run(PrinterSetupResult::kDbusError);
+      return;
+    }
+
     PrinterSetupResult result;
-    switch (result_code) {
+    switch (result_code.value()) {
       case debugd::CupsResult::CUPS_SUCCESS:
         result = PrinterSetupResult::kSuccess;
         break;
@@ -157,54 +162,44 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
       case debugd::CupsResult::CUPS_FATAL:
       default:
         // We have no idea.  It must be fatal.
-        LOG(ERROR) << "Unrecognized printer setup error: " << result_code;
+        LOG(ERROR) << "Unrecognized printer setup error: "
+                   << result_code.value();
         result = PrinterSetupResult::kFatalError;
         break;
     }
 
-    cb.Run(result);
-  }
-
-  void OnDbusError(const PrinterSetupCallback& cb) {
-    // The callback is expected to run on the UI thread.
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    LOG(WARNING) << "Could not contact debugd";
-    cb.Run(PrinterSetupResult::kDbusError);
+    std::move(cb).Run(result);
   }
 
   void AddPrinter(const Printer& printer,
                   const std::string& ppd_contents,
-                  const PrinterSetupCallback& cb) {
+                  PrinterSetupCallback cb) {
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
 
     client->CupsAddManuallyConfiguredPrinter(
         printer.id(), URIForCups(printer), ppd_contents,
-        base::Bind(&PrinterConfigurerImpl::OnAddedPrinter,
-                   weak_factory_.GetWeakPtr(), printer, cb),
-        base::Bind(&PrinterConfigurerImpl::OnDbusError,
-                   weak_factory_.GetWeakPtr(), cb));
+        base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
+                       weak_factory_.GetWeakPtr(), printer, std::move(cb)));
   }
 
   // Executed on component load API finish.
   // Check API return result to decide whether component is successfully loaded.
   void OnComponentLoad(const Printer& printer,
                        const std::string& ppd_contents,
-                       const PrinterSetupCallback& cb,
+                       PrinterSetupCallback cb,
                        const std::string& result) {
     // Result is the component mount point, or empty
     // if the component couldn't be loaded
     if (result.empty()) {
       LOG(ERROR) << "Filter component installation fails.";
-      cb.Run(PrinterSetupResult::kFatalError);
+      std::move(cb).Run(PrinterSetupResult::kFatalError);
     } else {
-      AddPrinter(printer, ppd_contents, cb);
+      AddPrinter(printer, ppd_contents, std::move(cb));
     }
   }
 
-  // Returns true if component is requred (and install if possible),
-  // Otherwise do nothing and return false.
-  bool RequiresComponent(const Printer& printer,
-                         const PrinterSetupCallback& cb,
+  void ResolvePpdSuccess(const Printer& printer,
+                         PrinterSetupCallback cb,
                          const std::string& ppd_contents,
                          const std::vector<std::string>& ppd_filters) {
     if (base::FeatureList::IsEnabled(features::kCrOSComponent)) {
@@ -221,20 +216,21 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
         auto& component_name = *components_requested.begin();
         component_updater::CrOSComponent::LoadComponent(
             component_name,
-            base::Bind(&PrinterConfigurerImpl::OnComponentLoad,
-                       weak_factory_.GetWeakPtr(), printer, ppd_contents, cb));
-        return true;
+            base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
+                           weak_factory_.GetWeakPtr(), printer, ppd_contents,
+                           std::move(cb)));
+        return;
       } else if (components_requested.size() > 1) {
-        LOG(ERROR) << "More than one filter components are requested.";
-        cb.Run(PrinterSetupResult::kFatalError);
-        return true;
+        LOG(ERROR) << "More than one filter component is requested.";
+        std::move(cb).Run(PrinterSetupResult::kFatalError);
+        return;
       }
     }
-    return false;
+    AddPrinter(printer, ppd_contents, std::move(cb));
   }
 
   void ResolvePpdDone(const Printer& printer,
-                      const PrinterSetupCallback& cb,
+                      PrinterSetupCallback cb,
                       PpdProvider::CallbackResultCode result,
                       const std::string& ppd_contents,
                       const std::vector<std::string>& ppd_filters) {
@@ -242,21 +238,19 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     switch (result) {
       case PpdProvider::SUCCESS:
         DCHECK(!ppd_contents.empty());
-        if (!RequiresComponent(printer, cb, ppd_contents, ppd_filters)) {
-          AddPrinter(printer, ppd_contents, cb);
-        }
+        ResolvePpdSuccess(printer, std::move(cb), ppd_contents, ppd_filters);
         break;
       case PpdProvider::CallbackResultCode::NOT_FOUND:
-        cb.Run(PrinterSetupResult::kPpdNotFound);
+        std::move(cb).Run(PrinterSetupResult::kPpdNotFound);
         break;
       case PpdProvider::CallbackResultCode::SERVER_ERROR:
-        cb.Run(PrinterSetupResult::kPpdUnretrievable);
+        std::move(cb).Run(PrinterSetupResult::kPpdUnretrievable);
         break;
       case PpdProvider::CallbackResultCode::INTERNAL_ERROR:
-        cb.Run(PrinterSetupResult::kFatalError);
+        std::move(cb).Run(PrinterSetupResult::kFatalError);
         break;
       case PpdProvider::CallbackResultCode::PPD_TOO_LARGE:
-        cb.Run(PrinterSetupResult::kPpdTooLarge);
+        std::move(cb).Run(PrinterSetupResult::kPpdTooLarge);
         break;
     }
   }

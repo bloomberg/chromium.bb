@@ -32,7 +32,7 @@ enum PrinterSetupResult {
   kMaxValue                // Maximum value for histograms
 };
 
-using PrinterSetupCallback = base::Callback<void(PrinterSetupResult)>;
+using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;
 
 // Configures printers by retrieving PPDs and registering the printer with CUPS.
 // Class must be constructed and used on the UI thread.
@@ -50,7 +50,7 @@ class PrinterConfigurer {
   // method must be called on the UI thread and will run |callback| on the
   // UI thread.
   virtual void SetUpPrinter(const Printer& printer,
-                            const PrinterSetupCallback& callback) = 0;
+                            PrinterSetupCallback callback) = 0;
 
   // Return an opaque fingerprint of the fields used to set up a printer with
   // CUPS.  The idea here is that if this fingerprint changes for a printer, we

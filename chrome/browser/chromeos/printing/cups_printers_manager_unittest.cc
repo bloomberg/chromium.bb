@@ -230,7 +230,7 @@ class FakePpdProvider : public PpdProvider {
 
   // These three functions are not used by CupsPrintersManager.
   void ResolvePpd(const Printer::PpdReference& reference,
-                  const ResolvePpdCallback& cb) override {}
+                  ResolvePpdCallback cb) override {}
   void ResolveManufacturers(const ResolveManufacturersCallback& cb) override {}
   void ResolvePrinters(const std::string& manufacturer,
                        const ResolvePrintersCallback& cb) override {}

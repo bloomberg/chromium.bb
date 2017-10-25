@@ -83,10 +83,10 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   //    string holds the contents of a PPD (that may or may not be gzipped).
   //    required_filters holds the names of the filters referenced in the ppd.
   // Otherwise, these fields will be empty.
-  using ResolvePpdCallback =
-      base::Callback<void(CallbackResultCode,
-                          const std::string&,
-                          const std::vector<std::string>& required_filters)>;
+  using ResolvePpdCallback = base::OnceCallback<void(
+      CallbackResultCode,
+      const std::string&,
+      const std::vector<std::string>& required_filters)>;
 
   // Result of a ResolveManufacturers() call.  If the result code is SUCCESS,
   // then the vector contains a sorted list of manufacturers for which we have
@@ -155,7 +155,7 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   //
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolvePpd(const Printer::PpdReference& reference,
-                          const ResolvePpdCallback& cb) = 0;
+                          ResolvePpdCallback cb) = 0;
 
   // For a given PpdReference, retrieve the make and model strings used to
   // construct that reference.
