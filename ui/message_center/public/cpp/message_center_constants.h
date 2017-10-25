@@ -127,9 +127,17 @@ const int kContextMessageLineLimit = 1;
 
 // Around notifications ////////////////////////////////////////////////////////
 
-// DIP dimensions (H = horizontal, V = vertical).
-const int kMarginBetweenItems = 10;  // H & V space around & between
-                                     // notifications.
+#if defined(OS_CHROMEOS)
+// Horizontal & vertical thickness of the border around the notifications in the
+// notification list.
+constexpr int kNotificationBorderThickness = 1;
+// Horizontal & vertical space around & between notifications in the
+// notification list.
+constexpr int kMarginBetweenItemsInList = 8;
+#endif
+
+// Horizontal & vertical space around & between popup notifications.
+constexpr int kMarginBetweenPopups = 10;
 
 // Shadow in the tray.
 const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);

@@ -474,7 +474,7 @@ TEST_F(MessageCenterViewTest, Size) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          message_center_style::kMarginBetweenItems +
+          message_center::kMarginBetweenItemsInList +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
@@ -498,7 +498,7 @@ TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          message_center_style::kMarginBetweenItems +
+          message_center::kMarginBetweenItemsInList +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 
@@ -518,7 +518,7 @@ TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          message_center_style::kMarginBetweenItems +
+          message_center::kMarginBetweenItemsInList +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
@@ -548,7 +548,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateBelowWithRepositionTarget) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          message_center_style::kMarginBetweenItems +
+          message_center::kMarginBetweenItemsInList +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
@@ -578,7 +578,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateOfRepositionTarget) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          message_center_style::kMarginBetweenItems +
+          message_center::kMarginBetweenItemsInList +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
