@@ -18,8 +18,6 @@ EnumTraits<memory_instrumentation::mojom::DumpType,
       return memory_instrumentation::mojom::DumpType::EXPLICITLY_TRIGGERED;
     case base::trace_event::MemoryDumpType::PEAK_MEMORY_USAGE:
       return memory_instrumentation::mojom::DumpType::PEAK_MEMORY_USAGE;
-    case base::trace_event::MemoryDumpType::SUMMARY_ONLY:
-      return memory_instrumentation::mojom::DumpType::SUMMARY_ONLY;
     default:
       CHECK(false) << "Invalid type: " << static_cast<uint8_t>(type);
       // This should not be reached. Just return a random value.
@@ -42,9 +40,6 @@ bool EnumTraits<memory_instrumentation::mojom::DumpType,
     case memory_instrumentation::mojom::DumpType::PEAK_MEMORY_USAGE:
       *out = base::trace_event::MemoryDumpType::PEAK_MEMORY_USAGE;
       break;
-    case memory_instrumentation::mojom::DumpType::SUMMARY_ONLY:
-      *out = base::trace_event::MemoryDumpType::SUMMARY_ONLY;
-      break;
     default:
       NOTREACHED() << "Invalid type: " << static_cast<uint8_t>(input);
       return false;
@@ -58,6 +53,8 @@ EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
            base::trace_event::MemoryDumpLevelOfDetail>::
     ToMojom(base::trace_event::MemoryDumpLevelOfDetail level_of_detail) {
   switch (level_of_detail) {
+    case base::trace_event::MemoryDumpLevelOfDetail::SUMMARY_ONLY:
+      return memory_instrumentation::mojom::LevelOfDetail::SUMMARY_ONLY;
     case base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND:
       return memory_instrumentation::mojom::LevelOfDetail::BACKGROUND;
     case base::trace_event::MemoryDumpLevelOfDetail::LIGHT:
@@ -81,6 +78,9 @@ bool EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
     FromMojom(memory_instrumentation::mojom::LevelOfDetail input,
               base::trace_event::MemoryDumpLevelOfDetail* out) {
   switch (input) {
+    case memory_instrumentation::mojom::LevelOfDetail::SUMMARY_ONLY:
+      *out = base::trace_event::MemoryDumpLevelOfDetail::SUMMARY_ONLY;
+      break;
     case memory_instrumentation::mojom::LevelOfDetail::BACKGROUND:
       *out = base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND;
       break;

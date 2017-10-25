@@ -273,8 +273,8 @@ mojom::RawOSMemDumpPtr FillRawOSDump(int pid) {
 // Tests that the global dump is acked even in absence of clients.
 TEST_F(CoordinatorImplTest, NoClients) {
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED};
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::SUMMARY_ONLY};
 
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(true, NotNull()));
@@ -293,8 +293,8 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
   EXPECT_CALL(client_process_2, RequestChromeMemoryDump(_, _)).Times(1);
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED};
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::SUMMARY_ONLY};
 
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(true, NotNull()))
@@ -307,8 +307,8 @@ TEST_F(CoordinatorImplTest, MissingChromeDump) {
   base::RunLoop run_loop;
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED};
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::SUMMARY_ONLY};
 
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
@@ -337,8 +337,8 @@ TEST_F(CoordinatorImplTest, MissingOsDump) {
   base::RunLoop run_loop;
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED};
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::SUMMARY_ONLY};
 
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
@@ -573,8 +573,8 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
       }));
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::BACKGROUND};
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::SUMMARY_ONLY};
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
 }

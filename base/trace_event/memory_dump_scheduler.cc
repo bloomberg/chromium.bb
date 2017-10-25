@@ -51,8 +51,10 @@ void MemoryDumpScheduler::StartInternal(MemoryDumpScheduler::Config config) {
     DCHECK_GT(trigger.period_ms, 0u);
     switch (trigger.level_of_detail) {
       case MemoryDumpLevelOfDetail::VM_REGIONS_ONLY_FOR_HEAP_PROFILER:
+      case MemoryDumpLevelOfDetail::SUMMARY_ONLY:
         // There is no use case to request a periodic dump which contains
-        // details that are useful only for the heap-profiler.
+        // details that are useful only for the heap-profiler. Similarily
+        // with dumps which only have summarised information.
         NOTREACHED();
         return;
       case MemoryDumpLevelOfDetail::BACKGROUND:
