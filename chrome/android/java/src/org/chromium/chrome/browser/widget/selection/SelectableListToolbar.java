@@ -686,6 +686,12 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         return mNavigationButton;
     }
 
+    /** Ends any in-progress animations. */
+    @VisibleForTesting
+    public void endAnimationsForTesting() {
+        mNumberRollView.endAnimationsForTesting();
+    }
+
     private void makeTextViewChildrenAccessible() {
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
