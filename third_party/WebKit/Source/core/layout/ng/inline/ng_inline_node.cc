@@ -561,10 +561,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
 
-  NGLineBoxFragmentBuilder container_builder(
-      node, &node.Style(), space->WritingMode(), TextDirection::kLtr);
-  container_builder.SetBfcOffset(NGBfcOffset{LayoutUnit(), LayoutUnit()});
-
+  Vector<NGPositionedFloat> positioned_floats;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
 
   scoped_refptr<NGInlineBreakToken> break_token;
@@ -572,10 +569,9 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   NGExclusionSpace empty_exclusion_space;
   LayoutUnit result;
   while (!break_token || !break_token->IsFinished()) {
-    NGLineBreaker line_breaker(node, *space, &container_builder,
+    NGLineBreaker line_breaker(node, *space, &positioned_floats,
                                &unpositioned_floats, break_token.get());
-    if (!line_breaker.NextLine(NGLogicalOffset(), empty_exclusion_space,
-                               &line_info))
+    if (!line_breaker.NextLine(empty_exclusion_space, &line_info))
       break;
 
     break_token = line_breaker.CreateBreakToken(nullptr);

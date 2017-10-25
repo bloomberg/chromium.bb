@@ -21,6 +21,7 @@
 #include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_space_utils.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
@@ -236,16 +237,12 @@ void NGInlineLayoutAlgorithm::PlaceItems(
     return;  // The line was empty.
   }
 
-  // NGLineBreaker should have determined we need a line box, and that has
-  // resolved the BFC offset.
-  DCHECK(container_builder_.BfcOffset().has_value());
-
   box_states_->OnEndPlaceItems(&line_box_, baseline_type_, position);
   const NGLineHeightMetrics& line_box_metrics =
       box_states_->LineBoxState().metrics;
   DCHECK(!line_box_metrics.IsEmpty());
 
-  NGLogicalOffset line_offset(line_info->LineOffset());
+  NGBfcOffset line_bfc_offset(line_info->LineBfcOffset());
 
   // TODO(kojii): Implement flipped line (vertical-lr). In this case, line_top
   // and block_start do not match.
@@ -259,7 +256,7 @@ void NGInlineLayoutAlgorithm::PlaceItems(
   // indivisual items do not change their relative position to the line box.
   LayoutUnit inline_size = position;
   if (text_align != ETextAlign::kJustify) {
-    ApplyTextAlign(*line_info, text_align, &line_offset.inline_offset,
+    ApplyTextAlign(*line_info, text_align, &line_bfc_offset.line_offset,
                    inline_size);
   }
 
@@ -272,11 +269,7 @@ void NGInlineLayoutAlgorithm::PlaceItems(
   container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
-
-  NGBfcOffset offset(
-      constraint_space_.BfcOffset().line_offset + line_offset.inline_offset,
-      constraint_space_.BfcOffset().block_offset + line_offset.block_offset);
-  container_builder_.SetBfcOffset(offset);
+  container_builder_.SetBfcOffset(line_bfc_offset);
 }
 
 // Place a generated content that does not exist in DOM nor in LayoutObject
@@ -529,19 +522,12 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 }
 
 scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
-  // We can resolve our BFC offset if we aren't an empty inline.
-  if (!Node().IsEmptyInline()) {
-    DCHECK(!container_builder_.BfcOffset());
-    DCHECK(ConstraintSpace().UnpositionedFloats().IsEmpty());
-    DCHECK(ConstraintSpace().MarginStrut().IsEmpty());
+  if (Node().IsEmptyInline())
+    return LayoutEmptyInline();
 
-    container_builder_.SetBfcOffset(ConstraintSpace().BfcOffset());
-  }
-
-  // TODO(ikilpatrick): We should have a separate branch for empty inlines,
-  // which just collects all of the unpositioned floats. This means that the
-  // NGLineBreaker will be able to assume a BfcOffset which will simplify the
-  // implementation a lot.
+  DCHECK(ConstraintSpace().UnpositionedFloats().IsEmpty());
+  DCHECK(ConstraintSpace().MarginStrut().IsEmpty());
+  container_builder_.SetBfcOffset(ConstraintSpace().BfcOffset());
 
   scoped_refptr<NGInlineBreakToken> break_token = BreakToken();
 
@@ -557,10 +543,10 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       WTF::MakeUnique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
   NGLineInfo line_info;
 
-  NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
+  NGLineBreaker line_breaker(Node(), constraint_space_, &positioned_floats_,
                              &unpositioned_floats_, break_token.get());
-  if (line_breaker.NextLine({LayoutUnit(), LayoutUnit()}, *exclusion_space,
-                            &line_info)) {
+  // TODO(ikilpatrick): Does this always succeed when we aren't an empty inline?
+  if (line_breaker.NextLine(*exclusion_space, &line_info)) {
     CreateLine(&line_info, line_breaker.ExclusionSpace());
     container_builder_.SetBreakToken(
         line_breaker.CreateBreakToken(std::move(box_states_)));
@@ -570,27 +556,9 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   }
 
   // Place any remaining floats which couldn't fit on the line.
-  if (container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset()) {
-    LayoutUnit content_size =
-        container_builder_.Metrics().LineHeight().ClampNegativeToZero();
-
-    NGBfcOffset bfc_offset = container_builder_.BfcOffset()
-                                 ? container_builder_.BfcOffset().value()
-                                 : ConstraintSpace().FloatsBfcOffset().value();
-
-    LayoutUnit origin_block_offset = bfc_offset.block_offset + content_size;
-    LayoutUnit from_block_offset = bfc_offset.block_offset;
-
-    const auto positioned_floats = PositionFloats(
-        origin_block_offset, from_block_offset, unpositioned_floats_,
-        ConstraintSpace(), exclusion_space.get());
-
-    for (const auto& positioned_float : positioned_floats) {
-      container_builder_.AddPositionedFloat(positioned_float);
-    }
-
-    unpositioned_floats_.clear();
-  }
+  LayoutUnit content_size =
+      container_builder_.Metrics().LineHeight().ClampNegativeToZero();
+  PositionPendingFloats(content_size, exclusion_space.get());
 
   // A <br clear=both> will strech the line-box height, such that the block-end
   // edge will clear any floats.
@@ -598,26 +566,79 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       line_info, *exclusion_space,
       container_builder_.Metrics().LineHeight().ClampNegativeToZero()));
 
-  // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
-  // Margin struts shouldn't need to be passed through like this once we've
-  // removed LayoutInline splitting.
-  if (!container_builder_.BfcOffset()) {
-    container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
-  }
-
-  // If we've got any unpositioned floats here, we must be an empty inline
-  // without a BFC offset. We need to pass our unpositioned floats to our next
-  // sibling.
-  if (!unpositioned_floats_.IsEmpty()) {
-    DCHECK(Node().IsEmptyInline());
-    DCHECK(!container_builder_.BfcOffset());
-    DCHECK(!ConstraintSpace().FloatsBfcOffset());
-    container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
-  }
-
+  // We shouldn't have any unpositioned floats if we aren't empty.
+  DCHECK(unpositioned_floats_.IsEmpty());
+  container_builder_.SwapPositionedFloats(&positioned_floats_);
   container_builder_.SetExclusionSpace(std::move(exclusion_space));
 
   return container_builder_.ToLineBoxFragment();
+}
+
+scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::LayoutEmptyInline() {
+  const Vector<NGInlineItem>& items = Node().Items();
+  LayoutUnit bfc_line_offset = ConstraintSpace().BfcOffset().line_offset;
+
+  for (const auto& item : items) {
+    if (item.Type() == NGInlineItem::kFloating) {
+      NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
+      NGBoxStrut margins =
+          ComputeMarginsForContainer(ConstraintSpace(), node.Style());
+
+      unpositioned_floats_.push_back(NGUnpositionedFloat::Create(
+          ConstraintSpace().AvailableSize(),
+          ConstraintSpace().PercentageResolutionSize(), bfc_line_offset,
+          bfc_line_offset, margins, node, /* break_token */ nullptr));
+    } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
+      // TODO(layout-dev): Report the correct static position for the out of
+      // flow descendant. We can't do this here yet as it doesn't know the
+      // size of the line box.
+      NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
+      container_builder_.AddOutOfFlowDescendant(
+          {node, NGStaticPosition::Create(ConstraintSpace().WritingMode(),
+                                          ConstraintSpace().Direction(),
+                                          NGPhysicalOffset())});
+    } else {
+      DCHECK_NE(item.Type(), NGInlineItem::kAtomicInline);
+      DCHECK_NE(item.Type(), NGInlineItem::kControl);
+      DCHECK_NE(item.Type(), NGInlineItem::kText);
+    }
+  }
+
+  std::unique_ptr<NGExclusionSpace> exclusion_space(
+      WTF::MakeUnique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
+
+  // The content_size is zero for an empty inline.
+  if (ConstraintSpace().FloatsBfcOffset())
+    PositionPendingFloats(/* content_size */ LayoutUnit(),
+                          exclusion_space.get());
+
+  container_builder_.SwapPositionedFloats(&positioned_floats_);
+  container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
+  container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
+  container_builder_.SetExclusionSpace(std::move(exclusion_space));
+
+  return container_builder_.ToLineBoxFragment();
+}
+
+void NGInlineLayoutAlgorithm::PositionPendingFloats(
+    LayoutUnit content_size,
+    NGExclusionSpace* exclusion_space) {
+  DCHECK(container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset())
+      << "The parent BFC offset should be known here";
+
+  NGBfcOffset bfc_offset = container_builder_.BfcOffset()
+                               ? container_builder_.BfcOffset().value()
+                               : ConstraintSpace().FloatsBfcOffset().value();
+
+  LayoutUnit origin_block_offset = bfc_offset.block_offset + content_size;
+  LayoutUnit from_block_offset = bfc_offset.block_offset;
+
+  const auto positioned_floats =
+      PositionFloats(origin_block_offset, from_block_offset,
+                     unpositioned_floats_, ConstraintSpace(), exclusion_space);
+
+  positioned_floats_.AppendVector(positioned_floats);
+  unpositioned_floats_.clear();
 }
 
 }  // namespace blink

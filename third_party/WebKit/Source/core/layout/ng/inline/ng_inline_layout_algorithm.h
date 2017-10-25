@@ -25,6 +25,7 @@ class NGInlineNode;
 class NGInlineItem;
 class NGLineBoxFragmentBuilder;
 class NGTextFragmentBuilder;
+struct NGPositionedFloat;
 
 // A class for inline layout (e.g. a <span> with no special style).
 //
@@ -45,6 +46,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   scoped_refptr<NGLayoutResult> Layout() override;
 
  private:
+  scoped_refptr<NGLayoutResult> LayoutEmptyInline();
+
+  void PositionPendingFloats(LayoutUnit content_size, NGExclusionSpace*);
+
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
   void BidiReorder(NGInlineItemResults*);
@@ -90,6 +95,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   unsigned quirks_mode_ : 1;
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;
+  Vector<NGPositionedFloat> positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 };
 
