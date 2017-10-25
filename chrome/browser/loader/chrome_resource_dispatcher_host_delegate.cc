@@ -54,6 +54,7 @@
 #include "components/nacl/common/features.h"
 #include "components/offline_pages/features/features.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#include "components/previews/content/previews_content_util.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_io_data.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -884,7 +885,8 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           std::move(load_timing_info)));
 }
 
-content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
+content::PreviewsState
+ChromeResourceDispatcherHostDelegate::DeterminePreviewsState(
     const net::URLRequest& url_request,
     content::ResourceContext* resource_context,
     content::PreviewsState previews_to_allow) {
@@ -905,16 +907,10 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
       previews_state |= content::SERVER_LITE_PAGE_ON;
     }
 
-    // Check that data saver is enabled and the user is eligible for Lo-Fi
-    // previews. If the user is not transitioned fully to the blacklist, respect
-    // the old prefs rules.
-    if (data_reduction_proxy_io_data->IsEnabled() &&
-        previews::params::IsClientLoFiEnabled() &&
-        previews_io_data->ShouldAllowPreviewAtECT(
-            url_request, previews::PreviewsType::LOFI,
-            previews::params::EffectiveConnectionTypeThresholdForClientLoFi(),
-            previews::params::GetBlackListedHostsForClientLoFiFieldTrial())) {
-      previews_state |= content::CLIENT_LOFI_ON;
+    // Check for enabled client-side previews if data saver is enabled.
+    if (data_reduction_proxy_io_data->IsEnabled()) {
+      previews_state |=
+          previews::DetermineClientPreviewsState(url_request, previews_io_data);
     }
   }
 

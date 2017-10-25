@@ -20,11 +20,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
@@ -52,10 +54,11 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
     case PreviewsType::AMP_REDIRECTION:
-    case PreviewsType::NOSCRIPT:
       return params::IsOfflinePreviewsEnabled();
     case PreviewsType::LOFI:
       return params::IsClientLoFiEnabled();
+    case PreviewsType::NOSCRIPT:
+      return params::IsNoScriptPreviewsEnabled();
     case PreviewsType::NONE:
     case PreviewsType::LAST:
       break;
@@ -253,6 +256,10 @@ class PreviewsIODataTest : public testing::Test {
 
   std::unique_ptr<net::URLRequest> CreateRequest() const {
     return CreateRequestWithURL(GURL("http://example.com"));
+  }
+
+  std::unique_ptr<net::URLRequest> CreateHttpsRequest() const {
+    return CreateRequestWithURL(GURL("https://secure.example.com"));
   }
 
   std::unique_ptr<net::URLRequest> CreateRequestWithURL(const GURL& url) const {
@@ -566,6 +573,40 @@ TEST_F(PreviewsIODataTest, ClientLoFiObeysHostBlackListFromServer) {
         1);
   }
   variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(PreviewsIODataTest, NoScriptDisallowedByDefault) {
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::NOSCRIPT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::NOSCRIPT),
+      std::vector<std::string>()));
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+}
+
+TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
+  InitializeUIService();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNoScriptPreviews);
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::NOSCRIPT),
+      std::vector<std::string>()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.NoScript",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 
 TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {

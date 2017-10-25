@@ -242,11 +242,11 @@ bool IsValidatedSCT(
 // If previews_to_allow is set to anything other than PREVIEWS_UNSPECIFIED,
 // it is either the values passed in for a sub-frame to use, or if this is
 // the main frame, it is a limitation on which previews to allow.
-PreviewsState GetPreviewsState(PreviewsState previews_to_allow,
-                               ResourceDispatcherHostDelegate* delegate,
-                               const net::URLRequest& request,
-                               ResourceContext* resource_context,
-                               bool is_main_frame) {
+PreviewsState DeterminePreviewsState(PreviewsState previews_to_allow,
+                                     ResourceDispatcherHostDelegate* delegate,
+                                     const net::URLRequest& request,
+                                     ResourceContext* resource_context,
+                                     bool is_main_frame) {
   // If previews have already been turned off, or we are inheriting values on a
   // sub-frame, don't check any further.
   if (previews_to_allow & PREVIEWS_OFF ||
@@ -256,8 +256,8 @@ PreviewsState GetPreviewsState(PreviewsState previews_to_allow,
   }
 
   // Get the mask of previews we could apply to the current navigation.
-  PreviewsState previews_state =
-      delegate->GetPreviewsState(request, resource_context, previews_to_allow);
+  PreviewsState previews_state = delegate->DeterminePreviewsState(
+      request, resource_context, previews_to_allow);
 
   return previews_state;
 }
@@ -1346,7 +1346,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   // Update the previews state, but only if this is not using PlzNavigate.
   PreviewsState previews_state = request_data.previews_state;
   if (!IsBrowserSideNavigationEnabled()) {
-    previews_state = GetPreviewsState(
+    previews_state = DeterminePreviewsState(
         request_data.previews_state, delegate_, *new_request, resource_context,
         request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME);
   }
@@ -2102,9 +2102,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
             .get()));
   }
 
-  PreviewsState previews_state =
-      GetPreviewsState(info.common_params.previews_state, delegate_,
-                       *new_request, resource_context, info.is_main_frame);
+  PreviewsState previews_state = DeterminePreviewsState(
+      info.common_params.previews_state, delegate_, *new_request,
+      resource_context, info.is_main_frame);
 
   // Make extra info and read footer (contains request ID).
   //

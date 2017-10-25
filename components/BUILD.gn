@@ -211,6 +211,7 @@ test("components_unittests") {
       "//components/payments/content/utility:unit_tests",
       "//components/policy/core/browser:unit_tests",
       "//components/policy/core/common:unit_tests",
+      "//components/previews/content:unit_tests",
       "//components/safe_browsing/common:unit_tests",
       "//components/safe_browsing/password_protection:password_protection_unittest",
       "//components/safe_browsing/triggers:unit_tests",
