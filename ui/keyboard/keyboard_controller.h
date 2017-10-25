@@ -13,6 +13,7 @@
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/keyboard_event_filter.h"
 #include "ui/keyboard/keyboard_export.h"
@@ -146,6 +147,14 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns true if overscroll is currently allowed by the active keyboard
   // container behavior.
   bool IsOverscrollAllowed() const;
+
+  // Handle mouse and touch events on the keyboard. The effects of this method
+  // will not stop propagation to the keyboard extension.
+  void HandlePointerEvent(bool isMouseButtonPressed,
+                          const gfx::Vector2d& kb_scoped_location);
+
+  // Moves an already loaded keyboard.
+  void MoveKeyboard(const gfx::Rect new_bounds);
 
  private:
   // For access to Observer methods for simulation.

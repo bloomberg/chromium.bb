@@ -20,8 +20,12 @@ class KEYBOARD_EXPORT KeyboardEventFilter : public ui::EventHandler {
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
+  void ProcessPointerEvent(bool isDrag, int x, int y);
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardEventFilter);
 };
 

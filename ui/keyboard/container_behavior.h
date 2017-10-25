@@ -43,6 +43,15 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // important to note that the word "Allowed" is used because whether or not
   // overscroll is "enabled" depends on multiple external factors.
   virtual bool IsOverscrollAllowed() const = 0;
+
+  // Return whether the given coordinate is a drag handle.
+  virtual bool IsDragHandle(const gfx::Vector2d& offset,
+                            const gfx::Size& keyboard_size) const = 0;
+
+  virtual void SavePosition(const gfx::Point& position) = 0;
+
+  virtual void HandlePointerEvent(bool isMouseButtonPressed,
+                                  const gfx::Vector2d& kb_offset) = 0;
 };
 
 }  // namespace keyboard
