@@ -580,6 +580,11 @@ crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styl
 
 # ====== DevTools test migration failures until here ======
 
+crbug.com/778391 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
+crbug.com/778391 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
+crbug.com/778391 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
+crbug.com/778391 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
+
 crbug.com/773353 [ Mac ] http/tests/devtools/coverage/coverage-view.html [ Pass Failure ]
 crbug.com/773353 [ Mac ] virtual/mojo-loading/http/tests/devtools/coverage/coverage-view.html [ Pass Failure ]
 
