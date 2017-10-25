@@ -30,8 +30,6 @@ class IPAddress;
 
 namespace safe_browsing {
 
-// The Safe Browsing V4 server URL prefix.
-constexpr char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
 // The size of the hash prefix, in bytes. It should be between 4 to 32 (full
 // hash).
@@ -52,6 +50,8 @@ using FullHash = HashPrefix;
 
 using ListUpdateRequest = FetchThreatListUpdatesRequest::ListUpdateRequest;
 using ListUpdateResponse = FetchThreatListUpdatesResponse::ListUpdateResponse;
+
+void SetSbV4UrlPrefixForTesting(const char* url_prefix);
 
 // Config passed to the constructor of a V4 protocol manager.
 struct V4ProtocolConfig {
