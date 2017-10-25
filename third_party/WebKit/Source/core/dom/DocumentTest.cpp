@@ -947,9 +947,19 @@ TEST_F(DocumentTest, ViewportPropagationNoRecalc) {
 #define DISABLE_ON_ANDROID(test_name) test_name
 #endif  // defined(OS_ANDROID)
 
-// TODO(pdr): Add support to the root layer scrolling codepaths so this test
-// passes (https://crbug.com/776607).
-TEST_F(DocumentTest, DISABLE_ON_ANDROID(ElementFromPointOnScrollbar)) {
+typedef bool TestParamRootLayerScrolling;
+class ParameterizedDocumentTest
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+      private ScopedRootLayerScrollingForTest,
+      public DocumentTest {
+ public:
+  ParameterizedDocumentTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All, ParameterizedDocumentTest, ::testing::Bool());
+
+TEST_P(ParameterizedDocumentTest,
+       DISABLE_ON_ANDROID(ElementFromPointOnScrollbar)) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
 
@@ -972,6 +982,31 @@ TEST_F(DocumentTest, DISABLE_ON_ANDROID(ElementFromPointOnScrollbar)) {
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 590), nullptr);
   // A hit test above the horizontal scrollbar should hit the body element.
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 580), GetDocument().body());
+}
+
+TEST_P(ParameterizedDocumentTest, ElementFromPointWithPageZoom) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
+
+  SetHtmlInnerHTML(
+      "<style>"
+      "  body { margin: 0; }"
+      "</style>"
+      "<div id='content' style='height: 10px;'>content</div>");
+
+  // A hit test on the content div should hit it.
+  auto* content = GetDocument().getElementById("content");
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 8), content);
+  // A hit test below the content div should not hit it.
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 12), GetDocument().body());
+
+  // Zoom the page by 2x,
+  GetDocument().GetFrame()->SetPageZoomFactor(2);
+
+  // A hit test on the content div should hit it.
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 8), content);
+  // A hit test below the content div should not hit it.
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 12), GetDocument().body());
 }
 
 }  // namespace blink
