@@ -41,8 +41,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     FRAME_PAUSABLE = 14,
     FRAME_UNPAUSABLE = 15,
     V8 = 16,
-
-    COUNT = 17
+    // Used to group multiple types when calculating Expected Queueing Time.
+    OTHER = 17,
+    COUNT = 18
   };
 
   // Returns name of the given queue type. Returned string has application
