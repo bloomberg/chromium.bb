@@ -962,7 +962,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int different_ref_found = 0;
   int context_counter = 0;
 
-#if CONFIG_TMV
+#if CONFIG_TMV || CONFIG_MFMV
   int tmi_row = mi_row & 0xfffe;
   int tmi_col = mi_col & 0xfffe;
   POSITION mi_pos = { 0, 0 };
