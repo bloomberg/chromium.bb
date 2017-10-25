@@ -67498,6 +67498,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.ReservedMemory" units="MB">
+  <owner>bbudge@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
+  <summary>
+    The size of the contiguous memory block reserved in the renderer so that
+    large allocations are more likely to succeed. The reservation is currently
+    made in BlinkInitializer.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.ResourcePoolMemoryUsage" units="MB">
   <owner>ericrk@chromium.org</owner>
   <summary>

@@ -35,6 +35,7 @@
 #include "build/build_config.h"
 #include "core/animation/AnimationClock.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/Histogram.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/heap/Heap.h"
@@ -83,6 +84,11 @@ void Initialize(Platform* platform) {
     const size_t kMB = 1024 * 1024;
     for (size_t size = 512 * kMB; size >= 32 * kMB; size -= 16 * kMB) {
       if (base::ReserveAddressSpace(size)) {
+        // Report successful reservation.
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, reservation_size_histogram,
+                            ("Renderer4.ReservedMemory", 32, 512, 32));
+        reservation_size_histogram.Count(size / kMB);
+
         break;
       }
     }
