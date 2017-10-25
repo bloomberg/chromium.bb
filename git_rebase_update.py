@@ -161,6 +161,7 @@ def rebase_branch(branch, parent, start_hash):
     if not rebase_ret.success:
       # TODO(iannucci): Find collapsible branches in a smarter way?
       print "Failed! Attempting to squash", branch, "...",
+      sys.stdout.flush()
       squash_branch = branch+"_squash_attempt"
       git.run('checkout', '-b', squash_branch)
       git.squash_current_branch(merge_base=start_hash)
