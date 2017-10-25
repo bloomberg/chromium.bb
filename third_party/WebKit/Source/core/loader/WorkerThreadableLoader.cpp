@@ -306,6 +306,14 @@ void WorkerThreadableLoader::Cancel() {
   DCHECK(!client_);
 }
 
+void WorkerThreadableLoader::Detach() {
+  // NOTREACHED
+  // Currently only "synchronous" requests are using this class and we will
+  // deprecate it in the future. As this method cannot be called for such
+  // requests, we don't implement it.
+  CHECK(false);
+}
+
 void WorkerThreadableLoader::DidStart(
     MainThreadLoaderHolder* main_thread_loader_holder) {
   DCHECK(!IsMainThread());

@@ -77,6 +77,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void OverrideTimeout(unsigned long timeout) override;
 
   void Cancel() override;
+  void Detach() override;
   void SetDefersLoading(bool);
 
   void Trace(blink::Visitor*) override;

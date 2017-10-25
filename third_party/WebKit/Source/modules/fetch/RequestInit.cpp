@@ -107,6 +107,10 @@ RequestInit::RequestInit(ExecutionContext* context,
   if (exception_state.HadException())
     return;
 
+  keepalive_ = h.Get<IDLBoolean>("keepalive");
+  if (exception_state.HadException())
+    return;
+
   auto v8_body = h.Get<IDLPassThrough>("body");
   if (exception_state.HadException())
     return;

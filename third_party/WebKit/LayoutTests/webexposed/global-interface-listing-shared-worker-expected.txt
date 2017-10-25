@@ -986,6 +986,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter credentials
 [Worker]     getter headers
 [Worker]     getter integrity
+[Worker]     getter keepalive
 [Worker]     getter method
 [Worker]     getter mode
 [Worker]     getter redirect

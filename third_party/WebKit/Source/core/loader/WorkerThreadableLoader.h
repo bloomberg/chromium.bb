@@ -103,6 +103,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   void Start(const ResourceRequest&) override;
   void OverrideTimeout(unsigned long timeout) override;
   void Cancel() override;
+  void Detach() override;
 
   void Trace(blink::Visitor*) override;
 

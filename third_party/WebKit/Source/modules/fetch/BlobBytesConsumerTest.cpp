@@ -40,6 +40,7 @@ class TestThreadableLoader : public ThreadableLoader {
   }
 
   void Cancel() override { is_cancelled_ = true; }
+  void Detach() override { NOTREACHED(); }
 
   bool IsStarted() const { return is_started_; }
   bool IsCancelled() const { return is_cancelled_; }
@@ -66,6 +67,7 @@ class SyncLoadingTestThreadableLoader : public ThreadableLoader {
   }
 
   void Cancel() override { is_cancelled_ = true; }
+  void Detach() override { NOTREACHED(); }
 
   bool IsStarted() const { return is_started_; }
   bool IsCancelled() const { return is_cancelled_; }
@@ -97,6 +99,7 @@ class SyncErrorTestThreadableLoader : public ThreadableLoader {
   }
 
   void Cancel() override { is_cancelled_ = true; }
+  void Detach() override { NOTREACHED(); }
 
   bool IsStarted() const { return is_started_; }
   bool IsCancelled() const { return is_cancelled_; }

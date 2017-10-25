@@ -649,7 +649,10 @@ void FetchManager::Loader::Dispose() {
   // Prevent notification
   fetch_manager_ = nullptr;
   if (loader_) {
-    loader_->Cancel();
+    if (request_->Keepalive())
+      loader_->Detach();
+    else
+      loader_->Cancel();
     loader_ = nullptr;
   }
   if (integrity_verifier_)
@@ -750,6 +753,17 @@ void FetchManager::Loader::PerformHTTPFetch() {
                                    ? WebURLRequest::ServiceWorkerMode::kNone
                                    : WebURLRequest::ServiceWorkerMode::kAll);
 
+  if (request_->Keepalive()) {
+    if (!WebCORS::IsCORSSafelistedMethod(request.HttpMethod()) ||
+        !WebCORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+            request.HttpHeaderFields())) {
+      PerformNetworkError(
+          "Preflight request for request with keepalive "
+          "specified is currently not supported");
+      return;
+    }
+    request.SetKeepalive(true);
+  }
   // "3. Append `Host`, ..."
   // FIXME: Implement this when the spec is fixed.
 

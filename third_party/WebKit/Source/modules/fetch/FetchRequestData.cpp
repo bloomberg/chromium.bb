@@ -68,6 +68,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->response_tainting_ = response_tainting_;
   request->mime_type_ = mime_type_;
   request->integrity_ = integrity_;
+  request->keepalive_ = keepalive_;
   request->attached_credential_ = attached_credential_;
   return request;
 }
@@ -106,7 +107,8 @@ FetchRequestData::FetchRequestData()
       credentials_(WebURLRequest::kFetchCredentialsModeOmit),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       redirect_(WebURLRequest::kFetchRedirectModeFollow),
-      response_tainting_(kBasicTainting) {}
+      response_tainting_(kBasicTainting),
+      keepalive_(false) {}
 
 void FetchRequestData::SetCredentials(
     WebURLRequest::FetchCredentialsMode credentials) {

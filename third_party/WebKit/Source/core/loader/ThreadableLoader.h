@@ -159,7 +159,13 @@ class CORE_EXPORT ThreadableLoader
   // milliseconds.
   virtual void OverrideTimeout(unsigned long timeout_milliseconds) = 0;
 
+  // Cancel the request.
   virtual void Cancel() = 0;
+
+  // Detach the loader from the request. This function is for "keepalive"
+  // requests. No notification will be sent to the client, but the request
+  // will be processed.
+  virtual void Detach() = 0;
 
   virtual ~ThreadableLoader() {}
 

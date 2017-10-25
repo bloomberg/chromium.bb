@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Fetch API: keepalive handling assert_equals: expected (string) "on" but got (object) null
-Harness: the test ran to completion.
-
