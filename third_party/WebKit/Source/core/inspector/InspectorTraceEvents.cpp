@@ -1120,7 +1120,6 @@ std::unique_ptr<TracedValue> InspectorFunctionCallEvent::Data(
   value->SetString("scriptId", String::Number(location->ScriptId()));
   value->SetString("url", location->Url());
   value->SetInteger("lineNumber", location->LineNumber());
-  value->SetInteger("columnNumber", location->ColumnNumber());
   return value;
 }
 

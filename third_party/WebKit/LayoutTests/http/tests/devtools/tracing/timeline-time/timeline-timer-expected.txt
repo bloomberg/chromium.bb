@@ -85,7 +85,6 @@ Text details for TimerRemove: timeline-timer.html:19
 FunctionCall Properties:
 {
     data : {
-        columnNumber : <number>
         frame : <string>
         functionName : "intervalTimerWork"
         lineNumber : <number>
@@ -100,7 +99,6 @@ FunctionCall Properties:
 FunctionCall Properties:
 {
     data : {
-        columnNumber : <number>
         frame : <string>
         functionName : "intervalTimerWork"
         lineNumber : <number>
