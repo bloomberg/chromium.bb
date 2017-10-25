@@ -50,35 +50,39 @@ struct GPU_EXPORT GpuPreferences {
   // Disables hardware acceleration of video decode, where available.
   bool disable_accelerated_video_decode = false;
 
-#if defined(OS_CHROMEOS)
-  // Disables VA-API accelerated video encode.
-  bool disable_vaapi_accelerated_video_encode = false;
-#endif
+  // Causes the GPU process to display a dialog on launch.
+  bool gpu_startup_dialog = false;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
+  // Disable the thread that crashes the GPU process if it stops responding to
+  // messages.
+  bool disable_gpu_watchdog = false;
+
+  // Starts the GPU sandbox before creating a GL context.
+  bool gpu_sandbox_start_early = false;
+
+  // Disables VA-API accelerated video encode. ChromeOS only.
+  bool disable_vaapi_accelerated_video_encode = false;
+
   // Disables HW encode acceleration for WebRTC.
   bool disable_web_rtc_hw_encoding = false;
-#endif
 
-#if defined(OS_WIN)
   // Enables experimental hardware acceleration for VP8/VP9 video decoding.
-  // Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all.
+  // Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all. Windows only.
   VpxDecodeVendors enable_accelerated_vpx_decode = VPX_VENDOR_MICROSOFT;
 
-  // Enables using CODECAPI_AVLowLatencyMode.
+  // Enables using CODECAPI_AVLowLatencyMode. Windows only.
   bool enable_low_latency_dxva = true;
 
-  // Enables support for avoiding copying DXGI NV12 textures.
+  // Enables support for avoiding copying DXGI NV12 textures. Windows only.
   bool enable_zero_copy_dxgi_video = false;
 
-  // Enables support for outputting NV12 video frames.
+  // Enables support for outputting NV12 video frames. Windows only.
   bool enable_nv12_dxgi_video = false;
 
   // Enables MediaFoundationVideoEncoderAccelerator on Windows 7. Windows 7 does
   // not support some of the attributes which may impact the performance or the
-  // quality of output. So this flag is disabled by default.
+  // quality of output. So this flag is disabled by default. Windows only.
   bool enable_media_foundation_vea_on_windows7 = false;
-#endif
 
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.cc
