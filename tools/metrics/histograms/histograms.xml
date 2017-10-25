@@ -29911,6 +29911,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IOS.RepeatedExternalAppPromptResponse"
+    enum="IOSRepeatedExternalAppPromptResponse">
+  <owner>mrefaat@chromium.org</owner>
+  <summary>
+    The user reaction to the prompt that appears when a website tries to open an
+    external application repeatedly.
+  </summary>
+</histogram>
+
 <histogram name="IOS.SearchExtension.Action" enum="IOSSearchExtensionAction">
   <owner>olivierrobin@chromium.org</owner>
   <summary>The action selected by the user in the Search Extension.</summary>
