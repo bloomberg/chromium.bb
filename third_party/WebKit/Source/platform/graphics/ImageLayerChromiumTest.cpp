@@ -40,7 +40,7 @@ namespace {
 
 class TestImage : public Image {
  public:
-  static RefPtr<TestImage> Create(const IntSize& size, bool opaque) {
+  static scoped_refptr<TestImage> Create(const IntSize& size, bool opaque) {
     return WTF::AdoptRef(new TestImage(size, opaque));
   }
 
@@ -101,7 +101,7 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset) {
   ASSERT_FALSE(graphics_layer->ContentsLayer());
 
   bool opaque = false;
-  RefPtr<Image> image = TestImage::Create(IntSize(100, 100), opaque);
+  scoped_refptr<Image> image = TestImage::Create(IntSize(100, 100), opaque);
   ASSERT_TRUE(image.get());
 
   graphics_layer->SetContentsToImage(image.get(), Image::kUnspecifiedDecode);
@@ -120,9 +120,10 @@ TEST(ImageLayerChromiumTest, opaqueImages) {
   ASSERT_TRUE(graphics_layer.get());
 
   bool opaque = true;
-  RefPtr<Image> opaque_image = TestImage::Create(IntSize(100, 100), opaque);
+  scoped_refptr<Image> opaque_image =
+      TestImage::Create(IntSize(100, 100), opaque);
   ASSERT_TRUE(opaque_image.get());
-  RefPtr<Image> non_opaque_image =
+  scoped_refptr<Image> non_opaque_image =
       TestImage::Create(IntSize(100, 100), !opaque);
   ASSERT_TRUE(non_opaque_image.get());
 

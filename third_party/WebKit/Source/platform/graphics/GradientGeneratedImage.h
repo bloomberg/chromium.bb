@@ -36,8 +36,9 @@ class IntSize;
 
 class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
  public:
-  static RefPtr<GradientGeneratedImage> Create(RefPtr<Gradient> generator,
-                                               const IntSize& size) {
+  static scoped_refptr<GradientGeneratedImage> Create(
+      scoped_refptr<Gradient> generator,
+      const IntSize& size) {
     return WTF::AdoptRef(
         new GradientGeneratedImage(std::move(generator), size));
   }
@@ -56,10 +57,10 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
             ImageDecodingMode) override;
   void DrawTile(GraphicsContext&, const FloatRect&) override;
 
-  GradientGeneratedImage(RefPtr<Gradient> generator, const IntSize& size)
+  GradientGeneratedImage(scoped_refptr<Gradient> generator, const IntSize& size)
       : GeneratedImage(size), gradient_(std::move(generator)) {}
 
-  RefPtr<Gradient> gradient_;
+  scoped_refptr<Gradient> gradient_;
 };
 
 }  // namespace blink

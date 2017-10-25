@@ -91,12 +91,12 @@ Image* Image::NullImage() {
   return null_image;
 }
 
-RefPtr<Image> Image::LoadPlatformResource(const char* name) {
+scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {
   const WebData& resource = Platform::Current()->GetDataResource(name);
   if (resource.IsEmpty())
     return Image::NullImage();
 
-  RefPtr<Image> image = BitmapImage::Create();
+  scoped_refptr<Image> image = BitmapImage::Create();
   image->SetData(resource, true);
   return image;
 }
@@ -105,7 +105,7 @@ bool Image::SupportsType(const String& type) {
   return MIMETypeRegistry::IsSupportedImageResourceMIMEType(type);
 }
 
-Image::SizeAvailability Image::SetData(RefPtr<SharedBuffer> data,
+Image::SizeAvailability Image::SetData(scoped_refptr<SharedBuffer> data,
                                        bool all_data_received) {
   encoded_image_data_ = std::move(data);
   if (!encoded_image_data_.get())
@@ -364,8 +364,8 @@ void Image::DrawPattern(GraphicsContext& context,
     PlatformInstrumentation::DidDrawLazyPixelRef(image_id);
 }
 
-RefPtr<Image> Image::ImageForDefaultFrame() {
-  RefPtr<Image> image(this);
+scoped_refptr<Image> Image::ImageForDefaultFrame() {
+  scoped_refptr<Image> image(this);
 
   return image;
 }

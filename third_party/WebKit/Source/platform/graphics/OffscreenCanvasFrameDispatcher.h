@@ -23,7 +23,7 @@ class OffscreenCanvasFrameDispatcherClient {
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
   virtual ~OffscreenCanvasFrameDispatcher() {}
-  virtual void DispatchFrame(RefPtr<StaticBitmapImage>,
+  virtual void DispatchFrame(scoped_refptr<StaticBitmapImage>,
                              double commit_start_time,
                              const SkIRect& damage_rect,
                              bool is_web_gl_software_rendering) = 0;

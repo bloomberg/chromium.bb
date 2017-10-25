@@ -30,17 +30,17 @@ class PLATFORM_EXPORT PropertyTreeState {
   const TransformPaintPropertyNode* Transform() const {
     return transform_.get();
   }
-  void SetTransform(RefPtr<const TransformPaintPropertyNode> node) {
+  void SetTransform(scoped_refptr<const TransformPaintPropertyNode> node) {
     transform_ = std::move(node);
   }
 
   const ClipPaintPropertyNode* Clip() const { return clip_.get(); }
-  void SetClip(RefPtr<const ClipPaintPropertyNode> node) {
+  void SetClip(scoped_refptr<const ClipPaintPropertyNode> node) {
     clip_ = std::move(node);
   }
 
   const EffectPaintPropertyNode* Effect() const { return effect_.get(); }
-  void SetEffect(RefPtr<const EffectPaintPropertyNode> node) {
+  void SetEffect(scoped_refptr<const EffectPaintPropertyNode> node) {
     effect_ = std::move(node);
   }
 
@@ -71,9 +71,9 @@ class PLATFORM_EXPORT PropertyTreeState {
 #endif
 
  private:
-  RefPtr<const TransformPaintPropertyNode> transform_;
-  RefPtr<const ClipPaintPropertyNode> clip_;
-  RefPtr<const EffectPaintPropertyNode> effect_;
+  scoped_refptr<const TransformPaintPropertyNode> transform_;
+  scoped_refptr<const ClipPaintPropertyNode> clip_;
+  scoped_refptr<const EffectPaintPropertyNode> effect_;
 };
 
 inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {

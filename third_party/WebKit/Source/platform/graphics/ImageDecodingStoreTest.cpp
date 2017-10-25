@@ -70,7 +70,7 @@ class ImageDecodingStoreTest : public ::testing::Test,
       ImageDecodingStore::Instance().SetCacheLimitInBytes(0);
   }
 
-  RefPtr<ImageFrameGenerator> generator_;
+  scoped_refptr<ImageFrameGenerator> generator_;
   int decoders_destroyed_;
 };
 

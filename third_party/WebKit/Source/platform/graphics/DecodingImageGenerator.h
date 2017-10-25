@@ -55,12 +55,13 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   static std::unique_ptr<SkImageGenerator> CreateAsSkImageGenerator(
       sk_sp<SkData>);
 
-  static sk_sp<DecodingImageGenerator> Create(RefPtr<ImageFrameGenerator>,
-                                              const SkImageInfo&,
-                                              RefPtr<SegmentReader>,
-                                              std::vector<FrameMetadata>,
-                                              PaintImage::ContentId,
-                                              bool all_data_received);
+  static sk_sp<DecodingImageGenerator> Create(
+      scoped_refptr<ImageFrameGenerator>,
+      const SkImageInfo&,
+      scoped_refptr<SegmentReader>,
+      std::vector<FrameMetadata>,
+      PaintImage::ContentId,
+      bool all_data_received);
 
   ~DecodingImageGenerator() override;
 
@@ -82,15 +83,15 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
 
  private:
-  DecodingImageGenerator(RefPtr<ImageFrameGenerator>,
+  DecodingImageGenerator(scoped_refptr<ImageFrameGenerator>,
                          const SkImageInfo&,
-                         RefPtr<SegmentReader>,
+                         scoped_refptr<SegmentReader>,
                          std::vector<FrameMetadata>,
                          PaintImage::ContentId,
                          bool all_data_received);
 
-  RefPtr<ImageFrameGenerator> frame_generator_;
-  const RefPtr<SegmentReader> data_;  // Data source.
+  scoped_refptr<ImageFrameGenerator> frame_generator_;
+  const scoped_refptr<SegmentReader> data_;  // Data source.
   const bool all_data_received_;
   bool can_yuv_decode_;
   const PaintImage::ContentId complete_frame_content_id_;

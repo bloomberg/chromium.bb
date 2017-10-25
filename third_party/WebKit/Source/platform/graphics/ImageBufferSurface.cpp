@@ -69,7 +69,7 @@ void ImageBufferSurface::Draw(GraphicsContext& context,
                               const FloatRect& dest_rect,
                               const FloatRect& src_rect,
                               SkBlendMode op) {
-  RefPtr<StaticBitmapImage> snapshot =
+  scoped_refptr<StaticBitmapImage> snapshot =
       NewImageSnapshot(kPreferAcceleration, kSnapshotReasonPaint);
   if (!snapshot)
     return;

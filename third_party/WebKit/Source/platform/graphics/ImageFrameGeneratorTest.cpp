@@ -127,9 +127,9 @@ class ImageFrameGeneratorTest : public ::testing::Test,
     UseMockImageDecoderFactory();
   }
 
-  RefPtr<SharedBuffer> data_;
-  RefPtr<SegmentReader> segment_reader_;
-  RefPtr<ImageFrameGenerator> generator_;
+  scoped_refptr<SharedBuffer> data_;
+  scoped_refptr<SegmentReader> segment_reader_;
+  scoped_refptr<ImageFrameGenerator> generator_;
   int decoders_destroyed_;
   int decode_request_count_;
   int memory_allocator_set_count_;

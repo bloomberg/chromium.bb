@@ -134,7 +134,7 @@ TEST_P(GeometryMapperTest, Root) {
 }
 
 TEST_P(GeometryMapperTest, IdentityTransform) {
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(),
                                          FloatPoint3D());
@@ -151,7 +151,7 @@ TEST_P(GeometryMapperTest, IdentityTransform) {
 TEST_P(GeometryMapperTest, TranslationTransform) {
   TransformationMatrix transform_matrix;
   transform_matrix.Translate(20, 10);
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          transform_matrix, FloatPoint3D());
   PropertyTreeState local_state = PropertyTreeState::Root();
@@ -173,7 +173,7 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
   TransformationMatrix transform_matrix;
   transform_matrix.Rotate(45);
   transform_matrix.Scale(2);
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          transform_matrix,
                                          FloatPoint3D(0, 0, 0));
@@ -192,7 +192,7 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
   TransformationMatrix transform_matrix;
   transform_matrix.Rotate(45);
   transform_matrix.Scale(2);
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          transform_matrix,
                                          FloatPoint3D(50, 50, 0));
@@ -211,13 +211,13 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
 TEST_P(GeometryMapperTest, NestedTransforms) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform1 =
+  scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform, FloatPoint3D());
 
   TransformationMatrix scale_transform;
   scale_transform.Scale(2);
-  RefPtr<TransformPaintPropertyNode> transform2 =
+  scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(transform1, scale_transform,
                                          FloatPoint3D());
 
@@ -236,13 +236,13 @@ TEST_P(GeometryMapperTest, NestedTransforms) {
 TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate3d(45, 0, 0);
-  RefPtr<TransformPaintPropertyNode> transform1 =
+  scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform, FloatPoint3D());
 
   TransformationMatrix inverse_rotate_transform;
   inverse_rotate_transform.Rotate3d(-45, 0, 0);
-  RefPtr<TransformPaintPropertyNode> transform2 =
+  scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(transform1, inverse_rotate_transform,
                                          FloatPoint3D(),
                                          true);  // Flattens
@@ -263,13 +263,13 @@ TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
 TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   TransformationMatrix scale_transform;
   scale_transform.Scale(2);
-  RefPtr<TransformPaintPropertyNode> transform1 =
+  scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          scale_transform, FloatPoint3D());
 
   TransformationMatrix translate_transform;
   translate_transform.Translate(100, 0);
-  RefPtr<TransformPaintPropertyNode> transform2 =
+  scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(transform1, translate_transform,
                                          FloatPoint3D());
 
@@ -290,13 +290,13 @@ TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
 TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform1 =
+  scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform, FloatPoint3D());
 
   TransformationMatrix scale_transform;
   scale_transform.Scale(2);
-  RefPtr<TransformPaintPropertyNode> transform2 =
+  scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(transform1, scale_transform,
                                          FloatPoint3D());
 
@@ -315,7 +315,7 @@ TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
 }
 
 TEST_P(GeometryMapperTest, SimpleClip) {
-  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 50, 50));
 
@@ -340,7 +340,7 @@ TEST_P(GeometryMapperTest, RoundedClip) {
   FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
                         FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
                                                 FloatSize(), FloatSize()));
-  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(), rect);
 
   PropertyTreeState local_state = PropertyTreeState::Root();
@@ -368,11 +368,11 @@ TEST_P(GeometryMapperTest, TwoClips) {
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
                               FloatSize()));
 
-  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       clip_rect1);
 
-  RefPtr<ClipPaintPropertyNode> clip2 =
+  scoped_refptr<ClipPaintPropertyNode> clip2 =
       ClipPaintPropertyNode::Create(clip1, TransformPaintPropertyNode::Root(),
                                     FloatRoundedRect(10, 10, 50, 50));
 
@@ -412,7 +412,7 @@ TEST_P(GeometryMapperTest, TwoClips) {
 }
 
 TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(),
                                          FloatPoint3D());
@@ -422,10 +422,10 @@ TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
                               FloatSize()));
 
-  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), transform.get(), clip_rect1);
 
-  RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
       clip1, transform.get(), FloatRoundedRect(10, 10, 30, 40));
 
   PropertyTreeState local_state = PropertyTreeState::Root();
@@ -462,11 +462,11 @@ TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
 TEST_P(GeometryMapperTest, ClipBeforeTransform) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform, FloatPoint3D());
 
-  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), transform.get(),
       FloatRoundedRect(10, 10, 50, 50));
 
@@ -493,11 +493,11 @@ TEST_P(GeometryMapperTest, ClipBeforeTransform) {
 TEST_P(GeometryMapperTest, ClipAfterTransform) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform, FloatPoint3D());
 
-  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 200, 200));
 
@@ -521,17 +521,17 @@ TEST_P(GeometryMapperTest, ClipAfterTransform) {
 }
 
 TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
-  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 200, 200));
 
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform, FloatPoint3D());
 
-  RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
       clip1, transform.get(), FloatRoundedRect(10, 10, 200, 200));
 
   FloatRect input(0, 0, 100, 100);
@@ -587,13 +587,13 @@ TEST_P(GeometryMapperTest, SiblingTransforms) {
   // going through the root.
   TransformationMatrix rotate_transform1;
   rotate_transform1.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform1 =
+  scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform1, FloatPoint3D());
 
   TransformationMatrix rotate_transform2;
   rotate_transform2.Rotate(-45);
-  RefPtr<TransformPaintPropertyNode> transform2 =
+  scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform2, FloatPoint3D());
 
@@ -629,17 +629,17 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   // going through the root.
   TransformationMatrix rotate_transform1;
   rotate_transform1.Rotate(45);
-  RefPtr<TransformPaintPropertyNode> transform1 =
+  scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform1, FloatPoint3D());
 
   TransformationMatrix rotate_transform2;
   rotate_transform2.Rotate(-45);
-  RefPtr<TransformPaintPropertyNode> transform2 =
+  scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          rotate_transform2, FloatPoint3D());
 
-  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), transform2.get(),
       FloatRoundedRect(10, 20, 30, 40));
 
@@ -671,30 +671,32 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
-  RefPtr<TransformPaintPropertyNode> transform_above_effect =
+  scoped_refptr<TransformPaintPropertyNode> transform_above_effect =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix().Scale(3),
                                          FloatPoint3D());
-  RefPtr<TransformPaintPropertyNode> transform_below_effect =
+  scoped_refptr<TransformPaintPropertyNode> transform_below_effect =
       TransformPaintPropertyNode::Create(transform_above_effect,
                                          TransformationMatrix().Scale(2),
                                          FloatPoint3D());
 
   // This clip is between transformAboveEffect and the effect.
-  RefPtr<ClipPaintPropertyNode> clip_above_effect =
+  scoped_refptr<ClipPaintPropertyNode> clip_above_effect =
       ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
                                     transform_above_effect,
                                     FloatRoundedRect(-100, -100, 200, 200));
   // This clip is between the effect and transformBelowEffect.
-  RefPtr<ClipPaintPropertyNode> clip_below_effect =
+  scoped_refptr<ClipPaintPropertyNode> clip_below_effect =
       ClipPaintPropertyNode::Create(clip_above_effect, transform_above_effect,
                                     FloatRoundedRect(10, 10, 200, 200));
 
   CompositorFilterOperations filters;
   filters.AppendBlurFilter(20);
-  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), transform_above_effect,
-      clip_above_effect, kColorFilterNone, filters, 1.0, SkBlendMode::kSrcOver);
+  scoped_refptr<EffectPaintPropertyNode> effect =
+      EffectPaintPropertyNode::Create(EffectPaintPropertyNode::Root(),
+                                      transform_above_effect, clip_above_effect,
+                                      kColorFilterNone, filters, 1.0,
+                                      SkBlendMode::kSrcOver);
 
   PropertyTreeState local_state(transform_below_effect.get(),
                                 clip_below_effect.get(), effect.get());
@@ -727,11 +729,12 @@ TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
   filters.AppendReferenceFilter(SkiaImageFilterBuilder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
-  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      ClipPaintPropertyNode::Root(), kColorFilterNone, filters, 1.0,
-      SkBlendMode::kSrcOver, kCompositingReasonNone, CompositorElementId(),
-      FloatPoint(100, 100));
+  scoped_refptr<EffectPaintPropertyNode> effect =
+      EffectPaintPropertyNode::Create(
+          EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+          ClipPaintPropertyNode::Root(), kColorFilterNone, filters, 1.0,
+          SkBlendMode::kSrcOver, kCompositingReasonNone, CompositorElementId(),
+          FloatPoint(100, 100));
 
   PropertyTreeState local_state = PropertyTreeState::Root();
   local_state.SetEffect(effect);
@@ -749,7 +752,7 @@ TEST_P(GeometryMapperTest, InvertedClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
-  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 50, 50));
 

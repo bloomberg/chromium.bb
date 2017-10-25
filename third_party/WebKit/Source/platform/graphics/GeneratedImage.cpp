@@ -58,7 +58,7 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   pattern_matrix.preScale(scale.Width(), scale.Height());
   pattern_matrix.preTranslate(tile_rect.X(), tile_rect.Y());
 
-  RefPtr<Pattern> pattern =
+  scoped_refptr<Pattern> pattern =
       Pattern::CreatePaintRecordPattern(std::move(record), tile_rect);
 
   PaintFlags fill_flags = dest_context.FillFlags();

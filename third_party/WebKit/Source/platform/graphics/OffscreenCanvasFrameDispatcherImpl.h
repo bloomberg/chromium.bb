@@ -33,7 +33,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
   void SetSuspendAnimation(bool) final;
   bool NeedsBeginFrame() const final { return needs_begin_frame_; }
   bool IsAnimationSuspended() const final { return suspend_animation_; }
-  void DispatchFrame(RefPtr<StaticBitmapImage>,
+  void DispatchFrame(scoped_refptr<StaticBitmapImage>,
                      double commit_start_time,
                      const SkIRect& damage_rect,
                      bool is_web_gl_software_rendering = false) final;
@@ -78,10 +78,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
       offscreen_canvas_resource_provider_;
 
   bool VerifyImageSize(const IntSize);
-  void PostImageToPlaceholderIfNotBlocked(RefPtr<StaticBitmapImage>,
+  void PostImageToPlaceholderIfNotBlocked(scoped_refptr<StaticBitmapImage>,
                                           unsigned resource_id);
   // virtual for testing
-  virtual void PostImageToPlaceholder(RefPtr<StaticBitmapImage>,
+  virtual void PostImageToPlaceholder(scoped_refptr<StaticBitmapImage>,
                                       unsigned resource_id);
 
   viz::mojom::blink::CompositorFrameSinkPtr sink_;
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
 
   // The latest_unposted_resource_id_ always refers to the Id of the frame
   // resource used by the latest_unposted_image_.
-  RefPtr<StaticBitmapImage> latest_unposted_image_;
+  scoped_refptr<StaticBitmapImage> latest_unposted_image_;
   unsigned latest_unposted_resource_id_;
   unsigned num_unreclaimed_frames_posted_;
 

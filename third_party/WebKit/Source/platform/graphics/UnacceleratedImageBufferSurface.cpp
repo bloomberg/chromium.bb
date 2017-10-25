@@ -79,9 +79,9 @@ bool UnacceleratedImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
   return surface_->getCanvas()->writePixels(orig_info, pixels, row_bytes, x, y);
 }
 
-RefPtr<StaticBitmapImage> UnacceleratedImageBufferSurface::NewImageSnapshot(
-    AccelerationHint,
-    SnapshotReason) {
+scoped_refptr<StaticBitmapImage>
+UnacceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint,
+                                                  SnapshotReason) {
   return StaticBitmapImage::Create(surface_->makeImageSnapshot());
 }
 

@@ -45,7 +45,7 @@ static void MixImages(const char* file_name,
                       size_t later_frame) {
   const Vector<char> file = ReadFile(file_name)->Copy();
 
-  RefPtr<SharedBuffer> partial_file =
+  scoped_refptr<SharedBuffer> partial_file =
       SharedBuffer::Create(file.data(), bytes_for_first_frame);
   std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::Create(
       partial_file, false, ImageDecoder::kAlphaPremultiplied,
@@ -53,7 +53,7 @@ static void MixImages(const char* file_name,
   ASSERT_NE(decoder, nullptr);
   sk_sp<SkImage> partial_image = CreateFrameAtIndex(decoder.get(), 0);
 
-  RefPtr<SharedBuffer> almost_complete_file =
+  scoped_refptr<SharedBuffer> almost_complete_file =
       SharedBuffer::Create(file.data(), file.size() - 1);
   decoder->SetData(almost_complete_file, false);
   sk_sp<SkImage> image_with_more_data =
@@ -102,7 +102,7 @@ TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
   };
 
   for (size_t i = 0; i < SK_ARRAY_COUNT(test_files); ++i) {
-    RefPtr<SharedBuffer> file_buffer = ReadFile(test_files[i]);
+    scoped_refptr<SharedBuffer> file_buffer = ReadFile(test_files[i]);
     ASSERT_NE(file_buffer, nullptr);
     // We need contiguous data, which SharedBuffer doesn't guarantee.
     sk_sp<SkData> sk_data = file_buffer->GetAsSkData();
@@ -110,7 +110,7 @@ TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
     const char* data = reinterpret_cast<const char*>(sk_data->bytes());
 
     // Truncated signature (only 1 byte).  Decoder instantiation should fail.
-    RefPtr<SharedBuffer> buffer = SharedBuffer::Create<size_t>(data, 1u);
+    scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create<size_t>(data, 1u);
     EXPECT_FALSE(ImageDecoder::HasSufficientDataToSniffImageType(*buffer));
     EXPECT_EQ(nullptr, DeferredImageDecoder::Create(
                            buffer, false, ImageDecoder::kAlphaPremultiplied,

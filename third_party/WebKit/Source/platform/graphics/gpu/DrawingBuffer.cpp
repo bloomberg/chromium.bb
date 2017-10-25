@@ -71,7 +71,7 @@ static bool g_should_fail_drawing_buffer_creation_for_testing = false;
 
 }  // namespace
 
-RefPtr<DrawingBuffer> DrawingBuffer::Create(
+scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     Client* client,
     const IntSize& size,
@@ -128,14 +128,14 @@ RefPtr<DrawingBuffer> DrawingBuffer::Create(
   if (discard_framebuffer_supported)
     extensions_util->EnsureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-  RefPtr<DrawingBuffer> drawing_buffer = WTF::AdoptRef(new DrawingBuffer(
+  scoped_refptr<DrawingBuffer> drawing_buffer = WTF::AdoptRef(new DrawingBuffer(
       std::move(context_provider), std::move(extensions_util), client,
       discard_framebuffer_supported, want_alpha_channel, premultiplied_alpha,
       preserve, webgl_version, want_depth_buffer, want_stencil_buffer,
       chromium_image_usage, color_params));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
-    return RefPtr<DrawingBuffer>();
+    return scoped_refptr<DrawingBuffer>();
   }
   return drawing_buffer;
 }
@@ -338,7 +338,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
   // mailbox is released (and while the release callback is running). It also
   // owns the SharedBitmap.
   auto func = WTF::Bind(&DrawingBuffer::MailboxReleasedSoftware,
-                        RefPtr<DrawingBuffer>(this),
+                        scoped_refptr<DrawingBuffer>(this),
                         WTF::Passed(std::move(bitmap)), size_);
   *out_release_callback = viz::SingleReleaseCallback::Create(
       ConvertToBaseCallback(std::move(func)));
@@ -360,7 +360,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
   }
 
   // Specify the buffer that we will put in the mailbox.
-  RefPtr<ColorBuffer> color_buffer_for_mailbox;
+  scoped_refptr<ColorBuffer> color_buffer_for_mailbox;
   if (preserve_drawing_buffer_ == kDiscard) {
     // If we can discard the backbuffer, send the old backbuffer directly
     // into the mailbox, and allocate (or recycle) a new backbuffer.
@@ -426,7 +426,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
     // mailbox is released (and while the release callback is running).
     auto func =
         WTF::Bind(&DrawingBuffer::MailboxReleasedGpu,
-                  RefPtr<DrawingBuffer>(this), color_buffer_for_mailbox);
+                  scoped_refptr<DrawingBuffer>(this), color_buffer_for_mailbox);
     *out_release_callback = viz::SingleReleaseCallback::Create(
         ConvertToBaseCallback(std::move(func)));
   }
@@ -439,7 +439,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
   return true;
 }
 
-void DrawingBuffer::MailboxReleasedGpu(RefPtr<ColorBuffer> color_buffer,
+void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
                                        const gpu::SyncToken& sync_token,
                                        bool lost_resource) {
   // If the mailbox has been returned by the compositor then it is no
@@ -481,7 +481,7 @@ void DrawingBuffer::MailboxReleasedSoftware(
   recycled_bitmaps_.push_back(std::move(recycled));
 }
 
-RefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
+scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   ScopedStateRestorer scoped_state_restorer(this);
 
   // This can be null if the context is lost before the first call to
@@ -543,10 +543,11 @@ RefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
       context_provider_->CreateWeakPtr(), size_);
 }
 
-RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateOrRecycleColorBuffer() {
+scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateOrRecycleColorBuffer() {
   DCHECK(state_restorer_);
   if (!recycled_color_buffer_queue_.IsEmpty()) {
-    RefPtr<ColorBuffer> recycled = recycled_color_buffer_queue_.TakeLast();
+    scoped_refptr<ColorBuffer> recycled =
+        recycled_color_buffer_queue_.TakeLast();
     if (recycled->receive_sync_token.HasData())
       gl_->WaitSyncTokenCHROMIUM(recycled->receive_sync_token.GetData());
     DCHECK(recycled->size == size_);
@@ -1166,7 +1167,7 @@ void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
   }
 }
 
-RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
+scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     const IntSize& size) {
   DCHECK(state_restorer_);
   state_restorer_->SetFramebufferBindingDirty();

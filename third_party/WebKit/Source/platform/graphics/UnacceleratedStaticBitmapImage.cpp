@@ -8,8 +8,8 @@
 
 namespace blink {
 
-RefPtr<UnacceleratedStaticBitmapImage> UnacceleratedStaticBitmapImage::Create(
-    sk_sp<SkImage> image) {
+scoped_refptr<UnacceleratedStaticBitmapImage>
+UnacceleratedStaticBitmapImage::Create(sk_sp<SkImage> image) {
   DCHECK(!image->isTextureBacked());
   return WTF::AdoptRef(new UnacceleratedStaticBitmapImage(std::move(image)));
 }
@@ -22,8 +22,8 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
       CreatePaintImageBuilder().set_image(std::move(image)).TakePaintImage();
 }
 
-RefPtr<UnacceleratedStaticBitmapImage> UnacceleratedStaticBitmapImage::Create(
-    PaintImage image) {
+scoped_refptr<UnacceleratedStaticBitmapImage>
+UnacceleratedStaticBitmapImage::Create(PaintImage image) {
   return WTF::AdoptRef(new UnacceleratedStaticBitmapImage(std::move(image)));
 }
 

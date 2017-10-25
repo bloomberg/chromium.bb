@@ -179,7 +179,7 @@ SnapshotReasonToFallbackReason(SnapshotReason reason) {
   return RecordingImageBufferSurface::kFallbackReasonUnknown;
 }
 
-RefPtr<StaticBitmapImage> RecordingImageBufferSurface::NewImageSnapshot(
+scoped_refptr<StaticBitmapImage> RecordingImageBufferSurface::NewImageSnapshot(
     AccelerationHint hint,
     SnapshotReason reason) {
   if (!fallback_surface_)

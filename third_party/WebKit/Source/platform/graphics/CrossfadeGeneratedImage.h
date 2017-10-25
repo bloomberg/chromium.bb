@@ -36,11 +36,12 @@ namespace blink {
 
 class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
  public:
-  static RefPtr<CrossfadeGeneratedImage> Create(RefPtr<Image> from_image,
-                                                RefPtr<Image> to_image,
-                                                float percentage,
-                                                IntSize crossfade_size,
-                                                const IntSize& size) {
+  static scoped_refptr<CrossfadeGeneratedImage> Create(
+      scoped_refptr<Image> from_image,
+      scoped_refptr<Image> to_image,
+      float percentage,
+      IntSize crossfade_size,
+      const IntSize& size) {
     return WTF::AdoptRef(
         new CrossfadeGeneratedImage(std::move(from_image), std::move(to_image),
                                     percentage, crossfade_size, size));
@@ -61,8 +62,8 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
             ImageDecodingMode) override;
   void DrawTile(GraphicsContext&, const FloatRect&) final;
 
-  CrossfadeGeneratedImage(RefPtr<Image> from_image,
-                          RefPtr<Image> to_image,
+  CrossfadeGeneratedImage(scoped_refptr<Image> from_image,
+                          scoped_refptr<Image> to_image,
                           float percentage,
                           IntSize crossfade_size,
                           const IntSize&);
@@ -73,8 +74,8 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
                      ImageClampingMode,
                      ImageDecodingMode);
 
-  RefPtr<Image> from_image_;
-  RefPtr<Image> to_image_;
+  scoped_refptr<Image> from_image_;
+  scoped_refptr<Image> to_image_;
 
   float percentage_;
   IntSize crossfade_size_;

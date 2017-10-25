@@ -133,7 +133,7 @@ class DrawingBufferTest : public Test {
     gl_->VerifyStateHasNotChangedSinceSave();
   }
 
-  RefPtr<DrawingBufferForTests> drawing_buffer_;
+  scoped_refptr<DrawingBufferForTests> drawing_buffer_;
 };
 
 class DrawingBufferTestMultisample : public DrawingBufferTest {
@@ -663,7 +663,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
     bool want_depth_buffer = cases[i].request_depth;
     bool want_stencil_buffer = cases[i].request_stencil;
     bool want_antialiasing = false;
-    RefPtr<DrawingBuffer> drawing_buffer = DrawingBuffer::Create(
+    scoped_refptr<DrawingBuffer> drawing_buffer = DrawingBuffer::Create(
         std::move(provider), nullptr, IntSize(10, 10), premultiplied_alpha,
         want_alpha_channel, want_depth_buffer, want_stencil_buffer,
         want_antialiasing, preserve, DrawingBuffer::kWebGL1,
@@ -732,7 +732,7 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes) {
 TEST_F(DrawingBufferTest,
        verifyTooBigDrawingBufferExceedingV8MaxSizeFailsToCreate) {
   IntSize too_big_size(1, (v8::TypedArray::kMaxLength / 4) + 1);
-  RefPtr<DrawingBuffer> too_big_drawing_buffer = DrawingBuffer::Create(
+  scoped_refptr<DrawingBuffer> too_big_drawing_buffer = DrawingBuffer::Create(
       nullptr, nullptr, too_big_size, false, false, false, false, false,
       DrawingBuffer::kDiscard, DrawingBuffer::kWebGL1,
       DrawingBuffer::kAllowChromiumImage, CanvasColorParams());

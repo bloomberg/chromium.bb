@@ -62,7 +62,7 @@ class SkiaImageDecoder final : public SkImageDeserializer {
                                 size_t length,
                                 const SkIRect* subset) override {
     // No need to copy the data; this decodes immediately.
-    RefPtr<SegmentReader> segment_reader =
+    scoped_refptr<SegmentReader> segment_reader =
         SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(data, length));
     std::unique_ptr<ImageDecoder> image_decoder = ImageDecoder::Create(
         std::move(segment_reader), true, ImageDecoder::kAlphaPremultiplied,
@@ -80,8 +80,8 @@ class SkiaImageDecoder final : public SkImageDeserializer {
   }
 };
 
-RefPtr<PictureSnapshot> PictureSnapshot::Load(
-    const Vector<RefPtr<TilePictureStream>>& tiles) {
+scoped_refptr<PictureSnapshot> PictureSnapshot::Load(
+    const Vector<scoped_refptr<TilePictureStream>>& tiles) {
   DCHECK(!tiles.IsEmpty());
   Vector<sk_sp<SkPicture>> pictures;
   pictures.ReserveCapacity(tiles.size());

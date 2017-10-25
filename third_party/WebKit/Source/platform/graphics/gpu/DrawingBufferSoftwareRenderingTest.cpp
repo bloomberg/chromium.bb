@@ -69,7 +69,7 @@ class DrawingBufferSoftwareRenderingTest : public Test {
     CHECK(drawing_buffer_);
   }
 
-  RefPtr<DrawingBufferForTests> drawing_buffer_;
+  scoped_refptr<DrawingBufferForTests> drawing_buffer_;
   bool is_software_rendering_ = false;
 };
 

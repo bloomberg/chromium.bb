@@ -100,8 +100,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.
-  virtual RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
-                                                     SnapshotReason) = 0;
+  virtual scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
+                                                            SnapshotReason) = 0;
 
   OpacityMode GetOpacityMode() const { return color_params_.GetOpacityMode(); }
   const IntSize& Size() const { return size_; }

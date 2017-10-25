@@ -74,7 +74,7 @@ class BitmapImageTest : public ::testing::Test {
     bool animation_advanced_ = false;
   };
 
-  static RefPtr<SharedBuffer> ReadFile(const char* file_name) {
+  static scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
     String file_path = testing::BlinkRootDir();
     file_path.append(file_name);
     return testing::ReadFromFile(file_path);
@@ -94,7 +94,7 @@ class BitmapImageTest : public ::testing::Test {
   void SetFirstFrameNotComplete() { image_->frames_[0].is_complete_ = false; }
 
   void LoadImage(const char* file_name, bool load_all_frames = true) {
-    RefPtr<SharedBuffer> image_data = ReadFile(file_name);
+    scoped_refptr<SharedBuffer> image_data = ReadFile(file_name);
     ASSERT_TRUE(image_data.get());
 
     image_->SetData(image_data, true);
@@ -128,7 +128,7 @@ class BitmapImageTest : public ::testing::Test {
 
   int AnimationFinished() { return image_->animation_finished_; }
 
-  RefPtr<Image> ImageForDefaultFrame() {
+  scoped_refptr<Image> ImageForDefaultFrame() {
     return image_->ImageForDefaultFrame();
   }
 
@@ -136,7 +136,7 @@ class BitmapImageTest : public ::testing::Test {
     return image_observer_->last_decoded_size_changed_delta_;
   }
 
-  RefPtr<SharedBuffer> Data() { return image_->Data(); }
+  scoped_refptr<SharedBuffer> Data() { return image_->Data(); }
 
  protected:
   void SetUp() override {
@@ -145,7 +145,7 @@ class BitmapImageTest : public ::testing::Test {
   }
 
   Persistent<FakeImageObserver> image_observer_;
-  RefPtr<BitmapImage> image_;
+  scoped_refptr<BitmapImage> image_;
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 };
@@ -184,11 +184,11 @@ TEST_F(BitmapImageTest, animationRepetitions) {
 }
 
 TEST_F(BitmapImageTest, isAllDataReceived) {
-  RefPtr<SharedBuffer> image_data =
+  scoped_refptr<SharedBuffer> image_data =
       ReadFile("/LayoutTests/images/resources/green.jpg");
   ASSERT_TRUE(image_data.get());
 
-  RefPtr<BitmapImage> image = BitmapImage::Create();
+  scoped_refptr<BitmapImage> image = BitmapImage::Create();
   EXPECT_FALSE(image->IsAllDataReceived());
 
   image->SetData(image_data, false);
@@ -265,12 +265,12 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
 }
 
 TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
-  RefPtr<SharedBuffer> image_data =
+  scoped_refptr<SharedBuffer> image_data =
       ReadFile("/LayoutTests/images/resources/green.jpg");
   ASSERT_TRUE(image_data.get());
 
   // Create a new buffer to partially supply the data.
-  RefPtr<SharedBuffer> partial_buffer = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> partial_buffer = SharedBuffer::Create();
   partial_buffer->Append(image_data->Data(), image_data->size() - 4);
 
   // First partial load. Repeated calls for a PaintImage should have the same
@@ -470,7 +470,7 @@ TEST_F(BitmapImageTestWithMockDecoder, DontAdvanceToIncompleteFrame) {
   // still won't advance it.
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
 
-  RefPtr<scheduler::FakeWebTaskRunner> task_runner =
+  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
       WTF::AdoptRef(new scheduler::FakeWebTaskRunner);
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);
@@ -505,7 +505,7 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   // received.
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
 
-  RefPtr<scheduler::FakeWebTaskRunner> task_runner =
+  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
       WTF::AdoptRef(new scheduler::FakeWebTaskRunner);
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);

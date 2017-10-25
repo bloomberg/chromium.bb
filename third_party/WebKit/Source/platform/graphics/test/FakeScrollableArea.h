@@ -55,7 +55,7 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
     return FlooredIntSize(scroll_offset_);
   }
 
-  RefPtr<WebTaskRunner> GetTimerTaskRunner() const final {
+  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
     return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
   }
 

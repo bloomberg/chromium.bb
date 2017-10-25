@@ -304,31 +304,34 @@ class ConicGradient final : public Gradient {
 
 }  // anonymous ns
 
-RefPtr<Gradient> Gradient::CreateLinear(const FloatPoint& p0,
-                                        const FloatPoint& p1,
-                                        GradientSpreadMethod spread_method,
-                                        ColorInterpolation interpolation) {
+scoped_refptr<Gradient> Gradient::CreateLinear(
+    const FloatPoint& p0,
+    const FloatPoint& p1,
+    GradientSpreadMethod spread_method,
+    ColorInterpolation interpolation) {
   return WTF::AdoptRef(
       new LinearGradient(p0, p1, spread_method, interpolation));
 }
 
-RefPtr<Gradient> Gradient::CreateRadial(const FloatPoint& p0,
-                                        float r0,
-                                        const FloatPoint& p1,
-                                        float r1,
-                                        float aspect_ratio,
-                                        GradientSpreadMethod spread_method,
-                                        ColorInterpolation interpolation) {
+scoped_refptr<Gradient> Gradient::CreateRadial(
+    const FloatPoint& p0,
+    float r0,
+    const FloatPoint& p1,
+    float r1,
+    float aspect_ratio,
+    GradientSpreadMethod spread_method,
+    ColorInterpolation interpolation) {
   return WTF::AdoptRef(new RadialGradient(p0, r0, p1, r1, aspect_ratio,
                                           spread_method, interpolation));
 }
 
-RefPtr<Gradient> Gradient::CreateConic(const FloatPoint& position,
-                                       float rotation,
-                                       float start_angle,
-                                       float end_angle,
-                                       GradientSpreadMethod spread_method,
-                                       ColorInterpolation interpolation) {
+scoped_refptr<Gradient> Gradient::CreateConic(
+    const FloatPoint& position,
+    float rotation,
+    float start_angle,
+    float end_angle,
+    GradientSpreadMethod spread_method,
+    ColorInterpolation interpolation) {
   return WTF::AdoptRef(new ConicGradient(position, rotation, start_angle,
                                          end_angle, spread_method,
                                          interpolation));
