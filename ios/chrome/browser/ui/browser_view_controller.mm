@@ -725,7 +725,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // it is valid to show the promotion and |nil| otherwise. |feature| is the
 // base::Feature object associated with the given promotion. |direction| is the
 // direction the bubble's arrow is pointing. |alignment| is the alignment of the
-// arrow on the button. |text| is the text displayed by the bubble.
+// arrow on the button. |text| is the text displayed by the bubble. This method
+// requires that |self.browserState| is not NULL.
 - (BubbleViewControllerPresenter*)
 bubblePresenterForFeature:(const base::Feature&)feature
                 direction:(BubbleArrowDirection)direction
@@ -737,21 +738,29 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Does not present the bubble if |tabTipBubblePresenter.userEngaged| is |YES|
 // to prevent resetting |tabTipBubblePresenter| and affecting the value of
 // |userEngaged|. Does not present the bubble if the feature engagement tracker
-// determines it is not valid to present it.
+// determines it is not valid to present it. This method requires that
+// |self.browserState| is not NULL.
 - (void)presentNewTabTipBubbleOnInitialized;
 // Optionally presents a bubble associated with the new tab tip in-product help
 // promotion. If the feature engagement tracker determines it is valid to show
 // the new tab tip, then it initializes |tabTipBubblePresenter| and presents
 // the bubble. If it is not valid to show the new tab tip,
-// |tabTipBubblePresenter| is set to |nil| and no bubble is shown.
+// |tabTipBubblePresenter| is set to |nil| and no bubble is shown. This method
+// requires that |self.browserState| is not NULL.
 - (void)presentNewTabTipBubble;
 // Waits to present a bubble associated with the new incognito tab tip
 // in-product help promotion until the feature engagement tracker database is
-// fully initialized.
+// fully initialized. This method requires that |self.browserState| is
+// not NULL.
 - (void)presentNewIncognitoTabTipBubbleOnInitialized;
 // Presents a bubble associated with the new incognito tab tip in-product help
-// promotion.
+// promotion. This method requires that |self.browserState| is not NULL.
 - (void)presentNewIncognitoTabTipBubble;
+// Presents the New Tab Tip or New Incognito Tab Tip Bubble if one is
+// eligible. Only one can be eligible per session (as enforced by the
+// FeatureEngagementTracker). If neither is eligible, neither bubble is
+// presented. This method requires that |self.browserState| is not NULL.
+- (void)presentBubblesIfEligible;
 
 // Update find bar with model data. If |shouldFocus| is set to YES, the text
 // field will become first responder.
@@ -1331,7 +1340,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
-  [self presentBubblesIfEligible];
+
+  // |viewDidAppear| can be called after |browserState| is destroyed. Since
+  // |presentBubblesIfEligible| requires that |self.browserState| is not NULL,
+  // check for |self.browserState| before calling the presenting the bubbles.
+  if (self.browserState) {
+    [self presentBubblesIfEligible];
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -2145,7 +2160,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
                 direction:(BubbleArrowDirection)direction
                 alignment:(BubbleAlignment)alignment
                      text:(NSString*)text {
-  if (!feature_engagement::TrackerFactory::GetForBrowserState(_browserState)
+  DCHECK(self.browserState);
+  if (!feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
            ->ShouldTriggerHelpUI(feature)) {
     return nil;
   }
@@ -2173,6 +2189,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)presentNewTabTipBubbleOnInitialized {
+  DCHECK(self.browserState);
   // If the tab tip bubble has already been presented and the user is still
   // considered engaged, it can't be overwritten or set to |nil| or else it will
   // reset the |userEngaged| property. Once the user is not engaged, the bubble
@@ -2193,6 +2210,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)presentNewTabTipBubble {
+  DCHECK(self.browserState);
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
   CGPoint tabSwitcherAnchor;
@@ -2221,6 +2239,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)presentNewIncognitoTabTipBubbleOnInitialized {
+  DCHECK(self.browserState);
   // Do not override |incognitoTabtipBubblePresenter| or set it to nil if the
   // user is still considered engaged.
   if (!self.incognitoTabTipBubblePresenter.isUserEngaged) {
@@ -2238,6 +2257,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)presentNewIncognitoTabTipBubble {
+  DCHECK(self.browserState);
   DCHECK([_toolbarCoordinator
       respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
   NSString* text = l10n_util::GetNSStringWithFixup(
