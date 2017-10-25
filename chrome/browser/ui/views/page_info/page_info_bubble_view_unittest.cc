@@ -287,7 +287,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 // Test that updating the number of cookies used by the current page doesn't add
 // any extra views to Page Info.
 TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
-  const int kExpectedChildren = 4;
+  const int kExpectedChildren = 5;
   EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
 
   // Create a fake list of cookies.

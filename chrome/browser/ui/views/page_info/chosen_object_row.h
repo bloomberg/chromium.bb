@@ -23,12 +23,11 @@ class ChosenObjectRowObserver;
 class ChosenObjectRow : public views::View, public views::ButtonListener {
  public:
   explicit ChosenObjectRow(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info);
+  ~ChosenObjectRow() override;
 
   void AddObserver(ChosenObjectRowObserver* observer);
 
  private:
-  ~ChosenObjectRow() override;
-
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
