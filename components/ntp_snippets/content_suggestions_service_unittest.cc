@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/mock_callback.h"
 #include "base/time/default_clock.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
@@ -39,6 +40,7 @@ using testing::IsEmpty;
 using testing::Mock;
 using testing::Property;
 using testing::Return;
+using testing::SizeIs;
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
 
@@ -816,6 +818,132 @@ TEST_F(ContentSuggestionsServiceTest,
 
   EXPECT_CALL(*raw_mock_ranker, OnCategoryDismissed(category));
   service()->DismissCategory(category);
+}
+
+TEST_F(ContentSuggestionsServiceTest,
+       ShouldDestroyBookmarksProviderWhenChromeHomeIsEnabled) {
+  // Create and register the provider.
+  Category bookmarks_category =
+      Category::FromKnownCategory(KnownCategories::BOOKMARKS);
+  MockContentSuggestionsProvider* bookmarks_provider =
+      MakeRegisteredMockProvider(bookmarks_category);
+  bookmarks_provider->FireSuggestionsChanged(
+      bookmarks_category, CreateSuggestions(bookmarks_category, {1}));
+  bookmarks_provider->FireCategoryStatusChangedWithCurrentStatus(
+      bookmarks_category);
+  ASSERT_THAT(service()->GetCategories(),
+              UnorderedElementsAre(bookmarks_category));
+  ASSERT_THAT(service()->GetCategoryStatus(bookmarks_category),
+              Eq(CategoryStatus::AVAILABLE));
+  ASSERT_THAT(service()->GetSuggestionsForCategory(bookmarks_category),
+              SizeIs(1));
+
+  // Set destructor callback to expect the destruction.
+  base::MockCallback<MockContentSuggestionsProvider::DestructorCallback>
+      mock_destructor_callback;
+  bookmarks_provider->SetDestructorCallback(mock_destructor_callback.Get());
+
+  MockServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  // The provider must be destructed and the category status must change.
+  EXPECT_CALL(mock_destructor_callback, Run());
+  EXPECT_CALL(observer, OnCategoryStatusChanged(bookmarks_category,
+                                                CategoryStatus::NOT_PROVIDED));
+  service()->OnChromeHomeStatusChanged(/*is_chrome_home_enabled=*/true);
+
+  EXPECT_THAT(service()->GetCategories(), IsEmpty());
+  EXPECT_THAT(service()->GetCategoryStatus(bookmarks_category),
+              Eq(CategoryStatus::NOT_PROVIDED));
+  EXPECT_THAT(service()->GetSuggestionsForCategory(bookmarks_category),
+              IsEmpty());
+
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(ContentSuggestionsServiceTest,
+       ShouldDestroyDownloadsProviderWhenChromeHomeIsEnabled) {
+  // Create and register the provider.
+  Category downloads_category =
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS);
+  MockContentSuggestionsProvider* downloads_provider =
+      MakeRegisteredMockProvider(downloads_category);
+  downloads_provider->FireSuggestionsChanged(
+      downloads_category, CreateSuggestions(downloads_category, {1}));
+  downloads_provider->FireCategoryStatusChangedWithCurrentStatus(
+      downloads_category);
+  ASSERT_THAT(service()->GetCategories(),
+              UnorderedElementsAre(downloads_category));
+  ASSERT_THAT(service()->GetCategoryStatus(downloads_category),
+              Eq(CategoryStatus::AVAILABLE));
+  ASSERT_THAT(service()->GetSuggestionsForCategory(downloads_category),
+              SizeIs(1));
+
+  // Set destructor callback to expect the destruction.
+  base::MockCallback<MockContentSuggestionsProvider::DestructorCallback>
+      mock_destructor_callback;
+  downloads_provider->SetDestructorCallback(mock_destructor_callback.Get());
+
+  MockServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  // The provider must be destructed and the category status must change.
+  EXPECT_CALL(mock_destructor_callback, Run());
+  EXPECT_CALL(observer, OnCategoryStatusChanged(downloads_category,
+                                                CategoryStatus::NOT_PROVIDED));
+  service()->OnChromeHomeStatusChanged(/*is_chrome_home_enabled=*/true);
+
+  EXPECT_THAT(service()->GetCategories(), IsEmpty());
+  EXPECT_THAT(service()->GetCategoryStatus(downloads_category),
+              Eq(CategoryStatus::NOT_PROVIDED));
+  EXPECT_THAT(service()->GetSuggestionsForCategory(downloads_category),
+              IsEmpty());
+
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(ContentSuggestionsServiceTest,
+       ShouldNotDestroyArticlesProviderWhenChromeHomeIsEnabled) {
+  // Create and register the provider.
+  Category articles_category =
+      Category::FromKnownCategory(KnownCategories::ARTICLES);
+  MockContentSuggestionsProvider* articles_provider =
+      MakeRegisteredMockProvider(articles_category);
+  articles_provider->FireSuggestionsChanged(
+      articles_category, CreateSuggestions(articles_category, {1}));
+  articles_provider->FireCategoryStatusChangedWithCurrentStatus(
+      articles_category);
+  ASSERT_THAT(service()->GetCategories(),
+              UnorderedElementsAre(articles_category));
+  ASSERT_THAT(service()->GetCategoryStatus(articles_category),
+              Eq(CategoryStatus::AVAILABLE));
+  ASSERT_THAT(service()->GetSuggestionsForCategory(articles_category),
+              SizeIs(1));
+
+  // Set destructor callback to ensure no destruction.
+  base::MockCallback<MockContentSuggestionsProvider::DestructorCallback>
+      mock_destructor_callback;
+  articles_provider->SetDestructorCallback(mock_destructor_callback.Get());
+
+  MockServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  // The provider must not be destructed and the category status must not
+  // change, because Articles are enabled in Chrome Home.
+  EXPECT_CALL(mock_destructor_callback, Run()).Times(0);
+  EXPECT_CALL(observer, OnCategoryStatusChanged(articles_category, _)).Times(0);
+  service()->OnChromeHomeStatusChanged(/*is_chrome_home_enabled=*/true);
+
+  EXPECT_THAT(service()->GetCategories(),
+              UnorderedElementsAre(articles_category));
+  EXPECT_THAT(service()->GetCategoryStatus(articles_category),
+              Eq(CategoryStatus::AVAILABLE));
+  EXPECT_THAT(service()->GetSuggestionsForCategory(articles_category),
+              SizeIs(1));
+
+  articles_provider->SetDestructorCallback(
+      MockContentSuggestionsProvider::DestructorCallback());
+  service()->RemoveObserver(&observer);
 }
 
 }  // namespace ntp_snippets
