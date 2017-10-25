@@ -295,7 +295,9 @@ cr.define('value_control', function() {
       this.readBtn_.hidden =
           (this.properties_ & bluetooth.mojom.Property.READ) === 0;
       this.writeBtn_.hidden =
-          (this.properties_ & bluetooth.mojom.Property.WRITE) === 0;
+          (this.properties_ & bluetooth.mojom.Property.WRITE) === 0 &&
+          (this.properties_ &
+           bluetooth.mojom.Property.WRITE_WITHOUT_RESPONSE) === 0;
 
       var isAvailable = !this.readBtn_.hidden || !this.writeBtn_.hidden;
       this.unavailableMessage_.hidden = isAvailable;
