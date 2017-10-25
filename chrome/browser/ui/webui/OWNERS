@@ -9,7 +9,6 @@ per-file inspect_ui*=dgozman@chromium.org
 per-file inspect_ui*=pfeldman@chromium.org
 
 per-file md_history_ui*=calamity@chromium.org
-per-file md_history_ui*=tsergeant@chromium.org
 
 per-file net_export_ui.*=file://net/OWNERS
 
