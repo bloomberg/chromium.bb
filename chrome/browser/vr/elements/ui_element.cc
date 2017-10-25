@@ -217,6 +217,10 @@ const gfx::Transform& UiElement::world_space_transform() const {
   return world_space_transform_;
 }
 
+bool UiElement::IsWorldPositioned() const {
+  return true;
+}
+
 void UiElement::OnSetMode() {}
 void UiElement::OnUpdatedWorldSpaceTransform() {}
 
@@ -294,10 +298,10 @@ bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
                              distance);
 }
 
-void UiElement::NotifyClientFloatAnimated(float opacity,
+void UiElement::NotifyClientFloatAnimated(float value,
                                           int target_property_id,
                                           cc::Animation* animation) {
-  opacity_ = base::ClampToRange(opacity, 0.0f, 1.0f);
+  opacity_ = base::ClampToRange(value, 0.0f, 1.0f);
 }
 
 void UiElement::NotifyClientTransformOperationsAnimated(
@@ -323,6 +327,10 @@ void UiElement::SetTransitionedProperties(
     const std::set<TargetProperty>& properties) {
   std::set<int> converted_properties(properties.begin(), properties.end());
   animation_player_.SetTransitionedProperties(converted_properties);
+}
+
+void UiElement::SetTransitionDuration(base::TimeDelta delta) {
+  animation_player_.SetTransitionDuration(delta);
 }
 
 void UiElement::AddAnimation(std::unique_ptr<cc::Animation> animation) {

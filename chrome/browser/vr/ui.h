@@ -76,6 +76,7 @@ class Ui : public BrowserUiInterface, public UiInterface {
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
   void OnWebVrFrameAvailable() override;
   void OnWebVrTimedOut() override;
+  void OnWebVrTimeoutImminent() override;
 
  private:
   // This state may be further abstracted into a SkiaUi object.

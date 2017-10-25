@@ -37,17 +37,13 @@ void InitializeColorSchemes() {
   normal_scheme.loading_indicator_background = 0xFF454545;
   normal_scheme.exit_warning_foreground = SK_ColorWHITE;
   normal_scheme.exit_warning_background = 0xCC1A1A1A;
-  normal_scheme.transient_warning_foreground = 0xFFF3F3F3;
-  normal_scheme.transient_warning_background = SK_ColorBLACK;
+  normal_scheme.web_vr_transient_toast_foreground = 0xFFF3F3F3;
+  normal_scheme.web_vr_transient_toast_background = SK_ColorBLACK;
   normal_scheme.exclusive_screen_toast_foreground = 0xCCFFFFFF;
   normal_scheme.exclusive_screen_toast_background = 0xCC2F2F2F;
 
-  normal_scheme.permanent_warning_foreground = 0xFF444444;
-  normal_scheme.permanent_warning_background = SK_ColorWHITE;
-  normal_scheme.system_indicator_foreground =
-      normal_scheme.permanent_warning_foreground;
-  normal_scheme.system_indicator_background =
-      normal_scheme.permanent_warning_background;
+  normal_scheme.system_indicator_foreground = 0xFF444444;
+  normal_scheme.system_indicator_background = SK_ColorWHITE;
   normal_scheme.separator = 0xFF9E9E9E;
   normal_scheme.prompt_foreground = 0xCC000000;
   normal_scheme.prompt_primary_button_forground = 0xA6000000;
@@ -66,6 +62,10 @@ void InitializeColorSchemes() {
   normal_scheme.dimmer_outer = 0xE6000000;
   normal_scheme.splash_screen_background = SK_ColorBLACK;
   normal_scheme.splash_screen_text_color = 0xA6FFFFFF;
+  normal_scheme.spinner_background = SK_ColorBLACK;
+  normal_scheme.spinner_color = 0xFFF3F3F3;
+  normal_scheme.timeout_message_background = 0xFF444444;
+  normal_scheme.timeout_message_foreground = normal_scheme.spinner_color;
 
   gColorSchemes[ColorScheme::kModeFullscreen] =
       gColorSchemes[ColorScheme::kModeNormal];

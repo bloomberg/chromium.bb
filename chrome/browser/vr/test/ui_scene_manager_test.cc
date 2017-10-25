@@ -71,10 +71,13 @@ bool UiSceneManagerTest::IsVisible(UiElementName name) const {
   scene_->root_element().UpdateComputedOpacityRecursive();
   scene_->root_element().UpdateWorldSpaceTransformRecursive();
   UiElement* element = scene_->GetUiElementByName(name);
-  if (!element)
+  if (!element || !element->IsVisible())
     return false;
 
-  return element->IsVisible() && IsElementFacingCamera(element);
+  if (!element->IsWorldPositioned())
+    return true;
+
+  return IsElementFacingCamera(element);
 }
 
 void UiSceneManagerTest::VerifyElementsVisible(
@@ -88,7 +91,8 @@ void UiSceneManagerTest::VerifyElementsVisible(
     auto* element = scene_->GetUiElementByName(name);
     ASSERT_NE(nullptr, element);
     EXPECT_TRUE(element->IsVisible());
-    EXPECT_TRUE(IsElementFacingCamera(element));
+    EXPECT_TRUE(!element->IsWorldPositioned() ||
+                IsElementFacingCamera(element));
     EXPECT_NE(kPhaseNone, element->draw_phase());
   }
 }

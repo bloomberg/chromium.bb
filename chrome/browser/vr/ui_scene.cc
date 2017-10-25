@@ -223,4 +223,18 @@ void UiScene::OnGlInitialized() {
     element.Initialize();
 }
 
+bool UiScene::ControllerWouldBeVisibleInTheSceneGraph() const {
+  UiElement* button = GetUiElementByName(kWebVrTimeoutMessageButton);
+  if (button && button->IsVisible())
+    return true;
+
+  UiElement* browsing_root = GetUiElementByName(k2dBrowsingRoot);
+  bool browsing_mode = browsing_root && browsing_root->IsVisible();
+
+  UiElement* spinner_bg = GetUiElementByName(kWebVrTimeoutSpinnerBackground);
+  bool transitioning_to_webvr = spinner_bg && spinner_bg->IsVisible();
+
+  return browsing_mode && !transitioning_to_webvr;
+}
+
 }  // namespace vr

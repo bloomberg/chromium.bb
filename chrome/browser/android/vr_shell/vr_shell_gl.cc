@@ -92,6 +92,7 @@ static constexpr base::TimeDelta kWebVRFenceCheckTimeout =
     base::TimeDelta::FromMicroseconds(2000);
 
 static constexpr int kWebVrInitialFrameTimeoutSeconds = 5;
+static constexpr int kWebVrSpinnerTimeoutSeconds = 2;
 
 static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
 
@@ -379,7 +380,7 @@ void VrShellGl::ConnectPresentingService(
            << "x" << webvr_size.height();
 
   CreateOrResizeWebVRSurface(webvr_size);
-  ScheduleWebVrFrameTimeout();
+  ScheduleOrCancelWebVrFrameTimeout();
 }
 
 void VrShellGl::OnSwapContents(int new_content_id) {
@@ -409,22 +410,25 @@ void VrShellGl::OnWebVRFrameAvailable() {
   ui_->OnWebVrFrameAvailable();
 
   DrawFrame(frame_index);
-  if (web_vr_mode_) {
+  if (web_vr_mode_)
     ++webvr_frames_received_;
-    ScheduleWebVrFrameTimeout();
-  } else {
-    webvr_frame_timeout_.Cancel();
-  }
+  ScheduleOrCancelWebVrFrameTimeout();
 }
 
-void VrShellGl::ScheduleWebVrFrameTimeout() {
+void VrShellGl::ScheduleOrCancelWebVrFrameTimeout() {
   // TODO(mthiesse): We should also timeout after the initial frame to prevent
   // bad experiences, but we have to be careful to handle things like splash
   // screens correctly. For now just ensure we receive a first frame.
-  if (webvr_frames_received_ > 0) {
+  if (!web_vr_mode_ || webvr_frames_received_ > 0) {
     webvr_frame_timeout_.Cancel();
+    webvr_spinner_timeout_.Cancel();
     return;
   }
+  webvr_spinner_timeout_.Reset(
+      base::Bind(&VrShellGl::OnWebVrTimeoutImminent, base::Unretained(this)));
+  task_runner_->PostDelayedTask(
+      FROM_HERE, webvr_spinner_timeout_.callback(),
+      base::TimeDelta::FromSeconds(kWebVrSpinnerTimeoutSeconds));
   webvr_frame_timeout_.Reset(
       base::Bind(&VrShellGl::OnWebVrFrameTimedOut, base::Unretained(this)));
   task_runner_->PostDelayedTask(
@@ -434,6 +438,10 @@ void VrShellGl::ScheduleWebVrFrameTimeout() {
 
 void VrShellGl::OnWebVrFrameTimedOut() {
   ui_->OnWebVrTimedOut();
+}
+
+void VrShellGl::OnWebVrTimeoutImminent() {
+  ui_->OnWebVrTimeoutImminent();
 }
 
 void VrShellGl::GvrInit(gvr_context* gvr_api) {
@@ -1114,7 +1122,7 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
 }
 
 bool VrShellGl::ShouldDrawWebVr() {
-  return web_vr_mode_ && ui_->ShouldRenderWebVr();
+  return web_vr_mode_ && ui_->ShouldRenderWebVr() && webvr_frames_received_ > 0;
 }
 
 void VrShellGl::DrawWebVr() {
@@ -1137,6 +1145,7 @@ void VrShellGl::OnPause() {
   controller_->OnPause();
   gvr_api_->PauseTracking();
   webvr_frame_timeout_.Cancel();
+  webvr_spinner_timeout_.Cancel();
 }
 
 void VrShellGl::OnResume() {
@@ -1149,14 +1158,14 @@ void VrShellGl::OnResume() {
   vsync_helper_.CancelVSyncRequest();
   OnVSync(base::TimeTicks::Now());
   if (web_vr_mode_ && submit_client_)
-    ScheduleWebVrFrameTimeout();
+    ScheduleOrCancelWebVrFrameTimeout();
 }
 
 void VrShellGl::SetWebVrMode(bool enabled) {
   web_vr_mode_ = enabled;
 
   if (web_vr_mode_ && submit_client_) {
-    ScheduleWebVrFrameTimeout();
+    ScheduleOrCancelWebVrFrameTimeout();
   } else {
     webvr_frame_timeout_.Cancel();
     webvr_frames_received_ = 0;

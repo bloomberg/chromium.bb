@@ -28,7 +28,10 @@ Ui::Ui(UiBrowserInterface* browser,
                                                model_.get(),
                                                ui_initial_state)),
       input_manager_(base::MakeUnique<vr::UiInputManager>(scene_.get())),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  model_->started_for_autopresentation =
+      ui_initial_state.web_vr_autopresentation_expected;
+}
 
 Ui::~Ui() = default;
 
@@ -37,6 +40,8 @@ base::WeakPtr<vr::BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
 }
 
 void Ui::SetWebVrMode(bool enabled, bool show_toast) {
+  model_->web_vr_timeout_state =
+      enabled ? kWebVrAwaitingFirstFrame : kWebVrNoTimeoutPending;
   scene_manager_->SetWebVrMode(enabled, show_toast);
 }
 
@@ -117,11 +122,16 @@ void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
 }
 
 void Ui::OnWebVrFrameAvailable() {
+  model_->web_vr_timeout_state = kWebVrNoTimeoutPending;
   scene_manager_->OnWebVrFrameAvailable();
 }
 
+void Ui::OnWebVrTimeoutImminent() {
+  model_->web_vr_timeout_state = kWebVrTimeoutImminent;
+}
+
 void Ui::OnWebVrTimedOut() {
-  scene_manager_->OnWebVrTimedOut();
+  model_->web_vr_timeout_state = kWebVrTimedOut;
 }
 
 }  // namespace vr

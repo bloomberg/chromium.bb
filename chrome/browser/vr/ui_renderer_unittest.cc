@@ -32,7 +32,6 @@ class UiRendererTest : public UiSceneManagerTest,
       e.SetTransitionedProperties({});
       e.SetVisible(true);
     }
-    scene_->OnBeginFrame(MicrosecondsToTicks(1), kForwardVector);
   }
 };
 
@@ -43,6 +42,7 @@ TEST_P(UiRendererTest, UiRendererSortingTest) {
   EXPECT_EQ(GetParam().expected_order.size(), sorted.size());
 
   for (size_t i = 0; i < sorted.size(); ++i) {
+    EXPECT_NE(0, sorted[i]->name());
     EXPECT_EQ(GetParam().expected_order[i], sorted[i]->name());
   }
 }
@@ -68,11 +68,12 @@ TestParams params[] = {
          kExitPrompt,
          kExitPromptBackplane,
          kUrlBar,
+         kLoadingIndicator,
+         kLoadingIndicatorForeground,
          kUnderDevelopmentNotice,
          kCloseButton,
          kExclusiveScreenToast,
          kVoiceSearchButton,
-
      }},
     {&UiScene::GetVisible2dBrowsingOverlayElements,
      {
@@ -80,7 +81,10 @@ TestParams params[] = {
      }},
     {&UiScene::GetVisibleSplashScreenElements,
      {
-         kSplashScreenBackground, kSplashScreenText,
+         kSplashScreenBackground, kWebVrTimeoutSpinnerBackground,
+         kSplashScreenText, kWebVrTimeoutSpinner, kWebVrTimeoutMessage,
+         kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+         kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
      }},
     {&UiScene::GetVisibleWebVrOverlayForegroundElements,
      {

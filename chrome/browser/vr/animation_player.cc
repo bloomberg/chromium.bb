@@ -194,6 +194,10 @@ void AnimationPlayer::SetTransitionedProperties(
   transition_.target_properties = properties;
 }
 
+void AnimationPlayer::SetTransitionDuration(base::TimeDelta delta) {
+  transition_.duration = delta;
+}
+
 void AnimationPlayer::TransitionFloatTo(base::TimeTicks monotonic_time,
                                         int target_property,
                                         float current,
