@@ -19,7 +19,6 @@ per-file page_info_strings.grdp=lgarron@chromium.org
 per-file password_manager_strings.grdp=file://components/password_manager/OWNERS
 per-file payments_strings.grdp=file://components/payments/OWNERS
 per-file pdf_strings.grdp=raymes@chromium.org
-per-file pdf_strings.grdp=tsergeant@chromium.org
 per-file physical_web_ui_strings.grdp=file://components/physical_web/OWNERS
 per-file policy_strings.grdp=file://components/policy/OWNERS
 per-file security_interstitials_strings.grdp=file://components/security_interstitials/OWNERS

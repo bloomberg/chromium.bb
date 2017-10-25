@@ -12,8 +12,6 @@ per-file BUILD.gn=*
 per-file *_android.*=file://chrome/browser/android/OWNERS
 
 per-file browser_resources.grd=file://ui/webui/PLATFORM_OWNERS
-per-file browser_resources.grd=calamity@chromium.org
-per-file browser_resources.grd=tsergeant@chromium.org
 
 per-file browser_close_manager_browsertest.cc=creis@chromium.org
 
