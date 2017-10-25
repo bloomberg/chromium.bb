@@ -955,6 +955,7 @@ void AppsGridView::UpdateControlVisibility(
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   if (is_app_list_focus_enabled_) {
+    // Let the FocusManager handle Left/Right keys.
     if (event.key_code() != ui::VKEY_UP && event.key_code() != ui::VKEY_DOWN)
       return false;
 
@@ -987,16 +988,26 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
     const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
     switch (event.key_code()) {
       case ui::VKEY_LEFT:
-        if (is_fullscreen_app_list_enabled_ && suggestions_container_ &&
+        if (!base::i18n::IsRTL() && is_fullscreen_app_list_enabled_ &&
+            suggestions_container_ &&
             suggestions_container_->selected_index() == 0) {
           // Left arrow key moves focus back to search box when
-          // |suggestions_container|'s first app is selected.
+          // |suggestions_container|'s first app is selected in LTR.
           ClearAnySelectedView();
           return false;
         }
         MoveSelected(0, -forward_dir, 0);
         return true;
       case ui::VKEY_RIGHT:
+        if (base::i18n::IsRTL() && is_fullscreen_app_list_enabled_ &&
+            suggestions_container_ &&
+            suggestions_container_->selected_index() == 0) {
+          // Right arrow key moves focus back to search box when
+          // |suggestions_container|'s first app is selected in RTL.
+          ClearAnySelectedView();
+          return false;
+        }
+
         MoveSelected(0, forward_dir, 0);
         return true;
       case ui::VKEY_UP:
@@ -1628,6 +1639,8 @@ void AppsGridView::ExtractDragLocation(const gfx::Point& root_location,
       GetWidget()->GetNativeWindow()->GetRootWindow(),
       GetWidget()->GetNativeWindow(), drag_point);
   views::View::ConvertPointFromWidget(this, drag_point);
+  // Ensure that |drag_point| is correct if RTL.
+  drag_point->set_x(GetMirroredXInView(drag_point->x()));
 }
 
 void AppsGridView::CalculateDropTarget() {
@@ -1635,6 +1648,8 @@ void AppsGridView::CalculateDropTarget() {
 
   gfx::Point point = drag_view_->icon()->bounds().CenterPoint();
   views::View::ConvertPointToTarget(drag_view_, this, &point);
+  // Ensure that the drop target location is correct if RTL.
+  point.set_x(GetMirroredXInView(point.x()));
   if (!IsPointWithinDragBuffer(point)) {
     // Reset the reorder target to the original position if the cursor is
     // outside the drag buffer.
