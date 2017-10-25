@@ -2322,11 +2322,6 @@ Nullable<ExceptionCode> HTMLMediaElement::Play() {
       PlayInternal();
       return nullptr;
     }
-    String message = ExceptionMessages::FailedToExecute(
-        "play", "HTMLMediaElement",
-        "API can only be initiated by a user gesture.");
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
     return exception_code;
   }
 

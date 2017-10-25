@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 18: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 CONSOLE ERROR: line 18: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = play() can only be initiated by a user gesture.
