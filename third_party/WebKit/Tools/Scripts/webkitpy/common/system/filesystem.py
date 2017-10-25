@@ -61,9 +61,10 @@ class FileSystem(object):
         return os.path.realpath(path)
 
     def path_to_module(self, module_name):
-        """A wrapper for all calls to __file__ to allow easy unit testing."""
+        """Returns the absolute path of a module."""
         # FIXME: This is the only use of sys in this file. It's possible this function should move elsewhere.
-        return sys.modules[module_name].__file__  # __file__ is always an absolute path.
+        # __file__ is not always an absolute path in Python <3.4 (https://bugs.python.org/issue18416).
+        return self.abspath(sys.modules[module_name].__file__)
 
     def expanduser(self, path):
         return os.path.expanduser(path)
