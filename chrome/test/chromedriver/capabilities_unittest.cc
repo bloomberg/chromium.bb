@@ -4,7 +4,9 @@
 
 #include "chrome/test/chromedriver/capabilities.h"
 
-#include "base/memory/ptr_util.h"
+#include <utility>
+
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -136,11 +138,11 @@ TEST(ParseCapabilities, LogPath) {
 
 TEST(ParseCapabilities, Args) {
   Capabilities capabilities;
-  base::ListValue args;
-  args.AppendString("arg1");
-  args.AppendString("arg2=val");
+  base::Value::ListStorage args;
+  args.emplace_back("arg1");
+  args.emplace_back("arg2=val");
   base::DictionaryValue caps;
-  caps.SetPath({"goog:chromeOptions", "args"}, args.Clone());
+  caps.SetPath({"goog:chromeOptions", "args"}, base::Value(args));
 
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -178,11 +180,11 @@ TEST(ParseCapabilities, LocalState) {
 
 TEST(ParseCapabilities, Extensions) {
   Capabilities capabilities;
-  base::ListValue extensions;
-  extensions.AppendString("ext1");
-  extensions.AppendString("ext2");
+  base::Value::ListStorage extensions;
+  extensions.emplace_back("ext1");
+  extensions.emplace_back("ext2");
   base::DictionaryValue caps;
-  caps.SetPath({"goog:chromeOptions", "extensions"}, extensions.Clone());
+  caps.SetPath({"goog:chromeOptions", "extensions"}, base::Value(extensions));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.extensions.size());
@@ -195,7 +197,7 @@ TEST(ParseCapabilities, UnrecognizedProxyType) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "unknown proxy type");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -205,7 +207,7 @@ TEST(ParseCapabilities, IllegalProxyType) {
   base::DictionaryValue proxy;
   proxy.SetInteger("proxyType", 123);
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -215,7 +217,7 @@ TEST(ParseCapabilities, DirectProxy) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "DIRECT");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
@@ -227,7 +229,7 @@ TEST(ParseCapabilities, SystemProxy) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "system");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(0u, capabilities.switches.GetSize());
@@ -239,7 +241,7 @@ TEST(ParseCapabilities, PacProxy) {
   proxy.SetString("proxyType", "PAC");
   proxy.SetString("proxyAutoconfigUrl", "test.wpad");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
@@ -252,7 +254,7 @@ TEST(ParseCapabilities, MissingProxyAutoconfigUrl) {
   proxy.SetString("proxyType", "PAC");
   proxy.SetString("httpProxy", "http://localhost:8001");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -262,7 +264,7 @@ TEST(ParseCapabilities, AutodetectProxy) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "autodetect");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
@@ -278,7 +280,7 @@ TEST(ParseCapabilities, ManualProxy) {
   proxy.SetString("sslProxy", "localhost:10001");
   proxy.SetString("noProxy", "google.com, youtube.com");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.switches.GetSize());
@@ -295,7 +297,7 @@ TEST(ParseCapabilities, MissingSettingForManualProxy) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "manual");
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -305,10 +307,10 @@ TEST(ParseCapabilities, IgnoreNullValueForManualProxy) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "manual");
   proxy.SetString("ftpProxy", "localhost:9001");
-  proxy.Set("sslProxy", base::MakeUnique<base::Value>());
-  proxy.Set("noProxy", base::MakeUnique<base::Value>());
+  proxy.SetKey("sslProxy", base::Value());
+  proxy.SetKey("noProxy", base::Value());
   base::DictionaryValue caps;
-  caps.SetKey("proxy", proxy.Clone());
+  caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
@@ -323,7 +325,7 @@ TEST(ParseCapabilities, LoggingPrefsOk) {
   base::DictionaryValue logging_prefs;
   logging_prefs.SetString("Network", "INFO");
   base::DictionaryValue caps;
-  caps.SetKey("loggingPrefs", logging_prefs.Clone());
+  caps.SetKey("loggingPrefs", std::move(logging_prefs));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.logging_prefs.size());
@@ -344,7 +346,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
   base::DictionaryValue logging_prefs;
   logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
   base::DictionaryValue desired_caps;
-  desired_caps.SetKey("loggingPrefs", logging_prefs.Clone());
+  desired_caps.SetKey("loggingPrefs", std::move(logging_prefs));
   ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
             capabilities.perf_logging_prefs.network);
   ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
@@ -355,7 +357,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
   perf_logging_prefs.SetBoolean("enableNetwork", true);
   perf_logging_prefs.SetBoolean("enablePage", false);
   desired_caps.SetPath({"goog:chromeOptions", "perfLoggingPrefs"},
-                       perf_logging_prefs.Clone());
+                       std::move(perf_logging_prefs));
   Status status = capabilities.Parse(desired_caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled,
@@ -372,13 +374,13 @@ TEST(ParseCapabilities, PerfLoggingPrefsTracing) {
   base::DictionaryValue logging_prefs;
   logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
   base::DictionaryValue desired_caps;
-  desired_caps.SetKey("loggingPrefs", logging_prefs.Clone());
+  desired_caps.SetKey("loggingPrefs", std::move(logging_prefs));
   ASSERT_EQ("", capabilities.perf_logging_prefs.trace_categories);
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetString("traceCategories", "benchmark,blink.console");
   perf_logging_prefs.SetInteger("bufferUsageReportingInterval", 1234);
   desired_caps.SetPath({"goog:chromeOptions", "perfLoggingPrefs"},
-                       perf_logging_prefs.Clone());
+                       std::move(perf_logging_prefs));
   Status status = capabilities.Parse(desired_caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("benchmark,blink.console",
@@ -393,12 +395,12 @@ TEST(ParseCapabilities, PerfLoggingPrefsInvalidInterval) {
   base::DictionaryValue logging_prefs;
   logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
   base::DictionaryValue desired_caps;
-  desired_caps.SetKey("loggingPrefs", logging_prefs.Clone());
+  desired_caps.SetKey("loggingPrefs", std::move(logging_prefs));
   base::DictionaryValue perf_logging_prefs;
   // A bufferUsageReportingInterval interval <= 0 will cause DevTools errors.
   perf_logging_prefs.SetInteger("bufferUsageReportingInterval", 0);
   desired_caps.SetPath({"goog:chromeOptions", "perfLoggingPrefs"},
-                       perf_logging_prefs.Clone());
+                       std::move(perf_logging_prefs));
   Status status = capabilities.Parse(desired_caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -409,7 +411,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsNotDict) {
   base::DictionaryValue logging_prefs;
   logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
   base::DictionaryValue desired_caps;
-  desired_caps.SetKey("loggingPrefs", logging_prefs.Clone());
+  desired_caps.SetKey("loggingPrefs", std::move(logging_prefs));
   desired_caps.SetString("goog:chromeOptions.perfLoggingPrefs",
                          "traceCategories");
   Status status = capabilities.Parse(desired_caps);
@@ -422,7 +424,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsNoPerfLogLevel) {
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetBoolean("enableNetwork", true);
   desired_caps.SetPath({"goog:chromeOptions", "perfLoggingPrefs"},
-                       perf_logging_prefs.Clone());
+                       std::move(perf_logging_prefs));
   // Should fail because perf log must be enabled if perf log prefs specified.
   Status status = capabilities.Parse(desired_caps);
   ASSERT_FALSE(status.IsOk());
@@ -434,11 +436,11 @@ TEST(ParseCapabilities, PerfLoggingPrefsPerfLogOff) {
   // Disable performance log by setting logging level to OFF.
   logging_prefs.SetString(WebDriverLog::kPerformanceType, "OFF");
   base::DictionaryValue desired_caps;
-  desired_caps.SetKey("loggingPrefs", logging_prefs.Clone());
+  desired_caps.SetKey("loggingPrefs", std::move(logging_prefs));
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetBoolean("enableNetwork", true);
   desired_caps.SetPath({"goog:chromeOptions", "perfLoggingPrefs"},
-                       perf_logging_prefs.Clone());
+                       std::move(perf_logging_prefs));
   // Should fail because perf log must be enabled if perf log prefs specified.
   Status status = capabilities.Parse(desired_caps);
   ASSERT_FALSE(status.IsOk());
@@ -446,18 +448,18 @@ TEST(ParseCapabilities, PerfLoggingPrefsPerfLogOff) {
 
 TEST(ParseCapabilities, ExcludeSwitches) {
   Capabilities capabilities;
-  base::ListValue exclude_switches;
-  exclude_switches.AppendString("switch1");
-  exclude_switches.AppendString("switch2");
+  base::Value::ListStorage exclude_switches;
+  exclude_switches.emplace_back("switch1");
+  exclude_switches.emplace_back("switch2");
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "excludeSwitches"},
-               exclude_switches.Clone());
+               base::Value(exclude_switches));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.exclude_switches.size());
   const std::set<std::string>& switches = capabilities.exclude_switches;
-  ASSERT_TRUE(switches.find("switch1") != switches.end());
-  ASSERT_TRUE(switches.find("switch2") != switches.end());
+  ASSERT_TRUE(base::ContainsKey(switches, "switch1"));
+  ASSERT_TRUE(base::ContainsKey(switches, "switch2"));
 }
 
 TEST(ParseCapabilities, UseRemoteBrowser) {
@@ -477,7 +479,7 @@ TEST(ParseCapabilities, MobileEmulationUserAgent) {
   mobile_emulation.SetString("userAgent", "Agent Smith");
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
-               mobile_emulation.Clone());
+               std::move(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
 
@@ -494,7 +496,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetrics) {
   mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
-               mobile_emulation.Clone());
+               std::move(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
 
@@ -509,7 +511,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
   mobile_emulation.SetString("deviceName", "Nexus 5");
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
-               mobile_emulation.Clone());
+               std::move(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
 
@@ -540,7 +542,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetricsNotDict) {
   mobile_emulation.SetInteger("deviceMetrics", 360);
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
-               mobile_emulation.Clone());
+               std::move(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -553,7 +555,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetricsNotNumbers) {
   mobile_emulation.SetString("deviceMetrics.pixelRatio", "3.0");
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
-               mobile_emulation.Clone());
+               std::move(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -567,7 +569,7 @@ TEST(ParseCapabilities, MobileEmulationBadDict) {
   mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
-               mobile_emulation.Clone());
+               std::move(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
