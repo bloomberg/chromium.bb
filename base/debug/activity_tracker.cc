@@ -1025,6 +1025,14 @@ const void* ThreadActivityTracker::GetBaseAddress() {
   return header_;
 }
 
+void ThreadActivityTracker::ClearDataChangedForTesting() {
+  header_->data_unchanged.store(2, std::memory_order_relaxed);
+}
+
+bool ThreadActivityTracker::WasDataChangedForTesting() {
+  return !header_->data_unchanged.load(std::memory_order_relaxed);
+}
+
 void ThreadActivityTracker::SetOwningProcessIdForTesting(int64_t pid,
                                                          int64_t stamp) {
   header_->owner.SetOwningProcessIdForTesting(pid, stamp);

@@ -250,6 +250,84 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
   ASSERT_EQ(2U, GetGlobalUserDataMemoryCacheUsed());
 }
 
+namespace {
+
+class SimpleLockThread : public SimpleThread {
+ public:
+  SimpleLockThread(const std::string& name, Lock* lock)
+      : SimpleThread(name, Options()),
+        lock_(lock),
+        data_changed_(false),
+        is_running_(false) {}
+
+  ~SimpleLockThread() override {}
+
+  void Run() override {
+    ThreadActivityTracker* tracker =
+        GlobalActivityTracker::Get()->GetOrCreateTrackerForCurrentThread();
+    tracker->ClearDataChangedForTesting();
+
+    is_running_.store(true, std::memory_order_relaxed);
+    lock_->Acquire();
+    data_changed_ = tracker->WasDataChangedForTesting();
+    lock_->Release();
+    is_running_.store(false, std::memory_order_relaxed);
+  }
+
+  bool IsRunning() { return is_running_.load(std::memory_order_relaxed); }
+
+  bool WasDataChanged() { return data_changed_; };
+
+ private:
+  Lock* lock_;
+  bool data_changed_;
+  std::atomic<bool> is_running_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleLockThread);
+};
+
+}  // namespace
+
+TEST_F(ActivityTrackerTest, LockTest) {
+  GlobalActivityTracker::CreateWithLocalMemory(kMemorySize, 0, "", 3, 0);
+
+  ThreadActivityTracker* tracker =
+      GlobalActivityTracker::Get()->GetOrCreateTrackerForCurrentThread();
+  ThreadActivityTracker::Snapshot snapshot;
+  ASSERT_EQ(0U, GetGlobalUserDataMemoryCacheUsed());
+
+  Lock lock;
+  tracker->ClearDataChangedForTesting();
+  ASSERT_FALSE(tracker->WasDataChangedForTesting());
+
+  // Check no activity when only "trying" a lock.
+  EXPECT_TRUE(lock.Try());
+  EXPECT_FALSE(tracker->WasDataChangedForTesting());
+  lock.Release();
+  EXPECT_FALSE(tracker->WasDataChangedForTesting());
+
+  // Check no activity when acquiring a free lock.
+  SimpleLockThread t1("locker1", &lock);
+  t1.Start();
+  t1.Join();
+  EXPECT_FALSE(t1.WasDataChanged());
+
+  // Check that activity is recorded when acquring a busy lock.
+  SimpleLockThread t2("locker2", &lock);
+  lock.Acquire();
+  t2.Start();
+  while (!t2.IsRunning())
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
+  // t2 can't join until the lock is released but have to give time for t2 to
+  // actually block on the lock before releasing it or the results will not
+  // be correct.
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(200));
+  lock.Release();
+  // Now the results will be valid.
+  t2.Join();
+  EXPECT_TRUE(t2.WasDataChanged());
+}
+
 TEST_F(ActivityTrackerTest, ExceptionTest) {
   GlobalActivityTracker::CreateWithLocalMemory(kMemorySize, 0, "", 3, 0);
   GlobalActivityTracker* global = GlobalActivityTracker::Get();
