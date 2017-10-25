@@ -59,8 +59,7 @@ static void FlushTaskRunner(base::SequencedTaskRunner* task_runner) {
 class WebRtcRtpDumpWriterTest : public testing::Test {
  public:
   WebRtcRtpDumpWriterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP |
-                       content::TestBrowserThreadBundle::REAL_FILE_THREAD),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         temp_dir_(new base::ScopedTempDir()) {}
 
   virtual void SetUp() {

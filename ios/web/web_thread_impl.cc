@@ -26,7 +26,6 @@ namespace {
 // Friendly names for the well-known threads.
 const char* const g_web_thread_names[WebThread::ID_COUNT] = {
     "Web_UIThread",                // UI
-    "Web_DBThread",                // DB
     "Web_IOThread",                // IO
 };
 
@@ -149,12 +148,6 @@ NOINLINE void WebThreadImpl::UIThreadRun(base::RunLoop* run_loop) {
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void WebThreadImpl::DBThreadRun(base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
 NOINLINE void WebThreadImpl::IOThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(run_loop);
@@ -169,8 +162,6 @@ void WebThreadImpl::Run(base::RunLoop* run_loop) {
   switch (thread_id) {
     case WebThread::UI:
       return UIThreadRun(run_loop);
-    case WebThread::DB:
-      return DBThreadRun(run_loop);
     case WebThread::IO:
       return IOThreadRun(run_loop);
     case WebThread::ID_COUNT:

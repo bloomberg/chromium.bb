@@ -39,7 +39,6 @@ class WebThreadImpl : public WebThread, public base::Thread {
   // The following are unique function names that makes it possible to tell
   // the thread id from the callstack alone in crash dumps.
   void UIThreadRun(base::RunLoop* run_loop);
-  void DBThreadRun(base::RunLoop* run_loop);
   void IOThreadRun(base::RunLoop* run_loop);
 
   static bool PostTaskHelper(WebThread::ID identifier,

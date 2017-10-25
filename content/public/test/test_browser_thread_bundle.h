@@ -112,10 +112,8 @@ class TestBrowserThreadBundle {
   enum Options {
     DEFAULT = 0,
     IO_MAINLOOP = 1 << 0,
-    REAL_DB_THREAD = 1 << 1,
-    REAL_FILE_THREAD = 1 << 2,
-    REAL_IO_THREAD = 1 << 3,
-    DONT_CREATE_BROWSER_THREADS = 1 << 4,
+    REAL_IO_THREAD = 1 << 1,
+    DONT_CREATE_BROWSER_THREADS = 1 << 2,
   };
 
   TestBrowserThreadBundle();

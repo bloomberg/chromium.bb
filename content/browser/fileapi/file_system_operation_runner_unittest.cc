@@ -187,7 +187,6 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
  public:
   MultiThreadFileSystemOperationRunnerTest()
       : thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_FILE_THREAD |
             content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {

@@ -133,44 +133,13 @@ int WebMainLoop::CreateThreads(
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_thread_ = std::make_unique<WebThreadImpl>(WebThread::IO);
+  io_thread_->StartWithOptions(io_message_loop_options);
 
-  // Start threads in the order they occur in the WebThread::ID
-  // enumeration, except for WebThread::UI which is the main
-  // thread.
-  //
-  // Must be size_t so we can increment it.
-  for (size_t thread_id = WebThread::UI + 1; thread_id < WebThread::ID_COUNT;
-       ++thread_id) {
-    std::unique_ptr<WebThreadImpl>* thread_to_start = nullptr;
-    base::Thread::Options options;
+  // Only start IO thread above as this is the only WebThread besides UI (which
+  // is the main thread).
+  static_assert(WebThread::ID_COUNT == 2, "Unhandled WebThread");
 
-    switch (thread_id) {
-      // TODO(rohitrao): We probably do not need all of these threads.  Remove
-      // the ones that serve no purpose.  http://crbug.com/365909
-      case WebThread::DB:
-        thread_to_start = &db_thread_;
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-        break;
-      case WebThread::IO:
-        thread_to_start = &io_thread_;
-        options = io_message_loop_options;
-        break;
-      case WebThread::UI:
-      case WebThread::ID_COUNT:
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    WebThread::ID id = static_cast<WebThread::ID>(thread_id);
-
-    if (thread_to_start) {
-      (*thread_to_start).reset(new WebThreadImpl(id));
-      (*thread_to_start)->StartWithOptions(options);
-    } else {
-      NOTREACHED();
-    }
-  }
   created_threads_ = true;
   return result_code_;
 }
@@ -207,34 +176,11 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
 
   service_manager_context_.reset();
 
-  // Must be size_t so we can subtract from it.
-  for (size_t thread_id = WebThread::ID_COUNT - 1;
-       thread_id >= (WebThread::UI + 1); --thread_id) {
-    // Find the thread object we want to stop. Looping over all valid
-    // WebThread IDs and DCHECKing on a missing case in the switch
-    // statement helps avoid a mismatch between this code and the
-    // WebThread::ID enumeration.
-    //
-    // The destruction order is the reverse order of occurrence in the
-    // WebThread::ID list. The rationale for the order is as
-    // follows (need to be filled in a bit):
-    //
-    //
-    // - (Not sure why DB stops last.)
-    switch (thread_id) {
-      case WebThread::DB:
-        db_thread_.reset();
-        break;
-      case WebThread::IO:
-        io_thread_.reset();
-        break;
-      case WebThread::UI:
-      case WebThread::ID_COUNT:
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
+  io_thread_.reset();
+
+  // Only stop IO thread above as this is the only WebThread besides UI (which
+  // is the main thread).
+  static_assert(WebThread::ID_COUNT == 2, "Unhandled WebThread");
 
   // Shutdown TaskScheduler after the other threads. Other threads such as the
   // I/O thread may need to schedule work like closing files or flushing data
