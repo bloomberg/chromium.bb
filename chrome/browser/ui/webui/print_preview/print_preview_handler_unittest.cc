@@ -76,60 +76,59 @@ PrinterInfo GetEmptyPrinterInfo() {
 base::Value GetPrintTicket(printing::PrinterType type, bool cloud) {
   bool is_privet_printer = !cloud && type == printing::kPrivetPrinter;
   bool is_extension_printer = !cloud && type == printing::kExtensionPrinter;
-  base::Value::DictStorage ticket;
+  base::Value ticket(base::Value::Type::DICTIONARY);
 
   // Letter
-  base::Value::DictStorage media_size;
-  media_size["is_default"] = std::make_unique<base::Value>(true);
-  media_size["width_microns"] = std::make_unique<base::Value>(215900);
-  media_size["height_microns"] = std::make_unique<base::Value>(279400);
-  ticket["mediaSize"] = std::make_unique<base::Value>(media_size);
+  base::Value media_size(base::Value::Type::DICTIONARY);
+  media_size.SetKey("is_default", base::Value(true));
+  media_size.SetKey("width_microns", base::Value(215900));
+  media_size.SetKey("height_microns", base::Value(279400));
+  ticket.SetKey("mediaSize", std::move(media_size));
 
-  ticket["pageCount"] = std::make_unique<base::Value>(1);
-  ticket["landscape"] = std::make_unique<base::Value>(false);
-  ticket["color"] = std::make_unique<base::Value>(2);  // color printing
-  ticket["headerFooterEnabled"] = std::make_unique<base::Value>(false);
-  ticket["marginsType"] = std::make_unique<base::Value>(0);  // default margins
-  ticket["duplex"] = std::make_unique<base::Value>(1);       // LONG_EDGE
-  ticket["copies"] = std::make_unique<base::Value>(1);
-  ticket["collate"] = std::make_unique<base::Value>(false);
-  ticket["shouldPrintBackgrounds"] = std::make_unique<base::Value>(false);
-  ticket["shouldPrintSelectionOnly"] = std::make_unique<base::Value>(false);
-  ticket["previewModifiable"] = std::make_unique<base::Value>(false);
-  ticket["printToPDF"] =
-      std::make_unique<base::Value>(!cloud && type == printing::kPdfPrinter);
-  ticket["printWithCloudPrint"] = std::make_unique<base::Value>(cloud);
-  ticket["printWithPrivet"] = std::make_unique<base::Value>(is_privet_printer);
-  ticket["printWithExtension"] =
-      std::make_unique<base::Value>(is_extension_printer);
-  ticket["rasterizePDF"] = std::make_unique<base::Value>(false);
-  ticket["scaleFactor"] = std::make_unique<base::Value>(100);
-  ticket["dpiHorizontal"] = std::make_unique<base::Value>(600);
-  ticket["dpiVertical"] = std::make_unique<base::Value>(600);
-  ticket["deviceName"] = std::make_unique<base::Value>(kDummyPrinterName);
-  ticket["fitToPageEnabled"] = std::make_unique<base::Value>(true);
-  ticket["pageWidth"] = std::make_unique<base::Value>(215900);
-  ticket["pageHeight"] = std::make_unique<base::Value>(279400);
-  ticket["showSystemDialog"] = std::make_unique<base::Value>(false);
+  ticket.SetKey("pageCount", base::Value(1));
+  ticket.SetKey("landscape", base::Value(false));
+  ticket.SetKey("color", base::Value(2));  // color printing
+  ticket.SetKey("headerFooterEnabled", base::Value(false));
+  ticket.SetKey("marginsType", base::Value(0));  // default margins
+  ticket.SetKey("duplex", base::Value(1));       // LONG_EDGE
+  ticket.SetKey("copies", base::Value(1));
+  ticket.SetKey("collate", base::Value(false));
+  ticket.SetKey("shouldPrintBackgrounds", base::Value(false));
+  ticket.SetKey("shouldPrintSelectionOnly", base::Value(false));
+  ticket.SetKey("previewModifiable", base::Value(false));
+  ticket.SetKey("printToPDF",
+                base::Value(!cloud && type == printing::kPdfPrinter));
+  ticket.SetKey("printWithCloudPrint", base::Value(cloud));
+  ticket.SetKey("printWithPrivet", base::Value(is_privet_printer));
+  ticket.SetKey("printWithExtension", base::Value(is_extension_printer));
+  ticket.SetKey("rasterizePDF", base::Value(false));
+  ticket.SetKey("scaleFactor", base::Value(100));
+  ticket.SetKey("dpiHorizontal", base::Value(600));
+  ticket.SetKey("dpiVertical", base::Value(600));
+  ticket.SetKey("deviceName", base::Value(kDummyPrinterName));
+  ticket.SetKey("fitToPageEnabled", base::Value(true));
+  ticket.SetKey("pageWidth", base::Value(215900));
+  ticket.SetKey("pageHeight", base::Value(279400));
+  ticket.SetKey("showSystemDialog", base::Value(false));
 
   if (cloud)
-    ticket["cloudPrintID"] = std::make_unique<base::Value>(kDummyPrinterName);
+    ticket.SetKey("cloudPrintID", base::Value(kDummyPrinterName));
 
   if (is_privet_printer || is_extension_printer) {
-    base::Value::DictStorage capabilities;
-    capabilities["duplex"] = std::make_unique<base::Value>(true);  // non-empty
+    base::Value capabilities(base::Value::Type::DICTIONARY);
+    capabilities.SetKey("duplex", base::Value(true));  // non-empty
     std::string caps_string;
-    base::JSONWriter::Write(base::Value(capabilities), &caps_string);
-    ticket["capabilities"] = std::make_unique<base::Value>(caps_string);
-    base::Value::DictStorage print_ticket;
-    print_ticket["version"] = std::make_unique<base::Value>("1.0");
-    print_ticket["print"] = std::make_unique<base::Value>();
+    base::JSONWriter::Write(capabilities, &caps_string);
+    ticket.SetKey("capabilities", base::Value(caps_string));
+    base::Value print_ticket(base::Value::Type::DICTIONARY);
+    print_ticket.SetKey("version", base::Value("1.0"));
+    print_ticket.SetKey("print", base::Value());
     std::string ticket_string;
-    base::JSONWriter::Write(base::Value(print_ticket), &ticket_string);
-    ticket["ticket"] = std::make_unique<base::Value>(ticket_string);
+    base::JSONWriter::Write(print_ticket, &ticket_string);
+    ticket.SetKey("ticket", base::Value(ticket_string));
   }
 
-  return base::Value(ticket);
+  return ticket;
 }
 
 class TestPrinterHandler : public PrinterHandler {
@@ -326,28 +325,28 @@ class PrintPreviewHandlerTest : public testing::Test {
                                const std::string& initiator_title) {
     CheckWebUIResponse(data, "test-callback-id-0", true);
     const base::Value* settings = data.arg3();
-    ASSERT_TRUE(settings->FindPathOfType({"isInKioskAutoPrintMode"},
-                                         base::Value::Type::BOOLEAN));
-    ASSERT_TRUE(settings->FindPathOfType({"isInAppKioskMode"},
-                                         base::Value::Type::BOOLEAN));
-    ASSERT_TRUE(settings->FindPathOfType({"thousandsDelimeter"},
-                                         base::Value::Type::STRING));
-    ASSERT_TRUE(settings->FindPathOfType({"decimalDelimeter"},
-                                         base::Value::Type::STRING));
+    ASSERT_TRUE(settings->FindKeyOfType("isInKioskAutoPrintMode",
+                                        base::Value::Type::BOOLEAN));
+    ASSERT_TRUE(settings->FindKeyOfType("isInAppKioskMode",
+                                        base::Value::Type::BOOLEAN));
+    ASSERT_TRUE(settings->FindKeyOfType("thousandsDelimeter",
+                                        base::Value::Type::STRING));
     ASSERT_TRUE(
-        settings->FindPathOfType({"unitType"}, base::Value::Type::INTEGER));
-    ASSERT_TRUE(settings->FindPathOfType({"previewModifiable"},
-                                         base::Value::Type::BOOLEAN));
+        settings->FindKeyOfType("decimalDelimeter", base::Value::Type::STRING));
+    ASSERT_TRUE(
+        settings->FindKeyOfType("unitType", base::Value::Type::INTEGER));
+    ASSERT_TRUE(settings->FindKeyOfType("previewModifiable",
+                                        base::Value::Type::BOOLEAN));
     const base::Value* title =
-        settings->FindPathOfType({"documentTitle"}, base::Value::Type::STRING);
+        settings->FindKeyOfType("documentTitle", base::Value::Type::STRING);
     ASSERT_TRUE(title);
     EXPECT_EQ(initiator_title, title->GetString());
-    ASSERT_TRUE(settings->FindPathOfType({"documentHasSelection"},
-                                         base::Value::Type::BOOLEAN));
-    ASSERT_TRUE(settings->FindPathOfType({"shouldPrintSelectionOnly"},
-                                         base::Value::Type::BOOLEAN));
+    ASSERT_TRUE(settings->FindKeyOfType("documentHasSelection",
+                                        base::Value::Type::BOOLEAN));
+    ASSERT_TRUE(settings->FindKeyOfType("shouldPrintSelectionOnly",
+                                        base::Value::Type::BOOLEAN));
     const base::Value* printer =
-        settings->FindPathOfType({"printerName"}, base::Value::Type::STRING);
+        settings->FindKeyOfType("printerName", base::Value::Type::STRING);
     ASSERT_TRUE(printer);
     EXPECT_EQ(default_printer_name, printer->GetString());
   }
@@ -415,8 +414,8 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
     ASSERT_TRUE(add_data.arg3());
     const base::Value::ListStorage& printer_list = add_data.arg3()->GetList();
     ASSERT_EQ(printer_list.size(), 1u);
-    EXPECT_TRUE(printer_list[0].FindPathOfType({"printer_name"},
-                                               base::Value::Type::STRING));
+    EXPECT_TRUE(printer_list[0].FindKeyOfType("printer_name",
+                                              base::Value::Type::STRING));
 
     // Verify getPrinters promise was resolved successfully.
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -455,8 +454,8 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     CheckWebUIResponse(data, callback_id_in, true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings);
-    EXPECT_TRUE(settings->FindPathOfType({printing::kSettingCapabilities},
-                                         base::Value::Type::DICTIONARY));
+    EXPECT_TRUE(settings->FindKeyOfType(printing::kSettingCapabilities,
+                                        base::Value::Type::DICTIONARY));
   }
 
   // Run through the loop again, this time with a printer that has no

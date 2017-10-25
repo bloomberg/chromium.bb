@@ -312,8 +312,8 @@ void ExtensionPrinterHandler::WrapGetCapabilityCallback(
       printing::ValidateCddForPrintPreview(capability);
   // Leave |capabilities| empty if |cdd| is empty.
   if (!cdd->empty()) {
-    capabilities->SetPath({printing::kSettingCapabilities},
-                          base::Value::FromUniquePtrValue(std::move(cdd)));
+    capabilities->SetKey(printing::kSettingCapabilities,
+                         base::Value::FromUniquePtrValue(std::move(cdd)));
   }
   callback.Run(std::move(capabilities));
 }
