@@ -6,6 +6,9 @@
 
 #include "jni/FeatureUtilities_jni.h"
 
+#include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ukm/ukm_source.h"
 
 using base::android::JavaParamRef;
@@ -46,4 +49,16 @@ static void SetIsInMultiWindowMode(JNIEnv* env,
                                    const JavaParamRef<jclass>& clazz,
                                    jboolean j_is_in_multi_window_mode) {
   is_in_multi_window_mode = j_is_in_multi_window_mode;
+}
+
+static void NotifyChromeHomeStatusChanged(JNIEnv* env,
+                                          const JavaParamRef<jclass>& clazz,
+                                          jboolean j_is_chrome_home_enabled) {
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfileIfExists(
+          ProfileManager::GetLastUsedProfile());
+  if (content_suggestions_service) {
+    content_suggestions_service->OnChromeHomeStatusChanged(
+        j_is_chrome_home_enabled);
+  }
 }

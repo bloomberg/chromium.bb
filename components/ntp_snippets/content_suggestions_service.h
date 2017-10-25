@@ -186,6 +186,9 @@ class ContentSuggestionsService : public KeyedService,
   // meantime).
   void ReloadSuggestions();
 
+  // Must be called when Chrome Home is turned on or off.
+  void OnChromeHomeStatusChanged(bool is_chrome_home_enabled);
+
   // Observer accessors.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -324,6 +327,11 @@ class ContentSuggestionsService : public KeyedService,
 
   void RestoreDismissedCategoriesFromPrefs();
   void StoreDismissedCategoriesToPrefs();
+
+  // Not implemented for articles. For all other categories, destroys its
+  // provider, deletes all mentions (except from dismissed list) and notifies
+  // observers that the category is disabled.
+  void DestroyCategoryAndItsProvider(Category category);
 
   // Get the domain of the suggestion suitable for fetching the favicon.
   GURL GetFaviconDomain(const ContentSuggestion::ID& suggestion_id);

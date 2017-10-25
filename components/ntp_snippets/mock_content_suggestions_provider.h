@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,6 +20,8 @@ namespace ntp_snippets {
 // TODO(treib): This is a weird combination of a mock and a fake. Fix this.
 class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
  public:
+  using DestructorCallback = base::OnceCallback<void()>;
+
   MockContentSuggestionsProvider(
       Observer* observer,
       const std::vector<Category>& provided_categories);
@@ -42,6 +45,9 @@ class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
   void FireCategoryStatusChanged(Category category, CategoryStatus new_status);
   void FireCategoryStatusChangedWithCurrentStatus(Category category);
   void FireSuggestionInvalidated(const ContentSuggestion::ID& suggestion_id);
+
+  // Set a callback to be called in the destructor. Used to "mock" destruction.
+  void SetDestructorCallback(DestructorCallback callback);
 
   MOCK_METHOD3(ClearHistory,
                void(base::Time begin,
@@ -76,6 +82,10 @@ class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
  private:
   std::vector<Category> provided_categories_;
   std::map<int, CategoryStatus> statuses_;
+
+  DestructorCallback destructor_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockContentSuggestionsProvider);
 };
 
 }  // namespace ntp_snippets
