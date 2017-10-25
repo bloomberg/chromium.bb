@@ -1312,7 +1312,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Sign in
       </message>
       <message name="IDS_SIGN_IN_GETTING_ACCOUNT_MANAGEMENT_POLICY" desc="Title of progress bar dialog for getting management policy">
-        Contacting Google…this may take a minute
+        Contacting Google. This may take a minute…
       </message>
       <message name="IDS_SIGN_IN_TIMEOUT_TITLE" desc="Title of sign in timeout alert dialog">
         Can’t sign in
