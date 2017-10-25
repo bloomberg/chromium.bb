@@ -400,7 +400,8 @@ be describing additional metrics about the same event.
     <summary>
       The time in microseconds between the initial creation of a touch event and
       the start of the frame swap on the GPU service. If no swap was induced by
-      the event, no recording is made.
+      the event, no recording is made. The first GSU of every scrolling sequence
+      is excluded from this metric.
     </summary>
   </metric>
 </event>
@@ -418,6 +419,23 @@ be describing additional metrics about the same event.
       ScrollUpdate gesture event if that ScrollUpdate is the first such event in
       a given scroll gesture event sequence. If no swap was induced by the
       event, no recording is made.
+    </summary>
+  </metric>
+</event>
+
+<event name="Event.ScrollUpdate.Wheel">
+  <owner>nzolghadr@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Metrics related to a scroll action caused by the generated ScrollUpdate
+    gesture event.
+  </summary>
+  <metric name="TimeToScrollUpdateSwapBegin">
+    <summary>
+      The time in microseconds between the initial creation of a wheel event and
+      the start of the frame swap on the GPU service. If no swap was induced by
+      the event, no recording is made. The first GSU of every scrolling sequence
+      is excluded from this metric.
     </summary>
   </metric>
 </event>
