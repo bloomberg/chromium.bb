@@ -144,7 +144,8 @@
 - (void)showToolsMenu {
   ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
   ToolsMenuConfiguration* menuConfiguration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:nil
+                                       baseViewController:nil];
   menuConfiguration.inTabSwitcher = NO;
   menuConfiguration.noOpenedTabs = NO;
   menuConfiguration.inIncognito =

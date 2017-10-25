@@ -2746,7 +2746,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 
 - (void)showToolsMenu {
   ToolsMenuConfiguration* configuration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]];
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]
+                                       baseViewController:self];
   [configuration setInTabSwitcher:YES];
   // When checking for the existence of tabs, catch the case where the main set
   // is both active and empty, but the incognito set has some cards.

@@ -22,13 +22,16 @@
 @synthesize requestStartTime = _requestStartTime;
 @synthesize inNewTabPage = _inNewTabPage;
 @synthesize engagementTracker = _engagementTracker;
+@synthesize baseViewController = _baseViewController;
 @synthesize displayView = _displayView;
 @synthesize toolsMenuButton = _toolsMenuButton;
 @synthesize readingListMenuNotifier = _readingListMenuNotifier;
 
-- (instancetype)initWithDisplayView:(UIView*)displayView {
+- (instancetype)initWithDisplayView:(UIView*)displayView
+                 baseViewController:(UIViewController*)baseViewController {
   if (self = [super init]) {
     _userAgentType = web::UserAgentType::NONE;
+    _baseViewController = baseViewController;
     _displayView = displayView;
     _readingListMenuNotifier = nil;
     _engagementTracker = nullptr;

@@ -50,6 +50,7 @@
 @interface KeyCommandsProvider : NSObject
 
 - (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+                baseViewController:(UIViewController*)baseViewController
                         dispatcher:
                             (id<ApplicationCommands, BrowserCommands>)dispatcher
                        editingText:(BOOL)editingText;

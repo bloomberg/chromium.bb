@@ -21,8 +21,9 @@ class ToolsMenuViewControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    configuration_.reset(
-        [[ToolsMenuConfiguration alloc] initWithDisplayView:nil]);
+    configuration_.reset([[ToolsMenuConfiguration alloc]
+        initWithDisplayView:nil
+         baseViewController:nil]);
     controller_.reset([[ToolsMenuViewController alloc] init]);
   }
 

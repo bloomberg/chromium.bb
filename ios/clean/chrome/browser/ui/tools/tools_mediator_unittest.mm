@@ -28,8 +28,9 @@ class ToolsMediatorTest : public PlatformTest {
  public:
   ToolsMediatorTest()
       : consumer_(OCMProtocolMock(@protocol(ToolsConsumer))),
-        configuration_(
-            [[ToolsMenuConfiguration alloc] initWithDisplayView:nil]) {
+        configuration_([[ToolsMenuConfiguration alloc]
+            initWithDisplayView:nil
+             baseViewController:nil]) {
     auto navigation_manager = base::MakeUnique<ToolbarTestNavigationManager>();
     test_web_state_.SetNavigationManager(std::move(navigation_manager));
   }

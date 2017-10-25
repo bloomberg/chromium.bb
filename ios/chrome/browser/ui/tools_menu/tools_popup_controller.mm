@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
@@ -40,6 +41,8 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
   ToolsMenuViewController* _toolsMenuViewController;
   // Container view of the menu items table.
   UIView* _toolsTableViewContainer;
+  // The view controller from which to present other view controllers.
+  __weak UIViewController* _baseViewController;
 }
 @end
 
@@ -56,6 +59,8 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     self.dispatcher = dispatcher;
     _toolsMenuViewController = [[ToolsMenuViewController alloc] init];
     _toolsMenuViewController.dispatcher = self.dispatcher;
+
+    _baseViewController = configuration.baseViewController;
 
     _toolsTableViewContainer = [_toolsMenuViewController view];
     [_toolsTableViewContainer layer].cornerRadius = 2;
@@ -193,6 +198,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
       break;
     case TOOLS_SETTINGS_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuSettings"));
+      [self.dispatcher showSettingsFromViewController:_baseViewController];
       break;
     case TOOLS_RELOAD_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuReload"));

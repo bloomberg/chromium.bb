@@ -63,6 +63,10 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
   return menuItem;
 }
 
+- (BOOL)canExecuteCommand {
+  return self.selector != nullptr;
+}
+
 - (void)executeCommandWithDispatcher:
     (id<ApplicationCommands, BrowserCommands>)dispatcher {
   DCHECK(self.selector);
