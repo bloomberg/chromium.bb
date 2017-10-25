@@ -303,10 +303,6 @@ public class BookmarkBridge {
             return true;
         }
 
-        // Start reading as a fail-safe measure to avoid waiting forever if the caller forgets to
-        // call kickOffReading().
-        PartnerBookmarksShim.kickOffReading(ContextUtils.getApplicationContext());
-
         addObserver(new BookmarkModelObserver() {
             @Override
             public void bookmarkModelLoaded() {
@@ -317,6 +313,10 @@ public class BookmarkBridge {
             public void bookmarkModelChanged() {
             }
         });
+
+        // Start reading as a fail-safe measure to avoid waiting forever if the caller forgets to
+        // call kickOffReading().
+        PartnerBookmarksShim.kickOffReading(ContextUtils.getApplicationContext());
         return false;
     }
 
