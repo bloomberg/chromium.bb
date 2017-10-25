@@ -38,6 +38,8 @@ component("blink_common") {
     "message_port/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
     "mime_util/mime_util.h",
+    "origin_manifest/origin_manifest.cc",
+    "origin_manifest/origin_manifest.h",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.cc",
@@ -68,6 +70,7 @@ test("blink_common_unittests") {
   sources = [
     "device_memory/approximated_device_memory_unittest.cc",
     "mime_util/mime_util_unittest.cc",
+    "origin_manifest/origin_manifest_unittest.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
     "test/run_all_unittests.cc",
