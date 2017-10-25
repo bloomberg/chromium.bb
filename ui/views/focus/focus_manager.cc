@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -196,8 +197,8 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
                                          Widget* starting_widget,
                                          bool reverse,
                                          bool dont_loop) {
-  DCHECK(!focused_view_ || ContainsView(focused_view_)) << " focus_view="
-                                                        << focused_view_;
+  DCHECK(!focused_view_ || ContainsView(focused_view_))
+      << " focus_view=" << focused_view_;
 
   FocusTraversable* focus_traversable = NULL;
 
@@ -299,8 +300,8 @@ void FocusManager::SetKeyboardAccessible(bool keyboard_accessible) {
   AdvanceFocusIfNecessary();
 }
 
-void FocusManager::SetFocusedViewWithReason(
-    View* view, FocusChangeReason reason) {
+void FocusManager::SetFocusedViewWithReason(View* view,
+                                            FocusChangeReason reason) {
   if (focused_view_ == view)
     return;
   // TODO(oshima|achuith): This is to diagnose crbug.com/687232.
@@ -440,11 +441,7 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
   FocusTraversable* new_focus_traversable = NULL;
   View* new_starting_view = NULL;
   View* v = focus_traversable->GetFocusSearch()->FindNextFocusableView(
-      starting_view,
-      reverse,
-      FocusSearch::DOWN,
-      false,
-      &new_focus_traversable,
+      starting_view, reverse, FocusSearch::DOWN, false, &new_focus_traversable,
       &new_starting_view);
 
   // Let's go down the FocusTraversable tree as much as we can.
@@ -454,12 +451,8 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
     new_focus_traversable = NULL;
     starting_view = NULL;
     v = focus_traversable->GetFocusSearch()->FindNextFocusableView(
-        starting_view,
-        reverse,
-        FocusSearch::DOWN,
-        false,
-        &new_focus_traversable,
-        &new_starting_view);
+        starting_view, reverse, FocusSearch::DOWN, false,
+        &new_focus_traversable, &new_starting_view);
   }
   return v;
 }
@@ -518,17 +511,16 @@ bool FocusManager::ProcessArrowKeyTraversal(const ui::KeyEvent& event) {
   if (event.IsShiftDown() || event.IsControlDown() || event.IsAltDown())
     return false;
 
-  const int key_code = event.key_code();
-  if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_UP) {
-    AdvanceFocus(true);
-    return true;
-  }
-  if (key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN) {
-    AdvanceFocus(false);
-    return true;
+  const ui::KeyboardCode key = event.key_code();
+  if (key != ui::VKEY_UP && key != ui::VKEY_DOWN && key != ui::VKEY_LEFT &&
+      key != ui::VKEY_RIGHT) {
+    return false;
   }
 
-  return false;
+  const ui::KeyboardCode reverse =
+      base::i18n::IsRTL() ? ui::VKEY_RIGHT : ui::VKEY_LEFT;
+  AdvanceFocus(key == reverse || key == ui::VKEY_UP);
+  return true;
 }
 
 bool FocusManager::IsFocusable(View* view) const {
