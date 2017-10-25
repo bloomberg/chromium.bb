@@ -29911,6 +29911,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IOS.PageLoadTiming.OmnibarToPageLoaded" units="ms">
+  <owner>danyao@chromium.org</owner>
+  <summary>
+    Measures the time from the end of user input in the omnibox to when the page
+    is fully loaded. Only measures page loads initiated by user typing a URL or
+    selecting a suggested entry from the URL bar.
+  </summary>
+</histogram>
+
 <histogram name="IOS.RepeatedExternalAppPromptResponse"
     enum="IOSRepeatedExternalAppPromptResponse">
   <owner>mrefaat@chromium.org</owner>

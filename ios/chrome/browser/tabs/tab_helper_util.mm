@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
+#import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
@@ -68,6 +69,7 @@ void AttachTabHelpers(web::WebState* web_state) {
   PagePlaceholderTabHelper::CreateForWebState(web_state, tab);
   CaptivePortalDetectorTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
+  LoadTimingTabHelper::CreateForWebState(web_state);
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);
