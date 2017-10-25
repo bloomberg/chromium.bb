@@ -280,6 +280,9 @@ extern const char kEnableNavigationTracingDescription[];
 extern const char kEnableNetworkServiceName[];
 extern const char kEnableNetworkServiceDescription[];
 
+extern const char kEnableNewPrintPreview[];
+extern const char kEnableNewPrintPreviewDescription[];
+
 extern const char kEnableNightLightName[];
 extern const char kEnableNightLightDescription[];
 
