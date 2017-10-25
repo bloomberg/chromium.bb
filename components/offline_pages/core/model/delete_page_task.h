@@ -49,25 +49,35 @@ class DeletePageTask : public Task {
       const std::vector<OfflinePageModel::DeletedPageInfo>&)>
       DeletePageTaskCallback;
 
-  // Create a task to delete pages with offline ids in |offline_ids|.
+  // Creates a task to delete pages with offline ids in |offline_ids|.
   static std::unique_ptr<DeletePageTask> CreateTaskMatchingOfflineIds(
       OfflinePageMetadataStoreSQL* store,
-      const std::vector<int64_t>& offline_ids,
-      DeletePageTask::DeletePageTaskCallback callback);
+      DeletePageTask::DeletePageTaskCallback callback,
+      const std::vector<int64_t>& offline_ids);
 
-  // Create a task to delete pages with client ids in |client_ids|.
+  // Creates a task to delete pages with client ids in |client_ids|.
   static std::unique_ptr<DeletePageTask> CreateTaskMatchingClientIds(
       OfflinePageMetadataStoreSQL* store,
-      const std::vector<ClientId>& client_ids,
-      DeletePageTask::DeletePageTaskCallback callback);
+      DeletePageTask::DeletePageTaskCallback callback,
+      const std::vector<ClientId>& client_ids);
 
-  // Create a task to delete pages which satisfy |predicate|.
+  // Creates a task to delete pages which satisfy |predicate|.
   static std::unique_ptr<DeletePageTask>
   CreateTaskMatchingUrlPredicateForCachedPages(
       OfflinePageMetadataStoreSQL* store,
+      DeletePageTask::DeletePageTaskCallback callback,
       ClientPolicyController* policy_controller,
-      const UrlPredicate& predicate,
-      DeletePageTask::DeletePageTaskCallback callback);
+      const UrlPredicate& predicate);
+
+  // Creates a task to delete old pages that have the same url and namespace
+  // with |page| to make the number of pages with same url less than the limit
+  // defined with the namespace that this |page| belongs to.
+  // Returns nullptr if there's no page limit per url of the page's namespace.
+  static std::unique_ptr<DeletePageTask> CreateTaskDeletingForPageLimit(
+      OfflinePageMetadataStoreSQL* store,
+      DeletePageTask::DeletePageTaskCallback callback,
+      ClientPolicyController* policy_controller,
+      const OfflinePageItem& page);
 
   ~DeletePageTask() override;
 

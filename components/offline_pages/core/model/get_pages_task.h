@@ -58,16 +58,16 @@ class GetPagesTask : public Task {
   static std::unique_ptr<GetPagesTask>
   CreateTaskMatchingPagesRemovedOnCacheReset(
       OfflinePageMetadataStoreSQL* store,
-      ClientPolicyController* policy_controller,
-      const MultipleOfflinePageItemCallback& callback);
+      const MultipleOfflinePageItemCallback& callback,
+      ClientPolicyController* policy_controller);
 
   // Creates |GetPagesTask| reading pages in namespaces supported by downloads
   // from DB.
   static std::unique_ptr<GetPagesTask>
   CreateTaskMatchingPagesSupportedByDownloads(
       OfflinePageMetadataStoreSQL* store,
-      ClientPolicyController* policy_controller,
-      const MultipleOfflinePageItemCallback& callback);
+      const MultipleOfflinePageItemCallback& callback,
+      ClientPolicyController* policy_controller);
 
   // Creates |GetPagesTask| reading pages matching provided |request_origin|
   // from DB.

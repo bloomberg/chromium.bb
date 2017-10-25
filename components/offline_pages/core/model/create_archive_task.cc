@@ -35,29 +35,12 @@ void CreateArchiveTask::Run() {
 
 void CreateArchiveTask::CreateArchive() {
   OfflinePageItem proposed_page;
-  // Skip saving the page that is not intended to be saved, like local file
-  // page.
-  if (!OfflinePageModel::CanSaveURL(save_page_params_.url)) {
-    InformCreateArchiveFailed(ArchiverResult::ERROR_SKIPPED);
-    return;
-  }
-
-  // The web contents is not available if archiver is not created and passed.
-  if (!archiver_) {
-    InformCreateArchiveFailed(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
-    return;
-  }
-
-  // If we already have an offline id, use it. If not, generate one.
-  int64_t offline_id = save_page_params_.proposed_offline_id;
-  if (offline_id == OfflinePageModel::kInvalidOfflineId)
-    offline_id = store_utils::GenerateOfflineId();
 
   // Create a proposed OfflinePageItem to pass in callback, the page will be
   // missing fields, which are going to be filled when the archive creation
   // finishes.
   proposed_page.url = save_page_params_.url;
-  proposed_page.offline_id = offline_id;
+  proposed_page.offline_id = save_page_params_.proposed_offline_id;
   proposed_page.client_id = save_page_params_.client_id;
   proposed_page.creation_time = clock_->Now();
   proposed_page.request_origin = save_page_params_.request_origin;
@@ -69,6 +52,23 @@ void CreateArchiveTask::CreateArchive() {
       save_page_params_.original_url != proposed_page.url) {
     proposed_page.original_url = save_page_params_.original_url;
   }
+
+  // Skip saving the page that is not intended to be saved, like local file
+  // page.
+  if (!OfflinePageModel::CanSaveURL(save_page_params_.url)) {
+    InformCreateArchiveFailed(ArchiverResult::ERROR_SKIPPED, proposed_page);
+    return;
+  }
+
+  // The web contents is not available if archiver is not created and passed.
+  if (!archiver_) {
+    InformCreateArchiveFailed(ArchiverResult::ERROR_CONTENT_UNAVAILABLE,
+                              proposed_page);
+    return;
+  }
+
+  if (proposed_page.offline_id == OfflinePageModel::kInvalidOfflineId)
+    proposed_page.offline_id = store_utils::GenerateOfflineId();
 
   OfflinePageArchiver::CreateArchiveParams create_archive_params;
   // If the page is being saved in the background, we should try to remove the
@@ -86,8 +86,10 @@ void CreateArchiveTask::CreateArchive() {
   TaskComplete();
 }
 
-void CreateArchiveTask::InformCreateArchiveFailed(ArchiverResult result) {
-  callback_.Run(OfflinePageItem(), archiver_, result, GURL(), base::FilePath(),
+void CreateArchiveTask::InformCreateArchiveFailed(
+    ArchiverResult result,
+    const OfflinePageItem& proposed_page) {
+  callback_.Run(proposed_page, archiver_, result, GURL(), base::FilePath(),
                 base::string16(), 0);
   TaskComplete();
 }
