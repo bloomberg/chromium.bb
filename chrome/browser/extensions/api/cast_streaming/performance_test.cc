@@ -18,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/default_tick_clock.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -704,14 +703,7 @@ class CastV2PerformanceTest
 
 }  // namespace
 
-// Flaky on Windows (see crbug.com/759866).
-#if defined(OS_WIN)
-#define MAYBE_Performance DISABLED_Performance
-#else
-#define MAYBE_Performance Performance
-#endif
-
-IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, MAYBE_Performance) {
+IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
   RunTest("CastV2Performance");
 }
 
