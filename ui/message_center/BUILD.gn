@@ -117,7 +117,6 @@ component("message_center") {
     # with message_center_unittests below.
     if (toolkit_views && !is_mac) {
       sources += [
-        "notification_delegate_views.cc",
         "views/bounded_label.cc",
         "views/bounded_label.h",
         "views/constants.h",

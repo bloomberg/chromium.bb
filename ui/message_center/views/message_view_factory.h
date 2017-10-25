@@ -7,6 +7,10 @@
 
 #include "ui/message_center/message_center_export.h"
 
+#include <memory>
+
+#include "base/callback_forward.h"
+
 namespace message_center {
 
 class MessageCenterController;
@@ -19,10 +23,28 @@ class Notification;
 // notifications on Linux with Aura.
 class MESSAGE_CENTER_EXPORT MessageViewFactory {
  public:
+  // A function that creates MessageView for a NOTIFICATION_TYPE_CUSTOM
+  // notification.
+  typedef base::Callback<std::unique_ptr<message_center::MessageView>(
+      message_center::MessageCenterController*,
+      const message_center::Notification&)>
+      CustomMessageViewFactoryFunction;
+
   // |controller| may be NULL, but has to be set before the view is shown.
   static MessageView* Create(MessageCenterController* controller,
                              const Notification& notification,
                              bool top_level);
+
+  // Sets the function that will be invoked to create a custom notification
+  // view. This should be a repeating callback. It's an error to attempt to show
+  // a custom notification without first having called this function. Currently,
+  // only ARC uses custom notifications, so this doesn't need to distinguish
+  // between various sources of custom notification.
+  static void SetCustomNotificationViewFactory(
+      const CustomMessageViewFactoryFunction& factory_function);
+
+  // Returns whether the custom view factory function has already been set.
+  static bool HasCustomNotificationViewFactory();
 };
 
 }  // namespace message_center

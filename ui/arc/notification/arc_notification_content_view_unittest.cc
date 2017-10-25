@@ -22,6 +22,7 @@
 #include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
+#include "ui/arc/notification/arc_notification_manager.h"
 #include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 #include "ui/arc/notification/arc_notification_view.h"
@@ -217,6 +218,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
     DCHECK(exo::WMHelper::HasInstance());
 
     surface_manager_ = std::make_unique<ArcNotificationSurfaceManagerImpl>();
+    ArcNotificationManager::SetCustomNotificationViewFactory();
   }
 
   void TearDown() override {
@@ -307,7 +309,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
         notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
         base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
         GURL(),
-        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+        message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                    "ARC_NOTIFICATION"),
         message_center::RichNotificationData(),
         new ArcNotificationDelegate(notification_item->GetWeakPtr()));

@@ -15,10 +15,23 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/arc/notification/arc_notification_item_impl.h"
+#include "ui/arc/notification/arc_notification_view.h"
+#include "ui/message_center/views/message_view_factory.h"
 
 namespace arc {
 namespace {
+
+std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
+    message_center::MessageCenterController* controller,
+    const message_center::Notification& notification) {
+  DCHECK_EQ(notification.notifier_id().type,
+            message_center::NotifierId::ARC_APPLICATION);
+  auto* arc_delegate =
+      static_cast<ArcNotificationDelegate*>(notification.delegate());
+  return arc_delegate->CreateCustomMessageView(controller, notification);
+}
 
 // Singleton factory for ArcNotificationManager.
 class ArcNotificationManagerFactory
@@ -58,6 +71,12 @@ ArcNotificationManager::CreateForTesting(
       bridge_service, main_profile_id, message_center));
 }
 
+// static
+void ArcNotificationManager::SetCustomNotificationViewFactory() {
+  message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+      base::Bind(&CreateCustomMessageView));
+}
+
 ArcNotificationManager::ArcNotificationManager(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
     : ArcNotificationManager(bridge_service,
@@ -73,6 +92,8 @@ ArcNotificationManager::ArcNotificationManager(
       message_center_(message_center),
       binding_(this) {
   arc_bridge_service_->notifications()->AddObserver(this);
+  if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory())
+    SetCustomNotificationViewFactory();
 }
 
 ArcNotificationManager::~ArcNotificationManager() {
