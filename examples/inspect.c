@@ -332,7 +332,7 @@ int put_map(char *buffer, const map_entry *map) {
       *(buf++) = ',';
     }
   }
-  return buf - buffer;
+  return (int)(buf - buffer);
 }
 
 int put_reference_frame(char *buffer) {
@@ -370,7 +370,7 @@ int put_reference_frame(char *buffer) {
     if (r < mi_rows - 1) *(buf++) = ',';
   }
   buf += put_str(buf, "],\n");
-  return buf - buffer;
+  return (int)(buf - buffer);
 }
 
 int put_motion_vectors(char *buffer) {
@@ -409,7 +409,7 @@ int put_motion_vectors(char *buffer) {
     if (r < mi_rows - 1) *(buf++) = ',';
   }
   buf += put_str(buf, "],\n");
-  return buf - buffer;
+  return (int)(buf - buffer);
 }
 
 int put_block_info(char *buffer, const map_entry *map, const char *name,
@@ -449,7 +449,7 @@ int put_block_info(char *buffer, const map_entry *map, const char *name,
     if (r < mi_rows - 1) *(buf++) = ',';
   }
   buf += put_str(buf, "],\n");
-  return buf - buffer;
+  return (int)(buf - buffer);
 }
 
 #if CONFIG_ACCOUNTING
@@ -489,7 +489,7 @@ int put_accounting(char *buffer) {
     if (i < num_syms - 1) *(buf++) = ',';
   }
   buf += put_str(buf, "],\n");
-  return buf - buffer;
+  return (int)(buf - buffer);
 }
 #endif
 
