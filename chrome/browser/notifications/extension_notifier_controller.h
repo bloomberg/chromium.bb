@@ -19,14 +19,11 @@ class ExtensionNotifierController : public NotifierController,
   ~ExtensionNotifierController() override;
 
   // NotifierController:
-  std::vector<std::unique_ptr<message_center::Notifier>> GetNotifierList(
+  std::vector<std::unique_ptr<message_center::NotifierUiData>> GetNotifierList(
       Profile* profile) override;
   void SetNotifierEnabled(Profile* profile,
                           const message_center::NotifierId& notifier_id,
                           bool enabled) override;
-  bool HasAdvancedSettings(
-      Profile* profile,
-      const message_center::NotifierId& notifier_id) const override;
   void OnNotifierAdvancedSettingsRequested(
       Profile* profile,
       const message_center::NotifierId& notifier_id,

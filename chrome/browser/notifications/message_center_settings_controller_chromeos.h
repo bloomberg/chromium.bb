@@ -34,13 +34,12 @@ class MessageCenterSettingsControllerChromeOs
   void AddObserver(message_center::NotifierSettingsObserver* observer) override;
   void RemoveObserver(
       message_center::NotifierSettingsObserver* observer) override;
-  void GetNotifierList(std::vector<std::unique_ptr<message_center::Notifier>>*
-                           notifiers) override;
+  void GetNotifierList(
+      std::vector<std::unique_ptr<message_center::NotifierUiData>>* notifiers)
+      override;
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
   void OnNotifierSettingsClosing() override;
-  bool NotifierHasAdvancedSettings(
-      const message_center::NotifierId& notifier_id) const override;
   void OnNotifierAdvancedSettingsRequested(
       const message_center::NotifierId& notifier_id,
       const std::string* notification_id) override;

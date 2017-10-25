@@ -29,19 +29,18 @@ ArcApplicationNotifierControllerChromeOS::
   StopObserving();
 }
 
-std::vector<std::unique_ptr<message_center::Notifier>>
+std::vector<std::unique_ptr<message_center::NotifierUiData>>
 ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
   package_to_app_ids_.clear();
   icons_.clear();
   StopObserving();
 
   ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
-  if (!app_list) {
-    // It can be null in unit tests.
-    return std::vector<std::unique_ptr<message_center::Notifier>>();
-  }
+  std::vector<std::unique_ptr<message_center::NotifierUiData>> results;
+  // The app list can be null in unit tests.
+  if (!app_list)
+    return results;
   const std::vector<std::string>& app_ids = app_list->GetAppIds();
-  std::vector<std::unique_ptr<message_center::Notifier>> results;
 
   last_profile_ = profile;
   app_list->AddObserver(this);
@@ -70,12 +69,12 @@ ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
     package_to_app_ids_.insert(std::make_pair(app->package_name, app_id));
     message_center::NotifierId notifier_id(
         message_center::NotifierId::ARC_APPLICATION, app_id);
-    std::unique_ptr<message_center::Notifier> notifier(
-        new message_center::Notifier(notifier_id, base::UTF8ToUTF16(app->name),
-                                     app->notifications_enabled));
-    notifier->icon = gfx::Image(icon->image_skia());
+    auto ui_data = std::make_unique<message_center::NotifierUiData>(
+        notifier_id, base::UTF8ToUTF16(app->name), false,
+        app->notifications_enabled);
+    ui_data->icon = gfx::Image(icon->image_skia());
     icons_.push_back(std::move(icon));
-    results.push_back(std::move(notifier));
+    results.push_back(std::move(ui_data));
   }
 
   return results;

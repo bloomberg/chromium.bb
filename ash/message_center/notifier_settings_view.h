@@ -54,16 +54,17 @@ class ASH_EXPORT NotifierSettingsView
   class ASH_EXPORT NotifierButton : public views::Button,
                                     public views::ButtonListener {
    public:
-    NotifierButton(message_center::NotifierSettingsProvider* provider,
-                   std::unique_ptr<message_center::Notifier> notifier,
-                   views::ButtonListener* listener);
+    NotifierButton(
+        message_center::NotifierSettingsProvider* provider,
+        std::unique_ptr<message_center::NotifierUiData> notifier_ui_data,
+        views::ButtonListener* listener);
     ~NotifierButton() override;
 
     void UpdateIconImage(const gfx::Image& icon);
     void SetChecked(bool checked);
     bool checked() const;
     bool has_learn_more() const;
-    const message_center::Notifier& notifier() const;
+    const message_center::NotifierUiData& notifier_ui_data() const;
 
     void SendLearnMorePressedForTest();
 
@@ -78,7 +79,7 @@ class ASH_EXPORT NotifierSettingsView
     void GridChanged(bool has_learn_more);
 
     message_center::NotifierSettingsProvider* provider_;  // Weak.
-    std::unique_ptr<message_center::Notifier> notifier_;
+    std::unique_ptr<message_center::NotifierUiData> notifier_ui_data_;
     views::ImageView* icon_view_;
     views::Label* name_view_;
     views::Checkbox* checkbox_;
@@ -89,7 +90,7 @@ class ASH_EXPORT NotifierSettingsView
 
   // Given a new list of notifiers, updates the view to reflect it.
   void UpdateContentsView(
-      std::vector<std::unique_ptr<message_center::Notifier>> notifiers);
+      std::vector<std::unique_ptr<message_center::NotifierUiData>> ui_data);
 
   // Overridden from views::View:
   void Layout() override;

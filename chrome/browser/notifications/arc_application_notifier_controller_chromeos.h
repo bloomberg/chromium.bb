@@ -17,10 +17,6 @@
 
 class Profile;
 
-namespace message_center {
-struct Notifier;
-}
-
 namespace arc {
 
 // TODO(hirono): Observe enabled flag change and notify it to message center.
@@ -35,7 +31,7 @@ class ArcApplicationNotifierControllerChromeOS
   ~ArcApplicationNotifierControllerChromeOS() override;
 
   // TODO(hirono): Rewrite the function with new API to fetch package list.
-  std::vector<std::unique_ptr<message_center::Notifier>> GetNotifierList(
+  std::vector<std::unique_ptr<message_center::NotifierUiData>> GetNotifierList(
       Profile* profile) override;
   void SetNotifierEnabled(Profile* profile,
                           const message_center::NotifierId& notifier_id,

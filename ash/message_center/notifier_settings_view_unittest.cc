@@ -13,7 +13,7 @@
 #include "ui/message_center/notifier_settings.h"
 #include "ui/views/controls/scroll_view.h"
 
-using message_center::Notifier;
+using message_center::NotifierUiData;
 using message_center::NotifierId;
 using message_center::NotifierSettingsObserver;
 using message_center::NotifierSettingsProvider;
@@ -39,11 +39,11 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
   void RemoveObserver(NotifierSettingsObserver* observer) override {}
 
   void GetNotifierList(
-      std::vector<std::unique_ptr<Notifier>>* notifiers) override {
-    notifiers->clear();
+      std::vector<std::unique_ptr<NotifierUiData>>* ui_data) override {
+    ui_data->clear();
     if (!no_notifiers_) {
-      notifiers->push_back(NewNotifier("id", "title", true /* enabled */));
-      notifiers->push_back(
+      ui_data->push_back(NewNotifier("id", "title", true /* enabled */));
+      ui_data->push_back(
           NewNotifier("id2", "other title", false /* enabled */));
     }
   }
@@ -53,11 +53,6 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
 
   // Called when the settings window is closed.
   void OnNotifierSettingsClosing() override {}
-
-  bool NotifierHasAdvancedSettings(
-      const NotifierId& notifier_id) const override {
-    return notifier_id == NotifierId(NotifierId::APPLICATION, "id");
-  }
 
   void OnNotifierAdvancedSettingsRequested(
       const NotifierId& notifier_id,
@@ -69,12 +64,13 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
   void set_no_notifiers(bool no_notifiers) { no_notifiers_ = no_notifiers; }
 
  private:
-  std::unique_ptr<Notifier> NewNotifier(const std::string& id,
-                                        const std::string& title,
-                                        bool enabled) {
+  std::unique_ptr<NotifierUiData> NewNotifier(const std::string& id,
+                                              const std::string& title,
+                                              bool enabled) {
     NotifierId notifier_id(NotifierId::APPLICATION, id);
-    return std::make_unique<Notifier>(notifier_id, base::UTF8ToUTF16(title),
-                                      enabled);
+    return std::make_unique<NotifierUiData>(
+        notifier_id, base::UTF8ToUTF16(title),
+        id == "id" /*has_advanced_settings*/, enabled);
   }
 
   size_t request_count_ = 0u;
