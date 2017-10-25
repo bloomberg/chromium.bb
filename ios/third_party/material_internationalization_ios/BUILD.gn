@@ -1,0 +1,54 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ios/ios_sdk.gni")
+import("//build/config/ios/rules.gni")
+
+config("config") {
+  include_dirs = [ "src/Sources" ]
+  visibility = [ ":material_internationalization_ios" ]
+}
+
+ios_info_plist("info_plist") {
+  info_plist = "src/Sources/Info.plist"
+  executable_name = "MDFInternationalization"
+  extra_substitutions = [
+    "PRODUCT_BUNDLE_IDENTIFIER=$ios_app_bundle_id_prefix",
+    "CURRENT_PROJECT_VERSION=1.0",
+  ]
+}
+
+ios_framework_bundle("material_internationalization_ios") {
+  info_plist_target = ":info_plist"
+  output_name = "MDFInternationalization"
+  sources = [
+    "src/Sources/MDFInternationalization.h",
+    "src/Sources/MDFRTL.h",
+    "src/Sources/MDFRTL.m",
+    "src/Sources/UIImage+MaterialRTL.h",
+    "src/Sources/UIImage+MaterialRTL.m",
+    "src/Sources/UIView+MaterialRTL.h",
+    "src/Sources/UIView+MaterialRTL.m",
+  ]
+  public_headers = [
+    "src/Sources/MDFRTL.h",
+    "src/Sources/UIImage+MaterialRTL.h",
+    "src/Sources/UIView+MaterialRTL.h",
+  ]
+
+  libs = [
+    "CoreImage.framework",
+    "UIKit.framework",
+  ]
+  public_configs = [ ":config" ]
+  configs -= [
+    "//build/config/gcc:symbol_visibility_hidden",
+    "//build/config/compiler:chromium_code",
+  ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/compiler:no_chromium_code",
+    "//build/config/gcc:symbol_visibility_default",
+  ]
+}
