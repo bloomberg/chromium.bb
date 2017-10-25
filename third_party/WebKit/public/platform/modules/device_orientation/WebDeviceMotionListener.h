@@ -44,7 +44,7 @@ class WebDeviceMotionListener : public WebPlatformEventListener {
   // This method is called every time new device motion data is available.
   virtual void DidChangeDeviceMotion(const device::MotionData&) = 0;
 
-  virtual ~WebDeviceMotionListener() {}
+  ~WebDeviceMotionListener() override {}
 };
 
 }  // namespace blink
