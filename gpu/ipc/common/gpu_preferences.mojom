@@ -20,6 +20,9 @@ struct GpuPreferences {
   bool ui_prioritize_in_gpu_process;
   bool enable_gpu_scheduler;
   bool disable_accelerated_video_decode;
+  bool gpu_startup_dialog;
+  bool disable_gpu_watchdog;
+  bool gpu_sandbox_start_early;
 
   bool disable_vaapi_accelerated_video_encode;
 

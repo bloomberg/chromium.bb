@@ -138,9 +138,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // In addition to disabling the watchdog if the command line switch is
   // present, disable the watchdog on valgrind because the code is expected
   // to run slowly in that case.
-  bool enable_watchdog =
-      !command_line->HasSwitch(switches::kDisableGpuWatchdog) &&
-      !command_line->HasSwitch(switches::kHeadless) && !RunningOnValgrind();
+  bool enable_watchdog = !gpu_preferences.disable_gpu_watchdog &&
+                         !command_line->HasSwitch(switches::kHeadless) &&
+                         !RunningOnValgrind();
 
   // Disable the watchdog in debug builds because they tend to only be run by
   // developers who will not appreciate the watchdog killing the GPU process.
@@ -182,7 +182,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // On Chrome OS ARM Mali, GPU driver userspace creates threads when
   // initializing a GL context, so start the sandbox early.
   // TODO(zmo): Need to collect OS version before this.
-  if (command_line->HasSwitch(switches::kGpuSandboxStartEarly)) {
+  if (gpu_preferences.gpu_sandbox_start_early) {
     gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
         watchdog_thread_.get(), &gpu_info_, gpu_preferences_);
     attempted_startsandbox = true;
