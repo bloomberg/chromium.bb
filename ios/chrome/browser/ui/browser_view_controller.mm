@@ -51,6 +51,9 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
+#include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/signin_metrics.h"
+#import "components/signin/ios/browser/account_consistency_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model_impl.h"
@@ -88,6 +91,8 @@
 #include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
+#import "ios/chrome/browser/signin/account_consistency_service_factory.h"
+#include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
@@ -374,6 +379,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     IOSCaptivePortalBlockingPageDelegate,
                                     KeyCommandsPlumbing,
                                     NetExportTabHelperDelegate,
+                                    ManageAccountsDelegate,
                                     MFMailComposeViewControllerDelegate,
                                     NewTabPageControllerObserver,
                                     OverscrollActionsControllerDelegate,
@@ -2451,7 +2457,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   DCHECK_NE(tab.webState->GetDelegate(), _webStateDelegate.get());
   // Unregistration happens when the Tab is removed from the TabModel.
   tab.iOSCaptivePortalBlockingPageDelegate = self;
-  tab.dispatcher = self.dispatcher;
+
+  // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
+  if (PasswordTabHelper* passwordTabHelper =
+          PasswordTabHelper::FromWebState(tab.webState)) {
+    passwordTabHelper->SetDispatcher(self.dispatcher);
+    passwordTabHelper->SetPasswordControllerDelegate(self);
+  }
+
   tab.dialogDelegate = self;
   tab.snapshotOverlayProvider = self;
   tab.passKitDialogProvider = self;
@@ -2476,17 +2489,23 @@ bubblePresenterForFeature:(const base::Feature&)feature
   PrintTabHelper::CreateForWebState(tab.webState, self);
   RepostFormTabHelper::CreateForWebState(tab.webState, self);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
-  PasswordTabHelper* passwordTabHelper =
-      PasswordTabHelper::FromWebState(tab.webState);
-  if (passwordTabHelper) {
-    passwordTabHelper->SetPasswordControllerDelegate(self);
+
+  if (AccountConsistencyService* accountConsistencyService =
+          ios::AccountConsistencyServiceFactory::GetForBrowserState(
+              self.browserState)) {
+    accountConsistencyService->SetWebStateHandler(tab.webState, self);
   }
 }
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
   DCHECK_EQ(tab.webState->GetDelegate(), _webStateDelegate.get());
   tab.iOSCaptivePortalBlockingPageDelegate = nil;
-  tab.dispatcher = nil;
+
+  // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
+  if (PasswordTabHelper* passwordTabHelper =
+          PasswordTabHelper::FromWebState(tab.webState))
+    passwordTabHelper->SetDispatcher(nil);
+
   tab.dialogDelegate = nil;
   tab.snapshotOverlayProvider = nil;
   tab.passKitDialogProvider = nil;
@@ -2502,6 +2521,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (tabHelper)
     tabHelper->SetLauncher(nil);
   tab.webState->SetDelegate(nullptr);
+  if (AccountConsistencyService* accountConsistencyService =
+          ios::AccountConsistencyServiceFactory::GetForBrowserState(
+              self.browserState)) {
+    accountConsistencyService->RemoveWebStateHandler(tab.webState);
+  }
 }
 
 // Called when a tab is selected in the model. Make any required view changes.
@@ -5254,6 +5278,44 @@ bubblePresenterForFeature:(const base::Feature&)feature
   tabStripFrame.size.width = CGRectGetWidth([self view].bounds);
   [self.tabStripView setFrame:tabStripFrame];
   [[self view] addSubview:tabStripView];
+}
+
+#pragma mark - ManageAccountsDelegate
+
+- (void)onManageAccounts {
+  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
+      ios::AccountReconcilorFactory::GetForBrowserState(self.browserState)
+          ->GetState());
+  [self.dispatcher showAccountsSettings];
+}
+
+- (void)onAddAccount {
+  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
+      ios::AccountReconcilorFactory::GetForBrowserState(self.browserState)
+          ->GetState());
+  [self.dispatcher showAddAccount];
+}
+
+- (void)onGoIncognito:(const GURL&)url {
+  // The user taps on go incognito from the mobile U-turn webpage (the web page
+  // that displays all users accounts available in the content area). As the
+  // user chooses to go to incognito, the mobile U-turn page is no longer
+  // neeeded. The current solution is to go back in history. This has the
+  // advantage of keeping the current browsing session and give a good user
+  // experience when the user comes back from incognito.
+  [self.tabModel.currentTab goBack];
+
+  if (url.is_valid()) {
+    OpenUrlCommand* command = [[OpenUrlCommand alloc]
+         initWithURL:url
+            referrer:web::Referrer()  // Strip referrer when switching modes.
+         inIncognito:YES
+        inBackground:NO
+            appendTo:kLastTab];
+    [self.dispatcher openURL:command];
+  } else {
+    [self.dispatcher openNewTab:[OpenNewTabCommand command]];
+  }
 }
 
 @end

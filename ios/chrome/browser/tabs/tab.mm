@@ -37,9 +37,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#import "components/signin/ios/browser/account_consistency_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
@@ -56,13 +53,10 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
-#import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
-#include "ios/chrome/browser/signin/account_consistency_service_factory.h"
-#include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/signin_capability.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
@@ -77,8 +71,6 @@
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -285,7 +277,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 @synthesize tabSnapshottingDelegate = tabSnapshottingDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 @synthesize fullScreenControllerDelegate = fullScreenControllerDelegate_;
-@synthesize dispatcher = _dispatcher;
 @synthesize snapshotManager = _snapshotManager;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
@@ -482,18 +473,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_overscrollActionsController
       setDelegate:overscrollActionsControllerDelegate];
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
-}
-
-- (void)setDispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher {
-  if (_dispatcher == dispatcher)
-    return;
-  // The dispatcher shouldn't change once set, so at this stage the dispatcher
-  // should be nil, or the new value should be nil.
-  DCHECK(!_dispatcher || !dispatcher);
-  _dispatcher = dispatcher;
-
-  // Forward the new dispatcher to tab helpers.
-  PasswordTabHelper::FromWebState(self.webState)->SetDispatcher(_dispatcher);
 }
 
 - (void)webDidUpdateSessionForLoadWithURL:(const GURL&)URL {
@@ -1205,65 +1184,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (BOOL)isPrerenderTab {
   return _isPrerenderTab;
-}
-
-#pragma mark - ManageAccountsDelegate
-
-- (void)onManageAccounts {
-  if (_isPrerenderTab) {
-    [delegate_ discardPrerender];
-    return;
-  }
-  if (self != [_parentTabModel currentTab])
-    return;
-
-  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-      ios::AccountReconcilorFactory::GetForBrowserState(_browserState)
-          ->GetState());
-  [self.dispatcher showAccountsSettings];
-}
-
-- (void)onAddAccount {
-  if (_isPrerenderTab) {
-    [delegate_ discardPrerender];
-    return;
-  }
-  if (self != [_parentTabModel currentTab])
-    return;
-
-  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-      ios::AccountReconcilorFactory::GetForBrowserState(_browserState)
-          ->GetState());
-  [self.dispatcher showAddAccount];
-}
-
-- (void)onGoIncognito:(const GURL&)url {
-  if (_isPrerenderTab) {
-    [delegate_ discardPrerender];
-    return;
-  }
-  if (self != [_parentTabModel currentTab])
-    return;
-
-  // The user taps on go incognito from the mobile U-turn webpage (the web page
-  // that displays all users accounts available in the content area). As the
-  // user chooses to go to incognito, the mobile U-turn page is no longer
-  // neeeded. The current solution is to go back in history. This has the
-  // advantage of keeping the current browsing session and give a good user
-  // experience when the user comes back from incognito.
-  [self goBack];
-
-  if (url.is_valid()) {
-    OpenUrlCommand* command = [[OpenUrlCommand alloc]
-         initWithURL:url
-            referrer:web::Referrer()  // Strip referrer when switching modes.
-         inIncognito:YES
-        inBackground:NO
-            appendTo:kLastTab];
-    [self.dispatcher openURL:command];
-  } else {
-    [self.dispatcher openNewTab:[OpenNewTabCommand command]];
-  }
 }
 
 - (void)wasShown {
