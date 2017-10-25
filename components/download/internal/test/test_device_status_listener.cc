@@ -39,8 +39,8 @@ void TestDeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
 }
 
 void TestDeviceStatusListener::StartAfterDelay() {
-  if (status_ != DeviceStatus())
-    NotifyObserver(status_);
+  is_valid_state_ = true;
+  NotifyObserver(status_);
 }
 
 void TestDeviceStatusListener::Stop() {

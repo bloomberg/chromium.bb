@@ -75,6 +75,17 @@ bool CanActivateMoreDownloads(Configuration* config,
   return true;
 }
 
+Model::EntryList GetRunnableEntries(const Model::EntryList& list) {
+  Model::EntryList candidates;
+  for (Entry* entry : list) {
+    if (entry->state == Entry::State::AVAILABLE ||
+        entry->state == Entry::State::ACTIVE) {
+      candidates.emplace_back(entry);
+    }
+  }
+  return candidates;
+}
+
 }  // namespace
 
 ControllerImpl::ControllerImpl(
@@ -297,7 +308,7 @@ void ControllerImpl::OnStartScheduledTask(
 bool ControllerImpl::OnStopScheduledTask(DownloadTaskType task_type) {
   HandleTaskFinished(task_type, false,
                      stats::ScheduledTaskStatus::CANCELLED_ON_STOP);
-  return true;
+  return false;
 }
 
 void ControllerImpl::OnCompleteCleanupTask() {
@@ -347,10 +358,8 @@ void ControllerImpl::RemoveCleanupEligibleDownloads() {
 void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
                                         bool needs_reschedule,
                                         stats::ScheduledTaskStatus status) {
-  if (task_finished_callbacks_.find(task_type) ==
-      task_finished_callbacks_.end()) {
+  if (task_finished_callbacks_.count(task_type) == 0)
     return;
-  }
 
   if (status != stats::ScheduledTaskStatus::CANCELLED_ON_STOP) {
     base::ResetAndReturn(&task_finished_callbacks_[task_type])
@@ -360,6 +369,15 @@ void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
   // running when we're asked to stop processing.
   stats::LogScheduledTaskStatus(task_type, status);
   task_finished_callbacks_.erase(task_type);
+
+  switch (task_type) {
+    case DownloadTaskType::DOWNLOAD_TASK:
+      scheduler_->Reschedule(GetRunnableEntries(model_->PeekEntries()));
+      break;
+    case DownloadTaskType::CLEANUP_TASK:
+      ScheduleCleanupTask();
+      break;
+  }
 }
 
 void ControllerImpl::OnDriverReady(bool success) {
@@ -1017,6 +1035,9 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
 }
 
 void ControllerImpl::ScheduleCleanupTask() {
+  if (task_finished_callbacks_.count(DownloadTaskType::CLEANUP_TASK) != 0)
+    return;
+
   base::Time earliest_cleanup_start_time = base::Time::Max();
   for (const Entry* entry : model_->PeekEntries()) {
     if (entry->state != Entry::State::COMPLETE)
@@ -1032,8 +1053,10 @@ void ControllerImpl::ScheduleCleanupTask() {
     }
   }
 
-  if (earliest_cleanup_start_time == base::Time::Max())
+  if (earliest_cleanup_start_time == base::Time::Max()) {
+    task_scheduler_->CancelTask(DownloadTaskType::CLEANUP_TASK);
     return;
+  }
 
   base::TimeDelta start_time = earliest_cleanup_start_time - base::Time::Now();
   base::TimeDelta end_time = start_time + config_->file_cleanup_window;
@@ -1084,42 +1107,48 @@ void ControllerImpl::ActivateMoreDownloads() {
   if (controller_state_ != State::READY)
     return;
 
+  if (!device_status_listener_->is_valid_state())
+    return;
+
   // Check all the entries and the configuration to throttle number of
   // downloads.
   std::map<Entry::State, uint32_t> entries_states;
-  Model::EntryList scheduling_candidates;
   for (auto* const entry : model_->PeekEntries()) {
     entries_states[entry->state]++;
-    // Only schedule background tasks based on available and active entries.
-    if (entry->state == Entry::State::AVAILABLE ||
-        entry->state == Entry::State::ACTIVE) {
-      scheduling_candidates.emplace_back(entry);
-    }
   }
 
   uint32_t paused_count = entries_states[Entry::State::PAUSED];
   uint32_t active_count = entries_states[Entry::State::ACTIVE];
 
-  bool has_actionable_downloads = false;
   while (CanActivateMoreDownloads(config_, active_count, paused_count)) {
     Entry* next = scheduler_->Next(
         model_->PeekEntries(), device_status_listener_->CurrentDeviceStatus());
     if (!next)
       break;
 
-    has_actionable_downloads = true;
     DCHECK_EQ(Entry::State::AVAILABLE, next->state);
     TransitTo(next, Entry::State::ACTIVE, model_.get());
     active_count++;
     UpdateDriverState(next);
   }
 
+  Model::EntryList candidates = GetRunnableEntries(model_->PeekEntries());
+  bool has_actionable_downloads = false;
+  for (auto* entry : candidates) {
+    has_actionable_downloads |= device_status_listener_->CurrentDeviceStatus()
+                                    .MeetsCondition(entry->scheduling_params)
+                                    .MeetsRequirements();
+    if (has_actionable_downloads)
+      break;
+  }
+  // Only schedule a task if we are not currently running one of the same type.
+  if (task_finished_callbacks_.count(DownloadTaskType::DOWNLOAD_TASK) == 0)
+    scheduler_->Reschedule(candidates);
+
   if (!has_actionable_downloads) {
     HandleTaskFinished(DownloadTaskType::DOWNLOAD_TASK, false,
                        stats::ScheduledTaskStatus::COMPLETED_NORMALLY);
   }
-
-  scheduler_->Reschedule(scheduling_candidates);
 }
 
 void ControllerImpl::OnNavigationEvent() {

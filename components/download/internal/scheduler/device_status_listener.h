@@ -29,6 +29,8 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
                                 const base::TimeDelta& online_delay);
   ~DeviceStatusListener() override;
 
+  bool is_valid_state() { return is_valid_state_; }
+
   // Returns the current device status for download scheduling.
   const DeviceStatus& CurrentDeviceStatus() const;
 
@@ -52,6 +54,8 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
 
   // If device status listener is started.
   bool listening_;
+
+  bool is_valid_state_;
 
  private:
   // Start after a delay to wait for potential network stack setup.
