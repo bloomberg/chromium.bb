@@ -46,8 +46,7 @@ InfoMap::ExtraData::ExtraData()
 
 InfoMap::ExtraData::~ExtraData() {}
 
-InfoMap::InfoMap() {
-}
+InfoMap::InfoMap() : ruleset_manager_(this) {}
 
 const ExtensionSet& InfoMap::extensions() const {
   CheckOnValidThread();
@@ -202,6 +201,17 @@ QuotaService* InfoMap::GetQuotaService() {
   if (!quota_service_)
     quota_service_.reset(new QuotaService());
   return quota_service_.get();
+}
+
+declarative_net_request::RulesetManager* InfoMap::GetRulesetManager() {
+  CheckOnValidThread();
+  return &ruleset_manager_;
+}
+
+const declarative_net_request::RulesetManager* InfoMap::GetRulesetManager()
+    const {
+  CheckOnValidThread();
+  return &ruleset_manager_;
 }
 
 void InfoMap::SetNotificationsDisabled(
