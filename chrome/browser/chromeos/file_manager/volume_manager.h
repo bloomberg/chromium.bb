@@ -106,7 +106,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // Getters for all members. See below for details.
   const std::string& volume_id() const { return volume_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
-  const std::string& extension_id() const { return extension_id_; }
+  const std::string& provider_id() const { return provider_id_; }
   Source source() const { return source_; }
   VolumeType type() const { return type_; }
   chromeos::DeviceType device_type() const { return device_type_; }
@@ -145,12 +145,12 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   std::string volume_id_;
 
   // The ID for provided file systems. If other type, then empty string. Unique
-  // per providing extension.
+  // per providing extension or native provider.
   std::string file_system_id_;
 
-  // The ID of an extension providing the file system. If other type, then equal
-  // to an empty string.
-  std::string extension_id_;
+  // The ID of an extension or native provider providing the file system. If
+  // other type, then equal to an empty string.
+  std::string provider_id_;
 
   // The source of the volume's data.
   Source source_;

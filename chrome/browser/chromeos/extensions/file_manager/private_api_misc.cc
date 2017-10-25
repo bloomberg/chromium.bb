@@ -597,7 +597,7 @@ FileManagerPrivateConfigureVolumeFunction::Run() {
 
       using chromeos::file_system_provider::ProvidedFileSystemInterface;
       ProvidedFileSystemInterface* const file_system =
-          service->GetProvidedFileSystem(volume->extension_id(),
+          service->GetProvidedFileSystem(volume->provider_id(),
                                          volume->file_system_id());
       if (file_system)
         file_system->Configure(base::Bind(

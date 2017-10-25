@@ -237,7 +237,7 @@ std::unique_ptr<Volume> Volume::CreateForProvidedFileSystem(
     MountContext mount_context) {
   std::unique_ptr<Volume> volume(new Volume());
   volume->file_system_id_ = file_system_info.file_system_id();
-  volume->extension_id_ = file_system_info.extension_id();
+  volume->provider_id_ = file_system_info.provider_id();
   switch (file_system_info.source()) {
     case extensions::SOURCE_FILE:
       volume->source_ = SOURCE_FILE;

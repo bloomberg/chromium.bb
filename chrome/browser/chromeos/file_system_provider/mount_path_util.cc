@@ -50,7 +50,7 @@ std::string EscapeFileSystemId(const std::string& file_system_id) {
 }
 
 base::FilePath GetMountPath(Profile* profile,
-                            const std::string& extension_id,
+                            const std::string& provider_id,
                             const std::string& file_system_id) {
   const user_manager::User* const user =
       user_manager::UserManager::IsInitialized()
@@ -59,8 +59,9 @@ base::FilePath GetMountPath(Profile* profile,
           : NULL;
   const std::string safe_file_system_id = EscapeFileSystemId(file_system_id);
   const std::string username_suffix = user ? user->username_hash() : "";
-  return base::FilePath(kProvidedMountPointRoot).AppendASCII(
-      extension_id + ":" + safe_file_system_id + ":" + username_suffix);
+  return base::FilePath(kProvidedMountPointRoot)
+      .AppendASCII(provider_id + ":" + safe_file_system_id + ":" +
+                   username_suffix);
 }
 
 bool IsFileSystemProviderLocalPath(const base::FilePath& local_path) {

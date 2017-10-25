@@ -50,7 +50,7 @@ enum RequestType {
 };
 
 // Manages requests between the service, async utils and the providing
-// extensions.
+// extension or native provider.
 class RequestManager {
  public:
   // Handles requests. Each request implementation must implement
@@ -63,7 +63,7 @@ class RequestManager {
     // Returns false in case of a execution failure.
     virtual bool Execute(int request_id) = 0;
 
-    // Success callback invoked by the providing extension in response to
+    // Success callback invoked by the provider in response to
     // Execute(). It may be called more than once, until |has_more| is set to
     // false.
     virtual void OnSuccess(int request_id,
@@ -106,10 +106,10 @@ class RequestManager {
     virtual void OnRequestTimeouted(int request_id) = 0;
   };
 
-  // Creates a request manager for |profile| and |extension_id|. Note, that
-  // there may be multiple instances of request managers per extension.
+  // Creates a request manager for |profile| and |provider_id|. Note, that
+  // there may be multiple instances of request managers per provider.
   RequestManager(Profile* profile,
-                 const std::string& extension_id,
+                 const std::string& provider_id,
                  NotificationManagerInterface* notification_manager);
   virtual ~RequestManager();
 
@@ -175,12 +175,12 @@ class RequestManager {
   // Resets the timeout timer for the specified request.
   void ResetTimer(int request_id);
 
-  // Checks whether there is an ongoing interaction between the providing
-  // extension and user.
+  // Checks whether there is an ongoing interaction between the provider
+  // and user.
   bool IsInteractingWithUser() const;
 
   Profile* profile_;  // Not owned.
-  std::string extension_id_;
+  std::string provider_id_;
   std::map<int, std::unique_ptr<Request>> requests_;
   NotificationManagerInterface* notification_manager_;  // Not owned.
   int next_id_;

@@ -91,7 +91,7 @@ class AbortOnUnresponsivePerformer : public Observer {
       return;
 
     ProvidedFileSystemInterface* const file_system =
-        service_->GetProvidedFileSystem(file_system_info.extension_id(),
+        service_->GetProvidedFileSystem(file_system_info.provider_id(),
                                         file_system_info.file_system_id());
     DCHECK(file_system);
     file_system->GetRequestManager()->SetTimeoutForTesting(base::TimeDelta());

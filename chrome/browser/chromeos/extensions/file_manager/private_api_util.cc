@@ -213,7 +213,7 @@ void VolumeToVolumeMetadata(
   volume_metadata->watchable = volume.watchable();
 
   if (volume.type() == VOLUME_TYPE_PROVIDED) {
-    volume_metadata->extension_id.reset(new std::string(volume.extension_id()));
+    volume_metadata->extension_id.reset(new std::string(volume.provider_id()));
     volume_metadata->file_system_id.reset(
         new std::string(volume.file_system_id()));
   }

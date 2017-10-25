@@ -34,8 +34,7 @@ Operation::Operation(extensions::EventRouter* event_router,
     : file_system_info_(file_system_info),
       dispatch_event_impl_(base::Bind(&DispatchEventImpl,
                                       event_router,
-                                      file_system_info_.extension_id())) {
-}
+                                      file_system_info_.provider_id())) {}
 
 Operation::~Operation() {
 }
