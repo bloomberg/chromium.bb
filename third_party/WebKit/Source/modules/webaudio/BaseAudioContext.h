@@ -338,6 +338,10 @@ class MODULES_EXPORT BaseAudioContext
   AudioWorkletMessagingProxy* WorkletMessagingProxy();
   bool HasWorkletMessagingProxy() const;
 
+  // TODO(crbug.com/764396): Remove this when fixed.
+  virtual void CountValueSetterConflict(bool does_conflict){};
+  virtual void RecordValueSetterStatistics(){};
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 

@@ -99,6 +99,15 @@ String DeprecatedWebAudioDezippering(const char* audio_param_name) {
       audio_param_name, milestoneString(M64));
 }
 
+String DeprecatedWebAudioValueSetterBehavior() {
+  return String::Format(
+      "AudioParam value setter will become equivalent to "
+      "AudioParam.setValueAtTime() in %s  "
+      "See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for "
+      "more details.",
+      milestoneString(M65));
+}
+
 }  // anonymous namespace
 
 namespace blink {
@@ -612,6 +621,9 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
       return DeprecatedWebAudioDezippering("BiquadFilterNode.Q");
     case WebFeature::kWebAudioDezipperBiquadFilterNodeGain:
       return DeprecatedWebAudioDezippering("BiquadFilterNode.gain");
+
+    case WebFeature::kWebAudioValueSetterIsSetValue:
+      return DeprecatedWebAudioValueSetterBehavior();
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
