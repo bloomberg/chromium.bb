@@ -260,6 +260,41 @@ executable("wayland_subsurface_client") {
   }
 }
 
+source_set("blur") {
+  sources = [
+    "clients/blur.cc",
+    "clients/blur.h",
+  ]
+
+  deps = [
+    ":client_support",
+    "//base",
+    "//skia",
+    "//third_party/wayland:wayland_client",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (ozone_platform_gbm) {
+    configs += [
+      ":libdrm",
+      "//ui/gl:gl_config",
+    ]
+  }
+}
+
+executable("wayland_blur_client") {
+  sources = [
+    "clients/blur_main.cc",
+  ]
+  deps = [
+    ":blur",
+    ":client_support",
+    "//base",
+    "//build/config:exe_and_shlib_deps",
+  ]
+}
+
 test("wayland_client_perftests") {
   sources = [
     "../../../ash/test/ash_test_suite.cc",
@@ -271,6 +306,7 @@ test("wayland_client_perftests") {
   ]
 
   deps = [
+    ":blur",
     ":client_support",
     ":simple",
     ":wayland",
