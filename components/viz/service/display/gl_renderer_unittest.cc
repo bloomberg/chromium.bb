@@ -2275,58 +2275,61 @@ class GLRendererPartialSwapTest : public GLRendererTest {
     renderer.SetVisible(true);
 
     gfx::Size viewport_size(100, 100);
+    gfx::Rect root_pass_output_rect(80, 80);
+    gfx::Rect root_pass_damage_rect(2, 2, 3, 3);
 
     for (int i = 0; i < 2; ++i) {
       int root_pass_id = 1;
-      RenderPass* root_pass = cc::AddRenderPass(
-          &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-          gfx::Transform(), cc::FilterOperations());
-      cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
+      RenderPass* root_pass = cc::AddRenderPassWithDamage(
+          &render_passes_in_draw_order_, root_pass_id, root_pass_output_rect,
+          root_pass_damage_rect, gfx::Transform(), cc::FilterOperations());
+      cc::AddQuad(root_pass, gfx::Rect(root_pass_output_rect), SK_ColorGREEN);
 
-      testing::Sequence seq;
+      InSequence seq;
+
       // A bunch of initialization that happens.
-      EXPECT_CALL(*gl, Disable(GL_DEPTH_TEST)).InSequence(seq);
-      EXPECT_CALL(*gl, Disable(GL_CULL_FACE)).InSequence(seq);
-      EXPECT_CALL(*gl, Disable(GL_STENCIL_TEST)).InSequence(seq);
-      EXPECT_CALL(*gl, Enable(GL_BLEND)).InSequence(seq);
-      EXPECT_CALL(*gl, Disable(GL_SCISSOR_TEST)).InSequence(seq);
-      EXPECT_CALL(*gl, Scissor(0, 0, 0, 0)).InSequence(seq);
+      EXPECT_CALL(*gl, Disable(GL_DEPTH_TEST));
+      EXPECT_CALL(*gl, Disable(GL_CULL_FACE));
+      EXPECT_CALL(*gl, Disable(GL_STENCIL_TEST));
+      EXPECT_CALL(*gl, Enable(GL_BLEND));
+      EXPECT_CALL(*gl, Disable(GL_SCISSOR_TEST));
+      EXPECT_CALL(*gl, Scissor(0, 0, 0, 0));
 
       // Partial frame, we should use a scissor to swap only that part when
-      // partial swap is enabled.
-      root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
-      // With SetDrawRectangle the first frame will have its damage expanded
-      // to cover the entire output rect.
+      // partial swap is enabled. With SetDrawRectangle the first frame will
+      // have its damage expanded to cover the entire output rect.
+      bool draw_rectangle_needs_full_damage = set_draw_rectangle && (i == 0);
       bool frame_has_partial_damage =
-          partial_swap && (!set_draw_rectangle || (i > 0));
+          partial_swap && !draw_rectangle_needs_full_damage;
       gfx::Rect output_rectangle = frame_has_partial_damage
-                                       ? root_pass->damage_rect
+                                       ? root_pass_damage_rect
                                        : gfx::Rect(viewport_size);
 
       if (partial_swap || set_draw_rectangle) {
-        EXPECT_CALL(*gl, Enable(GL_SCISSOR_TEST)).InSequence(seq);
+        EXPECT_CALL(*gl, Enable(GL_SCISSOR_TEST));
         // The scissor is flipped, so subtract the y coord and height from the
         // bottom of the GL viewport.
         EXPECT_CALL(
             *gl, Scissor(output_rectangle.x(),
                          viewport_size.height() - output_rectangle.y() -
                              output_rectangle.height(),
-                         output_rectangle.width(), output_rectangle.height()))
-            .InSequence(seq);
+                         output_rectangle.width(), output_rectangle.height()));
       }
 
       // The quad doesn't need blending.
-      EXPECT_CALL(*gl, Disable(GL_BLEND)).InSequence(seq);
+      EXPECT_CALL(*gl, Disable(GL_BLEND));
 
       // Blending is disabled at the end of the frame.
-      EXPECT_CALL(*gl, Disable(GL_BLEND)).InSequence(seq);
+      EXPECT_CALL(*gl, Disable(GL_BLEND));
 
       renderer.DecideRenderPassAllocationsForFrame(
           render_passes_in_draw_order_);
       DrawFrame(&renderer, viewport_size);
+
       if (set_draw_rectangle) {
         EXPECT_EQ(output_rectangle, output_surface->last_set_draw_rectangle());
       }
+
       Mock::VerifyAndClearExpectations(gl);
     }
   }
