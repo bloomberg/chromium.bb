@@ -59,7 +59,7 @@ static v8::Local<v8::Value> DeserializeIDBValueData(v8::Isolate*,
 static v8::Local<v8::Value> DeserializeIDBValueArray(
     v8::Isolate*,
     v8::Local<v8::Object> creation_context,
-    const Vector<RefPtr<IDBValue>>*);
+    const Vector<scoped_refptr<IDBValue>>*);
 
 v8::Local<v8::Value> ToV8(const IDBKeyPath& value,
                           v8::Local<v8::Object> creation_context,
@@ -389,7 +389,7 @@ static v8::Local<v8::Value> DeserializeIDBValueData(v8::Isolate* isolate,
   if (!value || value->IsNull())
     return v8::Null(isolate);
 
-  RefPtr<SerializedScriptValue> serialized_value =
+  scoped_refptr<SerializedScriptValue> serialized_value =
       value->CreateSerializedValue();
   SerializedScriptValue::DeserializeOptions options;
   options.blob_info = value->BlobInfo();
@@ -438,7 +438,7 @@ v8::Local<v8::Value> DeserializeIDBValue(v8::Isolate* isolate,
 static v8::Local<v8::Value> DeserializeIDBValueArray(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,
-    const Vector<RefPtr<IDBValue>>* values) {
+    const Vector<scoped_refptr<IDBValue>>* values) {
   DCHECK(isolate->InContext());
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();

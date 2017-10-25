@@ -19,14 +19,14 @@ class SerializedScriptValueForModulesFactory final
   SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() {}
 
  protected:
-  RefPtr<SerializedScriptValue> Create(
+  scoped_refptr<SerializedScriptValue> Create(
       v8::Isolate*,
       v8::Local<v8::Value>,
       const SerializedScriptValue::SerializeOptions&,
       ExceptionState&) override;
 
   v8::Local<v8::Value> Deserialize(
-      RefPtr<SerializedScriptValue>,
+      scoped_refptr<SerializedScriptValue>,
       v8::Isolate*,
       const SerializedScriptValue::DeserializeOptions&) override;
 

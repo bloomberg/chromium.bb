@@ -90,7 +90,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                                                 v8::Isolate*,
                                                 ExceptionState&);
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Object> constructor_;
   TraceWrapperV8Reference<v8::Function> connected_callback_;
   TraceWrapperV8Reference<v8::Function> disconnected_callback_;

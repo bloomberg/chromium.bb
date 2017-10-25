@@ -62,7 +62,7 @@ v8::Local<v8::Value> ScriptValue::V8ValueFor(
 
   DCHECK(isolate->InContext());
   v8::Local<v8::Value> value = value_->NewLocal(isolate);
-  RefPtr<SerializedScriptValue> serialized =
+  scoped_refptr<SerializedScriptValue> serialized =
       SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
   return serialized->Deserialize(isolate);
 }

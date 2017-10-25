@@ -155,7 +155,7 @@ class ScriptPromisePropertyTestBase {
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
-  RefPtr<ScriptState> other_script_state_;
+  scoped_refptr<ScriptState> other_script_state_;
 };
 
 // This is the main test class.

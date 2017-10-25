@@ -83,7 +83,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   v8::TryCatch try_catch(isolate);
 
   // Deserialize.
-  RefPtr<SerializedScriptValue> serialized_script_value =
+  scoped_refptr<SerializedScriptValue> serialized_script_value =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data), size);
   serialized_script_value->Deserialize(isolate, options);
   CHECK(!try_catch.HasCaught())

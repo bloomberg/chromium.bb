@@ -97,7 +97,7 @@ class ScriptStreamingTest : public ::testing::Test {
     testing::RunPendingTasks();
   }
 
-  RefPtr<WebTaskRunner> loading_task_runner_;
+  scoped_refptr<WebTaskRunner> loading_task_runner_;
   std::unique_ptr<Settings> settings_;
   // The Resource and PendingScript where we stream from. These don't really
   // fetch any data outside the test; the test controls the data by calling

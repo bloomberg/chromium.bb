@@ -335,7 +335,7 @@ void ScriptController::ExecuteScriptInIsolatedWorld(
     Vector<v8::Local<v8::Value>>* results) {
   DCHECK_GT(world_id, 0);
 
-  RefPtr<DOMWrapperWorld> world =
+  scoped_refptr<DOMWrapperWorld> world =
       DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), world_id);
   LocalWindowProxy* isolated_world_window_proxy = WindowProxy(*world);
   // TODO(dcheng): Context must always be initialized here, due to the call to
@@ -369,9 +369,9 @@ void ScriptController::ExecuteScriptInIsolatedWorld(
   }
 }
 
-RefPtr<DOMWrapperWorld> ScriptController::CreateNewInspectorIsolatedWorld(
-    const String& world_name) {
-  RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::Create(
+scoped_refptr<DOMWrapperWorld>
+ScriptController::CreateNewInspectorIsolatedWorld(const String& world_name) {
+  scoped_refptr<DOMWrapperWorld> world = DOMWrapperWorld::Create(
       GetIsolate(), DOMWrapperWorld::WorldType::kInspectorIsolated);
   // Bail out if we could not create an isolated world.
   if (!world)

@@ -145,7 +145,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
   // true if the listener is created through a DOM attribute.
   bool is_attribute_;
 
-  RefPtr<DOMWrapperWorld> world_;
+  scoped_refptr<DOMWrapperWorld> world_;
   v8::Isolate* isolate_;
 
   // nullptr unless this listener belongs to a worker.

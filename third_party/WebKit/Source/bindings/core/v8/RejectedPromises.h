@@ -25,7 +25,7 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
   USING_FAST_MALLOC(RejectedPromises);
 
  public:
-  static RefPtr<RejectedPromises> Create() {
+  static scoped_refptr<RejectedPromises> Create() {
     return WTF::AdoptRef(new RejectedPromises());
   }
 

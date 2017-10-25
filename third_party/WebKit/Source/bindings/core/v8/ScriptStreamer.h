@@ -46,7 +46,7 @@ class CORE_EXPORT ScriptStreamer final
                              Type,
                              Settings*,
                              ScriptState*,
-                             RefPtr<WebTaskRunner>);
+                             scoped_refptr<WebTaskRunner>);
 
   // Like StartStreaming, but assume that the resource has already been
   // fully loaded.
@@ -54,7 +54,7 @@ class CORE_EXPORT ScriptStreamer final
                                          Type,
                                          Settings*,
                                          ScriptState*,
-                                         RefPtr<WebTaskRunner>);
+                                         scoped_refptr<WebTaskRunner>);
 
   // Returns false if we cannot stream the given encoding.
   static bool ConvertEncoding(const char* encoding_name,
@@ -108,7 +108,7 @@ class CORE_EXPORT ScriptStreamer final
       Type script_type,
       ScriptState* script_state,
       v8::ScriptCompiler::CompileOptions compile_options,
-      RefPtr<WebTaskRunner> loading_task_runner) {
+      scoped_refptr<WebTaskRunner> loading_task_runner) {
     return new ScriptStreamer(script, script_type, script_state,
                               compile_options, std::move(loading_task_runner));
   }
@@ -116,7 +116,7 @@ class CORE_EXPORT ScriptStreamer final
                  Type,
                  ScriptState*,
                  v8::ScriptCompiler::CompileOptions,
-                 RefPtr<WebTaskRunner>);
+                 scoped_refptr<WebTaskRunner>);
 
   void StreamingComplete();
   void NotifyFinishedToClient();
@@ -125,7 +125,7 @@ class CORE_EXPORT ScriptStreamer final
                                      Type,
                                      Settings*,
                                      ScriptState*,
-                                     RefPtr<WebTaskRunner>);
+                                     scoped_refptr<WebTaskRunner>);
 
   Member<ClassicPendingScript> pending_script_;
   // This pointer is weak. If ClassicPendingScript and its Resource are deleted
@@ -151,7 +151,7 @@ class CORE_EXPORT ScriptStreamer final
   // What kind of cached data V8 produces during streaming.
   v8::ScriptCompiler::CompileOptions compile_options_;
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 
   // For recording metrics for different types of scripts separately.
   Type script_type_;
@@ -165,7 +165,7 @@ class CORE_EXPORT ScriptStreamer final
   // Encoding of the streamed script. Saved for sanity checking purposes.
   v8::ScriptCompiler::StreamedSource::Encoding encoding_;
 
-  RefPtr<WebTaskRunner> loading_task_runner_;
+  scoped_refptr<WebTaskRunner> loading_task_runner_;
 };
 
 }  // namespace blink

@@ -67,7 +67,7 @@
 
 namespace blink {
 
-RefPtr<SerializedScriptValue> SerializedScriptValue::Serialize(
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::Serialize(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     const SerializeOptions& options,
@@ -76,23 +76,23 @@ RefPtr<SerializedScriptValue> SerializedScriptValue::Serialize(
                                                          options, exception);
 }
 
-RefPtr<SerializedScriptValue>
+scoped_refptr<SerializedScriptValue>
 SerializedScriptValue::SerializeAndSwallowExceptions(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value) {
   DummyExceptionStateForTesting exception_state;
-  RefPtr<SerializedScriptValue> serialized =
+  scoped_refptr<SerializedScriptValue> serialized =
       Serialize(isolate, value, SerializeOptions(), exception_state);
   if (exception_state.HadException())
     return NullValue();
   return serialized;
 }
 
-RefPtr<SerializedScriptValue> SerializedScriptValue::Create() {
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create() {
   return WTF::AdoptRef(new SerializedScriptValue);
 }
 
-RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
     const String& data) {
   CheckedNumeric<size_t> data_buffer_size = data.length();
   data_buffer_size *= 2;
@@ -217,8 +217,9 @@ static void SwapWiredDataIfNeeded(uint8_t* buffer, size_t buffer_size) {
     uchars[i] = ntohs(uchars[i]);
 }
 
-RefPtr<SerializedScriptValue> SerializedScriptValue::Create(const char* data,
-                                                            size_t length) {
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
+    const char* data,
+    size_t length) {
   if (!data)
     return Create();
 
@@ -230,8 +231,8 @@ RefPtr<SerializedScriptValue> SerializedScriptValue::Create(const char* data,
       new SerializedScriptValue(std::move(data_buffer), length));
 }
 
-RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
-    RefPtr<const SharedBuffer> buffer) {
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
+    scoped_refptr<const SharedBuffer> buffer) {
   if (!buffer)
     return Create();
 
@@ -277,7 +278,7 @@ SerializedScriptValue::~SerializedScriptValue() {
   }
 }
 
-RefPtr<SerializedScriptValue> SerializedScriptValue::NullValue() {
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::NullValue() {
   // The format here may fall a bit out of date, because we support
   // deserializing SSVs written by old browser versions.
   static const uint8_t kNullData[] = {0xFF, 17, 0xFF, 13, '0', 0x00};
@@ -392,7 +393,7 @@ v8::Local<v8::Value> SerializedScriptValue::Deserialize(
 
 // static
 UnpackedSerializedScriptValue* SerializedScriptValue::Unpack(
-    RefPtr<SerializedScriptValue> value) {
+    scoped_refptr<SerializedScriptValue> value) {
   if (!value)
     return nullptr;
 #if DCHECK_IS_ON()

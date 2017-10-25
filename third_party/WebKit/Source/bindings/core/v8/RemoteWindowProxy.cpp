@@ -46,7 +46,7 @@ namespace blink {
 
 RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
                                      RemoteFrame& frame,
-                                     RefPtr<DOMWrapperWorld> world)
+                                     scoped_refptr<DOMWrapperWorld> world)
     : WindowProxy(isolate, frame, std::move(world)) {}
 
 void RemoteWindowProxy::DisposeContext(Lifecycle next_status,

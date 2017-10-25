@@ -14,7 +14,7 @@
 namespace blink {
 
 UnpackedSerializedScriptValue::UnpackedSerializedScriptValue(
-    RefPtr<SerializedScriptValue> value)
+    scoped_refptr<SerializedScriptValue> value)
     : value_(std::move(value)) {
   auto& array_buffer_contents = value_->array_buffer_contents_array_;
   if (!array_buffer_contents.IsEmpty()) {
@@ -35,7 +35,7 @@ UnpackedSerializedScriptValue::UnpackedSerializedScriptValue(
     image_bitmaps_.Grow(image_bitmap_contents.size());
     std::transform(image_bitmap_contents.begin(), image_bitmap_contents.end(),
                    image_bitmaps_.begin(),
-                   [](RefPtr<StaticBitmapImage>& contents) {
+                   [](scoped_refptr<StaticBitmapImage>& contents) {
                      return ImageBitmap::Create(std::move(contents));
                    });
     image_bitmap_contents.clear();

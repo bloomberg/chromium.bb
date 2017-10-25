@@ -184,7 +184,7 @@ namespace {
 
 static RejectedPromises& RejectedPromisesOnMainThread() {
   DCHECK(IsMainThread());
-  DEFINE_STATIC_LOCAL(RefPtr<RejectedPromises>, rejected_promises,
+  DEFINE_STATIC_LOCAL(scoped_refptr<RejectedPromises>, rejected_promises,
                       (RejectedPromises::Create()));
   return *rejected_promises;
 }

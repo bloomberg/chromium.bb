@@ -525,7 +525,7 @@ void LocalWindowProxy::UpdateSecurityOrigin(SecurityOrigin* origin) {
 
 LocalWindowProxy::LocalWindowProxy(v8::Isolate* isolate,
                                    LocalFrame& frame,
-                                   RefPtr<DOMWrapperWorld> world)
+                                   scoped_refptr<DOMWrapperWorld> world)
     : WindowProxy(isolate, frame, std::move(world)) {}
 
 }  // namespace blink

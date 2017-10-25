@@ -170,8 +170,8 @@ class CORE_EXPORT ScriptValue final {
   static ScriptValue CreateNull(ScriptState*);
 
  private:
-  RefPtr<ScriptState> script_state_;
-  RefPtr<SharedPersistent<v8::Value>> value_;
+  scoped_refptr<ScriptState> script_state_;
+  scoped_refptr<SharedPersistent<v8::Value>> value_;
 };
 
 template <>

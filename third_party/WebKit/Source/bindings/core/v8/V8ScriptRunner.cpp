@@ -181,7 +181,7 @@ v8::MaybeLocal<v8::Script> CompileWithoutOptions(
 // Compile a script, and consume a V8 cache that was generated previously.
 static v8::MaybeLocal<v8::Script> CompileAndConsumeCache(
     CachedMetadataHandler* cache_handler,
-    RefPtr<CachedMetadata> cached_metadata,
+    scoped_refptr<CachedMetadata> cached_metadata,
     v8::ScriptCompiler::CompileOptions consume_options,
     v8::Isolate* isolate,
     v8::Local<v8::String> code,
@@ -280,7 +280,7 @@ bool IsResourceHotForCaching(CachedMetadataHandler* cache_handler,
                              int hot_hours) {
   const double cache_within_seconds = hot_hours * 60 * 60;
   uint32_t tag = CacheTag(kCacheTagTimeStamp, cache_handler);
-  RefPtr<CachedMetadata> cached_metadata =
+  scoped_refptr<CachedMetadata> cached_metadata =
       cache_handler->GetCachedMetadata(tag);
   if (!cached_metadata)
     return false;
@@ -390,7 +390,7 @@ static CompileFn SelectCompileFunction(
     case kV8CacheOptionsParse: {
       // Use parser-cache; in-memory only.
       uint32_t parser_tag = CacheTag(kCacheTagParser, cache_handler);
-      RefPtr<CachedMetadata> parser_cache(
+      scoped_refptr<CachedMetadata> parser_cache(
           cache_handler ? cache_handler->GetCachedMetadata(parser_tag)
                         : nullptr);
       if (parser_cache) {
@@ -412,7 +412,7 @@ static CompileFn SelectCompileFunction(
     case kV8CacheOptionsAlways: {
       // Use code caching for recently seen resources.
       // Use compression depending on the cache option.
-      RefPtr<CachedMetadata> code_cache(
+      scoped_refptr<CachedMetadata> code_cache(
           cache_handler ? cache_handler->GetCachedMetadata(
                               CacheTag(kCacheTagCode, cache_handler))
                         : nullptr);

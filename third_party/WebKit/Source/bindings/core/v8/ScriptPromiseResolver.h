@@ -162,7 +162,7 @@ class CORE_EXPORT ScriptPromiseResolver
   void OnTimerFired(TimerBase*);
 
   ResolutionState state_;
-  const RefPtr<ScriptState> script_state_;
+  const scoped_refptr<ScriptState> script_state_;
   TaskRunnerTimer<ScriptPromiseResolver> timer_;
   Resolver resolver_;
   ScopedPersistent<v8::Value> value_;
