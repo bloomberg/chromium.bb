@@ -39,7 +39,6 @@
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/sandbox_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "media/media_features.h"
@@ -49,6 +48,7 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "services/service_manager/sandbox/sandbox.h"
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
@@ -615,10 +615,12 @@ bool ZygoteMain(
 
   const int sandbox_flags = linux_sandbox->GetStatus();
 
-  const bool setuid_sandbox_engaged = sandbox_flags & kSandboxLinuxSUID;
+  const bool setuid_sandbox_engaged =
+      sandbox_flags & service_manager::Sandbox::kSUID;
   CHECK_EQ(using_setuid_sandbox, setuid_sandbox_engaged);
 
-  const bool namespace_sandbox_engaged = sandbox_flags & kSandboxLinuxUserNS;
+  const bool namespace_sandbox_engaged =
+      sandbox_flags & service_manager::Sandbox::kUserNS;
   CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
 
   Zygote zygote(sandbox_flags, std::move(fork_delegates), extra_children,

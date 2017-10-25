@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "content/public/common/sandbox_linux.h"
+#include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \

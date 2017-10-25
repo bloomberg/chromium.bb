@@ -44,13 +44,13 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // Here, we test that the status of SeccompBpf in the renderer is consistent
   // with what SandboxLinux::GetStatus() said we would do.
   class SandboxLinux* linux_sandbox = SandboxLinux::GetInstance();
-  if (linux_sandbox->GetStatus() & kSandboxLinuxSeccompBPF) {
+  if (linux_sandbox->GetStatus() & service_manager::Sandbox::kSeccompBPF) {
     CHECK(linux_sandbox->seccomp_bpf_started());
   }
 
   // Under the setuid sandbox, we should not be able to open any file via the
   // filesystem.
-  if (linux_sandbox->GetStatus() & kSandboxLinuxSUID) {
+  if (linux_sandbox->GetStatus() & service_manager::Sandbox::kSUID) {
     CHECK(!base::PathExists(base::FilePath("/proc/cpuinfo")));
   }
 
