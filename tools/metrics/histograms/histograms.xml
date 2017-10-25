@@ -2769,12 +2769,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.DisplayColorManager.IccFileDownloaded"
+    enum="BooleanDownloaded">
+  <owner>mcasas@chromium.org</owner>
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    This boolean keeps track if an ICC file was downloaded correctly (if true)
+    or a local file was reused instead.
+  </summary>
+</histogram>
+
 <histogram name="Ash.DisplayColorManager.IccFileFound" enum="Boolean">
+  <obsolete>
+    Deprecated 10/2017, replaced by Ash.DisplayColorManager.IccFileDownloaded
+  </obsolete>
   <owner>mcasas@chromium.org</owner>
   <owner>dcastagna@chromium.org</owner>
   <summary>
     This boolean keeps track if a request for an ICC for a specific product id
     has been successful or not.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DisplayColorManager.ValidDisplayColorSpace" enum="Boolean">
+  <owner>mcasas@chromium.org</owner>
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    This boolean keeps track if a Display update (i.e. when connecting a new
+    one) carried valid ColorSpace information.
   </summary>
 </histogram>
 

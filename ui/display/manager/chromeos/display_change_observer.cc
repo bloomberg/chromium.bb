@@ -303,6 +303,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
       state->is_aspect_preserving_scaling());
   if (dpi)
     new_info.set_device_dpi(dpi);
+  new_info.set_color_space(state->color_space());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
