@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -15,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -35,9 +33,6 @@ import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -230,106 +225,5 @@ public class OfflinePageUtilsTest {
             }
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private List<OfflinePageItem> getAllPages() throws InterruptedException {
-        final Semaphore semaphore = new Semaphore(0);
-        final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
-                    @Override
-                    public void onResult(List<OfflinePageItem> allPages) {
-                        result.addAll(allPages);
-                        semaphore.release();
-                    }
-                });
-            }
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        return result;
-    }
-
-    @Test
-    @SmallTest
-    @RetryOnFailure
-    public void testCopyToShareableLocation() throws Exception {
-        // Save an offline page.
-        loadPageAndSave();
-
-        // Get an offline page from the list and obtain the file path.
-        List<OfflinePageItem> allPages = getAllPages();
-        OfflinePageItem offlinePage = allPages.get(0);
-        String offlinePageFilePath = offlinePage.getFilePath();
-
-        File offlinePageOriginal = new File(offlinePageFilePath);
-
-        // Clear the directory before copying the file.
-        clearSharedOfflineFilesAndWait();
-
-        File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(
-                mActivityTestRule.getActivity().getBaseContext());
-        Assert.assertTrue("Offline sharing directory should exist.", offlineSharingDir != null);
-
-        File offlinePageShareable = new File(offlineSharingDir, offlinePageOriginal.getName());
-        Assert.assertFalse(
-                "File with the same name should not exist.", offlinePageShareable.exists());
-
-        Assert.assertTrue("Should be able to copy file to shareable location.",
-                OfflinePageUtils.copyToShareableLocation(
-                        offlinePageOriginal, offlinePageShareable));
-
-        Assert.assertEquals("File copy result incorrect", offlinePageOriginal.length(),
-                offlinePageShareable.length());
-    }
-
-    @Test
-    @SmallTest
-    public void testDeleteSharedOfflineFiles() throws Exception {
-        // Save an offline page.
-        loadPageAndSave();
-
-        // Copies file to external cache directory.
-        List<OfflinePageItem> allPages = getAllPages();
-        OfflinePageItem offlinePage = allPages.get(0);
-        String offlinePageFilePath = offlinePage.getFilePath();
-
-        File offlinePageOriginal = new File(offlinePageFilePath);
-
-        final Context context = mActivityTestRule.getActivity().getBaseContext();
-        final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
-
-        Assert.assertTrue("Should be able to create subdirectory in shareable directory.",
-                (offlineSharingDir != null));
-
-        File offlinePageShareable = new File(offlineSharingDir, offlinePageOriginal.getName());
-        if (!offlinePageShareable.exists()) {
-            Assert.assertTrue("Should be able to copy file to shareable location.",
-                    OfflinePageUtils.copyToShareableLocation(
-                            offlinePageOriginal, offlinePageShareable));
-        }
-
-        // Clear files.
-        clearSharedOfflineFilesAndWait();
-    }
-
-    private void clearSharedOfflineFilesAndWait() {
-        final Context context = mActivityTestRule.getActivity().getBaseContext();
-        final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                OfflinePageUtils.clearSharedOfflineFiles(context);
-            }
-        });
-
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed while waiting for file operation to complete.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !offlineSharingDir.exists();
-                    }
-                });
     }
 }
