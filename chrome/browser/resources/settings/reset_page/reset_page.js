@@ -37,6 +37,16 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    // <if expr="is_win">
+    /** @private */
+    userInitiatedCleanupsEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('userInitiatedCleanupsEnabled');
+      },
+    },
+    // </if>
   },
 
   /**
@@ -78,4 +88,11 @@ Polymer({
     cr.ui.focusWithoutInk(assert(this.$.powerwashArrow));
   },
   // </if>
+
+  // <if expr="is_win">
+  onChromeCleanupTap_: function() {
+    settings.navigateTo(settings.routes.CHROME_CLEANUP);
+  },
+  // </if>
+
 });
