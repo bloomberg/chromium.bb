@@ -1,6 +1,5 @@
 Tests that source map is not detached on edits. crbug.com/257778
 
-container.
 
 Running: editProperty
 [expanded] 

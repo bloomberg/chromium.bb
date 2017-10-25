@@ -1,26 +1,34 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<style>
-#first {
-    color: blue;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#second {
-    line-height: 1em;
-    border: 1px solid black;
-}
+(async function() {
+  TestRunner.addResult(`Tests that styles sidebar pane does not leak any LiveLocations.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #first {
+          color: blue;
+      }
 
-#third {
-    margin: 1px 1px 0 0;
-    padding: 10px;
-    background-color: blue;
-    border: 1px solid black;
-}
-</style>
-<script>
-function test() {
+      #second {
+          line-height: 1em;
+          border: 1px solid black;
+      }
+
+      #third {
+          margin: 1px 1px 0 0;
+          padding: 10px;
+          background-color: blue;
+          border: 1px solid black;
+      }
+      </style>
+      <div id="first">First element to select</div>
+      <div id="second">Second element to select</div>
+      <div id="third">Second element to select</div>
+    `);
+
   var initialLiveLocationsCount;
   TestRunner.runTestSuite([
     function selectInitialNode(next) {
@@ -63,19 +71,4 @@ function test() {
       locationsCount += modelInfo._locations.valuesArray().length;
     return locationsCount;
   }
-}
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-
-<p>
-Tests that styles sidebar pane does not leak any LiveLocations.
-</p>
-<div id="first">First element to select</div>
-<div id="second">Second element to select</div>
-<div id="third">Second element to select</div>
-</body>
-</html>
+})();

@@ -1,8 +1,5 @@
 Tests that styles sidebar pane does not leak any LiveLocations.
 
-First element to select
-Second element to select
-Second element to select
 
 Running: selectInitialNode
 

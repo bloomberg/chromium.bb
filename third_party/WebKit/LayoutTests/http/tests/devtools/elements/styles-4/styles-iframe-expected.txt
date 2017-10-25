@@ -1,13 +1,11 @@
-CONSOLE MESSAGE: line 9: iframe loaded
 Tests that proper (and different) styles are returned for body elements of main document and iframe.
-
 
 Main frame style:
 [expanded] 
 element.style { ()
 
 [expanded] 
-#main { (styles-iframe.html:2 -> styles-iframe.html:2:10)
+#main { (styles-iframe.js:2 -> styles-iframe.js:2:16)
     background: blue;
 
 [expanded] 

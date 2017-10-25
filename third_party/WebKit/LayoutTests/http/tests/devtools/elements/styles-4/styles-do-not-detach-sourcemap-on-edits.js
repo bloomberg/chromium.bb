@@ -1,13 +1,18 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" href="./resources/styles-do-not-detach-sourcemap-on-edits.css">
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/inspector-test.js"></script>
-<script>
+(async function() {
+  TestRunner.addResult(`Tests that source map is not detached on edits. crbug.com/257778\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="container">container.</div>
+    `);
+  await TestRunner.addStylesheetTag('./resources/styles-do-not-detach-sourcemap-on-edits.css');
 
-function test() {
   SourcesTestRunner.waitForScriptSource('styles-do-not-detach-sourcemap-on-edits.scss', onSourceMapLoaded);
 
   function onSourceMapLoaded() {
@@ -66,17 +71,4 @@ function test() {
       next();
     },
   ];
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that source map is not detached on edits. crbug.com/257778
-</p>
-
-<div id="container">container.</div>
-
-</body>
-</html>
+})();

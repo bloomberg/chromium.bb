@@ -22,12 +22,12 @@ div { (user agent stylesheet)
 
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (styles-keyframes.html:10 -> styles-keyframes.html:10:5)
+0%, 20% { (<style>…</style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-100% { (styles-keyframes.html:14 -> styles-keyframes.html:14:5)
+100% { (<style>…</style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -74,12 +74,12 @@ div { (user agent stylesheet)
 
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (styles-keyframes.html:10 -> styles-keyframes.html:10:5)
+0%, 20% { (<style>…</style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-1% { (styles-keyframes.html:14 -> styles-keyframes.html:14:5)
+1% { (<style>…</style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -126,12 +126,12 @@ div { (user agent stylesheet)
 
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (styles-keyframes.html:10 -> styles-keyframes.html:10:5)
+0%, 20% { (<style>…</style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-100% { (styles-keyframes.html:14 -> styles-keyframes.html:14:5)
+100% { (<style>…</style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -178,12 +178,12 @@ div { (user agent stylesheet)
 
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (styles-keyframes.html:10 -> styles-keyframes.html:10:5)
+0%, 20% { (<style>…</style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-1% { (styles-keyframes.html:14 -> styles-keyframes.html:14:5)
+1% { (<style>…</style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -230,12 +230,12 @@ div { (user agent stylesheet)
 
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (styles-keyframes.html:10 -> styles-keyframes.html:10:5)
+0%, 20% { (<style>…</style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-1% { (styles-keyframes.html:14 -> styles-keyframes.html:14:5)
+1% { (<style>…</style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========

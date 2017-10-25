@@ -1,23 +1,27 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" href="../styles/resources/keyframes.css">
+(async function() {
+  TestRunner.addResult(`Tests that keyframes are shown in styles pane.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      @keyframes animName {
+          from, 20% {
+              margin-left: 200px;
+              color: red;
+          }
+          to {
+              margin-left: 500px;
+          }
+      }
+      </style>
+      <div id="element"></div>
+    `);
+  await TestRunner.addStylesheetTag('../styles/resources/keyframes.css');
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<style>
-@keyframes animName {
-    from, 20% {
-        margin-left: 200px;
-        color: red;
-    }
-    to {
-        margin-left: 500px;
-    }
-}
-</style>
-<script>
-function test() {
   ElementsTestRunner.selectNodeAndWaitForStyles('element', step1);
 
   function step1() {
@@ -60,15 +64,4 @@ function test() {
     ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<div id="element"></div>
-<p>
-Tests that keyframes are shown in styles pane.
-</p>
-
-</body>
-</html>
+})();

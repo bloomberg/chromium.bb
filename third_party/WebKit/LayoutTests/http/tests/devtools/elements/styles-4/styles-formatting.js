@@ -1,11 +1,29 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+(async function() {
+  TestRunner.addResult(
+      `Tests that InspectorCSSAgent formats the CSS style text based on the CSS model modifications.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
 
-function test() {
+      #formatted {
+          /* leading comment */
+          color: red;   /* comment1 */
+          zoom: 1;/* comment2 */ /* like: property */
+          padding: 0
+      }
+
+      #unformatted {/*leading comment*/color:red;zoom:1;padding:0;}
+
+      </style>
+      <div id="formatted">Formatted</div>
+      <div id="unformatted">Unformatted</div>
+    `);
+
   var formattedStyle;
   var unformattedStyle;
 
@@ -215,28 +233,4 @@ function test() {
     TestRunner.addResult('raw cssText:');
     TestRunner.addResult('{' + style.cssText + '}');
   }
-}
-</script>
-
-<style>
-
-#formatted {
-    /* leading comment */
-    color: red;   /* comment1 */
-    zoom: 1;/* comment2 */ /* like: property */
-    padding: 0
-}
-
-#unformatted {/*leading comment*/color:red;zoom:1;padding:0;}
-
-</style>
-</head>
-
-<body id="mainBody" onload="runTest()">
-<p>
-Tests that InspectorCSSAgent formats the CSS style text based on the CSS model modifications.
-</p>
-<div id="formatted">Formatted</div>
-<div id="unformatted">Unformatted</div>
-</body>
-</html>
+})();

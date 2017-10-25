@@ -1,6 +1,5 @@
 Tests that links are updated properly after disabling property.
 
-Red text here.
 
 Running: selectInitialNode
 

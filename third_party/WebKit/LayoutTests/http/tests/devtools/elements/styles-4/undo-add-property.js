@@ -1,17 +1,21 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style>
-.container {
-  font-weight: bold
-}
-</style>
+(async function() {
+  TestRunner.addResult(`Tests that adding a property is undone properly.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      .container {
+        font-weight: bold
+      }
+      </style>
+      <div id="container" class="container"></div>
+      <div id="other" class="container"></div>
+    `);
 
-<script>
-
-function test() {
   ElementsTestRunner.selectNodeAndWaitForStyles('container', testAppendProperty);
 
   function testAppendProperty() {
@@ -26,7 +30,7 @@ function test() {
 
   function testInsertMiddle() {
     TestRunner.addResult('=== Middle property ===');
-    testAddProperty('margin-right: 1px', 1, TestRunner.completeTest.bind(InspectorTest));
+    testAddProperty('margin-right: 1px', 1, TestRunner.completeTest.bind(TestRunner));
   }
 
   function testAddProperty(propertyText, index, callback) {
@@ -60,17 +64,4 @@ function test() {
       callback();
     }
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that adding a property is undone properly.
-</p>
-
-<div id="container" class="container"></div>
-<div id="other" class="container"></div>
-
-</body>
-</html>
+})();
