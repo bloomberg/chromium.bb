@@ -713,6 +713,11 @@ class BASE_EXPORT ThreadActivityTracker {
   // Gets the base memory address used for storing data.
   const void* GetBaseAddress();
 
+  // Access the "data unchanged" flag so tests can determine if an activity
+  // was pushed and popped in a single call.
+  void ClearDataChangedForTesting();
+  bool WasDataChangedForTesting();
+
   // Explicitly sets the process ID.
   void SetOwningProcessIdForTesting(int64_t pid, int64_t stamp);
 
