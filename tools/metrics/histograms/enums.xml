@@ -2865,6 +2865,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="1+"/>
 </enum>
 
+<enum name="BeforeUnloadDialogResult">
+  <int value="0" label="No dialog: no string returned"/>
+  <int value="1" label="No dialog: blocked, no user gesture"/>
+  <int value="2" label="No dialog: blocked, multiple confirmation panels"/>
+  <int value="3" label="Show dialog"/>
+</enum>
+
 <enum name="BiquadFilterType">
   <int value="0" label="lowpass"/>
   <int value="1" label="highpass"/>
