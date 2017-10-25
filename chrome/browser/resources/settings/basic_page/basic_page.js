@@ -29,13 +29,15 @@ Polymer({
     /** @type {!AndroidAppsInfo|undefined} */
     androidAppsInfo: Object,
 
+    // <if expr="is_win">
     showChromeCleanup: {
       type: Boolean,
       value: function() {
-        return loadTimeData.valueExists('chromeCleanupEnabled') &&
-            loadTimeData.getBoolean('chromeCleanupEnabled');
+        return loadTimeData.getBoolean('chromeCleanupEnabled') &&
+            !loadTimeData.getBoolean('userInitiatedCleanupsEnabled');
       },
     },
+    // </if>
 
     showChangePassword: {
       type: Boolean,
@@ -111,9 +113,11 @@ Polymer({
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
 
+    // <if expr="is_win">
     this.addEventListener('chrome-cleanup-dismissed', e => {
       this.showChromeCleanup = false;
     });
+    // </if>
 
     this.addEventListener('change-password-dismissed', e => {
       this.showChangePassword = false;

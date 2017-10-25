@@ -60,6 +60,9 @@ extern const base::Feature kInBrowserCleanerUIFeature;
 // Settings page is not the current active tab.
 extern const base::Feature kRebootPromptDialogFeature;
 
+// When enabled, users can initiate cleanups from the Settings page.
+extern const base::Feature kUserInitiatedChromeCleanupsFeature;
+
 extern const char kSRTPromptTrial[];
 
 // Returns true if this Chrome is in a field trial group which shows the SRT
@@ -69,6 +72,9 @@ bool IsInSRTPromptFieldTrialGroups();
 // Returns true if this Chrome is in a field trial group which doesn't need an
 // elevation icon, i.e., the SRT won't ask for elevation on startup.
 bool SRTPromptNeedsElevationIcon();
+
+// Returns true if feature kUserInitiatedChromeCleanupsFeature is enabled.
+bool UserInitiatedCleanupsEnabled();
 
 // Returns true if this Chrome is in a field trial group which enables running
 // the SwReporter.

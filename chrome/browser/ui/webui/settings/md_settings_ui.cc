@@ -191,13 +191,17 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
 
 #if defined(OS_WIN)
+  bool chromeCleanupEnabled = false;
+  bool userInitiatedCleanupsEnabled = false;
+
   if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
     AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>(profile));
 
     safe_browsing::ChromeCleanerController* cleaner_controller =
         safe_browsing::ChromeCleanerController::GetInstance();
-    if (cleaner_controller->ShouldShowCleanupInSettingsUI())
-      html_source->AddBoolean("chromeCleanupEnabled", true);
+    chromeCleanupEnabled = cleaner_controller->ShouldShowCleanupInSettingsUI();
+    userInitiatedCleanupsEnabled =
+        safe_browsing::UserInitiatedCleanupsEnabled();
 
 #if defined(GOOGLE_CHROME_BUILD)
     if (cleaner_controller->IsPoweredByPartner())
@@ -210,6 +214,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
   }
+
+  html_source->AddBoolean("chromeCleanupEnabled", chromeCleanupEnabled);
+  // Don't need to save this variable in UpdateCleanupDataSource() because it
+  // should never change while Chrome is open.
+  html_source->AddBoolean("userInitiatedCleanupsEnabled",
+                          userInitiatedCleanupsEnabled);
+
 #endif  // defined(OS_WIN)
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
