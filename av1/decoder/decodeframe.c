@@ -436,7 +436,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
   return eob;
 }
-#endif  // CONFIG_SUPER_TX
+#endif  // CONFIG_COEF_INTERLEAVE || (!CONFIG_EXT_TX && CONFIG_RECT_TX)
 
 static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
