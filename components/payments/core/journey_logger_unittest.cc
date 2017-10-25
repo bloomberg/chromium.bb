@@ -944,8 +944,6 @@ TEST(JourneyLoggerTest,
 
   // Simulate that the user aborts after being shown the Payment Request and
   // clicking pay.
-  logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 1,
-                                     /*has_complete_suggestion=*/true);
   logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
   logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
@@ -974,7 +972,6 @@ TEST(JourneyLoggerTest,
                 JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
                 JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
                 JourneyLogger::EVENT_USER_ABORTED |
-                JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
                 JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
             step_metric->value);
 }
@@ -999,8 +996,6 @@ TEST(JourneyLoggerTest,
       /*requested_method_other=*/false);
 
   // Simulate that the user aborts after being shown the Payment Request.
-  logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 1,
-                                     /*has_complete_suggestion=*/true);
   logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   logger.SetCompleted();
 
@@ -1026,7 +1021,6 @@ TEST(JourneyLoggerTest,
                 JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
                 JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
                 JourneyLogger::EVENT_COMPLETED |
-                JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
                 JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
             step_metric->value);
 }
