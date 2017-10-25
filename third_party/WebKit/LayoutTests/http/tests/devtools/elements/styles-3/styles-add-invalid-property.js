@@ -1,10 +1,16 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that adding an invalid property retains its syntax.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected" style="font-size: 12px">Text</div>
+      <div id="other"></div>
+    `);
+
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
   var treeElement;
@@ -47,18 +53,4 @@ function test() {
     ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that adding an invalid property retains its syntax.
-</p>
-
-<div id="inspected" style="font-size: 12px">Text</div>
-<div id="other"></div>
-
-</body>
-</html>
+})();

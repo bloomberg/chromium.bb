@@ -1,6 +1,5 @@
 Tests that adding a new rule works after switching nodes.
 
-Text
 After adding new rule (inspected):
 [expanded] 
 element.style { ()

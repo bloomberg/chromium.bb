@@ -1,32 +1,44 @@
-<html>
-<head>
-<style>
-body {
-    --a: red;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#id1 {
-    --b: 44px;
-}
+(async function() {
+  TestRunner.addResult(`Tests that computed styles expand and allow tracing to style rules.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      body {
+          --a: red;
+      }
 
-#id2 {
-    --a: green;
-}
+      #id1 {
+          --b: 44px;
+      }
 
-#id3 {
-    --a: inherit;
-}
+      #id2 {
+          --a: green;
+      }
 
-#id4 {
-    --a: var(--z);
-}
+      #id3 {
+          --a: inherit;
+      }
 
-</style>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+      #id4 {
+          --a: var(--z);
+      }
 
-function test() {
+      </style>
+      <div id="id1">
+      <div id="id2">
+      <div id="id3">
+      </div>
+      </div>
+      </div>
+      <div id="id4">
+      </div>
+    `);
+
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('id1', step1);
   function step1(node) {
     TestRunner.addResult('==== Computed style for ID1 ====');
@@ -63,23 +75,4 @@ function test() {
       TestRunner.completeTest();
     });
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that computed styles expand and allow tracing to style rules.
-</p>
-
-<div id="id1">
-<div id="id2">
-<div id="id3">
-</div>
-</div>
-</div>
-<div id="id4">
-</div>
-
-</body>
-</html>
+})();

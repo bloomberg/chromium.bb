@@ -1,6 +1,5 @@
 Tests that adding new rule in the stylesheet end works as expected.
 
-Styled element
 [expanded] 
 element.style { ()
 

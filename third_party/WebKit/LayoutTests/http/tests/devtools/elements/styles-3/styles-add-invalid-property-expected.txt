@@ -1,6 +1,5 @@
 Tests that adding an invalid property retains its syntax.
 
-Text
 Before append:
 [expanded] 
 element.style { ()

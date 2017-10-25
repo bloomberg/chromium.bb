@@ -7,7 +7,7 @@ display: block;
 element.style { ()
 
 [expanded] 
-#id1 { (styles-variables.html:8 -> styles-variables.html:8:7)
+#id1 { (<style>…</style>)
     --b: 44px;
 
 [expanded] 
@@ -16,7 +16,7 @@ div { (user agent stylesheet)
 
 ======== Inherited from body ========
 [expanded] 
-body { (styles-variables.html:4 -> styles-variables.html:4:7)
+body { (<style>…</style>)
     --a: red;
 
 value of --a:  red
@@ -27,7 +27,7 @@ display: block;
 element.style { ()
 
 [expanded] 
-#id2 { (styles-variables.html:12 -> styles-variables.html:12:7)
+#id2 { (<style>…</style>)
     --a: green;
 
 [expanded] 
@@ -36,12 +36,12 @@ div { (user agent stylesheet)
 
 ======== Inherited from div#id1 ========
 [expanded] 
-#id1 { (styles-variables.html:8 -> styles-variables.html:8:7)
+#id1 { (<style>…</style>)
     --b: 44px;
 
 ======== Inherited from body ========
 [expanded] 
-body { (styles-variables.html:4 -> styles-variables.html:4:7)
+body { (<style>…</style>)
 /-- overloaded --/     --a: red;
 
 value of --b:  44px
@@ -52,7 +52,7 @@ display: block;
 element.style { ()
 
 [expanded] 
-#id3 { (styles-variables.html:16 -> styles-variables.html:16:7)
+#id3 { (<style>…</style>)
     --a: inherit;
 
 [expanded] 
@@ -61,17 +61,17 @@ div { (user agent stylesheet)
 
 ======== Inherited from div#id2 ========
 [expanded] 
-#id2 { (styles-variables.html:12 -> styles-variables.html:12:7)
+#id2 { (<style>…</style>)
 /-- overloaded --/     --a: green;
 
 ======== Inherited from div#id1 ========
 [expanded] 
-#id1 { (styles-variables.html:8 -> styles-variables.html:8:7)
+#id1 { (<style>…</style>)
     --b: 44px;
 
 ======== Inherited from body ========
 [expanded] 
-body { (styles-variables.html:4 -> styles-variables.html:4:7)
+body { (<style>…</style>)
 /-- overloaded --/     --a: red;
 
 value of --b:  44px
@@ -82,7 +82,7 @@ display: block;
 element.style { ()
 
 [expanded] 
-#id4 { (styles-variables.html:20 -> styles-variables.html:20:7)
+#id4 { (<style>…</style>)
     --a: var(--z);
 
 [expanded] 
@@ -91,7 +91,7 @@ div { (user agent stylesheet)
 
 ======== Inherited from body ========
 [expanded] 
-body { (styles-variables.html:4 -> styles-variables.html:4:7)
+body { (<style>…</style>)
 /-- overloaded --/     --a: red;
 
 value of --a: undefined

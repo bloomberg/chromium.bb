@@ -1,6 +1,5 @@
 Tests that WebInspector.CSSStyleSheet methods work as expected.
 
-Inspect Me
 h1: [user-agent] {
     ['display':'block'] @[undefined-undefined] 
     ['font-size':'2em'] @[undefined-undefined] 
@@ -10,8 +9,8 @@ h1: [user-agent] {
     ['-webkit-margin-end':'0px'] @[undefined-undefined] 
     ['font-weight':'bold'] @[undefined-undefined] 
 }
-html #inspected.bar, b: [regular, 2:25-3:25; 4:10-5:10] {
-    ['text-decoration':'none'] @[6:4-6:26] 
+html #inspected.bar, b: [regular, 2:31-3:31; 4:16-5:16] {
+    ['text-decoration':'none'] @[6:10-6:32] 
     ['text-decoration-line':'none'] @[undefined-undefined] 
     ['text-decoration-style':'initial'] @[undefined-undefined] 
     ['text-decoration-color':'initial'] @[undefined-undefined] 
