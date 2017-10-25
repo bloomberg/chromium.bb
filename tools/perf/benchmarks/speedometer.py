@@ -73,7 +73,7 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
         tab.EvaluateJavaScript('benchmarkClient._timeValues'),
         important=True))
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
-        page, 'Runs/Minute', 'score',
+        page, 'RunsPerMinute', 'score',
         tab.EvaluateJavaScript(
             '[parseFloat(document.getElementById("result-number").innerText)];'
         ),
