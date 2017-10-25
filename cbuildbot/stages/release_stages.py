@@ -466,26 +466,34 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         if not self.skip_testing:
           suite_name, archive_board, archive_build, finished_uri = testdata
 
-          models = []
           # For unified builds, only test against the specified models.
           if self._run.config.models:
+            models = []
             for model in self._run.config.models:
               # 'au' is a test suite generated in ge_build_config.json
               if model.test_suites and 'au' in model.test_suites:
                 models.append(model.name)
-          else:
-            models.append(archive_board)
 
-          if len(models) > 1:
-            parallel.RunParallelSteps(
-                [lambda: self._RunPaygenTestStage(
-                    suite_name, model, archive_build, finished_uri)
-                 for model in models])
-          elif len(models) == 1:
+            if len(models) > 1:
+              parallel.RunParallelSteps(
+                  [lambda: self._RunPaygenTestStage(
+                      suite_name,
+                      archive_board,
+                      model,
+                      archive_build,
+                      finished_uri)
+                   for model in models])
+            elif len(models) == 1:
+              PaygenTestStage(
+                  self._run, suite_name, archive_board, models[0], self.channel,
+                  archive_build, finished_uri, self.skip_duts_check,
+                  self.debug).Run()
+          else:
             PaygenTestStage(
-                self._run, suite_name, models[0], self.channel,
+                self._run, suite_name, archive_board, None, self.channel,
                 archive_build, finished_uri, self.skip_duts_check,
                 self.debug).Run()
+
 
 
       except (paygen_build_lib.BuildFinished,
@@ -499,11 +507,12 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
 
   def _RunPaygenTestStage(
-      self, suite_name, model, build, finished_uri):
+      self, suite_name, board, model, build, finished_uri):
     """Runs the PaygenTest stage"""
     PaygenTestStage(
         self._run,
         suite_name,
+        board,
         model,
         self.channel,
         build,
@@ -514,13 +523,14 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that schedules the payload tests."""
-  def __init__(self, builder_run, suite_name, model, channel, build,
+  def __init__(self, builder_run, suite_name, board, model, channel, build,
                finished_uri, skip_duts_check, debug, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchiveStage
       suite_name: See builder_run on ArchiveStage
+      board: Board that will be tested.
       model: Model that will be tested. ('reef', 'pyro', etc)
       channel: Channel of payloads to generate ('stable', 'beta', etc)
       build: Version of payloads to generate.
@@ -529,7 +539,16 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       debug: Boolean indicating if this is a test run or a real run.
     """
     self.suite_name = suite_name
+    self.board = board
     self.model = model
+
+    # This is a hack because boards in the lab for reef-uni aren't actually
+    # provisioned under reef-uni.
+    # This will be a problem for any boards that are migrated going forward.
+    # TODO(shapiroc): Add this config to GE and remove this hack
+    if model and board.endswith('-uni'):
+      self.board = model
+
     self.build = build
     self.finished_uri = finished_uri
     self.skip_duts_check = skip_duts_check
@@ -537,17 +556,22 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     # We don't need the '-channel'suffix.
     if channel.endswith('-channel'):
       channel = channel[0:-len('-channel')]
-    suffix = '%s [%s]' % (channel.capitalize(), model)
+    suffix = channel.capitalize()
+    if model:
+      suffix += ' [%s]' % model
 
     super(PaygenTestStage, self).__init__(
-        builder_run, model, suffix=suffix, **kwargs)
+        builder_run, board, suffix=suffix, **kwargs)
     self._drm = dryrun_lib.DryRunMgr(self.debug)
 
   def PerformStage(self):
     """Schedule the tests to run."""
     # Schedule the tests to run and wait for the results.
-    paygen_build_lib.ScheduleAutotestTests(self.suite_name, self.model,
-                                           self.build, self.skip_duts_check,
+    paygen_build_lib.ScheduleAutotestTests(self.suite_name,
+                                           self.board,
+                                           self.model,
+                                           self.build,
+                                           self.skip_duts_check,
                                            self.debug,
                                            job_keyvals=self.GetJobKeyvals())
 

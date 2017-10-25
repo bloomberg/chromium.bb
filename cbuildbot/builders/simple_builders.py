@@ -101,7 +101,8 @@ class SimpleBuilder(generic_builders.Builder):
                       "option in the builder config is set to True.")
       return
 
-    models = [config_lib.ModelTestConfig(board)]
+    # For non-uni builds, we don't pass a model (just board)
+    models = [config_lib.ModelTestConfig(None)]
 
     if builder_run.config.models:
       models = builder_run.config.models

@@ -239,6 +239,7 @@ The suite job has another 2:39:39.789250 till timeout.
   def setUp(self):
     self._build = 'test-build'
     self._board = 'test-board'
+    self._model = 'test-model'
     self._suite = 'test-suite'
     self._pool = 'test-pool'
     self._num = 42
@@ -575,9 +576,11 @@ The suite job has another 2:39:39.789250 till timeout.
     result_1 = commands._GetRunSuiteArgs(build=self._build,
                                          suite=self._suite,
                                          board=self._board,
+                                         model=self._model,
                                          subsystems=['light'])
     expected_1 = ['--build', self._build,
                   '--board', self._board,
+                  '--model', self._model,
                   '--suite_name', 'suite_attr_wrapper',
                   '--suite_args',
                   ("{'attr_filter': '(suite:%s) and (subsystem:light)'}" %

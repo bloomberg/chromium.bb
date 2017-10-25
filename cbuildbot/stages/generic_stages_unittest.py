@@ -147,6 +147,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
     self._boards = build_config['boards']
     self._current_board = self._boards[0] if self._boards else None
+    self._model = self._current_board
 
     # Some preliminary sanity checks.
     self.assertEquals(options.buildroot, self.build_root)

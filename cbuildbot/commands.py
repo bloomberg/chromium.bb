@@ -722,6 +722,7 @@ HWTestSuiteResult = collections.namedtuple('HWTestSuiteResult',
                              timeout_util.TimeoutError)
 def RunHWTestSuite(
     build, suite, board,
+    model=None,
     pool=None,
     num=None,
     file_bugs=None,
@@ -746,6 +747,7 @@ def RunHWTestSuite(
       e.g. x86-mario-release/R18-1655.0.0-a1-b1584.
     suite: Name of the Autotest suite.
     board: The board the test suite should be scheduled against.
+    model: A specific model to schedule the test suite against.
     pool: The pool of machines we should use to run the hw tests on.
     num: Maximum number of devices to use when scheduling tests in the
          hardware test lab.
@@ -783,6 +785,7 @@ def RunHWTestSuite(
     cmd = [RUN_SUITE_PATH]
     cmd += _GetRunSuiteArgs(
         build, suite, board,
+        model=model,
         pool=pool,
         num=num,
         file_bugs=file_bugs,
@@ -906,6 +909,7 @@ def RunHWTestSuite(
 # pylint: disable=docstring-missing-args
 def _GetRunSuiteArgs(
     build, suite, board,
+    model=None,
     pool=None,
     num=None,
     file_bugs=None,
@@ -930,6 +934,10 @@ def _GetRunSuiteArgs(
     A list of args for run_suite
   """
   args = ['--build', build, '--board', board]
+
+  if model:
+    args += ['--model', model]
+
 
   if subsystems:
     args += ['--suite_name', 'suite_attr_wrapper']

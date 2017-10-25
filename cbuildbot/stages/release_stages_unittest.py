@@ -425,7 +425,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Ensure that PaygenTestStage is created and schedules the test suite
       # with the correct arguments.
       sched_tests.assert_called_once_with(
-          'foo-suite-name', 'foo-archive-board', 'foo-archive-build',
+          'foo-suite-name', 'foo-archive-board', None, 'foo-archive-build',
           False, True, job_keyvals=mock.ANY)
 
     # Ensure arguments are properly converted and passed along.
@@ -474,7 +474,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Ensure that the first model from the unified build was selected
       # as the platform to be tested
       sched_tests.assert_called_once_with(
-          'foo-suite-name', 'model2', 'foo-archive-build',
+          'foo-suite-name', 'foo-archive-board', 'model2', 'foo-archive-build',
           False, True, job_keyvals=mock.ANY)
 
   def testRunPaygenInParallelWithUnifiedBuild(self):
@@ -534,6 +534,7 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     return release_stages.PaygenTestStage(
         builder_run=self._run,
         suite_name='foo-test-suite',
+        board=self._current_board,
         model=self._current_board,
         # The PaygenBuild stage will add the '-channel' suffix to the channel
         # when converting to release tools naming.

@@ -81,7 +81,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if suffix is None:
       suffix = ''
 
-    if board is not model:
+    if model:
       suffix += ' [%s]' % (model)
 
     if not self.TestsEnabled(builder_run):
@@ -266,8 +266,17 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     build_id, db = self._run.GetCIDBHandle()
 
+    # This is a hack because boards in the lab for reef-uni aren't actually
+    # provisioned under reef-uni.
+    # This will be a problem for any boards that are migrated going forward.
+    # TODO(shapiroc): Add this config to GE and remove this hack
+    board = self._current_board
+    if self._model and board.endswith('-uni'):
+      board = self._model
+
     cmd_result = commands.RunHWTestSuite(
-        build, self.suite_config.suite, self._model,
+        build, self.suite_config.suite, board,
+        model=self._model,
         pool=self.suite_config.pool,
         num=self.suite_config.num,
         file_bugs=self.suite_config.file_bugs,
