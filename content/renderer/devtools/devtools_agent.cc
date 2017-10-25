@@ -19,7 +19,6 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/manifest.h"
-#include "content/renderer/devtools/devtools_client.h"
 #include "content/renderer/devtools/devtools_cpu_throttler.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
@@ -87,7 +86,6 @@ base::LazyInstance<IdToAgentMap>::Leaky
 
 DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
     : RenderFrameObserver(frame),
-      is_devtools_client_(false),
       paused_(false),
       frame_(frame),
       weak_factory_(this) {
@@ -111,7 +109,6 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_RequestNewWindow_ACK,
                         OnRequestNewWindowACK)
-    IPC_MESSAGE_HANDLER(DevToolsMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -281,14 +278,6 @@ void DevToolsAgent::OnRequestNewWindowACK(bool success) {
 
 void DevToolsAgent::ContinueProgram() {
   GetWebAgent()->ContinueProgram();
-}
-
-void DevToolsAgent::OnSetupDevToolsClient(const std::string& api_script) {
-  // We only want to register once; and only in main frame.
-  if (is_devtools_client_)
-    return;
-  is_devtools_client_ = true;
-  new DevToolsClient(frame_, api_script);
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {

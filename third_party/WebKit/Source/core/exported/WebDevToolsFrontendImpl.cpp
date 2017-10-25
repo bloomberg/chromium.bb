@@ -59,6 +59,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
+  web_frame_->SetDevToolsFrontend(nullptr);
   if (devtools_host_)
     devtools_host_->DisconnectClient();
 }
