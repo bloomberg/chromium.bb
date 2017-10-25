@@ -62,14 +62,22 @@ class WebServiceWorkerImpl;
 // ready to be destroyed. If there was no ServiceWorkerRegistrationObjectInfo
 // inflight, the browser process destroys the Mojo connection to this instance,
 // which finally destroys it.
+//
+// Another destruction scenario is that the browser process destroys the
+// ServiceWorkerRegistrationObject Mojo connection while some
+// WebServiceWorkerRegistration::Handles are still held by Blink. In such a case
+// this instance will finally be destroyed after all Blink destroys all the
+// WebServiceWorkerRegistration::Handles.
 class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
     : public blink::mojom::ServiceWorkerRegistrationObject,
       public blink::WebServiceWorkerRegistration,
       public base::RefCounted<WebServiceWorkerRegistrationImpl,
                               WebServiceWorkerRegistrationImpl> {
  public:
-  // |io_task_runner| is used to bind |host_for_global_scope_|, as it's a
-  // Channel-associated interface and needs to be bound on either the main or IO
+  // |io_task_runner| is used to bind |host_for_global_scope_| and |binding_|
+  // for service worker execution context, as both of
+  // ServiceWorkerRegistrationObjectHost and ServiceWorkerRegistrationObject are
+  // Channel-associated interfaces and need to be bound on either the main or IO
   // thread.
   static scoped_refptr<WebServiceWorkerRegistrationImpl>
   CreateForServiceWorkerGlobalScope(
@@ -133,6 +141,39 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   // gone away.
   static void Destruct(const WebServiceWorkerRegistrationImpl* impl);
 
+  // Enumeration of the possible |state_| during lifetime of this class.
+  // -     |kInitial| --> |kAttachedAndBound|
+  //   |this| is initialized with |kInitial| state by the ctor then it is
+  //   set to |kAttachedAndBound| state soon in the factory methods
+  //   (CreateForServiceWorkerGlobalScope() or CreateForServiceWorkerClient()).
+  //   From the beginning |this| is referenced by
+  //   blink::WebServiceWorkerRegistration::Handle impl and the |binding_| Mojo
+  //   connection has been established.
+  // -     |kAttachedAndBound| --> |kDetached|
+  //   When all references to |this| have been released by Blink,
+  //   DetachAndMaybeDestroy() will be triggered to change |state_| from
+  //   |kAttachedAndBound| to |kDetached|.
+  // -     |kAttachedAndBound| --> |kUnbound|
+  //   When |binding_| Mojo connection gets broken, OnConnectionError() will be
+  //   triggered to change |state_| from |kAttachedAndBound| to |kUnbound|.
+  // -     {|kUnbound|, |kDetached|} --> |kDead|
+  //   But if DetachAndMaybeDestroy() saw that |state_| is already |kUnbound| or
+  //   OnConnectionError() saw that |state_| is already |kDetached|, they will
+  //   just set |state_| to |kDead| and delete |this| immediately.
+  // -     |kDetached| --> |kAttachedAndBound|
+  //   When |this| is in |kDetached| state, if an inflight
+  //   ServiceWorkerRegistrationObjectInfo for the same JavaScript registration
+  //   object arrived, |this| is resued to be provided to Blink. In such a case
+  //   AttachForServiceWorkerGlobalScope() or AttachForServiceWorkerClient()
+  //   sets |state_| to |kAttachedAndBound|.
+  enum class LifecycleState {
+    kInitial,
+    kAttachedAndBound,
+    kUnbound,
+    kDetached,
+    kDead
+  };
+
   enum QueuedTaskType {
     INSTALLING,
     WAITING,
@@ -154,6 +195,8 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   GetRegistrationObjectHost();
   void Attach(blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
   void DetachAndMaybeDestroy();
+  void BindRequest(
+      blink::mojom::ServiceWorkerRegistrationObjectAssociatedRequest request);
   void OnConnectionError();
 
   void OnUpdated(std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks,
@@ -207,11 +250,22 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   // |binding_| keeps the Mojo binding to serve its other Mojo endpoint (i.e.
   // the caller end) held by the content::ServiceWorkerRegistrationHandle in the
-  // browser process, is bound with |info_->request| by the constructor.
+  // browser process, is bound with |info_->request| by BindRequest() function.
   // This also controls lifetime of |this|, its connection error handler will
   // delete |this|.
+  // It is bound on the main thread for service worker clients (document, shared
+  // worker).
+  // It is bound on the IO thread for service worker execution contexts,
+  // but always uses PostTask to handle received messages actually on the worker
+  // thread, because it's a channel-associated interface which can be bound
+  // only on the main or IO thread.
+  // TODO(leonhsl): Once we can detach this interface out from the legacy IPC
+  // channel-associated interfaces world, for service worker execution context
+  // we should bind it always on the worker thread on which |this| lives.
   mojo::AssociatedBinding<blink::mojom::ServiceWorkerRegistrationObject>
       binding_;
+  scoped_refptr<base::SingleThreadTaskRunner> creation_task_runner_;
+  LifecycleState state_;
 
   std::vector<QueuedTask> queued_tasks_;
 
