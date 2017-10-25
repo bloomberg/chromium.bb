@@ -37,6 +37,8 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwAutofillManager;
 import org.chromium.android_webview.AwAutofillProvider;
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
+import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -46,6 +48,7 @@ import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.util.TestWebServer;
 
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -445,6 +448,28 @@ public class AwAutofillTest {
         }
     }
 
+    private static class AwAutofillTestClient extends TestAwContentsClient {
+        public interface ShouldInterceptRequestImpl {
+            AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request);
+        }
+
+        private ShouldInterceptRequestImpl mShouldInterceptRequestImpl;
+
+        public void setShouldInterceptRequestImpl(ShouldInterceptRequestImpl impl) {
+            mShouldInterceptRequestImpl = impl;
+        }
+
+        @Override
+        public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
+            AwWebResourceResponse response = null;
+            if (mShouldInterceptRequestImpl != null) {
+                response = mShouldInterceptRequestImpl.shouldInterceptRequest(request);
+            }
+            if (response != null) return response;
+            return super.shouldInterceptRequest(request);
+        }
+    }
+
     public static final String FILE = "/login.html";
     public static final String FILE_URL = "file:///android_asset/autofill.html";
 
@@ -458,7 +483,7 @@ public class AwAutofillTest {
     public AwActivityTestRule mRule = new AwActivityTestRule();
 
     private AwTestContainerView mTestContainerView;
-    private TestAwContentsClient mContentsClient;
+    private AwAutofillTestClient mContentsClient;
     private CallbackHelper mCallbackHelper = new CallbackHelper();
     private AwContents mAwContents;
     private ConcurrentLinkedQueue<Integer> mEventQueue = new ConcurrentLinkedQueue<>();
@@ -466,7 +491,7 @@ public class AwAutofillTest {
 
     @Before
     public void setUp() throws Exception {
-        mContentsClient = new TestAwContentsClient();
+        mContentsClient = new AwAutofillTestClient();
         mTestContainerView = mRule.createAwTestContainerViewOnMainSync(
                 mContentsClient, false, new TestDependencyFactory() {
                     @Override
@@ -840,6 +865,87 @@ public class AwAutofillTest {
         }
     }
 
+    /**
+     * This test is verifying new session starts if frame change.
+     */
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSwitchFromIFrame() throws Throwable {
+        // we intentionally load main frame and iframe from the same URL and make both have the
+        // similar form, so the new session is triggered by frame change
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<html><head></head><body><form name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='submit'></form>"
+                + "<iframe id='myframe' src='" + FILE + "'></iframe>"
+                + "</body></html>";
+        final String iframeData = "<html><head></head><body><form name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name' "
+                + " autofocus>"
+                + "<input type='submit'></form>"
+                + "</body></html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            mContentsClient.setShouldInterceptRequestImpl(
+                    new AwAutofillTestClient.ShouldInterceptRequestImpl() {
+                        private int mCallCount;
+
+                        @Override
+                        public AwWebResourceResponse shouldInterceptRequest(
+                                AwWebResourceRequest request) {
+                            try {
+                                if (url.equals(request.url)) {
+                                    // Only intercept the iframe's request.
+                                    if (mCallCount == 1) {
+                                        final String encoding = "UTF-8";
+                                        return new AwWebResourceResponse("text/html", encoding,
+                                                new ByteArrayInputStream(
+                                                        iframeData.getBytes(encoding)));
+                                    }
+                                    mCallCount++;
+                                }
+                                return null;
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+            loadUrlSync(url);
+
+            // Trigger the autofill in iframe.
+            int count = clearEventQueueAndGetCallCount();
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            // Verify autofill session triggered.
+            count += waitForCallbackAndVerifyTypes(count,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            // Verify focus is in iframe.
+            assertEquals("true",
+                    executeJavaScriptAndWaitForResult(
+                            "document.getElementById('myframe').contentDocument.hasFocus()"));
+            // Move focus to the main frame form.
+            clearChangedValues();
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            // The new session starts because cancel() has been called.
+            waitForCallbackAndVerifyTypes(count,
+                    new Integer[] {AUTOFILL_VIEW_EXITED, AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED,
+                            AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
+            assertEquals(1, values.size());
+            assertEquals("a", values.get(0).second.getTextValue());
+            // Verify focus isn't in iframe now.
+            assertEquals("false",
+                    executeJavaScriptAndWaitForResult(
+                            "document.getElementById('myframe').contentDocument.hasFocus()"));
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
     private void loadUrlSync(String url) throws Exception {
         mRule.loadUrlSync(
                 mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(), url);
@@ -871,6 +977,11 @@ public class AwAutofillTest {
         return mCallbackHelper.getCallCount();
     }
 
+    private int clearEventQueueAndGetCallCount() {
+        mEventQueue.clear();
+        return mCallbackHelper.getCallCount();
+    }
+
     /**
      * Wait for expected callbacks to be called, and verify the types.
      *
@@ -883,14 +994,25 @@ public class AwAutofillTest {
      */
     private int waitForCallbackAndVerifyTypes(int currentCallCount, Integer[] expectedEventArray)
             throws InterruptedException, TimeoutException {
-        // Check against the call count to avoid missing out a callback in between waits, while
-        // exposing it so that the test can control where the call count starts.
-        mCallbackHelper.waitForCallback(currentCallCount, expectedEventArray.length);
-        Object[] objectArray = mEventQueue.toArray();
-        mEventQueue.clear();
-        Integer[] resultArray = Arrays.copyOf(objectArray, objectArray.length, Integer[].class);
-        Assert.assertArrayEquals(Arrays.toString(resultArray), expectedEventArray, resultArray);
-        return expectedEventArray.length;
+        try {
+            // Check against the call count to avoid missing out a callback in between waits, while
+            // exposing it so that the test can control where the call count starts.
+            mCallbackHelper.waitForCallback(currentCallCount, expectedEventArray.length);
+            Object[] objectArray = mEventQueue.toArray();
+            mEventQueue.clear();
+            Integer[] resultArray = Arrays.copyOf(objectArray, objectArray.length, Integer[].class);
+            Assert.assertArrayEquals("Expect: " + Arrays.toString(expectedEventArray)
+                            + " Result: " + Arrays.toString(resultArray),
+                    expectedEventArray, resultArray);
+            return expectedEventArray.length;
+        } catch (TimeoutException e) {
+            Object[] objectArray = mEventQueue.toArray();
+            Integer[] resultArray = Arrays.copyOf(objectArray, objectArray.length, Integer[].class);
+            Assert.assertArrayEquals("Expect:" + Arrays.toString(expectedEventArray)
+                            + " Result:" + Arrays.toString(resultArray),
+                    expectedEventArray, resultArray);
+            throw e;
+        }
     }
 
     private void dispatchDownAndUpKeyEvents(final int code) throws Throwable {
