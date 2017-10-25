@@ -29,7 +29,6 @@
 
 #include "platform/fonts/SimpleFontData.h"
 
-#include <unicode/unorm.h>
 #include <unicode/utf16.h>
 
 #include <memory>

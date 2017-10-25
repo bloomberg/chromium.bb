@@ -27,7 +27,7 @@
 
 #include "platform/text/UnicodeUtilities.h"
 
-#include <unicode/unorm.h>
+#include <unicode/normalizer2.h>
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuffer.h"
 
@@ -295,24 +295,27 @@ void NormalizeCharactersIntoNFCForm(const UChar* characters,
                                     Vector<UChar>& buffer) {
   DCHECK(length);
 
-  buffer.resize(length);
-
   UErrorCode status = U_ZERO_ERROR;
-  size_t buffer_size = unorm_normalize(characters, length, UNORM_NFC, 0,
-                                       buffer.data(), length, &status);
-  DCHECK(status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING ||
-         status == U_BUFFER_OVERFLOW_ERROR);
+  const icu::Normalizer2* normalizer = icu::Normalizer2::getNFCInstance(status);
+  DCHECK(U_SUCCESS(status));
+  int32_t input_length = static_cast<int32_t>(length);
+  // copy-on-write.
+  icu::UnicodeString normalized(FALSE, characters, input_length);
+  // In the vast majority of cases, input is already NFC. Run a quick check
+  // to avoid normalizing the entire input unnecessarily.
+  int32_t normalized_prefix_length =
+      normalizer->spanQuickCheckYes(normalized, status);
+  if (normalized_prefix_length < input_length) {
+    icu::UnicodeString un_normalized(normalized, normalized_prefix_length);
+    normalized.truncate(normalized_prefix_length);
+    normalizer->normalizeSecondAndAppend(normalized, un_normalized, status);
+  }
+  size_t buffer_size = normalized.length();
   DCHECK(buffer_size);
 
   buffer.resize(buffer_size);
-
-  if (status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING)
-    return;
-
-  status = U_ZERO_ERROR;
-  unorm_normalize(characters, length, UNORM_NFC, 0, buffer.data(), buffer_size,
-                  &status);
-  DCHECK_EQ(status, U_STRING_NOT_TERMINATED_WARNING);
+  normalized.extract(buffer.data(), buffer_size, status);
+  DCHECK(U_SUCCESS(status));
 }
 
 // This function returns kNotFound if |first| and |second| contain different

@@ -13,10 +13,10 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/icu/source/common/unicode/normalizer2.h"
 #include "third_party/icu/source/common/unicode/ucnv.h"
 #include "third_party/icu/source/common/unicode/ucnv_cb.h"
 #include "third_party/icu/source/common/unicode/ucnv_err.h"
-#include "third_party/icu/source/common/unicode/unorm.h"
 #include "third_party/icu/source/common/unicode/ustring.h"
 
 namespace base {
@@ -201,18 +201,23 @@ bool ConvertToUtf8AndNormalize(const std::string& text,
     return false;
 
   UErrorCode status = U_ZERO_ERROR;
-  size_t max_length = utf16.length() + 1;
-  string16 normalized_utf16;
-  std::unique_ptr<char16[]> buffer(new char16[max_length]);
-  int actual_length = unorm_normalize(
-      utf16.c_str(), utf16.length(), UNORM_NFC, 0,
-      buffer.get(), static_cast<int>(max_length), &status);
-  if (!U_SUCCESS(status))
+  const icu::Normalizer2* normalizer = icu::Normalizer2::getNFCInstance(status);
+  DCHECK(U_SUCCESS(status));
+  if (U_FAILURE(status))
     return false;
-  normalized_utf16.assign(buffer.get(), actual_length);
-
-  return UTF16ToUTF8(normalized_utf16.data(),
-                     normalized_utf16.length(), result);
+  int32_t utf16_length = static_cast<int32_t>(utf16.length());
+  icu::UnicodeString normalized(utf16.data(), utf16_length);
+  int32_t normalized_prefix_length =
+      normalizer->spanQuickCheckYes(normalized, status);
+  if (normalized_prefix_length < utf16_length) {
+    icu::UnicodeString un_normalized(normalized, normalized_prefix_length);
+    normalized.truncate(normalized_prefix_length);
+    normalizer->normalizeSecondAndAppend(normalized, un_normalized, status);
+  }
+  if (U_FAILURE(status))
+    return false;
+  normalized.toUTF8String(*result);
+  return true;
 }
 
 }  // namespace base
