@@ -199,6 +199,10 @@ extern const base::Feature kPreferHtmlOverPlugins;
 extern const base::Feature kPreloadLockScreen;
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+extern const base::Feature kNewPrintPreview;
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
 extern const base::Feature kPrintPdfAsImage;
 #endif

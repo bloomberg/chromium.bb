@@ -383,6 +383,12 @@ const base::Feature kPreloadLockScreen{"PreloadLockScreen",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// Enables the new Print Preview UI.
+const base::Feature kNewPrintPreview{"NewPrintPreview",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
 // Enables the Print as Image feature in print preview.
 const base::Feature kPrintPdfAsImage{"PrintPdfAsImage",

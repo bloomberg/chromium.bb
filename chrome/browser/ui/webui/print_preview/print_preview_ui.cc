@@ -163,6 +163,13 @@ bool HandleRequestCallback(
   return true;
 }
 
+content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
+  content::WebUIDataSource* source =
+      content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
+  source->SetDefaultResource(IDR_NEW_PRINT_PREVIEW_HTML);
+  return source;
+}
+
 content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
@@ -440,7 +447,15 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource(profile));
+
+  bool new_print_preview_enabled =
+      base::FeatureList::IsEnabled(features::kNewPrintPreview);
+  if (new_print_preview_enabled) {
+    content::WebUIDataSource::Add(profile,
+                                  CreateNewPrintPreviewUISource(profile));
+  } else {
+    content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource(profile));
+  }
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, new ThemeSource(profile));

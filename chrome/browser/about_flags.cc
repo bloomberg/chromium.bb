@@ -2853,6 +2853,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          features::kDisplayPersistenceToggleInPermissionPrompts)},
 #endif
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+    {"enable-new-print-preview", flag_descriptions::kEnableNewPrintPreview,
+     flag_descriptions::kEnableNewPrintPreviewDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNewPrintPreview)},
+#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
     {"print-pdf-as-image", flag_descriptions::kPrintPdfAsImageName,
      flag_descriptions::kPrintPdfAsImageDescription, kOsDesktop,
