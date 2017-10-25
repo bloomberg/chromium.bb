@@ -220,6 +220,7 @@ class WPTGitHub(object):
             else:
                 raise GitHubError(200, response.status_code, 'fetch all pull requests', path)
             path = self.extract_link_next(response.getheader('Link'))
+        _log.info('Fetched %d PRs from GitHub.', len(all_prs))
         return all_prs
 
     def get_pr_branch(self, pr_number):
