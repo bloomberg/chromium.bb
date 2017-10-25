@@ -10,6 +10,7 @@
  */
 
 #include "aom_dsp/bitreader.h"
+#include "av1/common/enums.h"
 
 #ifndef AV1_DECODER_SYMBOLRATE_H_
 #define AV1_DECODER_SYMBOLRATE_H_
@@ -17,9 +18,11 @@
 #if CONFIG_SYMBOLRATE
 static INLINE void av1_dump_symbol_rate(struct AV1Common *cm) {
   const FRAME_COUNTS *counts = &cm->counts;
-  printf("%d %d %d %d %d %d %d\n", cm->current_video_frame, cm->show_frame,
-         counts->superblock_num, counts->coeff_num[0], counts->coeff_num[1],
-         counts->symbol_num[0], counts->symbol_num[1]);
+  printf("fidx %d show %d superblock_num %d\n", cm->current_video_frame,
+         cm->show_frame, counts->superblock_num);
+  printf("%d %d\n", counts->symbol_num[0], counts->symbol_num[1]);
+  for (int i = 0; i < COEFF_LEVELS; ++i) printf("%d ", counts->coeff_num[i]);
+  printf("\n");
 }
 static INLINE int av1_read_record_symbol(FRAME_COUNTS *counts, aom_reader *r,
                                          aom_cdf_prob *cdf, int nsymbs,
@@ -63,7 +66,9 @@ static INLINE int av1_read_record_bit(FRAME_COUNTS *counts, aom_reader *r,
 
 static INLINE void av1_record_coeff(FRAME_COUNTS *counts, tran_low_t qcoeff) {
   assert(qcoeff >= 0);
-  if (counts) ++counts->coeff_num[qcoeff != 0];
+  int abs_qc = abs(qcoeff);
+  abs_qc = clamp(abs_qc, 0, COEFF_LEVELS - 1);
+  if (counts) ++counts->coeff_num[abs_qc];
 }
 
 static INLINE void av1_record_superblock(FRAME_COUNTS *counts) {
