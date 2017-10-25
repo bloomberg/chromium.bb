@@ -82,7 +82,7 @@ class ChunkLengthAccumulator {
 void ChunkLengthAccumulator::ProcessRange(BoxListConstIterator box_start,
                                           BoxListConstIterator box_end) {
   SVGTextFragment* last_fragment = nullptr;
-  for (auto box_iter = box_start; box_iter != box_end; ++box_iter) {
+  for (auto* const* box_iter = box_start; box_iter != box_end; ++box_iter) {
     for (SVGTextFragment& fragment : (*box_iter)->TextFragments()) {
       num_characters_ += fragment.length;
 
@@ -117,9 +117,9 @@ void SVGTextChunkBuilder::ProcessTextChunks(
     return;
 
   bool found_start = false;
-  auto box_iter = line_layout_boxes.begin();
-  auto end_box = line_layout_boxes.end();
-  auto chunk_start_box = box_iter;
+  auto* const* box_iter = line_layout_boxes.begin();
+  auto* const* end_box = line_layout_boxes.end();
+  auto* const* chunk_start_box = box_iter;
   for (; box_iter != end_box; ++box_iter) {
     if (!(*box_iter)->StartsNewTextChunk())
       continue;
@@ -214,7 +214,7 @@ void SVGTextChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
         text_length_shift /= length_accumulator.NumCharacters() - 1;
       }
       unsigned at_character = 0;
-      for (auto box_iter = box_start; box_iter != box_end; ++box_iter) {
+      for (auto* const* box_iter = box_start; box_iter != box_end; ++box_iter) {
         Vector<SVGTextFragment>& fragments = (*box_iter)->TextFragments();
         if (fragments.IsEmpty())
           continue;
@@ -234,7 +234,7 @@ void SVGTextChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
       float text_length_bias = 0;
 
       bool found_first_fragment = false;
-      for (auto box_iter = box_start; box_iter != box_end; ++box_iter) {
+      for (auto* const* box_iter = box_start; box_iter != box_end; ++box_iter) {
         SVGInlineTextBox* text_box = *box_iter;
         Vector<SVGTextFragment>& fragments = text_box->TextFragments();
         if (fragments.IsEmpty())
@@ -257,7 +257,7 @@ void SVGTextChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
 
   float text_anchor_shift =
       CalculateTextAnchorShift(style, length_accumulator.length());
-  for (auto box_iter = box_start; box_iter != box_end; ++box_iter) {
+  for (auto* const* box_iter = box_start; box_iter != box_end; ++box_iter) {
     Vector<SVGTextFragment>& fragments = (*box_iter)->TextFragments();
     if (fragments.IsEmpty())
       continue;

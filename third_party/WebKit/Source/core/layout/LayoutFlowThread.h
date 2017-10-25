@@ -183,7 +183,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
       LayoutUnit,
       PageBoundaryRule) const = 0;
 
-  virtual const char* GetName() const = 0;
+  const char* GetName() const override = 0;
 
  protected:
   void GenerateColumnSetIntervalTree();

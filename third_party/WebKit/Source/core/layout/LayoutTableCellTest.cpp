@@ -32,12 +32,12 @@ namespace blink {
 
 class LayoutTableCellDeathTest : public RenderingTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     RenderingTest::SetUp();
     cell_ = LayoutTableCell::CreateAnonymous(&GetDocument());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     cell_->Destroy();
     RenderingTest::TearDown();
   }

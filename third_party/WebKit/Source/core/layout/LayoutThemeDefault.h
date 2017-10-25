@@ -83,11 +83,11 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   Color PlatformFocusRingColor() const override;
 
   // System fonts.
-  virtual void SystemFont(CSSValueID system_font_id,
-                          FontSelectionValue& font_slope,
-                          FontSelectionValue& font_weight,
-                          float& font_size,
-                          AtomicString& font_family) const;
+  void SystemFont(CSSValueID system_font_id,
+                  FontSelectionValue& font_slope,
+                  FontSelectionValue& font_weight,
+                  float& font_size,
+                  AtomicString& font_family) const override;
 
   int MinimumMenuListSize(const ComputedStyle&) const override;
 

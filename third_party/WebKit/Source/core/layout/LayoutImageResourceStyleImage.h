@@ -55,7 +55,7 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
   LayoutSize ImageSize(float multiplier) const override;
   WrappedImagePtr ImagePtr() const override { return style_image_->Data(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit LayoutImageResourceStyleImage(StyleImage*);

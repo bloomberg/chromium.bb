@@ -46,7 +46,7 @@
 namespace blink {
 
 struct SameSizeAsLayoutInline : public LayoutBoxModelObject {
-  virtual ~SameSizeAsLayoutInline() {}
+  ~SameSizeAsLayoutInline() override {}
   LayoutObjectChildList children_;
   LineBoxList line_boxes_;
 };
