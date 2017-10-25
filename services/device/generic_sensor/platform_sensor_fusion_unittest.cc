@@ -18,6 +18,9 @@
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Invoke;
+
 namespace device {
 
 using mojom::SensorType;
@@ -27,6 +30,21 @@ class PlatformSensorFusionTest : public DeviceServiceTestBase {
   PlatformSensorFusionTest() {
     provider_ = base::MakeUnique<FakePlatformSensorProvider>();
     PlatformSensorProvider::SetProviderForTesting(provider_.get());
+  }
+
+  void SetUp() override {
+    DeviceServiceTestBase::SetUp();
+    // Default
+    ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
+        .WillByDefault(Invoke(
+            [this](mojom::SensorType type, void* buffer,
+                   const FakePlatformSensorProvider::CreateSensorCallback&
+                       callback) {
+              auto sensor = base::MakeRefCounted<FakePlatformSensor>(
+                  type, mojo::ScopedSharedBufferMapping(buffer),
+                  provider_.get());
+              callback.Run(sensor);
+            }));
   }
 
  protected:
@@ -122,7 +140,13 @@ TEST_F(PlatformSensorFusionTest, SourceSensorNeedsToBeCreated) {
 }
 
 TEST_F(PlatformSensorFusionTest, SourceSensorIsNotAvailable) {
-  provider_->set_accelerometer_is_available(false);
+  // Accelerometer is not available.
+  ON_CALL(*provider_, DoCreateSensorInternal(SensorType::ACCELEROMETER, _, _))
+      .WillByDefault(Invoke(
+          [](mojom::SensorType, void*,
+             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
+            callback.Run(nullptr);
+          }));
 
   CreateLinearAccelerationFusionSensor();
   EXPECT_FALSE(fusion_sensor_);
@@ -157,8 +181,13 @@ TEST_F(PlatformSensorFusionTest, BothSourceSensorsNeedToBeCreated) {
 }
 
 TEST_F(PlatformSensorFusionTest, BothSourceSensorsAreNotAvailable) {
-  provider_->set_accelerometer_is_available(false);
-  provider_->set_magnetometer_is_available(false);
+  // Failure.
+  ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
+      .WillByDefault(Invoke(
+          [](mojom::SensorType, void*,
+             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
+            callback.Run(nullptr);
+          }));
 
   CreateAbsoluteOrientationEulerAnglesFusionSensor();
   EXPECT_FALSE(fusion_sensor_);
@@ -183,7 +212,13 @@ TEST_F(PlatformSensorFusionTest,
   CreateAccelerometer();
   EXPECT_TRUE(provider_->GetSensor(SensorType::ACCELEROMETER));
 
-  provider_->set_magnetometer_is_available(false);
+  // Magnetometer is not available.
+  ON_CALL(*provider_, DoCreateSensorInternal(SensorType::MAGNETOMETER, _, _))
+      .WillByDefault(Invoke(
+          [](mojom::SensorType, void*,
+             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
+            callback.Run(nullptr);
+          }));
 
   CreateAbsoluteOrientationEulerAnglesFusionSensor();
   EXPECT_FALSE(fusion_sensor_);
@@ -192,7 +227,13 @@ TEST_F(PlatformSensorFusionTest,
 TEST_F(PlatformSensorFusionTest,
        OneSourceSensorNeedsToBeCreatedTheOtherSourceSensorIsNotAvailable) {
   EXPECT_FALSE(provider_->GetSensor(SensorType::ACCELEROMETER));
-  provider_->set_magnetometer_is_available(false);
+  // Magnetometer is not available.
+  ON_CALL(*provider_, DoCreateSensorInternal(SensorType::MAGNETOMETER, _, _))
+      .WillByDefault(Invoke(
+          [](mojom::SensorType, void*,
+             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
+            callback.Run(nullptr);
+          }));
 
   CreateAbsoluteOrientationEulerAnglesFusionSensor();
   EXPECT_FALSE(fusion_sensor_);

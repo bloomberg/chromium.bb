@@ -41,30 +41,14 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
   FakePlatformSensorProvider();
   ~FakePlatformSensorProvider() override;
 
-  enum RequestResult { kSuccess, kFailure, kPending };
-
-  void set_next_request_result(RequestResult result) {
-    request_result_ = result;
-  }
-
-  void set_accelerometer_is_available(bool accelerometer_is_available) {
-    accelerometer_is_available_ = accelerometer_is_available;
-  }
-
-  void set_magnetometer_is_available(bool magnetometer_is_available) {
-    magnetometer_is_available_ = magnetometer_is_available;
-  }
-
   MOCK_METHOD0(FreeResources, void());
+  MOCK_METHOD3(DoCreateSensorInternal,
+               void(mojom::SensorType, void*, const CreateSensorCallback&));
 
  private:
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
                             const CreateSensorCallback& callback) override;
-
-  RequestResult request_result_ = kSuccess;
-  bool accelerometer_is_available_ = true;
-  bool magnetometer_is_available_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakePlatformSensorProvider);
 };

@@ -10,15 +10,33 @@
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Invoke;
+
 namespace device {
 
 class PlatformSensorProviderTest : public DeviceServiceTestBase {
  public:
-  PlatformSensorProviderTest() = default;
+  PlatformSensorProviderTest() {
+    provider_ = base::MakeUnique<FakePlatformSensorProvider>();
+    PlatformSensorProvider::SetProviderForTesting(provider_.get());
+  }
 
-  void SetUp() override { provider_.reset(new FakePlatformSensorProvider); }
-
-  void TearDown() override { provider_.reset(); }
+  void SetUp() override {
+    DeviceServiceTestBase::SetUp();
+    provider_.reset(new FakePlatformSensorProvider);
+    // Default
+    ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
+        .WillByDefault(Invoke(
+            [this](mojom::SensorType type, void* buffer,
+                   const FakePlatformSensorProvider::CreateSensorCallback&
+                       callback) {
+              auto sensor = base::MakeRefCounted<FakePlatformSensor>(
+                  type, mojo::ScopedSharedBufferMapping(buffer),
+                  provider_.get());
+              callback.Run(sensor);
+            }));
+  }
 
  protected:
   std::unique_ptr<FakePlatformSensorProvider> provider_;
@@ -29,27 +47,36 @@ class PlatformSensorProviderTest : public DeviceServiceTestBase {
 
 TEST_F(PlatformSensorProviderTest, ResourcesAreFreed) {
   EXPECT_CALL(*provider_, FreeResources()).Times(2);
-
-  provider_->set_next_request_result(FakePlatformSensorProvider::kFailure);
   provider_->CreateSensor(
-      device::mojom::SensorType::AMBIENT_LIGHT,
-      base::Bind([](scoped_refptr<PlatformSensor> s) { EXPECT_FALSE(s); }));
-
-  provider_->CreateSensor(
-      device::mojom::SensorType::AMBIENT_LIGHT,
+      mojom::SensorType::AMBIENT_LIGHT,
       base::Bind([](scoped_refptr<PlatformSensor> s) { EXPECT_TRUE(s); }));
+  // Failure.
+  EXPECT_CALL(*provider_, DoCreateSensorInternal(_, _, _))
+      .WillOnce(Invoke(
+          [](mojom::SensorType, void*,
+             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
+            callback.Run(nullptr);
+          }));
+
+  provider_->CreateSensor(
+      mojom::SensorType::AMBIENT_LIGHT,
+      base::Bind([](scoped_refptr<PlatformSensor> s) { EXPECT_FALSE(s); }));
 }
 
 TEST_F(PlatformSensorProviderTest, ResourcesAreNotFreedOnPendingRequest) {
   EXPECT_CALL(*provider_, FreeResources()).Times(0);
+  // Suspend.
+  EXPECT_CALL(*provider_, DoCreateSensorInternal(_, _, _))
+      .WillOnce(Invoke(
+          [](mojom::SensorType, void*,
+             const FakePlatformSensorProvider::CreateSensorCallback&) {}));
 
-  provider_->set_next_request_result(FakePlatformSensorProvider::kPending);
   provider_->CreateSensor(
-      device::mojom::SensorType::AMBIENT_LIGHT,
+      mojom::SensorType::AMBIENT_LIGHT,
       base::Bind([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
 
   provider_->CreateSensor(
-      device::mojom::SensorType::AMBIENT_LIGHT,
+      mojom::SensorType::AMBIENT_LIGHT,
       base::Bind([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
 }
 
