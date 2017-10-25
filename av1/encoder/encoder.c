@@ -4409,10 +4409,10 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (q < qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
-        new_denom = SCALE_NUMERATOR + 1 + ((q - qthresh) >> 3);
-        new_denom = AOMMIN(SCALE_NUMERATOR << 1, new_denom);
-        // printf("SUPERRES: q %d, qthresh %d: denom %d\n", q, qthresh,
-        // new_denom);
+        const uint8_t min_denom = SCALE_NUMERATOR + 1;
+        const uint8_t denom_step = (MAXQ - qthresh + 1) >> 3;
+        const uint8_t additional_denom = (q - qthresh) / denom_step;
+        new_denom = AOMMIN(min_denom + additional_denom, SCALE_NUMERATOR << 1);
       }
       break;
     default: assert(0);
