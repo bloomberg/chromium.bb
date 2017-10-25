@@ -140,7 +140,7 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
   // Tap the 'add' button to go to the Add address page.
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_PAYMENTS_ADD_ADDRESS)]
+                                   IDS_PAYMENTS_ADD_SHIPPING_ADDRESS_LABEL)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
