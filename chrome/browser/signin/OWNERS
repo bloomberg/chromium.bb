@@ -1,5 +1,4 @@
-msarda@chromium.org
-rogerta@chromium.org
+file://components/signin/OWNERS
 
 per-file chrome_proximity_auth_*=tbarzic@chromium.org
 per-file chrome_proximity_auth_*=tengs@chromium.org
@@ -8,10 +7,6 @@ per-file chrome_proximity_auth_*=xiyuan@chromium.org
 per-file easy_unlock_*=tbarzic@chromium.org
 per-file easy_unlock_*=tengs@chromium.org
 per-file easy_unlock_*=xiyuan@chromium.org
-
-per-file screenlock_bridge*=tbarzic@chromium.org
-per-file screenlock_bridge*=tengs@chromium.org
-per-file screenlock_bridge*=xiyuan@chromium.org
 
 # TEAM: chrome-signin@chromium.org
 # COMPONENT: Services>SignIn
