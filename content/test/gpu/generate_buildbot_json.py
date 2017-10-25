@@ -2323,13 +2323,6 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         ],
       },
     ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux Ozone (Intel)',
-        ],
-      },
-    ],
     'compile_target': 'command_buffer_perftests',
     'isolate_name': 'command_buffer_perftests',
     'args': [
@@ -2350,13 +2343,6 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
             'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
-        ],
-      },
-    ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux Ozone (Intel)',
         ],
       },
     ],
