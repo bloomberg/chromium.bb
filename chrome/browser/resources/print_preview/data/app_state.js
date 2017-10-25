@@ -46,13 +46,13 @@ print_preview.AppStateRecentDestination;
  */
 function makeRecentDestination(destination) {
   return {
-    id: destination.id_,
-    origin: destination.origin_,
-    account: destination.account_ || '',
+    id: destination.id,
+    origin: destination.origin,
+    account: destination.account || '',
     capabilities: destination.capabilities,
-    displayName: destination.displayName_ || '',
-    extensionId: destination.extensionId_ || '',
-    extensionName: destination.extensionName_ || '',
+    displayName: destination.displayName || '',
+    extensionId: destination.extensionId || '',
+    extensionName: destination.extensionName || '',
   };
 }
 
@@ -65,6 +65,8 @@ cr.define('print_preview', function() {
     constructor() {
       /**
        * Internal representation of application state.
+       * Must contain only plain objects or classes that override the
+       * toJSON() method.
        * @private {!Object}
        */
       this.state_ = {};
@@ -220,7 +222,9 @@ cr.define('print_preview', function() {
               });
 
       // No change
-      if (indexFound == 0) {
+      if (indexFound == 0 &&
+          this.selectedDestination.capabilities ==
+              newDestination.capabilities) {
         this.persist_();
         return;
       }
