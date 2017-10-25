@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import { h, Component } from 'preact';
 
 const ESCAPE_KEY = 27;
@@ -58,7 +59,7 @@ export default class TodoItem extends Component {
 
     render({ todo:{ title, completed }, onToggle, onDestroy, editing }, { editText }) {
         return (
-            <li class={{ completed, editing }}>
+            <li class={cx({ completed, editing })}>
                 <div class="view">
                     <input
                         class="toggle"
