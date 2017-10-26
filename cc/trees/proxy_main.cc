@@ -129,11 +129,9 @@ void ProxyMain::BeginMainFrame(
   DCHECK_EQ(NO_PIPELINE_STAGE, current_pipeline_stage_);
 
   // We need to issue image decode callbacks whether or not we will abort this
-  // commit, since the callbacks are only stored in |begin_main_frame_state|.
-  for (auto& callback :
-       begin_main_frame_state->completed_image_decode_callbacks) {
-    callback.Run();
-  }
+  // commit, since the request ids are only stored in |begin_main_frame_state|.
+  layer_tree_host_->ImageDecodesFinished(
+      std::move(begin_main_frame_state->completed_image_decode_requests));
 
   if (defer_commits_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",

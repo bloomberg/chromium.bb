@@ -2518,9 +2518,8 @@ LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
   return viewport()->MainScrollLayer();
 }
 
-void LayerTreeHostImpl::QueueImageDecode(
-    const PaintImage& image,
-    const base::Callback<void(bool)>& embedder_callback) {
+void LayerTreeHostImpl::QueueImageDecode(int request_id,
+                                         const PaintImage& image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "LayerTreeHostImpl::QueueImageDecode", "frame_key",
                image.GetKeyForFrame(image.frame_index()).ToString());
@@ -2529,24 +2528,22 @@ void LayerTreeHostImpl::QueueImageDecode(
   decoded_image_tracker_.QueueImageDecode(
       image, GetRasterColorSpace(),
       base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
-                 base::Unretained(this), embedder_callback));
+                 base::Unretained(this), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);
 }
 
-void LayerTreeHostImpl::ImageDecodeFinished(
-    const base::Callback<void(bool)>& embedder_callback,
-    bool decode_succeeded) {
+void LayerTreeHostImpl::ImageDecodeFinished(int request_id,
+                                            bool decode_succeeded) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "LayerTreeHostImpl::ImageDecodeFinished");
-  completed_image_decode_callbacks_.emplace_back(
-      base::Bind(embedder_callback, decode_succeeded));
+  completed_image_decode_requests_.emplace_back(request_id, decode_succeeded);
   client_->NotifyImageDecodeRequestFinished();
 }
 
-std::vector<base::Closure>
-LayerTreeHostImpl::TakeCompletedImageDecodeCallbacks() {
-  auto result = std::move(completed_image_decode_callbacks_);
-  completed_image_decode_callbacks_.clear();
+std::vector<std::pair<int, bool>>
+LayerTreeHostImpl::TakeCompletedImageDecodeRequests() {
+  auto result = std::move(completed_image_decode_requests_);
+  completed_image_decode_requests_.clear();
   return result;
 }
 

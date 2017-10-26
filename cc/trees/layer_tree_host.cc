@@ -60,6 +60,7 @@
 
 namespace {
 static base::AtomicSequenceNumber s_layer_tree_host_sequence_number;
+static base::AtomicSequenceNumber s_image_decode_sequence_number;
 }
 
 namespace cc {
@@ -184,6 +185,10 @@ LayerTreeHost::~LayerTreeHost() {
     // outlive them, and we must make good.
     root_layer_ = nullptr;
   }
+
+  // Fail any pending image decodes.
+  for (auto& pair : pending_image_decodes_)
+    pair.second.Run(false);
 
   if (proxy_) {
     DCHECK(task_runner_provider_->IsMainThread());
@@ -365,12 +370,26 @@ void LayerTreeHost::FinishCommitOnImplThread(
   }
 
   // Transfer image decode requests to the impl thread.
-  for (auto& request : queued_image_decodes_)
-    host_impl->QueueImageDecode(std::move(request.first), request.second);
+  for (auto& request : queued_image_decodes_) {
+    int next_id = s_image_decode_sequence_number.GetNext();
+    pending_image_decodes_[next_id] = std::move(request.second);
+    host_impl->QueueImageDecode(next_id, std::move(request.first));
+  }
   queued_image_decodes_.clear();
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
+}
+
+void LayerTreeHost::ImageDecodesFinished(
+    const std::vector<std::pair<int, bool>>& results) {
+  // Issue stored callbacks and remove them from the pending list.
+  for (const auto& pair : results) {
+    auto it = pending_image_decodes_.find(pair.first);
+    DCHECK(it != pending_image_decodes_.end());
+    it->second.Run(pair.second);
+    pending_image_decodes_.erase(it);
+  }
 }
 
 void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
