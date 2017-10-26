@@ -80,7 +80,9 @@ class ContentFaviconDriver
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DocumentOnLoadCompletedInMainFrame() override;
 
+  bool document_on_load_completed_;
   GURL bypass_cache_page_url_;
   // nullopt until the actual list is reported via DidUpdateFaviconURL().
   base::Optional<std::vector<content::FaviconURL>> favicon_urls_;
