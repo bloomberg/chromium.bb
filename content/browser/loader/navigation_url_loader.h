@@ -6,12 +6,15 @@
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_request_completion_status.h"
+
+class GURL;
 
 namespace content {
 
@@ -63,11 +66,12 @@ class CONTENT_EXPORT NavigationURLLoader {
 
   // Callback to intercept the response from the URLLoader. Only used when
   // network service is enabled. Args: the initial resource request,
-  // the URLLoader for sending the request, optional completion status if
-  // it has already been received.
+  // the URLLoader for sending the request, url chain, optional completion
+  // status if it has already been received.
   using NavigationInterceptionCB =
       base::OnceCallback<void(std::unique_ptr<ResourceRequest>,
                               std::unique_ptr<ThrottlingURLLoader>,
+                              std::vector<GURL>,
                               base::Optional<ResourceRequestCompletionStatus>)>;
 
   // This method is called to intercept the url response. Caller is responsible

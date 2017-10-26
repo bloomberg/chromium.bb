@@ -30,7 +30,6 @@
 # http://crbug.com/715630
 -DownloadContentTest.CookiePolicy
 -DownloadContentTest.DownloadAttributeSameSiteCookie
--DownloadContentTest.RedirectBeforeResume
 -DownloadContentTest.RedirectWhileResume
 -DragDownloadFileTest.DragDownloadFileTest_Complete
 

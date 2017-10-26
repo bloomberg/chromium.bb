@@ -189,6 +189,10 @@ void DownloadResponseHandler::OnComplete(
   OnResponseStarted(mojom::DownloadStreamHandlePtr());
 }
 
+void DownloadResponseHandler::SetURLChain(std::vector<GURL> url_chain) {
+  url_chain_ = std::move(url_chain);
+}
+
 void DownloadResponseHandler::OnResponseStarted(
     mojom::DownloadStreamHandlePtr stream_handle) {
   started_ = true;

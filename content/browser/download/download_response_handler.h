@@ -59,6 +59,9 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   void OnComplete(const content::ResourceRequestCompletionStatus&
                   completion_status) override;
 
+  // Sets the URL chain when the download is intercepted from navigation.
+  void SetURLChain(std::vector<GURL> url_chain);
+
  private:
   std::unique_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
       const ResourceResponseHead& head);
