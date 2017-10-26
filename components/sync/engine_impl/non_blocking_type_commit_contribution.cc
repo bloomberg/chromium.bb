@@ -35,12 +35,12 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
   sync_pb::CommitMessage* commit_message = msg->mutable_commit();
   entries_start_index_ = commit_message->entries_size();
 
+  int startIndex = commit_message->entries_size();
   std::copy(entities_.begin(), entities_.end(),
             RepeatedPtrFieldBackInserter(commit_message->mutable_entries()));
 
   if (clear_client_defined_unique_tags_) {
-    for (int i = entries_start_index_; i < commit_message->entries_size();
-         ++i) {
+    for (int i = startIndex; i < commit_message->entries_size(); ++i) {
       commit_message->mutable_entries(i)->clear_client_defined_unique_tag();
     }
   }
@@ -130,7 +130,9 @@ void NonBlockingTypeCommitContribution::CleanUp() {
   debug_info_emitter_->EmitCommitCountersUpdate();
   debug_info_emitter_->EmitStatusCountersUpdate();
 
-  worker_->CleanupAfterCommit();
+  // We could inform our parent NonBlockingCommitContributor that a commit is
+  // no longer in progress.  The current implementation doesn't really care
+  // either way, so we don't bother sending the signal.
 }
 
 size_t NonBlockingTypeCommitContribution::GetNumEntries() const {

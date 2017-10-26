@@ -28,27 +28,33 @@ namespace {
 
 class CommitQueueProxy : public CommitQueue {
  public:
-  CommitQueueProxy(const base::WeakPtr<CommitQueue>& worker,
+  CommitQueueProxy(const base::WeakPtr<ModelTypeWorker>& worker,
                    const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
   ~CommitQueueProxy() override;
 
+  void EnqueueForCommit(const CommitRequestDataList& list) override;
   void NudgeForCommit() override;
 
  private:
-  base::WeakPtr<CommitQueue> worker_;
+  base::WeakPtr<ModelTypeWorker> worker_;
   scoped_refptr<base::SequencedTaskRunner> sync_thread_;
 };
 
 CommitQueueProxy::CommitQueueProxy(
-    const base::WeakPtr<CommitQueue>& worker,
+    const base::WeakPtr<ModelTypeWorker>& worker,
     const scoped_refptr<base::SequencedTaskRunner>& sync_thread)
     : worker_(worker), sync_thread_(sync_thread) {}
 
 CommitQueueProxy::~CommitQueueProxy() {}
 
+void CommitQueueProxy::EnqueueForCommit(const CommitRequestDataList& list) {
+  sync_thread_->PostTask(
+      FROM_HERE, base::Bind(&ModelTypeWorker::EnqueueForCommit, worker_, list));
+}
+
 void CommitQueueProxy::NudgeForCommit() {
   sync_thread_->PostTask(FROM_HERE,
-                         base::Bind(&CommitQueue::NudgeForCommit, worker_));
+                         base::Bind(&ModelTypeWorker::NudgeForCommit, worker_));
 }
 
 }  // namespace

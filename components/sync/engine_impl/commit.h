@@ -71,6 +71,7 @@ class Commit {
   ContributionMap contributions_;
 
   sync_pb::ClientToServerMessage message_;
+  sync_pb::ClientToServerResponse response_;
   ExtensionsActivity::Records extensions_activity_buffer_;
 
   // Debug only flag used to indicate if it's safe to destruct the object.
