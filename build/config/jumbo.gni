@@ -161,7 +161,7 @@ template("internal_jumbo_target") {
     action(merge_action_name) {
       script = "//build/config/merge_for_jumbo.py"
       response_file_contents =
-          rebase_path(invoker_sources - excluded_sources, gen_target_dir)
+          rebase_path(invoker_sources - excluded_sources, root_build_dir)
       outputs = jumbo_files
       args = [ "--outputs" ] + rebase_path(outputs, root_build_dir) +
              [ "--file-list={{response_file_name}}" ]
@@ -206,6 +206,15 @@ template("internal_jumbo_target") {
           sources += [ source_file ]
         }
       }
+
+      # Change include_dirs to make sure that the jumbo file can find its
+      # #included files.
+      variables_to_not_forward += [ "include_dirs" ]
+      include_dirs = []
+      if (defined(invoker.include_dirs)) {
+        include_dirs = invoker.include_dirs
+      }
+      include_dirs += [ root_build_dir ]
     }
     forward_variables_from(invoker, "*", variables_to_not_forward)
   }
