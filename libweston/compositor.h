@@ -216,6 +216,9 @@ struct weston_output {
 	 *  next repaint should be run */
 	struct timespec next_repaint;
 
+	/** For cancelling the idle_repaint callback on output destruction. */
+	struct wl_event_source *idle_repaint_source;
+
 	struct weston_output_zoom zoom;
 	int dirty;
 	struct wl_signal frame_signal;
