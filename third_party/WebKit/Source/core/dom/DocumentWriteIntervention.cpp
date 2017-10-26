@@ -10,6 +10,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/network/NetworkUtils.h"
 #include "public/platform/WebEffectiveConnectionType.h"
@@ -19,7 +20,7 @@ namespace blink {
 
 namespace {
 
-void EmitWarningForDocWriteScripts(const String& url, Document& document) {
+void EmitWarningMayBeBlocked(const String& url, Document& document) {
   String message =
       "A parser-blocking, cross site (i.e. different eTLD+1) script, " + url +
       ", is invoked via document.write. The network request for this script "
@@ -31,6 +32,40 @@ void EmitWarningForDocWriteScripts(const String& url, Document& document) {
   document.AddConsoleMessage(
       ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
   DVLOG(1) << message.Utf8().data();
+}
+
+void EmitWarningNotBlocked(const String& url, Document& document) {
+  String message =
+      "The parser-blocking, cross site (i.e. different eTLD+1) script, " + url +
+      ", invoked via document.write was NOT BLOCKED on this page load, but MAY "
+      "be blocked by the browser in future page loads with poor network "
+      "connectivity.";
+  document.AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
+}
+
+void EmitErrorBlocked(const String& url, Document& document) {
+  String message =
+      "Network request for the parser-blocking, cross site (i.e. different "
+      "eTLD+1) script, " +
+      url +
+      ", invoked via document.write was BLOCKED by the browser due to poor "
+      "network connectivity. ";
+  document.AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+}
+
+void AddWarningHeader(FetchParameters* params) {
+  params->MutableResourceRequest().AddHTTPHeaderField(
+      "Intervention",
+      "<https://www.chromestatus.com/feature/5718547946799104>; "
+      "level=\"warning\"");
+}
+
+void AddHeader(FetchParameters* params) {
+  params->MutableResourceRequest().AddHTTPHeaderField(
+      "Intervention",
+      "<https://www.chromestatus.com/feature/5718547946799104>");
 }
 
 bool IsConnectionEffectively2G(WebEffectiveConnectionType effective_type) {
@@ -66,34 +101,34 @@ bool ShouldDisallowFetch(Settings* settings,
 
 }  // namespace
 
-bool MaybeDisallowFetchForDocWrittenScript(ResourceRequest& request,
-                                           FetchParameters::DeferOption defer,
-                                           Document& document) {
+FetchBlockedDocWriteScriptClient* MaybeDisallowFetchForDocWrittenScript(
+    FetchParameters& params,
+    Document& document) {
   // Only scripts inserted via document.write are candidates for having their
   // fetch disallowed.
   if (!document.IsInDocumentWrite())
-    return false;
+    return nullptr;
 
   Settings* settings = document.GetSettings();
   if (!settings)
-    return false;
+    return nullptr;
 
   if (!document.GetFrame() || !document.GetFrame()->IsMainFrame())
-    return false;
+    return nullptr;
 
   // Only block synchronously loaded (parser blocking) scripts.
-  if (defer != FetchParameters::kNoDefer)
-    return false;
+  if (params.Defer() != FetchParameters::kNoDefer)
+    return nullptr;
 
   probe::documentWriteFetchScript(&document);
 
-  if (!request.Url().ProtocolIsInHTTPFamily())
-    return false;
+  if (!params.Url().ProtocolIsInHTTPFamily())
+    return nullptr;
 
   // Avoid blocking same origin scripts, as they may be used to render main
   // page content, whereas cross-origin scripts inserted via document.write
   // are likely to be third party content.
-  String request_host = request.Url().Host();
+  String request_host = params.Url().Host();
   String document_host = document.GetSecurityOrigin()->Domain();
 
   bool same_site = false;
@@ -119,18 +154,15 @@ bool MaybeDisallowFetchForDocWrittenScript(ResourceRequest& request,
     // same scheme while deciding whether or not to block the script as is done
     // in other cases of "same site" usage. On the other hand we do not want to
     // block more scripts than necessary.
-    if (request.Url().Protocol() != document.GetSecurityOrigin()->Protocol()) {
+    if (params.Url().Protocol() != document.GetSecurityOrigin()->Protocol()) {
       document.Loader()->DidObserveLoadingBehavior(
           WebLoadingBehaviorFlag::
               kWebLoadingBehaviorDocumentWriteBlockDifferentScheme);
     }
-    return false;
+    return nullptr;
   }
 
-  EmitWarningForDocWriteScripts(request.Url().GetString(), document);
-  request.AddHTTPHeaderField("Intervention",
-                             "<https://www.chromestatus.com/feature/"
-                             "5718547946799104>; level=\"warning\"");
+  EmitWarningMayBeBlocked(params.Url().GetString(), document);
 
   // Do not block scripts if it is a page reload. This is to enable pages to
   // recover if blocking of a script is leading to a page break and the user
@@ -141,7 +173,8 @@ bool MaybeDisallowFetchForDocWrittenScript(ResourceRequest& request,
     // where a script was blocked could be indicative of a page break.
     document.Loader()->DidObserveLoadingBehavior(
         WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlockReload);
-    return false;
+    AddWarningHeader(&params);
+    return nullptr;
   }
 
   // Add the metadata that this page has scripts inserted via document.write
@@ -153,11 +186,57 @@ bool MaybeDisallowFetchForDocWrittenScript(ResourceRequest& request,
   if (!ShouldDisallowFetch(
           settings, GetNetworkStateNotifier().ConnectionType(),
           document.GetFrame()->Client()->GetEffectiveConnectionType())) {
-    return false;
+    AddWarningHeader(&params);
+    return nullptr;
   }
 
-  request.SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
-  return true;
+  FetchBlockedDocWriteScriptClient* client =
+      new FetchBlockedDocWriteScriptClient(document, params);
+
+  // Adding warning header after FetchBlockedDocWriteScriptClient is created, so
+  // that the asynchronous fetch request sent when this request is blocked, does
+  // not contain the warning header. That request will contain the intervention
+  // header without the warning level set, instead.
+  AddWarningHeader(&params);
+
+  params.MutableResourceRequest().SetCacheMode(
+      mojom::FetchCacheMode::kOnlyIfCached);
+
+  return client;
+}
+
+void FetchBlockedDocWriteScriptClient::Trace(Visitor* visitor) {
+  visitor->Trace(document_);
+  ResourceOwner<ScriptResource>::Trace(visitor);
+}
+
+void FetchBlockedDocWriteScriptClient::SetResource(ScriptResource* resource) {
+  keep_alive_ = this;
+  ResourceOwner<ScriptResource>::SetResource(resource);
+}
+
+void FetchBlockedDocWriteScriptClient::NotifyFinished(Resource* resource) {
+  DCHECK_EQ(GetResource(), resource);
+  ClearResource();
+  keep_alive_.Clear();
+  Document* document = document_;
+  if (!document)
+    return;
+
+  if (!resource->ErrorOccurred()) {
+    EmitWarningNotBlocked(params_.Url(), *document);
+    return;
+  }
+
+  // Due to dependency violation, not able to check the exact error to be
+  // ERR_CACHE_MISS but other errors are rare with
+  // mojom::FetchCacheMode::kOnlyIfCached.
+
+  EmitErrorBlocked(params_.Url(), *document);
+
+  AddHeader(&params_);
+  params_.SetDefer(FetchParameters::kIdleLoad);
+  ScriptResource::Fetch(params_, document->Fetcher());
 }
 
 }  // namespace blink

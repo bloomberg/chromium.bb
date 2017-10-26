@@ -49,9 +49,6 @@ Resource* PreloadRequest::Start(Document* document) {
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type_, is_image_set_, false));
 
-  if (resource_type_ == Resource::kScript)
-    MaybeDisallowFetchForDocWrittenScript(resource_request, defer_, *document);
-
   ResourceLoaderOptions options;
   options.initiator_info = initiator_info;
   FetchParameters params(resource_request, options);
@@ -112,6 +109,12 @@ Resource* PreloadRequest::Start(Document* document) {
         FetchParameters::SpeculativePreloadType::kInserted;
   }
   params.SetSpeculativePreloadType(speculative_preload_type, discovery_time_);
+
+  if (resource_type_ == Resource::kScript) {
+    MaybeDisallowFetchForDocWrittenScript(params, *document);
+    // We intentionally ignore the returned value, because we don't resend
+    // the async request to the blocked script here.
+  }
 
   return document->Loader()->StartPreload(resource_type_, params);
 }

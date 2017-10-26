@@ -41,7 +41,6 @@ namespace blink {
 class ScriptElementBase;
 class Script;
 
-class ResourceFetcher;
 class ScriptResource;
 
 class Modulator;
@@ -121,10 +120,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
     return pending_script_ && pending_script_->IsReady();
   }
 
-  bool DisallowedFetchForDocWrittenScript() {
-    return document_write_intervention_ ==
-           DocumentWriteIntervention::kDoNotFetchDocWrittenScript;
-  }
   void SetFetchDocWrittenScriptDeferIdle();
 
   const String& Nonce() const { return nonce_; }
@@ -150,7 +145,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   //
   // https://html.spec.whatwg.org/#fetch-a-classic-script
   bool FetchClassicScript(const KURL&,
-                          ResourceFetcher*,
+                          Document&,
                           const String& nonce,
                           const IntegrityMetadataSet&,
                           ParserDisposition,
@@ -222,20 +217,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   const bool created_during_document_write_;
 
   ScriptRunner::AsyncExecutionType async_exec_type_;
-  enum DocumentWriteIntervention {
-    kDocumentWriteInterventionNone = 0,
-    // Based on what shouldDisallowFetchForMainFrameScript() returns.
-    // This script will be blocked if not present in http cache.
-    kDoNotFetchDocWrittenScript,
-    // If a parser blocking doc.written script was not fetched and was not
-    // present in the http cache, send a GET for it with an interventions
-    // header to allow the server to know of the intervention. This fetch
-    // will be using DeferOption::IdleLoad to keep it out of the critical
-    // path.
-    kFetchDocWrittenScriptDeferIdle,
-  };
-
-  DocumentWriteIntervention document_write_intervention_;
 
   TraceWrapperMember<PendingScript> pending_script_;
   TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
