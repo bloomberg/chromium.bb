@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -99,4 +100,11 @@ TEST_F(ChromePrefServiceWebKitPrefs, PrefsCopied) {
   EXPECT_EQ(base::ASCIIToUTF16(kDefaultFont),
             webkit_prefs.standard_font_family_map[prefs::kWebKitCommonScript]);
   EXPECT_TRUE(webkit_prefs.javascript_enabled);
+
+#if defined(OS_ANDROID)
+  // Touch event enabled only on Android.
+  EXPECT_TRUE(webkit_prefs.touch_event_feature_detection_enabled);
+#else
+  EXPECT_FALSE(webkit_prefs.touch_event_feature_detection_enabled);
+#endif
 }

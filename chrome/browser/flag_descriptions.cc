@@ -1427,7 +1427,7 @@ const char kTouchEventsName[] = "Touch Events API";
 const char kTouchEventsDescription[] =
     "Force Touch Events API feature detection to always be enabled or "
     "disabled, or to be enabled when a touchscreen is detected on startup "
-    "(Automatic, the default).";
+    "(Automatic).";
 
 const char kTouchSelectionStrategyName[] = "Touch text selection strategy";
 const char kTouchSelectionStrategyDescription[] =
