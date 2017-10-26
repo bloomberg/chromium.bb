@@ -447,7 +447,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     update_eob = 0;
     for (c = eob - 1; c >= 0; --c) {
       const int level = levels[scan[c]];
-      const int sign = signs[scan[c]];
       int ctx;
 
       if (level <= i) continue;
@@ -457,13 +456,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       if (level == i + 1) {
         aom_write_bin(w, 1, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
                       2);
-        if (c == 0) {
-          aom_write_bin(w, sign,
-                        ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx],
-                        2);
-        } else {
-          aom_write_bit(w, sign);
-        }
         continue;
       }
 
@@ -473,20 +465,31 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
   }
 
-  for (c = update_eob; c >= 0; --c) {
+  // Loop to code all signs in the transform block,
+  // starting with the sign of DC (if applicable)
+  for (c = 0; c < eob; ++c) {
     const int level = levels[scan[c]];
     const int sign = signs[scan[c]];
+    if (level == 0) continue;
+
+    if (c == 0) {
+#if LV_MAP_PROB
+      aom_write_bin(w, sign,
+                    ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
+#else
+      aom_write(w, sign, ec_ctx->dc_sign[plane_type][txb_ctx->dc_sign_ctx]);
+#endif
+    } else {
+      aom_write_bit(w, sign);
+    }
+  }
+
+  for (c = update_eob; c >= 0; --c) {
+    const int level = levels[scan[c]];
     int idx;
     int ctx;
 
     if (level <= NUM_BASE_LEVELS) continue;
-
-    if (c == 0) {
-      aom_write_bin(w, sign,
-                    ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
-    } else {
-      aom_write_bit(w, sign);
-    }
 
     // level is above 1.
     ctx = get_br_ctx(levels, scan[c], bwl, height);
@@ -2310,7 +2313,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     update_eob = 0;
     for (c = eob - 1; c >= 0; --c) {
       const int level = levels[scan[c]];
-      const int sign = signs[scan[c]];
       int ctx;
 
       if (level <= i) continue;
@@ -2321,13 +2323,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
         ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][1];
         update_bin(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 1,
                    2);
-        if (c == 0) {
-          int dc_sign_ctx = txb_ctx.dc_sign_ctx;
-
-          ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
-          update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
-          x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
-        }
         continue;
       }
       ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][0];
@@ -2336,21 +2331,24 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     }
   }
 
+  c = 0;  // Update the context needed to code the DC sign (if applicable)
+  const int sign = signs[scan[c]];
+  if (levels[scan[c]] != 0) {
+    int dc_sign_ctx = txb_ctx.dc_sign_ctx;
+
+    ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
+#if LV_MAP_PROB
+    update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
+#endif
+    x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
+  }
+
   for (c = update_eob; c >= 0; --c) {
     const int level = levels[scan[c]];
-    const int sign = signs[scan[c]];
     int idx;
     int ctx;
 
     if (level <= NUM_BASE_LEVELS) continue;
-
-    if (c == 0) {
-      int dc_sign_ctx = txb_ctx.dc_sign_ctx;
-
-      ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
-      update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
-      x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
-    }
 
     // level is above 1.
     ctx = get_br_ctx(levels, scan[c], bwl, height);

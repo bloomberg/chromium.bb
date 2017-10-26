@@ -393,7 +393,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     update_eob = 0;
     for (c = *eob - 1; c >= 0; --c) {
       uint8_t *const level = &levels[scan[c]];
-      int8_t *const sign = &signs[scan[c]];
       int ctx;
 
       if (*level <= i) continue;
@@ -408,15 +407,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
         if (counts) ++counts->coeff_base[txs_ctx][plane_type][i][ctx][1];
 
-        if (c == 0) {
-          int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-          *sign = av1_read_record_bin(
-              counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2,
-              ACCT_STR);
-          if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][*sign];
-        } else {
-          *sign = av1_read_record_bit(counts, r, ACCT_STR);
-        }
         continue;
       }
       *level = i + 2;
@@ -427,22 +417,31 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
   }
 
-  for (c = update_eob; c >= 0; --c) {
-    uint8_t *const level = &levels[scan[c]];
+  // Loop to decode all signs in the transform block,
+  // starting with the sign of the DC (if applicable)
+  for (c = 0; c < *eob; ++c) {
     int8_t *const sign = &signs[scan[c]];
-    int idx;
-    int ctx;
-
-    if (*level <= NUM_BASE_LEVELS) continue;
-
+    if (levels[scan[c]] == 0) continue;
     if (c == 0) {
       int dc_sign_ctx = txb_ctx->dc_sign_ctx;
+#if LV_MAP_PROB
       *sign = av1_read_record_bin(
           counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
+#else
+      *sign = aom_read(r, ec_ctx->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
+#endif
       if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][*sign];
     } else {
       *sign = av1_read_record_bit(counts, r, ACCT_STR);
     }
+  }
+
+  for (c = update_eob; c >= 0; --c) {
+    uint8_t *const level = &levels[scan[c]];
+    int idx;
+    int ctx;
+
+    if (*level <= NUM_BASE_LEVELS) continue;
 
     ctx = get_br_ctx(levels, scan[c], bwl, height);
 
