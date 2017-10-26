@@ -1383,8 +1383,11 @@ TEST(FieldTrialListTest, SerializeSharedMemoryHandleMetadata) {
   SharedMemoryHandle deserialized =
       FieldTrialList::DeserializeSharedMemoryHandleMetadata(serialized);
 #else
+  // Use a valid-looking arbitrary number for the file descriptor. It's not
+  // being used in this unittest, but needs to pass sanity checks in the
+  // handle's constructor.
   SharedMemoryHandle deserialized =
-      FieldTrialList::DeserializeSharedMemoryHandleMetadata(-1, serialized);
+      FieldTrialList::DeserializeSharedMemoryHandleMetadata(42, serialized);
 #endif
   EXPECT_EQ(deserialized.GetGUID(), shm->handle().GetGUID());
   EXPECT_FALSE(deserialized.GetGUID().is_empty());
