@@ -175,7 +175,7 @@ grid-row-start: auto
 grid-template-areas: none
 grid-template-columns: none
 grid-template-rows: none
-height: auto
+height: 100px
 hyphens: manual
 image-orientation: 0deg
 image-rendering: auto
@@ -293,7 +293,7 @@ vertical-align: baseline
 visibility: visible
 white-space: normal
 widows: 2
-width: auto
+width: 100px
 will-change: auto
 word-break: normal
 word-spacing: 0px

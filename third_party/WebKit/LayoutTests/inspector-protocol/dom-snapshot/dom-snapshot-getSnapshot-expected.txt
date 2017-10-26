@@ -1715,7 +1715,7 @@ Tests DOMSnapshot.getSnapshot method.
         },
         {
           "name": "width",
-          "value": "auto"
+          "value": "200px"
         },
         {
           "name": "display",

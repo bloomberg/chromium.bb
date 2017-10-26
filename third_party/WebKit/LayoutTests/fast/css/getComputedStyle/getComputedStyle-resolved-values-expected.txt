@@ -20,8 +20,8 @@ padding-left: 20px
 
 Resolved values for element "fixed" with display "inline":
 line-height: 30px
-width: auto
-height: auto
+width: 150px
+height: 100px
 top: auto
 right: auto
 bottom: auto
@@ -89,8 +89,8 @@ padding-left: 25px
 
 Resolved values for element "percents" with display "inline":
 line-height: 36px
-width: auto
-height: auto
+width: 50%
+height: 25%
 top: auto
 right: auto
 bottom: auto
@@ -158,8 +158,8 @@ padding-left: 18px
 
 Resolved values for element "ems" with display "inline":
 line-height: 24px
-width: auto
-height: auto
+width: 240px
+height: 120px
 top: auto
 right: auto
 bottom: auto
@@ -227,7 +227,7 @@ padding-left: 0px
 
 Resolved values for element "auto" with display "inline":
 line-height: 30px
-width: auto
+width: 200px
 height: auto
 top: auto
 right: auto
@@ -296,8 +296,8 @@ padding-left: 0px
 
 Resolved values for element "mixed" with display "inline":
 line-height: 48px
-width: auto
-height: auto
+width: 30%
+height: 20%
 top: auto
 right: auto
 bottom: auto
@@ -365,8 +365,8 @@ padding-left: 20px
 
 Resolved values for element "rel_positioned" with display "inline":
 line-height: 30px
-width: auto
-height: auto
+width: 150px
+height: 100px
 top: 15px
 right: -10px
 bottom: -15px
