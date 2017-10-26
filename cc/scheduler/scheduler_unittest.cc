@@ -3622,5 +3622,20 @@ TEST_F(SchedulerTest, CriticalBeginMainFrameToActivateIsFast) {
   EXPECT_TRUE(scheduler_->ImplLatencyTakesPriority());
 }
 
+TEST_F(SchedulerTest, WaitForAllPipelineStagesSkipsMissedBeginFrames) {
+  scheduler_settings_.wait_for_all_pipeline_stages_before_draw = true;
+  SetUpScheduler(EXTERNAL_BFS);
+
+  scheduler_->SetNeedsRedraw();
+
+  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+  now_src_->Advance(interval);
+  viz::BeginFrameArgs args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 0u, 1u, now_src_->NowTicks(),
+      now_src_->NowTicks() + interval, interval, viz::BeginFrameArgs::MISSED);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+}
+
 }  // namespace
 }  // namespace cc
