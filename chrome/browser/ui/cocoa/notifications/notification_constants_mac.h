@@ -20,6 +20,10 @@ extern NSString* const kNotificationHasSettingsButton;
 
 extern NSString* const kAlertXPCServiceName;
 
+// Value used to represent the absence of a button index following a user
+// interaction with a notification.
+constexpr int kNotificationInvalidButtonIndex = -1;
+
 }  // notification_constants
 
 #endif  // CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_NOTIFICATION_CONSTANTS_MAC_H_
