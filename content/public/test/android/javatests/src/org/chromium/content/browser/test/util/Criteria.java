@@ -27,7 +27,7 @@ public abstract class Criteria {
      * @param failureReason The failure reason to be shown.
      */
     public Criteria(String failureReason) {
-        mFailureReason = failureReason;
+        if (failureReason != null) mFailureReason = failureReason;
     }
 
     /**
@@ -44,7 +44,7 @@ public abstract class Criteria {
     }
 
     /**
-     * Updates the message to displayed if this criteria does not succeed in the alloted time.  For
+     * Updates the message to displayed if this criteria does not succeed in the allotted time.  For
      * correctness, you should be updating this in {@link #isSatisfied()} to ensure the error state
      * is the same that you last checked.
      *
