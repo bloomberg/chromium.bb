@@ -155,7 +155,21 @@ public:
     T* operator->() { return 0; }
 };
 
+template <typename T, typename... Args>
+unique_ptr<T> make_unique(Args&&... args) {
+  return unique_ptr<T>();
 }
+
+}  // namespace std
+
+namespace base {
+
+template <typename T>
+std::unique_ptr<T> WrapUnique(T* ptr) {
+  return std::unique_ptr<T>();
+}
+
+}  // namespace base
 
 namespace blink {
 

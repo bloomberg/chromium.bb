@@ -1,6 +1,7 @@
 set(LIBRARYNAME BlinkGCPlugin)
 
 set(plugin_sources
+  BadPatternFinder.cpp
   BlinkGCPlugin.cpp
   BlinkGCPluginConsumer.cpp
   CheckDispatchVisitor.cpp
