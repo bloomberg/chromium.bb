@@ -14,9 +14,8 @@
 #include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
-#include "ui/events/devices/device_data_manager.h"
-#include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -31,15 +30,13 @@ class VirtualKeyboardControllerTest : public AshTestBase {
 
   void UpdateTouchscreenDevices(
       std::vector<ui::TouchscreenDevice> touchscreen_devices) {
-    ui::DeviceHotplugEventObserver* manager =
-        ui::DeviceDataManager::GetInstance();
-    manager->OnTouchscreenDevicesUpdated(touchscreen_devices);
+    ui::InputDeviceManager::GetInstance()->SetTouchscreenDevicesForTesting(
+        touchscreen_devices);
   }
 
   void UpdateKeyboardDevices(std::vector<ui::InputDevice> keyboard_devices) {
-    ui::DeviceHotplugEventObserver* manager =
-        ui::DeviceDataManager::GetInstance();
-    manager->OnKeyboardDevicesUpdated(keyboard_devices);
+    ui::InputDeviceManager::GetInstance()->SetKeyboardDevicesForTesting(
+        keyboard_devices);
   }
 
   // Sets the event blocker on the maximized window controller.
@@ -67,9 +64,8 @@ class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
     std::vector<ui::InputDevice> keyboard_devices;
     keyboard_devices.push_back(ui::InputDevice(
         1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
-    ui::DeviceHotplugEventObserver* manager =
-        ui::DeviceDataManager::GetInstance();
-    manager->OnKeyboardDevicesUpdated(keyboard_devices);
+    ui::InputDeviceManager::GetInstance()->SetKeyboardDevicesForTesting(
+        keyboard_devices);
   }
 
  private:
