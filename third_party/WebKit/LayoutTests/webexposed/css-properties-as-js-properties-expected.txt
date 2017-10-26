@@ -222,9 +222,6 @@ overflowAnchor
 overflowWrap
 overflowX
 overflowY
-overscrollBehavior
-overscrollBehaviorX
-overscrollBehaviorY
 padding
 paddingBottom
 paddingLeft
@@ -253,6 +250,9 @@ rx
 ry
 scale
 scrollBehavior
+scrollBoundaryBehavior
+scrollBoundaryBehaviorX
+scrollBoundaryBehaviorY
 scrollPadding
 scrollPaddingBlock
 scrollPaddingBlockEnd

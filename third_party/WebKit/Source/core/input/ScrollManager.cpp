@@ -87,10 +87,10 @@ static bool CanPropagate(const ScrollState& scroll_state,
     return true;
 
   return (scroll_state.deltaXHint() == 0 ||
-          element.GetComputedStyle()->OverscrollBehaviorX() ==
+          element.GetComputedStyle()->ScrollBoundaryBehaviorX() ==
               EScrollBoundaryBehavior::kAuto) &&
          (scroll_state.deltaYHint() == 0 ||
-          element.GetComputedStyle()->OverscrollBehaviorY() ==
+          element.GetComputedStyle()->ScrollBoundaryBehaviorY() ==
               EScrollBoundaryBehavior::kAuto);
 }
 

@@ -2284,8 +2284,8 @@
       type_name: "ScrollBehavior",
     },
     {
-      name: "overscroll-behavior-x",
-      api_class: "CSSPropertyAPIOverscrollBehavior",
+      name: "scroll-boundary-behavior-x",
+      api_class: "CSSPropertyAPIScrollBoundaryBehavior",
       runtime_flag: "CSSScrollBoundaryBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2293,8 +2293,8 @@
       type_name: "EScrollBoundaryBehavior",
     },
     {
-      name: "overscroll-behavior-y",
-      api_class: "CSSPropertyAPIOverscrollBehavior",
+      name: "scroll-boundary-behavior-y",
+      api_class: "CSSPropertyAPIScrollBoundaryBehavior",
       runtime_flag: "CSSScrollBoundaryBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -4318,8 +4318,8 @@
       api_methods: ["ParseShorthand"],
     },
     {
-      name: "overscroll-behavior",
-      longhands: ["overscroll-behavior-x", "overscroll-behavior-y"],
+      name: "scroll-boundary-behavior",
+      longhands: ["scroll-boundary-behavior-x", "scroll-boundary-behavior-y"],
       api_class: true,
       api_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollBoundaryBehavior",
