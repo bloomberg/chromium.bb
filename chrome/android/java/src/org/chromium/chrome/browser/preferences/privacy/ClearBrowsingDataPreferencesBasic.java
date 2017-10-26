@@ -9,6 +9,7 @@ import android.os.Bundle;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataTabCheckBoxPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -23,9 +24,6 @@ import org.chromium.components.sync.ModelType;
  * explanatory text.
  */
 public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferencesTab {
-    /** The my activity URL. */
-    private static final String MY_ACTIVITY_URL =
-            "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,7 +38,8 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
             @Override
             public void run() {
                 new TabDelegate(false /* incognito */)
-                        .launchUrl(MY_ACTIVITY_URL, TabModel.TabLaunchType.FROM_CHROME_UI);
+                        .launchUrl(UrlConstants.MY_ACTIVITY_URL_IN_CBD,
+                                TabModel.TabLaunchType.FROM_CHROME_UI);
             }
         });
 

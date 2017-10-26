@@ -113,7 +113,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
       l10n_util::GetStringFUTF16(
           IDS_HISTORY_OTHER_FORMS_OF_HISTORY,
           l10n_util::GetStringUTF16(
-              IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_HISTORY)));
+              IDS_SETTINGS_CLEAR_DATA_MYACTIVITY_URL_IN_HISTORY)));
 
   PrefService* prefs = profile->GetPrefs();
   bool allow_deleting_history =
