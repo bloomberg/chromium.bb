@@ -19,6 +19,12 @@ enum class SadTabViewMode {
   FEEDBACK,    // A mode which allows the user to provide feedback
 };
 
+// Protocol for actions from the SadTabView.
+@protocol SadTabActionDelegate
+// Shows reportAnIssue UI.
+- (void)showReportAnIssue;
+@end
+
 // The view used to show "sad tab" content to the user when WKWebView's renderer
 // process crashes.
 @interface SadTabView : UIView
@@ -38,6 +44,9 @@ enum class SadTabViewMode {
 
 // The dispatcher for this view.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
+// The delegate for actions from this view.
+@property(nonatomic, weak) id<SadTabActionDelegate> actionDelegate;
 
 @end
 

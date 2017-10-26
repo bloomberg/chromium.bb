@@ -136,6 +136,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 @synthesize mode = _mode;
 @synthesize navigationManager = _navigationManager;
 @synthesize dispatcher = _dispatcher;
+@synthesize actionDelegate = _actionDelegate;
 
 - (instancetype)initWithMode:(SadTabViewMode)mode
            navigationManager:(web::NavigationManager*)navigationManager {
@@ -579,11 +580,11 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
       self.navigationManager->Reload(web::ReloadType::NORMAL, true);
       break;
     case SadTabViewMode::FEEDBACK: {
-      DCHECK(self.dispatcher);
+      DCHECK(self.actionDelegate);
       UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabFeedbackHistogramKey,
                                 ui_metrics::SadTabEvent::BUTTON_CLICKED,
                                 ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
-      [self.dispatcher showReportAnIssue];
+      [self.actionDelegate showReportAnIssue];
       break;
     }
   };

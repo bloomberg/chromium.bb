@@ -227,6 +227,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case TOOLS_REPORT_AN_ISSUE:
       self.containerView.hidden = YES;
       base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
+      [self.dispatcher showReportAnIssueFromViewController:_baseViewController];
       break;
     case TOOLS_VIEW_SOURCE:
       // Debug only; no metric.

@@ -1438,7 +1438,10 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                  completion:nil];
 }
 
-- (void)showReportAnIssue {
+- (void)showReportAnIssueFromViewController:
+    (UIViewController*)baseViewController {
+  DCHECK(baseViewController);
+  DCHECK(![baseViewController presentedViewController]);
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -1448,10 +1451,9 @@ const int kExternalFilesCleanupDelaySeconds = 60;
         newUserFeedbackController:_mainBrowserState
                          delegate:self
                feedbackDataSource:self];
-    [[self topPresentedViewController]
-        presentViewController:_settingsNavigationController
-                     animated:YES
-                   completion:nil];
+    [baseViewController presentViewController:_settingsNavigationController
+                                     animated:YES
+                                   completion:nil];
   });
 }
 
