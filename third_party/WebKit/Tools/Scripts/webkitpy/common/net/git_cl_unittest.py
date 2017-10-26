@@ -60,6 +60,7 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
+                '-m', 'tryserver.chromium.android',
                 '-b', 'android_blink_rel',
                 '--auth-refresh-token-json', 'token.json'
             ],
@@ -81,6 +82,7 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
+                '-m', 'tryserver.chromium.android',
                 '-b', 'android_blink_rel',
                 '--auth-refresh-token-json', 'token.json'
             ],
