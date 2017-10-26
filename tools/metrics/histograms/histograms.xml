@@ -25010,7 +25010,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.SuggestApps.Close"
+<histogram name="FileBrowser.SuggestApps.CloseDialog"
     enum="SuggestAppsDialogCloseReason">
   <owner>joshwoodward@google.com</owner>
   <summary>
