@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -495,7 +496,7 @@ public class SuggestionsSectionTest {
 
         // Tap the button -- we handle this case explicitly here to avoid complexity in
         // verifyAction().
-        section.getActionItemForTesting().performAction(mUiDelegate, null);
+        section.getActionItemForTesting().performAction(mUiDelegate, null, null);
         verify(mUiDelegate.getSuggestionsSource(), times(1)).fetchRemoteSuggestions();
 
         // Simulate the arrival of new data.
@@ -526,7 +527,8 @@ public class SuggestionsSectionTest {
 
         // Tap the button, providing a Runnable for when it fails.
         Runnable sectionOnFailureRunnable = mock(Runnable.class);
-        section.getActionItemForTesting().performAction(mUiDelegate, sectionOnFailureRunnable);
+        section.getActionItemForTesting()
+                .performAction(mUiDelegate, sectionOnFailureRunnable, null);
 
         // Ensure the tap leads to a fetch request on the source with a (potentially different)
         // failure Runnable.
@@ -543,6 +545,40 @@ public class SuggestionsSectionTest {
         // Ensure we're back to the button and the section's failure runnable has been run.
         assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
         verify(sectionOnFailureRunnable, times(1)).run();
+    }
+
+    @Test
+    @Feature("Ntp")
+    public void testFetchMoreNoSuggestions() {
+        SuggestionsSection section = createSection(new CategoryInfoBuilder(REMOTE_TEST_CATEGORY)
+                .withAction(ContentSuggestionsAdditionalAction.FETCH)
+                .showIfEmpty()
+                .build());
+        section.setStatus(CategoryStatus.AVAILABLE);
+        section.appendSuggestions(createDummySuggestions(10, REMOTE_TEST_CATEGORY),
+                /* keepSectionSize = */ true, /* reportPrefetchedSuggestionsCount = */ false);
+        assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
+        assertTrue(section.getCategoryInfo().isRemote());
+
+        // Tap the button, providing a Runnable for when it succeeds with no suggestions.
+        Runnable sectionOnNoNewSuggestionsRunnable = mock(Runnable.class);
+        section.getActionItemForTesting()
+                .performAction(mUiDelegate, null, sectionOnNoNewSuggestionsRunnable);
+
+        // Ensure the tap leads to a fetch request on the source with a (potentially different)
+        // failure Runnable.
+        ArgumentCaptor<Callback> sourceOnSuccessCallback = ArgumentCaptor.forClass(Callback.class);
+        verify(mUiDelegate.getSuggestionsSource(), times(1)).fetchSuggestions(
+                eq(REMOTE_TEST_CATEGORY), any(), sourceOnSuccessCallback.capture(), any());
+
+        // Check the runnable isn't called if we return suggestions.
+        sourceOnSuccessCallback.getValue().onResult(
+                createDummySuggestions(2, REMOTE_TEST_CATEGORY));
+        verify(sectionOnNoNewSuggestionsRunnable, times(0)).run();
+
+        // Check the runnable is called when we return no suggestions.
+        sourceOnSuccessCallback.getValue().onResult(new LinkedList<SnippetArticle>());
+        verify(sectionOnNoNewSuggestionsRunnable, times(1)).run();
     }
 
     /**
@@ -955,7 +991,7 @@ public class SuggestionsSectionTest {
     private void verifyAction(
             SuggestionsSection section, @ContentSuggestionsAdditionalAction int action) {
         if (action != ContentSuggestionsAdditionalAction.NONE) {
-            section.getActionItemForTesting().performAction(mUiDelegate, null);
+            section.getActionItemForTesting().performAction(mUiDelegate, null, null);
         }
 
         verify(section.getCategoryInfo(),
