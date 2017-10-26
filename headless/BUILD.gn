@@ -309,6 +309,8 @@ component("headless") {
     "public/internal/value_conversions.h",
     "public/util/black_hole_protocol_handler.cc",
     "public/util/black_hole_protocol_handler.h",
+    "public/util/compositor_controller.cc",
+    "public/util/compositor_controller.h",
     "public/util/deterministic_dispatcher.cc",
     "public/util/deterministic_dispatcher.h",
     "public/util/deterministic_http_protocol_handler.cc",
@@ -542,6 +544,7 @@ group("headless_tests") {
 test("headless_unittests") {
   sources = [
     "public/domains/types_unittest.cc",
+    "public/util/compositor_controller_unittest.cc",
     "public/util/deterministic_dispatcher_test.cc",
     "public/util/error_reporter_unittest.cc",
     "public/util/expedited_dispatcher_test.cc",
@@ -679,6 +682,7 @@ test("headless_browsertests") {
     "lib/headless_devtools_client_browsertest.cc",
     "lib/headless_web_contents_browsertest.cc",
     "lib/virtual_time_browsertest.cc",
+    "public/util/compositor_controller_browsertest.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
     "public/util/testing/generic_url_request_mocks.cc",

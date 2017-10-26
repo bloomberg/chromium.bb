@@ -32,7 +32,7 @@ class HEADLESS_EXPORT VirtualTimeController
   //
   // Should not be called again until the previous invocation's
   // budget_expired_callback was executed.
-  void GrantVirtualTimeBudget(
+  virtual void GrantVirtualTimeBudget(
       emulation::VirtualTimePolicy policy,
       int budget_ms,
       const base::Callback<void()>& set_up_complete_callback,
@@ -70,8 +70,8 @@ class HEADLESS_EXPORT VirtualTimeController
   //
   // To ensure that the task is notified of elapsed intervals accurately, it
   // should be added while virtual time is paused.
-  void ScheduleRepeatingTask(RepeatingTask* task, int interval_ms);
-  void CancelRepeatingTask(RepeatingTask* task);
+  virtual void ScheduleRepeatingTask(RepeatingTask* task, int interval_ms);
+  virtual void CancelRepeatingTask(RepeatingTask* task);
 
  private:
   struct TaskEntry {

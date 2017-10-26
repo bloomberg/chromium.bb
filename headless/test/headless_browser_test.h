@@ -141,6 +141,9 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // Whether to allow TabSockets when creating |web_contents_|.
   virtual bool GetAllowTabSockets();
 
+  // Whether to enable BeginFrameControl when creating |web_contents_|.
+  virtual bool GetEnableBeginFrameControl();
+
   // Allows the HeadlessBrowserContext used in testing to be customized.
   virtual void CustomizeHeadlessBrowserContext(
       HeadlessBrowserContext::Builder& builder);

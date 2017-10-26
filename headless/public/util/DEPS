@@ -1,0 +1,6 @@
+specific_include_rules = {
+  "compositor_controller_browsertest.cc": [
+    "+cc/base/switches.h",
+  ]
+}
+
