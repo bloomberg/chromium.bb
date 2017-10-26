@@ -102,33 +102,35 @@ auto FontSelectionAlgorithm::WeightDistance(
   if (weight.Includes(request_.weight))
     return {FontSelectionValue(), request_.weight};
 
-  // The spec states, for weights 400 and 500: "If the desired weight is
-  // 400, 500 is checked first ... If the desired weight is 500, 400 is
-  // checked first", section 4.c) of
-  // https://drafts.csswg.org/css-fonts/#font-style-matching section
-  FontSelectionValue offset(1);
-  if (request_.weight == FontSelectionValue(400) &&
-      weight.Includes(FontSelectionValue(500)))
-    return {offset, FontSelectionValue(500)};
-  if (request_.weight == FontSelectionValue(500) &&
-      weight.Includes(FontSelectionValue(400)))
-    return {offset, FontSelectionValue(400)};
-
-  if (request_.weight <= WeightSearchThreshold()) {
+  if (request_.weight >= LowerWeightSearchThreshold() &&
+      request_.weight <= UpperWeightSearchThreshold()) {
+    if (weight.minimum > request_.weight &&
+        weight.minimum <= UpperWeightSearchThreshold())
+      return {weight.minimum - request_.weight, weight.minimum};
     if (weight.maximum < request_.weight)
-      return {request_.weight - weight.maximum + offset, weight.maximum};
+      return {UpperWeightSearchThreshold() - weight.maximum, weight.maximum};
+    DCHECK(weight.minimum > UpperWeightSearchThreshold());
+    auto threshold =
+        std::min(request_.weight, capabilities_bounds_.weight.minimum);
+    return {weight.minimum - threshold, weight.minimum};
+  }
+
+  if (request_.weight < LowerWeightSearchThreshold()) {
+    if (weight.maximum < request_.weight)
+      return {request_.weight - weight.maximum, weight.maximum};
     DCHECK(weight.minimum > request_.weight);
     auto threshold =
         std::min(request_.weight, capabilities_bounds_.weight.minimum);
-    return {weight.minimum - threshold + offset, weight.minimum};
+    return {weight.minimum - threshold, weight.minimum};
   }
 
+  DCHECK(request_.weight >= UpperWeightSearchThreshold());
   if (weight.minimum > request_.weight)
-    return {weight.minimum - request_.weight + offset, weight.minimum};
+    return {weight.minimum - request_.weight, weight.minimum};
   DCHECK(weight.maximum < request_.weight);
   auto threshold =
       std::max(request_.weight, capabilities_bounds_.weight.maximum);
-  return {threshold - weight.maximum + offset, weight.maximum};
+  return {threshold - weight.maximum, weight.maximum};
 }
 
 bool FontSelectionAlgorithm::IsBetterMatchForRequest(
