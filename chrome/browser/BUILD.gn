@@ -3933,7 +3933,7 @@ split_static_library("browser") {
   }
 
   if (enable_vr) {
-    if (is_android) {
+    if (enable_daydream) {
       deps += [ "android/vr_shell:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
