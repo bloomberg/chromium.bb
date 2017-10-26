@@ -729,7 +729,7 @@ void VrShell::SetVoiceSearchActive(bool active) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     std::string profile_locale = g_browser_process->GetApplicationLocale();
     speech_recognizer_.reset(new vr::SpeechRecognizer(
-        this, profile->GetRequestContext(), profile_locale));
+        this, ui_, profile->GetRequestContext(), profile_locale));
   }
   if (active) {
     speech_recognizer_->Start();

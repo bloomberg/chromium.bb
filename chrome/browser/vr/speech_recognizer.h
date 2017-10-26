@@ -41,6 +41,7 @@ namespace vr {
 enum SpeechRecognitionState {
   SPEECH_RECOGNITION_OFF = 0,
   SPEECH_RECOGNITION_READY,
+  SPEECH_RECOGNITION_END,
   SPEECH_RECOGNITION_RECOGNIZING,
   SPEECH_RECOGNITION_IN_SPEECH,
   SPEECH_RECOGNITION_NETWORK_ERROR,
@@ -51,6 +52,7 @@ class VoiceResultDelegate {
   virtual void OnVoiceResults(const base::string16& result) = 0;
 };
 
+class BrowserUiInterface;
 class SpeechRecognizerOnIO;
 
 // An interface for IO to communicate with browser UI thread.
@@ -79,6 +81,7 @@ class IOBrowserUIInterface {
 class SpeechRecognizer : public IOBrowserUIInterface {
  public:
   SpeechRecognizer(VoiceResultDelegate* delegate,
+                   BrowserUiInterface* ui,
                    net::URLRequestContextGetter* url_request_context_getter,
                    const std::string& locale);
   ~SpeechRecognizer() override;
@@ -102,6 +105,7 @@ class SpeechRecognizer : public IOBrowserUIInterface {
 
  private:
   VoiceResultDelegate* delegate_;
+  BrowserUiInterface* ui_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::string locale_;
 

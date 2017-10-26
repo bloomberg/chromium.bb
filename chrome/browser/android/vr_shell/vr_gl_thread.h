@@ -76,6 +76,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetLocationAccessIndicator(bool enabled) override;
   void SetExitVrPromptEnabled(bool enabled,
                               vr::UiUnsupportedMode reason) override;
+  void SetSpeechRecognitionEnabled(bool enabled) override;
+  void OnSpeechRecognitionStateChanged(int new_state) override;
 
  protected:
   void Init() override;

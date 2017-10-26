@@ -165,6 +165,8 @@ static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
 
 static constexpr float kScreenDimmerOpacity = 0.9f;
 
+static constexpr float kVoiceSearchButtonXOffset = 0.25f;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_

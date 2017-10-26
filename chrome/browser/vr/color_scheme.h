@@ -89,6 +89,8 @@ struct ColorScheme {
   // Timeout UI colors
   SkColor timeout_message_background;
   SkColor timeout_message_foreground;
+
+  SkColor speech_recognition_circle_background;
 };
 
 }  // namespace vr

@@ -29,6 +29,9 @@ struct Model {
 
   WebVrTimeoutState web_vr_timeout_state = kWebVrNoTimeoutPending;
   bool started_for_autopresentation = false;
+
+  bool recognizing_speech = false;
+  int speech_recognition_state = 0;
 };
 
 }  // namespace vr
