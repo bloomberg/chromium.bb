@@ -595,8 +595,6 @@ void PaintController::CommitNewDisplayItems() {
                (int)new_display_item_list_.size() - num_cached_new_items_);
 
   num_cached_new_items_ = 0;
-  // These data structures are used during painting only.
-  DCHECK(!IsSkippingCache());
 #if DCHECK_IS_ON()
   new_display_item_indices_by_client_.clear();
 #endif
@@ -605,6 +603,7 @@ void PaintController::CommitNewDisplayItems() {
       !new_display_item_list_.IsEmpty())
     GenerateRasterInvalidations(new_paint_chunks_.LastChunk());
 
+  auto old_cache_generation = current_cache_generation_;
   current_cache_generation_ =
       DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
 
@@ -616,21 +615,30 @@ void PaintController::CommitNewDisplayItems() {
 
   Vector<const DisplayItemClient*> skipped_cache_clients;
   for (const auto& item : new_display_item_list_) {
+    const auto& client = item.Client();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-      item.Client().ClearPartialInvalidationRect();
+      client.ClearPartialInvalidationRect();
 
     if (item.IsCacheable()) {
-      item.Client().SetDisplayItemsCached(current_cache_generation_);
+      client.SetDisplayItemsCached(current_cache_generation_);
     } else {
-      if (item.Client().IsJustCreated())
-        item.Client().ClearIsJustCreated();
+      if (client.IsJustCreated())
+        client.ClearIsJustCreated();
       if (item.SkippedCache())
         skipped_cache_clients.push_back(&item.Client());
     }
   }
 
-  for (auto* client : skipped_cache_clients)
-    client->SetDisplayItemsUncached();
+  for (auto* client : skipped_cache_clients) {
+    // Set client uncached only if it is cached by this PaintController. The
+    // client may be still validly cached in another PaintController which
+    // should not be affected by skipping cache in this PaintController.
+    if (client->DisplayItemsAreCached(old_cache_generation) ||
+        // The client was set cached because it just painted some cacheable
+        // items in this PaintController. Need to set it uncached.
+        client->DisplayItemsAreCached(current_cache_generation_))
+      client->SetDisplayItemsUncached();
+  }
 
   // The new list will not be appended to again so we can release unused memory.
   new_display_item_list_.ShrinkToFit();
