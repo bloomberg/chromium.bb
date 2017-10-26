@@ -81,6 +81,7 @@
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
@@ -159,9 +160,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
   // YES if this Tab is being prerendered.
   BOOL _isPrerenderTab;
-
-  // YES if this Tab was initiated from a voice search.
-  BOOL _isVoiceSearchResultsTab;
 
   // Last visited timestamp.
   double _lastVisitedTimestamp;
@@ -266,7 +264,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     _iOSCaptivePortalBlockingPageDelegate;
 @synthesize useGreyImageCache = useGreyImageCache_;
 @synthesize isPrerenderTab = _isPrerenderTab;
-@synthesize isVoiceSearchResultsTab = _isVoiceSearchResultsTab;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
@@ -286,10 +283,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // TODO(crbug.com/620465): Tab should only use public API of WebState.
     // Remove this cast once this is the case.
     _webStateImpl = static_cast<web::WebStateImpl*>(webState);
-    _browserState =
-        ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
     _webStateObserver =
         base::MakeUnique<web::WebStateObserverBridge>(webState, self);
+    _browserState =
+        ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
 
     [self updateLastVisitedTimestamp];
     [[self webController] addObserver:self];
@@ -336,11 +333,21 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return self.webState && !self.webState->IsLoading();
 }
 
-- (void)setIsVoiceSearchResultsTab:(BOOL)isVoiceSearchResultsTab {
-  // There is intentionally no equality check in this setter, as we want the
-  // notificaiton to be sent regardless of whether the value has changed.
-  _isVoiceSearchResultsTab = isVoiceSearchResultsTab;
-  [_parentTabModel notifyTabChanged:self];
+- (BOOL)isVoiceSearchResultsTab {
+  // TODO(crbug.com/778416): Move this logic entirely into helper.
+  // If nothing has been loaded in the Tab, it cannot be displaying a voice
+  // search results page.
+  web::NavigationItem* item =
+      self.webState->GetNavigationManager()->GetVisibleItem();
+  if (!item)
+    return NO;
+  // Navigating through history to a NavigationItem that was created for a voice
+  // search query should just be treated like a normal page load.
+  if ((item->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) != 0)
+    return NO;
+  // Check whether |item| has been marked as a voice search result navigation.
+  return VoiceSearchNavigationTabHelper::FromWebState(self.webState)
+      ->IsNavigationFromVoiceSearch(item);
 }
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
@@ -865,8 +872,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   if (!navigation->IsSameDocument()) {
-    // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
-    self.isVoiceSearchResultsTab = NO;
     // Move the toolbar to visible during page load.
     [_fullScreenController disableFullScreen];
   }
