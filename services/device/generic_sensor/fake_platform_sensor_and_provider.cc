@@ -55,7 +55,9 @@ void FakePlatformSensorProvider::CreateSensorInternal(
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback) {
   DCHECK(type >= mojom::SensorType::FIRST && type <= mojom::SensorType::LAST);
-  DoCreateSensorInternal(type, mapping.release(), callback);
+  auto sensor =
+      base::MakeRefCounted<FakePlatformSensor>(type, std::move(mapping), this);
+  DoCreateSensorInternal(type, std::move(sensor), callback);
 }
 
 }  // namespace device
