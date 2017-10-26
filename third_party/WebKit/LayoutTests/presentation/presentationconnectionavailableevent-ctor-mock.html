@@ -9,6 +9,18 @@
 <button>click me</button>
 <script>
 
+test(function() {
+  assert_throws(new TypeError, () => {
+    new PresentationConnectionAvailableEvent('connectionavailable')
+  });
+  assert_throws(new TypeError, () => {
+    new PresentationConnectionAvailableEvent('connectionavailable', {})
+  });
+  assert_throws(new TypeError, () => {
+    new PresentationConnectionAvailableEvent('connectionavailable', { connection: null })
+  });
+}, "Test that the PresentationConnectionAvailableEvent ctor requires connection parameter.")
+
 async_test(t => {
   var button = document.querySelector('button');
   // This is receiving the user gesture and runs the callback.
