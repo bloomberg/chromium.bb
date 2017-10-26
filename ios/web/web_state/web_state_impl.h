@@ -234,6 +234,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void TakeSnapshot(const SnapshotCallback& callback,
                     CGSize target_size) const override;
   base::WeakPtr<WebState> AsWeakPtr() override;
+  void AddObserver(WebStateObserver* observer) override;
+  void RemoveObserver(WebStateObserver* observer) override;
 
   // Adds |interstitial|'s view to the web controller's content view.
   void ShowWebInterstitial(WebInterstitialImpl* interstitial);
@@ -297,8 +299,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
 
  protected:
-  void AddObserver(WebStateObserver* observer) override;
-  void RemoveObserver(WebStateObserver* observer) override;
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
 

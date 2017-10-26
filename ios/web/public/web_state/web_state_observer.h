@@ -28,6 +28,8 @@ enum class PageLoadCompletionStatus : bool { SUCCESS = 0, FAILURE = 1 };
 class WebStateObserver {
  public:
   // Returns the web state associated with this observer.
+  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
+  // have been converted to manage the registration with WebState directly.
   WebState* web_state() const { return web_state_; }
 
   // These methods are invoked every time the WebState changes visibility.
@@ -149,28 +151,38 @@ class WebStateObserver {
   virtual void WebStateDestroyed(WebState* web_state) {}
 
  protected:
+  // Use this constructor when the object wants to observe a WebState for
+  // part of its lifetime.  It can register directly with WebState as an
+  // observer using AddObserver/RemoveObserver methods.
+  WebStateObserver();
+
   // Use this constructor when the object is tied to a single WebState for
   // its entire lifetime.
+  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
+  // have been converted to manage the registration with WebState directly.
   explicit WebStateObserver(WebState* web_state);
-
-  // Use this constructor when the object wants to observe a WebState for
-  // part of its lifetime.  It can then call Observe() to start and stop
-  // observing.
-  WebStateObserver();
 
   virtual ~WebStateObserver();
 
   // Start observing a different WebState; used with the default constructor.
+  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
+  // have been converted to manage the registration with WebState directly.
   void Observe(WebState* web_state);
 
  private:
+  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
+  // have been converted to manage the registration with WebState directly.
   friend class WebStateImpl;
   friend class TestWebState;
 
   // Stops observing the current web state.
+  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
+  // have been converted to manage the registration with WebState directly.
   void ResetWebState();
 
-  WebState* web_state_;
+  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
+  // have been converted to manage the registration with WebState directly.
+  WebState* web_state_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateObserver);
 };
