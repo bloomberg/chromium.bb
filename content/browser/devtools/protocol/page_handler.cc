@@ -348,8 +348,7 @@ Response PageHandler::Navigate(const std::string& url,
       gurl,
       Referrer(GURL(referrer.fromMaybe("")), blink::kWebReferrerPolicyDefault),
       type, std::string());
-  *frame_id = web_contents->GetMainFrame()->GetDevToolsFrameToken().ToString();
-  return Response::OK();
+  return Response::FallThrough();
 }
 
 static const char* TransitionTypeName(ui::PageTransition type) {
