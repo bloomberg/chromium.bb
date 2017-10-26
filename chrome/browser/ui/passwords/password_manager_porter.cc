@@ -132,6 +132,12 @@ void PasswordManagerPorter::PresentFileSelector(
 #endif
 }
 
+void PasswordManagerPorter::Store() {
+  DCHECK(web_contents_);
+  PresentFileSelector(web_contents_,
+                      PasswordManagerPorter::Type::PASSWORD_EXPORT);
+}
+
 void PasswordManagerPorter::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {

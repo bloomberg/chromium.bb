@@ -14,7 +14,6 @@ struct PasswordForm;
 
 namespace password_manager {
 
-// TODO(vabr): Define the ExportFlow interface.
 // This is a delegate of the ExportFlow interface used to retrieve exportable
 // passwords.
 class CredentialProviderInterface {

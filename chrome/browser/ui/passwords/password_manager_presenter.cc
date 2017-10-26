@@ -424,8 +424,8 @@ void PasswordManagerPresenter::ImportPasswords(
 
 void PasswordManagerPresenter::ExportPasswords(
     content::WebContents* web_contents) {
-  password_manager_porter_.PresentFileSelector(
-      web_contents, PasswordManagerPorter::Type::PASSWORD_EXPORT);
+  password_manager_porter_.set_web_contents(web_contents);
+  password_manager_porter_.Store();
 }
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {

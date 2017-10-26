@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_MANAGER_PORTER_H_
 
 #include "components/password_manager/core/browser/import/password_importer.h"
+#include "components/password_manager/core/browser/ui/export_flow.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace content {
@@ -20,7 +21,8 @@ class Profile;
 
 // Handles the exporting of passwords to a file, and the importing of such a
 // file to the Password Manager.
-class PasswordManagerPorter : public ui::SelectFileDialog::Listener {
+class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
+                              public password_manager::ExportFlow {
  public:
   enum Type {
     PASSWORD_IMPORT,
@@ -36,6 +38,13 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener {
   // passwords.
   void PresentFileSelector(content::WebContents* web_contents, Type type);
 
+  void set_web_contents(content::WebContents* web_contents) {
+    web_contents_ = web_contents;
+  }
+
+  // password_manager::ExportFlow
+  void Store() override;
+
  private:
   // Callback from the file selector dialogue when a file has been picked (for
   // either import or export).
@@ -50,7 +59,10 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener {
 
   password_manager::CredentialProviderInterface* credential_provider_interface_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  Profile* profile_;
+  Profile* profile_ = nullptr;
+
+  // Caching the current WebContents for when PresentFileSelector is called.
+  content::WebContents* web_contents_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPorter);
 };
