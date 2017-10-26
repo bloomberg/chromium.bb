@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 
@@ -23,12 +24,21 @@ class ServiceWorkerContainerHost;
 class CONTENT_EXPORT ControllerServiceWorkerConnector
     : public base::RefCounted<ControllerServiceWorkerConnector> {
  public:
+  // Observes the connection to the controller.
+  class Observer {
+   public:
+    virtual void OnConnectionClosed() = 0;
+  };
+
   explicit ControllerServiceWorkerConnector(
       mojom::ServiceWorkerContainerHost* container_host);
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
   mojom::ControllerServiceWorker* GetControllerServiceWorker();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   void OnContainerHostConnectionClosed();
 
@@ -50,6 +60,8 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // but will eventually be directly connected to the controller service worker
   // in the renderer process)
   mojom::ControllerServiceWorkerPtr controller_service_worker_;
+
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerServiceWorkerConnector);
 };
