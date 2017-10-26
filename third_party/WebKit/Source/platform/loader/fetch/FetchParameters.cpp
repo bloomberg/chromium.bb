@@ -89,7 +89,8 @@ void FetchParameters::SetCrossOriginAccessControl(
     WebURLRequest::FetchCredentialsMode credentials_mode) {
   // Currently FetchParametersMode is only used when the request goes to
   // Service Worker.
-  resource_request_.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  resource_request_.SetFetchRequestMode(
+      network::mojom::FetchRequestMode::kCORS);
   resource_request_.SetFetchCredentialsMode(credentials_mode);
 
   options_.security_origin = origin;

@@ -132,7 +132,7 @@ void EventSource::Connect() {
   request.SetHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   request.SetRequestContext(WebURLRequest::kRequestContextEventSource);
-  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   request.SetFetchCredentialsMode(
       with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
                         : WebURLRequest::kFetchCredentialsModeSameOrigin);

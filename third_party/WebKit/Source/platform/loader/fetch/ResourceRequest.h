@@ -41,6 +41,7 @@
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -257,10 +258,10 @@ class PLATFORM_EXPORT ResourceRequest final {
     frame_type_ = frame_type;
   }
 
-  WebURLRequest::FetchRequestMode GetFetchRequestMode() const {
+  network::mojom::FetchRequestMode GetFetchRequestMode() const {
     return fetch_request_mode_;
   }
-  void SetFetchRequestMode(WebURLRequest::FetchRequestMode mode) {
+  void SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
     fetch_request_mode_ = mode;
   }
 
@@ -369,7 +370,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   RefPtr<ExtraData> extra_data_;
   WebURLRequest::RequestContext request_context_;
   WebURLRequest::FrameType frame_type_;
-  WebURLRequest::FetchRequestMode fetch_request_mode_;
+  network::mojom::FetchRequestMode fetch_request_mode_;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
   WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
@@ -430,7 +431,7 @@ struct CrossThreadResourceRequestData {
   int app_cache_host_id_;
   WebURLRequest::RequestContext request_context_;
   WebURLRequest::FrameType frame_type_;
-  WebURLRequest::FetchRequestMode fetch_request_mode_;
+  network::mojom::FetchRequestMode fetch_request_mode_;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
   WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;

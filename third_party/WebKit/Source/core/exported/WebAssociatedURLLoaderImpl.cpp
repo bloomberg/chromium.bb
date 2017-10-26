@@ -96,7 +96,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
       WebAssociatedURLLoaderImpl*,
       WebAssociatedURLLoaderClient*,
       const WebAssociatedURLLoaderOptions&,
-      WebURLRequest::FetchRequestMode,
+      network::mojom::FetchRequestMode,
       scoped_refptr<WebTaskRunner>);
 
   // ThreadableLoaderClient
@@ -139,7 +139,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   ClientAdapter(WebAssociatedURLLoaderImpl*,
                 WebAssociatedURLLoaderClient*,
                 const WebAssociatedURLLoaderOptions&,
-                WebURLRequest::FetchRequestMode,
+                network::mojom::FetchRequestMode,
                 scoped_refptr<WebTaskRunner>);
 
   void NotifyError(TimerBase*);
@@ -147,7 +147,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderImpl* loader_;
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
-  WebURLRequest::FetchRequestMode fetch_request_mode_;
+  network::mojom::FetchRequestMode fetch_request_mode_;
   WebURLError error_;
 
   TaskRunnerTimer<ClientAdapter> error_timer_;
@@ -160,7 +160,7 @@ WebAssociatedURLLoaderImpl::ClientAdapter::Create(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
-    WebURLRequest::FetchRequestMode fetch_request_mode,
+    network::mojom::FetchRequestMode fetch_request_mode,
     scoped_refptr<WebTaskRunner> task_runner) {
   return WTF::WrapUnique(new ClientAdapter(loader, client, options,
                                            fetch_request_mode, task_runner));
@@ -170,7 +170,7 @@ WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
-    WebURLRequest::FetchRequestMode fetch_request_mode,
+    network::mojom::FetchRequestMode fetch_request_mode,
     scoped_refptr<WebTaskRunner> task_runner)
     : loader_(loader),
       client_(client),
@@ -214,9 +214,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
 
   if (options_.expose_all_response_headers ||
-      (fetch_request_mode_ != WebURLRequest::kFetchRequestModeCORS &&
+      (fetch_request_mode_ != network::mojom::FetchRequestMode::kCORS &&
        fetch_request_mode_ !=
-           WebURLRequest::kFetchRequestModeCORSWithForcedPreflight)) {
+           network::mojom::FetchRequestMode::kCORSWithForcedPreflight)) {
     // Use the original ResourceResponse.
     client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;

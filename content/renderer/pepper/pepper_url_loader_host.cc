@@ -272,14 +272,14 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
     if (filled_in_request_data.allow_cross_origin_requests) {
       // Allow cross-origin requests with access control. The request specifies
       // if credentials are to be sent.
-      web_request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+      web_request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
       web_request.SetFetchCredentialsMode(
           filled_in_request_data.allow_credentials
               ? WebURLRequest::kFetchCredentialsModeInclude
               : WebURLRequest::kFetchCredentialsModeOmit);
     } else {
       web_request.SetFetchRequestMode(
-          WebURLRequest::kFetchRequestModeSameOrigin);
+          network::mojom::FetchRequestMode::kSameOrigin);
       // Same-origin requests can always send credentials. Use the default
       // credentials mode "include".
     }

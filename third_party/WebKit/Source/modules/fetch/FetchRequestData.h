@@ -16,6 +16,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -59,8 +60,8 @@ class FetchRequestData final
   void SetReferrerString(const AtomicString& s) { referrer_.referrer = s; }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_.referrer_policy; }
   void SetReferrerPolicy(ReferrerPolicy p) { referrer_.referrer_policy = p; }
-  void SetMode(WebURLRequest::FetchRequestMode mode) { mode_ = mode; }
-  WebURLRequest::FetchRequestMode Mode() const { return mode_; }
+  void SetMode(network::mojom::FetchRequestMode mode) { mode_ = mode; }
+  network::mojom::FetchRequestMode Mode() const { return mode_; }
   void SetCredentials(WebURLRequest::FetchCredentialsMode);
   WebURLRequest::FetchCredentialsMode Credentials() const {
     return credentials_;
@@ -123,7 +124,7 @@ class FetchRequestData final
   Referrer referrer_;
   // FIXME: Support m_authenticationFlag;
   // FIXME: Support m_synchronousFlag;
-  WebURLRequest::FetchRequestMode mode_;
+  network::mojom::FetchRequestMode mode_;
   WebURLRequest::FetchCredentialsMode credentials_;
   // TODO(yiyix): |cache_mode_| is exposed but does not yet affect fetch
   // behavior. We must transfer the mode to the network layer and service

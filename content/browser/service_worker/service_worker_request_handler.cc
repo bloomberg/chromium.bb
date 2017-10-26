@@ -101,10 +101,11 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
-          FETCH_REQUEST_MODE_NAVIGATE, FETCH_CREDENTIALS_MODE_INCLUDE,
-          FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
-          resource_type, request_context_type, frame_type,
-          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
+          network::mojom::FetchRequestMode::kNavigate,
+          FETCH_CREDENTIALS_MODE_INCLUDE, FetchRedirectMode::MANUAL_MODE,
+          std::string() /* integrity */, resource_type, request_context_type,
+          frame_type, blob_storage_context->AsWeakPtr(), body,
+          skip_service_worker));
   if (handler)
     request->SetUserData(&kUserDataKey, std::move(handler));
 
@@ -154,10 +155,11 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
-          FETCH_REQUEST_MODE_NAVIGATE, FETCH_CREDENTIALS_MODE_INCLUDE,
-          FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
-          resource_type, request_context_type, frame_type,
-          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
+          network::mojom::FetchRequestMode::kNavigate,
+          FETCH_CREDENTIALS_MODE_INCLUDE, FetchRedirectMode::MANUAL_MODE,
+          std::string() /* integrity */, resource_type, request_context_type,
+          frame_type, blob_storage_context->AsWeakPtr(), body,
+          skip_service_worker));
 
   // Transfer ownership to the ServiceWorkerNavigationHandleCore.
   // In the case of a successful navigation, the SWProviderHost will be
@@ -176,7 +178,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     int process_id,
     int provider_id,
     bool skip_service_worker,
-    FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,

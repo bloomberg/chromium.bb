@@ -103,7 +103,7 @@ FetchRequestData::FetchRequestData()
       context_(WebURLRequest::kRequestContextUnspecified),
       same_origin_data_url_flag_(false),
       referrer_(Referrer(ClientReferrerString(), kReferrerPolicyDefault)),
-      mode_(WebURLRequest::kFetchRequestModeNoCORS),
+      mode_(network::mojom::FetchRequestMode::kNoCORS),
       credentials_(WebURLRequest::kFetchCredentialsModeOmit),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       redirect_(WebURLRequest::kFetchRedirectModeFollow),

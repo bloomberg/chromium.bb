@@ -11,12 +11,12 @@
 #include "platform/mojo/ReferrerStructTraits.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebReferrerPolicy.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace mojo {
 
 using blink::mojom::FetchCredentialsMode;
 using blink::mojom::FetchRedirectMode;
-using blink::mojom::FetchRequestMode;
 using blink::mojom::RequestContextFrameType;
 using blink::mojom::RequestContextType;
 
@@ -88,50 +88,6 @@ bool EnumTraits<FetchRedirectMode, blink::WebURLRequest::FetchRedirectMode>::
       return true;
     case FetchRedirectMode::MANUAL:
       *out = blink::WebURLRequest::kFetchRedirectModeManual;
-      return true;
-  }
-
-  return false;
-}
-
-FetchRequestMode
-EnumTraits<FetchRequestMode, blink::WebURLRequest::FetchRequestMode>::ToMojom(
-    blink::WebURLRequest::FetchRequestMode input) {
-  switch (input) {
-    case blink::WebURLRequest::kFetchRequestModeSameOrigin:
-      return FetchRequestMode::SAME_ORIGIN;
-    case blink::WebURLRequest::kFetchRequestModeNoCORS:
-      return FetchRequestMode::NO_CORS;
-    case blink::WebURLRequest::kFetchRequestModeCORS:
-      return FetchRequestMode::CORS;
-    case blink::WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
-      return FetchRequestMode::CORS_WITH_FORCED_PREFLIGHT;
-    case blink::WebURLRequest::kFetchRequestModeNavigate:
-      return FetchRequestMode::NAVIGATE;
-  }
-
-  NOTREACHED();
-  return FetchRequestMode::NO_CORS;
-}
-
-bool EnumTraits<FetchRequestMode, blink::WebURLRequest::FetchRequestMode>::
-    FromMojom(FetchRequestMode input,
-              blink::WebURLRequest::FetchRequestMode* out) {
-  switch (input) {
-    case FetchRequestMode::SAME_ORIGIN:
-      *out = blink::WebURLRequest::kFetchRequestModeSameOrigin;
-      return true;
-    case FetchRequestMode::NO_CORS:
-      *out = blink::WebURLRequest::kFetchRequestModeNoCORS;
-      return true;
-    case FetchRequestMode::CORS:
-      *out = blink::WebURLRequest::kFetchRequestModeCORS;
-      return true;
-    case FetchRequestMode::CORS_WITH_FORCED_PREFLIGHT:
-      *out = blink::WebURLRequest::kFetchRequestModeCORSWithForcedPreflight;
-      return true;
-    case FetchRequestMode::NAVIGATE:
-      *out = blink::WebURLRequest::kFetchRequestModeNavigate;
       return true;
   }
 
@@ -450,7 +406,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
                   blink::WebServiceWorkerRequest>::
     Read(blink::mojom::FetchAPIRequestDataView data,
          blink::WebServiceWorkerRequest* out) {
-  blink::WebURLRequest::FetchRequestMode mode;
+  network::mojom::FetchRequestMode mode;
   blink::WebURLRequest::RequestContext requestContext;
   blink::WebURLRequest::FrameType frameType;
   blink::KURL url;

@@ -71,7 +71,7 @@ bool TextTrackLoader::RedirectReceived(Resource* resource,
                                        const ResourceResponse&) {
   DCHECK_EQ(this->GetResource(), resource);
   if (resource->GetResourceRequest().GetFetchRequestMode() ==
-          WebURLRequest::kFetchRequestModeCORS ||
+          network::mojom::FetchRequestMode::kCORS ||
       GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(request.Url()))
     return true;
 

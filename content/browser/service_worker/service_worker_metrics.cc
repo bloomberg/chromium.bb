@@ -792,9 +792,11 @@ void ServiceWorkerMetrics::RecordStatusZeroResponseError(
   }
 }
 
-void ServiceWorkerMetrics::RecordFallbackedRequestMode(FetchRequestMode mode) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
-                            mode, FETCH_REQUEST_MODE_LAST + 1);
+void ServiceWorkerMetrics::RecordFallbackedRequestMode(
+    network::mojom::FetchRequestMode mode) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorker.URLRequestJob.FallbackedRequestMode", mode,
+      static_cast<int>(network::mojom::FetchRequestMode::kLast) + 1);
 }
 
 void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {

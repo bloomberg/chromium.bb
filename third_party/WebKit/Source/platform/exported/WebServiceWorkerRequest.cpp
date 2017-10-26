@@ -17,7 +17,7 @@ class WebServiceWorkerRequestPrivate
     : public RefCounted<WebServiceWorkerRequestPrivate> {
  public:
   WebServiceWorkerRequestPrivate()
-      : mode_(WebURLRequest::kFetchRequestModeNoCORS),
+      : mode_(network::mojom::FetchRequestMode::kNoCORS),
         is_main_resource_load_(false),
         credentials_mode_(WebURLRequest::kFetchCredentialsModeOmit),
         cache_mode_(mojom::FetchCacheMode::kDefault),
@@ -31,7 +31,7 @@ class WebServiceWorkerRequestPrivate
   HTTPHeaderMap headers_;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Referrer referrer_;
-  WebURLRequest::FetchRequestMode mode_;
+  network::mojom::FetchRequestMode mode_;
   bool is_main_resource_load_;
   WebURLRequest::FetchCredentialsMode credentials_mode_;
   mojom::FetchCacheMode cache_mode_;
@@ -146,11 +146,11 @@ const Referrer& WebServiceWorkerRequest::GetReferrer() const {
   return private_->referrer_;
 }
 
-void WebServiceWorkerRequest::SetMode(WebURLRequest::FetchRequestMode mode) {
+void WebServiceWorkerRequest::SetMode(network::mojom::FetchRequestMode mode) {
   private_->mode_ = mode;
 }
 
-WebURLRequest::FetchRequestMode WebServiceWorkerRequest::Mode() const {
+network::mojom::FetchRequestMode WebServiceWorkerRequest::Mode() const {
   return private_->mode_;
 }
 

@@ -21,6 +21,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -46,7 +47,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      FetchRequestMode request_mode,
+      network::mojom::FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
@@ -123,7 +124,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   const bool is_main_resource_load_;
   const bool is_main_frame_load_;
   std::unique_ptr<ServiceWorkerURLJobWrapper> url_job_;
-  FetchRequestMode request_mode_;
+  network::mojom::FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
   std::string integrity_;

@@ -21,6 +21,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 
 namespace net {
 class NetworkDelegate;
@@ -93,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       int process_id,
       int provider_id,
       bool skip_service_worker,
-      FetchRequestMode request_mode,
+      network::mojom::FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,

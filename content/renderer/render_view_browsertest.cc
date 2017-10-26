@@ -679,7 +679,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
-  request.SetFetchRequestMode(blink::WebURLRequest::kFetchRequestModeNavigate);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
   request.SetFetchCredentialsMode(
       blink::WebURLRequest::kFetchCredentialsModeInclude);
   request.SetFetchRedirectMode(blink::WebURLRequest::kFetchRedirectModeManual);

@@ -157,11 +157,6 @@ class StreamHandleListener
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
 };
 
-WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
-    FetchRequestMode mode) {
-  return static_cast<WebURLRequest::FetchRequestMode>(mode);
-}
-
 WebURLRequest::FetchCredentialsMode GetBlinkFetchCredentialsMode(
     FetchCredentialsMode credentials_mode) {
   return static_cast<WebURLRequest::FetchCredentialsMode>(credentials_mode);
@@ -220,7 +215,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
   web_request->SetReferrer(
       blink::WebString::FromUTF8(request.referrer.url.spec()),
       request.referrer.policy);
-  web_request->SetMode(GetBlinkFetchRequestMode(request.mode));
+  web_request->SetMode(request.mode);
   web_request->SetIsMainResourceLoad(request.is_main_resource_load);
   web_request->SetCredentialsMode(
       GetBlinkFetchCredentialsMode(request.credentials_mode));

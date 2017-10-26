@@ -10,6 +10,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -26,7 +27,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   static FetchRespondWithObserver* Create(ExecutionContext*,
                                           int fetch_event_id,
                                           const KURL& request_url,
-                                          WebURLRequest::FetchRequestMode,
+                                          network::mojom::FetchRequestMode,
                                           WebURLRequest::FetchRedirectMode,
                                           WebURLRequest::FrameType,
                                           WebURLRequest::RequestContext,
@@ -42,7 +43,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   FetchRespondWithObserver(ExecutionContext*,
                            int fetch_event_id,
                            const KURL& request_url,
-                           WebURLRequest::FetchRequestMode,
+                           network::mojom::FetchRequestMode,
                            WebURLRequest::FetchRedirectMode,
                            WebURLRequest::FrameType,
                            WebURLRequest::RequestContext,
@@ -50,7 +51,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
 
  private:
   const KURL request_url_;
-  const WebURLRequest::FetchRequestMode request_mode_;
+  const network::mojom::FetchRequestMode request_mode_;
   const WebURLRequest::FetchRedirectMode redirect_mode_;
   const WebURLRequest::FrameType frame_type_;
   const WebURLRequest::RequestContext request_context_;

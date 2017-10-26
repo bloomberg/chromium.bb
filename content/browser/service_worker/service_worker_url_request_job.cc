@@ -321,7 +321,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     const std::string& client_id,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     const ResourceContext* resource_context,
-    FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
@@ -867,8 +867,9 @@ bool ServiceWorkerURLRequestJob::IsFallbackToRendererNeeded() const {
   // fallback to the network directly.
   return !IsMainResourceLoad() &&
          fetch_type_ != ServiceWorkerFetchType::FOREIGN_FETCH &&
-         (request_mode_ == FETCH_REQUEST_MODE_CORS ||
-          request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
+         (request_mode_ == network::mojom::FetchRequestMode::kCORS ||
+          request_mode_ ==
+              network::mojom::FetchRequestMode::kCORSWithForcedPreflight) &&
          (!request()->initiator().has_value() ||
           !request()->initiator()->IsSameOriginWith(
               url::Origin::Create(request()->url())));

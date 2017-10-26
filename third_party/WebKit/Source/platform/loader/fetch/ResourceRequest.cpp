@@ -67,7 +67,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(WebURLRequest::kRequestContextUnspecified),
       frame_type_(WebURLRequest::kFrameTypeNone),
-      fetch_request_mode_(WebURLRequest::kFetchRequestModeNoCORS),
+      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCORS),
       fetch_credentials_mode_(WebURLRequest::kFetchCredentialsModeInclude),
       fetch_redirect_mode_(WebURLRequest::kFetchRedirectModeFollow),
       referrer_policy_(kReferrerPolicyDefault),

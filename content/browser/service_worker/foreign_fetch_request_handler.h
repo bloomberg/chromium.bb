@@ -18,6 +18,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 
 namespace net {
 class NetworkDelegate;
@@ -59,7 +60,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       int process_id,
       int provider_id,
       ServiceWorkerMode service_worker_mode,
-      FetchRequestMode request_mode,
+      network::mojom::FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
@@ -90,7 +91,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   ForeignFetchRequestHandler(
       ServiceWorkerContextWrapper* context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      FetchRequestMode request_mode,
+      network::mojom::FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
@@ -125,7 +126,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   ResourceType resource_type_;
-  FetchRequestMode request_mode_;
+  network::mojom::FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
   std::string integrity_;

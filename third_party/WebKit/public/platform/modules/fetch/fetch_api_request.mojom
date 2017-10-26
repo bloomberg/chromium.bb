@@ -4,19 +4,10 @@
 
 module blink.mojom;
 
+import "services/network/public/interfaces/fetch_api.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
 import "url/mojo/url.mojom";
-
-// The mode associated with a request.
-// https://fetch.spec.whatwg.org/#concept-request-mode
-enum FetchRequestMode {
-  SAME_ORIGIN,
-  NO_CORS,
-  CORS,
-  CORS_WITH_FORCED_PREFLIGHT,
-  NAVIGATE,
-};
 
 // Type of the context associated with a request.
 enum RequestContextType {
@@ -126,7 +117,7 @@ enum ServiceWorkerFetchType {
 };
 
 struct FetchAPIRequest {
-  FetchRequestMode mode;
+  network.mojom.FetchRequestMode mode;
   bool is_main_resource_load;
   RequestContextType request_context_type;
   RequestContextFrameType frame_type;

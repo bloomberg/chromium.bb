@@ -317,7 +317,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS);
     ServiceWorkerRequestHandler::InitializeHandler(
         request_.get(), context_wrapper(), &blob_storage_context_, process_id,
-        provider_id, false, FETCH_REQUEST_MODE_NO_CORS,
+        provider_id, false, network::mojom::FetchRequestMode::kNoCORS,
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
         std::string() /* integrity */, RESOURCE_TYPE_SERVICE_WORKER,
         REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,

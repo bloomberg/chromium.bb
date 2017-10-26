@@ -30,6 +30,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 #ifndef INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
@@ -148,8 +149,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,
                           net::OCSPRevocationStatus::UNKNOWN)
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRequestMode,
-                          content::FETCH_REQUEST_MODE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
+                          network::mojom::FetchRequestMode::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchCredentialsMode,
                           content::FETCH_CREDENTIALS_MODE_LAST)

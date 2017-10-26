@@ -113,7 +113,7 @@ void ResourceMultiBufferDataProvider::Start() {
     options.preflight_policy =
         blink::WebAssociatedURLLoaderOptions::kPreventPreflight;
 
-    request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
     if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {
       request.SetFetchCredentialsMode(
           WebURLRequest::kFetchCredentialsModeSameOrigin);

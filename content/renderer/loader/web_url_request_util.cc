@@ -508,22 +508,6 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_SAME_ORIGIN,
-                   WebURLRequest::kFetchRequestModeSameOrigin);
-STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_NO_CORS,
-                   WebURLRequest::kFetchRequestModeNoCORS);
-STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_CORS,
-                   WebURLRequest::kFetchRequestModeCORS);
-STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
-                   WebURLRequest::kFetchRequestModeCORSWithForcedPreflight);
-STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_NAVIGATE,
-                   WebURLRequest::kFetchRequestModeNavigate);
-
-FetchRequestMode GetFetchRequestModeForWebURLRequest(
-    const WebURLRequest& request) {
-  return static_cast<FetchRequestMode>(request.GetFetchRequestMode());
-}
-
 STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_OMIT,
                    WebURLRequest::kFetchCredentialsModeOmit);
 STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_SAME_ORIGIN,

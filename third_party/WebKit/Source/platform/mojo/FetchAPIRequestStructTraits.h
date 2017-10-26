@@ -36,16 +36,6 @@ struct EnumTraits<::blink::mojom::FetchRedirectMode,
 };
 
 template <>
-struct EnumTraits<::blink::mojom::FetchRequestMode,
-                  ::blink::WebURLRequest::FetchRequestMode> {
-  static ::blink::mojom::FetchRequestMode ToMojom(
-      ::blink::WebURLRequest::FetchRequestMode input);
-
-  static bool FromMojom(::blink::mojom::FetchRequestMode input,
-                        ::blink::WebURLRequest::FetchRequestMode* out);
-};
-
-template <>
 struct EnumTraits<::blink::mojom::RequestContextFrameType,
                   ::blink::WebURLRequest::FrameType> {
   static ::blink::mojom::RequestContextFrameType ToMojom(
@@ -68,7 +58,7 @@ struct EnumTraits<::blink::mojom::RequestContextType,
 template <>
 struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
                     ::blink::WebServiceWorkerRequest> {
-  static ::blink::WebURLRequest::FetchRequestMode mode(
+  static ::network::mojom::FetchRequestMode mode(
       const ::blink::WebServiceWorkerRequest& request) {
     return request.Mode();
   }

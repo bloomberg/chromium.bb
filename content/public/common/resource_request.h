@@ -19,6 +19,7 @@
 #include "content/public/common/service_worker_modes.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -101,7 +102,8 @@ struct CONTENT_EXPORT ResourceRequest {
   ServiceWorkerMode service_worker_mode = ServiceWorkerMode::ALL;
 
   // The request mode passed to the ServiceWorker.
-  FetchRequestMode fetch_request_mode = FETCH_REQUEST_MODE_SAME_ORIGIN;
+  network::mojom::FetchRequestMode fetch_request_mode =
+      network::mojom::FetchRequestMode::kSameOrigin;
 
   // The credentials mode passed to the ServiceWorker.
   FetchCredentialsMode fetch_credentials_mode = FETCH_CREDENTIALS_MODE_OMIT;

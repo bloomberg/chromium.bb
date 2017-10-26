@@ -246,7 +246,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
     response.SetURL(url);
 
     if (allow_origin_url) {
-      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+      request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
       resource->MutableOptions().cors_handling_by_resource_fetcher =
           kEnableCORSHandlingByResourceFetcher;
       response.SetHTTPHeaderField(

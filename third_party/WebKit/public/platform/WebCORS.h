@@ -33,6 +33,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -162,7 +163,7 @@ BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
     const WebString&);
 
 BLINK_PLATFORM_EXPORT bool IsCORSEnabledRequestMode(
-    WebURLRequest::FetchRequestMode);
+    network::mojom::FetchRequestMode);
 
 // Checks whether request mode 'no-cors' is allowed for a certain context and
 // service-worker mode.

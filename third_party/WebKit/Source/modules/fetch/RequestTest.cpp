@@ -12,6 +12,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -59,8 +60,8 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   const WebReferrerPolicy kReferrerPolicy = kWebReferrerPolicyAlways;
   const WebURLRequest::RequestContext kContext =
       WebURLRequest::kRequestContextAudio;
-  const WebURLRequest::FetchRequestMode kMode =
-      WebURLRequest::kFetchRequestModeNavigate;
+  const network::mojom::FetchRequestMode kMode =
+      network::mojom::FetchRequestMode::kNavigate;
   const WebURLRequest::FetchCredentialsMode kCredentialsMode =
       WebURLRequest::kFetchCredentialsModeInclude;
   const auto kCacheMode = mojom::FetchCacheMode::kValidateCache;

@@ -6,6 +6,7 @@
 #define ForeignFetchRespondWithObserver_h
 
 #include "modules/serviceworkers/FetchRespondWithObserver.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -18,7 +19,7 @@ class MODULES_EXPORT ForeignFetchRespondWithObserver final
       ExecutionContext*,
       int event_id,
       const KURL& request_url,
-      WebURLRequest::FetchRequestMode,
+      network::mojom::FetchRequestMode,
       WebURLRequest::FetchRedirectMode,
       WebURLRequest::FrameType,
       WebURLRequest::RequestContext,
@@ -31,7 +32,7 @@ class MODULES_EXPORT ForeignFetchRespondWithObserver final
   ForeignFetchRespondWithObserver(ExecutionContext*,
                                   int event_id,
                                   const KURL& request_url,
-                                  WebURLRequest::FetchRequestMode,
+                                  network::mojom::FetchRequestMode,
                                   WebURLRequest::FetchRedirectMode,
                                   WebURLRequest::FrameType,
                                   WebURLRequest::RequestContext,

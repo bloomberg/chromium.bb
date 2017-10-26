@@ -258,7 +258,7 @@ bool ResourceLoader::WillFollowRedirect(
   WebURLRequest::RequestContext request_context =
       initial_request.GetRequestContext();
   WebURLRequest::FrameType frame_type = initial_request.GetFrameType();
-  WebURLRequest::FetchRequestMode fetch_request_mode =
+  network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
       initial_request.GetFetchCredentialsMode();
@@ -296,7 +296,7 @@ bool ResourceLoader::WillFollowRedirect(
 
     if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
-        fetch_request_mode == WebURLRequest::kFetchRequestModeCORS) {
+        fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
       RefPtr<SecurityOrigin> source_origin = options.security_origin;
       if (!source_origin.get())
         source_origin = Context().GetSecurityOrigin();
@@ -337,7 +337,7 @@ bool ResourceLoader::WillFollowRedirect(
 
   if (options.cors_handling_by_resource_fetcher ==
           kEnableCORSHandlingByResourceFetcher &&
-      fetch_request_mode == WebURLRequest::kFetchRequestModeCORS) {
+      fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
     bool allow_stored_credentials = false;
     switch (fetch_credentials_mode) {
       case WebURLRequest::kFetchCredentialsModeOmit:
@@ -445,8 +445,9 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   if (resource_->Options().cors_handling_by_resource_fetcher !=
           kEnableCORSHandlingByResourceFetcher ||
       initial_request.GetFetchRequestMode() !=
-          WebURLRequest::kFetchRequestModeCORS)
+          network::mojom::FetchRequestMode::kCORS) {
     return CORSStatus::kNotApplicable;
+  }
 
   // Use the original response instead of the 304 response for a successful
   // revalidation.
@@ -493,7 +494,7 @@ void ResourceLoader::DidReceiveResponse(
   // The following parameters never change during the lifetime of a request.
   WebURLRequest::RequestContext request_context =
       initial_request.GetRequestContext();
-  WebURLRequest::FetchRequestMode fetch_request_mode =
+  network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
 
   const ResourceLoaderOptions& options = resource_->Options();
@@ -508,7 +509,7 @@ void ResourceLoader::DidReceiveResponse(
   if (response.WasFetchedViaServiceWorker()) {
     if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
-        fetch_request_mode == WebURLRequest::kFetchRequestModeCORS &&
+        fetch_request_mode == network::mojom::FetchRequestMode::kCORS &&
         response.WasFallbackRequiredByServiceWorker()) {
       ResourceRequest last_request = resource_->LastResourceRequest();
       DCHECK_EQ(last_request.GetServiceWorkerMode(),
@@ -557,7 +558,7 @@ void ResourceLoader::DidReceiveResponse(
     }
   } else if (options.cors_handling_by_resource_fetcher ==
                  kEnableCORSHandlingByResourceFetcher &&
-             fetch_request_mode == WebURLRequest::kFetchRequestModeCORS) {
+             fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
     if (!resource_->IsSameOriginOrCORSSuccessful()) {
       if (!resource_->IsUnusedPreload())
         Context().AddErrorConsoleMessage(cors_error_msg.ToString(),

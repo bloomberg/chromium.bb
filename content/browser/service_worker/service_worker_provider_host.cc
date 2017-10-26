@@ -455,7 +455,7 @@ void ServiceWorkerProviderHost::NotifyControllerLost() {
 
 std::unique_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
-    FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
