@@ -1644,7 +1644,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   }
 
   WTF::ArrayBufferContents contents;
-  if (!buffer->GetImageData(kUnmultiplied, image_data_rect, contents)) {
+  if (!buffer->GetImageData(image_data_rect, contents)) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
@@ -1756,11 +1756,11 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     data->ImageDataInCanvasColorSettings(ColorSpace(), PixelFormat(),
                                          converted_pixels);
 
-    buffer->PutByteArray(kUnmultiplied, converted_pixels.get(),
+    buffer->PutByteArray(converted_pixels.get(),
                          IntSize(data->width(), data->height()), source_rect,
                          IntPoint(dest_offset));
   } else {
-    buffer->PutByteArray(kUnmultiplied, data->data()->Data(),
+    buffer->PutByteArray(data->data()->Data(),
                          IntSize(data->width(), data->height()), source_rect,
                          IntPoint(dest_offset));
   }
