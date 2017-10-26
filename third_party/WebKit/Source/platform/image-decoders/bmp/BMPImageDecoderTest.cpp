@@ -25,7 +25,7 @@ std::unique_ptr<ImageDecoder> CreateBMPDecoder() {
 TEST(BMPImageDecoderTest, isSizeAvailable) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/lenna.bmp";  // 256x256
-  RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
+  scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
@@ -38,7 +38,7 @@ TEST(BMPImageDecoderTest, isSizeAvailable) {
 TEST(BMPImageDecoderTest, parseAndDecode) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/lenna.bmp";  // 256x256
-  RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
+  scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
@@ -56,7 +56,7 @@ TEST(BMPImageDecoderTest, parseAndDecode) {
 TEST(BMPImageDecoderTest, emptyImage) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/0x0.bmp";  // 0x0
-  RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
+  scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
@@ -71,7 +71,7 @@ TEST(BMPImageDecoderTest, emptyImage) {
 TEST(BMPImageDecoderTest, int32MinHeight) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/1xint32_min.bmp";  // 0xINT32_MIN
-  RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
+  scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   // Test when not all data is received.
   decoder->SetData(data.get(), false);
@@ -92,7 +92,7 @@ TEST(BMPImageDecoderTest, mergeBuffer) {
 TEST(BMPImageDecoderTest, crbug752898) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/crbug752898.bmp";
-  RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
+  scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();

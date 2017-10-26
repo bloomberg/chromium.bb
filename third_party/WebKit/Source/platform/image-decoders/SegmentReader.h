@@ -34,11 +34,12 @@ class PLATFORM_EXPORT SegmentReader
   // This version is thread-safe so long as no thread is modifying the
   // underlying SharedBuffer. This class does not modify it, so that would
   // mean modifying it in another way.
-  static RefPtr<SegmentReader> CreateFromSharedBuffer(RefPtr<SharedBuffer>);
+  static scoped_refptr<SegmentReader> CreateFromSharedBuffer(
+      scoped_refptr<SharedBuffer>);
 
   // These versions use thread-safe input, so they are always thread-safe.
-  static RefPtr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
-  static RefPtr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
+  static scoped_refptr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
+  static scoped_refptr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
 
   SegmentReader() {}
   virtual ~SegmentReader() {}

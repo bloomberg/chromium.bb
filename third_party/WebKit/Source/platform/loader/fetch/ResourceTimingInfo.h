@@ -51,12 +51,12 @@ class PLATFORM_EXPORT ResourceTimingInfo
   WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 
  public:
-  static RefPtr<ResourceTimingInfo> Create(const AtomicString& type,
-                                           const double time,
-                                           bool is_main_resource) {
+  static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
+                                                  const double time,
+                                                  bool is_main_resource) {
     return WTF::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
   }
-  static RefPtr<ResourceTimingInfo> Adopt(
+  static scoped_refptr<ResourceTimingInfo> Adopt(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
   // Gets a copy of the data suitable for passing to another thread.

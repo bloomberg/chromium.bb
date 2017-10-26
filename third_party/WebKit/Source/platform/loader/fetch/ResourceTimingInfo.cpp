@@ -10,9 +10,9 @@
 
 namespace blink {
 
-RefPtr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
+scoped_refptr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
     std::unique_ptr<CrossThreadResourceTimingInfoData> data) {
-  RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
       AtomicString(data->type_), data->initial_time_, data->is_main_resource_);
   info->original_timing_allow_origin_ =
       AtomicString(data->original_timing_allow_origin_);

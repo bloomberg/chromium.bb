@@ -76,10 +76,11 @@ class PLATFORM_EXPORT TransformOperation
   virtual void Apply(TransformationMatrix&,
                      const FloatSize& border_box_size) const = 0;
 
-  virtual RefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                           double progress,
-                                           bool blend_to_identity = false) = 0;
-  virtual RefPtr<TransformOperation> Zoom(double factor) = 0;
+  virtual scoped_refptr<TransformOperation> Blend(
+      const TransformOperation* from,
+      double progress,
+      bool blend_to_identity = false) = 0;
+  virtual scoped_refptr<TransformOperation> Zoom(double factor) = 0;
 
   virtual OperationType GetType() const = 0;
 

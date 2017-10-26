@@ -46,14 +46,15 @@ namespace blink {
 // data type ID will reject data generated with a different byte-order.
 class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
  public:
-  static RefPtr<CachedMetadata> Create(uint32_t data_type_id,
-                                       const char* data,
-                                       size_t size) {
+  static scoped_refptr<CachedMetadata> Create(uint32_t data_type_id,
+                                              const char* data,
+                                              size_t size) {
     return WTF::AdoptRef(new CachedMetadata(data_type_id, data, size));
   }
 
-  static RefPtr<CachedMetadata> CreateFromSerializedData(const char* data,
-                                                         size_t size) {
+  static scoped_refptr<CachedMetadata> CreateFromSerializedData(
+      const char* data,
+      size_t size) {
     return WTF::AdoptRef(new CachedMetadata(data, size));
   }
 

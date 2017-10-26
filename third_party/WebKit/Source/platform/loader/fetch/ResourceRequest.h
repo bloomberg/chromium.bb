@@ -110,8 +110,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   const KURL& SiteForCookies() const;
   void SetSiteForCookies(const KURL&);
 
-  RefPtr<SecurityOrigin> RequestorOrigin() const;
-  void SetRequestorOrigin(RefPtr<SecurityOrigin>);
+  scoped_refptr<SecurityOrigin> RequestorOrigin() const;
+  void SetRequestorOrigin(scoped_refptr<SecurityOrigin>);
 
   const AtomicString& HttpMethod() const;
   void SetHTTPMethod(const AtomicString&);
@@ -159,10 +159,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   EncodedFormData* HttpBody() const;
-  void SetHTTPBody(RefPtr<EncodedFormData>);
+  void SetHTTPBody(scoped_refptr<EncodedFormData>);
 
   EncodedFormData* AttachedCredential() const;
-  void SetAttachedCredential(RefPtr<EncodedFormData>);
+  void SetAttachedCredential(scoped_refptr<EncodedFormData>);
 
   bool AllowStoredCredentials() const;
   void SetAllowStoredCredentials(bool allow_credentials);
@@ -242,7 +242,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   // Extra data associated with this request.
   ExtraData* GetExtraData() const { return extra_data_.get(); }
-  void SetExtraData(RefPtr<ExtraData> extra_data) {
+  void SetExtraData(scoped_refptr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
 
@@ -346,11 +346,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   double timeout_interval_;  // 0 is a magic value for platform default on
                              // platforms that have one.
   KURL site_for_cookies_;
-  RefPtr<SecurityOrigin> requestor_origin_;
+  scoped_refptr<SecurityOrigin> requestor_origin_;
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
-  RefPtr<EncodedFormData> http_body_;
-  RefPtr<EncodedFormData> attached_credential_;
+  scoped_refptr<EncodedFormData> http_body_;
+  scoped_refptr<EncodedFormData> attached_credential_;
   bool allow_stored_credentials_ : 1;
   bool report_upload_progress_ : 1;
   bool report_raw_headers_ : 1;
@@ -367,7 +367,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   int requestor_process_id_;
   int app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
-  RefPtr<ExtraData> extra_data_;
+  scoped_refptr<ExtraData> extra_data_;
   WebURLRequest::RequestContext request_context_;
   WebURLRequest::FrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
@@ -410,12 +410,12 @@ struct CrossThreadResourceRequestData {
   mojom::FetchCacheMode cache_mode_;
   double timeout_interval_;
   KURL site_for_cookies_;
-  RefPtr<SecurityOrigin> requestor_origin_;
+  scoped_refptr<SecurityOrigin> requestor_origin_;
 
   String http_method_;
   std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
-  RefPtr<EncodedFormData> http_body_;
-  RefPtr<EncodedFormData> attached_credential_;
+  scoped_refptr<EncodedFormData> http_body_;
+  scoped_refptr<EncodedFormData> attached_credential_;
   bool allow_stored_credentials_;
   bool report_upload_progress_;
   bool has_user_gesture_;

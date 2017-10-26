@@ -660,7 +660,7 @@ class JPEGImageReader final {
     last_set_byte_ = nullptr;
   }
 
-  RefPtr<SegmentReader> data_;
+  scoped_refptr<SegmentReader> data_;
   JPEGImageDecoder* decoder_;
 
   // Input reading: True if we need to back up to restart_position_.

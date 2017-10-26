@@ -346,7 +346,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
       !cached_resources_map_.Contains(url)) {
     // Resources loaded from memory cache should be reported the first time
     // they're used.
-    RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+    scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         params.Options().initiator_info.name, MonotonicallyIncreasingTime(),
         resource->GetType() == Resource::kMainResource);
     PopulateTimingInfo(info.get(), resource);
@@ -420,7 +420,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   }
 
   ResourceResponse response;
-  RefPtr<SharedBuffer> data;
+  scoped_refptr<SharedBuffer> data;
   if (substitute_data.IsValid()) {
     data = substitute_data.Content();
     response.SetURL(url);
@@ -614,7 +614,7 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return kAbort;
 
-  RefPtr<SecurityOrigin> origin = options.security_origin;
+  scoped_refptr<SecurityOrigin> origin = options.security_origin;
   params.MutableOptions().cors_flag =
       !origin || !origin->CanRequestNoSuborigin(params.Url());
 
@@ -779,7 +779,7 @@ Resource* ResourceFetcher::RequestResource(
 
 void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
   DCHECK_EQ(timer, &resource_timing_report_timer_);
-  Vector<RefPtr<ResourceTimingInfo>> timing_reports;
+  Vector<scoped_refptr<ResourceTimingInfo>> timing_reports;
   timing_reports.swap(scheduled_resource_timing_reports_);
   for (const auto& timing_info : timing_reports)
     Context().AddResourceTiming(*timing_info);
@@ -866,7 +866,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
         fetch_initiator, start_time, is_main_resource);
   }
 
-  RefPtr<ResourceTimingInfo> info =
+  scoped_refptr<ResourceTimingInfo> info =
       ResourceTimingInfo::Create(fetch_initiator, start_time, is_main_resource);
 
   if (resource->IsCacheValidator()) {
@@ -1343,7 +1343,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
           encoded_data_length == -1 ? 0 : encoded_data_length);
     }
   }
-  if (RefPtr<ResourceTimingInfo> info =
+  if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     // Store redirect responses that were packed inside the final response.
     AddRedirectsToTimingInfo(resource, info.get());

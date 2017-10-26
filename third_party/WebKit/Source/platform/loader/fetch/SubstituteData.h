@@ -39,10 +39,10 @@ class SubstituteData {
  public:
   SubstituteData() {}
 
-  SubstituteData(RefPtr<SharedBuffer> content)
+  SubstituteData(scoped_refptr<SharedBuffer> content)
       : SubstituteData(content, "text/html", "UTF-8", KURL()) {}
 
-  SubstituteData(RefPtr<SharedBuffer> content,
+  SubstituteData(scoped_refptr<SharedBuffer> content,
                  const AtomicString& mime_type,
                  const AtomicString& text_encoding,
                  const KURL& failing_url)
@@ -59,7 +59,7 @@ class SubstituteData {
   const KURL& FailingURL() const { return failing_url_; }
 
  private:
-  RefPtr<SharedBuffer> content_;
+  scoped_refptr<SharedBuffer> content_;
   AtomicString mime_type_;
   AtomicString text_encoding_;
   KURL failing_url_;

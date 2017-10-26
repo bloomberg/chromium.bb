@@ -55,7 +55,7 @@ void InterpolatedTransformOperation::Apply(
   transform.Multiply(to_transform);
 }
 
-RefPtr<TransformOperation> InterpolatedTransformOperation::Blend(
+scoped_refptr<TransformOperation> InterpolatedTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {

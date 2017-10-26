@@ -564,15 +564,16 @@ ResourceLoadTiming* ResourceResponse::GetResourceLoadTiming() const {
 }
 
 void ResourceResponse::SetResourceLoadTiming(
-    RefPtr<ResourceLoadTiming> resource_load_timing) {
+    scoped_refptr<ResourceLoadTiming> resource_load_timing) {
   resource_load_timing_ = std::move(resource_load_timing);
 }
 
-RefPtr<ResourceLoadInfo> ResourceResponse::GetResourceLoadInfo() const {
+scoped_refptr<ResourceLoadInfo> ResourceResponse::GetResourceLoadInfo() const {
   return resource_load_info_.get();
 }
 
-void ResourceResponse::SetResourceLoadInfo(RefPtr<ResourceLoadInfo> load_info) {
+void ResourceResponse::SetResourceLoadInfo(
+    scoped_refptr<ResourceLoadInfo> load_info) {
   resource_load_info_ = std::move(load_info);
 }
 

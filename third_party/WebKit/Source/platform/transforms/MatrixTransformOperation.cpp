@@ -25,7 +25,7 @@
 
 namespace blink {
 
-RefPtr<TransformOperation> MatrixTransformOperation::Blend(
+scoped_refptr<TransformOperation> MatrixTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
@@ -50,7 +50,8 @@ RefPtr<TransformOperation> MatrixTransformOperation::Blend(
                                           to_t.D(), to_t.E(), to_t.F());
 }
 
-RefPtr<TransformOperation> MatrixTransformOperation::Zoom(double factor) {
+scoped_refptr<TransformOperation> MatrixTransformOperation::Zoom(
+    double factor) {
   return Create(a_, b_, c_, d_, e_ * factor, f_ * factor);
 }
 

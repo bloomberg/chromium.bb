@@ -32,7 +32,7 @@ namespace blink {
 class PLATFORM_EXPORT IdentityTransformOperation final
     : public TransformOperation {
  public:
-  static RefPtr<IdentityTransformOperation> Create() {
+  static scoped_refptr<IdentityTransformOperation> Create() {
     return WTF::AdoptRef(new IdentityTransformOperation());
   }
 
@@ -49,13 +49,13 @@ class PLATFORM_EXPORT IdentityTransformOperation final
 
   void Apply(TransformationMatrix&, const FloatSize&) const override {}
 
-  RefPtr<TransformOperation> Blend(const TransformOperation*,
-                                   double,
-                                   bool = false) override {
+  scoped_refptr<TransformOperation> Blend(const TransformOperation*,
+                                          double,
+                                          bool = false) override {
     return this;
   }
 
-  RefPtr<TransformOperation> Zoom(double factor) final { return this; }
+  scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 
   IdentityTransformOperation() {}
 };

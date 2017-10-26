@@ -25,7 +25,7 @@ TEST(ICOImageDecoderTests, trunctedIco) {
       ReadFile("/LayoutTests/images/resources/png-in-ico.ico")->Copy();
   ASSERT_FALSE(data.IsEmpty());
 
-  RefPtr<SharedBuffer> truncated_data =
+  scoped_refptr<SharedBuffer> truncated_data =
       SharedBuffer::Create(data.data(), data.size() / 2);
   auto decoder = CreateICODecoder();
 
@@ -46,7 +46,7 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
   // Modify the file to have a broken CRC in IHDR.
   constexpr size_t kCrcOffset = 22 + 29;
   constexpr size_t kCrcSize = 4;
-  RefPtr<SharedBuffer> modified_data =
+  scoped_refptr<SharedBuffer> modified_data =
       SharedBuffer::Create(data.data(), kCrcOffset);
   Vector<char> bad_crc(kCrcSize, 0);
   modified_data->Append(bad_crc);
@@ -91,12 +91,12 @@ TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
 TEST(ICOImageDecoderTests, NullData) {
   static constexpr size_t kSizeOfBadBlock = 6 + 16 + 1;
 
-  RefPtr<SharedBuffer> ico_file_data =
+  scoped_refptr<SharedBuffer> ico_file_data =
       ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
   ASSERT_FALSE(ico_file_data->IsEmpty());
   ASSERT_LT(kSizeOfBadBlock, ico_file_data->size());
 
-  RefPtr<SharedBuffer> truncated_data =
+  scoped_refptr<SharedBuffer> truncated_data =
       SharedBuffer::Create(ico_file_data->Data(), kSizeOfBadBlock);
   auto decoder = CreateICODecoder();
 
@@ -107,7 +107,7 @@ TEST(ICOImageDecoderTests, NullData) {
   auto* frame = decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_EQ(nullptr, frame);
 
-  decoder->SetData(RefPtr<SegmentReader>(nullptr), false);
+  decoder->SetData(scoped_refptr<SegmentReader>(nullptr), false);
   decoder->ClearCacheExceptFrame(0);
   decoder->SetMemoryAllocator(nullptr);
   EXPECT_FALSE(decoder->Failed());

@@ -54,8 +54,9 @@
 
 namespace blink {
 
-static RefPtr<WebTaskRunner> GetTaskRunnerFor(const ResourceRequest& request,
-                                              FetchContext& context) {
+static scoped_refptr<WebTaskRunner> GetTaskRunnerFor(
+    const ResourceRequest& request,
+    FetchContext& context) {
   if (!request.GetKeepalive())
     return context.GetLoadingTaskRunner();
   // The loader should be able to work after the frame destruction, so we
@@ -297,7 +298,7 @@ bool ResourceLoader::WillFollowRedirect(
     if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
         fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
-      RefPtr<SecurityOrigin> source_origin = options.security_origin;
+      scoped_refptr<SecurityOrigin> source_origin = options.security_origin;
       if (!source_origin.get())
         source_origin = Context().GetSecurityOrigin();
       WebSecurityOrigin source_web_origin(source_origin.get());

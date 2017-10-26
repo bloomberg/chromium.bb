@@ -74,8 +74,10 @@ class PLATFORM_EXPORT TransformOperations {
 
   void clear() { operations_.clear(); }
 
-  Vector<RefPtr<TransformOperation>>& Operations() { return operations_; }
-  const Vector<RefPtr<TransformOperation>>& Operations() const {
+  Vector<scoped_refptr<TransformOperation>>& Operations() {
+    return operations_;
+  }
+  const Vector<scoped_refptr<TransformOperation>>& Operations() const {
     return operations_;
   }
 
@@ -91,7 +93,7 @@ class PLATFORM_EXPORT TransformOperations {
                            FloatBox* bounds) const;
   TransformOperations BlendByMatchingOperations(const TransformOperations& from,
                                                 const double& progress) const;
-  RefPtr<TransformOperation> BlendByUsingMatrixInterpolation(
+  scoped_refptr<TransformOperation> BlendByUsingMatrixInterpolation(
       const TransformOperations& from,
       double progress) const;
   TransformOperations Blend(const TransformOperations& from,
@@ -100,7 +102,7 @@ class PLATFORM_EXPORT TransformOperations {
   TransformOperations Zoom(double factor) const;
 
  private:
-  Vector<RefPtr<TransformOperation>> operations_;
+  Vector<scoped_refptr<TransformOperation>> operations_;
 };
 
 }  // namespace blink

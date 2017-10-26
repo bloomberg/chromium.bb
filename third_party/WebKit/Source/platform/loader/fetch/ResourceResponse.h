@@ -225,10 +225,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetWasCached(bool);
 
   ResourceLoadTiming* GetResourceLoadTiming() const;
-  void SetResourceLoadTiming(RefPtr<ResourceLoadTiming>);
+  void SetResourceLoadTiming(scoped_refptr<ResourceLoadTiming>);
 
-  RefPtr<ResourceLoadInfo> GetResourceLoadInfo() const;
-  void SetResourceLoadInfo(RefPtr<ResourceLoadInfo>);
+  scoped_refptr<ResourceLoadInfo> GetResourceLoadInfo() const;
+  void SetResourceLoadInfo(scoped_refptr<ResourceLoadInfo>);
 
   HTTPVersion HttpVersion() const { return http_version_; }
   void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
@@ -393,7 +393,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // Extra data associated with this response.
   ExtraData* GetExtraData() const { return extra_data_.get(); }
-  void SetExtraData(RefPtr<ExtraData> extra_data) {
+  void SetExtraData(scoped_refptr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
 
@@ -486,8 +486,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   // valid data.
   SecurityDetails security_details_;
 
-  RefPtr<ResourceLoadTiming> resource_load_timing_;
-  RefPtr<ResourceLoadInfo> resource_load_info_;
+  scoped_refptr<ResourceLoadTiming> resource_load_timing_;
+  scoped_refptr<ResourceLoadInfo> resource_load_info_;
 
   mutable CacheControlHeader cache_control_header_;
 
@@ -544,10 +544,10 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The handle to the downloaded file to ensure the underlying file will not
   // be deleted.
-  RefPtr<BlobDataHandle> downloaded_file_handle_;
+  scoped_refptr<BlobDataHandle> downloaded_file_handle_;
 
   // ExtraData associated with the response.
-  RefPtr<ExtraData> extra_data_;
+  scoped_refptr<ExtraData> extra_data_;
 
   // PlzNavigate: the redirect responses are transmitted
   // inside the final response.
@@ -582,7 +582,7 @@ struct CrossThreadResourceResponseData {
   int http_status_code_;
   String http_status_text_;
   std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
-  RefPtr<ResourceLoadTiming> resource_load_timing_;
+  scoped_refptr<ResourceLoadTiming> resource_load_timing_;
   bool has_major_certificate_errors_;
   bool is_legacy_symantec_cert_;
   base::Time cert_validity_start_;
@@ -611,7 +611,7 @@ struct CrossThreadResourceResponseData {
   long long encoded_body_length_;
   long long decoded_body_length_;
   String downloaded_file_path_;
-  RefPtr<BlobDataHandle> downloaded_file_handle_;
+  scoped_refptr<BlobDataHandle> downloaded_file_handle_;
 };
 
 }  // namespace blink

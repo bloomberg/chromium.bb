@@ -48,9 +48,9 @@ class PLATFORM_EXPORT FastSharedBufferReader final {
   WTF_MAKE_NONCOPYABLE(FastSharedBufferReader);
 
  public:
-  FastSharedBufferReader(RefPtr<SegmentReader> data);
+  FastSharedBufferReader(scoped_refptr<SegmentReader> data);
 
-  void SetData(RefPtr<SegmentReader>);
+  void SetData(scoped_refptr<SegmentReader>);
 
   // Returns a consecutive buffer that carries the data starting
   // at |data_position| with |length| bytes.
@@ -81,7 +81,7 @@ class PLATFORM_EXPORT FastSharedBufferReader final {
  private:
   void GetSomeDataInternal(size_t data_position) const;
 
-  RefPtr<SegmentReader> data_;
+  scoped_refptr<SegmentReader> data_;
 
   // Caches the last segment of |data_| accessed, since subsequent reads are
   // likely to re-access it.
