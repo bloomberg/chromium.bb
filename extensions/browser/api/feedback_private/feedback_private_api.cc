@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -216,7 +217,9 @@ ExtensionFunction::ResponseAction FeedbackPrivateReadLogSourceFunction::Run() {
           api_params->params, extension_id(),
           base::Bind(&FeedbackPrivateReadLogSourceFunction::OnCompleted,
                      this))) {
-    return RespondNow(Error("Unable to initiate fetch from log source."));
+    return RespondNow(Error(base::StringPrintf(
+        "Unable to initiate fetch from log source %s.",
+        feedback_private::ToString(api_params->params.source))));
   }
 
   return RespondLater();
