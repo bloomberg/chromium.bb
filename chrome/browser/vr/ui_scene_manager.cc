@@ -202,7 +202,7 @@ void UiSceneManager::CreateSystemIndicators() {
   };
 
   std::unique_ptr<LinearLayout> indicator_layout =
-      base::MakeUnique<LinearLayout>(LinearLayout::kHorizontal);
+      base::MakeUnique<LinearLayout>(LinearLayout::kRight);
   indicator_layout->set_name(kIndicatorLayout);
   indicator_layout->set_hit_testable(false);
   indicator_layout->set_y_anchoring(YAnchoring::YTOP);
@@ -344,8 +344,7 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
   scene_->AddUiElement(kSplashScreenViewportAwareRoot,
                        std::move(timeout_message));
 
-  auto timeout_layout =
-      base::MakeUnique<LinearLayout>(LinearLayout::kHorizontal);
+  auto timeout_layout = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
   timeout_layout->set_name(kWebVrTimeoutMessageLayout);
   timeout_layout->set_hit_testable(false);
   timeout_layout->SetVisible(true);

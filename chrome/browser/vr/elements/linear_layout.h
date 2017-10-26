@@ -11,12 +11,13 @@ namespace vr {
 
 class LinearLayout : public UiElement {
  public:
-  enum Direction { kVertical, kHorizontal };
+  enum Direction { kUp, kDown, kLeft, kRight };
 
   explicit LinearLayout(Direction direction);
   ~LinearLayout() override;
 
   void set_margin(float margin) { margin_ = margin; }
+  void set_direction(Direction direction) { direction_ = direction; }
 
   void LayOutChildren() override;
 
