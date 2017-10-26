@@ -119,6 +119,20 @@ TEST_F(GpuHostTest, GpuClientDestructionOrder) {
   EXPECT_EQ(nullptr, client_ref);
 }
 
+TEST_F(GpuHostTest, GpuClientDestroyedWhileChannelRequestInFlight) {
+  base::WeakPtr<GpuClient> client_ref = AddGpuClient();
+  mojom::Gpu* gpu = client_ref.get();
+  bool callback_called = false;
+  gpu->EstablishGpuChannel(
+      base::Bind([](bool* callback_called, int, mojo::ScopedMessagePipeHandle,
+                    const gpu::GPUInfo&,
+                    const gpu::GpuFeatureInfo&) { *callback_called = true; },
+                 &callback_called));
+  EXPECT_FALSE(callback_called);
+  DestroyHost();
+  EXPECT_TRUE(callback_called);
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui
