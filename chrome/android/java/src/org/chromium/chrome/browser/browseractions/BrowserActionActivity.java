@@ -16,12 +16,15 @@ import android.view.Menu;
 import android.view.View;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
+import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.Referrer;
 
@@ -153,6 +156,21 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     @Override
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
+        recordClientPackageName();
         mHelper.onNativeInitialized();
+    }
+
+    private void recordClientPackageName() {
+        if (TextUtils.isEmpty(mCreatorPackageName)) return;
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                RapporServiceBridge.sampleString(
+                        "BrowserActions.ServiceClient.PackageName", mCreatorPackageName);
+                if (GSAState.isGsaPackageName(mCreatorPackageName)) return;
+                RapporServiceBridge.sampleString(
+                        "BrowserActions.ServiceClient.PackageNameThirdParty", mCreatorPackageName);
+            }
+        });
     }
 }
