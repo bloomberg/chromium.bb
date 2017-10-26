@@ -2878,6 +2878,8 @@ split_static_library("browser") {
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
+      "dbus/dbus_thread_linux.cc",
+      "dbus/dbus_thread_linux.h",
       "first_run/upgrade_util.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
