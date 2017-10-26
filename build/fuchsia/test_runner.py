@@ -140,6 +140,9 @@ def main():
   parser.add_argument('--kernel', type=os.path.realpath,
                       help='Path to a kernel to use instead of the default '
                            'one from the SDK')
+  parser.add_argument('--wait-for-network', action='store_true', default=False,
+                      help='Wait for network connectivity before executing '
+                           'the test binary.')
   args = parser.parse_args()
 
   child_args = ['--test-launcher-retry-limit=0']
@@ -200,7 +203,8 @@ def main():
         args.dry_run, bootdata=args.bootdata,
         summary_output=args.test_launcher_summary_output,
         shutdown_machine=True, target_cpu=args.target_cpu,
-        use_device=args.device, use_autorun=True)
+        use_device=args.device, wait_for_network=args.wait_for_network,
+        use_autorun=True)
     if not bootfs:
       return 2
 

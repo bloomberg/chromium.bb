@@ -59,7 +59,7 @@ def main():
       args.output_directory, runtime_deps, args.exe_name, child_args,
       args.dry_run, args.bootdata, summary_output=None, shutdown_machine=False,
       target_cpu=args.target_cpu, use_device=args.device,
-      use_autorun=not args.no_autorun)
+      wait_for_network=True, use_autorun=not args.no_autorun)
   if not bootfs:
     return 2
 
