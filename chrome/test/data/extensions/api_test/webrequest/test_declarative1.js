@@ -192,22 +192,19 @@ runTests([
           event: "onBeforeRequest",
           details: {
             url: getURLHttpWithHeaders(),
-            frameUrl: getURLHttpWithHeaders(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            frameUrl: getURLHttpWithHeaders()
           }
         },
         { label: "onBeforeSendHeaders",
           event: "onBeforeSendHeaders",
           details: {
-            url: getURLHttpWithHeaders(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            url: getURLHttpWithHeaders()
           }
         },
         { label: "onSendHeaders",
           event: "onSendHeaders",
           details: {
-            url: getURLHttpWithHeaders(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            url: getURLHttpWithHeaders()
           }
         },
         { label: "onHeadersReceived",
@@ -215,8 +212,7 @@ runTests([
           details: {
             statusLine: "HTTP/1.1 200 OK",
             url: getURLHttpWithHeaders(),
-            statusCode: 200,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            statusCode: 200
           }
         },
         { label: "onErrorOccurred",
@@ -224,8 +220,7 @@ runTests([
           details: {
             url: getURLHttpWithHeaders(),
             fromCache: false,
-            error: "net::ERR_BLOCKED_BY_CLIENT",
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            error: "net::ERR_BLOCKED_BY_CLIENT"
           }
         },
       ],

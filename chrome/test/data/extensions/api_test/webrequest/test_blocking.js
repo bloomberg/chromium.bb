@@ -143,16 +143,14 @@ runTests([
             method: "GET",
             type: "main_frame",
             url: getURLHttpSimpleLoad(),
-            frameUrl: getURLHttpSimpleLoad(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            frameUrl: getURLHttpSimpleLoad()
           },
         },
         { label: "onBeforeSendHeaders",
           event: "onBeforeSendHeaders",
           details: {
             url: getURLHttpSimpleLoad(),
-            requestHeadersValid: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            requestHeadersValid: true
           },
           retval: {requestHeaders: [{name: "User-Agent"}]}
         },
@@ -162,8 +160,7 @@ runTests([
           event: "onSendHeaders",
           details: {
             url: getURLHttpSimpleLoad(),
-            requestHeadersValid: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            requestHeadersValid: true
           }
         },
         { label: "onHeadersReceived",
@@ -171,8 +168,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             statusLine: "HTTP/1.1 200 OK",
-            statusCode: 200,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            statusCode: 200
           }
         },
         { label: "onResponseStarted",
@@ -182,8 +178,7 @@ runTests([
             fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1",
-            statusLine: "HTTP/1.1 200 OK",
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            statusLine: "HTTP/1.1 200 OK"
           }
         },
         { label: "onCompleted",
@@ -193,8 +188,7 @@ runTests([
             fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1",
-            statusLine: "HTTP/1.1 200 OK",
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            statusLine: "HTTP/1.1 200 OK"
           }
         },
       ],

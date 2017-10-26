@@ -976,19 +976,17 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
   WaitForLoadStop(new_shell->web_contents());
 
   // The window.open() should have resulted in an error page. The blocked
-  // URL should be in the virtual URL, not the actual URL.
-  //
-  // TODO(nasko): Now that the error commits on the previous URL, the blocked
-  // navigation logic is no longer needed. https://crbug.com/723796
+  // URL should be in both the actual and the virtual URL.
   {
     EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
     NavigationEntry* entry = controller->GetLastCommittedEntry();
     EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
     EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
     EXPECT_TRUE(base::StartsWith(
-        entry->GetVirtualURL().spec(),
+        entry->GetURL().spec(),
         embedded_test_server()->GetURL("/server-redirect?").spec(),
         base::CompareCase::SENSITIVE));
+    EXPECT_EQ(entry->GetURL(), entry->GetVirtualURL());
   }
 
   // Navigate forward and then go back to ensure the navigation to data: URL
@@ -1006,10 +1004,10 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
     EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
     EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
     EXPECT_TRUE(base::StartsWith(
-        entry->GetVirtualURL().spec(),
+        entry->GetURL().spec(),
         embedded_test_server()->GetURL("/server-redirect?").spec(),
         base::CompareCase::SENSITIVE));
-    EXPECT_EQ(url::kAboutBlankURL, entry->GetURL().spec());
+    EXPECT_EQ(entry->GetURL(), entry->GetVirtualURL());
   }
 
   // Do another new navigation, but then use JavaScript to navigate back,
@@ -1026,10 +1024,10 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
     EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
     EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
     EXPECT_TRUE(base::StartsWith(
-        entry->GetVirtualURL().spec(),
+        entry->GetURL().spec(),
         embedded_test_server()->GetURL("/server-redirect?").spec(),
         base::CompareCase::SENSITIVE));
-    EXPECT_EQ(url::kAboutBlankURL, entry->GetURL().spec());
+    EXPECT_EQ(entry->GetURL(), entry->GetVirtualURL());
   }
 }
 

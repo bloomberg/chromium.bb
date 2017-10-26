@@ -6921,18 +6921,79 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   controller.GoBack();
   back_load_observer.Wait();
 
-  // The expectation is that about:blank was loaded and the virtual URL is set
-  // to the URL that was blocked.
-  //
-  // TODO(nasko): Now that the error commits on the previous URL, the blocked
-  // navigation logic is no longer needed. https://crbug.com/723796
+  // The expectation is that the blocked URL is present in the NavigationEntry,
+  // and shows up in both GetURL and GetVirtualURL.
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_FALSE(
       controller.GetLastCommittedEntry()->GetURL().SchemeIs(url::kDataScheme));
   EXPECT_EQ(redirect_to_unsafe_url,
+            controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(redirect_to_unsafe_url,
             controller.GetLastCommittedEntry()->GetVirtualURL());
-  EXPECT_EQ(url::kAboutBlankURL,
-            controller.GetLastCommittedEntry()->GetURL().spec());
+}
+
+// Verifies that redirecting to a blocked URL and going back does not allow a
+// URL spoof.  See https://crbug.com/777419.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PreventSpoofFromBlockedRedirect) {
+  GURL url1 = embedded_test_server()->GetURL(
+      "a.com", "/navigation_controller/simple_page_1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Pop open a new window.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(root, "var w = window.open()"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+  EXPECT_FALSE(
+      new_shell->web_contents()->GetController().GetLastCommittedEntry());
+
+  // Navigate it to a cross-site URL that redirects to a data: URL.  Since it is
+  // an unsafe redirect, it will result in a blocked navigation and error page.
+  GURL redirect_to_data_url(
+      embedded_test_server()->GetURL("/server-redirect?data:text/html,Hello!"));
+  TestNavigationObserver nav_observer(new_shell->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      root, "w.location.href = '" + redirect_to_data_url.spec() + "';"));
+  nav_observer.WaitForNavigationFinished();
+  EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      new_shell->web_contents()->GetController());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(redirect_to_data_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+
+  // Navigate to a new document, then go back in history trying to load the
+  // blocked URL.
+  EXPECT_TRUE(NavigateToURL(new_shell, url1));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url1, controller.GetLastCommittedEntry()->GetURL());
+  TestNavigationObserver back_load_observer(new_shell->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+  EXPECT_EQ(redirect_to_data_url, controller.GetLastCommittedEntry()->GetURL());
+
+  // The opener should not be able to script the page, which should be another
+  // error message and not a blank page.
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(),
+      "domAutomationController.send((function() {\n"
+      "  try {\n"
+      "    return w.document.body.innerHTML;\n"
+      "  } catch (e) {\n"
+      "    return e.toString();\n"
+      "  }\n"
+      "})())",
+      &result));
+  DLOG(INFO) << "Result: " << result;
+  EXPECT_THAT(result,
+              ::testing::MatchesRegex("SecurityError: Blocked a frame with "
+                                      "origin \"http://a.com:\\d+\" from "
+                                      "accessing a cross-origin frame."));
 }
 
 // Same-document navigations can sometimes succeed but then later be blocked by
