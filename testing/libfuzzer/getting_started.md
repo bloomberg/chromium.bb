@@ -33,6 +33,10 @@ Supported sanitizer configurations are:
 | `is_ubsan_security=true` | enables [Undefined Behavior Sanitizer] to catch<sup>\[[*](reference.md#UBSan)\]</sup> undefined behavior like integer overflow. |
 | | it is possible to run libfuzzer without any sanitizers; *probably not what you want*.|
 
+ Fuzzers are built with minimal symbols by default, regardless of the value of
+`is_debug` and `symbol_level`. However if you want to run the fuzzer under a
+debugger you can re-enable them by setting `sanitizer_keep_symbols=true`.
+
 To get the exact GN configuration that are used on our builders, see
 [Build Config].
 
