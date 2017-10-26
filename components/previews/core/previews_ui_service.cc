@@ -59,6 +59,22 @@ void PreviewsUIService::LogPreviewDecisionMade(PreviewsEligibilityReason reason,
   logger_->LogPreviewDecisionMade(reason, url, time, type);
 }
 
+void PreviewsUIService::OnNewBlacklistedHost(const std::string& host,
+                                             base::Time time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  logger_->OnNewBlacklistedHost(host, time);
+}
+
+void PreviewsUIService::OnUserBlacklistedStatusChange(bool blacklisted) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  logger_->OnUserBlacklistedStatusChange(blacklisted);
+}
+
+void PreviewsUIService::OnBlacklistCleared(base::Time time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  logger_->OnBlacklistCleared(time);
+}
+
 PreviewsLogger* PreviewsUIService::previews_logger() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return logger_.get();

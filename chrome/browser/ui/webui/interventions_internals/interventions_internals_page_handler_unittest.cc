@@ -53,15 +53,37 @@ class TestInterventionsInternalsPage
   void LogNewMessage(mojom::MessageLogPtr message) override {
     message_ = base::MakeUnique<mojom::MessageLogPtr>(std::move(message));
   }
+  void OnBlacklistedHost(const std::string& host, int64_t time) override {
+    host_blacklisted_ = host;
+    host_blacklisted_time_ = time;
+  }
+  void OnUserBlacklistedStatusChange(bool blacklisted) override {
+    user_blacklisted_ = blacklisted;
+  }
+  void OnBlacklistCleared(int64_t time) override {
+    blacklist_cleared_time_ = time;
+  }
 
   // Expose passed in message in LogNewMessage for testing.
   mojom::MessageLogPtr* message() const { return message_.get(); }
+
+  // Expose passed in blacklist events info for testing.
+  std::string host_blacklisted() const { return host_blacklisted_; }
+  int64_t host_blacklisted_time() const { return host_blacklisted_time_; }
+  bool user_blacklisted() const { return user_blacklisted_; }
+  int64_t blacklist_cleared_time() const { return blacklist_cleared_time_; }
 
  private:
   mojo::Binding<mojom::InterventionsInternalsPage> binding_;
 
   // The MessageLogPtr passed in LogNewMessage method.
   std::unique_ptr<mojom::MessageLogPtr> message_;
+
+  // Received blacklist events info.
+  std::string host_blacklisted_;
+  int64_t host_blacklisted_time_;
+  int64_t user_blacklisted_;
+  int64_t blacklist_cleared_time_;
 };
 
 // Mock class to test interaction between the PageHandler and the
@@ -239,6 +261,45 @@ TEST_F(InterventionsInternalsPageHandlerTest, ObserverIsRemovedWhenDestroyed) {
   EXPECT_FALSE(logger_->RemovedObserverIsCalled());
   page_handler_.reset();
   EXPECT_TRUE(logger_->RemovedObserverIsCalled());
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, OnNewBlacklistedHostPostToPage) {
+  const std::string hosts[] = {
+      "example_0.com", "example_1.com", "example_2.com",
+  };
+
+  for (auto expected_host : hosts) {
+    base::Time expected_time = base::Time::Now();
+    page_handler_->OnNewBlacklistedHost(expected_host, expected_time);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(expected_host, page_->host_blacklisted());
+    EXPECT_EQ(expected_time.ToJavaTime(), page_->host_blacklisted_time());
+  }
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, OnUserBlacklistedPostToPage) {
+  page_handler_->OnUserBlacklistedStatusChange(true /* blacklisted */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(page_->user_blacklisted());
+
+  page_handler_->OnUserBlacklistedStatusChange(false /* blacklisted */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(page_->user_blacklisted());
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, OnBlacklistClearedPostToPage) {
+  base::Time times[] = {
+      base::Time::FromJsTime(-413696806000),  // Nov 21 1956 20:13:14 UTC
+      base::Time::FromJsTime(758620800000),   // Jan 15 1994 08:00:00 UTC
+      base::Time::FromJsTime(1581696550000),  // Feb 14 2020 16:09:10 UTC
+  };
+  for (auto expected_time : times) {
+    page_handler_->OnBlacklistCleared(expected_time);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(expected_time.ToJavaTime(), page_->blacklist_cleared_time());
+  }
 }
 
 }  // namespace

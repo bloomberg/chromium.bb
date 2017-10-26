@@ -31,6 +31,11 @@
   border: inset 1px silver;
 }
 
+.table-name {
+  font-size: 100%;
+  font-weight: bold;
+}
+
 table {
   border: 1px solid black;
   border-collapse: collapse;

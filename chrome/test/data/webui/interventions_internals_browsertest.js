@@ -72,6 +72,30 @@ InterventionsInternalsUITest.prototype = {
     }.bind(this);
 
     window.testPageHandler = new TestPageHandler();
+
+    /**
+     * Convert milliseconds to human readable date/time format.
+     * The return format will be "MM/dd/YYYY hh:mm:ss.sss"
+     * @param {number} time Time in millisecond since Unix Epoch.
+     * @return The converted string format.
+     */
+    getTimeFormat = function(time) {
+      let date = new Date(time);
+      let options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }
+
+      let timeString = date.toLocaleDateString('en-US', options);
+      return dateString + ' ' + date.getHours() + ':' + date.getMinutes() +
+          ':' + date.getSeconds() + '.' + date.getMilliseconds();
+    };
+
+    getBlacklistedStatus = function(blacklisted) {
+      return 'User blacklisted status: ' +
+          (blacklisted ? 'Blacklisted' : 'Not blacklisted');
+    };
   },
 };
 
@@ -147,7 +171,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
     expectEquals(logs.length, rows.length);
 
     logs.forEach((log, index) => {
-      let expectedTime = new Date(log.time).toISOString();
+      let expectedTime = getTimeFormat(log.time);
       let row = rows[logs.length - index - 1];  // Expecting reversed order.
                                                 // (i.e. a new log message is
                                                 // appended to the top of the
@@ -160,6 +184,74 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
       expectEquals(log.url.url, row.querySelector('.log-url').textContent);
     });
 
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'AddNewBlacklistedHost', function() {
+  test('AddNewBlacklistedHost', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let time = 758675653000;  // Jan 15 1994 23:14:13 UTC
+    let expectedHost = 'example.com';
+    pageImpl.onBlacklistedHost(expectedHost, time);
+
+    let blacklistedTable = $('blacklisted-hosts-table');
+    let row = blacklistedTable.querySelector('.blacklisted-host-row');
+
+    let expectedTime = getTimeFormat(time);
+
+    expectEquals(
+        expectedHost, row.querySelector('.host-blacklisted').textContent);
+    expectEquals(
+        expectedTime, row.querySelector('.host-blacklisted-time').textContent);
+
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'HostAlreadyBlacklisted', function() {
+  test('HostAlreadyBlacklisted', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let time0 = 758675653000;   // Jan 15 1994 23:14:13 UTC
+    let time1 = 1507221689240;  // Oct 05 2017 16:41:29 UTC
+    let expectedHost = 'example.com';
+
+    pageImpl.onBlacklistedHost(expectedHost, time0);
+
+    let blacklistedTable = $('blacklisted-hosts-table');
+    let row = blacklistedTable.querySelector('.blacklisted-host-row');
+    let expectedTime = getTimeFormat(time0);
+    expectEquals(
+        expectedHost, row.querySelector('.host-blacklisted').textContent);
+    expectEquals(
+        expectedTime, row.querySelector('.host-blacklisted-time').textContent);
+
+    pageImpl.onBlacklistedHost(expectedHost, time1);
+
+    // The row remains the same.
+    expectEquals(
+        expectedHost, row.querySelector('.host-blacklisted').textContent);
+    expectEquals(
+        expectedTime, row.querySelector('.host-blacklisted-time').textContent);
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'UpdateUserBlacklisted', function() {
+  test('UpdateUserBlacklistedDisplayCorrectly', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let state = $('user-blacklisted-status');
+
+    pageImpl.onUserBlacklistedStatusChange(true /* blacklisted */);
+    expectEquals(
+        getBlacklistedStatus(true /* blacklisted */), state.textContent);
+
+    pageImpl.onUserBlacklistedStatusChange(false /* blacklisted */);
+    expectEquals(
+        getBlacklistedStatus(false /* blacklisted */), state.textContent);
   });
 
   mocha.run();

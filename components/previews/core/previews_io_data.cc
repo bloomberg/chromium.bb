@@ -84,18 +84,40 @@ void PreviewsIOData::Initialize(
                  base::Passed(&previews_opt_out_store)));
 }
 
+void PreviewsIOData::OnNewBlacklistedHost(const std::string& host,
+                                          base::Time time) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&PreviewsUIService::OnNewBlacklistedHost,
+                                       previews_ui_service_, host, time));
+}
+
+void PreviewsIOData::OnUserBlacklistedStatusChange(bool blacklisted) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PreviewsUIService::OnUserBlacklistedStatusChange,
+                            previews_ui_service_, blacklisted));
+}
+
+void PreviewsIOData::OnBlacklistCleared(base::Time time) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&PreviewsUIService::OnBlacklistCleared,
+                                       previews_ui_service_, time));
+}
+
 void PreviewsIOData::InitializeOnIOThread(
     std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_.reset(
       new PreviewsBlackList(std::move(previews_opt_out_store),
-                            base::MakeUnique<base::DefaultClock>()));
+                            base::MakeUnique<base::DefaultClock>(), this));
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsUIService::SetIOData, previews_ui_service_,
                             weak_factory_.GetWeakPtr()));
 }
 
-void PreviewsIOData::SetTestingPreviewsBlacklistForTesting(
+void PreviewsIOData::SetPreviewsBlacklistForTesting(
     std::unique_ptr<PreviewsBlackList> previews_back_list) {
   previews_black_list_ = std::move(previews_back_list);
 }

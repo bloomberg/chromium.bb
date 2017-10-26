@@ -4,9 +4,11 @@
 
 #include "components/previews/core/previews_black_list.h"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,10 +21,12 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/variations/variations_associated_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -38,12 +42,74 @@ void RunLoadCallback(
                std::move(host_indifferent_black_list_item));
 }
 
+// Mock class to test that PreviewsBlackList notifies the delegate with correct
+// events (e.g. New host blacklisted, user blacklisted, and blacklist cleared).
+class TestPreviewsBlacklistDelegate : public PreviewsBlacklistDelegate {
+ public:
+  TestPreviewsBlacklistDelegate()
+      : user_blacklisted_(false),
+        blacklist_cleared_(false),
+        blacklist_cleared_time_(base::Time::Now()) {}
+
+  // PreviewsBlacklistDelegate:
+  void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
+    blacklisted_hosts_[host] = time;
+  }
+  void OnUserBlacklistedStatusChange(bool blacklisted) override {
+    user_blacklisted_ = blacklisted;
+  }
+  void OnBlacklistCleared(base::Time time) override {
+    blacklist_cleared_ = true;
+    blacklist_cleared_time_ = time;
+  }
+
+  // Gets the set of blacklisted hosts recorded.
+  const std::unordered_map<std::string, base::Time>& blacklisted_hosts() const {
+    return blacklisted_hosts_;
+  }
+
+  // Gets the state of user blacklisted status.
+  bool user_blacklisted() const { return user_blacklisted_; }
+
+  // Gets the state of blacklisted cleared status of |this| for testing.
+  bool blacklist_cleared() const { return blacklist_cleared_; }
+
+  // Gets the event time of blacklist is as cleared.
+  base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
+
+ private:
+  // The user blacklisted status of |this| blacklist_delegate.
+  bool user_blacklisted_;
+
+  // Check if the blacklist is notified as cleared on |this| blacklist_delegate.
+  bool blacklist_cleared_;
+
+  // The time when blacklist is cleared.
+  base::Time blacklist_cleared_time_;
+
+  // |this| blacklist_delegate's collection of blacklisted hosts.
+  std::unordered_map<std::string, base::Time> blacklisted_hosts_;
+};
+
 class TestPreviewsOptOutStore : public PreviewsOptOutStore {
  public:
   TestPreviewsOptOutStore() : clear_blacklist_count_(0) {}
   ~TestPreviewsOptOutStore() override {}
 
   int clear_blacklist_count() { return clear_blacklist_count_; }
+
+  // Set |host_indifferent_black_list_item_| to test behavior of
+  // PreviewsBlackList on certain PreviewsOptOutStore states.
+  void SetHostIndifferentBlacklistItem(
+      std::unique_ptr<PreviewsBlackListItem> item) {
+    host_indifferent_black_list_item_ = std::move(item);
+  }
+
+  // Set |black_list_item_map_| to test behavior of
+  // PreviewsBlackList on certain PreviewsOptOutStore states.
+  void SetBlacklistItemMap(std::unique_ptr<BlackListItemMap> item_map) {
+    black_list_item_map_ = std::move(item_map);
+  }
 
  private:
   // PreviewsOptOutStore implementation:
@@ -53,14 +119,18 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
                             base::Time now) override {}
 
   void LoadBlackList(LoadBlackListCallback callback) override {
-    std::unique_ptr<BlackListItemMap> black_list_item_map(
-        new BlackListItemMap());
-    std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item =
-        PreviewsBlackList::CreateHostIndifferentBlackListItem();
+    if (!black_list_item_map_) {
+      black_list_item_map_ = base::MakeUnique<BlackListItemMap>();
+    }
+    if (!host_indifferent_black_list_item_) {
+      host_indifferent_black_list_item_ =
+          PreviewsBlackList::CreateHostIndifferentBlackListItem();
+    }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RunLoadCallback, callback,
-                              base::Passed(&black_list_item_map),
-                              base::Passed(&host_indifferent_black_list_item)));
+        FROM_HERE,
+        base::Bind(&RunLoadCallback, callback,
+                   base::Passed(&black_list_item_map_),
+                   base::Passed(&host_indifferent_black_list_item_)));
   }
 
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {
@@ -68,6 +138,8 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
   }
 
   int clear_blacklist_count_;
+  std::unique_ptr<BlackListItemMap> black_list_item_map_;
+  std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item_;
 };
 
 class PreviewsBlackListTest : public testing::Test {
@@ -91,8 +163,8 @@ class PreviewsBlackListTest : public testing::Test {
     std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
         null_opt_out ? nullptr : base::MakeUnique<TestPreviewsOptOutStore>();
     opt_out_store_ = opt_out_store.get();
-    black_list_ = base::MakeUnique<PreviewsBlackList>(std::move(opt_out_store),
-                                                      std::move(test_clock));
+    black_list_ = base::MakeUnique<PreviewsBlackList>(
+        std::move(opt_out_store), std::move(test_clock), &blacklist_delegate_);
     start_ = test_clock_->Now();
   }
 
@@ -156,6 +228,9 @@ class PreviewsBlackListTest : public testing::Test {
 
  protected:
   base::MessageLoop loop_;
+
+  // Observer to |black_list_|.
+  TestPreviewsBlacklistDelegate blacklist_delegate_;
 
   // Unowned raw pointers tied to the lifetime of |black_list_|.
   base::SimpleTestClock* test_clock_;
@@ -588,6 +663,207 @@ TEST_F(PreviewsBlackListTest, ClearingBlackListClearsRecentNavigation) {
 
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+}
+
+TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnHostBlacklisted) {
+  // Tests the black list behavior when a null OptOutStore is passed in.
+  const GURL url_("http://www.url_.com");
+
+  // Host indifferent blacklisting should have no effect with the following
+  // params.
+  const size_t host_indifferent_history = 1;
+  SetHostHistoryParam(4);
+  SetHostThresholdParam(2);
+  SetHostIndifferentHistoryParam(host_indifferent_history);
+  SetHostIndifferentThresholdParam(host_indifferent_history + 1);
+  SetHostDurationParam(365);
+  // Disable single opt out by setting duration to 0.
+  SetSingleOptOutDurationParam(0);
+
+  StartTest(true /* null_opt_out */);
+
+  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
+            black_list_->IsLoadedAndAllowed(url_, PreviewsType::OFFLINE));
+
+  // Observer is not notified as blacklisted when the threshold does not met.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  black_list_->AddPreviewNavigation(url_, true, PreviewsType::OFFLINE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(0));
+
+  // Observer is notified as blacklisted when the threshold is met.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  black_list_->AddPreviewNavigation(url_, true, PreviewsType::OFFLINE);
+  base::RunLoop().RunUntilIdle();
+  const base::Time blacklisted_time = test_clock_->Now();
+  EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));
+  EXPECT_EQ(blacklisted_time,
+            blacklist_delegate_.blacklisted_hosts().find(url_.host())->second);
+
+  // Observer is not notified when the host is already blacklisted.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  black_list_->AddPreviewNavigation(url_, true, PreviewsType::OFFLINE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));
+  EXPECT_EQ(blacklisted_time,
+            blacklist_delegate_.blacklisted_hosts().find(url_.host())->second);
+
+  // Observer is notified when blacklist is cleared.
+  EXPECT_FALSE(blacklist_delegate_.blacklist_cleared());
+
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  black_list_->ClearBlackList(start_, test_clock_->Now());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(blacklist_delegate_.blacklist_cleared());
+  EXPECT_EQ(test_clock_->Now(), blacklist_delegate_.blacklist_cleared_time());
+}
+
+TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnUserBlacklisted) {
+  // Tests the black list behavior when a null OptOutStore is passed in.
+  const GURL urls[] = {
+      GURL("http://www.url_0.com"), GURL("http://www.url_1.com"),
+      GURL("http://www.url_2.com"), GURL("http://www.url_3.com"),
+  };
+
+  // Per host blacklisting should have no effect with the following params.
+  const size_t per_host_history = 1;
+  const size_t host_indifferent_history = 4;
+  const size_t host_indifferent_threshold = host_indifferent_history;
+  SetHostHistoryParam(per_host_history);
+  SetHostIndifferentHistoryParam(host_indifferent_history);
+  SetHostThresholdParam(per_host_history + 1);
+  SetHostIndifferentThresholdParam(host_indifferent_threshold);
+  SetHostDurationParam(365);
+  // Disable single opt out by setting duration to 0.
+  SetSingleOptOutDurationParam(0);
+
+  StartTest(true /* null_opt_out */);
+
+  // Initially no host is blacklisted, and user is not blacklisted.
+  EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(0));
+  EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
+
+  for (size_t i = 0; i < host_indifferent_threshold; ++i) {
+    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    black_list_->AddPreviewNavigation(urls[i], true, PreviewsType::OFFLINE);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(0));
+    // Observer is notified when number of recently opt out meets
+    // |host_indifferent_threshold|.
+    EXPECT_EQ(i >= host_indifferent_threshold - 1,
+              blacklist_delegate_.user_blacklisted());
+  }
+
+  // Observer is notified when the user is no longer blacklisted.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  black_list_->AddPreviewNavigation(urls[3], false, PreviewsType::OFFLINE);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
+}
+
+TEST_F(PreviewsBlackListTest, ObserverIsNotifiedWhenLoadBlacklistDone) {
+  const GURL url_a1("http://www.url_a.com/a1");
+  const GURL url_a2("http://www.url_a.com/a2");
+
+  // Per host blacklisting should have no effect with the following params.
+  const size_t per_host_history = 1;
+  const size_t host_indifferent_history = 4;
+  const size_t host_indifferent_threshold = host_indifferent_history;
+  SetHostHistoryParam(per_host_history);
+  SetHostIndifferentHistoryParam(host_indifferent_history);
+  SetHostThresholdParam(per_host_history + 1);
+  SetHostIndifferentThresholdParam(host_indifferent_threshold);
+  SetHostDurationParam(365);
+  // Disable single opt out by setting duration to 0.
+  SetSingleOptOutDurationParam(0);
+
+  StartTest(false /* null_opt_out */);
+
+  std::unique_ptr<PreviewsBlackListItem> host_indifferent_item =
+      PreviewsBlackList::CreateHostIndifferentBlackListItem();
+  std::unique_ptr<base::SimpleTestClock> test_clock =
+      base::MakeUnique<base::SimpleTestClock>();
+
+  for (size_t i = 0; i < host_indifferent_threshold; ++i) {
+    test_clock->Advance(base::TimeDelta::FromSeconds(1));
+    host_indifferent_item->AddPreviewNavigation(true, test_clock->Now());
+  }
+
+  std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
+      base::MakeUnique<TestPreviewsOptOutStore>();
+  opt_out_store->SetHostIndifferentBlacklistItem(
+      std::move(host_indifferent_item));
+
+  EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
+  auto black_list = base::MakeUnique<PreviewsBlackList>(
+      std::move(opt_out_store), std::move(test_clock), &blacklist_delegate_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(blacklist_delegate_.user_blacklisted());
+}
+
+TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
+  // Tests the black list behavior when a non-null OptOutStore is passed in.
+  const GURL url_a("http://www.url_a.com");
+  const GURL url_b("http://www.url_b.com");
+
+  // Host indifferent blacklisting should have no effect with the following
+  // params.
+  const size_t host_indifferent_history = 1;
+  SetHostThresholdParam(2);
+  SetHostHistoryParam(4);
+  SetHostIndifferentHistoryParam(host_indifferent_history);
+  SetHostIndifferentThresholdParam(host_indifferent_history + 1);
+  SetHostDurationParam(365);
+  // Disable single opt out by setting duration to 0.
+  SetSingleOptOutDurationParam(0);
+
+  StartTest(false /* null_opt_out */);
+
+  std::unique_ptr<base::SimpleTestClock> test_clock =
+      base::MakeUnique<base::SimpleTestClock>();
+
+  PreviewsBlackListItem* item_a = new PreviewsBlackListItem(
+      params::MaxStoredHistoryLengthForPerHostBlackList(),
+      params::PerHostBlackListOptOutThreshold(),
+      params::PerHostBlackListDuration());
+  PreviewsBlackListItem* item_b = new PreviewsBlackListItem(
+      params::MaxStoredHistoryLengthForPerHostBlackList(),
+      params::PerHostBlackListOptOutThreshold(),
+      params::PerHostBlackListDuration());
+
+  // Host |url_a| is blacklisted.
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  item_a->AddPreviewNavigation(true, test_clock->Now());
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  item_a->AddPreviewNavigation(true, test_clock->Now());
+  base::Time blacklisted_time = test_clock->Now();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(item_a->IsBlackListed(test_clock->Now()));
+
+  // Host |url_b| is not blacklisted.
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  item_b->AddPreviewNavigation(true, test_clock->Now());
+
+  std::unique_ptr<BlackListItemMap> item_map =
+      base::MakeUnique<BlackListItemMap>();
+  item_map->emplace(url_a.host(), base::WrapUnique(item_a));
+  item_map->emplace(url_b.host(), base::WrapUnique(item_b));
+
+  std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
+      base::MakeUnique<TestPreviewsOptOutStore>();
+  opt_out_store->SetBlacklistItemMap(std::move(item_map));
+
+  auto black_list = base::MakeUnique<PreviewsBlackList>(
+      std::move(opt_out_store), std::move(test_clock), &blacklist_delegate_);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));
+  EXPECT_EQ(blacklisted_time,
+            blacklist_delegate_.blacklisted_hosts().find(url_a.host())->second);
 }
 
 }  // namespace
