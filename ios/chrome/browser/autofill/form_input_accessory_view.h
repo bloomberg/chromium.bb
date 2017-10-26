@@ -14,19 +14,21 @@
 // way of the playInputClick method.
 @interface FormInputAccessoryView : UIView<UIInputViewAudioFeedback>
 
-// Initializes with |frame| and |delegate| to show |customView|. If the size of
-// |rightFrame| is non-zero, the view will have two parts: the left one has
-// frame |leftFrame| and the right one has frame |rightFrame|. Otherwise the
-// view will be shown in |leftFrame|.
-- (instancetype)initWithFrame:(CGRect)frame
-                     delegate:(id<FormInputAccessoryViewDelegate>)delegate
-                   customView:(UIView*)customView
-                    leftFrame:(CGRect)leftFrame
-                   rightFrame:(CGRect)rightFrame;
+// Initializes with |delegate|.
+- (instancetype)initWithDelegate:(id<FormInputAccessoryViewDelegate>)delegate;
 
 // Initializes with |frame| to show |customView|. Navigation controls are not
 // shown.
 - (instancetype)initWithFrame:(CGRect)frame customView:(UIView*)customView;
+
+// Initializes the view with the given |customView|.
+// If the size of |rightFrame| is non-zero, the view will be split into two
+// parts with |leftFrame| and |rightFrame|. Otherwise the Autofill view will
+// be shown in |leftFrame|.
+- (void)initializeViewWithCustomView:(UIView*)customView
+                           leftFrame:(CGRect)leftFrame
+                          rightFrame:(CGRect)rightFrame;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_H_
