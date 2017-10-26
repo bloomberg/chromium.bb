@@ -37,7 +37,7 @@ Options:
                       auditor's executable.
   --extractor-output  Optional path to the temporary file that extracted
                       annotations will be stored into.
-  --extracted-input   Optional path to the file that temporary extracted
+  --extractor-input   Optional path to the file that temporary extracted
                       annotations are already stored in. If this is provided,
                       clang tool is not run and this is used as input.
   --full-run          Optional flag asking the tool to run on the whole
@@ -385,6 +385,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  std::vector<AuditorResult> errors = auditor.errors();
+
   // Test/Update annotations.xml.
   TrafficAnnotationExporter exporter(source_path);
   if (!exporter.UpdateAnnotations(
@@ -394,7 +396,9 @@ int main(int argc, char* argv[]) {
   }
   if (exporter.modified()) {
     if (test_only) {
-      printf("Error: annotation.xml needs update.\n");
+      errors.push_back(
+          AuditorResult(AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE,
+                        exporter.GetRequiredUpdates()));
     } else if (!exporter.SaveAnnotationsXML() ||
                !RunAnnotationDownstreamUpdater(source_path)) {
       LOG(ERROR) << "Could not update annotations XML or downstream files.";
@@ -402,13 +406,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  // Dump Errors and Warnings to stdout.
-  const std::vector<AuditorResult>& errors = auditor.errors();
+  // Dump Errors to stdout.
   for (const auto& error : errors) {
-    printf(
-        "%s: %s\n",
-        error.type() == AuditorResult::Type::ERROR_SYNTAX ? "Error" : "Warning",
-        error.ToText().c_str());
+    printf("%s: %s\n",
+           "Error",  // "Warning" can be used for minor nags.
+           error.ToText().c_str());
   }
 
   return 0;

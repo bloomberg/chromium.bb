@@ -33,6 +33,34 @@ const base::FilePath kAnnotationsXmlPath =
         .Append(FILE_PATH_LITERAL("summary"))
         .Append(FILE_PATH_LITERAL("annotations.xml"));
 
+// Extracts annotation id from a line of XML. Expects to have the line in the
+// following format: <... id="..." .../>
+// TODO(rhalavati): Use real XML parsing.
+std::string GetAnnotationID(const std::string& xml_line) {
+  std::string::size_type start = xml_line.find("id=\"");
+  if (start == std::string::npos)
+    return "";
+
+  start += 4;
+  std::string::size_type end = xml_line.find("\"", start);
+  if (end == std::string::npos)
+    return "";
+
+  return xml_line.substr(start, end - start);
+}
+
+// Extracts a map of XML items, keyed by their 'id' tags, from a serialized XML.
+void ExtractXMLItems(const std::string& serialized_xml,
+                     std::map<std::string, std::string>* items) {
+  std::vector<std::string> lines = base::SplitString(
+      serialized_xml, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const std::string& line : lines) {
+    std::string id = GetAnnotationID(line);
+    if (!id.empty())
+      items->insert(std::make_pair(id, line));
+  }
+}
+
 }  // namespace
 
 TrafficAnnotationExporter::ReportItem::ReportItem()
@@ -49,7 +77,10 @@ TrafficAnnotationExporter::ReportItem::~ReportItem() {}
 
 TrafficAnnotationExporter::TrafficAnnotationExporter(
     const base::FilePath& source_path)
-    : source_path_(source_path), modified_(false) {}
+    : source_path_(source_path), modified_(false) {
+  all_supported_platforms_.push_back("linux");
+  all_supported_platforms_.push_back("windows");
+}
 
 TrafficAnnotationExporter::~TrafficAnnotationExporter() {}
 
@@ -118,16 +149,19 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
 
   std::set<int> current_platform_hashcodes;
 
-  // Iterate current annotations and add/update.
+  // Iterate annotations extracted from the code, and add/update them in the
+  // reported list, if required.
   for (AnnotationInstance annotation : annotations) {
-    // Source tag is not used in computing the hashcode, as we don't need
-    // sensitivity to changes in source location (filepath, line number,
-    // and function).
+    // Compute a hashcode for the annotation. Source field is not used in this
+    // computation as we don't need sensitivity to changes in source location,
+    // i.e. filepath, line number and function.
     std::string content;
     annotation.proto.clear_source();
     google::protobuf::TextFormat::PrintToString(annotation.proto, &content);
     int content_hash_code = TrafficAnnotationAuditor::ComputeHashValue(content);
 
+    // If annotation unique id is already in the reported list, just check if
+    // platform is correct.
     if (base::ContainsKey(report_items_, annotation.proto.unique_id())) {
       ReportItem* current = &report_items_[annotation.proto.unique_id()];
       if (!base::ContainsValue(current->os_list, platform)) {
@@ -135,10 +169,12 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
         modified_ = true;
       }
     } else {
+      // If annotation is new, add it and assume it is on all platforms. Tests
+      // running on other platforms will request updating this if required.
       ReportItem new_item;
       new_item.unique_id_hash_code = annotation.unique_id_hash_code;
       new_item.content_hash_code = content_hash_code;
-      new_item.os_list.push_back(platform);
+      new_item.os_list = all_supported_platforms_;
       report_items_[annotation.proto.unique_id()] = new_item;
       modified_ = true;
     }
@@ -161,7 +197,7 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
     if (!base::ContainsKey(report_items_, item.second)) {
       ReportItem new_item;
       new_item.unique_id_hash_code = item.first;
-      new_item.os_list.push_back("all");
+      new_item.os_list = all_supported_platforms_;
       report_items_[item.second] = new_item;
       modified_ = true;
     }
@@ -182,7 +218,7 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
   return CheckReportItems();
 }
 
-bool TrafficAnnotationExporter::SaveAnnotationsXML() {
+std::string TrafficAnnotationExporter::GenerateSerializedXML() {
   XmlWriter writer;
   writer.StartWriting();
   writer.StartElement("annotations");
@@ -215,6 +251,12 @@ bool TrafficAnnotationExporter::SaveAnnotationsXML() {
   std::string xml_content = writer.GetWrittenString();
   // Add comment before annotation tag (and after xml version).
   xml_content.insert(xml_content.find("<annotations>"), kXmlComment);
+
+  return xml_content;
+}
+
+bool TrafficAnnotationExporter::SaveAnnotationsXML() {
+  std::string xml_content = GenerateSerializedXML();
 
   return base::WriteFile(source_path_.Append(kAnnotationsXmlPath),
                          xml_content.c_str(), xml_content.length()) != -1;
@@ -255,4 +297,78 @@ bool TrafficAnnotationExporter::CheckReportItems() {
     }
   }
   return true;
+}
+
+unsigned TrafficAnnotationExporter::GetXMLItemsCountForTesting() {
+  std::string xml_content;
+  if (!base::ReadFileToString(
+          base::MakeAbsoluteFilePath(source_path_.Append(kAnnotationsXmlPath)),
+          &xml_content)) {
+    LOG(ERROR) << "Could not read 'annotations.xml'.";
+    return 0;
+  }
+
+  std::map<std::string, std::string> lines;
+  ExtractXMLItems(xml_content, &lines);
+  return lines.size();
+}
+
+std::string TrafficAnnotationExporter::GetRequiredUpdates() {
+  std::string old_xml;
+  if (!base::ReadFileToString(
+          base::MakeAbsoluteFilePath(source_path_.Append(kAnnotationsXmlPath)),
+          &old_xml)) {
+    return "Could not generate required changes.";
+  }
+
+  return GetXMLDifferences(old_xml, GenerateSerializedXML());
+}
+
+std::string TrafficAnnotationExporter::GetXMLDifferences(
+    const std::string& old_xml,
+    const std::string& new_xml) {
+  std::map<std::string, std::string> old_items;
+  ExtractXMLItems(old_xml, &old_items);
+  std::set<std::string> old_keys;
+  std::transform(old_items.begin(), old_items.end(),
+                 std::inserter(old_keys, old_keys.end()),
+                 [](auto pair) { return pair.first; });
+
+  std::map<std::string, std::string> new_items;
+  ExtractXMLItems(new_xml, &new_items);
+  std::set<std::string> new_keys;
+  std::transform(new_items.begin(), new_items.end(),
+                 std::inserter(new_keys, new_keys.end()),
+                 [](auto pair) { return pair.first; });
+
+  std::set<std::string> added_items;
+  std::set<std::string> removed_items;
+
+  std::set_difference(new_keys.begin(), new_keys.end(), old_keys.begin(),
+                      old_keys.end(),
+                      std::inserter(added_items, added_items.begin()));
+  std::set_difference(old_keys.begin(), old_keys.end(), new_keys.begin(),
+                      new_keys.end(),
+                      std::inserter(removed_items, removed_items.begin()));
+
+  std::string message;
+
+  for (const std::string& id : added_items) {
+    message += base::StringPrintf("\n\tAdd line: '%s'", new_items[id].c_str());
+  }
+
+  for (const std::string& id : removed_items) {
+    message +=
+        base::StringPrintf("\n\tRemove line: '%s'", old_items[id].c_str());
+  }
+
+  for (const std::string& id : old_keys) {
+    if (base::ContainsKey(new_items, id) && old_items[id] != new_items[id]) {
+      message +=
+          base::StringPrintf("\n\tUpdate line: '%s' --> '%s'",
+                             old_items[id].c_str(), new_items[id].c_str());
+    }
+  }
+
+  return message;
 }

@@ -37,9 +37,10 @@ class AuditorResult {
     ERROR_INCOMPLETED_ANNOTATION,  // A partial or [branched_] completing
                                    // annotation is not paired with any other
                                    // annotation to be completed.
-    ERROR_DIRECT_ASSIGNMENT        // A value is directly assigned to a mutable
+    ERROR_DIRECT_ASSIGNMENT,       // A value is directly assigned to a mutable
                                    // annotation or annotation instialized with
                                    // list expresssion.
+    ERROR_ANNOTATIONS_XML_UPDATE   // Annotations XML requires update.
   };
 
   static const int kNoCodeLineSpecified;

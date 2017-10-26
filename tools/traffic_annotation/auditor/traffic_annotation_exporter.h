@@ -30,6 +30,14 @@ class TrafficAnnotationExporter {
   // Saves |report_items_| into annotations.xml.
   bool SaveAnnotationsXML();
 
+  // Returns the required updates for annotations.xml.
+  std::string GetRequiredUpdates();
+
+  std::string GetXMLDifferencesForTesting(const std::string& old_xml,
+                                          const std::string& new_xml) {
+    return GetXMLDifferences(old_xml, new_xml);
+  }
+
   // Produces the list of deprecated hash codes. Returns false if
   // annotations.xml is not and cannot be loaded.
   bool GetDeprecatedHashCodes(std::set<int>* hash_codes);
@@ -38,6 +46,9 @@ class TrafficAnnotationExporter {
 
   // Runs tests on content of |report_items_|.
   bool CheckReportItems();
+
+  // Returns the number of items in annotations.xml for testing.
+  unsigned GetXMLItemsCountForTesting();
 
  private:
   struct ReportItem {
@@ -51,6 +62,14 @@ class TrafficAnnotationExporter {
     std::vector<std::string> os_list;
   };
 
+  // Generates a text serialized XML for current report items.
+  std::string GenerateSerializedXML();
+
+  // Returns the required updates to convert one serialized XML to another.
+  std::string GetXMLDifferences(const std::string& old_xml,
+                                const std::string& new_xml);
+
+  std::vector<std::string> all_supported_platforms_;
   std::map<std::string, ReportItem> report_items_;
   const base::FilePath source_path_;
   bool modified_;

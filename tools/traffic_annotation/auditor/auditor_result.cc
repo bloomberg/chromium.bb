@@ -20,7 +20,8 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::RESULT_IGNORE ||
          type == AuditorResult::Type::ERROR_FATAL ||
          type == AuditorResult::Type::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE ||
-         type == AuditorResult::Type::ERROR_MERGE_FAILED);
+         type == AuditorResult::Type::ERROR_MERGE_FAILED ||
+         type == AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE);
   DCHECK(!message.empty() || type == AuditorResult::Type::RESULT_OK ||
          type == AuditorResult::Type::RESULT_IGNORE ||
          type == AuditorResult::Type::ERROR_MISSING_TAG_USED ||
@@ -145,6 +146,16 @@ std::string AuditorResult::ToText() const {
           "Annotation at '%s:%i' is assigned without annotations API "
           "functions.",
           file_path_.c_str(), line_);
+
+    case AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE:
+      DCHECK(details_.size());
+      return base::StringPrintf(
+          "'tools/traffic_annotation/summary/annotations.xml' requires update. "
+          "It is recommended to run traffic_annotation_auditor locally to do "
+          "the updates automatically (please refer to tools/traffic_annotation/"
+          "auditor/README.md), but you can also apply the following edit(s) to "
+          "do it manually:%s",
+          details_[0].c_str());
 
     default:
       return std::string();

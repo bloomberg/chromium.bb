@@ -40230,6 +40230,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="22096011" label="test_partial"/>
   <int value="22265491" label="user_info_fetcher"/>
   <int value="22774132" label="devtools_free_data_source"/>
+  <int value="23472048" label="network_location_provider"/>
   <int value="24058523" label="CRD_relay_session_request"/>
   <int value="24978481" label="cloud_print_privet_register"/>
   <int value="25204343" label="cryptauth_toggle_easyunlock"/>

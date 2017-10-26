@@ -883,3 +883,56 @@ TEST_F(TrafficAnnotationAuditorTest, GetClangLibraryPath) {
   base::FilePath clang_library = auditor().GetClangLibraryPath();
   EXPECT_FALSE(clang_library.empty());
 }
+
+// Tests if 'annotations.xml' is read and has at least one item.
+TEST_F(TrafficAnnotationAuditorTest, AnnotationsXMLLines) {
+  TrafficAnnotationExporter exporter(source_path());
+  EXPECT_LE(1u, exporter.GetXMLItemsCountForTesting());
+}
+
+// Tests if 'annotations.xml' changes are correctly reported.
+TEST_F(TrafficAnnotationAuditorTest, AnnotationsXMLDifferences) {
+  TrafficAnnotationExporter exporter(source_path());
+
+  std::string xml1;
+  std::string xml2;
+  std::string xml3;
+
+  EXPECT_TRUE(base::ReadFileToString(
+      base::MakeAbsoluteFilePath(
+          tests_folder().Append(FILE_PATH_LITERAL("annotations_sample1.xml"))),
+      &xml1));
+  EXPECT_TRUE(base::ReadFileToString(
+      base::MakeAbsoluteFilePath(
+          tests_folder().Append(FILE_PATH_LITERAL("annotations_sample2.xml"))),
+      &xml2));
+  EXPECT_TRUE(base::ReadFileToString(
+      base::MakeAbsoluteFilePath(
+          tests_folder().Append(FILE_PATH_LITERAL("annotations_sample3.xml"))),
+      &xml3));
+
+  std::string diff12 = exporter.GetXMLDifferencesForTesting(xml1, xml2);
+  std::string diff13 = exporter.GetXMLDifferencesForTesting(xml1, xml3);
+  std::string diff23 = exporter.GetXMLDifferencesForTesting(xml2, xml3);
+
+  std::string expected_diff12;
+  std::string expected_diff13;
+  std::string expected_diff23;
+
+  EXPECT_TRUE(base::ReadFileToString(
+      base::MakeAbsoluteFilePath(
+          tests_folder().Append(FILE_PATH_LITERAL("annotations_diff12.txt"))),
+      &expected_diff12));
+  EXPECT_TRUE(base::ReadFileToString(
+      base::MakeAbsoluteFilePath(
+          tests_folder().Append(FILE_PATH_LITERAL("annotations_diff13.txt"))),
+      &expected_diff13));
+  EXPECT_TRUE(base::ReadFileToString(
+      base::MakeAbsoluteFilePath(
+          tests_folder().Append(FILE_PATH_LITERAL("annotations_diff23.txt"))),
+      &expected_diff23));
+
+  EXPECT_EQ(diff12, expected_diff12);
+  EXPECT_EQ(diff13, expected_diff13);
+  EXPECT_EQ(diff23, expected_diff23);
+}
