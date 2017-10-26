@@ -53,9 +53,6 @@ DrawingRecorder::~DrawingRecorder() {
     return;
 
 #if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::SlimmingPaintStrictCullRectClippingEnabled())
-    context_.Restore();
-
   context_.SetInDrawingRecorder(false);
 
   if (!g_list_modification_check_disabled) {
@@ -67,8 +64,7 @@ DrawingRecorder::~DrawingRecorder() {
   sk_sp<const PaintRecord> picture = context_.EndRecording();
 
 #if DCHECK_IS_ON()
-  if (!RuntimeEnabledFeatures::SlimmingPaintStrictCullRectClippingEnabled() &&
-      !context_.GetPaintController().IsForPaintRecordBuilder() &&
+  if (!context_.GetPaintController().IsForPaintRecordBuilder() &&
       client_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize()) {
     DCHECK_EQ(0u, picture->size()) << client_.DebugName();
   }
