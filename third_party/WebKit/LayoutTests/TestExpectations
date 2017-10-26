@@ -726,8 +726,15 @@ crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.
 crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
-crbug.com/498539 [ Win ] http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
-crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
+
+# crbug.com/778784 Is tracking recent flakiness in decode-resize.html. Once that is fixed, the following
+# failures should be uncommented:
+# crbug.com/498539 [ Win ] http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
+# crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
+crbug.com/778784 http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
+crbug.com/778784 virtual/mojo-loading/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
+crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
+
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
