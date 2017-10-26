@@ -763,37 +763,57 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
 }
 
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
-  base::HistogramTester histogram_tester;
-  int64_t baseline_received_bytes = total_received_bytes();
-  int64_t baseline_original_received_bytes = total_original_received_bytes();
-
-  const char kDrpResponseHeaders[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Warning: 199 Misc-Agent \"some warning text\"\r\n"
-      "Via:\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy-Suffix, 9.9 other-proxy\r\n"
-      "Via: 2.2 Chrome-Compression-Proxy\r\n"
-      "Warning: 214 Chrome-Compression-Proxy \"Transformation Applied\"\r\n"
-      "X-Original-Content-Length: 10000\r\n"
-      "Chrome-Proxy: q=low\r\n"
-      "Content-Length: 1000\r\n\r\n";
+  const struct {
+    const std::string DrpResponseHeaders;
+  } test_cases[] = {
+      {
+          "HTTP/1.1 200 OK\r\n"
+          "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+          "Warning: 199 Misc-Agent \"some warning text\"\r\n"
+          "Via:\r\n"
+          "Via: 1.1 Chrome-Compression-Proxy-Suffix, 9.9 other-proxy\r\n"
+          "Via: 2.2 Chrome-Compression-Proxy\r\n"
+          "Warning: 214 Chrome-Compression-Proxy \"Transformation Applied\"\r\n"
+          "X-Original-Content-Length: 10000\r\n"
+          "Chrome-Proxy: q=low\r\n"
+          "Content-Length: 1000\r\n\r\n",
+      },
+      {
+          "HTTP/1.1 200 OK\r\n"
+          "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+          "Warning: 199 Misc-Agent \"some warning text\"\r\n"
+          "Via:\r\n"
+          "Via: 1.1 Chrome-Compression-Proxy-Suffix, 9.9 other-proxy\r\n"
+          "Via: 2.2 Chrome-Compression-Proxy\r\n"
+          "Warning: 214 Chrome-Compression-Proxy \"Transformation Applied\"\r\n"
+          "Chrome-Proxy: q=low,ofcl=10000\r\n"
+          "Content-Length: 1000\r\n\r\n",
+      }};
 
   params()->UseNonSecureProxiesForHttp();
-  std::unique_ptr<net::URLRequest> request = FetchURLRequest(
-      GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 1000);
 
-  EXPECT_EQ(request->GetTotalReceivedBytes(),
-            total_received_bytes() - baseline_received_bytes);
+  for (const auto& test : test_cases) {
+    base::HistogramTester histogram_tester;
+    int64_t baseline_received_bytes = total_received_bytes();
+    int64_t baseline_original_received_bytes = total_original_received_bytes();
 
-  const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-      kDrpResponseHeaders, arraysize(kDrpResponseHeaders) - 1);
-  EXPECT_EQ(static_cast<int64_t>(raw_headers.size() +
-                                 10000 /* original_response_body */),
-            total_original_received_bytes() - baseline_original_received_bytes);
+    std::unique_ptr<net::URLRequest> request =
+        FetchURLRequest(GURL("http://example.com/path/"), nullptr,
+                        test.DrpResponseHeaders.c_str(), 1000);
 
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
+    EXPECT_EQ(request->GetTotalReceivedBytes(),
+              total_received_bytes() - baseline_received_bytes);
+
+    const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
+        test.DrpResponseHeaders.c_str(), test.DrpResponseHeaders.size());
+    EXPECT_EQ(
+        static_cast<int64_t>(raw_headers.size() +
+                             10000 /* original_response_body */),
+        total_original_received_bytes() - baseline_original_received_bytes);
+
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
+  }
 }
 
 TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
@@ -882,26 +902,39 @@ TEST_F(DataReductionProxyDelegateTest, Holdback) {
 }
 
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
-  int64_t baseline_received_bytes = total_received_bytes();
-  int64_t baseline_original_received_bytes = total_original_received_bytes();
-
-  const char kDrpResponseHeaders[] =
-      "HTTP/1.1 304 Not Modified\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "X-Original-Content-Length: 10000\r\n\r\n";
+  const struct {
+    const std::string DrpResponseHeaders;
+  } test_cases[] = {{
+                        "HTTP/1.1 304 Not Modified\r\n"
+                        "Via: 1.1 Chrome-Compression-Proxy\r\n"
+                        "X-Original-Content-Length: 10000\r\n\r\n",
+                    },
+                    {
+                        "HTTP/1.1 304 Not Modified\r\n"
+                        "Via: 1.1 Chrome-Compression-Proxy\r\n"
+                        "Chrome-Proxy: ofcl=10000\r\n\r\n",
+                    }};
 
   params()->UseNonSecureProxiesForHttp();
-  std::unique_ptr<net::URLRequest> request = FetchURLRequest(
-      GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 0);
 
-  EXPECT_EQ(request->GetTotalReceivedBytes(),
-            total_received_bytes() - baseline_received_bytes);
+  for (const auto& test : test_cases) {
+    int64_t baseline_received_bytes = total_received_bytes();
+    int64_t baseline_original_received_bytes = total_original_received_bytes();
 
-  const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-      kDrpResponseHeaders, arraysize(kDrpResponseHeaders) - 1);
-  EXPECT_EQ(static_cast<int64_t>(raw_headers.size() +
-                                 10000 /* original_response_body */),
-            total_original_received_bytes() - baseline_original_received_bytes);
+    std::unique_ptr<net::URLRequest> request =
+        FetchURLRequest(GURL("http://example.com/path/"), nullptr,
+                        test.DrpResponseHeaders.c_str(), 0);
+
+    EXPECT_EQ(request->GetTotalReceivedBytes(),
+              total_received_bytes() - baseline_received_bytes);
+
+    const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
+        test.DrpResponseHeaders.c_str(), test.DrpResponseHeaders.size());
+    EXPECT_EQ(
+        static_cast<int64_t>(raw_headers.size() +
+                             10000 /* original_response_body */),
+        total_original_received_bytes() - baseline_original_received_bytes);
+  }
 }
 
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForWriteError) {
@@ -1015,6 +1048,18 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
            base::Int64ToString((static_cast<int64_t>(1) << 60) * 3) +
            "\r\n\r\n",
        100, 300},
+      {"HTTP/1.1 206 Partial Content\r\n"
+       "Content-Range: bytes 0-19/40\r\n"
+       "Content-Length: 20\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n"
+       "Chrome-Proxy: ofcl=160\r\n\r\n",
+       20, 80},
+      {"HTTP/1.1 206 Partial Content\r\n"
+       "Content-Range: bytes 0-9/40\r\n"
+       "Content-Length: 10\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n"
+       "Chrome-Proxy: ofcl=160\r\n\r\n",
+       10, 40},
   };
 
   params()->UseNonSecureProxiesForHttp();

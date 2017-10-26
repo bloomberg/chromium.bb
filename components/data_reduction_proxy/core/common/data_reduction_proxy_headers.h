@@ -209,5 +209,9 @@ void GetDataReductionProxyHeaderWithFingerprintRemoved(
     const net::HttpResponseHeaders* headers,
     std::vector<std::string>* values);
 
+// Returns the OFCL value in the Chrome-Proxy header. Returns -1 in case of
+// of error or if OFCL does not exist. |headers| must be non-null.
+int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers);
+
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_

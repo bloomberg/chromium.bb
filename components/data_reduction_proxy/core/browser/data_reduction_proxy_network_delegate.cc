@@ -125,8 +125,8 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
                                    int64_t original_content_length,
                                    const base::TimeDelta& freshness_lifetime,
                                    DataReductionProxyRequestType request_type) {
-  // Add the current resource to these histograms only when a valid
-  // X-Original-Content-Length header is present.
+  // Add the current resource to these histograms only when the content length
+  // is valid.
   if (original_content_length >= 0) {
     UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthWithValidOCL",
                             received_content_length);
@@ -149,7 +149,7 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
 
   } else {
     // Presume the original content length is the same as the received content
-    // length if the X-Original-Content-Header is not present.
+    // length.
     original_content_length = received_content_length;
   }
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength", received_content_length);
@@ -536,16 +536,9 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   DataReductionProxyRequestType request_type = GetDataReductionProxyRequestType(
       *request, configurator_->GetProxyConfig(), *data_reduction_proxy_config_);
 
-  // Determine the original content length if present.
-  int64_t original_content_length =
-      request->response_headers()
-          ? request->response_headers()->GetInt64HeaderValue(
-                "x-original-content-length")
-          : -1;
-
   CalculateAndRecordDataUsage(*request, request_type);
-
-  RecordContentLength(*request, request_type, original_content_length);
+  RecordContentLength(*request, request_type,
+                      util::CalculateOCLFromOFCL(*request));
   RecordAcceptTransformReceivedUMA(*request);
 }
 

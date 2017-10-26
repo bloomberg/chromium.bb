@@ -9,11 +9,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/version.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
@@ -179,12 +181,37 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
   return !data_reduction_proxy_info->proxy_server().is_direct();
 }
 
+int64_t CalculateOCLFromOFCL(const net::URLRequest& request) {
+  const net::HttpResponseHeaders* response_headers = request.response_headers();
+  int64_t original_content_length = GetDataReductionProxyOFCL(response_headers);
+
+  if (response_headers->response_code() == net::HTTP_PARTIAL_CONTENT) {
+    int64_t first, last, range_content_length;
+    if (response_headers->GetContentRangeFor206(&first, &last,
+                                                &range_content_length) &&
+        range_content_length > 0 && original_content_length > 0) {
+      // For a range request, OFCL indicates the original content length of the
+      // entire resource. The received response content length should be scaled
+      // by the compression ratio given by OFCL / range_content_length.
+      original_content_length =
+          ScaleByteCountByRatio(request.received_response_content_length(),
+                                original_content_length, range_content_length);
+    }
+  }
+  if (original_content_length < 0) {
+    // Fallback to using XOCL if getting from OFCL header fails.
+    // TODO(rajendrant): Remove the usage of OFCL, after integration tests are
+    // changed.
+    original_content_length =
+        response_headers->GetInt64HeaderValue("x-original-content-length");
+  }
+  return original_content_length;
+}
+
 int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
   if (request.was_cached() || !request.response_headers())
     return request.received_response_content_length();
-  int64_t original_content_length_from_header =
-      request.response_headers()->GetInt64HeaderValue(
-          "x-original-content-length");
+  int64_t original_content_length_from_header = CalculateOCLFromOFCL(request);
 
   if (original_content_length_from_header < 0)
     return request.received_response_content_length();
