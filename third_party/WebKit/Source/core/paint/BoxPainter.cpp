@@ -127,15 +127,15 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(
-      paint_info.context, display_item_client,
-      DisplayItem::kBoxDecorationBackground,
-      FloatRect(BoundsForDrawingRecorder(paint_info, paint_offset)));
+  DrawingRecorder recorder(paint_info.context, display_item_client,
+                           DisplayItem::kBoxDecorationBackground);
   BoxDecorationData box_decoration_data(layout_box_);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
+      // TODO(wkorman): Rename BoundsForDrawingRecorder as it's used
+      // here for another purpose.
       layout_box_.BackgroundIsKnownToBeOpaqueInRect(
           BoundsForDrawingRecorder(paint_info, LayoutPoint())))
     recorder.SetKnownToBeOpaque();
@@ -227,11 +227,7 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
           paint_info.context, layout_box_, paint_info.phase))
     return;
 
-  LayoutRect visual_overflow_rect(layout_box_.VisualOverflowRect());
-  visual_overflow_rect.MoveBy(paint_offset);
-
-  DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase,
-                           visual_overflow_rect);
+  DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase);
   LayoutRect paint_rect = LayoutRect(paint_offset, layout_box_.Size());
   PaintMaskImages(paint_info, paint_rect);
 }
@@ -296,8 +292,7 @@ void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
 
   IntRect paint_rect =
       PixelSnappedIntRect(LayoutRect(paint_offset, layout_box_.Size()));
-  DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase,
-                           paint_rect);
+  DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase);
   paint_info.context.FillRect(paint_rect, Color::kBlack);
 }
 

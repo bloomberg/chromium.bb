@@ -55,10 +55,6 @@ class SVGInlineTextBoxPainter {
 
  private:
   bool ShouldPaintSelection(const PaintInfo&) const;
-  FloatRect BoundsForDrawingRecorder(const PaintInfo&,
-                                     const ComputedStyle&,
-                                     const LayoutPoint&,
-                                     bool include_selection_rect) const;
   void PaintTextFragments(const PaintInfo&, LayoutObject&);
   void PaintDecoration(const PaintInfo&,
                        TextDecoration,

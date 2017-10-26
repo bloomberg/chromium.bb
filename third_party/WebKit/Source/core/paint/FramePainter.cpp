@@ -239,7 +239,7 @@ void FramePainter::PaintScrollCorner(GraphicsContext& context,
                                 context, *GetFrameView().ScrollCorner(),
                                 DisplayItem::kScrollbarBackground)) {
       DrawingRecorder recorder(context, *GetFrameView().ScrollCorner(),
-                               DisplayItem::kScrollbarBackground, corner_rect);
+                               DisplayItem::kScrollbarBackground);
       context.FillRect(corner_rect, GetFrameView().BaseBackgroundColor());
     }
     ScrollbarPainter::PaintIntoRect(*GetFrameView().ScrollCorner(), context,
@@ -273,8 +273,7 @@ void FramePainter::PaintScrollbar(GraphicsContext& context,
     if (!to_fill.IsEmpty() &&
         !DrawingRecorder::UseCachedDrawingIfPossible(
             context, bar, DisplayItem::kScrollbarBackground)) {
-      DrawingRecorder recorder(context, bar, DisplayItem::kScrollbarBackground,
-                               to_fill);
+      DrawingRecorder recorder(context, bar, DisplayItem::kScrollbarBackground);
       context.FillRect(to_fill, GetFrameView().BaseBackgroundColor());
     }
   }

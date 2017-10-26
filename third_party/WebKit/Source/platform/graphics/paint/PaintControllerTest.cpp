@@ -1895,7 +1895,7 @@ void DrawPath(GraphicsContext& context,
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
     return;
 
-  DrawingRecorder recorder(context, client, type, FloatRect(0, 0, 100, 100));
+  DrawingRecorder recorder(context, client, type);
   SkPath path;
   path.moveTo(0, 0);
   path.lineTo(0, 100);
@@ -2060,9 +2060,11 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
 
+    first.SetVisualRect(LayoutRect(100, 100, 300, 300));
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
+    first.SetVisualRect(LayoutRect(200, 200, 300, 300));
     DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
@@ -2130,6 +2132,7 @@ class PaintControllerUnderInvalidationTest
     GraphicsContext context(GetPaintController());
     {
       SubsequenceRecorder r(context, first);
+      first.SetVisualRect(LayoutRect(100, 100, 300, 300));
       DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
       DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
@@ -2138,6 +2141,7 @@ class PaintControllerUnderInvalidationTest
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
       SubsequenceRecorder r(context, first);
+      first.SetVisualRect(LayoutRect(200, 200, 300, 300));
       DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
       DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }

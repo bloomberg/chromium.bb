@@ -39,15 +39,14 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
       return;
     DrawingRecorder recorder(
         paint_info.context, inline_flow_box_,
-        DisplayItem::PaintPhaseToDrawingType(paint_info.phase),
-        PixelSnappedIntRect(overflow_rect));
+        DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
     PaintMask(paint_info, paint_offset);
     return;
   }
 
   if (paint_info.phase == PaintPhase::kForeground) {
     // Paint our background, border and box-shadow.
-    PaintBoxDecorationBackground(paint_info, paint_offset, overflow_rect);
+    PaintBoxDecorationBackground(paint_info, paint_offset);
   }
 
   // Paint our children.
@@ -254,8 +253,7 @@ static inline Node* GetNode(const LayoutObject* box_model) {
 
 void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
-    const LayoutRect& cull_rect) {
+    const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
   if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
       EVisibility::kVisible)
@@ -286,8 +284,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     return;
 
   DrawingRecorder recorder(paint_info.context, inline_flow_box_,
-                           DisplayItem::kBoxDecorationBackground,
-                           PixelSnappedIntRect(cull_rect));
+                           DisplayItem::kBoxDecorationBackground);
 
   LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();
 

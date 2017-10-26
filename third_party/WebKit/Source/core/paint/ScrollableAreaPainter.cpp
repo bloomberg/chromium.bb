@@ -48,7 +48,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, GetScrollableArea().Box(),
-                           DisplayItem::kResizer, abs_rect);
+                           DisplayItem::kResizer);
 
   DrawPlatformResizerImage(context, abs_rect);
 
@@ -275,7 +275,7 @@ void ScrollableAreaPainter::PaintScrollCorner(
     return;
 
   DrawingRecorder recorder(context, GetScrollableArea().Box(),
-                           DisplayItem::kScrollbarCorner, abs_rect);
+                           DisplayItem::kScrollbarCorner);
   context.FillRect(abs_rect, Color::kWhite);
 }
 

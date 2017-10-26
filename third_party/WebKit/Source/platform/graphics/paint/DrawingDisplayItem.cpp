@@ -36,7 +36,7 @@ bool DrawingDisplayItem::DrawsContent() const {
 #ifndef NDEBUG
 void DrawingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
-  json.SetString("rect", record_bounds_.ToString());
+  json.SetString("rect", VisualRect().ToString());
   json.SetBoolean("opaque", known_to_be_opaque_);
 }
 #endif
@@ -92,11 +92,10 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
     return false;
 
   const sk_sp<const PaintRecord>& record = this->GetPaintRecord();
-  const FloatRect& bounds = this->GetPaintRecordBounds();
+  const FloatRect bounds(this->VisualRect());
   const sk_sp<const PaintRecord>& other_record =
       static_cast<const DrawingDisplayItem&>(other).GetPaintRecord();
-  const FloatRect& other_bounds =
-      static_cast<const DrawingDisplayItem&>(other).GetPaintRecordBounds();
+  const FloatRect other_bounds(other.VisualRect());
 
   if (!record && !other_record)
     return true;

@@ -35,8 +35,7 @@ void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
     DrawingRecorder recorder(paint_info_before_filtering.context,
                              *LineLayoutAPIShim::ConstLayoutObjectFrom(
                                  svg_root_inline_box_.GetLineLayoutItem()),
-                             paint_info_before_filtering.phase,
-                             paint_info_before_filtering.GetCullRect().rect_);
+                             paint_info_before_filtering.phase);
     for (InlineBox* child = svg_root_inline_box_.FirstChild(); child;
          child = child->NextOnLine()) {
       if (child->IsSVGInlineTextBox())

@@ -57,8 +57,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
                                                   paint_info.phase))
     return;
 
-  DrawingRecorder recorder(context, layout_html_canvas_, paint_info.phase,
-                           content_rect);
+  DrawingRecorder recorder(context, layout_html_canvas_, paint_info.phase);
 
   bool clip = !content_rect.Contains(paint_rect);
   if (clip) {

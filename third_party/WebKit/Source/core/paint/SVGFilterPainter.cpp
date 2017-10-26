@@ -62,7 +62,7 @@ static void PaintFilteredContent(GraphicsContext& context,
                                                   DisplayItem::kSVGFilter))
     return;
 
-  DrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, bounds);
+  DrawingRecorder recorder(context, object, DisplayItem::kSVGFilter);
   sk_sp<SkImageFilter> image_filter =
       SkiaImageFilterBuilder::Build(effect, kInterpolationSpaceSRGB);
   context.Save();

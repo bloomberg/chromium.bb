@@ -147,8 +147,7 @@ struct TestChunks {
     auto record = sk_make_sp<PaintRecord>();
     record->push<cc::NoopOp>();
     items.AllocateAndConstruct<DrawingDisplayItem>(
-        DefaultId().client, DefaultId().type, std::move(record),
-        FloatRect(-200000, -200000, 400000, 400000));
+        DefaultId().client, DefaultId().type, std::move(record));
     chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));
   }
 

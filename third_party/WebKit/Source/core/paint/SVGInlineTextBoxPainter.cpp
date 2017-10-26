@@ -55,23 +55,6 @@ static bool HasShadow(const PaintInfo& paint_info, const ComputedStyle& style) {
   return style.TextShadow() && !paint_info.IsPrinting();
 }
 
-FloatRect SVGInlineTextBoxPainter::BoundsForDrawingRecorder(
-    const PaintInfo& paint_info,
-    const ComputedStyle& style,
-    const LayoutPoint& paint_offset,
-    bool include_selection_rect) const {
-  LayoutRect bounds(svg_inline_text_box_.Location() + paint_offset,
-                    svg_inline_text_box_.Size());
-  if (HasShadow(paint_info, style))
-    bounds.Expand(style.TextShadow()->RectOutsetsIncludingOriginal());
-  if (include_selection_rect) {
-    bounds.Unite(svg_inline_text_box_.LocalSelectionRect(
-        svg_inline_text_box_.Start(),
-        svg_inline_text_box_.Start() + svg_inline_text_box_.Len()));
-  }
-  return FloatRect(bounds);
-}
-
 LayoutObject& SVGInlineTextBoxPainter::InlineLayoutObject() const {
   return *LineLayoutAPIShim::LayoutObjectFrom(
       svg_inline_text_box_.GetLineLayoutItem());
@@ -116,14 +99,8 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     LayoutObject& parent_layout_object = ParentInlineLayoutObject();
     const ComputedStyle& style = parent_layout_object.StyleRef();
 
-    bool include_selection_rect =
-        paint_info.phase != PaintPhase::kSelection &&
-        (have_selection ||
-         InlineTextBoxPainter::PaintsMarkerHighlights(text_layout_object));
-    DrawingRecorder recorder(
-        paint_info.context, svg_inline_text_box_, display_item_type,
-        BoundsForDrawingRecorder(paint_info, style, paint_offset,
-                                 include_selection_rect));
+    DrawingRecorder recorder(paint_info.context, svg_inline_text_box_,
+                             display_item_type);
     InlineTextBoxPainter text_painter(svg_inline_text_box_);
     const DocumentMarkerVector& markers_to_paint =
         text_painter.ComputeMarkersToPaint();

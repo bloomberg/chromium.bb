@@ -38,8 +38,7 @@ class InlineFlowBoxPainter {
 
  private:
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paint_offset,
-                                    const LayoutRect& cull_rect);
+                                    const LayoutPoint& paint_offset);
   void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintFillLayers(const PaintInfo&,
                        const Color&,

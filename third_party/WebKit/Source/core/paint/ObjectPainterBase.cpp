@@ -498,14 +498,7 @@ void ObjectPainterBase::PaintOutlineRects(
   for (auto& r : outline_rects)
     pixel_snapped_outline_rects.push_back(PixelSnappedIntRect(r));
 
-  IntRect united_outline_rect =
-      UnionRectEvenIfEmpty(pixel_snapped_outline_rects);
-  IntRect bounds = united_outline_rect;
-  bounds.Inflate(style.OutlineOutsetExtent());
-
-  DrawingRecorder recorder(paint_info.context, display_item, paint_info.phase,
-                           bounds);
-
+  DrawingRecorder recorder(paint_info.context, display_item, paint_info.phase);
   Color color = style.VisitedDependentColor(CSSPropertyOutlineColor);
   if (style.OutlineStyleIsAuto()) {
     paint_info.context.DrawFocusRing(pixel_snapped_outline_rects,
@@ -514,6 +507,8 @@ void ObjectPainterBase::PaintOutlineRects(
     return;
   }
 
+  IntRect united_outline_rect =
+      UnionRectEvenIfEmpty(pixel_snapped_outline_rects);
   if (united_outline_rect == pixel_snapped_outline_rects[0]) {
     PaintSingleRectangleOutline(paint_info, united_outline_rect, style, color);
     return;

@@ -244,7 +244,7 @@ void ScrollbarThemeAura::PaintTrackPiece(GraphicsContext& gc,
                                                   display_item_type))
     return;
 
-  DrawingRecorder recorder(gc, scrollbar, display_item_type, rect);
+  DrawingRecorder recorder(gc, scrollbar, display_item_type);
 
   WebThemeEngine::State state = scrollbar.HoveredPart() == part_type
                                     ? WebThemeEngine::kStateHover
@@ -280,7 +280,7 @@ void ScrollbarThemeAura::PaintButton(GraphicsContext& gc,
       ButtonPartPaintingParams(scrollbar, scrollbar.CurrentPos(), part);
   if (!params.should_paint)
     return;
-  DrawingRecorder recorder(gc, scrollbar, display_item_type, rect);
+  DrawingRecorder recorder(gc, scrollbar, display_item_type);
   Platform::Current()->ThemeEngine()->Paint(
       gc.Canvas(), params.part, params.state, WebRect(rect), nullptr);
 }
@@ -292,7 +292,7 @@ void ScrollbarThemeAura::PaintThumb(GraphicsContext& gc,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(gc, scrollbar, DisplayItem::kScrollbarThumb, rect);
+  DrawingRecorder recorder(gc, scrollbar, DisplayItem::kScrollbarThumb);
 
   WebThemeEngine::State state;
   WebCanvas* canvas = gc.Canvas();

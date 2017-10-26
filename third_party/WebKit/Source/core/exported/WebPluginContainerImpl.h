@@ -164,7 +164,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   int PrintBegin(const WebPrintParams&) const;
   // Prints the page specified by pageNumber (0-based index) into the supplied
   // canvas.
-  void PrintPage(int page_number, GraphicsContext&, const IntRect& paint_rect);
+  void PrintPage(int page_number, GraphicsContext&);
   // Ends the print operation.
   void PrintEnd();
 

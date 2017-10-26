@@ -118,7 +118,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
                                  : nullptr;
 
   DrawingRecorder recorder(context, *display_item_client,
-                           DisplayItem::kDocumentBackground, background_rect);
+                           DisplayItem::kDocumentBackground);
 
   // Special handling for print economy mode.
   bool force_background_to_white =

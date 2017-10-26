@@ -995,8 +995,7 @@ void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
   // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
   // the correct visualRect (i.e., the bounds of the involved GraphicsLayer).
   DrawingRecorder recorder(context, *graphics_layer,
-                           DisplayItem::kScrollbarCompositedScrollbar,
-                           layer_bounds);
+                           DisplayItem::kScrollbarCompositedScrollbar);
   context.Canvas()->drawPicture(builder.EndRecording());
 }
 

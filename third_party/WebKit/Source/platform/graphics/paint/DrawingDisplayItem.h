@@ -32,11 +32,9 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
                      sk_sp<const PaintRecord> record,
-                     const FloatRect& record_bounds,
                      bool known_to_be_opaque = false)
       : DisplayItem(client, type, sizeof(*this)),
         record_(record && record->size() ? std::move(record) : nullptr),
-        record_bounds_(record_bounds),
         known_to_be_opaque_(known_to_be_opaque) {
     DCHECK(IsDrawingType(type));
   }
@@ -47,9 +45,6 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   bool DrawsContent() const override;
 
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
-  // This rect is described in the coordinate space relative to the PaintRecord
-  // whose bounds it describes.
-  FloatRect GetPaintRecordBounds() const { return record_bounds_; }
 
   bool KnownToBeOpaque() const {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
@@ -63,7 +58,6 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   bool Equals(const DisplayItem& other) const final;
 
   sk_sp<const PaintRecord> record_;
-  FloatRect record_bounds_;
 
   // True if there are no transparent areas. Only used for SlimmingPaintV2.
   const bool known_to_be_opaque_;

@@ -42,7 +42,7 @@ TEST_F(DrawingDisplayItemTest, VisualRectAndDrawingBounds) {
   client_.SetVisualRect(drawing_bounds);
 
   DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
-                          CreateRectRecord(record_bounds), record_bounds);
+                          CreateRectRecord(record_bounds));
   EXPECT_EQ(drawing_bounds, item.VisualRect());
 
   MockWebDisplayItemList list1;

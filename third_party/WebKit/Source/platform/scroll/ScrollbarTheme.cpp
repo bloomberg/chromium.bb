@@ -212,7 +212,7 @@ void ScrollbarTheme::PaintScrollCorner(
     return;
 
   DrawingRecorder recorder(context, display_item_client,
-                           DisplayItem::kScrollbarCorner, corner_rect);
+                           DisplayItem::kScrollbarCorner);
 #if defined(OS_MACOSX)
   context.FillRect(corner_rect, Color::kWhite);
 #else
@@ -250,8 +250,8 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
           context, scrollbar, DisplayItem::kScrollbarTickmarks))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTickmarks,
-                           rect);
+  DrawingRecorder recorder(context, scrollbar,
+                           DisplayItem::kScrollbarTickmarks);
   GraphicsContextStateSaver state_saver(context);
   context.SetShouldAntialias(false);
 

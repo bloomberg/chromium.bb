@@ -55,7 +55,7 @@ void ScrollbarThemeMock::PaintTrackBackground(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, scrollbar,
-                           DisplayItem::kScrollbarTrackBackground, track_rect);
+                           DisplayItem::kScrollbarTrackBackground);
   context.FillRect(track_rect,
                    scrollbar.Enabled() ? Color::kLightGray : Color(0xFFE0E0E0));
 }
@@ -70,8 +70,7 @@ void ScrollbarThemeMock::PaintThumb(GraphicsContext& context,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
-                           thumb_rect);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
   context.FillRect(thumb_rect, Color::kDarkGray);
 }
 
@@ -82,8 +81,7 @@ void ScrollbarThemeMock::PaintScrollCorner(GraphicsContext& context,
           context, scrollbar, DisplayItem::kScrollbarCorner))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarCorner,
-                           corner_rect);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarCorner);
   context.FillRect(corner_rect, Color::kWhite);
 }
 

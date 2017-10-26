@@ -387,10 +387,8 @@ void TableSectionPainter::PaintBoxDecorationBackground(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  LayoutRect bounds = BoxPainter(layout_table_section_)
-                          .BoundsForDrawingRecorder(paint_info, paint_offset);
   DrawingRecorder recorder(paint_info.context, layout_table_section_,
-                           DisplayItem::kBoxDecorationBackground, bounds);
+                           DisplayItem::kBoxDecorationBackground);
   LayoutRect paint_rect(paint_offset, layout_table_section_.Size());
 
   if (has_box_shadow) {

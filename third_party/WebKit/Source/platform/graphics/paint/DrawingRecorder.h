@@ -41,51 +41,14 @@ class PLATFORM_EXPORT DrawingRecorder final {
 
   DrawingRecorder(GraphicsContext&,
                   const DisplayItemClient&,
-                  DisplayItem::Type,
-                  const IntRect& bounds);
+                  DisplayItem::Type);
 
   DrawingRecorder(GraphicsContext& context,
                   const DisplayItemClient& client,
-                  PaintPhase phase,
-                  const IntRect& bounds)
+                  PaintPhase phase)
       : DrawingRecorder(context,
                         client,
-                        DisplayItem::PaintPhaseToDrawingType(phase),
-                        bounds) {}
-
-  DrawingRecorder(GraphicsContext& context,
-                  const DisplayItemClient& client,
-                  DisplayItem::Type type,
-                  const FloatRect& bounds)
-      // Use the enclosing int rect, since pixel-snapping may be applied to the
-      // bounds of the object during painting. Potentially expanding the bounds
-      // by a pixel or two also does not affect correctness, and is very
-      // unlikely to matter for performance.
-      : DrawingRecorder(context, client, type, EnclosingIntRect(bounds)) {}
-
-  DrawingRecorder(GraphicsContext& context,
-                  const DisplayItemClient& client,
-                  PaintPhase phase,
-                  const FloatRect& bounds)
-      : DrawingRecorder(context,
-                        client,
-                        DisplayItem::PaintPhaseToDrawingType(phase),
-                        bounds) {}
-
-  DrawingRecorder(GraphicsContext& context,
-                  const DisplayItemClient& client,
-                  DisplayItem::Type type,
-                  const LayoutRect& bounds)
-      : DrawingRecorder(context, client, type, EnclosingIntRect(bounds)) {}
-
-  DrawingRecorder(GraphicsContext& context,
-                  const DisplayItemClient& client,
-                  PaintPhase phase,
-                  const LayoutRect& bounds)
-      : DrawingRecorder(context,
-                        client,
-                        DisplayItem::PaintPhaseToDrawingType(phase),
-                        bounds) {}
+                        DisplayItem::PaintPhaseToDrawingType(phase)) {}
 
   ~DrawingRecorder();
 
@@ -101,8 +64,6 @@ class PLATFORM_EXPORT DrawingRecorder final {
 
   // True if there are no transparent areas. Only used for SlimmingPaintV2.
   bool known_to_be_opaque_;
-  // The bounds of the area being recorded.
-  IntRect bounds_;
 
 #if DCHECK_IS_ON()
   // Ensures the list size does not change during the recorder's scope.

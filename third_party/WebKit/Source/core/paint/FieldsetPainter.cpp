@@ -48,7 +48,7 @@ void FieldsetPainter::PaintBoxDecorationBackground(
   }
 
   DrawingRecorder recorder(paint_info.context, layout_fieldset_,
-                           paint_info.phase, paint_rect);
+                           paint_info.phase);
   BoxDecorationData box_decoration_data(layout_fieldset_);
 
   BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
@@ -134,7 +134,7 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
   }
 
   DrawingRecorder recorder(paint_info.context, layout_fieldset_,
-                           paint_info.phase, paint_rect);
+                           paint_info.phase);
   BoxPainter(layout_fieldset_).PaintMaskImages(paint_info, paint_rect);
 }
 
