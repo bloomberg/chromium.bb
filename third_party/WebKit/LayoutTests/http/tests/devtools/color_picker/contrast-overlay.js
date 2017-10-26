@@ -1,8 +1,11 @@
-<html>
-  <head>
-    <script src="../../inspector/inspector-test.js"></script>
-    <script type="text/javascript">
-      async function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that the contrast line algorithm produces good results and terminates.\n`);
+
+
   await self.runtime.loadModulePromise('color_picker');
   var colorElement = document.createElement('div');
   var contentElement = document.createElement('div');
@@ -50,10 +53,4 @@
     logLineForColorPair(pair.fg, pair.bg);
 
   TestRunner.completeTest();
-}
-    </script>
-  </head>
-  <body onload="runTest()">
-    Tests that the contrast line algorithm produces good results and terminates.
-  </body>
-</html>
+})();

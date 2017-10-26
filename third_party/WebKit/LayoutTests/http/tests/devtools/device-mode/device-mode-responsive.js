@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/device-mode-test.js"></script>
-<script type="text/javascript">
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Test that device mode's responsive mode behaves correctly when adjusting inputs.\n`);
+  await TestRunner.loadModule('device_mode_test_runner');
+
   var phone0 = DeviceModeTestRunner.buildFakePhone();
   var phone1 = DeviceModeTestRunner.buildFakePhone();
 
@@ -68,12 +70,4 @@ function test() {
         ', screenRect: ' + JSON.stringify(model.screenRect()) + ', visiblePageRect: ' +
         JSON.stringify(model.visiblePageRect()) + ', outlineRect: ' + JSON.stringify(model.outlineRect()));
   }
-}
-
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Test that device mode's responsive mode behaves correctly when adjusting inputs.</p>
-</body>
-</html>
+})();

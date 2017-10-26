@@ -1,8 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script type="text/javascript">
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Test that the command menu is properly filled.\n`);
+
+
   self.runtime.loadModulePromise('quick_open').then(() => {
     var categories = new Set();
     var commands = new Map();
@@ -35,11 +38,4 @@ function test() {
       TestRunner.completeTest();
     }
   });
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Test that the command menu is properly filled.</p>
-</body>
-</html>
+})();

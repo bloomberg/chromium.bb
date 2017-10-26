@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/device-mode-test.js"></script>
-<script type="text/javascript">
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Test preservation of orientation and scale when that switching devices in device mode.\n`);
+  await TestRunner.loadModule('device_mode_test_runner');
+
   var phone0 = DeviceModeTestRunner.buildFakePhone();
   var phone1 = DeviceModeTestRunner.buildFakePhone();
 
@@ -27,11 +29,4 @@ function test() {
   TestRunner.addResult('Phone0 Scale: ' + model._scaleSetting.get());
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Test preservation of orientation and scale when that switching devices in device mode.</p>
-</body>
-</html>
+})();

@@ -1,15 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function sendRequest(url)
-{
-    fetch(url);
-}
+(async function() {
+  TestRunner.addResult(`Tests fetch() breakpoints.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.evaluateInPagePromise(`
+      function sendRequest(url)
+      {
+          fetch(url);
+      }
+  `);
 
-function test() {
   SourcesTestRunner.runDebuggerTestSuite([
     function testFetchBreakpoint(next) {
       SDK.domDebuggerManager.addXHRBreakpoint('foo', true);
@@ -73,15 +75,4 @@ function test() {
       }
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests fetch() breakpoints.
-</p>
-
-</body>
-</html>
+})();
