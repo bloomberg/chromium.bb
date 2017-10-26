@@ -630,19 +630,24 @@ void TabManagerDelegate::LowMemoryKillImpl(
       GetSortedCandidates(tab_list, arc_processes);
 
   // TODO(semenzato): decide if TargetMemoryToFreeKB is doing real
-  // I/O and if it is, move to I/O thread.
-  int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
-  const TimeTicks now = TimeTicks::Now();
+  // I/O and if it is, move to I/O thread (crbug.com/778703).
+  int target_memory_to_free_kb = 0;
+  {
+    base::ScopedAllowBlocking allow_blocking;
+    target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
+  }
 
   MEMORY_LOG(ERROR) << "List of low memory kill candidates "
                        "(sorted from low priority to high priority):";
   for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
     MEMORY_LOG(ERROR) << *it;
   }
+
   // Kill processes until the estimated amount of freed memory is sufficient to
   // bring the system memory back to a normal level.
   // The list is sorted by descending importance, so we go through the list
   // backwards.
+  const TimeTicks now = TimeTicks::Now();
   for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
     MEMORY_LOG(ERROR) << "Target memory to free: " << target_memory_to_free_kb
                       << " KB";
