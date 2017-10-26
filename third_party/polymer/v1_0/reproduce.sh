@@ -117,6 +117,9 @@ python create_components_summary.py > components_summary.txt
 echo 'Creating GYP files for interfaces and externs...'
 ./generate_gyp.sh
 
+echo 'Creating GN files for interfaces and externs...'
+./generate_gn.sh
+
 popd > /dev/null
 
 echo 'Searching for unused elements...'
