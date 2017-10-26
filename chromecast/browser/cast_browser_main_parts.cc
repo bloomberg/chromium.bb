@@ -81,6 +81,10 @@
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "chromecast/net/fake_connectivity_checker.h"
+#endif
+
 #if defined(USE_AURA)
 // gn check ignored on OverlayManagerCast as it's not a public ozone
 // header, but is exported to allow injecting the overlay-composited
@@ -467,10 +471,17 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetNetLog(net_log_.get());
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
+#if defined(OS_FUCHSIA)
+  // TODO(777973): Switch to using the real ConnectivityChecker once setup works
+  // properly.
+  LOG(WARNING) << "Using FakeConnectivityChecker.";
+  cast_browser_process_->SetConnectivityChecker(new FakeConnectivityChecker());
+#else
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
       url_request_context_factory_->GetSystemGetter()));
+#endif  // defined(OS_FUCHSIA)
 
   cast_browser_process_->SetBrowserContext(
       base::MakeUnique<CastBrowserContext>(url_request_context_factory_));
