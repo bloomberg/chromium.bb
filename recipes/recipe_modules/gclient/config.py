@@ -269,8 +269,7 @@ def boringssl(c):
 def dart(c):
   soln = c.solutions.add()
   soln.name = 'sdk'
-  soln.url = ('https://chromium.googlesource.com/external/github.com/' +
-              'dart-lang/sdk.git')
+  soln.url = ('https://dart.googlesource.com/sdk.git')
   soln.deps_file = 'DEPS'
   soln.managed = False
 
