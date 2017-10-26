@@ -121,6 +121,20 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'font-weight',
+  from: 'bold',
+  to: 'normal',
+}, [
+  {at: -0.5, is: '900'},
+  {at: 0, is: 'bold'}, // 700
+  {at: 0.3, is: '600'},
+  {at: 0.5, is: '600'},
+  {at: 0.6, is: '500'},
+  {at: 1, is: 'normal'}, // 400
+  {at: 1.5, is: '300'},
+]);
+
+assertInterpolation({
+  property: 'font-weight',
   from: '100',
   to: '900'
   }, [
