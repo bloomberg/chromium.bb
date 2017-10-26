@@ -221,8 +221,11 @@ void av1_init_lv_map(AV1_COMMON *cm) {
   LV_MAP_CTX_TABLE *coeff_ctx_table = &cm->coeff_ctx_table;
   for (int row = 0; row < 2; ++row) {
     for (int col = 0; col < 2; ++col) {
-      for (int sig_mag = 0; sig_mag < 2; ++sig_mag) {
+      for (int sig_mag = 0; sig_mag < 3; ++sig_mag) {
         for (int count = 0; count < BASE_CONTEXT_POSITION_NUM + 1; ++count) {
+          if (row == 0 && col == 0 && count > 5) continue;
+          if ((row == 0 || col == 0) && count > 8) continue;
+
           coeff_ctx_table->base_ctx_table[row][col][sig_mag][count] =
               get_base_ctx_from_count_mag(row, col, count, sig_mag);
         }

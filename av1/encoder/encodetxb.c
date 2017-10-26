@@ -570,7 +570,8 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = 1 << bwl;
-  int mag[NUM_BASE_LEVELS] = { 0 };
+  int mag_count[NUM_BASE_LEVELS] = { 0 };
+  int nb_mag[NUM_BASE_LEVELS][3] = { { 0 } };
   int idx;
   tran_low_t abs_coeff;
   int i;
@@ -587,13 +588,19 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
 
     for (i = 0; i < NUM_BASE_LEVELS; ++i) {
       ctx_set[i] += abs_coeff > i;
-      if (base_ref_offset[idx][0] >= 0 && base_ref_offset[idx][1] >= 0)
-        mag[i] |= abs_coeff > (i + 1);
+      if (base_ref_offset[idx][0] == 0 && base_ref_offset[idx][1] == 1)
+        nb_mag[i][0] = abs_coeff;
+      if (base_ref_offset[idx][0] == 1 && base_ref_offset[idx][1] == 0)
+        nb_mag[i][1] = abs_coeff;
+      if (base_ref_offset[idx][0] == 1 && base_ref_offset[idx][1] == 1)
+        nb_mag[i][2] = abs_coeff;
     }
   }
 
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
-    ctx_set[i] = get_base_ctx_from_count_mag(row, col, ctx_set[i], mag[i]);
+    for (idx = 0; idx < 3; ++idx) mag_count[i] += nb_mag[i][idx] > i + 1;
+    ctx_set[i] = get_base_ctx_from_count_mag(row, col, ctx_set[i],
+                                             AOMMIN(2, mag_count[i]));
   }
   return;
 }

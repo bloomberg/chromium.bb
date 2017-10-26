@@ -183,10 +183,10 @@ typedef struct BufferPool {
 
 #if CONFIG_LV_MAP
 typedef struct {
-  int base_ctx_table[2 /*row*/][2 /*col*/][2 /*sig_map*/]
+  int base_ctx_table[2 /*row*/][2 /*col*/][3 /*sig_map*/]
                     [BASE_CONTEXT_POSITION_NUM + 1];
 } LV_MAP_CTX_TABLE;
-typedef int BASE_CTX_TABLE[2 /*col*/][2 /*sig_map*/]
+typedef int BASE_CTX_TABLE[2 /*col*/][3 /*sig_map*/]
                           [BASE_CONTEXT_POSITION_NUM + 1];
 #endif
 
