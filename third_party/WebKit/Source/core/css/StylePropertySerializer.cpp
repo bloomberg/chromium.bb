@@ -486,8 +486,8 @@ String StylePropertySerializer::GetPropertyValue(
       return GetShorthandValue(webkitMarginCollapseShorthand());
     case CSSPropertyOverflow:
       return GetCommonValue(overflowShorthand());
-    case CSSPropertyScrollBoundaryBehavior:
-      return GetShorthandValue(scrollBoundaryBehaviorShorthand());
+    case CSSPropertyOverscrollBehavior:
+      return GetShorthandValue(overscrollBehaviorShorthand());
     case CSSPropertyPadding:
       return Get4Values(paddingShorthand());
     case CSSPropertyTextDecoration:

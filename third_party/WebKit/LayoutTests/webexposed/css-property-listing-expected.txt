@@ -271,6 +271,8 @@ All changes to this list should go through Blink's feature review process: http:
     overflow-wrap
     overflow-x
     overflow-y
+    overscroll-behavior-x
+    overscroll-behavior-y
     padding-bottom
     padding-left
     padding-right
@@ -290,8 +292,6 @@ All changes to this list should go through Blink's feature review process: http:
     ry
     scale
     scroll-behavior
-    scroll-boundary-behavior-x
-    scroll-boundary-behavior-y
     scroll-padding-block-end
     scroll-padding-block-start
     scroll-padding-bottom
@@ -598,6 +598,9 @@ All changes to this list should go through Blink's feature review process: http:
     overflow
         overflow-x
         overflow-y
+    overscroll-behavior
+        overscroll-behavior-x
+        overscroll-behavior-y
     padding
         padding-bottom
         padding-left
@@ -618,9 +621,6 @@ All changes to this list should go through Blink's feature review process: http:
     place-self
         align-self
         justify-self
-    scroll-boundary-behavior
-        scroll-boundary-behavior-x
-        scroll-boundary-behavior-y
     scroll-padding
         scroll-padding-bottom
         scroll-padding-left
