@@ -12,7 +12,10 @@ namespace content {
 class WebContents;
 }
 
+namespace password_manager {
 class CredentialProviderInterface;
+}
+
 class Profile;
 
 // Handles the exporting of passwords to a file, and the importing of such a
@@ -24,8 +27,8 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener {
     PASSWORD_EXPORT,
   };
 
-  explicit PasswordManagerPorter(
-      CredentialProviderInterface* credential_provider_interface);
+  explicit PasswordManagerPorter(password_manager::CredentialProviderInterface*
+                                     credential_provider_interface);
 
   ~PasswordManagerPorter() override;
 
@@ -45,7 +48,7 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener {
 
   virtual void ExportPasswordsToPath(const base::FilePath& path);
 
-  CredentialProviderInterface* credential_provider_interface_;
+  password_manager::CredentialProviderInterface* credential_provider_interface_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   Profile* profile_;
 
