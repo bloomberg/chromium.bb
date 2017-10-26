@@ -38,7 +38,7 @@ CrashDumpManager::CrashDumpManager() {}
 CrashDumpManager::~CrashDumpManager() {}
 
 base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
-    int child_process_id) {
+    int process_host_id) {
   base::AssertBlockingAllowed();
   base::FilePath minidump_path;
   if (!base::CreateTemporaryFile(&minidump_path)) {
@@ -56,13 +56,13 @@ base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
     return base::ScopedFD();
   }
 
-  SetMinidumpPath(child_process_id, minidump_path);
+  SetMinidumpPath(process_host_id, minidump_path);
   return base::ScopedFD(minidump_file.TakePlatformFile());
 }
 
 bool CrashDumpManager::ProcessMinidumpFileFromChild(
     base::FilePath crash_dump_dir,
-    base::ProcessHandle pid,
+    int process_host_id,
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
     base::android::ApplicationState app_state) {
@@ -71,7 +71,7 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been
   // processed, then there is no more work to do.
-  if (!GetMinidumpPath(pid, &minidump_path))
+  if (!GetMinidumpPath(process_host_id, &minidump_path))
     return increase_crash_count;
 
   int64_t file_size = 0;
@@ -150,9 +150,8 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     return increase_crash_count;
   }
   const uint64_t rand = base::RandUint64();
-  const std::string filename =
-      base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
-                         rand, pid);
+  const std::string filename = base::StringPrintf(
+      "chromium-renderer-minidump-%016" PRIx64 ".dmp%d", rand, process_host_id);
   base::FilePath dest_path = crash_dump_dir.Append(filename);
   r = base::Move(minidump_path, dest_path);
   if (!r) {
@@ -173,24 +172,24 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
   return increase_crash_count;
 }
 
-void CrashDumpManager::SetMinidumpPath(int child_process_id,
+void CrashDumpManager::SetMinidumpPath(int process_host_id,
                                        const base::FilePath& minidump_path) {
-  base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
+  base::AutoLock auto_lock(process_host_id_to_minidump_path_lock_);
   DCHECK(
-      !base::ContainsKey(child_process_id_to_minidump_path_, child_process_id));
-  child_process_id_to_minidump_path_[child_process_id] = minidump_path;
+      !base::ContainsKey(process_host_id_to_minidump_path_, process_host_id));
+  process_host_id_to_minidump_path_[process_host_id] = minidump_path;
 }
 
-bool CrashDumpManager::GetMinidumpPath(int child_process_id,
+bool CrashDumpManager::GetMinidumpPath(int process_host_id,
                                        base::FilePath* minidump_path) {
-  base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
+  base::AutoLock auto_lock(process_host_id_to_minidump_path_lock_);
   ChildProcessIDToMinidumpPath::iterator iter =
-      child_process_id_to_minidump_path_.find(child_process_id);
-  if (iter == child_process_id_to_minidump_path_.end()) {
+      process_host_id_to_minidump_path_.find(process_host_id);
+  if (iter == process_host_id_to_minidump_path_.end()) {
     return false;
   }
   *minidump_path = iter->second;
-  child_process_id_to_minidump_path_.erase(iter);
+  process_host_id_to_minidump_path_.erase(iter);
   return true;
 }
 

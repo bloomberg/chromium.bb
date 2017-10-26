@@ -28,20 +28,20 @@ ChildProcessCrashObserver::ChildProcessCrashObserver(
 ChildProcessCrashObserver::~ChildProcessCrashObserver() {}
 
 void ChildProcessCrashObserver::OnChildStart(
-    int child_process_id,
+    int process_host_id,
     content::PosixFileDescriptorInfo* mappings) {
   if (!breakpad::IsCrashReporterEnabled())
     return;
 
   base::ScopedFD file(
       CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
-          child_process_id));
+          process_host_id));
   if (file.is_valid())
     mappings->Transfer(descriptor_id_, std::move(file));
 }
 
 void ChildProcessCrashObserver::OnChildExit(
-    int child_process_id,
+    int process_host_id,
     base::ProcessHandle pid,
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
@@ -54,7 +54,7 @@ void ChildProcessCrashObserver::OnChildExit(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
                  base::Unretained(CrashDumpManager::GetInstance()),
-                 crash_dump_dir_, child_process_id, process_type,
+                 crash_dump_dir_, process_host_id, process_type,
                  termination_status, app_state),
       increase_crash_cb_);
 }

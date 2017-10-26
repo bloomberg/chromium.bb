@@ -55,20 +55,20 @@ void GetAwRenderProcessGoneDelegatesForRenderProcess(
   }
 }
 
-void OnRenderProcessGone(int child_process_id) {
+void OnRenderProcessGone(int process_host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<AwRenderProcessGoneDelegate*> delegates;
-  GetAwRenderProcessGoneDelegatesForRenderProcess(child_process_id, &delegates);
+  GetAwRenderProcessGoneDelegatesForRenderProcess(process_host_id, &delegates);
   for (auto* delegate : delegates)
-    delegate->OnRenderProcessGone(child_process_id);
+    delegate->OnRenderProcessGone(process_host_id);
 }
 
-void OnRenderProcessGoneDetail(int child_process_id,
+void OnRenderProcessGoneDetail(int process_host_id,
                                base::ProcessHandle child_process_pid,
                                bool crashed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<AwRenderProcessGoneDelegate*> delegates;
-  GetAwRenderProcessGoneDelegatesForRenderProcess(child_process_id, &delegates);
+  GetAwRenderProcessGoneDelegatesForRenderProcess(process_host_id, &delegates);
   for (auto* delegate : delegates) {
     if (!delegate->OnRenderProcessGoneDetail(child_process_pid, crashed)) {
       if (crashed) {
@@ -103,31 +103,31 @@ AwBrowserTerminator::AwBrowserTerminator(base::FilePath crash_dump_dir)
 AwBrowserTerminator::~AwBrowserTerminator() {}
 
 void AwBrowserTerminator::OnChildStart(
-    int child_process_id,
+    int process_host_id,
     content::PosixFileDescriptorInfo* mappings) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::PROCESS_LAUNCHER);
 
-  base::AutoLock auto_lock(child_process_id_to_pipe_lock_);
-  DCHECK(!ContainsKey(child_process_id_to_pipe_, child_process_id));
+  base::AutoLock auto_lock(process_host_id_to_pipe_lock_);
+  DCHECK(!ContainsKey(process_host_id_to_pipe_, process_host_id));
 
   auto local_pipe = base::MakeUnique<base::SyncSocket>();
   auto child_pipe = base::MakeUnique<base::SyncSocket>();
   if (base::SyncSocket::CreatePair(local_pipe.get(), child_pipe.get())) {
-    child_process_id_to_pipe_[child_process_id] = std::move(local_pipe);
+    process_host_id_to_pipe_[process_host_id] = std::move(local_pipe);
     mappings->Transfer(kAndroidWebViewCrashSignalDescriptor,
                        base::ScopedFD(dup(child_pipe->handle())));
   }
   if (crash_reporter::IsCrashReporterEnabled()) {
     base::ScopedFD file(
         breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
-            child_process_id));
+            process_host_id));
     if (file != base::kInvalidPlatformFile)
       mappings->Transfer(kAndroidMinidumpDescriptor, std::move(file));
   }
 }
 
 void AwBrowserTerminator::OnChildExitAsync(
-    int child_process_id,
+    int process_host_id,
     base::ProcessHandle pid,
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
@@ -136,7 +136,7 @@ void AwBrowserTerminator::OnChildExitAsync(
     std::unique_ptr<base::SyncSocket> pipe) {
   if (crash_reporter::IsCrashReporterEnabled()) {
     breakpad::CrashDumpManager::GetInstance()->ProcessMinidumpFileFromChild(
-        crash_dump_dir, child_process_id, process_type, termination_status,
+        crash_dump_dir, process_host_id, process_type, termination_status,
         app_state);
   }
 
@@ -158,11 +158,11 @@ void AwBrowserTerminator::OnChildExitAsync(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnRenderProcessGoneDetail, child_process_id, pid, crashed));
+      base::Bind(&OnRenderProcessGoneDetail, process_host_id, pid, crashed));
 }
 
 void AwBrowserTerminator::OnChildExit(
-    int child_process_id,
+    int process_host_id,
     base::ProcessHandle pid,
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
@@ -170,26 +170,26 @@ void AwBrowserTerminator::OnChildExit(
   std::unique_ptr<base::SyncSocket> pipe;
 
   {
-    base::AutoLock auto_lock(child_process_id_to_pipe_lock_);
+    base::AutoLock auto_lock(process_host_id_to_pipe_lock_);
     // We might get a NOTIFICATION_RENDERER_PROCESS_TERMINATED and a
     // NOTIFICATION_RENDERER_PROCESS_CLOSED. In that case we only want
     // to process the first notification.
-    const auto& iter = child_process_id_to_pipe_.find(child_process_id);
-    if (iter != child_process_id_to_pipe_.end()) {
+    const auto& iter = process_host_id_to_pipe_.find(process_host_id);
+    if (iter != process_host_id_to_pipe_.end()) {
       pipe = std::move(iter->second);
       DCHECK(pipe->handle() != base::SyncSocket::kInvalidHandle);
-      child_process_id_to_pipe_.erase(iter);
+      process_host_id_to_pipe_.erase(iter);
     }
   }
   if (pipe.get()) {
-    OnRenderProcessGone(child_process_id);
+    OnRenderProcessGone(process_host_id);
   }
 
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::Bind(&AwBrowserTerminator::OnChildExitAsync, child_process_id, pid,
+      base::Bind(&AwBrowserTerminator::OnChildExitAsync, process_host_id, pid,
                  process_type, termination_status, app_state, crash_dump_dir_,
                  base::Passed(std::move(pipe))));
 }

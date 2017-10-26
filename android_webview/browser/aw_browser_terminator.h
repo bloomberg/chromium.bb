@@ -31,16 +31,16 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
   ~AwBrowserTerminator() override;
 
   // breakpad::CrashDumpObserver::Client implementation.
-  void OnChildStart(int child_process_id,
+  void OnChildStart(int process_host_id,
                     content::PosixFileDescriptorInfo* mappings) override;
-  void OnChildExit(int child_process_id,
+  void OnChildExit(int process_host_id,
                    base::ProcessHandle pid,
                    content::ProcessType process_type,
                    base::TerminationStatus termination_status,
                    base::android::ApplicationState app_state) override;
 
  private:
-  static void OnChildExitAsync(int child_process_id,
+  static void OnChildExitAsync(int process_host_id,
                                base::ProcessHandle pid,
                                content::ProcessType process_type,
                                base::TerminationStatus termination_status,
@@ -52,8 +52,8 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER, FILE, and UI threads.
-  base::Lock child_process_id_to_pipe_lock_;
-  std::map<int, std::unique_ptr<base::SyncSocket>> child_process_id_to_pipe_;
+  base::Lock process_host_id_to_pipe_lock_;
+  std::map<int, std::unique_ptr<base::SyncSocket>> process_host_id_to_pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserTerminator);
 };
