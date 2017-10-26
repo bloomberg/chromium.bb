@@ -43,8 +43,6 @@ namespace {
 // TODO(tetsui): Remove when back arrow is removed.
 constexpr int kButtonSize = 40;
 
-constexpr SkColor kActiveButtonColor = SkColorSetARGB(0xFF, 0x5A, 0x5A, 0x5A);
-constexpr SkColor kInactiveButtonColor = SkColorSetARGB(0x8A, 0x5A, 0x5A, 0x5A);
 constexpr SkColor kTextColor = SkColorSetARGB(0xFF, 0x0, 0x0, 0x0);
 constexpr SkColor kButtonSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 constexpr int kTextFontSize = 14;
@@ -146,12 +144,12 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterClearAllIcon,
                             message_center_style::kActionIconSize,
-                            kActiveButtonColor));
+                            message_center_style::kActiveButtonColor));
   close_all_button_->SetImage(
       views::Button::STATE_DISABLED,
       gfx::CreateVectorIcon(kNotificationCenterClearAllIcon,
                             message_center_style::kActionIconSize,
-                            kInactiveButtonColor));
+                            message_center_style::kInactiveButtonColor));
   close_all_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
   SetDefaultButtonStyle(close_all_button_);
@@ -163,10 +161,11 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
                             message_center_style::kActionIconSize,
-                            kInactiveButtonColor));
-  gfx::ImageSkia quiet_mode_toggle_icon = gfx::CreateVectorIcon(
-      kNotificationCenterDoNotDisturbOnIcon,
-      message_center_style::kActionIconSize, kActiveButtonColor);
+                            message_center_style::kInactiveButtonColor));
+  gfx::ImageSkia quiet_mode_toggle_icon =
+      gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
+                            message_center_style::kActionIconSize,
+                            message_center_style::kActiveButtonColor);
   quiet_mode_button_->SetToggledImage(views::Button::STATE_NORMAL,
                                       &quiet_mode_toggle_icon);
   quiet_mode_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -181,7 +180,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterSettingsIcon,
                             message_center_style::kActionIconSize,
-                            kActiveButtonColor));
+                            message_center_style::kActiveButtonColor));
   settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP));
   SetDefaultButtonStyle(settings_button_);
