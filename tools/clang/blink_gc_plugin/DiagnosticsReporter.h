@@ -83,6 +83,9 @@ class DiagnosticsReporter {
   void UniquePtrUsedWithGC(const clang::Expr* expr,
                            const clang::FunctionDecl* bad_function,
                            const clang::CXXRecordDecl* gc_type);
+  void OptionalUsedWithGC(const clang::Expr* expr,
+                          const clang::CXXRecordDecl* optional,
+                          const clang::CXXRecordDecl* gc_type);
 
  private:
   clang::DiagnosticBuilder ReportDiagnostic(
@@ -146,6 +149,7 @@ class DiagnosticsReporter {
   unsigned diag_trace_method_of_stack_allocated_parent_;
 
   unsigned diag_unique_ptr_used_with_gc_;
+  unsigned diag_optional_used_with_gc_;
 };
 
 #endif // TOOLS_BLINK_GC_PLUGIN_DIAGNOSTICS_REPORTER_H_

@@ -54,6 +54,36 @@ class UniquePtrGarbageCollectedMatcher : public MatchFinder::MatchCallback {
   DiagnosticsReporter& diagnostics_;
 };
 
+class OptionalGarbageCollectedMatcher : public MatchFinder::MatchCallback {
+ public:
+  explicit OptionalGarbageCollectedMatcher(DiagnosticsReporter& diagnostics)
+      : diagnostics_(diagnostics) {}
+
+  void Register(MatchFinder& match_finder) {
+    // Matches any application of make_unique where the template argument is
+    // known to refer to a garbage-collected type.
+    auto optional_construction =
+        cxxConstructExpr(hasDeclaration(cxxConstructorDecl(ofClass(
+                             classTemplateSpecializationDecl(
+                                 hasName("::base::Optional"),
+                                 hasTemplateArgument(
+                                     0, refersToType(GarbageCollectedType())))
+                                 .bind("optional")))))
+            .bind("bad");
+    match_finder.addDynamicMatcher(optional_construction, this);
+  }
+
+  void run(const MatchFinder::MatchResult& result) {
+    auto* bad_use = result.Nodes.getNodeAs<clang::Expr>("bad");
+    auto* optional = result.Nodes.getNodeAs<clang::CXXRecordDecl>("optional");
+    auto* gc_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
+    diagnostics_.OptionalUsedWithGC(bad_use, optional, gc_type);
+  }
+
+ private:
+  DiagnosticsReporter& diagnostics_;
+};
+
 }  // namespace
 
 void FindBadPatterns(clang::ASTContext& ast_context,
@@ -62,6 +92,9 @@ void FindBadPatterns(clang::ASTContext& ast_context,
 
   UniquePtrGarbageCollectedMatcher unique_ptr_gc(diagnostics);
   unique_ptr_gc.Register(match_finder);
+
+  OptionalGarbageCollectedMatcher optional_gc(diagnostics);
+  optional_gc.Register(match_finder);
 
   match_finder.matchAST(ast_context);
 }

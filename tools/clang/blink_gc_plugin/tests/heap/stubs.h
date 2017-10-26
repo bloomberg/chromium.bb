@@ -169,6 +169,9 @@ std::unique_ptr<T> WrapUnique(T* ptr) {
   return std::unique_ptr<T>();
 }
 
+template <typename T>
+class Optional {};
+
 }  // namespace base
 
 namespace blink {
