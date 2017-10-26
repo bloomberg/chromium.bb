@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -40,14 +41,14 @@ static const char kManifestDisplayNotSupportedMessage[] =
     "the manifest display property must be set to 'standalone' or 'fullscreen'";
 static const char kManifestMissingSuitableIconMessage[] =
     "the manifest does not contain a suitable icon - PNG format of at least "
-    "%spx is required, the sizes attribute must be set, and the purpose "
+    "%dpx is required, the sizes attribute must be set, and the purpose "
     "attribute, if set, must include \"any\".";
 static const char kNoMatchingServiceWorkerMessage[] =
     "no matching service worker detected. You may need to reload the page, or "
     "check that the service worker for the current page also controls the "
     "start URL from the manifest";
 static const char kNoAcceptableIconMessage[] =
-    "a %spx square icon is required, but no supplied icon meets this "
+    "a %dpx square icon is required, but no supplied icon meets this "
     "requirement";
 static const char kCannotDownloadIconMessage[] =
     "could not download a required icon from the manifest";
@@ -70,13 +71,12 @@ static const char kNoGesture[] =
 }  // namespace
 
 void LogErrorToConsole(content::WebContents* web_contents,
-                       InstallableStatusCode code,
-                       const std::string& param) {
+                       InstallableStatusCode code) {
   if (!web_contents)
     return;
 
   content::ConsoleMessageLevel severity = content::CONSOLE_MESSAGE_LEVEL_ERROR;
-  const char* pattern = nullptr;
+  std::string message;
   switch (code) {
     case NO_ERROR_DETECTED:
     // These codes are solely used for UMA reporting.
@@ -94,80 +94,80 @@ void LogErrorToConsole(content::WebContents* web_contents,
     case MAX_ERROR_CODE:
       return;
     case RENDERER_EXITING:
-      pattern = kRendererExitingMessage;
+      message = kRendererExitingMessage;
       break;
     case RENDERER_CANCELLED:
-      pattern = kRendererCancelledMessage;
+      message = kRendererCancelledMessage;
       severity = content::CONSOLE_MESSAGE_LEVEL_INFO;
       break;
     case USER_NAVIGATED:
-      pattern = kUserNavigatedMessage;
+      message = kUserNavigatedMessage;
       severity = content::CONSOLE_MESSAGE_LEVEL_WARNING;
       break;
     case NOT_IN_MAIN_FRAME:
-      pattern = kNotInMainFrameMessage;
+      message = kNotInMainFrameMessage;
       break;
     case NOT_FROM_SECURE_ORIGIN:
-      pattern = kNotFromSecureOriginMessage;
+      message = kNotFromSecureOriginMessage;
       break;
     case NO_MANIFEST:
-      pattern = kNoManifestMessage;
+      message = kNoManifestMessage;
       break;
     case MANIFEST_EMPTY:
-      pattern = kManifestEmptyMessage;
+      message = kManifestEmptyMessage;
       break;
     case START_URL_NOT_VALID:
-      pattern = kStartUrlNotValidMessage;
+      message = kStartUrlNotValidMessage;
       break;
     case MANIFEST_MISSING_NAME_OR_SHORT_NAME:
-      pattern = kManifestMissingNameOrShortNameMessage;
+      message = kManifestMissingNameOrShortNameMessage;
       break;
     case MANIFEST_DISPLAY_NOT_SUPPORTED:
-      pattern = kManifestDisplayNotSupportedMessage;
+      message = kManifestDisplayNotSupportedMessage;
       break;
     case MANIFEST_MISSING_SUITABLE_ICON:
-      pattern = kManifestMissingSuitableIconMessage;
+      message =
+          base::StringPrintf(kManifestMissingSuitableIconMessage,
+                             InstallableManager::GetMinimumIconSizeInPx());
       break;
     case NO_MATCHING_SERVICE_WORKER:
-      pattern = kNoMatchingServiceWorkerMessage;
+      message = kNoMatchingServiceWorkerMessage;
       break;
     case NO_ACCEPTABLE_ICON:
-      pattern = kNoAcceptableIconMessage;
+      message =
+          base::StringPrintf(kNoAcceptableIconMessage,
+                             InstallableManager::GetMinimumIconSizeInPx());
       break;
     case CANNOT_DOWNLOAD_ICON:
-      pattern = kCannotDownloadIconMessage;
+      message = kCannotDownloadIconMessage;
       break;
     case NO_ICON_AVAILABLE:
-      pattern = kNoIconAvailableMessage;
+      message = kNoIconAvailableMessage;
       break;
     case PLATFORM_NOT_SUPPORTED_ON_ANDROID:
-      pattern = kPlatformNotSupportedOnAndroidMessage;
+      message = kPlatformNotSupportedOnAndroidMessage;
       severity = content::CONSOLE_MESSAGE_LEVEL_WARNING;
       break;
     case NO_ID_SPECIFIED:
-      pattern = kNoIdSpecifiedMessage;
+      message = kNoIdSpecifiedMessage;
       break;
     case IDS_DO_NOT_MATCH:
-      pattern = kIdsDoNotMatchMessage;
+      message = kIdsDoNotMatchMessage;
       break;
     case URL_NOT_SUPPORTED_FOR_WEBAPK:
-      pattern = kUrlNotSupportedForWebApkMessage;
+      message = kUrlNotSupportedForWebApkMessage;
       break;
     case IN_INCOGNITO:
-      pattern = kInIncognitoMessage;
+      message = kInIncognitoMessage;
       break;
     case NOT_OFFLINE_CAPABLE:
-      pattern = kNotOfflineCapable;
+      message = kNotOfflineCapable;
       break;
     case NO_GESTURE:
-      pattern = kNoGesture;
+      message = kNoGesture;
       break;
   }
 
-  if (!pattern)
-    return;
-  std::string message = param.empty() ?
-      pattern : base::StringPrintf(pattern, param.c_str());
   web_contents->GetMainFrame()->AddMessageToConsole(
       severity, GetMessagePrefix() + message);
 }

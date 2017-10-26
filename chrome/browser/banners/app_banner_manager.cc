@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -72,15 +71,6 @@ class AppBannerManager::StatusReporter {
 
 namespace {
 
-// Returns a string parameter for a devtools console message corresponding to
-// |code|. Returns the empty string if |code| requires no parameter.
-std::string GetStatusParam(InstallableStatusCode code) {
-  if (code == NO_ACCEPTABLE_ICON || code == MANIFEST_MISSING_SUITABLE_ICON)
-    return base::IntToString(InstallableManager::GetMinimumIconSizeInPx());
-
-  return std::string();
-}
-
 // Logs installable status codes to the console.
 class ConsoleStatusReporter : public banners::AppBannerManager::StatusReporter {
  public:
@@ -88,7 +78,7 @@ class ConsoleStatusReporter : public banners::AppBannerManager::StatusReporter {
   // attached to |web_contents|.
   void ReportStatus(content::WebContents* web_contents,
                     InstallableStatusCode code) override {
-    LogErrorToConsole(web_contents, code, GetStatusParam(code));
+    LogErrorToConsole(web_contents, code);
   }
 };
 
