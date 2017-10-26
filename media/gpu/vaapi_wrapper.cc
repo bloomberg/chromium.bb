@@ -120,23 +120,20 @@ static const VAConfigAttrib kEncodeVAConfigAttribs[] = {
      VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE},
 };
 
-struct ProfileMap {
+// A map between VideoCodecProfile and VAProfile.
+static const struct {
   VideoCodecProfile profile;
   VAProfile va_profile;
-};
-
-// A map between VideoCodecProfile and VAProfile.
-static const ProfileMap kProfileMap[] = {
+} kProfileMap[] = {
     {H264PROFILE_BASELINE, VAProfileH264Baseline},
     {H264PROFILE_MAIN, VAProfileH264Main},
-    // TODO(posciak): See if we can/want support other variants of
+    // TODO(posciak): See if we can/want to support other variants of
     // H264PROFILE_HIGH*.
     {H264PROFILE_HIGH, VAProfileH264High},
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
     {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
-    {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-    {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
+    // TODO(mcasas): support other VP9 Profiles, https://crbug.com/778093.
 };
 
 static std::vector<VAConfigAttrib> GetRequiredAttribs(
