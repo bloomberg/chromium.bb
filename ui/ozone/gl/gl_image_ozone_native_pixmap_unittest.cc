@@ -60,7 +60,7 @@ class GLImageNativePixmapTestDelegate {
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_EXTERNAL_OES; }
 
-  const uint8_t* GetImageColor() {
+  const uint8_t* GetImageColor() const {
     return format == gfx::BufferFormat::R_8 ? kRed : kYellow;
   }
 
@@ -92,6 +92,7 @@ using GLImageScanoutTypeDisabled = testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageNativePixmapScanout,
                               GLImageTest,
                               GLImageScanoutTypeDisabled);
+
 using GLImageReadWriteType = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::R_8>,
