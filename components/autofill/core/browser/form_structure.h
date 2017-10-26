@@ -256,9 +256,18 @@ class FormStructure {
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
 
-  // A helper function to avoid suggesting field types in cases where they are
-  // highly unlikely. For example: lone credit card fields in an otherwise
-  // non-credit-card related form.
+  // A function to fine tune the credit cards related predictions. For example:
+  // lone credit card fields in an otherwise non-credit-card related form is
+  // unlikely to be correct, the function will override that prediction.
+  void RationalizeCreditCardFieldPredictions();
+
+  // A function that detects if predictions suggest there are more phone fields
+  // than one valid phone number can fill, then mark those extranous fields
+  // as fill-only-when-user-highlight.
+  void RationalizePhoneNumberFieldPredictions();
+
+  // A helper function to review the predictions and do appropriate adjustments
+  // when it considers neccessary.
   void RationalizeFieldTypePredictions();
 
   // Encodes information about this form and its fields into |query_form|.
