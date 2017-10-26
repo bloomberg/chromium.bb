@@ -10905,7 +10905,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     uint8_t *const best_palette_color_map =
         x->palette_buffer->best_palette_color_map;
     uint8_t *const color_map = xd->plane[0].color_index_map;
-    MB_MODE_INFO best_mbmi_palette = best_mbmode;
+    MB_MODE_INFO best_mbmi_palette = *mbmi;
 
     mbmi->mode = DC_PRED;
     mbmi->uv_mode = UV_DC_PRED;
