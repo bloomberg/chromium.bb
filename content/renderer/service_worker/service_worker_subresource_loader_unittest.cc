@@ -77,6 +77,10 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   void CloseAllBindings() { bindings_.CloseAllBindings(); }
 
+  // Tells this controller to abort the fetch event without a response.
+  // i.e., simulate the service worker failing to handle the fetch event.
+  void AbortEventWithNoResponse() { response_mode_ = ResponseMode::kAbort; }
+
   // Tells this controller to respond to fetch events with network fallback.
   // i.e., simulate the service worker not calling respondWith().
   void RespondWithFallback() {
@@ -113,6 +117,10 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       case ResponseMode::kDefault:
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
+        break;
+      case ResponseMode::kAbort:
+        std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+                                base::Time());
         break;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(
@@ -194,6 +202,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
  private:
   enum class ResponseMode {
     kDefault,
+    kAbort,
     kStream,
     kFallbackResponse,
     kErrorResponse,
@@ -336,6 +345,24 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
   EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
   EXPECT_EQ(1, fake_controller_.fetch_event_count());
   EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+}
+
+TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
+  fake_controller_.AbortEventWithNoResponse();
+
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+
+  // Perform the request.
+  ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  client->RunUntilComplete();
+
+  EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
