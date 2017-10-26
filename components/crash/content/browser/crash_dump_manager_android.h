@@ -33,12 +33,12 @@ class CrashDumpManager {
 
   // Returns the condition whether we should write the crash to stability proto.
   bool ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
-                                    base::ProcessHandle pid,
+                                    int process_host_id,
                                     content::ProcessType process_type,
                                     base::TerminationStatus termination_status,
                                     base::android::ApplicationState app_state);
 
-  base::ScopedFD CreateMinidumpFileForChild(int child_process_id);
+  base::ScopedFD CreateMinidumpFileForChild(int process_host_id);
 
  private:
   friend struct base::LazyInstanceTraitsBase<CrashDumpManager>;
@@ -60,14 +60,14 @@ class CrashDumpManager {
     MINIDUMP_STATUS_COUNT
   };
 
-  void SetMinidumpPath(int child_process_id,
+  void SetMinidumpPath(int process_host_id,
                        const base::FilePath& minidump_path);
-  bool GetMinidumpPath(int child_process_id, base::FilePath* minidump_path);
+  bool GetMinidumpPath(int process_host_id, base::FilePath* minidump_path);
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER and UI threads.
-  base::Lock child_process_id_to_minidump_path_lock_;
-  ChildProcessIDToMinidumpPath child_process_id_to_minidump_path_;
+  base::Lock process_host_id_to_minidump_path_lock_;
+  ChildProcessIDToMinidumpPath process_host_id_to_minidump_path_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashDumpManager);
 };

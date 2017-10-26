@@ -21,9 +21,9 @@ class ChildProcessCrashObserver : public breakpad::CrashDumpObserver::Client {
   ~ChildProcessCrashObserver() override;
 
   // breakpad::CrashDumpObserver::Client implementation:
-  void OnChildStart(int child_process_id,
+  void OnChildStart(int process_host_id,
                     content::PosixFileDescriptorInfo* mappings) override;
-  void OnChildExit(int child_process_id,
+  void OnChildExit(int process_host_id,
                    base::ProcessHandle pid,
                    content::ProcessType process_type,
                    base::TerminationStatus termination_status,

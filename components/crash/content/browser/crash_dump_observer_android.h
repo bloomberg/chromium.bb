@@ -32,15 +32,21 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   // clients were registered. It is the implementer's responsibility
   // to post tasks to the appropriate threads if required (and be
   // aware that this may break ordering guarantees).
+  //
+  // Note, callbacks are generated for both "child processes" which are hosted
+  // by BrowserChildProcessHosts, and "render processes" which are hosted by
+  // RenderProcessHosts. The unique ids correspond to either the
+  // ChildProcessData::id, or the RenderProcessHost::ID, depending on the
+  // process type.
   class Client {
    public:
     // OnChildStart is called on the launcher thread.
-    virtual void OnChildStart(int child_process_id,
+    virtual void OnChildStart(int process_host_id,
                               content::PosixFileDescriptorInfo* mappings) = 0;
     // OnChildExit is called on the UI thread.
     // OnChildExit may be called twice (once for the child process
     // termination, and once for the IPC channel disconnection).
-    virtual void OnChildExit(int child_process_id,
+    virtual void OnChildExit(int process_host_id,
                              base::ProcessHandle pid,
                              content::ProcessType process_type,
                              base::TerminationStatus termination_status,
@@ -66,7 +72,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   // overrides, to notify the CrashDumpObserver of child process
   // creation, and to allow clients to register any fd mappings they
   // need.
-  void BrowserChildProcessStarted(int child_process_id,
+  void BrowserChildProcessStarted(int process_host_id,
                                   content::PosixFileDescriptorInfo* mappings);
 
  private:
@@ -90,7 +96,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
                const content::NotificationDetails& details) override;
 
   // Called on child process exit (including crash).
-  void OnChildExit(int child_process_id,
+  void OnChildExit(int process_host_id,
                    base::ProcessHandle pid,
                    content::ProcessType process_type,
                    base::TerminationStatus termination_status,
@@ -101,8 +107,8 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   base::Lock registered_clients_lock_;
   std::vector<std::unique_ptr<Client>> registered_clients_;
 
-  // child_process_id to process id.
-  std::map<int, base::ProcessHandle> child_process_id_to_pid_;
+  // process_host_id to process id.
+  std::map<int, base::ProcessHandle> process_host_id_to_pid_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashDumpObserver);
 };
