@@ -8,39 +8,70 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentWriteIntervention.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/SubresourceIntegrityHelper.h"
+#include "core/loader/resource/ScriptResource.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/MemoryCache.h"
 
 namespace blink {
 
-ClassicPendingScript* ClassicPendingScript::Create(ScriptElementBase* element,
-                                                   ScriptResource* resource) {
-  CHECK(resource);
-  return new ClassicPendingScript(element, resource, TextPosition());
+ClassicPendingScript* ClassicPendingScript::Fetch(ScriptElementBase* element,
+                                                  FetchParameters& params,
+                                                  Document& element_document) {
+  // [Intervention]
+  // For users on slow connections, we want to avoid blocking the parser in
+  // the main frame on script loads inserted via document.write, since it can
+  // add significant delays before page content is displayed on the screen.
+  auto* client_for_intervention =
+      MaybeDisallowFetchForDocWrittenScript(params, element_document);
+
+  ClassicPendingScript* pending_script =
+      new ClassicPendingScript(element, TextPosition(), true /* is_external */);
+  ScriptResource* resource =
+      ScriptResource::Fetch(params, element_document.Fetcher());
+  if (!resource)
+    return nullptr;
+  pending_script->SetResource(resource);
+  pending_script->CheckState();
+  if (client_for_intervention)
+    client_for_intervention->SetResource(resource);
+  return pending_script;
 }
 
-ClassicPendingScript* ClassicPendingScript::Create(
+ClassicPendingScript* ClassicPendingScript::CreateExternalForTest(
+    ScriptElementBase* element,
+    ScriptResource* resource) {
+  DCHECK(resource);
+  ClassicPendingScript* pending_script =
+      new ClassicPendingScript(element, TextPosition(), true /* is_external */);
+  pending_script->SetResource(resource);
+  pending_script->CheckState();
+  return pending_script;
+}
+
+ClassicPendingScript* ClassicPendingScript::CreateInline(
     ScriptElementBase* element,
     const TextPosition& starting_position) {
-  return new ClassicPendingScript(element, nullptr, starting_position);
+  ClassicPendingScript* pending_script = new ClassicPendingScript(
+      element, starting_position, false /* is_external */);
+  pending_script->CheckState();
+  return pending_script;
 }
 
 ClassicPendingScript::ClassicPendingScript(
     ScriptElementBase* element,
-    ScriptResource* resource,
-    const TextPosition& starting_position)
+    const TextPosition& starting_position,
+    bool is_external)
     : PendingScript(element, starting_position),
-      is_external_(resource),
-      ready_state_(resource ? kWaitingForResource : kReady),
+      is_external_(is_external),
+      ready_state_(is_external ? kWaitingForResource : kReady),
       integrity_failure_(false),
       is_currently_streaming_(false) {
   CHECK(GetElement());
-  SetResource(resource);
-  CheckState();
   MemoryCoordinator::Instance().RegisterClient(this);
 }
 

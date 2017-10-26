@@ -44,7 +44,6 @@ class Script;
 class ScriptResource;
 
 class Modulator;
-class ModulePendingScriptTreeClient;
 
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                                  public PendingScriptClient,
@@ -86,9 +85,10 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // PendingScript::Dispose() is called in ExecuteScriptBlock().
   void ExecuteScriptBlock(PendingScript*, const KURL&);
 
-  // Creates a PendingScript for external script whose fetch is started in
+  // Gets a PendingScript for external script whose fetch is started in
   // FetchClassicScript()/FetchModuleScriptTree().
-  PendingScript* CreatePendingScript();
+  // This should be called only once.
+  PendingScript* TakePendingScript();
 
   // The entry point only for ScriptRunner that wraps ExecuteScriptBlock().
   virtual void Execute();
@@ -177,7 +177,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   }
 
   Member<ScriptElementBase> element_;
-  Member<ScriptResource> resource_;
   WTF::OrdinalNumber start_line_number_;
 
   // https://html.spec.whatwg.org/#script-processing-model
@@ -218,8 +217,23 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   ScriptRunner::AsyncExecutionType async_exec_type_;
 
+  // A PendingScript is first created in PrepareScript() and stored in
+  // |prepared_pending_script_|.
+  // Later, TakePendingScript() is called, and its caller holds a reference
+  // to the PendingScript instead and |prepared_pending_script_| is cleared.
+  TraceWrapperMember<PendingScript> prepared_pending_script_;
+
+  // If the script is controlled by ScriptRunner, then
+  // ScriptLoader::pending_script_ holds a reference to the PendingScript and
+  // ScriptLoader is its client.
+  // Otherwise, HTMLParserScriptRunner or XMLParserScriptRunner holds the
+  // reference and |pending_script_| here is null.
   TraceWrapperMember<PendingScript> pending_script_;
-  TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
+
+  // This is used only to keep the ScriptResource of a classic script alive
+  // and thus to keep it on MemoryCache, even after script execution, as long
+  // as ScriptLoader is alive. crbug.com/778799
+  Member<ScriptResource> resource_keep_alive_;
 
   String nonce_;
 

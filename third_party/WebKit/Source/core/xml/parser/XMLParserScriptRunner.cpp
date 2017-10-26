@@ -86,13 +86,13 @@ void XMLParserScriptRunner::ProcessScriptElement(
   if (script_loader->ReadyToBeParserExecuted()) {
     // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
     script_loader->ExecuteScriptBlock(
-        ClassicPendingScript::Create(script_element_base,
-                                     script_start_position),
+        ClassicPendingScript::CreateInline(script_element_base,
+                                           script_start_position),
         document.Url());
   } else if (script_loader->WillBeParserExecuted()) {
     // 1st/2nd Clauses, Step 23 of
     // https://html.spec.whatwg.org/#prepare-a-script
-    parser_blocking_script_ = script_loader->CreatePendingScript();
+    parser_blocking_script_ = script_loader->TakePendingScript();
     parser_blocking_script_->MarkParserBlockingLoadStartTime();
     script_element_ = script_element_base;
     parser_blocking_script_->WatchForLoad(this);
