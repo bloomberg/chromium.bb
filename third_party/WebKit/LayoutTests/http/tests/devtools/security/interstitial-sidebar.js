@@ -1,9 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/security-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Tests that the sidebar origin list disappears and appers when an interstitial is shown or hidden.\n`);
+  await TestRunner.loadModule('security_test_runner');
+  await TestRunner.showPanel('security');
+
   var request1 = new SDK.NetworkRequest(0, 'https://foo.test/', 'https://foo.test', 0, 0, null);
   request1.setSecurityState(Protocol.Security.SecurityState.Secure);
   SecurityTestRunner.dispatchRequestFinished(request1);
@@ -32,10 +36,4 @@ function test() {
   TestRunner.dumpDeepInnerHTML(Security.SecurityPanel._instance()._sidebarTree.element);
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that the sidebar origin list disappears and appers when an interstitial is shown or hidden.</p>
-</body>
-</html>
+})();

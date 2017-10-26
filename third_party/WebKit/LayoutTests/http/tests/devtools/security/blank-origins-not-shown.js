@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/security-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that blank origins aren't shown in the security panel origins list.\n`);
+  await TestRunner.loadModule('security_test_runner');
+  await TestRunner.showPanel('security');
+
   var request1 = new SDK.NetworkRequest(0, 'https://foo.test/foo.jpg', 'https://foo.test', 0, 0, null);
   SecurityTestRunner.dispatchRequestFinished(request1);
 
@@ -16,10 +19,4 @@ function test() {
   SecurityTestRunner.dumpSecurityPanelSidebarOrigins();
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that blank origins aren't shown in the security panel origins list.</p>
-</body>
-</html>
+})();

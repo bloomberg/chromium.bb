@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/security-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that origin group names in the Security panel are distinct.\n`);
+  await TestRunner.loadModule('security_test_runner');
+  await TestRunner.showPanel('security');
+
   var originGroupNameSize = Object.keys(Security.SecurityPanelSidebarTree.OriginGroupName).length;
 
   var deduplicatedNames = new Set();
@@ -17,10 +20,4 @@ function test() {
       '): ' + (originGroupNameSize == deduplicatedNames.size) + ' (expected: true)');
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that origin group names in the Security panel are distinct.</p>
-</body>
-</html>
+})();
