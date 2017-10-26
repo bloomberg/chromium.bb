@@ -1535,6 +1535,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.SysUtilsLowEndMatches" enum="BooleanEqual">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Measures whether Chrome low-end detection logic based on RAM size matches
+    the Android system utility value for isLowRamDevice(). This is recorded once
+    per browser start and may be recorded in the renderer if isLowEndDevice()
+    bit is checked.
+  </summary>
+</histogram>
+
 <histogram name="Android.TabNavigationInterceptResult"
     enum="NavigationInterceptResult">
   <owner>mariakhomenko@chromium.org</owner>
