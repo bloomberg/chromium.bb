@@ -19,7 +19,6 @@ import android.widget.TextView;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -39,7 +38,6 @@ import java.util.List;
  */
 public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistoryObserver {
     private static final String EMPTY_QUERY = "";
-    private static final String GOOGLE_HISTORY_LINK = "history.google.com";
 
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
     private final HistoryProvider mHistoryProvider;
@@ -310,20 +308,16 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * @return The {@SpannableString} with the privacy disclaimer string resource and url.
      */
     private SpannableString getPrivacyDisclaimerText() {
-        boolean flagEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.TABS_IN_CBD);
-        int stringId = flagEnabled ? R.string.android_history_other_forms_of_history_new
-                                   : R.string.android_history_other_forms_of_history;
-        final String url =
-                flagEnabled ? UrlConstants.MY_ACTIVITY_URL_IN_HISTORY : GOOGLE_HISTORY_LINK;
         final Resources resources = ContextUtils.getApplicationContext().getResources();
         NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View view) {
-                mHistoryManager.openUrl(url, null, true);
+                mHistoryManager.openUrl(UrlConstants.MY_ACTIVITY_URL_IN_HISTORY, null, true);
             }
         };
         return SpanApplier.applySpans(
-                resources.getString(stringId), new SpanApplier.SpanInfo("<link>", "</link>", link));
+                resources.getString(R.string.android_history_other_forms_of_history),
+                new SpanApplier.SpanInfo("<link>", "</link>", link));
     }
 
     /**
