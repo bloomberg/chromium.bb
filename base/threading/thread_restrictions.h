@@ -92,6 +92,10 @@ namespace remoting {
 class AutoThread;
 }
 
+namespace resource_coordinator {
+class TabManagerDelegate;
+}
+
 namespace ui {
 class WindowResizeHelperMac;
 }
@@ -188,6 +192,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContextAdapter;
+  friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ScopedAllowBlockingForTesting;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
