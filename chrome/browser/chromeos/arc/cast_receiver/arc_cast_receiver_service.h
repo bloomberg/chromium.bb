@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/arc/common/cast_receiver.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -48,8 +49,10 @@ class ArcCastReceiverService
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  // Registrar to observe pref changes.
+  // Observers for preferences and settings changes.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      receiver_name_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCastReceiverService);
 };

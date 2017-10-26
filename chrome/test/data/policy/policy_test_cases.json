@@ -3232,7 +3232,7 @@
     "os": ["chromeos"],
     "test_policy": { "CastReceiverName": "Hallway" },
     "pref_mappings": [
-      { "pref": "cast_receiver.name",
+      { "pref": "cros.device.cast_receiver.name",
         "local_state": true }
     ]
   },

@@ -62,6 +62,7 @@ const char* const kKnownSettings[] = {
     kAllowRedeemChromeOsRegistrationOffers,
     kAllowedConnectionTypesForUpdate,
     kAttestationForContentProtectionEnabled,
+    kCastReceiverName,
     kDeviceAttestationEnabled,
     kDeviceDisabled,
     kDeviceDisabledMessage,
@@ -109,6 +110,7 @@ const char* const kKnownSettings[] = {
     kDeviceOffHours,
     kTPMFirmwareUpdateSettings,
     kMinimumRequiredChromeVersion,
+    kCastReceiverName,
 };
 
 void DecodeLoginPolicies(
@@ -594,6 +596,14 @@ void DecodeGenericPolicies(
     if (container.has_chrome_version())
       new_values_cache->SetString(kMinimumRequiredChromeVersion,
                                   container.chrome_version());
+  }
+
+  if (policy.has_cast_receiver_name()) {
+    const em::CastReceiverNameProto& container(policy.cast_receiver_name());
+    if (container.has_name()) {
+      new_values_cache->SetValue(
+          kCastReceiverName, base::MakeUnique<base::Value>(container.name()));
+    }
   }
 }
 
