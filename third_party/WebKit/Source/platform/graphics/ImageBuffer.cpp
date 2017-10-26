@@ -322,8 +322,7 @@ void ImageBuffer::FlushGpu(FlushReason reason) {
   }
 }
 
-bool ImageBuffer::GetImageData(Multiply multiplied,
-                               const IntRect& rect,
+bool ImageBuffer::GetImageData(const IntRect& rect,
                                WTF::ArrayBufferContents& contents) const {
   uint8_t bytes_per_pixel = surface_->ColorParams().BytesPerPixel();
   CheckedNumeric<int> data_size = bytes_per_pixel;
@@ -368,17 +367,13 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
   WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
                                   WTF::ArrayBufferContents::kNotShared);
 
-  SkAlphaType alpha_type = (multiplied == kPremultiplied)
-                               ? kPremul_SkAlphaType
-                               : kUnpremul_SkAlphaType;
   SkColorType color_type =
       (surface_->ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
           ? kRGBA_F16_SkColorType
           : kRGBA_8888_SkColorType;
-
-  SkImageInfo info =
-      SkImageInfo::Make(rect.Width(), rect.Height(), color_type, alpha_type,
-                        surface_->ColorParams().GetSkColorSpaceForSkSurfaces());
+  SkImageInfo info = SkImageInfo::Make(
+      rect.Width(), rect.Height(), color_type, kUnpremul_SkAlphaType,
+      surface_->ColorParams().GetSkColorSpaceForSkSurfaces());
   snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
       info, result.Data(), bytes_per_pixel * rect.Width(), rect.X(), rect.Y());
   gpu_readback_invoked_in_current_frame_ = true;
@@ -386,8 +381,7 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
   return true;
 }
 
-void ImageBuffer::PutByteArray(Multiply multiplied,
-                               const unsigned char* source,
+void ImageBuffer::PutByteArray(const unsigned char* source,
                                const IntSize& source_size,
                                const IntRect& source_rect,
                                const IntPoint& dest_point) {
@@ -425,8 +419,7 @@ void ImageBuffer::PutByteArray(Multiply multiplied,
     // behavior (memcpy) by pretending the write is opaque.
     alpha_type = kOpaque_SkAlphaType;
   } else {
-    alpha_type = (multiplied == kPremultiplied) ? kPremul_SkAlphaType
-                                                : kUnpremul_SkAlphaType;
+    alpha_type = kUnpremul_SkAlphaType;
   }
 
   SkImageInfo info;

@@ -256,8 +256,8 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
                 Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
     WTF::ArrayBufferContents contents;
-    image_buffer->GetImageData(
-        kUnmultiplied, IntRect(IntPoint(), image_rect.Size()), contents);
+    image_buffer->GetImageData(IntRect(IntPoint(), image_rect.Size()),
+                               contents);
     DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
     DOMUint8ClampedArray* pixel_array = DOMUint8ClampedArray::Create(
         array_buffer, 0, array_buffer->ByteLength());

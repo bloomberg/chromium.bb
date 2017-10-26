@@ -66,8 +66,6 @@ class ImageBufferClient;
 class IntPoint;
 class IntRect;
 
-enum Multiply { kPremultiplied, kUnmultiplied };
-
 class PLATFORM_EXPORT ImageBuffer {
   WTF_MAKE_NONCOPYABLE(ImageBuffer);
   USING_FAST_MALLOC(ImageBuffer);
@@ -118,10 +116,9 @@ class PLATFORM_EXPORT ImageBuffer {
 
   void WillOverwriteCanvas() { surface_->WillOverwriteCanvas(); }
 
-  bool GetImageData(Multiply, const IntRect&, WTF::ArrayBufferContents&) const;
+  bool GetImageData(const IntRect&, WTF::ArrayBufferContents&) const;
 
-  void PutByteArray(Multiply,
-                    const unsigned char* source,
+  void PutByteArray(const unsigned char* source,
                     const IntSize& source_size,
                     const IntRect& source_rect,
                     const IntPoint& dest_point);
