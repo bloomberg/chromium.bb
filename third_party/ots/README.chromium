@@ -1,13 +1,12 @@
 Name: OTS (OpenType Sanitizer)
 URL: https://github.com/khaledhosny/ots.git
-Version: 010db68e299cca14bbc9df456e0e8e77f7ec6be1
+Version: fbe8db1e192958055fef1607ae69b478789ba22a
 Security Critical: yes
 License: BSD
 
 Local Modifications:
 - This only includes src/ and include/ directories, and the files under the
-  repository root. Unneeded direcories such as tests/, tools/ are removed.
-- Cherry-picked commit b21e9ed to fix build error.
+  repository root. Unneeded direcories such as tests/, util/ are removed.
 - src/ots.cc: Changed include path to woff2_dec.h.
 - BUILD.gn: Added.
 - fuzz/: Added.

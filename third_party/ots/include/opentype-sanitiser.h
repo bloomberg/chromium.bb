@@ -15,13 +15,17 @@ typedef int int32_t;
 typedef unsigned int uint32_t;
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
-#define ntohl(x) _byteswap_ulong (x)
-#define ntohs(x) _byteswap_ushort (x)
-#define htonl(x) _byteswap_ulong (x)
-#define htons(x) _byteswap_ushort (x)
+#define ots_ntohl(x) _byteswap_ulong (x)
+#define ots_ntohs(x) _byteswap_ushort (x)
+#define ots_htonl(x) _byteswap_ulong (x)
+#define ots_htons(x) _byteswap_ushort (x)
 #else
 #include <arpa/inet.h>
 #include <stdint.h>
+#define ots_ntohl(x) ntohl (x)
+#define ots_ntohs(x) ntohs (x)
+#define ots_htonl(x) htonl (x)
+#define ots_htons(x) htons (x)
 #endif
 
 #include <sys/types.h>
@@ -32,7 +36,7 @@ typedef unsigned __int64 uint64_t;
 #include <cstring>
 
 #define OTS_TAG(c1,c2,c3,c4) ((uint32_t)((((uint8_t)(c1))<<24)|(((uint8_t)(c2))<<16)|(((uint8_t)(c3))<<8)|((uint8_t)(c4))))
-#define OTS_UNTAG(tag)       ((uint8_t)((tag)>>24)), ((uint8_t)((tag)>>16)), ((uint8_t)((tag)>>8)), ((uint8_t)(tag))
+#define OTS_UNTAG(tag)       ((char)((tag)>>24)), ((char)((tag)>>16)), ((char)((tag)>>8)), ((char)(tag))
 
 namespace ots {
 
@@ -60,7 +64,7 @@ class OTSStream {
       const size_t l = std::min(length, static_cast<size_t>(4) - chksum_offset);
       uint32_t tmp = 0;
       std::memcpy(reinterpret_cast<uint8_t *>(&tmp) + chksum_offset, data, l);
-      chksum_ += ntohl(tmp);
+      chksum_ += ots_ntohl(tmp);
       length -= l;
       offset += l;
     }
@@ -69,7 +73,7 @@ class OTSStream {
       uint32_t tmp;
       std::memcpy(&tmp, reinterpret_cast<const uint8_t *>(data) + offset,
         sizeof(uint32_t));
-      chksum_ += ntohl(tmp);
+      chksum_ += ots_ntohl(tmp);
       length -= 4;
       offset += 4;
     }
@@ -79,7 +83,7 @@ class OTSStream {
       uint32_t tmp = 0;
       std::memcpy(&tmp,
                   reinterpret_cast<const uint8_t*>(data) + offset, length);
-      chksum_ += ntohl(tmp);
+      chksum_ += ots_ntohl(tmp);
     }
 
     return WriteRaw(data, orig_length);
@@ -107,27 +111,27 @@ class OTSStream {
   }
 
   bool WriteU16(uint16_t v) {
-    v = htons(v);
+    v = ots_htons(v);
     return Write(&v, sizeof(v));
   }
 
   bool WriteS16(int16_t v) {
-    v = htons(v);
+    v = ots_htons(v);
     return Write(&v, sizeof(v));
   }
 
   bool WriteU24(uint32_t v) {
-    v = htonl(v);
+    v = ots_htonl(v);
     return Write(reinterpret_cast<uint8_t*>(&v)+1, 3);
   }
 
   bool WriteU32(uint32_t v) {
-    v = htonl(v);
+    v = ots_htonl(v);
     return Write(&v, sizeof(v));
   }
 
   bool WriteS32(int32_t v) {
-    v = htonl(v);
+    v = ots_htonl(v);
     return Write(&v, sizeof(v));
   }
 
@@ -156,7 +160,7 @@ class OTSStream {
 
 enum TableAction {
   TABLE_ACTION_DEFAULT,  // Use OTS's default action for that table
-  TABLE_ACTION_SANITIZE, // Sanitize the table, potentially droping it
+  TABLE_ACTION_SANITIZE, // Sanitize the table, potentially dropping it
   TABLE_ACTION_PASSTHRU, // Serialize the table unchanged
   TABLE_ACTION_DROP      // Drop the table
 };

@@ -22,9 +22,21 @@ struct CFFIndex {
   uint32_t offset_to_next;
 };
 
-struct OpenTypeCFF {
-  const uint8_t *data;
-  size_t length;
+class OpenTypeCFF : public Table {
+ public:
+  explicit OpenTypeCFF(Font *font, uint32_t tag)
+      : Table(font, tag, tag),
+        font_dict_length(0),
+        local_subrs(NULL),
+        m_data(NULL),
+        m_length(0) {
+  }
+
+  ~OpenTypeCFF();
+
+  bool Parse(const uint8_t *data, size_t length);
+  bool Serialize(OTSStream *out);
+
   // Name INDEX. This name is used in name.cc as a postscript font name.
   std::string name;
 
@@ -39,6 +51,10 @@ struct OpenTypeCFF {
   std::vector<CFFIndex *> local_subrs_per_font;
   // A Local Subrs associated with Top DICT. Can be NULL.
   CFFIndex *local_subrs;
+
+ private:
+  const uint8_t *m_data;
+  size_t m_length;
 };
 
 }  // namespace ots
