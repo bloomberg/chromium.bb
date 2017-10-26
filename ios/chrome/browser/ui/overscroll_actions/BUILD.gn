@@ -22,6 +22,7 @@ source_set("overscroll_actions") {
     "//base",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:notifications",
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/page_info:coordinator",
     "//ios/chrome/browser/ui/static_content",

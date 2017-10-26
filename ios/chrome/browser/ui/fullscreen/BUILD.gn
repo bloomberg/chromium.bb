@@ -1,0 +1,65 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("fullscreen") {
+  sources = [
+    "fullscreen_controller.h",
+    "fullscreen_controller.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui:notifications",
+    "//ios/chrome/browser/ui/history_popup/requirements",
+    "//ios/chrome/browser/ui/overscroll_actions",
+    "//ios/chrome/browser/ui/page_info:coordinator",
+    "//ios/chrome/browser/ui/side_swipe",
+    "//ios/chrome/browser/ui/tabs/requirements",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/voice",
+    "//ios/web",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "fullscreen_controller_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":fullscreen",
+    "//ios/web",
+    "//ios/web/public",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "fullscreen_egtest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/side_swipe",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/web:earl_grey_test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
+  ]
+  libs = [ "XCTest.framework" ]
+}
