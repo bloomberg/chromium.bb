@@ -645,16 +645,25 @@ wayland_output_repaint_pixman(struct weston_output *output_base,
 static void
 wayland_backend_destroy_output_surface(struct wayland_output *output)
 {
-	if (output->parent.xdg_toplevel)
+	assert(output->parent.surface);
+
+	if (output->parent.xdg_toplevel) {
 		zxdg_toplevel_v6_destroy(output->parent.xdg_toplevel);
+		output->parent.xdg_toplevel = NULL;
+	}
 
-	if (output->parent.xdg_surface)
+	if (output->parent.xdg_surface) {
 		zxdg_surface_v6_destroy(output->parent.xdg_surface);
+		output->parent.xdg_surface = NULL;
+	}
 
-	if (output->parent.shell_surface)
+	if (output->parent.shell_surface) {
 		wl_shell_surface_destroy(output->parent.shell_surface);
+		output->parent.shell_surface = NULL;
+	}
 
 	wl_surface_destroy(output->parent.surface);
+	output->parent.surface = NULL;
 }
 
 static void
@@ -1138,6 +1147,8 @@ static int
 wayland_backend_create_output_surface(struct wayland_output *output)
 {
 	struct wayland_backend *b = to_wayland_backend(output->base.compositor);
+
+	assert(!output->parent.surface);
 
 	output->parent.surface =
 		wl_compositor_create_surface(b->parent.compositor);
