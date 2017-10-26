@@ -802,6 +802,9 @@ extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 extern const char kSpellingFeedbackFieldTrialName[];
 extern const char kSpellingFeedbackFieldTrialDescription[];
 
+extern const char kStopLoadingInBackgroundName[];
+extern const char kStopLoadingInBackgroundDescription[];
+
 extern const char kTLS13VariantName[];
 extern const char kTLS13VariantDescription[];
 extern const char kTLS13VariantDisabled[];

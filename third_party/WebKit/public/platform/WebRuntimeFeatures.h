@@ -182,6 +182,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableV8ContextSnapshot(bool);
   BLINK_PLATFORM_EXPORT static void EnableAutomationControlled(bool);
   BLINK_PLATFORM_EXPORT static void EnableWorkStealingInScriptRunner(bool);
+  BLINK_PLATFORM_EXPORT static void EnableStopLoadingInBackgroundAndroid(bool);
 
  private:
   WebRuntimeFeatures();
