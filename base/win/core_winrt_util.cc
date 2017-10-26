@@ -4,7 +4,6 @@
 
 #include "base/win/core_winrt_util.h"
 
-#include <roapi.h>
 #include <robuffer.h>
 #include <string.h>
 #include <wrl/client.h>
@@ -17,6 +16,20 @@ namespace {
 void* LoadComBaseFunction(const char* function_name) {
   static HMODULE const handle = ::LoadLibrary(L"combase.dll");
   return handle ? ::GetProcAddress(handle, function_name) : nullptr;
+}
+
+decltype(&::RoInitialize) GetRoInitializeFunction() {
+  static decltype(&::RoInitialize) const function =
+      reinterpret_cast<decltype(&::RoInitialize)>(
+          LoadComBaseFunction("RoInitialize"));
+  return function;
+}
+
+decltype(&::RoUninitialize) GetRoUninitializeFunction() {
+  static decltype(&::RoUninitialize) const function =
+      reinterpret_cast<decltype(&::RoUninitialize)>(
+          LoadComBaseFunction("RoUninitialize"));
+  return function;
 }
 
 decltype(&::RoActivateInstance) GetRoActivateInstanceFunction() {
@@ -40,23 +53,34 @@ namespace win {
 
 bool ResolveCoreWinRTDelayload() {
   // TODO(finnur): Add AssertIOAllowed once crbug.com/770193 is fixed.
+  return GetRoInitializeFunction() && GetRoUninitializeFunction() &&
+         GetRoActivateInstanceFunction() && GetRoGetActivationFactoryFunction();
+}
 
-  return GetRoActivateInstanceFunction() && GetRoGetActivationFactoryFunction();
+HRESULT RoInitialize(RO_INIT_TYPE init_type) {
+  auto ro_initialize_func = GetRoInitializeFunction();
+  if (!ro_initialize_func)
+    return E_FAIL;
+  return ro_initialize_func(init_type);
+}
+
+void RoUninitialize() {
+  auto ro_uninitialize_func = GetRoUninitializeFunction();
+  if (ro_uninitialize_func)
+    ro_uninitialize_func();
 }
 
 HRESULT RoGetActivationFactory(HSTRING class_id,
                                const IID& iid,
                                void** out_factory) {
-  decltype(&::RoGetActivationFactory) get_factory_func =
-      GetRoGetActivationFactoryFunction();
+  auto get_factory_func = GetRoGetActivationFactoryFunction();
   if (!get_factory_func)
     return E_FAIL;
   return get_factory_func(class_id, iid, out_factory);
 }
 
 HRESULT RoActivateInstance(HSTRING class_id, IInspectable** instance) {
-  decltype(&::RoActivateInstance) activate_instance_func =
-      GetRoActivateInstanceFunction();
+  auto activate_instance_func = GetRoActivateInstanceFunction();
   if (!activate_instance_func)
     return E_FAIL;
   return activate_instance_func(class_id, instance);
