@@ -2052,6 +2052,7 @@ test("browser_tests") {
       sources += [
         "../browser/payments/manifest_verifier_browsertest.cc",
         "../browser/payments/payment_manifest_parser_browsertest.cc",
+        "../browser/payments/service_worker_payment_app_factory_browsertest.cc",
         "../browser/payments/site_per_process_payments_browsertest.cc",
         "../browser/ui/global_error/global_error_browsertest.cc",
         "../browser/ui/global_error/global_error_service_browsertest.cc",
@@ -2096,6 +2097,7 @@ test("browser_tests") {
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
       ]
       deps += [
+        "//components/payments/core:test_support",
         "//ui/views",
         "//url",
       ]

@@ -16,9 +16,9 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/content_payment_request_delegate.h"
-#include "components/payments/content/manifest_verifier.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
+#include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/autofill_payment_instrument.h"
@@ -27,40 +27,10 @@
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/stored_payment_app.h"
 #include "content/public/common/content_features.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace payments {
-namespace {
-
-// Returns true if |app| supports at least one of the |requested_methods|.
-bool AppSupportsAtLeastOneRequestedMethod(
-    const std::set<std::string>& requested_methods,
-    const content::StoredPaymentApp& app) {
-  for (const auto& enabled_method : app.enabled_methods) {
-    if (requested_methods.find(enabled_method) != requested_methods.end())
-      return true;
-  }
-  return false;
-}
-
-content::PaymentAppProvider::PaymentApps RemoveAppsWithoutMatchingMethods(
-    const std::set<std::string>& requested_methods,
-    content::PaymentAppProvider::PaymentApps apps) {
-  std::vector<int64_t> keys_to_erase;
-  for (const auto& app : apps) {
-    if (!AppSupportsAtLeastOneRequestedMethod(requested_methods,
-                                              *(app.second))) {
-      keys_to_erase.emplace_back(app.first);
-    }
-  }
-  for (const auto& key : keys_to_erase) {
-    apps.erase(key);
-  }
-  return apps;
-}
-
-}  // namespace
 
 PaymentRequestState::PaymentRequestState(
     content::BrowserContext* context,
@@ -89,19 +59,22 @@ PaymentRequestState::PaymentRequestState(
       weak_ptr_factory_(this) {
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps)) {
     get_all_instruments_finished_ = false;
-    // Start up the utility manifest parsing process as soon as it is known that
-    // it's going to be used, because it can take a couple of seconds to be
-    // ready.
-    payment_app_manifest_verifier_ = std::make_unique<ManifestVerifier>(
-        std::make_unique<payments::PaymentManifestDownloader>(
+    service_worker_payment_app_factory_ =
+        std::make_unique<ServiceWorkerPaymentAppFactory>();
+    service_worker_payment_app_factory_->GetAllPaymentApps(
+        context,
+        std::make_unique<PaymentManifestDownloader>(
             content::BrowserContext::GetDefaultStoragePartition(context)
                 ->GetURLRequestContext()),
-        std::make_unique<payments::PaymentManifestParser>(),
-        payment_request_delegate_->GetPaymentManifestWebDataService());
-    content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-        context, base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
-                                weak_ptr_factory_.GetWeakPtr(), context,
-                                top_level_origin, frame_origin));
+        payment_request_delegate_->GetPaymentManifestWebDataService(),
+        spec_->payment_method_identifiers_set(),
+        base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
+                       weak_ptr_factory_.GetWeakPtr(), context,
+                       top_level_origin, frame_origin),
+        base::BindOnce(
+            &PaymentRequestState::
+                OnServiceWorkerPaymentAppFactoryFinishedUsingResources,
+            weak_ptr_factory_.GetWeakPtr()));
   } else {
     PopulateProfileCache();
     SetDefaultProfileSelections();
@@ -112,30 +85,6 @@ PaymentRequestState::PaymentRequestState(
 PaymentRequestState::~PaymentRequestState() {}
 
 void PaymentRequestState::GetAllPaymentAppsCallback(
-    content::BrowserContext* context,
-    const GURL& top_level_origin,
-    const GURL& frame_origin,
-    content::PaymentAppProvider::PaymentApps apps) {
-  content::PaymentAppProvider::PaymentApps matching_apps =
-      RemoveAppsWithoutMatchingMethods(spec_->payment_method_identifiers_set(),
-                                       std::move(apps));
-  if (matching_apps.empty()) {
-    OnPaymentAppsVerified(context, top_level_origin, frame_origin,
-                          std::move(matching_apps));
-    return;
-  }
-
-  payment_app_manifest_verifier_->Verify(
-      std::move(matching_apps),
-      base::BindOnce(&PaymentRequestState::OnPaymentAppsVerified,
-                     weak_ptr_factory_.GetWeakPtr(), context, top_level_origin,
-                     frame_origin),
-      base::BindOnce(
-          &PaymentRequestState::OnPaymentAppsVerifierFinishedUsingResources,
-          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PaymentRequestState::OnPaymentAppsVerified(
     content::BrowserContext* context,
     const GURL& top_level_origin,
     const GURL& frame_origin,
@@ -158,8 +107,9 @@ void PaymentRequestState::OnPaymentAppsVerified(
     CheckCanMakePayment(std::move(can_make_payment_callback_));
 }
 
-void PaymentRequestState::OnPaymentAppsVerifierFinishedUsingResources() {
-  payment_app_manifest_verifier_.reset();
+void PaymentRequestState::
+    OnServiceWorkerPaymentAppFactoryFinishedUsingResources() {
+  service_worker_payment_app_factory_.reset();
 }
 
 void PaymentRequestState::OnPaymentResponseReady(

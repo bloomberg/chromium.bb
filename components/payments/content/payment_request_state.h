@@ -30,8 +30,8 @@ namespace payments {
 
 class ContentPaymentRequestDelegate;
 class JourneyLogger;
-class ManifestVerifier;
 class PaymentInstrument;
+class ServiceWorkerPaymentAppFactory;
 
 // Keeps track of the information currently selected by the user and whether the
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
@@ -230,13 +230,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
                                  const GURL& top_level_origin,
                                  const GURL& frame_origin,
                                  content::PaymentAppProvider::PaymentApps apps);
-
-  // The ManifestVerifier::VerifyCallback.
-  void OnPaymentAppsVerified(content::BrowserContext* context,
-                             const GURL& top_level_origin,
-                             const GURL& frame_origin,
-                             content::PaymentAppProvider::PaymentApps apps);
-  void OnPaymentAppsVerifierFinishedUsingResources();
+  void OnServiceWorkerPaymentAppFactoryFinishedUsingResources();
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
@@ -285,7 +279,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   base::ObserverList<Observer> observers_;
 
-  std::unique_ptr<ManifestVerifier> payment_app_manifest_verifier_;
+  std::unique_ptr<ServiceWorkerPaymentAppFactory>
+      service_worker_payment_app_factory_;
 
   base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_;
 

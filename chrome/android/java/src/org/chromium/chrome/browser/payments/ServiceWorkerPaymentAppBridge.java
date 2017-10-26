@@ -50,7 +50,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     @Override
     public void create(WebContents webContents, Set<String> methodNames,
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
-        nativeGetAllPaymentApps(webContents, callback);
+        nativeGetAllPaymentApps(
+                webContents, methodNames.toArray(new String[methodNames.size()]), callback);
     }
 
     /**
@@ -215,7 +216,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * be of type PaymentInstrument.InstrumentDetailsCallback, once this JNI bug
      * has been resolved.
      */
-    private static native void nativeGetAllPaymentApps(WebContents webContents, Object callback);
+    private static native void nativeGetAllPaymentApps(
+            WebContents webContents, String[] pmis, Object callback);
 
     /*
      * TODO(tommyt): crbug.com/505554. Change the |callback| parameter below to
