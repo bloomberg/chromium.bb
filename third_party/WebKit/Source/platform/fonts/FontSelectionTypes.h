@@ -191,6 +191,18 @@ static inline const FontSelectionValue& BoldThreshold() {
   return boldThreshold;
 }
 
+static inline const FontSelectionValue& MinWeightValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, minWeightValue,
+                                  (1));
+  return minWeightValue;
+}
+
+static inline const FontSelectionValue& MaxWeightValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, maxWeightValue,
+                                  (1000));
+  return maxWeightValue;
+}
+
 static inline const FontSelectionValue& BoldWeightValue() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, boldWeightValue,
                                   (700));
