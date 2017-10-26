@@ -72,6 +72,10 @@ void JavaScriptDialogViews::DeleteDelegate() {
   delete this;
 }
 
+bool JavaScriptDialogViews::ShouldShowCloseButton() const {
+  return false;
+}
+
 views::View* JavaScriptDialogViews::GetContentsView() {
   return message_box_view_;
 }
