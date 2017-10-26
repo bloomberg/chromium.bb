@@ -19,7 +19,7 @@
 namespace content {
 namespace {
 
-const int kVerboseLevel = 1;
+const int kDownloadJobVerboseLevel = 1;
 
 }  // namespace
 
@@ -127,7 +127,7 @@ void ParallelDownloadJob::OnByteStreamReady(
 
   // Destroy the request if the sink is gone.
   if (!success) {
-    VLOG(kVerboseLevel)
+    VLOG(kDownloadJobVerboseLevel)
         << "Byte stream arrived after download file is released.";
     worker->Cancel(false);
   }
@@ -158,7 +158,7 @@ void ParallelDownloadJob::BuildParallelRequests() {
   // previous session only has one stream writing to disk. In these cases, fall
   // back to non parallel download.
   if (initial_request_offset_ > first_slice_offset) {
-    VLOG(kVerboseLevel)
+    VLOG(kDownloadJobVerboseLevel)
         << "Received slices data mismatch initial request offset.";
     return;
   }
