@@ -93,8 +93,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
   while (offset_ < end_offset_ && !text_state_.PositionNode()) {
     // We may go through multiple mappings, which happens when there is
     // ::first-letter and blockifying style.
-    const NGOffsetMapping* mapping =
-        NGOffsetMapping::GetFor(*text_node_, offset_);
+    auto* mapping = NGOffsetMapping::GetFor(Position(text_node_, offset_));
     if (!mapping) {
       offset_ = end_offset_;
       return;
@@ -230,7 +229,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
   first_letter_text_ = nullptr;
   uses_layout_ng_ = false;
 
-  if (NGOffsetMapping::GetFor(*node, offset_)) {
+  if (NGOffsetMapping::GetFor(Position(node, offset_))) {
     // Restore end offset from magic value.
     if (end_offset_ == kMaxOffset)
       end_offset_ = node->data().length();
