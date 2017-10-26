@@ -159,26 +159,6 @@ bool ShouldTreatNavigationAsReload(const NavigationEntry* entry) {
   return false;
 }
 
-// Returns true if the error code indicates an error condition that is not
-// recoverable or navigation is blocked. In such cases, session history
-// navigations to the same NavigationEntry should not attempt to load the
-// original URL.
-// TODO(nasko): Find a better way to distinguish blocked vs failed navigations,
-// as this is a very hacky way of accomplishing this. For now, a handful of
-// error codes are considered, which are more or less known to be cases of
-// blocked navigations.
-bool IsBlockedNavigation(net::Error error_code) {
-  switch (error_code) {
-    case net::ERR_BLOCKED_BY_CLIENT:
-    case net::ERR_BLOCKED_BY_RESPONSE:
-    case net::ERR_BLOCKED_BY_XSS_AUDITOR:
-    case net::ERR_UNSAFE_REDIRECT:
-      return true;
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 // NavigationControllerImpl ----------------------------------------------------
@@ -948,24 +928,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // TODO(creis): Remove the "if" once https://crbug.com/522193 is fixed.
   if (frame_entry) {
     DCHECK(params.page_state == frame_entry->page_state());
-  }
-
-  // When a navigation in the main frame is blocked, it will display an error
-  // page. To avoid loading the blocked URL on back/forward navigations,
-  // do not store it in the FrameNavigationEntry's URL or PageState. Instead,
-  // make it visible to the user as the virtual URL. Store a safe URL
-  // (about:blank) as the one to load if the entry is revisited.
-  // TODO(nasko): Consider supporting similar behavior for subframe
-  // navigations, including AUTO_SUBFRAME.
-  if (!rfh->GetParent() &&
-      IsBlockedNavigation(navigation_handle->GetNetErrorCode())) {
-    DCHECK(params.url_is_unreachable);
-    active_entry->SetURL(GURL(url::kAboutBlankURL));
-    active_entry->SetVirtualURL(params.url);
-    if (frame_entry) {
-      frame_entry->SetPageState(
-          PageState::CreateFromURL(active_entry->GetURL()));
-    }
   }
 
   // Use histogram to track memory impact of redirect chain because it's now

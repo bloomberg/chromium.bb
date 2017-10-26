@@ -1643,18 +1643,36 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   }
 
   {
-    // Reloading the blocked document should load about:blank and not transfer
-    // processes.
-    GURL about_blank_url(url::kAboutBlankURL);
-    NavigationHandleObserver observer(shell()->web_contents(), about_blank_url);
+    // Reloading the blocked document from the renderer process should not
+    // transfer processes.
+    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload()"));
+    navigation_observer.Wait();
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+
+  {
+    // Reloading the blocked document from the browser process ends up
+    // transferring processes in --site-per-process.
+    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
 
     shell()->Reload();
     navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
-    EXPECT_FALSE(observer.is_error());
-    EXPECT_EQ(site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    EXPECT_TRUE(observer.is_error());
+    if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_NE(site_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    } else {
+      EXPECT_EQ(site_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    }
   }
 
   installer.reset();
