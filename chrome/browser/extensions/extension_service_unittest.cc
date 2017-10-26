@@ -201,6 +201,7 @@ const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
 const char cast_stable[] = "boadgeojelhgndaghljhdicfkmllpafd";
 const char cast_beta[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
+const char zip_unpacker[] = "oedeeodfidgoollimchfdnbmhcpnklnd";
 
 struct BubbleErrorsTestData {
   BubbleErrorsTestData(const std::string& id,
@@ -7297,4 +7298,47 @@ TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
 
   service()->UninstallMigratedExtensionsForTest();
   EXPECT_FALSE(service()->GetInstalledExtension(cast_stable));
+}
+
+TEST_F(ExtensionServiceTest, EnableZipUnpackerExtension) {
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> zip_unpacker_extension =
+      ExtensionBuilder("stable")
+          .SetID(zip_unpacker)
+          .SetLocation(Manifest::EXTERNAL_COMPONENT)
+          .Build();
+  service()->AddExtension(zip_unpacker_extension.get());
+  service()->DisableExtension(zip_unpacker,
+                              extensions::disable_reason::DISABLE_USER_ACTION);
+  ASSERT_TRUE(registry()->disabled_extensions().Contains(zip_unpacker));
+
+  service()->EnableZipUnpackerExtensionForTest();
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(zip_unpacker));
+#else
+  ASSERT_TRUE(registry()->disabled_extensions().Contains(zip_unpacker));
+#endif
+}
+
+TEST_F(ExtensionServiceTest, ShouldNotEnableZipUnpackerExtensionAgainstPolicy) {
+  InitializeEmptyExtensionService();
+
+  GetManagementPolicy()->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider_(
+      extensions::TestManagementPolicyProvider::MUST_REMAIN_DISABLED);
+  GetManagementPolicy()->RegisterProvider(&provider_);
+
+  scoped_refptr<const Extension> zip_unpacker_extension =
+      ExtensionBuilder("stable")
+          .SetID(zip_unpacker)
+          .SetLocation(Manifest::EXTERNAL_COMPONENT)
+          .Build();
+  service()->AddExtension(zip_unpacker_extension.get());
+  service()->DisableExtension(zip_unpacker,
+                              extensions::disable_reason::DISABLE_USER_ACTION);
+  ASSERT_TRUE(registry()->disabled_extensions().Contains(zip_unpacker));
+
+  service()->EnableZipUnpackerExtensionForTest();
+  ASSERT_FALSE(registry()->enabled_extensions().Contains(zip_unpacker));
 }
