@@ -17,6 +17,7 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
@@ -467,13 +468,19 @@ void AppListView::InitChildWidgets() {
   search_box_widget_params.opacity =
       views::Widget::InitParams::TRANSLUCENT_WINDOW;
   search_box_widget_params.name = "SearchBoxView";
+  search_box_widget_params.delegate = search_box_view_;
 
   // Create a widget for the SearchBoxView to live in. This allows the
   // SearchBoxView to be on top of the custom launcher page's WebContents
   // (otherwise the search box events will be captured by the WebContents).
   search_box_widget_ = new views::Widget;
   search_box_widget_->Init(search_box_widget_params);
-  search_box_widget_->SetContentsView(search_box_view_);
+
+  // Assign an accessibility role to the native window of search box widget, so
+  // that hitting search+right could move ChromeVox focus across search box to
+  // other elements in app list view.
+  search_box_widget_->GetNativeWindow()->SetProperty(
+      ui::kAXRoleOverride, static_cast<ui::AXRole>(ui::AX_ROLE_GROUP));
 
   // The search box will not naturally receive focus by itself (because it is in
   // a separate widget). Create this SearchBoxFocusHost in the main widget to
@@ -1043,6 +1050,13 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
 
   if (!visible)
     app_list_main_view_->ResetForShow();
+}
+
+ui::AXRole AppListView::GetAccessibleWindowRole() const {
+  // Default role of root view is AX_ROLE_WINDOW which traps ChromeVox focus
+  // within the root view. Assign AX_ROLE_GROUP here to allow the focus to move
+  // from elements in app list view to search box.
+  return ui::AX_ROLE_GROUP;
 }
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {

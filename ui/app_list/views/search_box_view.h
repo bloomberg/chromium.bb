@@ -17,6 +17,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 class BoxLayout;
@@ -48,7 +49,7 @@ class SearchBoxImageButton;
 // model that controls what icon to display, what placeholder text to use for
 // Textfield. The text and selection model part could be set to change the
 // contents and selection model of the Textfield.
-class APP_LIST_EXPORT SearchBoxView : public views::View,
+class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
                                       public views::TextfieldController,
                                       public views::ButtonListener,
                                       public SearchBoxModelObserver,
@@ -118,6 +119,10 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* evetn) override;
+
+  // Overridden from views::WidgetDelegate:
+  ui::AXRole GetAccessibleWindowRole() const override;
+  bool ShouldAdvanceFocusToTopLevelWidget() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
