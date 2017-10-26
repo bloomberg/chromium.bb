@@ -39,7 +39,7 @@ TEST_F(HidServiceTest, GetDevices) {
   ASSERT_TRUE(service_);
 
   base::RunLoop loop;
-  service_->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
+  service_->GetDevices(base::BindOnce(&OnGetDevices, loop.QuitClosure()));
   loop.Run();
 }
 

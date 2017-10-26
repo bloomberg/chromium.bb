@@ -44,15 +44,15 @@ void HidManagerImpl::AddBinding(device::mojom::HidManagerRequest request) {
 void HidManagerImpl::GetDevicesAndSetClient(
     device::mojom::HidManagerClientAssociatedPtrInfo client,
     GetDevicesCallback callback) {
-  hid_service_->GetDevices(AdaptCallbackForRepeating(base::BindOnce(
+  hid_service_->GetDevices(base::BindOnce(
       &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
-      std::move(callback), std::move(client))));
+      std::move(callback), std::move(client)));
 }
 
 void HidManagerImpl::GetDevices(GetDevicesCallback callback) {
-  hid_service_->GetDevices(AdaptCallbackForRepeating(base::BindOnce(
-      &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
-      std::move(callback), nullptr)));
+  hid_service_->GetDevices(base::BindOnce(&HidManagerImpl::CreateDeviceList,
+                                          weak_factory_.GetWeakPtr(),
+                                          std::move(callback), nullptr));
 }
 
 void HidManagerImpl::CreateDeviceList(
@@ -71,10 +71,10 @@ void HidManagerImpl::CreateDeviceList(
 
 void HidManagerImpl::Connect(const std::string& device_guid,
                              ConnectCallback callback) {
-  hid_service_->Connect(device_guid,
-                        AdaptCallbackForRepeating(base::BindOnce(
-                            &HidManagerImpl::CreateConnection,
-                            weak_factory_.GetWeakPtr(), std::move(callback))));
+  hid_service_->Connect(
+      device_guid,
+      base::Bind(&HidManagerImpl::CreateConnection, weak_factory_.GetWeakPtr(),
+                 base::Passed(&callback)));
 }
 
 void HidManagerImpl::CreateConnection(

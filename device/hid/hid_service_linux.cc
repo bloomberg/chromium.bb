@@ -88,7 +88,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
     watcher_->EnumerateExistingDevices();
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&HidServiceLinux::FirstEnumerationComplete, service_));
+        base::BindOnce(&HidServiceLinux::FirstEnumerationComplete, service_));
   }
 
  private:
@@ -162,8 +162,9 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
                              report_descriptor_str.end()),
         device_node));
 
-    task_runner_->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::AddDevice,
-                                                 service_, device_info));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HidServiceLinux::AddDevice, service_, device_info));
   }
 
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override {
@@ -171,8 +172,8 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
     const char* device_path = udev_device_get_syspath(device.get());
     if (device_path) {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&HidServiceLinux::RemoveDevice, service_,
-                                std::string(device_path)));
+          FROM_HERE, base::BindOnce(&HidServiceLinux::RemoveDevice, service_,
+                                    std::string(device_path)));
     }
   }
 
@@ -192,8 +193,8 @@ HidServiceLinux::HidServiceLinux()
       weak_factory_(this) {
   helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&BlockingTaskHelper::Start, base::Unretained(helper_.get())));
+      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
+                                base::Unretained(helper_.get())));
 }
 
 HidServiceLinux::~HidServiceLinux() {
@@ -233,8 +234,8 @@ void HidServiceLinux::Connect(const std::string& device_guid,
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       params->blocking_task_runner;
   blocking_task_runner->PostTask(
-      FROM_HERE, base::Bind(&HidServiceLinux::OpenOnBlockingThread,
-                            base::Passed(&params)));
+      FROM_HERE, base::BindOnce(&HidServiceLinux::OpenOnBlockingThread,
+                                std::move(params)));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -248,7 +249,7 @@ void HidServiceLinux::OnPathOpenComplete(std::unique_ptr<ConnectParams> params,
   params->fd = std::move(fd);
   blocking_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&HidServiceLinux::FinishOpen, base::Passed(&params)));
+      base::BindOnce(&HidServiceLinux::FinishOpen, std::move(params)));
 }
 
 // static
@@ -288,7 +289,7 @@ void HidServiceLinux::OpenOnBlockingThread(
     HID_LOG(EVENT) << "Failed to open '" << params->device_info->device_node()
                    << "': "
                    << base::File::ErrorToString(device_file.error_details());
-    task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
+    task_runner->PostTask(FROM_HERE, base::BindOnce(params->callback, nullptr));
     return;
   }
   params->fd.reset(device_file.TakePlatformFile());
@@ -304,13 +305,13 @@ void HidServiceLinux::FinishOpen(std::unique_ptr<ConnectParams> params) {
 
   if (!base::SetNonBlocking(params->fd.get())) {
     HID_PLOG(ERROR) << "Failed to set the non-blocking flag on the device fd";
-    task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
+    task_runner->PostTask(FROM_HERE, base::BindOnce(params->callback, nullptr));
     return;
   }
 
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&HidServiceLinux::CreateConnection, base::Passed(&params)));
+      base::BindOnce(&HidServiceLinux::CreateConnection, std::move(params)));
 }
 
 // static
