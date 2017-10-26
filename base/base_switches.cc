@@ -10,10 +10,16 @@ namespace switches {
 // Disables the crash reporting.
 const char kDisableBreakpad[]               = "disable-breakpad";
 
+// Comma-separated list of feature names to disable. See also kEnableFeatures.
+const char kDisableFeatures[] = "disable-features";
+
 // Indicates that crash reporting should be enabled. On platforms where helper
 // processes cannot access to files needed to make this decision, this flag is
 // generated internally.
 const char kEnableCrashReporter[]           = "enable-crash-reporter";
+
+// Comma-separated list of feature names to enable. See also kDisableFeatures.
+const char kEnableFeatures[] = "enable-features";
 
 // Makes memory allocators keep track of their allocations and context, so a
 // detailed breakdown of memory usage can be presented in chrome://tracing when
