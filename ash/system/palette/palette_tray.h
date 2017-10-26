@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/devices/input_device_event_observer.h"
+#include "ui/views/pointer_watcher.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -43,7 +44,8 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                public SessionObserver,
                                public ShellObserver,
                                public PaletteToolManager::Delegate,
-                               public ui::InputDeviceEventObserver {
+                               public ui::InputDeviceEventObserver,
+                               public views::PointerWatcher {
  public:
   explicit PaletteTray(Shelf* shelf);
   ~PaletteTray() override;
@@ -51,13 +53,22 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Returns true if the palette tray contains the given point. This is useful
+  // for determining if an event should be propagated through to the palette.
+  bool ContainsPointInScreen(const gfx::Point& point);
+
+  // Returns true if the palette should be visible in the UI. This happens when:
+  // there is a stylus input, there is an internal display, and the user has not
+  // disabled it in settings. This can be overridden by passing switches.
+  bool ShouldShowPalette() const;
+
   // SessionObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
   void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
-  void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;
@@ -77,17 +88,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                  PaletteInvocationMethod method) override;
   void RecordPaletteModeCancellation(PaletteModeCancelType type) override;
 
-  // Returns true if the palette tray contains the given point. This is useful
-  // for determining if an event should be propagated through to the palette.
-  bool ContainsPointInScreen(const gfx::Point& point);
-
-  // Returns true if the palette should be visible in the UI. This happens when:
-  // there is a stylus input, there is an internal display, and the user has not
-  // disabled it in settings. This can be overridden by passing switches.
-  bool ShouldShowPalette() const;
-
  private:
-  class StylusWatcher;
   friend class PaletteTrayTestApi;
 
   // ui::InputDeviceObserver:
@@ -106,6 +107,11 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void OnActiveToolChanged() override;
   aura::Window* GetWindow() override;
 
+  // views::PointerWatcher:
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              gfx::NativeView target) override;
+
   // Updates the tray icon from the palette tool manager.
   void UpdateTrayIcon();
 
@@ -121,21 +127,24 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Deactivates the active tool. Returns false if there was no active tool.
   bool DeactivateActiveTool();
 
+  // Helper method which returns true if the device has seen a stylus event
+  // previously, or if the device has an internal stylus.
+  bool HasSeenStylus();
+
   std::unique_ptr<PaletteToolManager> palette_tool_manager_;
   std::unique_ptr<PaletteWelcomeBubble> welcome_bubble_;
   std::unique_ptr<TrayBubbleWrapper> bubble_;
-  std::unique_ptr<StylusWatcher> watcher_;
 
   PrefService* local_state_pref_service_ = nullptr;  // Not owned.
+  PrefService* active_user_pref_service_ = nullptr;  // Not owned.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_local_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_user_;
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
 
-  // Cached palette pref values.
+  // Cached palette pref value.
   bool is_palette_enabled_ = true;
-  bool has_seen_stylus_ = false;
 
   // Used to indicate whether the palette bubble is automatically opened by a
   // stylus eject event.

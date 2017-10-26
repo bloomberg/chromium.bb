@@ -97,20 +97,11 @@ TEST_F(PaletteTrayTest, PaletteTrayIsInvisible) {
   EXPECT_FALSE(palette_tray_->visible());
 }
 
-// Verify that if the has seen stylus pref is not set initially, the palette
-// tray's touch event watcher should be active.
-TEST_F(PaletteTrayTest, PaletteTrayStylusWatcherAlive) {
-  ASSERT_FALSE(palette_tray_->visible());
-
-  EXPECT_TRUE(test_api_->IsStylusWatcherActive());
-}
-
 // Verify if the has seen stylus pref is not set initially, the palette tray
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   ASSERT_FALSE(palette_tray_->visible());
   ASSERT_FALSE(local_state_pref_service()->GetBoolean(prefs::kHasSeenStylus));
-  ASSERT_TRUE(test_api_->IsStylusWatcherActive());
 
   // Send a stylus event.
   GetEventGenerator().EnterPenPointerMode();
@@ -118,10 +109,7 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   GetEventGenerator().ReleaseTouch();
   GetEventGenerator().ExitPenPointerMode();
 
-  // Verify that the palette tray is now visible, the stylus event watcher is
-  // inactive and that the has seen stylus pref is now set to true.
   EXPECT_TRUE(palette_tray_->visible());
-  EXPECT_FALSE(test_api_->IsStylusWatcherActive());
 }
 
 // Verify if the has seen stylus pref is initially set, the palette tray is
@@ -131,7 +119,6 @@ TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
   local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
 
   EXPECT_TRUE(palette_tray_->visible());
-  EXPECT_FALSE(test_api_->IsStylusWatcherActive());
 }
 
 // Verify taps on the palette tray button results in expected behaviour.
@@ -218,6 +205,26 @@ TEST_F(PaletteTrayTest, EnableStylusPref) {
   // Setting the pref again shows the palette tray.
   active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
   EXPECT_TRUE(palette_tray_->visible());
+}
+
+TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
+  ASSERT_FALSE(active_user_pref_service()->GetBoolean(
+      prefs::kShownPaletteWelcomeBubble));
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
+
+  // Verify that the welcome bubble does not shown up after tapping the screen
+  // with a finger.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressTouch();
+  generator.ReleaseTouch();
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
+
+  // Verify that the welcome bubble shows up after tapping the screen with a
+  // stylus for the first time.
+  generator.EnterPenPointerMode();
+  generator.PressTouch();
+  generator.ReleaseTouch();
+  EXPECT_TRUE(test_api_->welcome_bubble()->bubble_shown());
 }
 
 // Base class for tests that rely on voice interaction enabled.
@@ -576,10 +583,10 @@ TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleShownOnEject) {
                                          false);
   ASSERT_FALSE(active_user_pref_service()->GetBoolean(
       prefs::kShownPaletteWelcomeBubble));
-  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 
   EjectStylus();
-  EXPECT_TRUE(test_api_->welcome_bubble()->BubbleShown());
+  EXPECT_TRUE(test_api_->welcome_bubble()->bubble_shown());
 }
 
 // Verify if the pref which tracks if the welcome bubble has been shown before
@@ -589,10 +596,10 @@ TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleNotShownIfShownBefore) {
                                          false);
   active_user_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                          true);
-  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 
   EjectStylus();
-  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 }
 
 // Verify that the bubble does not get shown if the auto open palette setting is
@@ -603,10 +610,31 @@ TEST_F(PaletteTrayTestWithInternalStylus,
       prefs::kLaunchPaletteOnEjectEvent));
   active_user_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                          false);
-  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 
   EjectStylus();
-  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
+}
+
+// Verify that the bubble does not get shown if a stylus event has been seen by
+// the tray prior to the first stylus ejection.
+TEST_F(PaletteTrayTestWithInternalStylus,
+       WelcomeBubbleNotShownIfStylusTouchTray) {
+  ASSERT_FALSE(active_user_pref_service()->GetBoolean(
+      prefs::kShownPaletteWelcomeBubble));
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.EnterPenPointerMode();
+  generator.set_current_location(
+      palette_tray_->GetBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+  generator.ReleaseTouch();
+
+  EXPECT_TRUE(active_user_pref_service()->GetBoolean(
+      prefs::kShownPaletteWelcomeBubble));
+  EjectStylus();
+  EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 }
 
 // Verify that palette bubble is shown/hidden on stylus eject/insert iff the

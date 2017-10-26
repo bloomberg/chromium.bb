@@ -115,19 +115,7 @@ void PaletteWelcomeBubble::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void PaletteWelcomeBubble::OnWidgetClosing(views::Widget* widget) {
   widget->RemoveObserver(this);
   bubble_view_ = nullptr;
-  active_user_pref_service_->SetBoolean(prefs::kShownPaletteWelcomeBubble,
-                                        true);
   ShellPort::Get()->RemovePointerWatcher(this);
-}
-
-void PaletteWelcomeBubble::OnPointerEventObserved(
-    const ui::PointerEvent& event,
-    const gfx::Point& location_in_screen,
-    gfx::NativeView target) {
-  if (bubble_view_ &&
-      !bubble_view_->GetBoundsInScreen().Contains(location_in_screen)) {
-    bubble_view_->GetWidget()->Close();
-  }
 }
 
 void PaletteWelcomeBubble::OnActiveUserPrefServiceChanged(
@@ -135,13 +123,19 @@ void PaletteWelcomeBubble::OnActiveUserPrefServiceChanged(
   active_user_pref_service_ = pref_service;
 }
 
-void PaletteWelcomeBubble::ShowIfNeeded() {
+void PaletteWelcomeBubble::ShowIfNeeded(bool shown_by_stylus) {
   DCHECK(active_user_pref_service_);
   if (!active_user_pref_service_->GetBoolean(
           prefs::kShownPaletteWelcomeBubble) &&
-      !BubbleShown()) {
-    Show();
+      !bubble_shown()) {
+    Show(shown_by_stylus);
   }
+}
+
+void PaletteWelcomeBubble::MarkAsShown() {
+  DCHECK(active_user_pref_service_);
+  active_user_pref_service_->SetBoolean(prefs::kShownPaletteWelcomeBubble,
+                                        true);
 }
 
 views::ImageButton* PaletteWelcomeBubble::GetCloseButtonForTest() {
@@ -158,20 +152,54 @@ base::Optional<gfx::Rect> PaletteWelcomeBubble::GetBubbleBoundsForTest() {
   return base::nullopt;
 }
 
-void PaletteWelcomeBubble::Show() {
+void PaletteWelcomeBubble::Show(bool shown_by_stylus) {
   if (!bubble_view_) {
     DCHECK(tray_);
     bubble_view_ =
         new WelcomeBubbleView(tray_, views::BubbleBorder::BOTTOM_RIGHT);
   }
+  active_user_pref_service_->SetBoolean(prefs::kShownPaletteWelcomeBubble,
+                                        true);
   bubble_view_->GetWidget()->Show();
   bubble_view_->GetWidget()->AddObserver(this);
   ShellPort::Get()->AddPointerWatcher(this,
                                       views::PointerWatcherEventTypes::BASIC);
+
+  // If the bubble is shown after the device first reads a stylus, ignore the
+  // first up event so the event responsible for showing the bubble does not
+  // also cause the bubble to close.
+  if (shown_by_stylus)
+    ignore_stylus_event_ = true;
 }
 
 void PaletteWelcomeBubble::Hide() {
   if (bubble_view_)
+    bubble_view_->GetWidget()->Close();
+}
+
+void PaletteWelcomeBubble::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    const gfx::Point& location_in_screen,
+    gfx::NativeView target) {
+  if (!bubble_view_)
+    return;
+
+  // For devices with external stylus, the bubble is activated after it receives
+  // a pen pointer event. However, on attaching |this| as a pointer watcher, it
+  // receives the same set of events which activated the bubble in the first
+  // place (ET_POINTER_DOWN, ET_POINTER_UP, ET_POINTER_CAPTURE_CHANGED). By only
+  // looking at ET_POINTER_UP events and skipping the first up event if the
+  // bubble is shown because of a stylus event, we ensure the same event that
+  // opened the bubble does not close it as well.
+  if (event.type() != ui::ET_POINTER_UP)
+    return;
+
+  if (ignore_stylus_event_) {
+    ignore_stylus_event_ = false;
+    return;
+  }
+
+  if (!bubble_view_->GetBoundsInScreen().Contains(location_in_screen))
     bubble_view_->GetWidget()->Close();
 }
 
