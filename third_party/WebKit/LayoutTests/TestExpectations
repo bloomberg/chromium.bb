@@ -3700,11 +3700,4 @@ crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failu
 
 crbug.com/778575 [ Mac Linux ] http/tests/devtools/tracing/timeline-js/timeline-script-id.html [ Pass Failure ]
 crbug.com/778575 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-injected-script-eval.html [ Pass Failure ]
-crbug.com/778575 [ Mac Linux ] http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/worker-events.js [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/frame-model.js [ Pass Failure ]
 crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/hit-test.html [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-network-received-data.js [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-receive-response-event.js [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-xhr-response-type-blob-event.js [ Pass Failure ]

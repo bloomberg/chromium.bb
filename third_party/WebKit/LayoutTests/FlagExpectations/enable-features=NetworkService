@@ -87,7 +87,6 @@ Bug(none) http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Fail
 Bug(none) http/tests/encoding/meta-switch-mid-parse-with-title.html [ Timeout ]
 Bug(none) http/tests/encoding/meta-switch-mid-parse.html [ Timeout ]
 crbug.com/778542 http/tests/devtools/tracing/timeline-js/timeline-script-id.html [ Failure ]
-crbug.com/778542 http/tests/devtools/tracing/timeline-script-parse.js [ Failure ]
 crbug.com/778542 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.html [ Failure ]
 crbug.com/778542 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-open-function-call.html [ Failure ]
 crbug.com/778542 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html [ Failure ]
