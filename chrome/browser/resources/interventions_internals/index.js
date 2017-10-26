@@ -96,7 +96,7 @@ function setupLogClear() {
     // Remove hosts from table.
     let logsTable = $('message-logs-table');
     let rows = logsTable.querySelectorAll('.log-message');
-    for (let row = rows.length - 1; row > 0; row--) {
+    for (let row = rows.length; row > 0; row--) {
       logsTable.deleteRow(row);
     }
   });
@@ -179,8 +179,8 @@ InterventionsInternalPageImpl.prototype = {
    * Unix epoch.
    */
   onUserBlacklistedStatusChange: function(blacklisted) {
-    let userBlacklistedStatus = $('user-blacklisted-status');
-    userBlacklistedStatus.textContent = 'User blacklisted status: ' +
+    let userBlacklistedStatus = $('user-blacklisted-status-value');
+    userBlacklistedStatus.textContent =
         (blacklisted ? 'Blacklisted' : 'Not blacklisted');
   },
 
@@ -192,14 +192,13 @@ InterventionsInternalPageImpl.prototype = {
    * epoch.
    */
   onBlacklistCleared: function(time) {
-    let blacklistClearedStatus = $('blacklist-cleared-status');
-    blacklistClearedStatus.textContent =
-        'Last blacklist cleared: ' + getTimeFormat(time);
+    let blacklistClearedStatus = $('blacklist-last-cleared-time');
+    blacklistClearedStatus.textContent = getTimeFormat(time);
 
     // Remove hosts from table.
     let blacklistedHostsTable = $('blacklisted-hosts-table');
     let rows = blacklistedHostsTable.querySelectorAll('.blacklisted-host-row');
-    for (let row = rows.length - 1; row > 0; row--) {
+    for (let row = rows.length; row > 0; row--) {
       blacklistedHostsTable.deleteRow(row);
     }
   },
