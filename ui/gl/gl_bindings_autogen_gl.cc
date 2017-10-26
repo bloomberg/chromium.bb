@@ -21,31 +21,21 @@
 namespace gl {
 
 void DriverGL::InitializeStaticBindings() {
+  // Ensure struct has been zero-initialized.
+  char* this_bytes = reinterpret_cast<char*>(this);
+  DCHECK(this_bytes[0] == 0);
+  DCHECK(memcmp(this_bytes, this_bytes + 1, sizeof(*this) - 1) == 0);
+
   fn.glActiveTextureFn = reinterpret_cast<glActiveTextureProc>(
       GetGLProcAddress("glActiveTexture"));
-  fn.glApplyFramebufferAttachmentCMAAINTELFn = 0;
   fn.glAttachShaderFn =
       reinterpret_cast<glAttachShaderProc>(GetGLProcAddress("glAttachShader"));
-  fn.glBeginQueryFn = 0;
-  fn.glBeginTransformFeedbackFn = 0;
   fn.glBindAttribLocationFn = reinterpret_cast<glBindAttribLocationProc>(
       GetGLProcAddress("glBindAttribLocation"));
   fn.glBindBufferFn =
       reinterpret_cast<glBindBufferProc>(GetGLProcAddress("glBindBuffer"));
-  fn.glBindBufferBaseFn = 0;
-  fn.glBindBufferRangeFn = 0;
-  fn.glBindFragDataLocationFn = 0;
-  fn.glBindFragDataLocationIndexedFn = 0;
-  fn.glBindFramebufferEXTFn = 0;
-  fn.glBindImageTextureEXTFn = 0;
-  fn.glBindRenderbufferEXTFn = 0;
-  fn.glBindSamplerFn = 0;
   fn.glBindTextureFn =
       reinterpret_cast<glBindTextureProc>(GetGLProcAddress("glBindTexture"));
-  fn.glBindTransformFeedbackFn = 0;
-  fn.glBindUniformLocationCHROMIUMFn = 0;
-  fn.glBindVertexArrayOESFn = 0;
-  fn.glBlendBarrierKHRFn = 0;
   fn.glBlendColorFn =
       reinterpret_cast<glBlendColorProc>(GetGLProcAddress("glBlendColor"));
   fn.glBlendEquationFn = reinterpret_cast<glBlendEquationProc>(
@@ -56,90 +46,50 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glBlendFuncProc>(GetGLProcAddress("glBlendFunc"));
   fn.glBlendFuncSeparateFn = reinterpret_cast<glBlendFuncSeparateProc>(
       GetGLProcAddress("glBlendFuncSeparate"));
-  fn.glBlitFramebufferFn = 0;
-  fn.glBlitFramebufferANGLEFn = 0;
-  fn.glBlitFramebufferEXTFn = 0;
   fn.glBufferDataFn =
       reinterpret_cast<glBufferDataProc>(GetGLProcAddress("glBufferData"));
   fn.glBufferSubDataFn = reinterpret_cast<glBufferSubDataProc>(
       GetGLProcAddress("glBufferSubData"));
-  fn.glCheckFramebufferStatusEXTFn = 0;
   fn.glClearFn = reinterpret_cast<glClearProc>(GetGLProcAddress("glClear"));
-  fn.glClearBufferfiFn = 0;
-  fn.glClearBufferfvFn = 0;
-  fn.glClearBufferivFn = 0;
-  fn.glClearBufferuivFn = 0;
   fn.glClearColorFn =
       reinterpret_cast<glClearColorProc>(GetGLProcAddress("glClearColor"));
   fn.glClearDepthFn =
       reinterpret_cast<glClearDepthProc>(GetGLProcAddress("glClearDepth"));
-  fn.glClearDepthfFn = 0;
   fn.glClearStencilFn =
       reinterpret_cast<glClearStencilProc>(GetGLProcAddress("glClearStencil"));
-  fn.glClientWaitSyncFn = 0;
   fn.glColorMaskFn =
       reinterpret_cast<glColorMaskProc>(GetGLProcAddress("glColorMask"));
   fn.glCompileShaderFn = reinterpret_cast<glCompileShaderProc>(
       GetGLProcAddress("glCompileShader"));
-  fn.glCompressedCopyTextureCHROMIUMFn = 0;
   fn.glCompressedTexImage2DFn = reinterpret_cast<glCompressedTexImage2DProc>(
       GetGLProcAddress("glCompressedTexImage2D"));
-  fn.glCompressedTexImage2DRobustANGLEFn = 0;
-  fn.glCompressedTexImage3DFn = 0;
-  fn.glCompressedTexImage3DRobustANGLEFn = 0;
   fn.glCompressedTexSubImage2DFn =
       reinterpret_cast<glCompressedTexSubImage2DProc>(
           GetGLProcAddress("glCompressedTexSubImage2D"));
-  fn.glCompressedTexSubImage2DRobustANGLEFn = 0;
-  fn.glCompressedTexSubImage3DFn = 0;
-  fn.glCompressedTexSubImage3DRobustANGLEFn = 0;
-  fn.glCopyBufferSubDataFn = 0;
-  fn.glCopySubTextureCHROMIUMFn = 0;
   fn.glCopyTexImage2DFn = reinterpret_cast<glCopyTexImage2DProc>(
       GetGLProcAddress("glCopyTexImage2D"));
   fn.glCopyTexSubImage2DFn = reinterpret_cast<glCopyTexSubImage2DProc>(
       GetGLProcAddress("glCopyTexSubImage2D"));
-  fn.glCopyTexSubImage3DFn = 0;
-  fn.glCopyTextureCHROMIUMFn = 0;
-  fn.glCoverageModulationNVFn = 0;
-  fn.glCoverFillPathInstancedNVFn = 0;
-  fn.glCoverFillPathNVFn = 0;
-  fn.glCoverStrokePathInstancedNVFn = 0;
-  fn.glCoverStrokePathNVFn = 0;
   fn.glCreateProgramFn = reinterpret_cast<glCreateProgramProc>(
       GetGLProcAddress("glCreateProgram"));
   fn.glCreateShaderFn =
       reinterpret_cast<glCreateShaderProc>(GetGLProcAddress("glCreateShader"));
   fn.glCullFaceFn =
       reinterpret_cast<glCullFaceProc>(GetGLProcAddress("glCullFace"));
-  fn.glDebugMessageCallbackFn = 0;
-  fn.glDebugMessageControlFn = 0;
-  fn.glDebugMessageInsertFn = 0;
   fn.glDeleteBuffersARBFn = reinterpret_cast<glDeleteBuffersARBProc>(
       GetGLProcAddress("glDeleteBuffers"));
-  fn.glDeleteFencesAPPLEFn = 0;
-  fn.glDeleteFencesNVFn = 0;
-  fn.glDeleteFramebuffersEXTFn = 0;
-  fn.glDeletePathsNVFn = 0;
   fn.glDeleteProgramFn = reinterpret_cast<glDeleteProgramProc>(
       GetGLProcAddress("glDeleteProgram"));
-  fn.glDeleteQueriesFn = 0;
-  fn.glDeleteRenderbuffersEXTFn = 0;
-  fn.glDeleteSamplersFn = 0;
   fn.glDeleteShaderFn =
       reinterpret_cast<glDeleteShaderProc>(GetGLProcAddress("glDeleteShader"));
-  fn.glDeleteSyncFn = 0;
   fn.glDeleteTexturesFn = reinterpret_cast<glDeleteTexturesProc>(
       GetGLProcAddress("glDeleteTextures"));
-  fn.glDeleteTransformFeedbacksFn = 0;
-  fn.glDeleteVertexArraysOESFn = 0;
   fn.glDepthFuncFn =
       reinterpret_cast<glDepthFuncProc>(GetGLProcAddress("glDepthFunc"));
   fn.glDepthMaskFn =
       reinterpret_cast<glDepthMaskProc>(GetGLProcAddress("glDepthMask"));
   fn.glDepthRangeFn =
       reinterpret_cast<glDepthRangeProc>(GetGLProcAddress("glDepthRange"));
-  fn.glDepthRangefFn = 0;
   fn.glDetachShaderFn =
       reinterpret_cast<glDetachShaderProc>(GetGLProcAddress("glDetachShader"));
   fn.glDisableFn =
@@ -147,272 +97,98 @@ void DriverGL::InitializeStaticBindings() {
   fn.glDisableVertexAttribArrayFn =
       reinterpret_cast<glDisableVertexAttribArrayProc>(
           GetGLProcAddress("glDisableVertexAttribArray"));
-  fn.glDiscardFramebufferEXTFn = 0;
   fn.glDrawArraysFn =
       reinterpret_cast<glDrawArraysProc>(GetGLProcAddress("glDrawArrays"));
-  fn.glDrawArraysInstancedANGLEFn = 0;
-  fn.glDrawBufferFn = 0;
-  fn.glDrawBuffersARBFn = 0;
   fn.glDrawElementsFn =
       reinterpret_cast<glDrawElementsProc>(GetGLProcAddress("glDrawElements"));
-  fn.glDrawElementsInstancedANGLEFn = 0;
-  fn.glDrawRangeElementsFn = 0;
-  fn.glEGLImageTargetRenderbufferStorageOESFn = 0;
-  fn.glEGLImageTargetTexture2DOESFn = 0;
   fn.glEnableFn = reinterpret_cast<glEnableProc>(GetGLProcAddress("glEnable"));
   fn.glEnableVertexAttribArrayFn =
       reinterpret_cast<glEnableVertexAttribArrayProc>(
           GetGLProcAddress("glEnableVertexAttribArray"));
-  fn.glEndQueryFn = 0;
-  fn.glEndTransformFeedbackFn = 0;
-  fn.glFenceSyncFn = 0;
   fn.glFinishFn = reinterpret_cast<glFinishProc>(GetGLProcAddress("glFinish"));
-  fn.glFinishFenceAPPLEFn = 0;
-  fn.glFinishFenceNVFn = 0;
   fn.glFlushFn = reinterpret_cast<glFlushProc>(GetGLProcAddress("glFlush"));
-  fn.glFlushMappedBufferRangeFn = 0;
-  fn.glFramebufferRenderbufferEXTFn = 0;
-  fn.glFramebufferTexture2DEXTFn = 0;
-  fn.glFramebufferTexture2DMultisampleEXTFn = 0;
-  fn.glFramebufferTexture2DMultisampleIMGFn = 0;
-  fn.glFramebufferTextureLayerFn = 0;
   fn.glFrontFaceFn =
       reinterpret_cast<glFrontFaceProc>(GetGLProcAddress("glFrontFace"));
   fn.glGenBuffersARBFn =
       reinterpret_cast<glGenBuffersARBProc>(GetGLProcAddress("glGenBuffers"));
-  fn.glGenerateMipmapEXTFn = 0;
-  fn.glGenFencesAPPLEFn = 0;
-  fn.glGenFencesNVFn = 0;
-  fn.glGenFramebuffersEXTFn = 0;
-  fn.glGenPathsNVFn = 0;
-  fn.glGenQueriesFn = 0;
-  fn.glGenRenderbuffersEXTFn = 0;
-  fn.glGenSamplersFn = 0;
   fn.glGenTexturesFn =
       reinterpret_cast<glGenTexturesProc>(GetGLProcAddress("glGenTextures"));
-  fn.glGenTransformFeedbacksFn = 0;
-  fn.glGenVertexArraysOESFn = 0;
   fn.glGetActiveAttribFn = reinterpret_cast<glGetActiveAttribProc>(
       GetGLProcAddress("glGetActiveAttrib"));
   fn.glGetActiveUniformFn = reinterpret_cast<glGetActiveUniformProc>(
       GetGLProcAddress("glGetActiveUniform"));
-  fn.glGetActiveUniformBlockivFn = 0;
-  fn.glGetActiveUniformBlockivRobustANGLEFn = 0;
-  fn.glGetActiveUniformBlockNameFn = 0;
-  fn.glGetActiveUniformsivFn = 0;
   fn.glGetAttachedShadersFn = reinterpret_cast<glGetAttachedShadersProc>(
       GetGLProcAddress("glGetAttachedShaders"));
   fn.glGetAttribLocationFn = reinterpret_cast<glGetAttribLocationProc>(
       GetGLProcAddress("glGetAttribLocation"));
-  fn.glGetBooleani_vRobustANGLEFn = 0;
   fn.glGetBooleanvFn =
       reinterpret_cast<glGetBooleanvProc>(GetGLProcAddress("glGetBooleanv"));
-  fn.glGetBooleanvRobustANGLEFn = 0;
-  fn.glGetBufferParameteri64vRobustANGLEFn = 0;
   fn.glGetBufferParameterivFn = reinterpret_cast<glGetBufferParameterivProc>(
       GetGLProcAddress("glGetBufferParameteriv"));
-  fn.glGetBufferParameterivRobustANGLEFn = 0;
-  fn.glGetBufferPointervRobustANGLEFn = 0;
-  fn.glGetDebugMessageLogFn = 0;
   fn.glGetErrorFn =
       reinterpret_cast<glGetErrorProc>(GetGLProcAddress("glGetError"));
-  fn.glGetFenceivNVFn = 0;
   fn.glGetFloatvFn =
       reinterpret_cast<glGetFloatvProc>(GetGLProcAddress("glGetFloatv"));
-  fn.glGetFloatvRobustANGLEFn = 0;
-  fn.glGetFragDataIndexFn = 0;
-  fn.glGetFragDataLocationFn = 0;
-  fn.glGetFramebufferAttachmentParameterivEXTFn = 0;
-  fn.glGetFramebufferAttachmentParameterivRobustANGLEFn = 0;
-  fn.glGetFramebufferParameterivRobustANGLEFn = 0;
-  fn.glGetGraphicsResetStatusARBFn = 0;
-  fn.glGetInteger64i_vFn = 0;
-  fn.glGetInteger64i_vRobustANGLEFn = 0;
-  fn.glGetInteger64vFn = 0;
-  fn.glGetInteger64vRobustANGLEFn = 0;
-  fn.glGetIntegeri_vFn = 0;
-  fn.glGetIntegeri_vRobustANGLEFn = 0;
   fn.glGetIntegervFn =
       reinterpret_cast<glGetIntegervProc>(GetGLProcAddress("glGetIntegerv"));
-  fn.glGetIntegervRobustANGLEFn = 0;
-  fn.glGetInternalformativFn = 0;
-  fn.glGetInternalformativRobustANGLEFn = 0;
-  fn.glGetMultisamplefvFn = 0;
-  fn.glGetMultisamplefvRobustANGLEFn = 0;
-  fn.glGetnUniformfvRobustANGLEFn = 0;
-  fn.glGetnUniformivRobustANGLEFn = 0;
-  fn.glGetnUniformuivRobustANGLEFn = 0;
-  fn.glGetObjectLabelFn = 0;
-  fn.glGetObjectPtrLabelFn = 0;
-  fn.glGetPointervFn = 0;
-  fn.glGetPointervRobustANGLERobustANGLEFn = 0;
-  fn.glGetProgramBinaryFn = 0;
   fn.glGetProgramInfoLogFn = reinterpret_cast<glGetProgramInfoLogProc>(
       GetGLProcAddress("glGetProgramInfoLog"));
-  fn.glGetProgramInterfaceivFn = 0;
-  fn.glGetProgramInterfaceivRobustANGLEFn = 0;
   fn.glGetProgramivFn =
       reinterpret_cast<glGetProgramivProc>(GetGLProcAddress("glGetProgramiv"));
-  fn.glGetProgramivRobustANGLEFn = 0;
-  fn.glGetProgramResourceivFn = 0;
-  fn.glGetProgramResourceLocationFn = 0;
-  fn.glGetProgramResourceNameFn = 0;
-  fn.glGetQueryivFn = 0;
-  fn.glGetQueryivRobustANGLEFn = 0;
-  fn.glGetQueryObjecti64vFn = 0;
-  fn.glGetQueryObjecti64vRobustANGLEFn = 0;
-  fn.glGetQueryObjectivFn = 0;
-  fn.glGetQueryObjectivRobustANGLEFn = 0;
-  fn.glGetQueryObjectui64vFn = 0;
-  fn.glGetQueryObjectui64vRobustANGLEFn = 0;
-  fn.glGetQueryObjectuivFn = 0;
-  fn.glGetQueryObjectuivRobustANGLEFn = 0;
-  fn.glGetRenderbufferParameterivEXTFn = 0;
-  fn.glGetRenderbufferParameterivRobustANGLEFn = 0;
-  fn.glGetSamplerParameterfvFn = 0;
-  fn.glGetSamplerParameterfvRobustANGLEFn = 0;
-  fn.glGetSamplerParameterIivRobustANGLEFn = 0;
-  fn.glGetSamplerParameterIuivRobustANGLEFn = 0;
-  fn.glGetSamplerParameterivFn = 0;
-  fn.glGetSamplerParameterivRobustANGLEFn = 0;
   fn.glGetShaderInfoLogFn = reinterpret_cast<glGetShaderInfoLogProc>(
       GetGLProcAddress("glGetShaderInfoLog"));
   fn.glGetShaderivFn =
       reinterpret_cast<glGetShaderivProc>(GetGLProcAddress("glGetShaderiv"));
-  fn.glGetShaderivRobustANGLEFn = 0;
-  fn.glGetShaderPrecisionFormatFn = 0;
   fn.glGetShaderSourceFn = reinterpret_cast<glGetShaderSourceProc>(
       GetGLProcAddress("glGetShaderSource"));
   fn.glGetStringFn =
       reinterpret_cast<glGetStringProc>(GetGLProcAddress("glGetString"));
   fn.glGetStringiFn =
       reinterpret_cast<glGetStringiProc>(GetGLProcAddress("glGetStringi"));
-  fn.glGetSyncivFn = 0;
-  fn.glGetTexLevelParameterfvFn = 0;
-  fn.glGetTexLevelParameterfvRobustANGLEFn = 0;
-  fn.glGetTexLevelParameterivFn = 0;
-  fn.glGetTexLevelParameterivRobustANGLEFn = 0;
   fn.glGetTexParameterfvFn = reinterpret_cast<glGetTexParameterfvProc>(
       GetGLProcAddress("glGetTexParameterfv"));
-  fn.glGetTexParameterfvRobustANGLEFn = 0;
-  fn.glGetTexParameterIivRobustANGLEFn = 0;
-  fn.glGetTexParameterIuivRobustANGLEFn = 0;
   fn.glGetTexParameterivFn = reinterpret_cast<glGetTexParameterivProc>(
       GetGLProcAddress("glGetTexParameteriv"));
-  fn.glGetTexParameterivRobustANGLEFn = 0;
-  fn.glGetTransformFeedbackVaryingFn = 0;
-  fn.glGetTranslatedShaderSourceANGLEFn = 0;
-  fn.glGetUniformBlockIndexFn = 0;
   fn.glGetUniformfvFn =
       reinterpret_cast<glGetUniformfvProc>(GetGLProcAddress("glGetUniformfv"));
-  fn.glGetUniformfvRobustANGLEFn = 0;
-  fn.glGetUniformIndicesFn = 0;
   fn.glGetUniformivFn =
       reinterpret_cast<glGetUniformivProc>(GetGLProcAddress("glGetUniformiv"));
-  fn.glGetUniformivRobustANGLEFn = 0;
   fn.glGetUniformLocationFn = reinterpret_cast<glGetUniformLocationProc>(
       GetGLProcAddress("glGetUniformLocation"));
-  fn.glGetUniformuivFn = 0;
-  fn.glGetUniformuivRobustANGLEFn = 0;
   fn.glGetVertexAttribfvFn = reinterpret_cast<glGetVertexAttribfvProc>(
       GetGLProcAddress("glGetVertexAttribfv"));
-  fn.glGetVertexAttribfvRobustANGLEFn = 0;
-  fn.glGetVertexAttribIivRobustANGLEFn = 0;
-  fn.glGetVertexAttribIuivRobustANGLEFn = 0;
   fn.glGetVertexAttribivFn = reinterpret_cast<glGetVertexAttribivProc>(
       GetGLProcAddress("glGetVertexAttribiv"));
-  fn.glGetVertexAttribivRobustANGLEFn = 0;
   fn.glGetVertexAttribPointervFn =
       reinterpret_cast<glGetVertexAttribPointervProc>(
           GetGLProcAddress("glGetVertexAttribPointerv"));
-  fn.glGetVertexAttribPointervRobustANGLEFn = 0;
   fn.glHintFn = reinterpret_cast<glHintProc>(GetGLProcAddress("glHint"));
-  fn.glInsertEventMarkerEXTFn = 0;
-  fn.glInvalidateFramebufferFn = 0;
-  fn.glInvalidateSubFramebufferFn = 0;
   fn.glIsBufferFn =
       reinterpret_cast<glIsBufferProc>(GetGLProcAddress("glIsBuffer"));
   fn.glIsEnabledFn =
       reinterpret_cast<glIsEnabledProc>(GetGLProcAddress("glIsEnabled"));
-  fn.glIsFenceAPPLEFn = 0;
-  fn.glIsFenceNVFn = 0;
-  fn.glIsFramebufferEXTFn = 0;
-  fn.glIsPathNVFn = 0;
   fn.glIsProgramFn =
       reinterpret_cast<glIsProgramProc>(GetGLProcAddress("glIsProgram"));
-  fn.glIsQueryFn = 0;
-  fn.glIsRenderbufferEXTFn = 0;
-  fn.glIsSamplerFn = 0;
   fn.glIsShaderFn =
       reinterpret_cast<glIsShaderProc>(GetGLProcAddress("glIsShader"));
-  fn.glIsSyncFn = 0;
   fn.glIsTextureFn =
       reinterpret_cast<glIsTextureProc>(GetGLProcAddress("glIsTexture"));
-  fn.glIsTransformFeedbackFn = 0;
-  fn.glIsVertexArrayOESFn = 0;
   fn.glLineWidthFn =
       reinterpret_cast<glLineWidthProc>(GetGLProcAddress("glLineWidth"));
   fn.glLinkProgramFn =
       reinterpret_cast<glLinkProgramProc>(GetGLProcAddress("glLinkProgram"));
-  fn.glMapBufferFn = 0;
-  fn.glMapBufferRangeFn = 0;
-  fn.glMatrixLoadfEXTFn = 0;
-  fn.glMatrixLoadIdentityEXTFn = 0;
-  fn.glMemoryBarrierEXTFn = 0;
-  fn.glObjectLabelFn = 0;
-  fn.glObjectPtrLabelFn = 0;
-  fn.glPathCommandsNVFn = 0;
-  fn.glPathParameterfNVFn = 0;
-  fn.glPathParameteriNVFn = 0;
-  fn.glPathStencilFuncNVFn = 0;
-  fn.glPauseTransformFeedbackFn = 0;
   fn.glPixelStoreiFn =
       reinterpret_cast<glPixelStoreiProc>(GetGLProcAddress("glPixelStorei"));
-  fn.glPointParameteriFn = 0;
-  fn.glPolygonModeFn = 0;
   fn.glPolygonOffsetFn = reinterpret_cast<glPolygonOffsetProc>(
       GetGLProcAddress("glPolygonOffset"));
-  fn.glPopDebugGroupFn = 0;
-  fn.glPopGroupMarkerEXTFn = 0;
-  fn.glPrimitiveRestartIndexFn = 0;
-  fn.glProgramBinaryFn = 0;
-  fn.glProgramParameteriFn = 0;
-  fn.glProgramPathFragmentInputGenNVFn = 0;
-  fn.glPushDebugGroupFn = 0;
-  fn.glPushGroupMarkerEXTFn = 0;
-  fn.glQueryCounterFn = 0;
-  fn.glReadBufferFn = 0;
-  fn.glReadnPixelsRobustANGLEFn = 0;
   fn.glReadPixelsFn =
       reinterpret_cast<glReadPixelsProc>(GetGLProcAddress("glReadPixels"));
-  fn.glReadPixelsRobustANGLEFn = 0;
-  fn.glReleaseShaderCompilerFn = 0;
-  fn.glRenderbufferStorageEXTFn = 0;
-  fn.glRenderbufferStorageMultisampleFn = 0;
-  fn.glRenderbufferStorageMultisampleANGLEFn = 0;
-  fn.glRenderbufferStorageMultisampleEXTFn = 0;
-  fn.glRenderbufferStorageMultisampleIMGFn = 0;
-  fn.glRequestExtensionANGLEFn = 0;
-  fn.glResumeTransformFeedbackFn = 0;
   fn.glSampleCoverageFn = reinterpret_cast<glSampleCoverageProc>(
       GetGLProcAddress("glSampleCoverage"));
-  fn.glSamplerParameterfFn = 0;
-  fn.glSamplerParameterfvFn = 0;
-  fn.glSamplerParameterfvRobustANGLEFn = 0;
-  fn.glSamplerParameteriFn = 0;
-  fn.glSamplerParameterIivRobustANGLEFn = 0;
-  fn.glSamplerParameterIuivRobustANGLEFn = 0;
-  fn.glSamplerParameterivFn = 0;
-  fn.glSamplerParameterivRobustANGLEFn = 0;
   fn.glScissorFn =
       reinterpret_cast<glScissorProc>(GetGLProcAddress("glScissor"));
-  fn.glSetFenceAPPLEFn = 0;
-  fn.glSetFenceNVFn = 0;
-  fn.glShaderBinaryFn = 0;
   fn.glShaderSourceFn =
       reinterpret_cast<glShaderSourceProc>(GetGLProcAddress("glShaderSource"));
-  fn.glStencilFillPathInstancedNVFn = 0;
-  fn.glStencilFillPathNVFn = 0;
   fn.glStencilFuncFn =
       reinterpret_cast<glStencilFuncProc>(GetGLProcAddress("glStencilFunc"));
   fn.glStencilFuncSeparateFn = reinterpret_cast<glStencilFuncSeparateProc>(
@@ -425,41 +201,18 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glStencilOpProc>(GetGLProcAddress("glStencilOp"));
   fn.glStencilOpSeparateFn = reinterpret_cast<glStencilOpSeparateProc>(
       GetGLProcAddress("glStencilOpSeparate"));
-  fn.glStencilStrokePathInstancedNVFn = 0;
-  fn.glStencilStrokePathNVFn = 0;
-  fn.glStencilThenCoverFillPathInstancedNVFn = 0;
-  fn.glStencilThenCoverFillPathNVFn = 0;
-  fn.glStencilThenCoverStrokePathInstancedNVFn = 0;
-  fn.glStencilThenCoverStrokePathNVFn = 0;
-  fn.glTestFenceAPPLEFn = 0;
-  fn.glTestFenceNVFn = 0;
-  fn.glTexBufferFn = 0;
-  fn.glTexBufferRangeFn = 0;
   fn.glTexImage2DFn =
       reinterpret_cast<glTexImage2DProc>(GetGLProcAddress("glTexImage2D"));
-  fn.glTexImage2DRobustANGLEFn = 0;
-  fn.glTexImage3DFn = 0;
-  fn.glTexImage3DRobustANGLEFn = 0;
   fn.glTexParameterfFn = reinterpret_cast<glTexParameterfProc>(
       GetGLProcAddress("glTexParameterf"));
   fn.glTexParameterfvFn = reinterpret_cast<glTexParameterfvProc>(
       GetGLProcAddress("glTexParameterfv"));
-  fn.glTexParameterfvRobustANGLEFn = 0;
   fn.glTexParameteriFn = reinterpret_cast<glTexParameteriProc>(
       GetGLProcAddress("glTexParameteri"));
-  fn.glTexParameterIivRobustANGLEFn = 0;
-  fn.glTexParameterIuivRobustANGLEFn = 0;
   fn.glTexParameterivFn = reinterpret_cast<glTexParameterivProc>(
       GetGLProcAddress("glTexParameteriv"));
-  fn.glTexParameterivRobustANGLEFn = 0;
-  fn.glTexStorage2DEXTFn = 0;
-  fn.glTexStorage3DFn = 0;
   fn.glTexSubImage2DFn = reinterpret_cast<glTexSubImage2DProc>(
       GetGLProcAddress("glTexSubImage2D"));
-  fn.glTexSubImage2DRobustANGLEFn = 0;
-  fn.glTexSubImage3DFn = 0;
-  fn.glTexSubImage3DRobustANGLEFn = 0;
-  fn.glTransformFeedbackVaryingsFn = 0;
   fn.glUniform1fFn =
       reinterpret_cast<glUniform1fProc>(GetGLProcAddress("glUniform1f"));
   fn.glUniform1fvFn =
@@ -468,8 +221,6 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glUniform1iProc>(GetGLProcAddress("glUniform1i"));
   fn.glUniform1ivFn =
       reinterpret_cast<glUniform1ivProc>(GetGLProcAddress("glUniform1iv"));
-  fn.glUniform1uiFn = 0;
-  fn.glUniform1uivFn = 0;
   fn.glUniform2fFn =
       reinterpret_cast<glUniform2fProc>(GetGLProcAddress("glUniform2f"));
   fn.glUniform2fvFn =
@@ -478,8 +229,6 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glUniform2iProc>(GetGLProcAddress("glUniform2i"));
   fn.glUniform2ivFn =
       reinterpret_cast<glUniform2ivProc>(GetGLProcAddress("glUniform2iv"));
-  fn.glUniform2uiFn = 0;
-  fn.glUniform2uivFn = 0;
   fn.glUniform3fFn =
       reinterpret_cast<glUniform3fProc>(GetGLProcAddress("glUniform3f"));
   fn.glUniform3fvFn =
@@ -488,8 +237,6 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glUniform3iProc>(GetGLProcAddress("glUniform3i"));
   fn.glUniform3ivFn =
       reinterpret_cast<glUniform3ivProc>(GetGLProcAddress("glUniform3iv"));
-  fn.glUniform3uiFn = 0;
-  fn.glUniform3uivFn = 0;
   fn.glUniform4fFn =
       reinterpret_cast<glUniform4fProc>(GetGLProcAddress("glUniform4f"));
   fn.glUniform4fvFn =
@@ -498,22 +245,12 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glUniform4iProc>(GetGLProcAddress("glUniform4i"));
   fn.glUniform4ivFn =
       reinterpret_cast<glUniform4ivProc>(GetGLProcAddress("glUniform4iv"));
-  fn.glUniform4uiFn = 0;
-  fn.glUniform4uivFn = 0;
-  fn.glUniformBlockBindingFn = 0;
   fn.glUniformMatrix2fvFn = reinterpret_cast<glUniformMatrix2fvProc>(
       GetGLProcAddress("glUniformMatrix2fv"));
-  fn.glUniformMatrix2x3fvFn = 0;
-  fn.glUniformMatrix2x4fvFn = 0;
   fn.glUniformMatrix3fvFn = reinterpret_cast<glUniformMatrix3fvProc>(
       GetGLProcAddress("glUniformMatrix3fv"));
-  fn.glUniformMatrix3x2fvFn = 0;
-  fn.glUniformMatrix3x4fvFn = 0;
   fn.glUniformMatrix4fvFn = reinterpret_cast<glUniformMatrix4fvProc>(
       GetGLProcAddress("glUniformMatrix4fv"));
-  fn.glUniformMatrix4x2fvFn = 0;
-  fn.glUniformMatrix4x3fvFn = 0;
-  fn.glUnmapBufferFn = 0;
   fn.glUseProgramFn =
       reinterpret_cast<glUseProgramProc>(GetGLProcAddress("glUseProgram"));
   fn.glValidateProgramFn = reinterpret_cast<glValidateProgramProc>(
@@ -534,17 +271,10 @@ void DriverGL::InitializeStaticBindings() {
       GetGLProcAddress("glVertexAttrib4f"));
   fn.glVertexAttrib4fvFn = reinterpret_cast<glVertexAttrib4fvProc>(
       GetGLProcAddress("glVertexAttrib4fv"));
-  fn.glVertexAttribDivisorANGLEFn = 0;
-  fn.glVertexAttribI4iFn = 0;
-  fn.glVertexAttribI4ivFn = 0;
-  fn.glVertexAttribI4uiFn = 0;
-  fn.glVertexAttribI4uivFn = 0;
-  fn.glVertexAttribIPointerFn = 0;
   fn.glVertexAttribPointerFn = reinterpret_cast<glVertexAttribPointerProc>(
       GetGLProcAddress("glVertexAttribPointer"));
   fn.glViewportFn =
       reinterpret_cast<glViewportProc>(GetGLProcAddress("glViewport"));
-  fn.glWaitSyncFn = 0;
 }
 
 void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
@@ -12446,55 +12176,49 @@ void DebugGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
+namespace {
+void NoContextHelper(const char* method_name) {
+  NOTREACHED() << "Trying to call " << method_name
+               << " without current GL context";
+  LOG(ERROR) << "Trying to call " << method_name
+             << " without current GL context";
+}
+}  // namespace
+
 void NoContextGLApi::glActiveTextureFn(GLenum texture) {
-  NOTREACHED() << "Trying to call glActiveTexture() without current GL context";
-  LOG(ERROR) << "Trying to call glActiveTexture() without current GL context";
+  NoContextHelper("glActiveTexture");
 }
 
 void NoContextGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
-  NOTREACHED() << "Trying to call glApplyFramebufferAttachmentCMAAINTEL() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glApplyFramebufferAttachmentCMAAINTEL() "
-                "without current GL context";
+  NoContextHelper("glApplyFramebufferAttachmentCMAAINTEL");
 }
 
 void NoContextGLApi::glAttachShaderFn(GLuint program, GLuint shader) {
-  NOTREACHED() << "Trying to call glAttachShader() without current GL context";
-  LOG(ERROR) << "Trying to call glAttachShader() without current GL context";
+  NoContextHelper("glAttachShader");
 }
 
 void NoContextGLApi::glBeginQueryFn(GLenum target, GLuint id) {
-  NOTREACHED() << "Trying to call glBeginQuery() without current GL context";
-  LOG(ERROR) << "Trying to call glBeginQuery() without current GL context";
+  NoContextHelper("glBeginQuery");
 }
 
 void NoContextGLApi::glBeginTransformFeedbackFn(GLenum primitiveMode) {
-  NOTREACHED()
-      << "Trying to call glBeginTransformFeedback() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBeginTransformFeedback() without current GL context";
+  NoContextHelper("glBeginTransformFeedback");
 }
 
 void NoContextGLApi::glBindAttribLocationFn(GLuint program,
                                             GLuint index,
                                             const char* name) {
-  NOTREACHED()
-      << "Trying to call glBindAttribLocation() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindAttribLocation() without current GL context";
+  NoContextHelper("glBindAttribLocation");
 }
 
 void NoContextGLApi::glBindBufferFn(GLenum target, GLuint buffer) {
-  NOTREACHED() << "Trying to call glBindBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glBindBuffer() without current GL context";
+  NoContextHelper("glBindBuffer");
 }
 
 void NoContextGLApi::glBindBufferBaseFn(GLenum target,
                                         GLuint index,
                                         GLuint buffer) {
-  NOTREACHED()
-      << "Trying to call glBindBufferBase() without current GL context";
-  LOG(ERROR) << "Trying to call glBindBufferBase() without current GL context";
+  NoContextHelper("glBindBufferBase");
 }
 
 void NoContextGLApi::glBindBufferRangeFn(GLenum target,
@@ -12502,35 +12226,24 @@ void NoContextGLApi::glBindBufferRangeFn(GLenum target,
                                          GLuint buffer,
                                          GLintptr offset,
                                          GLsizeiptr size) {
-  NOTREACHED()
-      << "Trying to call glBindBufferRange() without current GL context";
-  LOG(ERROR) << "Trying to call glBindBufferRange() without current GL context";
+  NoContextHelper("glBindBufferRange");
 }
 
 void NoContextGLApi::glBindFragDataLocationFn(GLuint program,
                                               GLuint colorNumber,
                                               const char* name) {
-  NOTREACHED()
-      << "Trying to call glBindFragDataLocation() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindFragDataLocation() without current GL context";
+  NoContextHelper("glBindFragDataLocation");
 }
 
 void NoContextGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                                                      GLuint colorNumber,
                                                      GLuint index,
                                                      const char* name) {
-  NOTREACHED() << "Trying to call glBindFragDataLocationIndexed() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glBindFragDataLocationIndexed() without "
-                "current GL context";
+  NoContextHelper("glBindFragDataLocationIndexed");
 }
 
 void NoContextGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
-  NOTREACHED()
-      << "Trying to call glBindFramebufferEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindFramebufferEXT() without current GL context";
+  NoContextHelper("glBindFramebufferEXT");
 }
 
 void NoContextGLApi::glBindImageTextureEXTFn(GLuint index,
@@ -12540,93 +12253,65 @@ void NoContextGLApi::glBindImageTextureEXTFn(GLuint index,
                                              GLint layer,
                                              GLenum access,
                                              GLint format) {
-  NOTREACHED()
-      << "Trying to call glBindImageTextureEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindImageTextureEXT() without current GL context";
+  NoContextHelper("glBindImageTextureEXT");
 }
 
 void NoContextGLApi::glBindRenderbufferEXTFn(GLenum target,
                                              GLuint renderbuffer) {
-  NOTREACHED()
-      << "Trying to call glBindRenderbufferEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindRenderbufferEXT() without current GL context";
+  NoContextHelper("glBindRenderbufferEXT");
 }
 
 void NoContextGLApi::glBindSamplerFn(GLuint unit, GLuint sampler) {
-  NOTREACHED() << "Trying to call glBindSampler() without current GL context";
-  LOG(ERROR) << "Trying to call glBindSampler() without current GL context";
+  NoContextHelper("glBindSampler");
 }
 
 void NoContextGLApi::glBindTextureFn(GLenum target, GLuint texture) {
-  NOTREACHED() << "Trying to call glBindTexture() without current GL context";
-  LOG(ERROR) << "Trying to call glBindTexture() without current GL context";
+  NoContextHelper("glBindTexture");
 }
 
 void NoContextGLApi::glBindTransformFeedbackFn(GLenum target, GLuint id) {
-  NOTREACHED()
-      << "Trying to call glBindTransformFeedback() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindTransformFeedback() without current GL context";
+  NoContextHelper("glBindTransformFeedback");
 }
 
 void NoContextGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
                                                      GLint location,
                                                      const char* name) {
-  NOTREACHED() << "Trying to call glBindUniformLocationCHROMIUM() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glBindUniformLocationCHROMIUM() without "
-                "current GL context";
+  NoContextHelper("glBindUniformLocationCHROMIUM");
 }
 
 void NoContextGLApi::glBindVertexArrayOESFn(GLuint array) {
-  NOTREACHED()
-      << "Trying to call glBindVertexArrayOES() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBindVertexArrayOES() without current GL context";
+  NoContextHelper("glBindVertexArrayOES");
 }
 
 void NoContextGLApi::glBlendBarrierKHRFn(void) {
-  NOTREACHED()
-      << "Trying to call glBlendBarrierKHR() without current GL context";
-  LOG(ERROR) << "Trying to call glBlendBarrierKHR() without current GL context";
+  NoContextHelper("glBlendBarrierKHR");
 }
 
 void NoContextGLApi::glBlendColorFn(GLclampf red,
                                     GLclampf green,
                                     GLclampf blue,
                                     GLclampf alpha) {
-  NOTREACHED() << "Trying to call glBlendColor() without current GL context";
-  LOG(ERROR) << "Trying to call glBlendColor() without current GL context";
+  NoContextHelper("glBlendColor");
 }
 
 void NoContextGLApi::glBlendEquationFn(GLenum mode) {
-  NOTREACHED() << "Trying to call glBlendEquation() without current GL context";
-  LOG(ERROR) << "Trying to call glBlendEquation() without current GL context";
+  NoContextHelper("glBlendEquation");
 }
 
 void NoContextGLApi::glBlendEquationSeparateFn(GLenum modeRGB,
                                                GLenum modeAlpha) {
-  NOTREACHED()
-      << "Trying to call glBlendEquationSeparate() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBlendEquationSeparate() without current GL context";
+  NoContextHelper("glBlendEquationSeparate");
 }
 
 void NoContextGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
-  NOTREACHED() << "Trying to call glBlendFunc() without current GL context";
-  LOG(ERROR) << "Trying to call glBlendFunc() without current GL context";
+  NoContextHelper("glBlendFunc");
 }
 
 void NoContextGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
                                            GLenum dstRGB,
                                            GLenum srcAlpha,
                                            GLenum dstAlpha) {
-  NOTREACHED()
-      << "Trying to call glBlendFuncSeparate() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBlendFuncSeparate() without current GL context";
+  NoContextHelper("glBlendFuncSeparate");
 }
 
 void NoContextGLApi::glBlitFramebufferFn(GLint srcX0,
@@ -12639,9 +12324,7 @@ void NoContextGLApi::glBlitFramebufferFn(GLint srcX0,
                                          GLint dstY1,
                                          GLbitfield mask,
                                          GLenum filter) {
-  NOTREACHED()
-      << "Trying to call glBlitFramebuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glBlitFramebuffer() without current GL context";
+  NoContextHelper("glBlitFramebuffer");
 }
 
 void NoContextGLApi::glBlitFramebufferANGLEFn(GLint srcX0,
@@ -12654,10 +12337,7 @@ void NoContextGLApi::glBlitFramebufferANGLEFn(GLint srcX0,
                                               GLint dstY1,
                                               GLbitfield mask,
                                               GLenum filter) {
-  NOTREACHED()
-      << "Trying to call glBlitFramebufferANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBlitFramebufferANGLE() without current GL context";
+  NoContextHelper("glBlitFramebufferANGLE");
 }
 
 void NoContextGLApi::glBlitFramebufferEXTFn(GLint srcX0,
@@ -12670,100 +12350,80 @@ void NoContextGLApi::glBlitFramebufferEXTFn(GLint srcX0,
                                             GLint dstY1,
                                             GLbitfield mask,
                                             GLenum filter) {
-  NOTREACHED()
-      << "Trying to call glBlitFramebufferEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glBlitFramebufferEXT() without current GL context";
+  NoContextHelper("glBlitFramebufferEXT");
 }
 
 void NoContextGLApi::glBufferDataFn(GLenum target,
                                     GLsizeiptr size,
                                     const void* data,
                                     GLenum usage) {
-  NOTREACHED() << "Trying to call glBufferData() without current GL context";
-  LOG(ERROR) << "Trying to call glBufferData() without current GL context";
+  NoContextHelper("glBufferData");
 }
 
 void NoContextGLApi::glBufferSubDataFn(GLenum target,
                                        GLintptr offset,
                                        GLsizeiptr size,
                                        const void* data) {
-  NOTREACHED() << "Trying to call glBufferSubData() without current GL context";
-  LOG(ERROR) << "Trying to call glBufferSubData() without current GL context";
+  NoContextHelper("glBufferSubData");
 }
 
 GLenum NoContextGLApi::glCheckFramebufferStatusEXTFn(GLenum target) {
-  NOTREACHED() << "Trying to call glCheckFramebufferStatusEXT() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glCheckFramebufferStatusEXT() without current "
-                "GL context";
+  NoContextHelper("glCheckFramebufferStatusEXT");
   return static_cast<GLenum>(0);
 }
 
 void NoContextGLApi::glClearFn(GLbitfield mask) {
-  NOTREACHED() << "Trying to call glClear() without current GL context";
-  LOG(ERROR) << "Trying to call glClear() without current GL context";
+  NoContextHelper("glClear");
 }
 
 void NoContextGLApi::glClearBufferfiFn(GLenum buffer,
                                        GLint drawbuffer,
                                        const GLfloat depth,
                                        GLint stencil) {
-  NOTREACHED() << "Trying to call glClearBufferfi() without current GL context";
-  LOG(ERROR) << "Trying to call glClearBufferfi() without current GL context";
+  NoContextHelper("glClearBufferfi");
 }
 
 void NoContextGLApi::glClearBufferfvFn(GLenum buffer,
                                        GLint drawbuffer,
                                        const GLfloat* value) {
-  NOTREACHED() << "Trying to call glClearBufferfv() without current GL context";
-  LOG(ERROR) << "Trying to call glClearBufferfv() without current GL context";
+  NoContextHelper("glClearBufferfv");
 }
 
 void NoContextGLApi::glClearBufferivFn(GLenum buffer,
                                        GLint drawbuffer,
                                        const GLint* value) {
-  NOTREACHED() << "Trying to call glClearBufferiv() without current GL context";
-  LOG(ERROR) << "Trying to call glClearBufferiv() without current GL context";
+  NoContextHelper("glClearBufferiv");
 }
 
 void NoContextGLApi::glClearBufferuivFn(GLenum buffer,
                                         GLint drawbuffer,
                                         const GLuint* value) {
-  NOTREACHED()
-      << "Trying to call glClearBufferuiv() without current GL context";
-  LOG(ERROR) << "Trying to call glClearBufferuiv() without current GL context";
+  NoContextHelper("glClearBufferuiv");
 }
 
 void NoContextGLApi::glClearColorFn(GLclampf red,
                                     GLclampf green,
                                     GLclampf blue,
                                     GLclampf alpha) {
-  NOTREACHED() << "Trying to call glClearColor() without current GL context";
-  LOG(ERROR) << "Trying to call glClearColor() without current GL context";
+  NoContextHelper("glClearColor");
 }
 
 void NoContextGLApi::glClearDepthFn(GLclampd depth) {
-  NOTREACHED() << "Trying to call glClearDepth() without current GL context";
-  LOG(ERROR) << "Trying to call glClearDepth() without current GL context";
+  NoContextHelper("glClearDepth");
 }
 
 void NoContextGLApi::glClearDepthfFn(GLclampf depth) {
-  NOTREACHED() << "Trying to call glClearDepthf() without current GL context";
-  LOG(ERROR) << "Trying to call glClearDepthf() without current GL context";
+  NoContextHelper("glClearDepthf");
 }
 
 void NoContextGLApi::glClearStencilFn(GLint s) {
-  NOTREACHED() << "Trying to call glClearStencil() without current GL context";
-  LOG(ERROR) << "Trying to call glClearStencil() without current GL context";
+  NoContextHelper("glClearStencil");
 }
 
 GLenum NoContextGLApi::glClientWaitSyncFn(GLsync sync,
                                           GLbitfield flags,
                                           GLuint64 timeout) {
-  NOTREACHED()
-      << "Trying to call glClientWaitSync() without current GL context";
-  LOG(ERROR) << "Trying to call glClientWaitSync() without current GL context";
+  NoContextHelper("glClientWaitSync");
   return static_cast<GLenum>(0);
 }
 
@@ -12771,21 +12431,16 @@ void NoContextGLApi::glColorMaskFn(GLboolean red,
                                    GLboolean green,
                                    GLboolean blue,
                                    GLboolean alpha) {
-  NOTREACHED() << "Trying to call glColorMask() without current GL context";
-  LOG(ERROR) << "Trying to call glColorMask() without current GL context";
+  NoContextHelper("glColorMask");
 }
 
 void NoContextGLApi::glCompileShaderFn(GLuint shader) {
-  NOTREACHED() << "Trying to call glCompileShader() without current GL context";
-  LOG(ERROR) << "Trying to call glCompileShader() without current GL context";
+  NoContextHelper("glCompileShader");
 }
 
 void NoContextGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
                                                        GLuint destId) {
-  NOTREACHED() << "Trying to call glCompressedCopyTextureCHROMIUM() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glCompressedCopyTextureCHROMIUM() without "
-                "current GL context";
+  NoContextHelper("glCompressedCopyTextureCHROMIUM");
 }
 
 void NoContextGLApi::glCompressedTexImage2DFn(GLenum target,
@@ -12796,10 +12451,7 @@ void NoContextGLApi::glCompressedTexImage2DFn(GLenum target,
                                               GLint border,
                                               GLsizei imageSize,
                                               const void* data) {
-  NOTREACHED()
-      << "Trying to call glCompressedTexImage2D() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCompressedTexImage2D() without current GL context";
+  NoContextHelper("glCompressedTexImage2D");
 }
 
 void NoContextGLApi::glCompressedTexImage2DRobustANGLEFn(GLenum target,
@@ -12811,10 +12463,7 @@ void NoContextGLApi::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                          GLsizei imageSize,
                                                          GLsizei dataSize,
                                                          const void* data) {
-  NOTREACHED() << "Trying to call glCompressedTexImage2DRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glCompressedTexImage2DRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glCompressedTexImage2DRobustANGLE");
 }
 
 void NoContextGLApi::glCompressedTexImage3DFn(GLenum target,
@@ -12826,10 +12475,7 @@ void NoContextGLApi::glCompressedTexImage3DFn(GLenum target,
                                               GLint border,
                                               GLsizei imageSize,
                                               const void* data) {
-  NOTREACHED()
-      << "Trying to call glCompressedTexImage3D() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCompressedTexImage3D() without current GL context";
+  NoContextHelper("glCompressedTexImage3D");
 }
 
 void NoContextGLApi::glCompressedTexImage3DRobustANGLEFn(GLenum target,
@@ -12842,10 +12488,7 @@ void NoContextGLApi::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                          GLsizei imageSize,
                                                          GLsizei dataSize,
                                                          const void* data) {
-  NOTREACHED() << "Trying to call glCompressedTexImage3DRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glCompressedTexImage3DRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glCompressedTexImage3DRobustANGLE");
 }
 
 void NoContextGLApi::glCompressedTexSubImage2DFn(GLenum target,
@@ -12857,10 +12500,7 @@ void NoContextGLApi::glCompressedTexSubImage2DFn(GLenum target,
                                                  GLenum format,
                                                  GLsizei imageSize,
                                                  const void* data) {
-  NOTREACHED() << "Trying to call glCompressedTexSubImage2D() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glCompressedTexSubImage2D() without current GL "
-                "context";
+  NoContextHelper("glCompressedTexSubImage2D");
 }
 
 void NoContextGLApi::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
@@ -12873,10 +12513,7 @@ void NoContextGLApi::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
                                                             GLsizei imageSize,
                                                             GLsizei dataSize,
                                                             const void* data) {
-  NOTREACHED() << "Trying to call glCompressedTexSubImage2DRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glCompressedTexSubImage2DRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glCompressedTexSubImage2DRobustANGLE");
 }
 
 void NoContextGLApi::glCompressedTexSubImage3DFn(GLenum target,
@@ -12890,10 +12527,7 @@ void NoContextGLApi::glCompressedTexSubImage3DFn(GLenum target,
                                                  GLenum format,
                                                  GLsizei imageSize,
                                                  const void* data) {
-  NOTREACHED() << "Trying to call glCompressedTexSubImage3D() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glCompressedTexSubImage3D() without current GL "
-                "context";
+  NoContextHelper("glCompressedTexSubImage3D");
 }
 
 void NoContextGLApi::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
@@ -12908,10 +12542,7 @@ void NoContextGLApi::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
                                                             GLsizei imageSize,
                                                             GLsizei dataSize,
                                                             const void* data) {
-  NOTREACHED() << "Trying to call glCompressedTexSubImage3DRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glCompressedTexSubImage3DRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glCompressedTexSubImage3DRobustANGLE");
 }
 
 void NoContextGLApi::glCopyBufferSubDataFn(GLenum readTarget,
@@ -12919,10 +12550,7 @@ void NoContextGLApi::glCopyBufferSubDataFn(GLenum readTarget,
                                            GLintptr readOffset,
                                            GLintptr writeOffset,
                                            GLsizeiptr size) {
-  NOTREACHED()
-      << "Trying to call glCopyBufferSubData() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCopyBufferSubData() without current GL context";
+  NoContextHelper("glCopyBufferSubData");
 }
 
 void NoContextGLApi::glCopySubTextureCHROMIUMFn(
@@ -12940,10 +12568,7 @@ void NoContextGLApi::glCopySubTextureCHROMIUMFn(
     GLboolean unpackFlipY,
     GLboolean unpackPremultiplyAlpha,
     GLboolean unpackUnmultiplyAlpha) {
-  NOTREACHED()
-      << "Trying to call glCopySubTextureCHROMIUM() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCopySubTextureCHROMIUM() without current GL context";
+  NoContextHelper("glCopySubTextureCHROMIUM");
 }
 
 void NoContextGLApi::glCopyTexImage2DFn(GLenum target,
@@ -12954,9 +12579,7 @@ void NoContextGLApi::glCopyTexImage2DFn(GLenum target,
                                         GLsizei width,
                                         GLsizei height,
                                         GLint border) {
-  NOTREACHED()
-      << "Trying to call glCopyTexImage2D() without current GL context";
-  LOG(ERROR) << "Trying to call glCopyTexImage2D() without current GL context";
+  NoContextHelper("glCopyTexImage2D");
 }
 
 void NoContextGLApi::glCopyTexSubImage2DFn(GLenum target,
@@ -12967,10 +12590,7 @@ void NoContextGLApi::glCopyTexSubImage2DFn(GLenum target,
                                            GLint y,
                                            GLsizei width,
                                            GLsizei height) {
-  NOTREACHED()
-      << "Trying to call glCopyTexSubImage2D() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCopyTexSubImage2D() without current GL context";
+  NoContextHelper("glCopyTexSubImage2D");
 }
 
 void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
@@ -12982,10 +12602,7 @@ void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
                                            GLint y,
                                            GLsizei width,
                                            GLsizei height) {
-  NOTREACHED()
-      << "Trying to call glCopyTexSubImage3D() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCopyTexSubImage3D() without current GL context";
+  NoContextHelper("glCopyTexSubImage3D");
 }
 
 void NoContextGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
@@ -12998,17 +12615,11 @@ void NoContextGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
                                              GLboolean unpackFlipY,
                                              GLboolean unpackPremultiplyAlpha,
                                              GLboolean unpackUnmultiplyAlpha) {
-  NOTREACHED()
-      << "Trying to call glCopyTextureCHROMIUM() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCopyTextureCHROMIUM() without current GL context";
+  NoContextHelper("glCopyTextureCHROMIUM");
 }
 
 void NoContextGLApi::glCoverageModulationNVFn(GLenum components) {
-  NOTREACHED()
-      << "Trying to call glCoverageModulationNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCoverageModulationNV() without current GL context";
+  NoContextHelper("glCoverageModulationNV");
 }
 
 void NoContextGLApi::glCoverFillPathInstancedNVFn(
@@ -13019,16 +12630,11 @@ void NoContextGLApi::glCoverFillPathInstancedNVFn(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues) {
-  NOTREACHED() << "Trying to call glCoverFillPathInstancedNV() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glCoverFillPathInstancedNV() without current "
-                "GL context";
+  NoContextHelper("glCoverFillPathInstancedNV");
 }
 
 void NoContextGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
-  NOTREACHED()
-      << "Trying to call glCoverFillPathNV() without current GL context";
-  LOG(ERROR) << "Trying to call glCoverFillPathNV() without current GL context";
+  NoContextHelper("glCoverFillPathNV");
 }
 
 void NoContextGLApi::glCoverStrokePathInstancedNVFn(
@@ -13039,42 +12645,30 @@ void NoContextGLApi::glCoverStrokePathInstancedNVFn(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues) {
-  NOTREACHED() << "Trying to call glCoverStrokePathInstancedNV() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glCoverStrokePathInstancedNV() without current "
-                "GL context";
+  NoContextHelper("glCoverStrokePathInstancedNV");
 }
 
 void NoContextGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
-  NOTREACHED()
-      << "Trying to call glCoverStrokePathNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glCoverStrokePathNV() without current GL context";
+  NoContextHelper("glCoverStrokePathNV");
 }
 
 GLuint NoContextGLApi::glCreateProgramFn(void) {
-  NOTREACHED() << "Trying to call glCreateProgram() without current GL context";
-  LOG(ERROR) << "Trying to call glCreateProgram() without current GL context";
+  NoContextHelper("glCreateProgram");
   return 0U;
 }
 
 GLuint NoContextGLApi::glCreateShaderFn(GLenum type) {
-  NOTREACHED() << "Trying to call glCreateShader() without current GL context";
-  LOG(ERROR) << "Trying to call glCreateShader() without current GL context";
+  NoContextHelper("glCreateShader");
   return 0U;
 }
 
 void NoContextGLApi::glCullFaceFn(GLenum mode) {
-  NOTREACHED() << "Trying to call glCullFace() without current GL context";
-  LOG(ERROR) << "Trying to call glCullFace() without current GL context";
+  NoContextHelper("glCullFace");
 }
 
 void NoContextGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
                                               const void* userParam) {
-  NOTREACHED()
-      << "Trying to call glDebugMessageCallback() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDebugMessageCallback() without current GL context";
+  NoContextHelper("glDebugMessageCallback");
 }
 
 void NoContextGLApi::glDebugMessageControlFn(GLenum source,
@@ -13083,10 +12677,7 @@ void NoContextGLApi::glDebugMessageControlFn(GLenum source,
                                              GLsizei count,
                                              const GLuint* ids,
                                              GLboolean enabled) {
-  NOTREACHED()
-      << "Trying to call glDebugMessageControl() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDebugMessageControl() without current GL context";
+  NoContextHelper("glDebugMessageControl");
 }
 
 void NoContextGLApi::glDebugMessageInsertFn(GLenum source,
@@ -13095,179 +12686,127 @@ void NoContextGLApi::glDebugMessageInsertFn(GLenum source,
                                             GLenum severity,
                                             GLsizei length,
                                             const char* buf) {
-  NOTREACHED()
-      << "Trying to call glDebugMessageInsert() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDebugMessageInsert() without current GL context";
+  NoContextHelper("glDebugMessageInsert");
 }
 
 void NoContextGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
-  NOTREACHED()
-      << "Trying to call glDeleteBuffersARB() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDeleteBuffersARB() without current GL context";
+  NoContextHelper("glDeleteBuffersARB");
 }
 
 void NoContextGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
-  NOTREACHED()
-      << "Trying to call glDeleteFencesAPPLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDeleteFencesAPPLE() without current GL context";
+  NoContextHelper("glDeleteFencesAPPLE");
 }
 
 void NoContextGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
-  NOTREACHED()
-      << "Trying to call glDeleteFencesNV() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteFencesNV() without current GL context";
+  NoContextHelper("glDeleteFencesNV");
 }
 
 void NoContextGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                                                const GLuint* framebuffers) {
-  NOTREACHED()
-      << "Trying to call glDeleteFramebuffersEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDeleteFramebuffersEXT() without current GL context";
+  NoContextHelper("glDeleteFramebuffersEXT");
 }
 
 void NoContextGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
-  NOTREACHED() << "Trying to call glDeletePathsNV() without current GL context";
-  LOG(ERROR) << "Trying to call glDeletePathsNV() without current GL context";
+  NoContextHelper("glDeletePathsNV");
 }
 
 void NoContextGLApi::glDeleteProgramFn(GLuint program) {
-  NOTREACHED() << "Trying to call glDeleteProgram() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteProgram() without current GL context";
+  NoContextHelper("glDeleteProgram");
 }
 
 void NoContextGLApi::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
-  NOTREACHED() << "Trying to call glDeleteQueries() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteQueries() without current GL context";
+  NoContextHelper("glDeleteQueries");
 }
 
 void NoContextGLApi::glDeleteRenderbuffersEXTFn(GLsizei n,
                                                 const GLuint* renderbuffers) {
-  NOTREACHED()
-      << "Trying to call glDeleteRenderbuffersEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDeleteRenderbuffersEXT() without current GL context";
+  NoContextHelper("glDeleteRenderbuffersEXT");
 }
 
 void NoContextGLApi::glDeleteSamplersFn(GLsizei n, const GLuint* samplers) {
-  NOTREACHED()
-      << "Trying to call glDeleteSamplers() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteSamplers() without current GL context";
+  NoContextHelper("glDeleteSamplers");
 }
 
 void NoContextGLApi::glDeleteShaderFn(GLuint shader) {
-  NOTREACHED() << "Trying to call glDeleteShader() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteShader() without current GL context";
+  NoContextHelper("glDeleteShader");
 }
 
 void NoContextGLApi::glDeleteSyncFn(GLsync sync) {
-  NOTREACHED() << "Trying to call glDeleteSync() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteSync() without current GL context";
+  NoContextHelper("glDeleteSync");
 }
 
 void NoContextGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
-  NOTREACHED()
-      << "Trying to call glDeleteTextures() without current GL context";
-  LOG(ERROR) << "Trying to call glDeleteTextures() without current GL context";
+  NoContextHelper("glDeleteTextures");
 }
 
 void NoContextGLApi::glDeleteTransformFeedbacksFn(GLsizei n,
                                                   const GLuint* ids) {
-  NOTREACHED() << "Trying to call glDeleteTransformFeedbacks() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glDeleteTransformFeedbacks() without current "
-                "GL context";
+  NoContextHelper("glDeleteTransformFeedbacks");
 }
 
 void NoContextGLApi::glDeleteVertexArraysOESFn(GLsizei n,
                                                const GLuint* arrays) {
-  NOTREACHED()
-      << "Trying to call glDeleteVertexArraysOES() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDeleteVertexArraysOES() without current GL context";
+  NoContextHelper("glDeleteVertexArraysOES");
 }
 
 void NoContextGLApi::glDepthFuncFn(GLenum func) {
-  NOTREACHED() << "Trying to call glDepthFunc() without current GL context";
-  LOG(ERROR) << "Trying to call glDepthFunc() without current GL context";
+  NoContextHelper("glDepthFunc");
 }
 
 void NoContextGLApi::glDepthMaskFn(GLboolean flag) {
-  NOTREACHED() << "Trying to call glDepthMask() without current GL context";
-  LOG(ERROR) << "Trying to call glDepthMask() without current GL context";
+  NoContextHelper("glDepthMask");
 }
 
 void NoContextGLApi::glDepthRangeFn(GLclampd zNear, GLclampd zFar) {
-  NOTREACHED() << "Trying to call glDepthRange() without current GL context";
-  LOG(ERROR) << "Trying to call glDepthRange() without current GL context";
+  NoContextHelper("glDepthRange");
 }
 
 void NoContextGLApi::glDepthRangefFn(GLclampf zNear, GLclampf zFar) {
-  NOTREACHED() << "Trying to call glDepthRangef() without current GL context";
-  LOG(ERROR) << "Trying to call glDepthRangef() without current GL context";
+  NoContextHelper("glDepthRangef");
 }
 
 void NoContextGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
-  NOTREACHED() << "Trying to call glDetachShader() without current GL context";
-  LOG(ERROR) << "Trying to call glDetachShader() without current GL context";
+  NoContextHelper("glDetachShader");
 }
 
 void NoContextGLApi::glDisableFn(GLenum cap) {
-  NOTREACHED() << "Trying to call glDisable() without current GL context";
-  LOG(ERROR) << "Trying to call glDisable() without current GL context";
+  NoContextHelper("glDisable");
 }
 
 void NoContextGLApi::glDisableVertexAttribArrayFn(GLuint index) {
-  NOTREACHED() << "Trying to call glDisableVertexAttribArray() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glDisableVertexAttribArray() without current "
-                "GL context";
+  NoContextHelper("glDisableVertexAttribArray");
 }
 
 void NoContextGLApi::glDiscardFramebufferEXTFn(GLenum target,
                                                GLsizei numAttachments,
                                                const GLenum* attachments) {
-  NOTREACHED()
-      << "Trying to call glDiscardFramebufferEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDiscardFramebufferEXT() without current GL context";
+  NoContextHelper("glDiscardFramebufferEXT");
 }
 
 void NoContextGLApi::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
-  NOTREACHED() << "Trying to call glDrawArrays() without current GL context";
-  LOG(ERROR) << "Trying to call glDrawArrays() without current GL context";
+  NoContextHelper("glDrawArrays");
 }
 
 void NoContextGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
                                                   GLint first,
                                                   GLsizei count,
                                                   GLsizei primcount) {
-  NOTREACHED() << "Trying to call glDrawArraysInstancedANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glDrawArraysInstancedANGLE() without current "
-                "GL context";
+  NoContextHelper("glDrawArraysInstancedANGLE");
 }
 
 void NoContextGLApi::glDrawBufferFn(GLenum mode) {
-  NOTREACHED() << "Trying to call glDrawBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glDrawBuffer() without current GL context";
+  NoContextHelper("glDrawBuffer");
 }
 
 void NoContextGLApi::glDrawBuffersARBFn(GLsizei n, const GLenum* bufs) {
-  NOTREACHED()
-      << "Trying to call glDrawBuffersARB() without current GL context";
-  LOG(ERROR) << "Trying to call glDrawBuffersARB() without current GL context";
+  NoContextHelper("glDrawBuffersARB");
 }
 
 void NoContextGLApi::glDrawElementsFn(GLenum mode,
                                       GLsizei count,
                                       GLenum type,
                                       const void* indices) {
-  NOTREACHED() << "Trying to call glDrawElements() without current GL context";
-  LOG(ERROR) << "Trying to call glDrawElements() without current GL context";
+  NoContextHelper("glDrawElements");
 }
 
 void NoContextGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
@@ -13275,10 +12814,7 @@ void NoContextGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                                     GLenum type,
                                                     const void* indices,
                                                     GLsizei primcount) {
-  NOTREACHED() << "Trying to call glDrawElementsInstancedANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glDrawElementsInstancedANGLE() without current "
-                "GL context";
+  NoContextHelper("glDrawElementsInstancedANGLE");
 }
 
 void NoContextGLApi::glDrawRangeElementsFn(GLenum mode,
@@ -13287,98 +12823,68 @@ void NoContextGLApi::glDrawRangeElementsFn(GLenum mode,
                                            GLsizei count,
                                            GLenum type,
                                            const void* indices) {
-  NOTREACHED()
-      << "Trying to call glDrawRangeElements() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDrawRangeElements() without current GL context";
+  NoContextHelper("glDrawRangeElements");
 }
 
 void NoContextGLApi::glEGLImageTargetRenderbufferStorageOESFn(
     GLenum target,
     GLeglImageOES image) {
-  NOTREACHED() << "Trying to call glEGLImageTargetRenderbufferStorageOES() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glEGLImageTargetRenderbufferStorageOES() "
-                "without current GL context";
+  NoContextHelper("glEGLImageTargetRenderbufferStorageOES");
 }
 
 void NoContextGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
                                                     GLeglImageOES image) {
-  NOTREACHED() << "Trying to call glEGLImageTargetTexture2DOES() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glEGLImageTargetTexture2DOES() without current "
-                "GL context";
+  NoContextHelper("glEGLImageTargetTexture2DOES");
 }
 
 void NoContextGLApi::glEnableFn(GLenum cap) {
-  NOTREACHED() << "Trying to call glEnable() without current GL context";
-  LOG(ERROR) << "Trying to call glEnable() without current GL context";
+  NoContextHelper("glEnable");
 }
 
 void NoContextGLApi::glEnableVertexAttribArrayFn(GLuint index) {
-  NOTREACHED() << "Trying to call glEnableVertexAttribArray() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glEnableVertexAttribArray() without current GL "
-                "context";
+  NoContextHelper("glEnableVertexAttribArray");
 }
 
 void NoContextGLApi::glEndQueryFn(GLenum target) {
-  NOTREACHED() << "Trying to call glEndQuery() without current GL context";
-  LOG(ERROR) << "Trying to call glEndQuery() without current GL context";
+  NoContextHelper("glEndQuery");
 }
 
 void NoContextGLApi::glEndTransformFeedbackFn(void) {
-  NOTREACHED()
-      << "Trying to call glEndTransformFeedback() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glEndTransformFeedback() without current GL context";
+  NoContextHelper("glEndTransformFeedback");
 }
 
 GLsync NoContextGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
-  NOTREACHED() << "Trying to call glFenceSync() without current GL context";
-  LOG(ERROR) << "Trying to call glFenceSync() without current GL context";
+  NoContextHelper("glFenceSync");
   return NULL;
 }
 
 void NoContextGLApi::glFinishFn(void) {
-  NOTREACHED() << "Trying to call glFinish() without current GL context";
-  LOG(ERROR) << "Trying to call glFinish() without current GL context";
+  NoContextHelper("glFinish");
 }
 
 void NoContextGLApi::glFinishFenceAPPLEFn(GLuint fence) {
-  NOTREACHED()
-      << "Trying to call glFinishFenceAPPLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glFinishFenceAPPLE() without current GL context";
+  NoContextHelper("glFinishFenceAPPLE");
 }
 
 void NoContextGLApi::glFinishFenceNVFn(GLuint fence) {
-  NOTREACHED() << "Trying to call glFinishFenceNV() without current GL context";
-  LOG(ERROR) << "Trying to call glFinishFenceNV() without current GL context";
+  NoContextHelper("glFinishFenceNV");
 }
 
 void NoContextGLApi::glFlushFn(void) {
-  NOTREACHED() << "Trying to call glFlush() without current GL context";
-  LOG(ERROR) << "Trying to call glFlush() without current GL context";
+  NoContextHelper("glFlush");
 }
 
 void NoContextGLApi::glFlushMappedBufferRangeFn(GLenum target,
                                                 GLintptr offset,
                                                 GLsizeiptr length) {
-  NOTREACHED()
-      << "Trying to call glFlushMappedBufferRange() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glFlushMappedBufferRange() without current GL context";
+  NoContextHelper("glFlushMappedBufferRange");
 }
 
 void NoContextGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
                                                     GLenum attachment,
                                                     GLenum renderbuffertarget,
                                                     GLuint renderbuffer) {
-  NOTREACHED() << "Trying to call glFramebufferRenderbufferEXT() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glFramebufferRenderbufferEXT() without current "
-                "GL context";
+  NoContextHelper("glFramebufferRenderbufferEXT");
 }
 
 void NoContextGLApi::glFramebufferTexture2DEXTFn(GLenum target,
@@ -13386,10 +12892,7 @@ void NoContextGLApi::glFramebufferTexture2DEXTFn(GLenum target,
                                                  GLenum textarget,
                                                  GLuint texture,
                                                  GLint level) {
-  NOTREACHED() << "Trying to call glFramebufferTexture2DEXT() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glFramebufferTexture2DEXT() without current GL "
-                "context";
+  NoContextHelper("glFramebufferTexture2DEXT");
 }
 
 void NoContextGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
@@ -13398,10 +12901,7 @@ void NoContextGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                             GLuint texture,
                                                             GLint level,
                                                             GLsizei samples) {
-  NOTREACHED() << "Trying to call glFramebufferTexture2DMultisampleEXT() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glFramebufferTexture2DMultisampleEXT() without "
-                "current GL context";
+  NoContextHelper("glFramebufferTexture2DMultisampleEXT");
 }
 
 void NoContextGLApi::glFramebufferTexture2DMultisampleIMGFn(GLenum target,
@@ -13410,10 +12910,7 @@ void NoContextGLApi::glFramebufferTexture2DMultisampleIMGFn(GLenum target,
                                                             GLuint texture,
                                                             GLint level,
                                                             GLsizei samples) {
-  NOTREACHED() << "Trying to call glFramebufferTexture2DMultisampleIMG() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glFramebufferTexture2DMultisampleIMG() without "
-                "current GL context";
+  NoContextHelper("glFramebufferTexture2DMultisampleIMG");
 }
 
 void NoContextGLApi::glFramebufferTextureLayerFn(GLenum target,
@@ -13421,87 +12918,60 @@ void NoContextGLApi::glFramebufferTextureLayerFn(GLenum target,
                                                  GLuint texture,
                                                  GLint level,
                                                  GLint layer) {
-  NOTREACHED() << "Trying to call glFramebufferTextureLayer() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glFramebufferTextureLayer() without current GL "
-                "context";
+  NoContextHelper("glFramebufferTextureLayer");
 }
 
 void NoContextGLApi::glFrontFaceFn(GLenum mode) {
-  NOTREACHED() << "Trying to call glFrontFace() without current GL context";
-  LOG(ERROR) << "Trying to call glFrontFace() without current GL context";
+  NoContextHelper("glFrontFace");
 }
 
 void NoContextGLApi::glGenBuffersARBFn(GLsizei n, GLuint* buffers) {
-  NOTREACHED() << "Trying to call glGenBuffersARB() without current GL context";
-  LOG(ERROR) << "Trying to call glGenBuffersARB() without current GL context";
+  NoContextHelper("glGenBuffersARB");
 }
 
 void NoContextGLApi::glGenerateMipmapEXTFn(GLenum target) {
-  NOTREACHED()
-      << "Trying to call glGenerateMipmapEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGenerateMipmapEXT() without current GL context";
+  NoContextHelper("glGenerateMipmapEXT");
 }
 
 void NoContextGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
-  NOTREACHED()
-      << "Trying to call glGenFencesAPPLE() without current GL context";
-  LOG(ERROR) << "Trying to call glGenFencesAPPLE() without current GL context";
+  NoContextHelper("glGenFencesAPPLE");
 }
 
 void NoContextGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
-  NOTREACHED() << "Trying to call glGenFencesNV() without current GL context";
-  LOG(ERROR) << "Trying to call glGenFencesNV() without current GL context";
+  NoContextHelper("glGenFencesNV");
 }
 
 void NoContextGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
-  NOTREACHED()
-      << "Trying to call glGenFramebuffersEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGenFramebuffersEXT() without current GL context";
+  NoContextHelper("glGenFramebuffersEXT");
 }
 
 GLuint NoContextGLApi::glGenPathsNVFn(GLsizei range) {
-  NOTREACHED() << "Trying to call glGenPathsNV() without current GL context";
-  LOG(ERROR) << "Trying to call glGenPathsNV() without current GL context";
+  NoContextHelper("glGenPathsNV");
   return 0U;
 }
 
 void NoContextGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
-  NOTREACHED() << "Trying to call glGenQueries() without current GL context";
-  LOG(ERROR) << "Trying to call glGenQueries() without current GL context";
+  NoContextHelper("glGenQueries");
 }
 
 void NoContextGLApi::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
-  NOTREACHED()
-      << "Trying to call glGenRenderbuffersEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGenRenderbuffersEXT() without current GL context";
+  NoContextHelper("glGenRenderbuffersEXT");
 }
 
 void NoContextGLApi::glGenSamplersFn(GLsizei n, GLuint* samplers) {
-  NOTREACHED() << "Trying to call glGenSamplers() without current GL context";
-  LOG(ERROR) << "Trying to call glGenSamplers() without current GL context";
+  NoContextHelper("glGenSamplers");
 }
 
 void NoContextGLApi::glGenTexturesFn(GLsizei n, GLuint* textures) {
-  NOTREACHED() << "Trying to call glGenTextures() without current GL context";
-  LOG(ERROR) << "Trying to call glGenTextures() without current GL context";
+  NoContextHelper("glGenTextures");
 }
 
 void NoContextGLApi::glGenTransformFeedbacksFn(GLsizei n, GLuint* ids) {
-  NOTREACHED()
-      << "Trying to call glGenTransformFeedbacks() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGenTransformFeedbacks() without current GL context";
+  NoContextHelper("glGenTransformFeedbacks");
 }
 
 void NoContextGLApi::glGenVertexArraysOESFn(GLsizei n, GLuint* arrays) {
-  NOTREACHED()
-      << "Trying to call glGenVertexArraysOES() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGenVertexArraysOES() without current GL context";
+  NoContextHelper("glGenVertexArraysOES");
 }
 
 void NoContextGLApi::glGetActiveAttribFn(GLuint program,
@@ -13511,9 +12981,7 @@ void NoContextGLApi::glGetActiveAttribFn(GLuint program,
                                          GLint* size,
                                          GLenum* type,
                                          char* name) {
-  NOTREACHED()
-      << "Trying to call glGetActiveAttrib() without current GL context";
-  LOG(ERROR) << "Trying to call glGetActiveAttrib() without current GL context";
+  NoContextHelper("glGetActiveAttrib");
 }
 
 void NoContextGLApi::glGetActiveUniformFn(GLuint program,
@@ -13523,20 +12991,14 @@ void NoContextGLApi::glGetActiveUniformFn(GLuint program,
                                           GLint* size,
                                           GLenum* type,
                                           char* name) {
-  NOTREACHED()
-      << "Trying to call glGetActiveUniform() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetActiveUniform() without current GL context";
+  NoContextHelper("glGetActiveUniform");
 }
 
 void NoContextGLApi::glGetActiveUniformBlockivFn(GLuint program,
                                                  GLuint uniformBlockIndex,
                                                  GLenum pname,
                                                  GLint* params) {
-  NOTREACHED() << "Trying to call glGetActiveUniformBlockiv() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetActiveUniformBlockiv() without current GL "
-                "context";
+  NoContextHelper("glGetActiveUniformBlockiv");
 }
 
 void NoContextGLApi::glGetActiveUniformBlockivRobustANGLEFn(
@@ -13546,10 +13008,7 @@ void NoContextGLApi::glGetActiveUniformBlockivRobustANGLEFn(
     GLsizei bufSize,
     GLsizei* length,
     GLint* params) {
-  NOTREACHED() << "Trying to call glGetActiveUniformBlockivRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetActiveUniformBlockivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetActiveUniformBlockivRobustANGLE");
 }
 
 void NoContextGLApi::glGetActiveUniformBlockNameFn(GLuint program,
@@ -13557,10 +13016,7 @@ void NoContextGLApi::glGetActiveUniformBlockNameFn(GLuint program,
                                                    GLsizei bufSize,
                                                    GLsizei* length,
                                                    char* uniformBlockName) {
-  NOTREACHED() << "Trying to call glGetActiveUniformBlockName() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetActiveUniformBlockName() without current "
-                "GL context";
+  NoContextHelper("glGetActiveUniformBlockName");
 }
 
 void NoContextGLApi::glGetActiveUniformsivFn(GLuint program,
@@ -13568,27 +13024,18 @@ void NoContextGLApi::glGetActiveUniformsivFn(GLuint program,
                                              const GLuint* uniformIndices,
                                              GLenum pname,
                                              GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetActiveUniformsiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetActiveUniformsiv() without current GL context";
+  NoContextHelper("glGetActiveUniformsiv");
 }
 
 void NoContextGLApi::glGetAttachedShadersFn(GLuint program,
                                             GLsizei maxcount,
                                             GLsizei* count,
                                             GLuint* shaders) {
-  NOTREACHED()
-      << "Trying to call glGetAttachedShaders() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetAttachedShaders() without current GL context";
+  NoContextHelper("glGetAttachedShaders");
 }
 
 GLint NoContextGLApi::glGetAttribLocationFn(GLuint program, const char* name) {
-  NOTREACHED()
-      << "Trying to call glGetAttribLocation() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetAttribLocation() without current GL context";
+  NoContextHelper("glGetAttribLocation");
   return 0;
 }
 
@@ -13597,25 +13044,18 @@ void NoContextGLApi::glGetBooleani_vRobustANGLEFn(GLenum target,
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLboolean* data) {
-  NOTREACHED() << "Trying to call glGetBooleani_vRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetBooleani_vRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetBooleani_vRobustANGLE");
 }
 
 void NoContextGLApi::glGetBooleanvFn(GLenum pname, GLboolean* params) {
-  NOTREACHED() << "Trying to call glGetBooleanv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetBooleanv() without current GL context";
+  NoContextHelper("glGetBooleanv");
 }
 
 void NoContextGLApi::glGetBooleanvRobustANGLEFn(GLenum pname,
                                                 GLsizei bufSize,
                                                 GLsizei* length,
                                                 GLboolean* data) {
-  NOTREACHED()
-      << "Trying to call glGetBooleanvRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetBooleanvRobustANGLE() without current GL context";
+  NoContextHelper("glGetBooleanvRobustANGLE");
 }
 
 void NoContextGLApi::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
@@ -13623,19 +13063,13 @@ void NoContextGLApi::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                            GLsizei bufSize,
                                                            GLsizei* length,
                                                            GLint64* params) {
-  NOTREACHED() << "Trying to call glGetBufferParameteri64vRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetBufferParameteri64vRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetBufferParameteri64vRobustANGLE");
 }
 
 void NoContextGLApi::glGetBufferParameterivFn(GLenum target,
                                               GLenum pname,
                                               GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetBufferParameteriv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetBufferParameteriv() without current GL context";
+  NoContextHelper("glGetBufferParameteriv");
 }
 
 void NoContextGLApi::glGetBufferParameterivRobustANGLEFn(GLenum target,
@@ -13643,10 +13077,7 @@ void NoContextGLApi::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                          GLsizei bufSize,
                                                          GLsizei* length,
                                                          GLint* params) {
-  NOTREACHED() << "Trying to call glGetBufferParameterivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetBufferParameterivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetBufferParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
@@ -13654,10 +13085,7 @@ void NoContextGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
                                                       void** params) {
-  NOTREACHED() << "Trying to call glGetBufferPointervRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetBufferPointervRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetBufferPointervRobustANGLE");
 }
 
 void NoContextGLApi::glGetDebugMessageLogFn(GLuint count,
@@ -13668,54 +13096,39 @@ void NoContextGLApi::glGetDebugMessageLogFn(GLuint count,
                                             GLenum* severities,
                                             GLsizei* lengths,
                                             char* messageLog) {
-  NOTREACHED()
-      << "Trying to call glGetDebugMessageLog() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetDebugMessageLog() without current GL context";
+  NoContextHelper("glGetDebugMessageLog");
 }
 
 GLenum NoContextGLApi::glGetErrorFn(void) {
-  NOTREACHED() << "Trying to call glGetError() without current GL context";
-  LOG(ERROR) << "Trying to call glGetError() without current GL context";
+  NoContextHelper("glGetError");
   return static_cast<GLenum>(0);
 }
 
 void NoContextGLApi::glGetFenceivNVFn(GLuint fence,
                                       GLenum pname,
                                       GLint* params) {
-  NOTREACHED() << "Trying to call glGetFenceivNV() without current GL context";
-  LOG(ERROR) << "Trying to call glGetFenceivNV() without current GL context";
+  NoContextHelper("glGetFenceivNV");
 }
 
 void NoContextGLApi::glGetFloatvFn(GLenum pname, GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetFloatv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetFloatv() without current GL context";
+  NoContextHelper("glGetFloatv");
 }
 
 void NoContextGLApi::glGetFloatvRobustANGLEFn(GLenum pname,
                                               GLsizei bufSize,
                                               GLsizei* length,
                                               GLfloat* data) {
-  NOTREACHED()
-      << "Trying to call glGetFloatvRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetFloatvRobustANGLE() without current GL context";
+  NoContextHelper("glGetFloatvRobustANGLE");
 }
 
 GLint NoContextGLApi::glGetFragDataIndexFn(GLuint program, const char* name) {
-  NOTREACHED()
-      << "Trying to call glGetFragDataIndex() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetFragDataIndex() without current GL context";
+  NoContextHelper("glGetFragDataIndex");
   return 0;
 }
 
 GLint NoContextGLApi::glGetFragDataLocationFn(GLuint program,
                                               const char* name) {
-  NOTREACHED()
-      << "Trying to call glGetFragDataLocation() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetFragDataLocation() without current GL context";
+  NoContextHelper("glGetFragDataLocation");
   return 0;
 }
 
@@ -13724,10 +13137,7 @@ void NoContextGLApi::glGetFramebufferAttachmentParameterivEXTFn(
     GLenum attachment,
     GLenum pname,
     GLint* params) {
-  NOTREACHED() << "Trying to call glGetFramebufferAttachmentParameterivEXT() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetFramebufferAttachmentParameterivEXT() "
-                "without current GL context";
+  NoContextHelper("glGetFramebufferAttachmentParameterivEXT");
 }
 
 void NoContextGLApi::glGetFramebufferAttachmentParameterivRobustANGLEFn(
@@ -13737,12 +13147,7 @@ void NoContextGLApi::glGetFramebufferAttachmentParameterivRobustANGLEFn(
     GLsizei bufSize,
     GLsizei* length,
     GLint* params) {
-  NOTREACHED() << "Trying to call "
-                  "glGetFramebufferAttachmentParameterivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call "
-                "glGetFramebufferAttachmentParameterivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetFramebufferAttachmentParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
@@ -13750,26 +13155,18 @@ void NoContextGLApi::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                               GLsizei bufSize,
                                                               GLsizei* length,
                                                               GLint* params) {
-  NOTREACHED() << "Trying to call glGetFramebufferParameterivRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetFramebufferParameterivRobustANGLE() "
-                "without current GL context";
+  NoContextHelper("glGetFramebufferParameterivRobustANGLE");
 }
 
 GLenum NoContextGLApi::glGetGraphicsResetStatusARBFn(void) {
-  NOTREACHED() << "Trying to call glGetGraphicsResetStatusARB() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetGraphicsResetStatusARB() without current "
-                "GL context";
+  NoContextHelper("glGetGraphicsResetStatusARB");
   return static_cast<GLenum>(0);
 }
 
 void NoContextGLApi::glGetInteger64i_vFn(GLenum target,
                                          GLuint index,
                                          GLint64* data) {
-  NOTREACHED()
-      << "Trying to call glGetInteger64i_v() without current GL context";
-  LOG(ERROR) << "Trying to call glGetInteger64i_v() without current GL context";
+  NoContextHelper("glGetInteger64i_v");
 }
 
 void NoContextGLApi::glGetInteger64i_vRobustANGLEFn(GLenum target,
@@ -13777,32 +13174,24 @@ void NoContextGLApi::glGetInteger64i_vRobustANGLEFn(GLenum target,
                                                     GLsizei bufSize,
                                                     GLsizei* length,
                                                     GLint64* data) {
-  NOTREACHED() << "Trying to call glGetInteger64i_vRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetInteger64i_vRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetInteger64i_vRobustANGLE");
 }
 
 void NoContextGLApi::glGetInteger64vFn(GLenum pname, GLint64* params) {
-  NOTREACHED() << "Trying to call glGetInteger64v() without current GL context";
-  LOG(ERROR) << "Trying to call glGetInteger64v() without current GL context";
+  NoContextHelper("glGetInteger64v");
 }
 
 void NoContextGLApi::glGetInteger64vRobustANGLEFn(GLenum pname,
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLint64* data) {
-  NOTREACHED() << "Trying to call glGetInteger64vRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetInteger64vRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetInteger64vRobustANGLE");
 }
 
 void NoContextGLApi::glGetIntegeri_vFn(GLenum target,
                                        GLuint index,
                                        GLint* data) {
-  NOTREACHED() << "Trying to call glGetIntegeri_v() without current GL context";
-  LOG(ERROR) << "Trying to call glGetIntegeri_v() without current GL context";
+  NoContextHelper("glGetIntegeri_v");
 }
 
 void NoContextGLApi::glGetIntegeri_vRobustANGLEFn(GLenum target,
@@ -13810,25 +13199,18 @@ void NoContextGLApi::glGetIntegeri_vRobustANGLEFn(GLenum target,
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLint* data) {
-  NOTREACHED() << "Trying to call glGetIntegeri_vRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetIntegeri_vRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetIntegeri_vRobustANGLE");
 }
 
 void NoContextGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
-  NOTREACHED() << "Trying to call glGetIntegerv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetIntegerv() without current GL context";
+  NoContextHelper("glGetIntegerv");
 }
 
 void NoContextGLApi::glGetIntegervRobustANGLEFn(GLenum pname,
                                                 GLsizei bufSize,
                                                 GLsizei* length,
                                                 GLint* data) {
-  NOTREACHED()
-      << "Trying to call glGetIntegervRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetIntegervRobustANGLE() without current GL context";
+  NoContextHelper("glGetIntegervRobustANGLE");
 }
 
 void NoContextGLApi::glGetInternalformativFn(GLenum target,
@@ -13836,10 +13218,7 @@ void NoContextGLApi::glGetInternalformativFn(GLenum target,
                                              GLenum pname,
                                              GLsizei bufSize,
                                              GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetInternalformativ() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetInternalformativ() without current GL context";
+  NoContextHelper("glGetInternalformativ");
 }
 
 void NoContextGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
@@ -13848,19 +13227,13 @@ void NoContextGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                                         GLsizei bufSize,
                                                         GLsizei* length,
                                                         GLint* params) {
-  NOTREACHED() << "Trying to call glGetInternalformativRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetInternalformativRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetInternalformativRobustANGLE");
 }
 
 void NoContextGLApi::glGetMultisamplefvFn(GLenum pname,
                                           GLuint index,
                                           GLfloat* val) {
-  NOTREACHED()
-      << "Trying to call glGetMultisamplefv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetMultisamplefv() without current GL context";
+  NoContextHelper("glGetMultisamplefv");
 }
 
 void NoContextGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
@@ -13868,10 +13241,7 @@ void NoContextGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                      GLsizei bufSize,
                                                      GLsizei* length,
                                                      GLfloat* val) {
-  NOTREACHED() << "Trying to call glGetMultisamplefvRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetMultisamplefvRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetMultisamplefvRobustANGLE");
 }
 
 void NoContextGLApi::glGetnUniformfvRobustANGLEFn(GLuint program,
@@ -13879,10 +13249,7 @@ void NoContextGLApi::glGetnUniformfvRobustANGLEFn(GLuint program,
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetnUniformfvRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetnUniformfvRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetnUniformfvRobustANGLE");
 }
 
 void NoContextGLApi::glGetnUniformivRobustANGLEFn(GLuint program,
@@ -13890,10 +13257,7 @@ void NoContextGLApi::glGetnUniformivRobustANGLEFn(GLuint program,
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLint* params) {
-  NOTREACHED() << "Trying to call glGetnUniformivRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetnUniformivRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetnUniformivRobustANGLE");
 }
 
 void NoContextGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
@@ -13901,10 +13265,7 @@ void NoContextGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                                                    GLsizei bufSize,
                                                    GLsizei* length,
                                                    GLuint* params) {
-  NOTREACHED() << "Trying to call glGetnUniformuivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetnUniformuivRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetnUniformuivRobustANGLE");
 }
 
 void NoContextGLApi::glGetObjectLabelFn(GLenum identifier,
@@ -13912,34 +13273,25 @@ void NoContextGLApi::glGetObjectLabelFn(GLenum identifier,
                                         GLsizei bufSize,
                                         GLsizei* length,
                                         char* label) {
-  NOTREACHED()
-      << "Trying to call glGetObjectLabel() without current GL context";
-  LOG(ERROR) << "Trying to call glGetObjectLabel() without current GL context";
+  NoContextHelper("glGetObjectLabel");
 }
 
 void NoContextGLApi::glGetObjectPtrLabelFn(void* ptr,
                                            GLsizei bufSize,
                                            GLsizei* length,
                                            char* label) {
-  NOTREACHED()
-      << "Trying to call glGetObjectPtrLabel() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetObjectPtrLabel() without current GL context";
+  NoContextHelper("glGetObjectPtrLabel");
 }
 
 void NoContextGLApi::glGetPointervFn(GLenum pname, void** params) {
-  NOTREACHED() << "Trying to call glGetPointerv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetPointerv() without current GL context";
+  NoContextHelper("glGetPointerv");
 }
 
 void NoContextGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                            GLsizei bufSize,
                                                            GLsizei* length,
                                                            void** params) {
-  NOTREACHED() << "Trying to call glGetPointervRobustANGLERobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetPointervRobustANGLERobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetPointervRobustANGLERobustANGLE");
 }
 
 void NoContextGLApi::glGetProgramBinaryFn(GLuint program,
@@ -13947,30 +13299,21 @@ void NoContextGLApi::glGetProgramBinaryFn(GLuint program,
                                           GLsizei* length,
                                           GLenum* binaryFormat,
                                           GLvoid* binary) {
-  NOTREACHED()
-      << "Trying to call glGetProgramBinary() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetProgramBinary() without current GL context";
+  NoContextHelper("glGetProgramBinary");
 }
 
 void NoContextGLApi::glGetProgramInfoLogFn(GLuint program,
                                            GLsizei bufsize,
                                            GLsizei* length,
                                            char* infolog) {
-  NOTREACHED()
-      << "Trying to call glGetProgramInfoLog() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetProgramInfoLog() without current GL context";
+  NoContextHelper("glGetProgramInfoLog");
 }
 
 void NoContextGLApi::glGetProgramInterfaceivFn(GLuint program,
                                                GLenum programInterface,
                                                GLenum pname,
                                                GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetProgramInterfaceiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetProgramInterfaceiv() without current GL context";
+  NoContextHelper("glGetProgramInterfaceiv");
 }
 
 void NoContextGLApi::glGetProgramInterfaceivRobustANGLEFn(
@@ -13980,17 +13323,13 @@ void NoContextGLApi::glGetProgramInterfaceivRobustANGLEFn(
     GLsizei bufSize,
     GLsizei* length,
     GLint* params) {
-  NOTREACHED() << "Trying to call glGetProgramInterfaceivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetProgramInterfaceivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetProgramInterfaceivRobustANGLE");
 }
 
 void NoContextGLApi::glGetProgramivFn(GLuint program,
                                       GLenum pname,
                                       GLint* params) {
-  NOTREACHED() << "Trying to call glGetProgramiv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetProgramiv() without current GL context";
+  NoContextHelper("glGetProgramiv");
 }
 
 void NoContextGLApi::glGetProgramivRobustANGLEFn(GLuint program,
@@ -13998,10 +13337,7 @@ void NoContextGLApi::glGetProgramivRobustANGLEFn(GLuint program,
                                                  GLsizei bufSize,
                                                  GLsizei* length,
                                                  GLint* params) {
-  NOTREACHED() << "Trying to call glGetProgramivRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetProgramivRobustANGLE() without current GL "
-                "context";
+  NoContextHelper("glGetProgramivRobustANGLE");
 }
 
 void NoContextGLApi::glGetProgramResourceivFn(GLuint program,
@@ -14012,19 +13348,13 @@ void NoContextGLApi::glGetProgramResourceivFn(GLuint program,
                                               GLsizei bufSize,
                                               GLsizei* length,
                                               GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetProgramResourceiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetProgramResourceiv() without current GL context";
+  NoContextHelper("glGetProgramResourceiv");
 }
 
 GLint NoContextGLApi::glGetProgramResourceLocationFn(GLuint program,
                                                      GLenum programInterface,
                                                      const char* name) {
-  NOTREACHED() << "Trying to call glGetProgramResourceLocation() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetProgramResourceLocation() without current "
-                "GL context";
+  NoContextHelper("glGetProgramResourceLocation");
   return 0;
 }
 
@@ -14034,17 +13364,13 @@ void NoContextGLApi::glGetProgramResourceNameFn(GLuint program,
                                                 GLsizei bufSize,
                                                 GLsizei* length,
                                                 GLchar* name) {
-  NOTREACHED()
-      << "Trying to call glGetProgramResourceName() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetProgramResourceName() without current GL context";
+  NoContextHelper("glGetProgramResourceName");
 }
 
 void NoContextGLApi::glGetQueryivFn(GLenum target,
                                     GLenum pname,
                                     GLint* params) {
-  NOTREACHED() << "Trying to call glGetQueryiv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetQueryiv() without current GL context";
+  NoContextHelper("glGetQueryiv");
 }
 
 void NoContextGLApi::glGetQueryivRobustANGLEFn(GLenum target,
@@ -14052,19 +13378,13 @@ void NoContextGLApi::glGetQueryivRobustANGLEFn(GLenum target,
                                                GLsizei bufSize,
                                                GLsizei* length,
                                                GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryivRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryivRobustANGLE() without current GL context";
+  NoContextHelper("glGetQueryivRobustANGLE");
 }
 
 void NoContextGLApi::glGetQueryObjecti64vFn(GLuint id,
                                             GLenum pname,
                                             GLint64* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryObjecti64v() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryObjecti64v() without current GL context";
+  NoContextHelper("glGetQueryObjecti64v");
 }
 
 void NoContextGLApi::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
@@ -14072,19 +13392,13 @@ void NoContextGLApi::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                                        GLsizei bufSize,
                                                        GLsizei* length,
                                                        GLint64* params) {
-  NOTREACHED() << "Trying to call glGetQueryObjecti64vRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetQueryObjecti64vRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetQueryObjecti64vRobustANGLE");
 }
 
 void NoContextGLApi::glGetQueryObjectivFn(GLuint id,
                                           GLenum pname,
                                           GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryObjectiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryObjectiv() without current GL context";
+  NoContextHelper("glGetQueryObjectiv");
 }
 
 void NoContextGLApi::glGetQueryObjectivRobustANGLEFn(GLuint id,
@@ -14092,19 +13406,13 @@ void NoContextGLApi::glGetQueryObjectivRobustANGLEFn(GLuint id,
                                                      GLsizei bufSize,
                                                      GLsizei* length,
                                                      GLint* params) {
-  NOTREACHED() << "Trying to call glGetQueryObjectivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetQueryObjectivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetQueryObjectivRobustANGLE");
 }
 
 void NoContextGLApi::glGetQueryObjectui64vFn(GLuint id,
                                              GLenum pname,
                                              GLuint64* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryObjectui64v() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryObjectui64v() without current GL context";
+  NoContextHelper("glGetQueryObjectui64v");
 }
 
 void NoContextGLApi::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
@@ -14112,19 +13420,13 @@ void NoContextGLApi::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                                         GLsizei bufSize,
                                                         GLsizei* length,
                                                         GLuint64* params) {
-  NOTREACHED() << "Trying to call glGetQueryObjectui64vRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetQueryObjectui64vRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetQueryObjectui64vRobustANGLE");
 }
 
 void NoContextGLApi::glGetQueryObjectuivFn(GLuint id,
                                            GLenum pname,
                                            GLuint* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryObjectuiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryObjectuiv() without current GL context";
+  NoContextHelper("glGetQueryObjectuiv");
 }
 
 void NoContextGLApi::glGetQueryObjectuivRobustANGLEFn(GLuint id,
@@ -14132,19 +13434,13 @@ void NoContextGLApi::glGetQueryObjectuivRobustANGLEFn(GLuint id,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
                                                       GLuint* params) {
-  NOTREACHED() << "Trying to call glGetQueryObjectuivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetQueryObjectuivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetQueryObjectuivRobustANGLE");
 }
 
 void NoContextGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
                                                        GLenum pname,
                                                        GLint* params) {
-  NOTREACHED() << "Trying to call glGetRenderbufferParameterivEXT() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetRenderbufferParameterivEXT() without "
-                "current GL context";
+  NoContextHelper("glGetRenderbufferParameterivEXT");
 }
 
 void NoContextGLApi::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
@@ -14152,19 +13448,13 @@ void NoContextGLApi::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                                GLsizei bufSize,
                                                                GLsizei* length,
                                                                GLint* params) {
-  NOTREACHED() << "Trying to call glGetRenderbufferParameterivRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetRenderbufferParameterivRobustANGLE() "
-                "without current GL context";
+  NoContextHelper("glGetRenderbufferParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glGetSamplerParameterfvFn(GLuint sampler,
                                                GLenum pname,
                                                GLfloat* params) {
-  NOTREACHED()
-      << "Trying to call glGetSamplerParameterfv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetSamplerParameterfv() without current GL context";
+  NoContextHelper("glGetSamplerParameterfv");
 }
 
 void NoContextGLApi::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
@@ -14172,10 +13462,7 @@ void NoContextGLApi::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                           GLsizei bufSize,
                                                           GLsizei* length,
                                                           GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetSamplerParameterfvRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetSamplerParameterfvRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetSamplerParameterfvRobustANGLE");
 }
 
 void NoContextGLApi::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
@@ -14183,10 +13470,7 @@ void NoContextGLApi::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                            GLsizei bufSize,
                                                            GLsizei* length,
                                                            GLint* params) {
-  NOTREACHED() << "Trying to call glGetSamplerParameterIivRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetSamplerParameterIivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetSamplerParameterIivRobustANGLE");
 }
 
 void NoContextGLApi::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
@@ -14194,19 +13478,13 @@ void NoContextGLApi::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                             GLsizei bufSize,
                                                             GLsizei* length,
                                                             GLuint* params) {
-  NOTREACHED() << "Trying to call glGetSamplerParameterIuivRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetSamplerParameterIuivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetSamplerParameterIuivRobustANGLE");
 }
 
 void NoContextGLApi::glGetSamplerParameterivFn(GLuint sampler,
                                                GLenum pname,
                                                GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetSamplerParameteriv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetSamplerParameteriv() without current GL context";
+  NoContextHelper("glGetSamplerParameteriv");
 }
 
 void NoContextGLApi::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
@@ -14214,27 +13492,20 @@ void NoContextGLApi::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                           GLsizei bufSize,
                                                           GLsizei* length,
                                                           GLint* params) {
-  NOTREACHED() << "Trying to call glGetSamplerParameterivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetSamplerParameterivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetSamplerParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glGetShaderInfoLogFn(GLuint shader,
                                           GLsizei bufsize,
                                           GLsizei* length,
                                           char* infolog) {
-  NOTREACHED()
-      << "Trying to call glGetShaderInfoLog() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetShaderInfoLog() without current GL context";
+  NoContextHelper("glGetShaderInfoLog");
 }
 
 void NoContextGLApi::glGetShaderivFn(GLuint shader,
                                      GLenum pname,
                                      GLint* params) {
-  NOTREACHED() << "Trying to call glGetShaderiv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetShaderiv() without current GL context";
+  NoContextHelper("glGetShaderiv");
 }
 
 void NoContextGLApi::glGetShaderivRobustANGLEFn(GLuint shader,
@@ -14242,40 +13513,30 @@ void NoContextGLApi::glGetShaderivRobustANGLEFn(GLuint shader,
                                                 GLsizei bufSize,
                                                 GLsizei* length,
                                                 GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetShaderivRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetShaderivRobustANGLE() without current GL context";
+  NoContextHelper("glGetShaderivRobustANGLE");
 }
 
 void NoContextGLApi::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                                   GLenum precisiontype,
                                                   GLint* range,
                                                   GLint* precision) {
-  NOTREACHED() << "Trying to call glGetShaderPrecisionFormat() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetShaderPrecisionFormat() without current "
-                "GL context";
+  NoContextHelper("glGetShaderPrecisionFormat");
 }
 
 void NoContextGLApi::glGetShaderSourceFn(GLuint shader,
                                          GLsizei bufsize,
                                          GLsizei* length,
                                          char* source) {
-  NOTREACHED()
-      << "Trying to call glGetShaderSource() without current GL context";
-  LOG(ERROR) << "Trying to call glGetShaderSource() without current GL context";
+  NoContextHelper("glGetShaderSource");
 }
 
 const GLubyte* NoContextGLApi::glGetStringFn(GLenum name) {
-  NOTREACHED() << "Trying to call glGetString() without current GL context";
-  LOG(ERROR) << "Trying to call glGetString() without current GL context";
+  NoContextHelper("glGetString");
   return NULL;
 }
 
 const GLubyte* NoContextGLApi::glGetStringiFn(GLenum name, GLuint index) {
-  NOTREACHED() << "Trying to call glGetStringi() without current GL context";
-  LOG(ERROR) << "Trying to call glGetStringi() without current GL context";
+  NoContextHelper("glGetStringi");
   return NULL;
 }
 
@@ -14284,18 +13545,14 @@ void NoContextGLApi::glGetSyncivFn(GLsync sync,
                                    GLsizei bufSize,
                                    GLsizei* length,
                                    GLint* values) {
-  NOTREACHED() << "Trying to call glGetSynciv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetSynciv() without current GL context";
+  NoContextHelper("glGetSynciv");
 }
 
 void NoContextGLApi::glGetTexLevelParameterfvFn(GLenum target,
                                                 GLint level,
                                                 GLenum pname,
                                                 GLfloat* params) {
-  NOTREACHED()
-      << "Trying to call glGetTexLevelParameterfv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetTexLevelParameterfv() without current GL context";
+  NoContextHelper("glGetTexLevelParameterfv");
 }
 
 void NoContextGLApi::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
@@ -14304,20 +13561,14 @@ void NoContextGLApi::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                            GLsizei bufSize,
                                                            GLsizei* length,
                                                            GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetTexLevelParameterfvRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetTexLevelParameterfvRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTexLevelParameterfvRobustANGLE");
 }
 
 void NoContextGLApi::glGetTexLevelParameterivFn(GLenum target,
                                                 GLint level,
                                                 GLenum pname,
                                                 GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetTexLevelParameteriv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetTexLevelParameteriv() without current GL context";
+  NoContextHelper("glGetTexLevelParameteriv");
 }
 
 void NoContextGLApi::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
@@ -14326,19 +13577,13 @@ void NoContextGLApi::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                            GLsizei bufSize,
                                                            GLsizei* length,
                                                            GLint* params) {
-  NOTREACHED() << "Trying to call glGetTexLevelParameterivRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetTexLevelParameterivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTexLevelParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glGetTexParameterfvFn(GLenum target,
                                            GLenum pname,
                                            GLfloat* params) {
-  NOTREACHED()
-      << "Trying to call glGetTexParameterfv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetTexParameterfv() without current GL context";
+  NoContextHelper("glGetTexParameterfv");
 }
 
 void NoContextGLApi::glGetTexParameterfvRobustANGLEFn(GLenum target,
@@ -14346,10 +13591,7 @@ void NoContextGLApi::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
                                                       GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetTexParameterfvRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetTexParameterfvRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTexParameterfvRobustANGLE");
 }
 
 void NoContextGLApi::glGetTexParameterIivRobustANGLEFn(GLenum target,
@@ -14357,10 +13599,7 @@ void NoContextGLApi::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                                        GLsizei bufSize,
                                                        GLsizei* length,
                                                        GLint* params) {
-  NOTREACHED() << "Trying to call glGetTexParameterIivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetTexParameterIivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTexParameterIivRobustANGLE");
 }
 
 void NoContextGLApi::glGetTexParameterIuivRobustANGLEFn(GLenum target,
@@ -14368,19 +13607,13 @@ void NoContextGLApi::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                                         GLsizei bufSize,
                                                         GLsizei* length,
                                                         GLuint* params) {
-  NOTREACHED() << "Trying to call glGetTexParameterIuivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetTexParameterIuivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTexParameterIuivRobustANGLE");
 }
 
 void NoContextGLApi::glGetTexParameterivFn(GLenum target,
                                            GLenum pname,
                                            GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetTexParameteriv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetTexParameteriv() without current GL context";
+  NoContextHelper("glGetTexParameteriv");
 }
 
 void NoContextGLApi::glGetTexParameterivRobustANGLEFn(GLenum target,
@@ -14388,10 +13621,7 @@ void NoContextGLApi::glGetTexParameterivRobustANGLEFn(GLenum target,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
                                                       GLint* params) {
-  NOTREACHED() << "Trying to call glGetTexParameterivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetTexParameterivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTexParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
@@ -14401,36 +13631,26 @@ void NoContextGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                                      GLsizei* size,
                                                      GLenum* type,
                                                      char* name) {
-  NOTREACHED() << "Trying to call glGetTransformFeedbackVarying() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetTransformFeedbackVarying() without "
-                "current GL context";
+  NoContextHelper("glGetTransformFeedbackVarying");
 }
 
 void NoContextGLApi::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
                                                         GLsizei bufsize,
                                                         GLsizei* length,
                                                         char* source) {
-  NOTREACHED() << "Trying to call glGetTranslatedShaderSourceANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetTranslatedShaderSourceANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetTranslatedShaderSourceANGLE");
 }
 
 GLuint NoContextGLApi::glGetUniformBlockIndexFn(GLuint program,
                                                 const char* uniformBlockName) {
-  NOTREACHED()
-      << "Trying to call glGetUniformBlockIndex() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetUniformBlockIndex() without current GL context";
+  NoContextHelper("glGetUniformBlockIndex");
   return 0U;
 }
 
 void NoContextGLApi::glGetUniformfvFn(GLuint program,
                                       GLint location,
                                       GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetUniformfv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetUniformfv() without current GL context";
+  NoContextHelper("glGetUniformfv");
 }
 
 void NoContextGLApi::glGetUniformfvRobustANGLEFn(GLuint program,
@@ -14438,27 +13658,20 @@ void NoContextGLApi::glGetUniformfvRobustANGLEFn(GLuint program,
                                                  GLsizei bufSize,
                                                  GLsizei* length,
                                                  GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetUniformfvRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetUniformfvRobustANGLE() without current GL "
-                "context";
+  NoContextHelper("glGetUniformfvRobustANGLE");
 }
 
 void NoContextGLApi::glGetUniformIndicesFn(GLuint program,
                                            GLsizei uniformCount,
                                            const char* const* uniformNames,
                                            GLuint* uniformIndices) {
-  NOTREACHED()
-      << "Trying to call glGetUniformIndices() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetUniformIndices() without current GL context";
+  NoContextHelper("glGetUniformIndices");
 }
 
 void NoContextGLApi::glGetUniformivFn(GLuint program,
                                       GLint location,
                                       GLint* params) {
-  NOTREACHED() << "Trying to call glGetUniformiv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetUniformiv() without current GL context";
+  NoContextHelper("glGetUniformiv");
 }
 
 void NoContextGLApi::glGetUniformivRobustANGLEFn(GLuint program,
@@ -14466,25 +13679,18 @@ void NoContextGLApi::glGetUniformivRobustANGLEFn(GLuint program,
                                                  GLsizei bufSize,
                                                  GLsizei* length,
                                                  GLint* params) {
-  NOTREACHED() << "Trying to call glGetUniformivRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetUniformivRobustANGLE() without current GL "
-                "context";
+  NoContextHelper("glGetUniformivRobustANGLE");
 }
 
 GLint NoContextGLApi::glGetUniformLocationFn(GLuint program, const char* name) {
-  NOTREACHED()
-      << "Trying to call glGetUniformLocation() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetUniformLocation() without current GL context";
+  NoContextHelper("glGetUniformLocation");
   return 0;
 }
 
 void NoContextGLApi::glGetUniformuivFn(GLuint program,
                                        GLint location,
                                        GLuint* params) {
-  NOTREACHED() << "Trying to call glGetUniformuiv() without current GL context";
-  LOG(ERROR) << "Trying to call glGetUniformuiv() without current GL context";
+  NoContextHelper("glGetUniformuiv");
 }
 
 void NoContextGLApi::glGetUniformuivRobustANGLEFn(GLuint program,
@@ -14492,19 +13698,13 @@ void NoContextGLApi::glGetUniformuivRobustANGLEFn(GLuint program,
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLuint* params) {
-  NOTREACHED() << "Trying to call glGetUniformuivRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetUniformuivRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glGetUniformuivRobustANGLE");
 }
 
 void NoContextGLApi::glGetVertexAttribfvFn(GLuint index,
                                            GLenum pname,
                                            GLfloat* params) {
-  NOTREACHED()
-      << "Trying to call glGetVertexAttribfv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetVertexAttribfv() without current GL context";
+  NoContextHelper("glGetVertexAttribfv");
 }
 
 void NoContextGLApi::glGetVertexAttribfvRobustANGLEFn(GLuint index,
@@ -14512,10 +13712,7 @@ void NoContextGLApi::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
                                                       GLfloat* params) {
-  NOTREACHED() << "Trying to call glGetVertexAttribfvRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetVertexAttribfvRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetVertexAttribfvRobustANGLE");
 }
 
 void NoContextGLApi::glGetVertexAttribIivRobustANGLEFn(GLuint index,
@@ -14523,10 +13720,7 @@ void NoContextGLApi::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                                        GLsizei bufSize,
                                                        GLsizei* length,
                                                        GLint* params) {
-  NOTREACHED() << "Trying to call glGetVertexAttribIivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetVertexAttribIivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetVertexAttribIivRobustANGLE");
 }
 
 void NoContextGLApi::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
@@ -14534,19 +13728,13 @@ void NoContextGLApi::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                                         GLsizei bufSize,
                                                         GLsizei* length,
                                                         GLuint* params) {
-  NOTREACHED() << "Trying to call glGetVertexAttribIuivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetVertexAttribIuivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetVertexAttribIuivRobustANGLE");
 }
 
 void NoContextGLApi::glGetVertexAttribivFn(GLuint index,
                                            GLenum pname,
                                            GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetVertexAttribiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetVertexAttribiv() without current GL context";
+  NoContextHelper("glGetVertexAttribiv");
 }
 
 void NoContextGLApi::glGetVertexAttribivRobustANGLEFn(GLuint index,
@@ -14554,19 +13742,13 @@ void NoContextGLApi::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
                                                       GLint* params) {
-  NOTREACHED() << "Trying to call glGetVertexAttribivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glGetVertexAttribivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetVertexAttribivRobustANGLE");
 }
 
 void NoContextGLApi::glGetVertexAttribPointervFn(GLuint index,
                                                  GLenum pname,
                                                  void** pointer) {
-  NOTREACHED() << "Trying to call glGetVertexAttribPointerv() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glGetVertexAttribPointerv() without current GL "
-                "context";
+  NoContextHelper("glGetVertexAttribPointerv");
 }
 
 void NoContextGLApi::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
@@ -14574,32 +13756,22 @@ void NoContextGLApi::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                             GLsizei bufSize,
                                                             GLsizei* length,
                                                             void** pointer) {
-  NOTREACHED() << "Trying to call glGetVertexAttribPointervRobustANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glGetVertexAttribPointervRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glGetVertexAttribPointervRobustANGLE");
 }
 
 void NoContextGLApi::glHintFn(GLenum target, GLenum mode) {
-  NOTREACHED() << "Trying to call glHint() without current GL context";
-  LOG(ERROR) << "Trying to call glHint() without current GL context";
+  NoContextHelper("glHint");
 }
 
 void NoContextGLApi::glInsertEventMarkerEXTFn(GLsizei length,
                                               const char* marker) {
-  NOTREACHED()
-      << "Trying to call glInsertEventMarkerEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glInsertEventMarkerEXT() without current GL context";
+  NoContextHelper("glInsertEventMarkerEXT");
 }
 
 void NoContextGLApi::glInvalidateFramebufferFn(GLenum target,
                                                GLsizei numAttachments,
                                                const GLenum* attachments) {
-  NOTREACHED()
-      << "Trying to call glInvalidateFramebuffer() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glInvalidateFramebuffer() without current GL context";
+  NoContextHelper("glInvalidateFramebuffer");
 }
 
 void NoContextGLApi::glInvalidateSubFramebufferFn(GLenum target,
@@ -14609,123 +13781,94 @@ void NoContextGLApi::glInvalidateSubFramebufferFn(GLenum target,
                                                   GLint y,
                                                   GLint width,
                                                   GLint height) {
-  NOTREACHED() << "Trying to call glInvalidateSubFramebuffer() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glInvalidateSubFramebuffer() without current "
-                "GL context";
+  NoContextHelper("glInvalidateSubFramebuffer");
 }
 
 GLboolean NoContextGLApi::glIsBufferFn(GLuint buffer) {
-  NOTREACHED() << "Trying to call glIsBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glIsBuffer() without current GL context";
+  NoContextHelper("glIsBuffer");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsEnabledFn(GLenum cap) {
-  NOTREACHED() << "Trying to call glIsEnabled() without current GL context";
-  LOG(ERROR) << "Trying to call glIsEnabled() without current GL context";
+  NoContextHelper("glIsEnabled");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsFenceAPPLEFn(GLuint fence) {
-  NOTREACHED() << "Trying to call glIsFenceAPPLE() without current GL context";
-  LOG(ERROR) << "Trying to call glIsFenceAPPLE() without current GL context";
+  NoContextHelper("glIsFenceAPPLE");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsFenceNVFn(GLuint fence) {
-  NOTREACHED() << "Trying to call glIsFenceNV() without current GL context";
-  LOG(ERROR) << "Trying to call glIsFenceNV() without current GL context";
+  NoContextHelper("glIsFenceNV");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
-  NOTREACHED()
-      << "Trying to call glIsFramebufferEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glIsFramebufferEXT() without current GL context";
+  NoContextHelper("glIsFramebufferEXT");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsPathNVFn(GLuint path) {
-  NOTREACHED() << "Trying to call glIsPathNV() without current GL context";
-  LOG(ERROR) << "Trying to call glIsPathNV() without current GL context";
+  NoContextHelper("glIsPathNV");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsProgramFn(GLuint program) {
-  NOTREACHED() << "Trying to call glIsProgram() without current GL context";
-  LOG(ERROR) << "Trying to call glIsProgram() without current GL context";
+  NoContextHelper("glIsProgram");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsQueryFn(GLuint query) {
-  NOTREACHED() << "Trying to call glIsQuery() without current GL context";
-  LOG(ERROR) << "Trying to call glIsQuery() without current GL context";
+  NoContextHelper("glIsQuery");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsRenderbufferEXTFn(GLuint renderbuffer) {
-  NOTREACHED()
-      << "Trying to call glIsRenderbufferEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glIsRenderbufferEXT() without current GL context";
+  NoContextHelper("glIsRenderbufferEXT");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsSamplerFn(GLuint sampler) {
-  NOTREACHED() << "Trying to call glIsSampler() without current GL context";
-  LOG(ERROR) << "Trying to call glIsSampler() without current GL context";
+  NoContextHelper("glIsSampler");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsShaderFn(GLuint shader) {
-  NOTREACHED() << "Trying to call glIsShader() without current GL context";
-  LOG(ERROR) << "Trying to call glIsShader() without current GL context";
+  NoContextHelper("glIsShader");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsSyncFn(GLsync sync) {
-  NOTREACHED() << "Trying to call glIsSync() without current GL context";
-  LOG(ERROR) << "Trying to call glIsSync() without current GL context";
+  NoContextHelper("glIsSync");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsTextureFn(GLuint texture) {
-  NOTREACHED() << "Trying to call glIsTexture() without current GL context";
-  LOG(ERROR) << "Trying to call glIsTexture() without current GL context";
+  NoContextHelper("glIsTexture");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsTransformFeedbackFn(GLuint id) {
-  NOTREACHED()
-      << "Trying to call glIsTransformFeedback() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glIsTransformFeedback() without current GL context";
+  NoContextHelper("glIsTransformFeedback");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glIsVertexArrayOESFn(GLuint array) {
-  NOTREACHED()
-      << "Trying to call glIsVertexArrayOES() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glIsVertexArrayOES() without current GL context";
+  NoContextHelper("glIsVertexArrayOES");
   return GL_FALSE;
 }
 
 void NoContextGLApi::glLineWidthFn(GLfloat width) {
-  NOTREACHED() << "Trying to call glLineWidth() without current GL context";
-  LOG(ERROR) << "Trying to call glLineWidth() without current GL context";
+  NoContextHelper("glLineWidth");
 }
 
 void NoContextGLApi::glLinkProgramFn(GLuint program) {
-  NOTREACHED() << "Trying to call glLinkProgram() without current GL context";
-  LOG(ERROR) << "Trying to call glLinkProgram() without current GL context";
+  NoContextHelper("glLinkProgram");
 }
 
 void* NoContextGLApi::glMapBufferFn(GLenum target, GLenum access) {
-  NOTREACHED() << "Trying to call glMapBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glMapBuffer() without current GL context";
+  NoContextHelper("glMapBuffer");
   return NULL;
 }
 
@@ -14733,46 +13876,33 @@ void* NoContextGLApi::glMapBufferRangeFn(GLenum target,
                                          GLintptr offset,
                                          GLsizeiptr length,
                                          GLbitfield access) {
-  NOTREACHED()
-      << "Trying to call glMapBufferRange() without current GL context";
-  LOG(ERROR) << "Trying to call glMapBufferRange() without current GL context";
+  NoContextHelper("glMapBufferRange");
   return NULL;
 }
 
 void NoContextGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
-  NOTREACHED()
-      << "Trying to call glMatrixLoadfEXT() without current GL context";
-  LOG(ERROR) << "Trying to call glMatrixLoadfEXT() without current GL context";
+  NoContextHelper("glMatrixLoadfEXT");
 }
 
 void NoContextGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
-  NOTREACHED()
-      << "Trying to call glMatrixLoadIdentityEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glMatrixLoadIdentityEXT() without current GL context";
+  NoContextHelper("glMatrixLoadIdentityEXT");
 }
 
 void NoContextGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
-  NOTREACHED()
-      << "Trying to call glMemoryBarrierEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glMemoryBarrierEXT() without current GL context";
+  NoContextHelper("glMemoryBarrierEXT");
 }
 
 void NoContextGLApi::glObjectLabelFn(GLenum identifier,
                                      GLuint name,
                                      GLsizei length,
                                      const char* label) {
-  NOTREACHED() << "Trying to call glObjectLabel() without current GL context";
-  LOG(ERROR) << "Trying to call glObjectLabel() without current GL context";
+  NoContextHelper("glObjectLabel");
 }
 
 void NoContextGLApi::glObjectPtrLabelFn(void* ptr,
                                         GLsizei length,
                                         const char* label) {
-  NOTREACHED()
-      << "Trying to call glObjectPtrLabel() without current GL context";
-  LOG(ERROR) << "Trying to call glObjectPtrLabel() without current GL context";
+  NoContextHelper("glObjectPtrLabel");
 }
 
 void NoContextGLApi::glPathCommandsNVFn(GLuint path,
@@ -14781,100 +13911,70 @@ void NoContextGLApi::glPathCommandsNVFn(GLuint path,
                                         GLsizei numCoords,
                                         GLenum coordType,
                                         const GLvoid* coords) {
-  NOTREACHED()
-      << "Trying to call glPathCommandsNV() without current GL context";
-  LOG(ERROR) << "Trying to call glPathCommandsNV() without current GL context";
+  NoContextHelper("glPathCommandsNV");
 }
 
 void NoContextGLApi::glPathParameterfNVFn(GLuint path,
                                           GLenum pname,
                                           GLfloat value) {
-  NOTREACHED()
-      << "Trying to call glPathParameterfNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPathParameterfNV() without current GL context";
+  NoContextHelper("glPathParameterfNV");
 }
 
 void NoContextGLApi::glPathParameteriNVFn(GLuint path,
                                           GLenum pname,
                                           GLint value) {
-  NOTREACHED()
-      << "Trying to call glPathParameteriNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPathParameteriNV() without current GL context";
+  NoContextHelper("glPathParameteriNV");
 }
 
 void NoContextGLApi::glPathStencilFuncNVFn(GLenum func,
                                            GLint ref,
                                            GLuint mask) {
-  NOTREACHED()
-      << "Trying to call glPathStencilFuncNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPathStencilFuncNV() without current GL context";
+  NoContextHelper("glPathStencilFuncNV");
 }
 
 void NoContextGLApi::glPauseTransformFeedbackFn(void) {
-  NOTREACHED()
-      << "Trying to call glPauseTransformFeedback() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPauseTransformFeedback() without current GL context";
+  NoContextHelper("glPauseTransformFeedback");
 }
 
 void NoContextGLApi::glPixelStoreiFn(GLenum pname, GLint param) {
-  NOTREACHED() << "Trying to call glPixelStorei() without current GL context";
-  LOG(ERROR) << "Trying to call glPixelStorei() without current GL context";
+  NoContextHelper("glPixelStorei");
 }
 
 void NoContextGLApi::glPointParameteriFn(GLenum pname, GLint param) {
-  NOTREACHED()
-      << "Trying to call glPointParameteri() without current GL context";
-  LOG(ERROR) << "Trying to call glPointParameteri() without current GL context";
+  NoContextHelper("glPointParameteri");
 }
 
 void NoContextGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
-  NOTREACHED() << "Trying to call glPolygonMode() without current GL context";
-  LOG(ERROR) << "Trying to call glPolygonMode() without current GL context";
+  NoContextHelper("glPolygonMode");
 }
 
 void NoContextGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
-  NOTREACHED() << "Trying to call glPolygonOffset() without current GL context";
-  LOG(ERROR) << "Trying to call glPolygonOffset() without current GL context";
+  NoContextHelper("glPolygonOffset");
 }
 
 void NoContextGLApi::glPopDebugGroupFn() {
-  NOTREACHED() << "Trying to call glPopDebugGroup() without current GL context";
-  LOG(ERROR) << "Trying to call glPopDebugGroup() without current GL context";
+  NoContextHelper("glPopDebugGroup");
 }
 
 void NoContextGLApi::glPopGroupMarkerEXTFn(void) {
-  NOTREACHED()
-      << "Trying to call glPopGroupMarkerEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPopGroupMarkerEXT() without current GL context";
+  NoContextHelper("glPopGroupMarkerEXT");
 }
 
 void NoContextGLApi::glPrimitiveRestartIndexFn(GLuint index) {
-  NOTREACHED()
-      << "Trying to call glPrimitiveRestartIndex() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPrimitiveRestartIndex() without current GL context";
+  NoContextHelper("glPrimitiveRestartIndex");
 }
 
 void NoContextGLApi::glProgramBinaryFn(GLuint program,
                                        GLenum binaryFormat,
                                        const GLvoid* binary,
                                        GLsizei length) {
-  NOTREACHED() << "Trying to call glProgramBinary() without current GL context";
-  LOG(ERROR) << "Trying to call glProgramBinary() without current GL context";
+  NoContextHelper("glProgramBinary");
 }
 
 void NoContextGLApi::glProgramParameteriFn(GLuint program,
                                            GLenum pname,
                                            GLint value) {
-  NOTREACHED()
-      << "Trying to call glProgramParameteri() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glProgramParameteri() without current GL context";
+  NoContextHelper("glProgramParameteri");
 }
 
 void NoContextGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
@@ -14882,37 +13982,27 @@ void NoContextGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                                                        GLenum genMode,
                                                        GLint components,
                                                        const GLfloat* coeffs) {
-  NOTREACHED() << "Trying to call glProgramPathFragmentInputGenNV() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glProgramPathFragmentInputGenNV() without "
-                "current GL context";
+  NoContextHelper("glProgramPathFragmentInputGenNV");
 }
 
 void NoContextGLApi::glPushDebugGroupFn(GLenum source,
                                         GLuint id,
                                         GLsizei length,
                                         const char* message) {
-  NOTREACHED()
-      << "Trying to call glPushDebugGroup() without current GL context";
-  LOG(ERROR) << "Trying to call glPushDebugGroup() without current GL context";
+  NoContextHelper("glPushDebugGroup");
 }
 
 void NoContextGLApi::glPushGroupMarkerEXTFn(GLsizei length,
                                             const char* marker) {
-  NOTREACHED()
-      << "Trying to call glPushGroupMarkerEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glPushGroupMarkerEXT() without current GL context";
+  NoContextHelper("glPushGroupMarkerEXT");
 }
 
 void NoContextGLApi::glQueryCounterFn(GLuint id, GLenum target) {
-  NOTREACHED() << "Trying to call glQueryCounter() without current GL context";
-  LOG(ERROR) << "Trying to call glQueryCounter() without current GL context";
+  NoContextHelper("glQueryCounter");
 }
 
 void NoContextGLApi::glReadBufferFn(GLenum src) {
-  NOTREACHED() << "Trying to call glReadBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glReadBuffer() without current GL context";
+  NoContextHelper("glReadBuffer");
 }
 
 void NoContextGLApi::glReadnPixelsRobustANGLEFn(GLint x,
@@ -14926,10 +14016,7 @@ void NoContextGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                                 GLsizei* columns,
                                                 GLsizei* rows,
                                                 void* data) {
-  NOTREACHED()
-      << "Trying to call glReadnPixelsRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glReadnPixelsRobustANGLE() without current GL context";
+  NoContextHelper("glReadnPixelsRobustANGLE");
 }
 
 void NoContextGLApi::glReadPixelsFn(GLint x,
@@ -14939,8 +14026,7 @@ void NoContextGLApi::glReadPixelsFn(GLint x,
                                     GLenum format,
                                     GLenum type,
                                     void* pixels) {
-  NOTREACHED() << "Trying to call glReadPixels() without current GL context";
-  LOG(ERROR) << "Trying to call glReadPixels() without current GL context";
+  NoContextHelper("glReadPixels");
 }
 
 void NoContextGLApi::glReadPixelsRobustANGLEFn(GLint x,
@@ -14954,27 +14040,18 @@ void NoContextGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                                GLsizei* columns,
                                                GLsizei* rows,
                                                void* pixels) {
-  NOTREACHED()
-      << "Trying to call glReadPixelsRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glReadPixelsRobustANGLE() without current GL context";
+  NoContextHelper("glReadPixelsRobustANGLE");
 }
 
 void NoContextGLApi::glReleaseShaderCompilerFn(void) {
-  NOTREACHED()
-      << "Trying to call glReleaseShaderCompiler() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glReleaseShaderCompiler() without current GL context";
+  NoContextHelper("glReleaseShaderCompiler");
 }
 
 void NoContextGLApi::glRenderbufferStorageEXTFn(GLenum target,
                                                 GLenum internalformat,
                                                 GLsizei width,
                                                 GLsizei height) {
-  NOTREACHED()
-      << "Trying to call glRenderbufferStorageEXT() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glRenderbufferStorageEXT() without current GL context";
+  NoContextHelper("glRenderbufferStorageEXT");
 }
 
 void NoContextGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
@@ -14982,10 +14059,7 @@ void NoContextGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                                         GLenum internalformat,
                                                         GLsizei width,
                                                         GLsizei height) {
-  NOTREACHED() << "Trying to call glRenderbufferStorageMultisample() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glRenderbufferStorageMultisample() without "
-                "current GL context";
+  NoContextHelper("glRenderbufferStorageMultisample");
 }
 
 void NoContextGLApi::glRenderbufferStorageMultisampleANGLEFn(
@@ -14994,10 +14068,7 @@ void NoContextGLApi::glRenderbufferStorageMultisampleANGLEFn(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  NOTREACHED() << "Trying to call glRenderbufferStorageMultisampleANGLE() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glRenderbufferStorageMultisampleANGLE() "
-                "without current GL context";
+  NoContextHelper("glRenderbufferStorageMultisampleANGLE");
 }
 
 void NoContextGLApi::glRenderbufferStorageMultisampleEXTFn(
@@ -15006,10 +14077,7 @@ void NoContextGLApi::glRenderbufferStorageMultisampleEXTFn(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  NOTREACHED() << "Trying to call glRenderbufferStorageMultisampleEXT() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glRenderbufferStorageMultisampleEXT() without "
-                "current GL context";
+  NoContextHelper("glRenderbufferStorageMultisampleEXT");
 }
 
 void NoContextGLApi::glRenderbufferStorageMultisampleIMGFn(
@@ -15018,124 +14086,86 @@ void NoContextGLApi::glRenderbufferStorageMultisampleIMGFn(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  NOTREACHED() << "Trying to call glRenderbufferStorageMultisampleIMG() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glRenderbufferStorageMultisampleIMG() without "
-                "current GL context";
+  NoContextHelper("glRenderbufferStorageMultisampleIMG");
 }
 
 void NoContextGLApi::glRequestExtensionANGLEFn(const char* name) {
-  NOTREACHED()
-      << "Trying to call glRequestExtensionANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glRequestExtensionANGLE() without current GL context";
+  NoContextHelper("glRequestExtensionANGLE");
 }
 
 void NoContextGLApi::glResumeTransformFeedbackFn(void) {
-  NOTREACHED() << "Trying to call glResumeTransformFeedback() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glResumeTransformFeedback() without current GL "
-                "context";
+  NoContextHelper("glResumeTransformFeedback");
 }
 
 void NoContextGLApi::glSampleCoverageFn(GLclampf value, GLboolean invert) {
-  NOTREACHED()
-      << "Trying to call glSampleCoverage() without current GL context";
-  LOG(ERROR) << "Trying to call glSampleCoverage() without current GL context";
+  NoContextHelper("glSampleCoverage");
 }
 
 void NoContextGLApi::glSamplerParameterfFn(GLuint sampler,
                                            GLenum pname,
                                            GLfloat param) {
-  NOTREACHED()
-      << "Trying to call glSamplerParameterf() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glSamplerParameterf() without current GL context";
+  NoContextHelper("glSamplerParameterf");
 }
 
 void NoContextGLApi::glSamplerParameterfvFn(GLuint sampler,
                                             GLenum pname,
                                             const GLfloat* params) {
-  NOTREACHED()
-      << "Trying to call glSamplerParameterfv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glSamplerParameterfv() without current GL context";
+  NoContextHelper("glSamplerParameterfv");
 }
 
 void NoContextGLApi::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                        GLenum pname,
                                                        GLsizei bufSize,
                                                        const GLfloat* param) {
-  NOTREACHED() << "Trying to call glSamplerParameterfvRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glSamplerParameterfvRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glSamplerParameterfvRobustANGLE");
 }
 
 void NoContextGLApi::glSamplerParameteriFn(GLuint sampler,
                                            GLenum pname,
                                            GLint param) {
-  NOTREACHED()
-      << "Trying to call glSamplerParameteri() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glSamplerParameteri() without current GL context";
+  NoContextHelper("glSamplerParameteri");
 }
 
 void NoContextGLApi::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                         GLenum pname,
                                                         GLsizei bufSize,
                                                         const GLint* param) {
-  NOTREACHED() << "Trying to call glSamplerParameterIivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glSamplerParameterIivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glSamplerParameterIivRobustANGLE");
 }
 
 void NoContextGLApi::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                          GLenum pname,
                                                          GLsizei bufSize,
                                                          const GLuint* param) {
-  NOTREACHED() << "Trying to call glSamplerParameterIuivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glSamplerParameterIuivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glSamplerParameterIuivRobustANGLE");
 }
 
 void NoContextGLApi::glSamplerParameterivFn(GLuint sampler,
                                             GLenum pname,
                                             const GLint* params) {
-  NOTREACHED()
-      << "Trying to call glSamplerParameteriv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glSamplerParameteriv() without current GL context";
+  NoContextHelper("glSamplerParameteriv");
 }
 
 void NoContextGLApi::glSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                        GLenum pname,
                                                        GLsizei bufSize,
                                                        const GLint* param) {
-  NOTREACHED() << "Trying to call glSamplerParameterivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glSamplerParameterivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glSamplerParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glScissorFn(GLint x,
                                  GLint y,
                                  GLsizei width,
                                  GLsizei height) {
-  NOTREACHED() << "Trying to call glScissor() without current GL context";
-  LOG(ERROR) << "Trying to call glScissor() without current GL context";
+  NoContextHelper("glScissor");
 }
 
 void NoContextGLApi::glSetFenceAPPLEFn(GLuint fence) {
-  NOTREACHED() << "Trying to call glSetFenceAPPLE() without current GL context";
-  LOG(ERROR) << "Trying to call glSetFenceAPPLE() without current GL context";
+  NoContextHelper("glSetFenceAPPLE");
 }
 
 void NoContextGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
-  NOTREACHED() << "Trying to call glSetFenceNV() without current GL context";
-  LOG(ERROR) << "Trying to call glSetFenceNV() without current GL context";
+  NoContextHelper("glSetFenceNV");
 }
 
 void NoContextGLApi::glShaderBinaryFn(GLsizei n,
@@ -15143,16 +14173,14 @@ void NoContextGLApi::glShaderBinaryFn(GLsizei n,
                                       GLenum binaryformat,
                                       const void* binary,
                                       GLsizei length) {
-  NOTREACHED() << "Trying to call glShaderBinary() without current GL context";
-  LOG(ERROR) << "Trying to call glShaderBinary() without current GL context";
+  NoContextHelper("glShaderBinary");
 }
 
 void NoContextGLApi::glShaderSourceFn(GLuint shader,
                                       GLsizei count,
                                       const char* const* str,
                                       const GLint* length) {
-  NOTREACHED() << "Trying to call glShaderSource() without current GL context";
-  LOG(ERROR) << "Trying to call glShaderSource() without current GL context";
+  NoContextHelper("glShaderSource");
 }
 
 void NoContextGLApi::glStencilFillPathInstancedNVFn(
@@ -15164,61 +14192,43 @@ void NoContextGLApi::glStencilFillPathInstancedNVFn(
     GLuint mask,
     GLenum transformType,
     const GLfloat* transformValues) {
-  NOTREACHED() << "Trying to call glStencilFillPathInstancedNV() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glStencilFillPathInstancedNV() without current "
-                "GL context";
+  NoContextHelper("glStencilFillPathInstancedNV");
 }
 
 void NoContextGLApi::glStencilFillPathNVFn(GLuint path,
                                            GLenum fillMode,
                                            GLuint mask) {
-  NOTREACHED()
-      << "Trying to call glStencilFillPathNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glStencilFillPathNV() without current GL context";
+  NoContextHelper("glStencilFillPathNV");
 }
 
 void NoContextGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
-  NOTREACHED() << "Trying to call glStencilFunc() without current GL context";
-  LOG(ERROR) << "Trying to call glStencilFunc() without current GL context";
+  NoContextHelper("glStencilFunc");
 }
 
 void NoContextGLApi::glStencilFuncSeparateFn(GLenum face,
                                              GLenum func,
                                              GLint ref,
                                              GLuint mask) {
-  NOTREACHED()
-      << "Trying to call glStencilFuncSeparate() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glStencilFuncSeparate() without current GL context";
+  NoContextHelper("glStencilFuncSeparate");
 }
 
 void NoContextGLApi::glStencilMaskFn(GLuint mask) {
-  NOTREACHED() << "Trying to call glStencilMask() without current GL context";
-  LOG(ERROR) << "Trying to call glStencilMask() without current GL context";
+  NoContextHelper("glStencilMask");
 }
 
 void NoContextGLApi::glStencilMaskSeparateFn(GLenum face, GLuint mask) {
-  NOTREACHED()
-      << "Trying to call glStencilMaskSeparate() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glStencilMaskSeparate() without current GL context";
+  NoContextHelper("glStencilMaskSeparate");
 }
 
 void NoContextGLApi::glStencilOpFn(GLenum fail, GLenum zfail, GLenum zpass) {
-  NOTREACHED() << "Trying to call glStencilOp() without current GL context";
-  LOG(ERROR) << "Trying to call glStencilOp() without current GL context";
+  NoContextHelper("glStencilOp");
 }
 
 void NoContextGLApi::glStencilOpSeparateFn(GLenum face,
                                            GLenum fail,
                                            GLenum zfail,
                                            GLenum zpass) {
-  NOTREACHED()
-      << "Trying to call glStencilOpSeparate() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glStencilOpSeparate() without current GL context";
+  NoContextHelper("glStencilOpSeparate");
 }
 
 void NoContextGLApi::glStencilStrokePathInstancedNVFn(
@@ -15230,19 +14240,13 @@ void NoContextGLApi::glStencilStrokePathInstancedNVFn(
     GLuint mask,
     GLenum transformType,
     const GLfloat* transformValues) {
-  NOTREACHED() << "Trying to call glStencilStrokePathInstancedNV() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glStencilStrokePathInstancedNV() without "
-                "current GL context";
+  NoContextHelper("glStencilStrokePathInstancedNV");
 }
 
 void NoContextGLApi::glStencilStrokePathNVFn(GLuint path,
                                              GLint reference,
                                              GLuint mask) {
-  NOTREACHED()
-      << "Trying to call glStencilStrokePathNV() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glStencilStrokePathNV() without current GL context";
+  NoContextHelper("glStencilStrokePathNV");
 }
 
 void NoContextGLApi::glStencilThenCoverFillPathInstancedNVFn(
@@ -15255,20 +14259,14 @@ void NoContextGLApi::glStencilThenCoverFillPathInstancedNVFn(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues) {
-  NOTREACHED() << "Trying to call glStencilThenCoverFillPathInstancedNV() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glStencilThenCoverFillPathInstancedNV() "
-                "without current GL context";
+  NoContextHelper("glStencilThenCoverFillPathInstancedNV");
 }
 
 void NoContextGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
                                                     GLenum fillMode,
                                                     GLuint mask,
                                                     GLenum coverMode) {
-  NOTREACHED() << "Trying to call glStencilThenCoverFillPathNV() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glStencilThenCoverFillPathNV() without current "
-                "GL context";
+  NoContextHelper("glStencilThenCoverFillPathNV");
 }
 
 void NoContextGLApi::glStencilThenCoverStrokePathInstancedNVFn(
@@ -15281,40 +14279,30 @@ void NoContextGLApi::glStencilThenCoverStrokePathInstancedNVFn(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues) {
-  NOTREACHED() << "Trying to call glStencilThenCoverStrokePathInstancedNV() "
-                  "without current GL context";
-  LOG(ERROR) << "Trying to call glStencilThenCoverStrokePathInstancedNV() "
-                "without current GL context";
+  NoContextHelper("glStencilThenCoverStrokePathInstancedNV");
 }
 
 void NoContextGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
                                                       GLint reference,
                                                       GLuint mask,
                                                       GLenum coverMode) {
-  NOTREACHED() << "Trying to call glStencilThenCoverStrokePathNV() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glStencilThenCoverStrokePathNV() without "
-                "current GL context";
+  NoContextHelper("glStencilThenCoverStrokePathNV");
 }
 
 GLboolean NoContextGLApi::glTestFenceAPPLEFn(GLuint fence) {
-  NOTREACHED()
-      << "Trying to call glTestFenceAPPLE() without current GL context";
-  LOG(ERROR) << "Trying to call glTestFenceAPPLE() without current GL context";
+  NoContextHelper("glTestFenceAPPLE");
   return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glTestFenceNVFn(GLuint fence) {
-  NOTREACHED() << "Trying to call glTestFenceNV() without current GL context";
-  LOG(ERROR) << "Trying to call glTestFenceNV() without current GL context";
+  NoContextHelper("glTestFenceNV");
   return GL_FALSE;
 }
 
 void NoContextGLApi::glTexBufferFn(GLenum target,
                                    GLenum internalformat,
                                    GLuint buffer) {
-  NOTREACHED() << "Trying to call glTexBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glTexBuffer() without current GL context";
+  NoContextHelper("glTexBuffer");
 }
 
 void NoContextGLApi::glTexBufferRangeFn(GLenum target,
@@ -15322,9 +14310,7 @@ void NoContextGLApi::glTexBufferRangeFn(GLenum target,
                                         GLuint buffer,
                                         GLintptr offset,
                                         GLsizeiptr size) {
-  NOTREACHED()
-      << "Trying to call glTexBufferRange() without current GL context";
-  LOG(ERROR) << "Trying to call glTexBufferRange() without current GL context";
+  NoContextHelper("glTexBufferRange");
 }
 
 void NoContextGLApi::glTexImage2DFn(GLenum target,
@@ -15336,8 +14322,7 @@ void NoContextGLApi::glTexImage2DFn(GLenum target,
                                     GLenum format,
                                     GLenum type,
                                     const void* pixels) {
-  NOTREACHED() << "Trying to call glTexImage2D() without current GL context";
-  LOG(ERROR) << "Trying to call glTexImage2D() without current GL context";
+  NoContextHelper("glTexImage2D");
 }
 
 void NoContextGLApi::glTexImage2DRobustANGLEFn(GLenum target,
@@ -15350,10 +14335,7 @@ void NoContextGLApi::glTexImage2DRobustANGLEFn(GLenum target,
                                                GLenum type,
                                                GLsizei bufSize,
                                                const void* pixels) {
-  NOTREACHED()
-      << "Trying to call glTexImage2DRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glTexImage2DRobustANGLE() without current GL context";
+  NoContextHelper("glTexImage2DRobustANGLE");
 }
 
 void NoContextGLApi::glTexImage3DFn(GLenum target,
@@ -15366,8 +14348,7 @@ void NoContextGLApi::glTexImage3DFn(GLenum target,
                                     GLenum format,
                                     GLenum type,
                                     const void* pixels) {
-  NOTREACHED() << "Trying to call glTexImage3D() without current GL context";
-  LOG(ERROR) << "Trying to call glTexImage3D() without current GL context";
+  NoContextHelper("glTexImage3D");
 }
 
 void NoContextGLApi::glTexImage3DRobustANGLEFn(GLenum target,
@@ -15381,80 +14362,59 @@ void NoContextGLApi::glTexImage3DRobustANGLEFn(GLenum target,
                                                GLenum type,
                                                GLsizei bufSize,
                                                const void* pixels) {
-  NOTREACHED()
-      << "Trying to call glTexImage3DRobustANGLE() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glTexImage3DRobustANGLE() without current GL context";
+  NoContextHelper("glTexImage3DRobustANGLE");
 }
 
 void NoContextGLApi::glTexParameterfFn(GLenum target,
                                        GLenum pname,
                                        GLfloat param) {
-  NOTREACHED() << "Trying to call glTexParameterf() without current GL context";
-  LOG(ERROR) << "Trying to call glTexParameterf() without current GL context";
+  NoContextHelper("glTexParameterf");
 }
 
 void NoContextGLApi::glTexParameterfvFn(GLenum target,
                                         GLenum pname,
                                         const GLfloat* params) {
-  NOTREACHED()
-      << "Trying to call glTexParameterfv() without current GL context";
-  LOG(ERROR) << "Trying to call glTexParameterfv() without current GL context";
+  NoContextHelper("glTexParameterfv");
 }
 
 void NoContextGLApi::glTexParameterfvRobustANGLEFn(GLenum target,
                                                    GLenum pname,
                                                    GLsizei bufSize,
                                                    const GLfloat* params) {
-  NOTREACHED() << "Trying to call glTexParameterfvRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glTexParameterfvRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glTexParameterfvRobustANGLE");
 }
 
 void NoContextGLApi::glTexParameteriFn(GLenum target,
                                        GLenum pname,
                                        GLint param) {
-  NOTREACHED() << "Trying to call glTexParameteri() without current GL context";
-  LOG(ERROR) << "Trying to call glTexParameteri() without current GL context";
+  NoContextHelper("glTexParameteri");
 }
 
 void NoContextGLApi::glTexParameterIivRobustANGLEFn(GLenum target,
                                                     GLenum pname,
                                                     GLsizei bufSize,
                                                     const GLint* params) {
-  NOTREACHED() << "Trying to call glTexParameterIivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glTexParameterIivRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glTexParameterIivRobustANGLE");
 }
 
 void NoContextGLApi::glTexParameterIuivRobustANGLEFn(GLenum target,
                                                      GLenum pname,
                                                      GLsizei bufSize,
                                                      const GLuint* params) {
-  NOTREACHED() << "Trying to call glTexParameterIuivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glTexParameterIuivRobustANGLE() without "
-                "current GL context";
+  NoContextHelper("glTexParameterIuivRobustANGLE");
 }
 
 void NoContextGLApi::glTexParameterivFn(GLenum target,
                                         GLenum pname,
                                         const GLint* params) {
-  NOTREACHED()
-      << "Trying to call glTexParameteriv() without current GL context";
-  LOG(ERROR) << "Trying to call glTexParameteriv() without current GL context";
+  NoContextHelper("glTexParameteriv");
 }
 
 void NoContextGLApi::glTexParameterivRobustANGLEFn(GLenum target,
                                                    GLenum pname,
                                                    GLsizei bufSize,
                                                    const GLint* params) {
-  NOTREACHED() << "Trying to call glTexParameterivRobustANGLE() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glTexParameterivRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glTexParameterivRobustANGLE");
 }
 
 void NoContextGLApi::glTexStorage2DEXTFn(GLenum target,
@@ -15462,9 +14422,7 @@ void NoContextGLApi::glTexStorage2DEXTFn(GLenum target,
                                          GLenum internalformat,
                                          GLsizei width,
                                          GLsizei height) {
-  NOTREACHED()
-      << "Trying to call glTexStorage2DEXT() without current GL context";
-  LOG(ERROR) << "Trying to call glTexStorage2DEXT() without current GL context";
+  NoContextHelper("glTexStorage2DEXT");
 }
 
 void NoContextGLApi::glTexStorage3DFn(GLenum target,
@@ -15473,8 +14431,7 @@ void NoContextGLApi::glTexStorage3DFn(GLenum target,
                                       GLsizei width,
                                       GLsizei height,
                                       GLsizei depth) {
-  NOTREACHED() << "Trying to call glTexStorage3D() without current GL context";
-  LOG(ERROR) << "Trying to call glTexStorage3D() without current GL context";
+  NoContextHelper("glTexStorage3D");
 }
 
 void NoContextGLApi::glTexSubImage2DFn(GLenum target,
@@ -15486,8 +14443,7 @@ void NoContextGLApi::glTexSubImage2DFn(GLenum target,
                                        GLenum format,
                                        GLenum type,
                                        const void* pixels) {
-  NOTREACHED() << "Trying to call glTexSubImage2D() without current GL context";
-  LOG(ERROR) << "Trying to call glTexSubImage2D() without current GL context";
+  NoContextHelper("glTexSubImage2D");
 }
 
 void NoContextGLApi::glTexSubImage2DRobustANGLEFn(GLenum target,
@@ -15500,10 +14456,7 @@ void NoContextGLApi::glTexSubImage2DRobustANGLEFn(GLenum target,
                                                   GLenum type,
                                                   GLsizei bufSize,
                                                   const void* pixels) {
-  NOTREACHED() << "Trying to call glTexSubImage2DRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glTexSubImage2DRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glTexSubImage2DRobustANGLE");
 }
 
 void NoContextGLApi::glTexSubImage3DFn(GLenum target,
@@ -15517,8 +14470,7 @@ void NoContextGLApi::glTexSubImage3DFn(GLenum target,
                                        GLenum format,
                                        GLenum type,
                                        const void* pixels) {
-  NOTREACHED() << "Trying to call glTexSubImage3D() without current GL context";
-  LOG(ERROR) << "Trying to call glTexSubImage3D() without current GL context";
+  NoContextHelper("glTexSubImage3D");
 }
 
 void NoContextGLApi::glTexSubImage3DRobustANGLEFn(GLenum target,
@@ -15533,134 +14485,110 @@ void NoContextGLApi::glTexSubImage3DRobustANGLEFn(GLenum target,
                                                   GLenum type,
                                                   GLsizei bufSize,
                                                   const void* pixels) {
-  NOTREACHED() << "Trying to call glTexSubImage3DRobustANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glTexSubImage3DRobustANGLE() without current "
-                "GL context";
+  NoContextHelper("glTexSubImage3DRobustANGLE");
 }
 
 void NoContextGLApi::glTransformFeedbackVaryingsFn(GLuint program,
                                                    GLsizei count,
                                                    const char* const* varyings,
                                                    GLenum bufferMode) {
-  NOTREACHED() << "Trying to call glTransformFeedbackVaryings() without "
-                  "current GL context";
-  LOG(ERROR) << "Trying to call glTransformFeedbackVaryings() without current "
-                "GL context";
+  NoContextHelper("glTransformFeedbackVaryings");
 }
 
 void NoContextGLApi::glUniform1fFn(GLint location, GLfloat x) {
-  NOTREACHED() << "Trying to call glUniform1f() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform1f() without current GL context";
+  NoContextHelper("glUniform1f");
 }
 
 void NoContextGLApi::glUniform1fvFn(GLint location,
                                     GLsizei count,
                                     const GLfloat* v) {
-  NOTREACHED() << "Trying to call glUniform1fv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform1fv() without current GL context";
+  NoContextHelper("glUniform1fv");
 }
 
 void NoContextGLApi::glUniform1iFn(GLint location, GLint x) {
-  NOTREACHED() << "Trying to call glUniform1i() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform1i() without current GL context";
+  NoContextHelper("glUniform1i");
 }
 
 void NoContextGLApi::glUniform1ivFn(GLint location,
                                     GLsizei count,
                                     const GLint* v) {
-  NOTREACHED() << "Trying to call glUniform1iv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform1iv() without current GL context";
+  NoContextHelper("glUniform1iv");
 }
 
 void NoContextGLApi::glUniform1uiFn(GLint location, GLuint v0) {
-  NOTREACHED() << "Trying to call glUniform1ui() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform1ui() without current GL context";
+  NoContextHelper("glUniform1ui");
 }
 
 void NoContextGLApi::glUniform1uivFn(GLint location,
                                      GLsizei count,
                                      const GLuint* v) {
-  NOTREACHED() << "Trying to call glUniform1uiv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform1uiv() without current GL context";
+  NoContextHelper("glUniform1uiv");
 }
 
 void NoContextGLApi::glUniform2fFn(GLint location, GLfloat x, GLfloat y) {
-  NOTREACHED() << "Trying to call glUniform2f() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform2f() without current GL context";
+  NoContextHelper("glUniform2f");
 }
 
 void NoContextGLApi::glUniform2fvFn(GLint location,
                                     GLsizei count,
                                     const GLfloat* v) {
-  NOTREACHED() << "Trying to call glUniform2fv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform2fv() without current GL context";
+  NoContextHelper("glUniform2fv");
 }
 
 void NoContextGLApi::glUniform2iFn(GLint location, GLint x, GLint y) {
-  NOTREACHED() << "Trying to call glUniform2i() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform2i() without current GL context";
+  NoContextHelper("glUniform2i");
 }
 
 void NoContextGLApi::glUniform2ivFn(GLint location,
                                     GLsizei count,
                                     const GLint* v) {
-  NOTREACHED() << "Trying to call glUniform2iv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform2iv() without current GL context";
+  NoContextHelper("glUniform2iv");
 }
 
 void NoContextGLApi::glUniform2uiFn(GLint location, GLuint v0, GLuint v1) {
-  NOTREACHED() << "Trying to call glUniform2ui() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform2ui() without current GL context";
+  NoContextHelper("glUniform2ui");
 }
 
 void NoContextGLApi::glUniform2uivFn(GLint location,
                                      GLsizei count,
                                      const GLuint* v) {
-  NOTREACHED() << "Trying to call glUniform2uiv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform2uiv() without current GL context";
+  NoContextHelper("glUniform2uiv");
 }
 
 void NoContextGLApi::glUniform3fFn(GLint location,
                                    GLfloat x,
                                    GLfloat y,
                                    GLfloat z) {
-  NOTREACHED() << "Trying to call glUniform3f() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform3f() without current GL context";
+  NoContextHelper("glUniform3f");
 }
 
 void NoContextGLApi::glUniform3fvFn(GLint location,
                                     GLsizei count,
                                     const GLfloat* v) {
-  NOTREACHED() << "Trying to call glUniform3fv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform3fv() without current GL context";
+  NoContextHelper("glUniform3fv");
 }
 
 void NoContextGLApi::glUniform3iFn(GLint location, GLint x, GLint y, GLint z) {
-  NOTREACHED() << "Trying to call glUniform3i() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform3i() without current GL context";
+  NoContextHelper("glUniform3i");
 }
 
 void NoContextGLApi::glUniform3ivFn(GLint location,
                                     GLsizei count,
                                     const GLint* v) {
-  NOTREACHED() << "Trying to call glUniform3iv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform3iv() without current GL context";
+  NoContextHelper("glUniform3iv");
 }
 
 void NoContextGLApi::glUniform3uiFn(GLint location,
                                     GLuint v0,
                                     GLuint v1,
                                     GLuint v2) {
-  NOTREACHED() << "Trying to call glUniform3ui() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform3ui() without current GL context";
+  NoContextHelper("glUniform3ui");
 }
 
 void NoContextGLApi::glUniform3uivFn(GLint location,
                                      GLsizei count,
                                      const GLuint* v) {
-  NOTREACHED() << "Trying to call glUniform3uiv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform3uiv() without current GL context";
+  NoContextHelper("glUniform3uiv");
 }
 
 void NoContextGLApi::glUniform4fFn(GLint location,
@@ -15668,15 +14596,13 @@ void NoContextGLApi::glUniform4fFn(GLint location,
                                    GLfloat y,
                                    GLfloat z,
                                    GLfloat w) {
-  NOTREACHED() << "Trying to call glUniform4f() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform4f() without current GL context";
+  NoContextHelper("glUniform4f");
 }
 
 void NoContextGLApi::glUniform4fvFn(GLint location,
                                     GLsizei count,
                                     const GLfloat* v) {
-  NOTREACHED() << "Trying to call glUniform4fv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform4fv() without current GL context";
+  NoContextHelper("glUniform4fv");
 }
 
 void NoContextGLApi::glUniform4iFn(GLint location,
@@ -15684,15 +14610,13 @@ void NoContextGLApi::glUniform4iFn(GLint location,
                                    GLint y,
                                    GLint z,
                                    GLint w) {
-  NOTREACHED() << "Trying to call glUniform4i() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform4i() without current GL context";
+  NoContextHelper("glUniform4i");
 }
 
 void NoContextGLApi::glUniform4ivFn(GLint location,
                                     GLsizei count,
                                     const GLint* v) {
-  NOTREACHED() << "Trying to call glUniform4iv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform4iv() without current GL context";
+  NoContextHelper("glUniform4iv");
 }
 
 void NoContextGLApi::glUniform4uiFn(GLint location,
@@ -15700,170 +14624,122 @@ void NoContextGLApi::glUniform4uiFn(GLint location,
                                     GLuint v1,
                                     GLuint v2,
                                     GLuint v3) {
-  NOTREACHED() << "Trying to call glUniform4ui() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform4ui() without current GL context";
+  NoContextHelper("glUniform4ui");
 }
 
 void NoContextGLApi::glUniform4uivFn(GLint location,
                                      GLsizei count,
                                      const GLuint* v) {
-  NOTREACHED() << "Trying to call glUniform4uiv() without current GL context";
-  LOG(ERROR) << "Trying to call glUniform4uiv() without current GL context";
+  NoContextHelper("glUniform4uiv");
 }
 
 void NoContextGLApi::glUniformBlockBindingFn(GLuint program,
                                              GLuint uniformBlockIndex,
                                              GLuint uniformBlockBinding) {
-  NOTREACHED()
-      << "Trying to call glUniformBlockBinding() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformBlockBinding() without current GL context";
+  NoContextHelper("glUniformBlockBinding");
 }
 
 void NoContextGLApi::glUniformMatrix2fvFn(GLint location,
                                           GLsizei count,
                                           GLboolean transpose,
                                           const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix2fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix2fv() without current GL context";
+  NoContextHelper("glUniformMatrix2fv");
 }
 
 void NoContextGLApi::glUniformMatrix2x3fvFn(GLint location,
                                             GLsizei count,
                                             GLboolean transpose,
                                             const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix2x3fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix2x3fv() without current GL context";
+  NoContextHelper("glUniformMatrix2x3fv");
 }
 
 void NoContextGLApi::glUniformMatrix2x4fvFn(GLint location,
                                             GLsizei count,
                                             GLboolean transpose,
                                             const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix2x4fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix2x4fv() without current GL context";
+  NoContextHelper("glUniformMatrix2x4fv");
 }
 
 void NoContextGLApi::glUniformMatrix3fvFn(GLint location,
                                           GLsizei count,
                                           GLboolean transpose,
                                           const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix3fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix3fv() without current GL context";
+  NoContextHelper("glUniformMatrix3fv");
 }
 
 void NoContextGLApi::glUniformMatrix3x2fvFn(GLint location,
                                             GLsizei count,
                                             GLboolean transpose,
                                             const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix3x2fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix3x2fv() without current GL context";
+  NoContextHelper("glUniformMatrix3x2fv");
 }
 
 void NoContextGLApi::glUniformMatrix3x4fvFn(GLint location,
                                             GLsizei count,
                                             GLboolean transpose,
                                             const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix3x4fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix3x4fv() without current GL context";
+  NoContextHelper("glUniformMatrix3x4fv");
 }
 
 void NoContextGLApi::glUniformMatrix4fvFn(GLint location,
                                           GLsizei count,
                                           GLboolean transpose,
                                           const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix4fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix4fv() without current GL context";
+  NoContextHelper("glUniformMatrix4fv");
 }
 
 void NoContextGLApi::glUniformMatrix4x2fvFn(GLint location,
                                             GLsizei count,
                                             GLboolean transpose,
                                             const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix4x2fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix4x2fv() without current GL context";
+  NoContextHelper("glUniformMatrix4x2fv");
 }
 
 void NoContextGLApi::glUniformMatrix4x3fvFn(GLint location,
                                             GLsizei count,
                                             GLboolean transpose,
                                             const GLfloat* value) {
-  NOTREACHED()
-      << "Trying to call glUniformMatrix4x3fv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glUniformMatrix4x3fv() without current GL context";
+  NoContextHelper("glUniformMatrix4x3fv");
 }
 
 GLboolean NoContextGLApi::glUnmapBufferFn(GLenum target) {
-  NOTREACHED() << "Trying to call glUnmapBuffer() without current GL context";
-  LOG(ERROR) << "Trying to call glUnmapBuffer() without current GL context";
+  NoContextHelper("glUnmapBuffer");
   return GL_FALSE;
 }
 
 void NoContextGLApi::glUseProgramFn(GLuint program) {
-  NOTREACHED() << "Trying to call glUseProgram() without current GL context";
-  LOG(ERROR) << "Trying to call glUseProgram() without current GL context";
+  NoContextHelper("glUseProgram");
 }
 
 void NoContextGLApi::glValidateProgramFn(GLuint program) {
-  NOTREACHED()
-      << "Trying to call glValidateProgram() without current GL context";
-  LOG(ERROR) << "Trying to call glValidateProgram() without current GL context";
+  NoContextHelper("glValidateProgram");
 }
 
 void NoContextGLApi::glVertexAttrib1fFn(GLuint indx, GLfloat x) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib1f() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib1f() without current GL context";
+  NoContextHelper("glVertexAttrib1f");
 }
 
 void NoContextGLApi::glVertexAttrib1fvFn(GLuint indx, const GLfloat* values) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib1fv() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib1fv() without current GL context";
+  NoContextHelper("glVertexAttrib1fv");
 }
 
 void NoContextGLApi::glVertexAttrib2fFn(GLuint indx, GLfloat x, GLfloat y) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib2f() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib2f() without current GL context";
+  NoContextHelper("glVertexAttrib2f");
 }
 
 void NoContextGLApi::glVertexAttrib2fvFn(GLuint indx, const GLfloat* values) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib2fv() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib2fv() without current GL context";
+  NoContextHelper("glVertexAttrib2fv");
 }
 
 void NoContextGLApi::glVertexAttrib3fFn(GLuint indx,
                                         GLfloat x,
                                         GLfloat y,
                                         GLfloat z) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib3f() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib3f() without current GL context";
+  NoContextHelper("glVertexAttrib3f");
 }
 
 void NoContextGLApi::glVertexAttrib3fvFn(GLuint indx, const GLfloat* values) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib3fv() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib3fv() without current GL context";
+  NoContextHelper("glVertexAttrib3fv");
 }
 
 void NoContextGLApi::glVertexAttrib4fFn(GLuint indx,
@@ -15871,23 +14747,16 @@ void NoContextGLApi::glVertexAttrib4fFn(GLuint indx,
                                         GLfloat y,
                                         GLfloat z,
                                         GLfloat w) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib4f() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib4f() without current GL context";
+  NoContextHelper("glVertexAttrib4f");
 }
 
 void NoContextGLApi::glVertexAttrib4fvFn(GLuint indx, const GLfloat* values) {
-  NOTREACHED()
-      << "Trying to call glVertexAttrib4fv() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttrib4fv() without current GL context";
+  NoContextHelper("glVertexAttrib4fv");
 }
 
 void NoContextGLApi::glVertexAttribDivisorANGLEFn(GLuint index,
                                                   GLuint divisor) {
-  NOTREACHED() << "Trying to call glVertexAttribDivisorANGLE() without current "
-                  "GL context";
-  LOG(ERROR) << "Trying to call glVertexAttribDivisorANGLE() without current "
-                "GL context";
+  NoContextHelper("glVertexAttribDivisorANGLE");
 }
 
 void NoContextGLApi::glVertexAttribI4iFn(GLuint indx,
@@ -15895,16 +14764,11 @@ void NoContextGLApi::glVertexAttribI4iFn(GLuint indx,
                                          GLint y,
                                          GLint z,
                                          GLint w) {
-  NOTREACHED()
-      << "Trying to call glVertexAttribI4i() without current GL context";
-  LOG(ERROR) << "Trying to call glVertexAttribI4i() without current GL context";
+  NoContextHelper("glVertexAttribI4i");
 }
 
 void NoContextGLApi::glVertexAttribI4ivFn(GLuint indx, const GLint* values) {
-  NOTREACHED()
-      << "Trying to call glVertexAttribI4iv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glVertexAttribI4iv() without current GL context";
+  NoContextHelper("glVertexAttribI4iv");
 }
 
 void NoContextGLApi::glVertexAttribI4uiFn(GLuint indx,
@@ -15912,17 +14776,11 @@ void NoContextGLApi::glVertexAttribI4uiFn(GLuint indx,
                                           GLuint y,
                                           GLuint z,
                                           GLuint w) {
-  NOTREACHED()
-      << "Trying to call glVertexAttribI4ui() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glVertexAttribI4ui() without current GL context";
+  NoContextHelper("glVertexAttribI4ui");
 }
 
 void NoContextGLApi::glVertexAttribI4uivFn(GLuint indx, const GLuint* values) {
-  NOTREACHED()
-      << "Trying to call glVertexAttribI4uiv() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glVertexAttribI4uiv() without current GL context";
+  NoContextHelper("glVertexAttribI4uiv");
 }
 
 void NoContextGLApi::glVertexAttribIPointerFn(GLuint indx,
@@ -15930,10 +14788,7 @@ void NoContextGLApi::glVertexAttribIPointerFn(GLuint indx,
                                               GLenum type,
                                               GLsizei stride,
                                               const void* ptr) {
-  NOTREACHED()
-      << "Trying to call glVertexAttribIPointer() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glVertexAttribIPointer() without current GL context";
+  NoContextHelper("glVertexAttribIPointer");
 }
 
 void NoContextGLApi::glVertexAttribPointerFn(GLuint indx,
@@ -15942,25 +14797,20 @@ void NoContextGLApi::glVertexAttribPointerFn(GLuint indx,
                                              GLboolean normalized,
                                              GLsizei stride,
                                              const void* ptr) {
-  NOTREACHED()
-      << "Trying to call glVertexAttribPointer() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glVertexAttribPointer() without current GL context";
+  NoContextHelper("glVertexAttribPointer");
 }
 
 void NoContextGLApi::glViewportFn(GLint x,
                                   GLint y,
                                   GLsizei width,
                                   GLsizei height) {
-  NOTREACHED() << "Trying to call glViewport() without current GL context";
-  LOG(ERROR) << "Trying to call glViewport() without current GL context";
+  NoContextHelper("glViewport");
 }
 
 void NoContextGLApi::glWaitSyncFn(GLsync sync,
                                   GLbitfield flags,
                                   GLuint64 timeout) {
-  NOTREACHED() << "Trying to call glWaitSync() without current GL context";
-  LOG(ERROR) << "Trying to call glWaitSync() without current GL context";
+  NoContextHelper("glWaitSync");
 }
 
 }  // namespace gl
