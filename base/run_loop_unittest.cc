@@ -136,20 +136,18 @@ class TestDelegate final : public RunLoop::Delegate {
   }
 
  private:
-  void Run() override {
+  void Run(bool application_tasks_allowed) override {
     if (nested_run_allowing_tasks_incoming_) {
       EXPECT_TRUE(run_loop_client_->IsNested());
-      EXPECT_TRUE(run_loop_client_->ProcessingTasksAllowed());
+      EXPECT_TRUE(application_tasks_allowed);
     } else if (run_loop_client_->IsNested()) {
-      EXPECT_FALSE(run_loop_client_->ProcessingTasksAllowed());
+      EXPECT_FALSE(application_tasks_allowed);
     }
     nested_run_allowing_tasks_incoming_ = false;
 
     while (!should_quit_) {
-      if (run_loop_client_->ProcessingTasksAllowed() &&
-          simple_task_runner_->ProcessTask()) {
+      if (application_tasks_allowed && simple_task_runner_->ProcessTask())
         continue;
-      }
 
       if (run_loop_client_->ShouldQuitWhenIdle())
         break;

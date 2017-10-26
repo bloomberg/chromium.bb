@@ -1564,6 +1564,97 @@ TEST_P(MessageLoopTypedTest, RecursivePosts) {
   RunLoop().Run();
 }
 
+TEST_P(MessageLoopTypedTest, NestableTasksAllowedAtTopLevel) {
+  MessageLoop loop(GetParam());
+  EXPECT_TRUE(MessageLoop::current()->NestableTasksAllowed());
+}
+
+// Nestable tasks shouldn't be allowed to run reentrantly by default (regression
+// test for https://crbug.com/754112).
+TEST_P(MessageLoopTypedTest, NestableTasksDisallowedByDefault) {
+  MessageLoop loop(GetParam());
+  RunLoop run_loop;
+  loop.task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](RunLoop* run_loop) {
+            EXPECT_FALSE(MessageLoop::current()->NestableTasksAllowed());
+            run_loop->Quit();
+          },
+          Unretained(&run_loop)));
+  run_loop.Run();
+}
+
+TEST_P(MessageLoopTypedTest, NestableTasksProcessedWhenRunLoopAllows) {
+  MessageLoop loop(GetParam());
+  RunLoop run_loop;
+  loop.task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](RunLoop* run_loop) {
+            // This test would hang if this RunLoop wasn't of type
+            // kNestableTasksAllowed (i.e. this is testing that this is
+            // processed and doesn't hang).
+            RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
+            ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE,
+                BindOnce(
+                    [](RunLoop* nested_run_loop) {
+                      // Each additional layer of application task nesting
+                      // requires its own allowance. The kNestableTasksAllowed
+                      // RunLoop allowed this task to be processed but further
+                      // nestable tasks are by default disallowed from this
+                      // layer.
+                      EXPECT_FALSE(
+                          MessageLoop::current()->NestableTasksAllowed());
+                      nested_run_loop->Quit();
+                    },
+                    Unretained(&nested_run_loop)));
+            nested_run_loop.Run();
+
+            run_loop->Quit();
+          },
+          Unretained(&run_loop)));
+  run_loop.Run();
+}
+
+TEST_P(MessageLoopTypedTest, NestableTasksAllowedExplicitlyInScope) {
+  MessageLoop loop(GetParam());
+  RunLoop run_loop;
+  loop.task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](RunLoop* run_loop) {
+            {
+              MessageLoop::ScopedNestableTaskAllower allow_nestable_tasks(
+                  MessageLoop::current());
+              EXPECT_TRUE(MessageLoop::current()->NestableTasksAllowed());
+            }
+            EXPECT_FALSE(MessageLoop::current()->NestableTasksAllowed());
+            run_loop->Quit();
+          },
+          Unretained(&run_loop)));
+  run_loop.Run();
+}
+
+TEST_P(MessageLoopTypedTest, NestableTasksAllowedManually) {
+  MessageLoop loop(GetParam());
+  RunLoop run_loop;
+  loop.task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](RunLoop* run_loop) {
+            EXPECT_FALSE(MessageLoop::current()->NestableTasksAllowed());
+            MessageLoop::current()->SetNestableTasksAllowed(true);
+            EXPECT_TRUE(MessageLoop::current()->NestableTasksAllowed());
+            MessageLoop::current()->SetNestableTasksAllowed(false);
+            EXPECT_FALSE(MessageLoop::current()->NestableTasksAllowed());
+            run_loop->Quit();
+          },
+          Unretained(&run_loop)));
+  run_loop.Run();
+}
+
 INSTANTIATE_TEST_CASE_P(,
                         MessageLoopTypedTest,
                         ::testing::Values(MessageLoop::TYPE_DEFAULT,
