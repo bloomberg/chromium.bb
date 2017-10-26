@@ -5,6 +5,7 @@
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/common/utils.h"
 #include "content/public/common/resource_request.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -19,7 +20,10 @@ RendererURLLoaderThrottle::RendererURLLoaderThrottle(
       render_frame_id_(render_frame_id),
       weak_factory_(this) {}
 
-RendererURLLoaderThrottle::~RendererURLLoaderThrottle() = default;
+RendererURLLoaderThrottle::~RendererURLLoaderThrottle() {
+  if (deferred_)
+    TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
+}
 
 void RendererURLLoaderThrottle::DetachFromCurrentSequence() {
   // Create a new pipe to the SafeBrowsing interface that can be bound to a
@@ -42,6 +46,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
     safe_browsing_ = safe_browsing_ptr_.get();
   }
 
+  original_url_ = request.url;
   pending_checks_++;
   // Use a weak pointer to self because |safe_browsing_| may not be owned by
   // this object.
@@ -95,6 +100,8 @@ void RendererURLLoaderThrottle::WillProcessResponse(
   deferred_ = true;
   defer_start_time_ = base::TimeTicks::Now();
   *defer = true;
+  TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "Deferred", this, "original_url",
+                           original_url_.spec());
 }
 
 void RendererURLLoaderThrottle::OnCompleteCheck(bool proceed,
@@ -154,8 +161,9 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
       delegate_->ResumeReadingBodyFromNet();
 
     if (pending_checks_ == 0 && deferred_) {
-      LogDelay(base::TimeTicks::Now() - defer_start_time_);
       deferred_ = false;
+      LogDelay(base::TimeTicks::Now() - defer_start_time_);
+      TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
       delegate_->Resume();
     }
   } else {
@@ -186,6 +194,7 @@ void RendererURLLoaderThrottle::OnConnectionError() {
   if (deferred_) {
     deferred_ = false;
     LogDelay(base::TimeTicks::Now() - defer_start_time_);
+    TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
     delegate_->Resume();
   }
 }

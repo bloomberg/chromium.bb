@@ -11,6 +11,7 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "url/gurl.h"
 
 namespace safe_browsing {
 
@@ -74,6 +75,8 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
   bool deferred_ = false;
 
   std::unique_ptr<mojo::BindingSet<mojom::UrlCheckNotifier>> notifier_bindings_;
+
+  GURL original_url_;
 
   base::WeakPtrFactory<RendererURLLoaderThrottle> weak_factory_;
 };
