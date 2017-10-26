@@ -85,7 +85,7 @@ public class DownloadNotificationServiceTest2 {
 
         // Download is paused.
         mDownloadNotificationService.notifyDownloadPaused(ID1, "test", true /* isResumable*/,
-                false /* isAutoResumable */, true, false, null, false);
+                false /* isAutoResumable */, true, false, null, false, false);
 
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
@@ -130,7 +130,7 @@ public class DownloadNotificationServiceTest2 {
 
         // Download is interrupted and now is pending.
         mDownloadNotificationService.notifyDownloadPaused(ID1, "test", true /* isResumable */,
-                true /* isAutoResumable */, true, false, null, false);
+                true /* isAutoResumable */, true, false, null, false, false);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertTrue(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));
@@ -163,7 +163,7 @@ public class DownloadNotificationServiceTest2 {
 
         // Download is interrupted but because it is not resumable, fails.
         mDownloadNotificationService.notifyDownloadPaused(ID1, "test", false /* isResumable*/,
-                true /* isAutoResumable */, true, false, null, false);
+                true /* isAutoResumable */, true, false, null, false, false);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));
