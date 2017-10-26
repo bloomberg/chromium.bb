@@ -19,6 +19,10 @@
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace viz {
 class ServerGpuMemoryBufferManager;
 }
@@ -54,7 +58,8 @@ class GpuHost {
 
 class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
  public:
-  explicit DefaultGpuHost(GpuHostDelegate* delegate);
+  DefaultGpuHost(GpuHostDelegate* delegate,
+                 service_manager::Connector* connector);
   ~DefaultGpuHost() override;
 
  private:
@@ -104,8 +109,7 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
 
   mojom::GpuMainPtr gpu_main_;
 
-  // TODO(fsamuel): GpuHost should not be holding onto |gpu_main_impl|
-  // because that will live in another process soon.
+  // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
   base::Thread gpu_thread_;
   std::unique_ptr<GpuMain> gpu_main_impl_;
   // This is used to make sure that the |gpu_main_impl_| has been set up

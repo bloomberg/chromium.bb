@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/gpu_host.h"
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -15,8 +16,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/ws/gpu_client.h"
 #include "services/ui/ws/gpu_host_delegate.h"
+#include "services/viz/public/interfaces/constants.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
 
 #if defined(OS_WIN)
@@ -31,9 +34,16 @@ namespace {
 // The client Id 1 is reserved for the frame sink manager.
 const int32_t kInternalGpuChannelClientId = 2;
 
+// TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
+bool HasSplitVizProcess() {
+  constexpr char kEnableViz[] = "enable-viz";
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableViz);
+}
+
 }  // namespace
 
-DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate)
+DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
+                               service_manager::Connector* connector)
     : delegate_(delegate),
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -41,13 +51,17 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate)
       gpu_thread_("GpuThread"),
       gpu_main_wait_(base::WaitableEvent::ResetPolicy::MANUAL,
                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
-  // TODO(sad): Once GPU process is split, this would look like:
-  //   connector->BindInterface("gpu", &gpu_main_);
-  gpu_thread_.Start();
-  gpu_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DefaultGpuHost::InitializeGpuMain, base::Unretained(this),
-                     base::Passed(MakeRequest(&gpu_main_))));
+  auto request = MakeRequest(&gpu_main_);
+  if (connector && HasSplitVizProcess()) {
+    connector->BindInterface(viz::mojom::kVizServiceName, std::move(request));
+  } else {
+    // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
+    gpu_thread_.Start();
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&DefaultGpuHost::InitializeGpuMain,
+                                  base::Unretained(this),
+                                  base::Passed(MakeRequest(&gpu_main_))));
+  }
 
   viz::mojom::GpuHostPtr gpu_host_proxy;
   gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
@@ -60,12 +74,15 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate)
 }
 
 DefaultGpuHost::~DefaultGpuHost() {
+  // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
   // Make sure |gpu_main_impl_| has been successfully created (i.e. the task
   // posted in the constructor to run InitializeGpuMain() has actually run).
-  gpu_main_wait_.Wait();
-  gpu_main_impl_->TearDown();
-  gpu_thread_.task_runner()->DeleteSoon(FROM_HERE, std::move(gpu_main_impl_));
-  gpu_thread_.Stop();
+  if (gpu_thread_.IsRunning()) {
+    gpu_main_wait_.Wait();
+    gpu_main_impl_->TearDown();
+    gpu_thread_.task_runner()->DeleteSoon(FROM_HERE, std::move(gpu_main_impl_));
+    gpu_thread_.Stop();
+  }
 }
 
 void DefaultGpuHost::Add(mojom::GpuRequest request) {

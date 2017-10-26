@@ -104,7 +104,7 @@ void GpuHostTest::DestroyHost() {
 
 void GpuHostTest::SetUp() {
   testing::Test::SetUp();
-  gpu_host_ = base::MakeUnique<DefaultGpuHost>(&gpu_host_delegate_);
+  gpu_host_ = base::MakeUnique<DefaultGpuHost>(&gpu_host_delegate_, nullptr);
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
 }

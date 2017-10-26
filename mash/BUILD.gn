@@ -49,6 +49,7 @@ catalog("catalog") {
     "//services/ui:manifest",
     "//services/ui/demo:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
+    "//services/viz:manifest",
   ]
 
   executable_overrides = [ "content_packaged_services:@EXE_DIR/chrome" ]
