@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Manual;
@@ -37,11 +38,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -423,6 +426,27 @@ public class OfflinePageSavePageLaterEvaluationTest {
                 "Timed out when getting all offline pages");
     }
 
+    private boolean copyToShareableLocation(File src, File dst) {
+        FileInputStream inputStream = null;
+        FileOutputStream outputStream = null;
+
+        try {
+            inputStream = new FileInputStream(src);
+            outputStream = new FileOutputStream(dst);
+
+            FileChannel inChannel = inputStream.getChannel();
+            FileChannel outChannel = outputStream.getChannel();
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to copy the file: " + src.getName(), e);
+            return false;
+        } finally {
+            StreamUtil.closeQuietly(inputStream);
+            StreamUtil.closeQuietly(outputStream);
+        }
+        return true;
+    }
+
     /**
      * Writes test results to output file. The format would be:
      * URL;OFFLINE_STATUS;FILE_SIZE;TIME_SINCE_TEST_START
@@ -462,7 +486,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
                 // Move the page to external storage if external archive exists.
                 File originalPage = new File(page.getFilePath());
                 File externalPage = new File(externalArchiveDir, originalPage.getName());
-                if (!OfflinePageUtils.copyToShareableLocation(originalPage, externalPage)) {
+                if (!copyToShareableLocation(originalPage, externalPage)) {
                     log(TAG, "Saved page for url " + page.getUrl() + " cannot be moved.");
                 }
             }
