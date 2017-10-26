@@ -157,7 +157,8 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
 }
 
 std::string DiceHeaderHelper::BuildRequestHeader(
-    const std::string& sync_account_id) {
+    const std::string& sync_account_id,
+    SignoutMode signout_mode) {
   // When fixing auth errors, only add the header when Sync is actually in error
   // state.
   DCHECK(signed_in_with_auth_error_ ||
@@ -180,10 +181,17 @@ std::string DiceHeaderHelper::BuildRequestHeader(
   parts.push_back("signin_mode=" + signin_mode);
 
   // Show the signout confirmation only when Dice is fully enabled.
-  std::string signout_mode = IsDiceMigrationEnabled()
-                                 ? kRequestSignoutShowConfirmation
-                                 : kRequestSignoutNoConfirmation;
-  parts.push_back("signout_mode=" + signout_mode);
+  const char* signout_mode_value = nullptr;
+  switch (signout_mode) {
+    case SignoutMode::kNoSignoutConfirmation:
+      signout_mode_value = kRequestSignoutNoConfirmation;
+      break;
+    case SignoutMode::kShowSignoutConfirmation:
+      signout_mode_value = kRequestSignoutShowConfirmation;
+      break;
+  }
+  DCHECK(signout_mode_value);
+  parts.push_back(base::StringPrintf("signout_mode=%s", signout_mode_value));
 
   return base::JoinString(parts, ",");
 }

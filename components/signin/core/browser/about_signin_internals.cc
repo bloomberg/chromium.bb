@@ -304,21 +304,19 @@ void AboutSigninInternals::NotifyObservers() {
   if (!signin_observers_.might_have_observers())
     return;
 
-  const std::string product_version = client_->GetProductVersion();
-
   std::unique_ptr<base::DictionaryValue> signin_status_value =
       signin_status_.ToValue(account_tracker_, signin_manager_,
                              signin_error_controller_, token_service_,
-                             cookie_manager_service_, product_version);
+                             cookie_manager_service_, client_);
 
   for (auto& observer : signin_observers_)
     observer.OnSigninStateChanged(signin_status_value.get());
 }
 
 std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
-  return signin_status_.ToValue(
-      account_tracker_, signin_manager_, signin_error_controller_,
-      token_service_, cookie_manager_service_, client_->GetProductVersion());
+  return signin_status_.ToValue(account_tracker_, signin_manager_,
+                                signin_error_controller_, token_service_,
+                                cookie_manager_service_, client_);
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
@@ -518,14 +516,15 @@ AboutSigninInternals::SigninStatus::ToValue(
     SigninErrorController* signin_error_controller,
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* cookie_manager_service,
-    const std::string& product_version) {
+    SigninClient* signin_client) {
   auto signin_status = base::MakeUnique<base::DictionaryValue>();
   auto signin_info = base::MakeUnique<base::ListValue>();
 
   // A summary of signin related info first.
   base::ListValue* basic_info =
       AddSection(signin_info.get(), "Basic Information");
-  AddSectionEntry(basic_info, "Chrome Version", product_version);
+  AddSectionEntry(basic_info, "Chrome Version",
+                  signin_client->GetProductVersion());
   AddSectionEntry(basic_info, "Account Consistency",
                   GetAccountConsistencyDescription());
   AddSectionEntry(basic_info, "Signin Status",
@@ -644,7 +643,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   signin_status->Set("accountInfo", std::move(account_info));
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (signin::IsDiceMigrationEnabled()) {
+  if (signin::IsDiceEnabledForProfile(signin_client->GetPrefs())) {
     auto dice_info = base::MakeUnique<base::DictionaryValue>();
     dice_info->SetBoolean("isSignedIn", signin_manager->IsAuthenticated());
     signin_status->Set("dice", std::move(dice_info));

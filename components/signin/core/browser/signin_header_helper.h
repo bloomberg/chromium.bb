@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/signin_features.h"
 #include "url/gurl.h"
 
@@ -178,6 +179,7 @@ bool AppendOrRemoveDiceRequestHeader(
     const std::string& account_id,
     bool sync_enabled,
     bool sync_has_auth_error,
+    BooleanPrefMember* dice_pref_member,
     const content_settings::CookieSettings* cookie_settings);
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response

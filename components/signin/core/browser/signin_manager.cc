@@ -155,7 +155,7 @@ void SigninManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
-               !signin::IsDiceMigrationEnabled());
+               !signin::IsDiceEnabledForProfile(client_->GetPrefs()));
 }
 
 void SigninManager::SignOutAndRemoveAllAccounts(

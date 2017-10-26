@@ -187,6 +187,8 @@ class ProfileIOData {
     return &network_prediction_options_;
   }
 
+  BooleanPrefMember* dice_enabled() const { return dice_enabled_.get(); }
+
 #if defined(OS_CHROMEOS)
   std::string username_hash() const {
     return username_hash_;
@@ -542,6 +544,7 @@ class ProfileIOData {
   mutable BooleanPrefMember sync_has_auth_error_;
   mutable BooleanPrefMember sync_suppress_start_;
   mutable BooleanPrefMember sync_first_setup_complete_;
+  mutable std::unique_ptr<BooleanPrefMember> dice_enabled_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

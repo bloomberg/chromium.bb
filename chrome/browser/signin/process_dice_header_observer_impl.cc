@@ -20,9 +20,12 @@ ProcessDiceHeaderObserverImpl::ProcessDiceHeaderObserverImpl(
 void ProcessDiceHeaderObserverImpl::WillStartRefreshTokenFetch(
     const std::string& gaia_id,
     const std::string& email) {
-  if (!signin::IsDiceMigrationEnabled())
-    return;
   if (!web_contents())
+    return;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (!signin::IsDiceEnabledForProfile(profile->GetPrefs()))
     return;
 
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents());
@@ -33,8 +36,6 @@ void ProcessDiceHeaderObserverImpl::WillStartRefreshTokenFetch(
 void ProcessDiceHeaderObserverImpl::DidFinishRefreshTokenFetch(
     const std::string& gaia_id,
     const std::string& email) {
-  if (!signin::IsDiceMigrationEnabled())
-    return;
   content::WebContents* web_contents = this->web_contents();
   if (!web_contents || !should_start_sync_) {
     VLOG(1) << "Do not start sync after web sign-in.";
@@ -45,6 +46,9 @@ void ProcessDiceHeaderObserverImpl::DidFinishRefreshTokenFetch(
   DCHECK(browser);
   Profile* profile = browser->profile();
   DCHECK(profile);
+  if (!signin::IsDiceEnabledForProfile(profile->GetPrefs()))
+    return;
+
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   DCHECK(signin_manager);
   if (signin_manager->IsAuthenticated()) {

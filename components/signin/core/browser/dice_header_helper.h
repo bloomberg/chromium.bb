@@ -20,6 +20,14 @@ extern const char kDiceProtocolVersion[];
 // SigninHeaderHelper implementation managing the Dice header.
 class DiceHeaderHelper : public SigninHeaderHelper {
  public:
+  // Signout mode for Gaia.
+  enum class SignoutMode {
+    // Gaia does not show a signout confirmation dialog.
+    kNoSignoutConfirmation,
+    // Gaia shows a signout confirmation dialog for the Sync account.
+    kShowSignoutConfirmation
+  };
+
   explicit DiceHeaderHelper(bool signed_in_with_auth_error);
   ~DiceHeaderHelper() override {}
 
@@ -37,7 +45,10 @@ class DiceHeaderHelper : public SigninHeaderHelper {
   // the header must not be added.
   // |sync_account_id| is not empty if Sync is currently enabled for this
   // account.
-  std::string BuildRequestHeader(const std::string& sync_account_id);
+  // |show_signout_confirmation| is true if Gaia must display the signout
+  // confirmation dialog.
+  std::string BuildRequestHeader(const std::string& sync_account_id,
+                                 SignoutMode signout_mode);
 
  private:
   // SigninHeaderHelper implementation:

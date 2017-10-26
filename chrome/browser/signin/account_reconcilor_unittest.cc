@@ -831,6 +831,68 @@ TEST_F(AccountReconcilorTest, DiceLastKnownFirstAccount) {
   }
 }
 
+// Tests that the Dice migration happens after a no-op reconcile.
+TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
+  // Enable Dice migration.
+  signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+
+  // Chrome account is consistent with the cookie.
+  const std::string account_id =
+      PickAccountIdForAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
+                                                              "12345");
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+
+  // Dice is not enabled by default.
+  ASSERT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
+  EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
+
+  // No-op reconcile.
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_)).Times(0);
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction()).Times(0);
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+
+  // Migration happened: Dice is now enabled.
+  EXPECT_TRUE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
+  EXPECT_TRUE(reconcilor->IsAccountConsistencyEnforced());
+}
+
+// Tests that the Dice migration does not happen after a busy reconcile.
+TEST_F(AccountReconcilorTest, DiceNoMigrationAfterReconcile) {
+  // Enable Dice migration.
+  signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+
+  // Add a token in Chrome but do not sign in.
+  const std::string account_id =
+      PickAccountIdForAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  cookie_manager_service()->SetListAccountsResponseNoAccounts();
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+
+  // Dice is not enabled by default.
+  ASSERT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
+  EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
+
+  // Busy reconcile.
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
+  reconcilor->StartReconcile();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+
+  // Migration did not happen.
+  EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
+  EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
+}
+
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 // Tests that reconcile cannot start before the tokens are loaded, and is

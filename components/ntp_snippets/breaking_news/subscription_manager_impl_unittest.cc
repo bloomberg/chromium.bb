@@ -12,6 +12,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "net/base/net_errors.h"
@@ -45,6 +46,8 @@ class SubscriptionManagerImplTest : public testing::Test {
 
   void SetUp() override {
     SubscriptionManagerImpl::RegisterProfilePrefs(
+        utils_.pref_service()->registry());
+    signin::RegisterAccountConsistencyProfilePrefs(
         utils_.pref_service()->registry());
   }
 
