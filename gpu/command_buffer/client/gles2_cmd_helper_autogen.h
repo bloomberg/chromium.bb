@@ -2778,17 +2778,6 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   }
 }
 
-void SetColorSpaceForScanoutCHROMIUM(GLuint texture_id,
-                                     GLuint shm_id,
-                                     GLuint shm_offset,
-                                     GLsizei color_space_size) {
-  gles2::cmds::SetColorSpaceForScanoutCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::SetColorSpaceForScanoutCHROMIUM>();
-  if (c) {
-    c->Init(texture_id, shm_id, shm_offset, color_space_size);
-  }
-}
-
 void ScheduleCALayerInUseQueryCHROMIUMImmediate(GLsizei count,
                                                 const GLuint* textures) {
   const uint32_t size =
@@ -3317,6 +3306,17 @@ void TexStorage2DImageCHROMIUM(GLenum target,
       GetCmdSpace<gles2::cmds::TexStorage2DImageCHROMIUM>();
   if (c) {
     c->Init(target, internalFormat, width, height);
+  }
+}
+
+void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
+                                   GLuint shm_id,
+                                   GLuint shm_offset,
+                                   GLsizei color_space_size) {
+  gles2::cmds::SetColorSpaceMetadataCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::SetColorSpaceMetadataCHROMIUM>();
+  if (c) {
+    c->Init(texture_id, shm_id, shm_offset, color_space_size);
   }
 }
 

@@ -339,7 +339,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   scoped_refptr<gl::GLImageDXGI> image_dxgi(
       new gl::GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
-  image_dxgi->SetColorSpaceForScanout(gfx::ColorSpace::CreateREC709());
+  image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
   ui::DCRendererLayerParams params(
       false, gfx::Rect(), 1, gfx::Transform(),
@@ -522,7 +522,7 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
     scoped_refptr<gl::GLImageDXGI> image_dxgi(
         new gl::GLImageDXGI(texture_size, nullptr));
     image_dxgi->SetTexture(texture, 0);
-    image_dxgi->SetColorSpaceForScanout(color_space);
+    image_dxgi->SetColorSpace(color_space);
 
     ui::DCRendererLayerParams params(
         false, gfx::Rect(), 1, gfx::Transform(),
@@ -617,7 +617,7 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
       new gl::GLImageRefCountedMemory(uv_size, GL_BGRA_EXT));
   uv_image->Initialize(new base::RefCountedBytes(uv_data),
                        gfx::BufferFormat::RG_88);
-  y_image->SetColorSpaceForScanout(gfx::ColorSpace::CreateREC709());
+  y_image->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
   ui::DCRendererLayerParams params(
       false, gfx::Rect(), 1, gfx::Transform(),

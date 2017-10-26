@@ -51,6 +51,7 @@ class DummyGLImage : public gl::GLImage {
                             const gfx::RectF& crop_rect) override {
     return false;
   }
+  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,

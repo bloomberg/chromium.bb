@@ -528,8 +528,6 @@ source_set("memory_buffer_sources") {
     "generic_shared_memory_id.cc",
     "generic_shared_memory_id.h",
     "gfx_export.h",
-    "mac/io_surface.cc",
-    "mac/io_surface.h",
     "native_pixmap.h",
     "native_pixmap_handle.cc",
     "native_pixmap_handle.h",
@@ -564,6 +562,15 @@ source_set("memory_buffer_sources") {
     ]
 
     deps += [ "//third_party/libdrm" ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "mac/io_surface.cc",
+      "mac/io_surface.h",
+    ]
+
+    public_deps += [ "//ui/gfx:color_space" ]
   }
 }
 

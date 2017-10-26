@@ -4985,13 +4985,13 @@ void GLES2Implementation::ScheduleDCLayerSharedStateCHROMIUM(
                                               buffer.shm_id(), buffer.offset());
 }
 
-void GLES2Implementation::SetColorSpaceForScanoutCHROMIUM(
+void GLES2Implementation::SetColorSpaceMetadataCHROMIUM(
     GLuint texture_id,
     GLColorSpace color_space) {
 #if defined(__native_client__)
   // Including gfx::ColorSpace would bring Skia and a lot of other code into
   // NaCl's IRT.
-  SetGLError(GL_INVALID_VALUE, "GLES2::SetColorSpaceForScanoutCHROMIUM",
+  SetGLError(GL_INVALID_VALUE, "GLES2::SetColorSpaceMetadataCHROMIUM",
              "not supported");
 #else
   gfx::ColorSpace* gfx_color_space =
@@ -5002,12 +5002,12 @@ void GLES2Implementation::SetColorSpaceForScanoutCHROMIUM(
   ScopedTransferBufferPtr buffer(color_space_data.size(), helper_,
                                  transfer_buffer_);
   if (!buffer.valid() || buffer.size() < color_space_data.size()) {
-    SetGLError(GL_OUT_OF_MEMORY, "GLES2::SetColorSpaceForScanoutCHROMIUM",
+    SetGLError(GL_OUT_OF_MEMORY, "GLES2::SetColorSpaceMetadataCHROMIUM",
                "out of memory");
     return;
   }
   memcpy(buffer.address(), color_space_data.data(), color_space_data.size());
-  helper_->SetColorSpaceForScanoutCHROMIUM(
+  helper_->SetColorSpaceMetadataCHROMIUM(
       texture_id, buffer.shm_id(), buffer.offset(), color_space_data.size());
 #endif
 }

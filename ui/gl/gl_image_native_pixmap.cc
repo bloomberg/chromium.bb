@@ -215,7 +215,13 @@ bool GLImageNativePixmap::CopyTexImage(unsigned target) {
                  GL_UNSIGNED_BYTE, data.data());
     return true;
   }
-  return GLImageEGL::CopyTexImage(target);
+  return false;
+}
+
+bool GLImageNativePixmap::CopyTexSubImage(unsigned target,
+                                          const gfx::Point& offset,
+                                          const gfx::Rect& rect) {
+  return false;
 }
 
 bool GLImageNativePixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

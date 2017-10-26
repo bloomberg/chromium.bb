@@ -308,7 +308,6 @@ GL_APICALL void         GL_APIENTRY glDiscardBackbufferCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glScheduleOverlayPlaneCHROMIUM (GLint plane_z_order, GLenum plane_transform, GLuint overlay_texture_id, GLint bounds_x, GLint bounds_y, GLint bounds_width, GLint bounds_height, GLfloat uv_x, GLfloat uv_y, GLfloat uv_width, GLfloat uv_height);
 GL_APICALL void         GL_APIENTRY glScheduleCALayerSharedStateCHROMIUM (GLfloat opacity, GLboolean is_clipped, const GLfloat* clip_rect, GLint sorting_context_id, const GLfloat* transform);
 GL_APICALL void         GL_APIENTRY glScheduleCALayerCHROMIUM (GLuint contents_texture_id, const GLfloat* contents_rect, GLuint background_color, GLuint edge_aa_mask, const GLfloat* bounds_rect, GLuint filter);
-GL_APICALL void         GL_APIENTRY glSetColorSpaceForScanoutCHROMIUM (GLuint texture_id, GLColorSpace color_space);
 GL_APICALL void         GL_APIENTRY glScheduleCALayerInUseQueryCHROMIUM (GLsizei count, const GLuint* textures);
 GL_APICALL void         GL_APIENTRY glCommitOverlayPlanesCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSwapInterval (GLint interval);
@@ -385,3 +384,6 @@ GL_APICALL void         GL_APIENTRY glEndRasterCHROMIUM (void);
 
 // Extension CHROMIUM_texture_storage_image
 GL_APICALL void         GL_APIENTRY glTexStorage2DImageCHROMIUM (GLenumTextureBindTarget target, GLenumTextureInternalFormatStorage internalFormat, GLenumClientBufferUsage bufferUsage, GLsizei width, GLsizei height);
+
+// Extension CHROMIUM_color_space_metadata
+GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadataCHROMIUM (GLuint texture_id, GLColorSpace color_space);

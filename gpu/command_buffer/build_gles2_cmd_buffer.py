@@ -4412,14 +4412,6 @@ _FUNCTION_INFO = {
                 'GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',
   },
-  'SetColorSpaceForScanoutCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'client_test': False,
-    'cmd_args': 'GLuint texture_id, GLuint shm_id, GLuint shm_offset, '
-                'GLsizei color_space_size',
-    'extension': 'CHROMIUM_schedule_ca_layer',
-  },
   'CommitOverlayPlanesCHROMIUM': {
     'impl_func': False,
     'decoder_func': 'DoCommitOverlayPlanes',
@@ -4620,6 +4612,14 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': 'CHROMIUM_texture_storage_image',
     'extension_flag': 'chromium_texture_storage_image',
+  },
+  'SetColorSpaceMetadataCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'cmd_args': 'GLuint texture_id, GLuint shm_id, GLuint shm_offset, '
+                'GLsizei color_space_size',
+    'extension': 'CHROMIUM_color_space_metadata',
   },
 }
 
