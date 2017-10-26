@@ -2536,6 +2536,21 @@
             ]
         }
     ],
+    "PersistentNotificationInStandalonePwa": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "pwa-persistent-notification"
+                    ]
+                }
+            ]
+        }
+    ],
     "PhysicalWeb": [
         {
             "platforms": [
