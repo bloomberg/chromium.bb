@@ -16,15 +16,6 @@ function getIntersectionHeight(rect1, rect2) {
 }
 
 /**
- * Makes sure that the scale level doesn't get out of the limits.
- * @param {number} scale The new scale level.
- * @return {number} The scale clamped within the limits.
- */
-function clampScale(scale) {
-  return Math.min(5, Math.max(0.25, scale));
-}
-
-/**
  * Computes vector between two points.
  * @param {!Object} p1 The first point.
  * @param {!Object} p2 The second point.
@@ -135,6 +126,17 @@ Viewport.ZOOM_FACTORS = [
 Viewport.ZOOM_FACTOR_RANGE = {
   min: Viewport.ZOOM_FACTORS[0],
   max: Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1]
+};
+
+/**
+ * Clamps the zoom factor (or page scale factor) to be within the limits.
+ * @param {number} factor The zoom/scale factor.
+ * @return {number} The factor clamped within the limits.
+ */
+Viewport.clampZoom = function(factor) {
+  return Math.max(
+      Viewport.ZOOM_FACTOR_RANGE.min,
+      Math.min(factor, Viewport.ZOOM_FACTOR_RANGE.max));
 };
 
 /**
@@ -369,7 +371,7 @@ Viewport.prototype = {
         this.allowedToChangeZoom_,
         'Called Viewport.setPinchZoomInternal_ without calling ' +
             'Viewport.mightZoom_.');
-    this.internalZoom_ = clampScale(this.internalZoom_ * scaleDelta);
+    this.internalZoom_ = Viewport.clampZoom(this.internalZoom_ * scaleDelta);
 
     var newCenterInContent = this.frameToContent(center);
     var delta = {
@@ -409,11 +411,8 @@ Viewport.prototype = {
    */
   setZoom: function(newZoom) {
     this.fittingType_ = Viewport.FittingType.NONE;
-    newZoom = Math.max(
-        Viewport.ZOOM_FACTOR_RANGE.min,
-        Math.min(newZoom, Viewport.ZOOM_FACTOR_RANGE.max));
     this.mightZoom_(() => {
-      this.setZoomInternal_(newZoom);
+      this.setZoomInternal_(Viewport.clampZoom(newZoom));
       this.updateViewport_();
     });
   },
@@ -675,7 +674,7 @@ Viewport.prototype = {
 
       var needsScrollbars =
           this.documentNeedsScrollbars_(this.zoomManager_.applyBrowserZoom(
-              clampScale(this.internalZoom_ * scaleDelta)));
+              Viewport.clampZoom(this.internalZoom_ * scaleDelta)));
 
       this.pinchCenter_ = e.center;
 
