@@ -36,6 +36,10 @@ BacktraceStorage::Lock& BacktraceStorage::Lock::operator=(Lock&& other) {
   return *this;
 }
 
+bool BacktraceStorage::Lock::IsLocked() {
+  return storage_ != nullptr;
+}
+
 BacktraceStorage::BacktraceStorage() : shards_(kShardCount) {}
 
 BacktraceStorage::~BacktraceStorage() {}

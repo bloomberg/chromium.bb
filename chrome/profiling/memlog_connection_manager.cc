@@ -234,6 +234,8 @@ void MemlogConnectionManager::DumpProcessesForTracing(
   base::AutoLock lock(connections_lock_);
 
   auto tracking = base::MakeRefCounted<DumpProcessesForTracingTracking>();
+  tracking->backtrace_storage_lock =
+      BacktraceStorage::Lock(&backtrace_storage_);
   tracking->waiting_responses = connections_.size();
   tracking->callback = std::move(callback);
   tracking->dump = std::move(dump);
@@ -270,6 +272,7 @@ void MemlogConnectionManager::DoDumpProcess(
     return;
   }
 
+  CHECK(args.backtrace_storage_lock.IsLocked());
   std::ostringstream oss;
   ExportParams params;
   params.allocs = std::move(counts);
@@ -336,6 +339,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
     return;
   }
 
+  CHECK(tracking->backtrace_storage_lock.IsLocked());
   ExportParams params;
   params.allocs = std::move(counts);
   params.maps = std::move(process_dump->os_dump->memory_maps_for_heap_profiler);

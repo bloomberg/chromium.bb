@@ -38,6 +38,7 @@ class BacktraceStorage {
 
     Lock& operator=(Lock&& other);
     Lock& operator=(const Lock&) = delete;
+    bool IsLocked();
 
    private:
     BacktraceStorage* storage_;  // May be null if moved from.
