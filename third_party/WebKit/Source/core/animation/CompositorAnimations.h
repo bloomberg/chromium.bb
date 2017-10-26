@@ -57,17 +57,25 @@ class CORE_EXPORT CompositorAnimations {
   struct FailureCode {
     const bool can_composite;
     const bool web_developer_actionable;
+    // This variable is used only to set the
+    // Animation::is_non_composited_compositable_.
+    const bool will_composite;
     const String reason;
 
-    static FailureCode None() { return FailureCode(true, false, String()); }
+    static FailureCode None() {
+      return FailureCode(true, false, true, String());
+    }
     static FailureCode Actionable(const String& reason) {
-      return FailureCode(false, true, reason);
+      return FailureCode(false, true, false, reason);
     }
     static FailureCode NonActionable(const String& reason) {
-      return FailureCode(false, false, reason);
+      return FailureCode(false, false, false, reason);
+    }
+    static FailureCode NotPaintIntoOwnBacking(const String& reason) {
+      return FailureCode(true, false, false, reason);
     }
 
-    bool Ok() const { return can_composite; }
+    bool Ok() const { return will_composite; }
 
     bool operator==(const FailureCode& other) const {
       return can_composite == other.can_composite &&
@@ -78,9 +86,11 @@ class CORE_EXPORT CompositorAnimations {
    private:
     FailureCode(bool can_composite,
                 bool web_developer_actionable,
+                bool will_composite,
                 const String& reason)
         : can_composite(can_composite),
           web_developer_actionable(web_developer_actionable),
+          will_composite(will_composite),
           reason(reason) {}
   };
 
@@ -155,6 +165,11 @@ class CORE_EXPORT CompositorAnimations {
                            canStartElementOnCompositorTransformSPv2);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                            canStartElementOnCompositorEffectSPv2);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           canStartElementOnCompositorEffect);
+  FRIEND_TEST_ALL_PREFIXES(
+      AnimationCompositorAnimationsTest,
+      cannotStartElementOnCompositorEffectWithRuntimeFeature);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                            cancelIncompatibleCompositorAnimations);
 };

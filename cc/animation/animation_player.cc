@@ -200,6 +200,10 @@ bool AnimationPlayer::NotifyAnimationFinishedForTesting(
   return animation_ticker_->NotifyAnimationFinished(event);
 }
 
+size_t AnimationPlayer::TickingAnimationsCount() const {
+  return animation_ticker_->TickingAnimationsCount();
+}
+
 void AnimationPlayer::SetNeedsCommit() {
   DCHECK(animation_host_);
   animation_host_->SetNeedsCommit();

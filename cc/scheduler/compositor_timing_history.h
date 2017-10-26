@@ -75,7 +75,10 @@ class CC_EXPORT CompositorTimingHistory {
   void DrawAborted();
   void WillDraw();
   void DidDraw(bool used_new_active_tree,
-               base::TimeTicks impl_frame_time);
+               base::TimeTicks impl_frame_time,
+               size_t composited_animations_count,
+               size_t main_thread_animations_count,
+               size_t main_thread_compositable_animations_count);
   void DidSubmitCompositorFrame();
   void DidReceiveCompositorFrameAck();
   void WillInvalidateOnImplSide();
@@ -101,6 +104,7 @@ class CC_EXPORT CompositorTimingHistory {
   bool compositor_drawing_continuously_;
   base::TimeTicks begin_main_frame_end_time_prev_;
   base::TimeTicks new_active_tree_draw_end_time_prev_;
+  base::TimeTicks new_active_tree_draw_end_time_prev_committing_continuously_;
   base::TimeTicks draw_end_time_prev_;
 
   RollingTimeDeltaHistory begin_main_frame_queue_duration_history_;
@@ -132,6 +136,11 @@ class CC_EXPORT CompositorTimingHistory {
 
   std::unique_ptr<UMAReporter> uma_reporter_;
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+
+  // Used only for reporting animation targeted UMA.
+  bool previous_frame_had_composited_animations_ = false;
+  bool previous_frame_had_main_thread_animations_ = false;
+  bool previous_frame_had_main_thread_compositable_animations_ = false;
 
   TreePriority tree_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
 

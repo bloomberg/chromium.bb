@@ -212,6 +212,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled,
     RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled>
     ScopedTimerThrottlingForHiddenFramesForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::TurnOff2DAndOpacityCompositorAnimationsEnabled,
+    RuntimeEnabledFeatures::SetTurnOff2DAndOpacityCompositorAnimationsEnabled>
+    ScopedTurnOff2DAndOpacityCompositorAnimationForTest;
 }  // namespace blink
 
 #endif  // RuntimeEnabledFeaturesTestHelpers_h

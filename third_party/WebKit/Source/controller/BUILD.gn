@@ -56,6 +56,7 @@ group("webkit_unit_tests_data") {
   data = [
     "../core/testing/data/",
     "../core/paint/test_data/",
+    "../core/animation/test_data/",
   ]
 }
 

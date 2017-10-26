@@ -384,6 +384,18 @@ void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
                                 proxy_main_weak_ptr_, base::Passed(&events)));
 }
 
+size_t ProxyImpl::CompositedAnimationsCount() const {
+  return host_impl_->mutator_host()->CompositedAnimationsCount();
+}
+
+size_t ProxyImpl::MainThreadAnimationsCount() const {
+  return host_impl_->mutator_host()->MainThreadAnimationsCount();
+}
+
+size_t ProxyImpl::MainThreadCompositableAnimationsCount() const {
+  return host_impl_->mutator_host()->MainThreadCompositableAnimationsCount();
+}
+
 bool ProxyImpl::IsInsideDraw() {
   return inside_draw_;
 }

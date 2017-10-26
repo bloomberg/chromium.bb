@@ -373,9 +373,15 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
         target_element.GetLayoutObject() &&
         target_element.GetLayoutObject()->GetCompositingState() ==
             kPaintsIntoOwnBacking;
+    // This function is called in CheckCanStartAnimationOnCompositor(), after
+    // CheckCanStartEffectOnCompositor returns code.Ok(), which means that we
+    // know this animation could be accelerated. If |!paints_into_own_backing|,
+    // then we know that the animation is not composited due to certain check,
+    // such as the ComputedStyle::ShouldCompositeForCurrentAnimations(), for
+    // a running experiment.
     if (!paints_into_own_backing) {
-      return FailureCode::NonActionable(
-          "Element does not paint into own backing");
+      return FailureCode::NotPaintIntoOwnBacking(
+          "Acceleratable animation not accelerated due to an experiment");
     }
   }
 

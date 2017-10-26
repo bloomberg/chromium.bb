@@ -72941,6 +72941,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.DrawIntervalWithCompositedAnimations2"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The time delta between the draw times of back-to-back BeginImplFrames,
+    regardless of whether or not they result in a swap, when there is at least
+    one composited animation.
+
+    The interval is only recorded when every BeginImplFrame wants to draw.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.DrawIntervalWithMainThreadAnimations2"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The time delta between the draw times of back-to-back BeginImplFrames of new
+    active trees only, regardless of whether or not they result in a swap, when
+    there is at least one main thread animation.
+
+    The interval is only recorded when every BeginImplFrame wants to draw.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.DrawIntervalWithMainThreadCompositableAnimations2"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The time delta between the draw times of back-to-back BeginImplFrames of new
+    active trees only, regardless of whether or not they result in a swap, when
+    there is at least one main thread animation that could be composited but
+    not, due to running experiment.
+
+    The interval is only recorded when every BeginImplFrame wants to draw.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.InvalidationToReadyToActivateDuration2"
     units="microseconds">
   <owner>brianderson@chromium.org</owner>
@@ -97335,6 +97372,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Scheduling.CommitToReadyToActivateDuration2"/>
   <affected-histogram name="Scheduling.DrawDuration2"/>
   <affected-histogram name="Scheduling.DrawInterval2"/>
+  <affected-histogram name="Scheduling.DrawIntervalWithCompositedAnimations2"/>
+  <affected-histogram name="Scheduling.DrawIntervalWithMainThreadAnimations2"/>
+  <affected-histogram
+      name="Scheduling.DrawIntervalWithMainThreadCompositableAnimations2"/>
   <affected-histogram name="Scheduling.InvalidationToReadyToActivateDuration2"/>
   <affected-histogram name="Scheduling.MainAndImplFrameTimeDelta2"/>
   <affected-histogram name="Scheduling.PrepareTilesDuration2"/>

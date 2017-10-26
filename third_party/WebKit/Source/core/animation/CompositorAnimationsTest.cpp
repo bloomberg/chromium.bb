@@ -40,7 +40,10 @@
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/dom/Document.h"
+#include "core/frame/FrameTestHelpers.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/FilterOperations.h"
@@ -50,17 +53,21 @@
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class AnimationCompositorAnimationsTest : public ::testing::Test {
+class AnimationCompositorAnimationsTest : public RenderingTest {
  protected:
   scoped_refptr<TimingFunction> linear_timing_function_;
   scoped_refptr<TimingFunction> cubic_ease_timing_function_;
@@ -81,6 +88,8 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   std::unique_ptr<DummyPageHolder> page_holder_;
 
   void SetUp() override {
+    RenderingTest::SetUp();
+    EnableCompositing();
     linear_timing_function_ = LinearTimingFunction::Shared();
     cubic_ease_timing_function_ = CubicBezierTimingFunction::Preset(
         CubicBezierTimingFunction::EaseType::EASE);
@@ -111,6 +120,9 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     timeline_ = DocumentTimeline::Create(document_.Get());
     timeline_->ResetForTesting();
     element_ = document_->createElement("test");
+
+    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    base_url_ = "http://www.test.com/";
   }
 
  public:
@@ -310,6 +322,31 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
         ToCubicBezierTimingFunction(*keyframe_timing_function);
     EXPECT_EQ(cubic_timing_function.GetEaseType(), ease_type);
   }
+
+  void LoadTestData(const std::string& file_name) {
+    String testing_path = testing::BlinkRootDir();
+    testing_path.append("/Source/core/animation/test_data/");
+    WebURL url = URLTestHelpers::RegisterMockedURLLoadFromBase(
+        WebString::FromUTF8(base_url_), testing_path,
+        WebString::FromUTF8(file_name));
+    FrameTestHelpers::LoadFrame(helper_.WebView()->MainFrameImpl(),
+                                base_url_ + file_name);
+    ForceFullCompositingUpdate();
+    URLTestHelpers::RegisterMockedURLUnregister(url);
+  }
+
+  LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
+
+  void ForceFullCompositingUpdate() {
+    helper_.WebView()->UpdateAllLifecyclePhases();
+  }
+
+ private:
+  static void ConfigureSettings(WebSettings* settings) {
+    settings->SetAcceleratedCompositingEnabled(true);
+  }
+  FrameTestHelpers::WebViewHelper helper_;
+  std::string base_url_;
 };
 
 class LayoutObjectProxy : public LayoutObject {
@@ -1301,6 +1338,50 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);
+}
+
+TEST_F(AnimationCompositorAnimationsTest, canStartElementOnCompositorEffect) {
+  LoadTestData("transform-animation.html");
+  Document* document = GetFrame()->GetDocument();
+  Element* target = document->getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->GetLayoutObject()->FirstFragment().PaintProperties();
+  EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+  CompositorAnimations::FailureCode code =
+      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
+  EXPECT_EQ(code, CompositorAnimations::FailureCode::None());
+  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
+  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 0u);
+  CompositorAnimationHost* host =
+      document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 0u);
+  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 0u);
+  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 1u);
+}
+
+TEST_F(AnimationCompositorAnimationsTest,
+       cannotStartElementOnCompositorEffectWithRuntimeFeature) {
+  ScopedTurnOff2DAndOpacityCompositorAnimationForTest
+      turn_off_2d_and_opacity_compositor_animation(true);
+  LoadTestData("transform-animation.html");
+  Document* document = GetFrame()->GetDocument();
+  Element* target = document->getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->GetLayoutObject()->FirstFragment().PaintProperties();
+  EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+  CompositorAnimations::FailureCode code =
+      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
+  EXPECT_EQ(
+      code,
+      CompositorAnimations::FailureCode::NotPaintIntoOwnBacking(
+          "Acceleratable animation not accelerated due to an experiment"));
+  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
+  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 1u);
+  CompositorAnimationHost* host =
+      document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 1u);
+  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 1u);
+  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 0u);
 }
 
 }  // namespace blink

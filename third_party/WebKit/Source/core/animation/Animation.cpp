@@ -324,11 +324,31 @@ bool Animation::PreCommit(
   if (should_start) {
     compositor_group_ = compositor_group;
     if (start_on_compositor) {
-      if (CheckCanStartAnimationOnCompositor(composited_element_ids).Ok()) {
+      CompositorAnimations::FailureCode failure_code =
+          CheckCanStartAnimationOnCompositor(composited_element_ids);
+      if (failure_code.Ok()) {
         CreateCompositorPlayer();
         StartAnimationOnCompositor(composited_element_ids);
         compositor_state_ = WTF::WrapUnique(new CompositorState(*this));
       } else {
+        // failure_code.Ok() is equivalent of |will_composite| = true, so if the
+        // |can_composite| is true here, then we know that it is a main thread
+        // compositable animation.
+        // The |will_composite| is set at
+        // CompositorAnimations::CheckCanStartElementOnCompositor. Please refer
+        // to that function for more details.
+        //
+        // In the CompositingRequirementsUpdater::UpdateRecursive, the
+        // (direct_reasons & kCompositingReasonActiveAnimation) can be non-zero
+        // which indicates that there is a compositor animation. However, the
+        // PaintLayerCompositor::CanBeComposited could still return false
+        // because the LocalFrameView is not visible. And in that case, the code
+        // path will get here because there is a compositor animation but it
+        // won't be composited. We have to account for this case.
+        if (failure_code.can_composite &&
+            TimelineInternal()->GetDocument()->View()->IsVisible()) {
+          is_non_composited_compositable_ = true;
+        }
         CancelIncompatibleAnimationsOnCompositor();
       }
     }

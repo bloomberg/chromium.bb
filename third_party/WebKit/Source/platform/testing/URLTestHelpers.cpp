@@ -100,5 +100,9 @@ void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
       full_url, response, file_path);
 }
 
+void RegisterMockedURLUnregister(const WebURL& url) {
+  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
+}
+
 }  // namespace URLTestHelpers
 }  // namespace blink

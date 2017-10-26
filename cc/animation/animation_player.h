@@ -99,6 +99,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void NotifyAnimationTakeover(const AnimationEvent& event);
   bool NotifyAnimationFinishedForTesting(TargetProperty::Type target_property,
                                          int group_id);
+  size_t TickingAnimationsCount() const;
 
   void SetNeedsPushProperties();
 
