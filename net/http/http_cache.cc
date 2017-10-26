@@ -113,7 +113,7 @@ bool HttpCache::ActiveEntry::HasNoTransactions() {
 }
 
 bool HttpCache::ActiveEntry::SafeToDestroy() {
-  return HasNoTransactions() && !writers;
+  return HasNoTransactions() && !writers && !will_process_queued_transactions;
 }
 
 //-----------------------------------------------------------------------------
@@ -612,8 +612,7 @@ int HttpCache::DoomEntry(const std::string& key, Transaction* trans) {
   entry_ptr->disk_entry->Doom();
   entry_ptr->doomed = true;
 
-  DCHECK(!entry_ptr->HasNoTransactions() ||
-         entry_ptr->will_process_queued_transactions);
+  DCHECK(!entry_ptr->SafeToDestroy());
   return OK;
 }
 
@@ -681,7 +680,6 @@ HttpCache::ActiveEntry* HttpCache::ActivateEntry(
 }
 
 void HttpCache::DeactivateEntry(ActiveEntry* entry) {
-  DCHECK(!entry->will_process_queued_transactions);
   DCHECK(!entry->doomed);
   DCHECK(entry->disk_entry);
   DCHECK(entry->SafeToDestroy());
@@ -943,8 +941,7 @@ void HttpCache::WritersDoneWritingToEntry(ActiveEntry* entry,
     // the truncated status of the entry.
     RestartHeadersPhaseTransactions(entry);
     entry->writers.reset();
-    if (entry->HasNoTransactions() &&
-        !entry->will_process_queued_transactions) {
+    if (entry->SafeToDestroy()) {
       DestroyEntry(entry);
     }
     return;
@@ -965,7 +962,7 @@ void HttpCache::DoomEntryValidationNoMatch(ActiveEntry* entry) {
   DCHECK(entry->headers_transaction);
 
   entry->headers_transaction = nullptr;
-  if (entry->SafeToDestroy() && !entry->will_process_queued_transactions) {
+  if (entry->SafeToDestroy()) {
     entry->disk_entry->Doom();
     DestroyEntry(entry);
     return;
@@ -1010,7 +1007,7 @@ void HttpCache::ProcessEntryFailure(ActiveEntry* entry) {
   TransactionList list;
   RemoveAllQueuedTransactions(entry, &list);
 
-  if (entry->SafeToDestroy() && !entry->will_process_queued_transactions) {
+  if (entry->SafeToDestroy()) {
     entry->disk_entry->Doom();
     DestroyEntry(entry);
   } else {
