@@ -36,14 +36,8 @@ grit("strings") {
 }
 
 config("libaddressinput_config") {
-  defines = [
-    "I18N_ADDRESSINPUT_USE_BASICTYPES_OVERRIDE=1",
-    "I18N_ADDRESS_VALIDATION_DATA_URL=\"https://chromium-i18n.appspot.com/ssl-aggregate-address/\"",
-  ]
-  include_dirs = [
-    "src/cpp/include",
-    "chromium/override",
-  ]
+  defines = [ "I18N_ADDRESS_VALIDATION_DATA_URL=\"https://chromium-i18n.appspot.com/ssl-aggregate-address/\"" ]
+  include_dirs = [ "src/cpp/include" ]
 }
 
 # This target provides basic functionality which is cooked into the build.
