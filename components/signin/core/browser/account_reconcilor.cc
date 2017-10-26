@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -30,6 +32,11 @@ namespace {
 
 // String used for source parameter in GAIA cookie manager calls.
 const char kSource[] = "ChromiumAccountReconcilor";
+
+// Preference indicating that the Dice migration should happen at the next
+// Chrome startup.
+const char kDiceMigrationOnStartupPref[] =
+    "signin.AccountReconcilor.kDiceMigrationOnStartup";
 
 class AccountEqualToFunc {
  public:
@@ -87,6 +94,14 @@ AccountReconcilor::AccountReconcilor(
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
+  if (ShouldMigrateToDiceOnStartup()) {
+    PrefService* prefs = client_->GetPrefs();
+    DCHECK(prefs);
+    if (!signin::IsDiceEnabledForProfile(prefs))
+      VLOG(1) << "Profile is migrating to Dice";
+    signin::MigrateProfileToDice(client->GetPrefs());
+    DCHECK(signin::IsDiceEnabledForProfile(prefs));
+  }
 }
 
 AccountReconcilor::~AccountReconcilor() {
@@ -94,6 +109,12 @@ AccountReconcilor::~AccountReconcilor() {
   // Make sure shutdown was called first.
   DCHECK(!registered_with_token_service_);
   DCHECK(!registered_with_cookie_manager_service_);
+}
+
+// static
+void AccountReconcilor::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(kDiceMigrationOnStartupPref, false);
 }
 
 void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
@@ -593,10 +614,10 @@ void AccountReconcilor::FinishReconcile() {
   CalculateIfReconcileIsDone();
   if (!is_reconcile_started_) {
     last_known_first_account_ = first_account;
-    if (reconcile_is_noop_ && signin::IsDiceMigrationEnabled()) {
-      VLOG(1) << "Migrating Profile to Dice.";
-      signin::MigrateProfileToDice(client_->GetPrefs());
-    }
+
+    // Migration happens on startup if the last reconcile was a no-op.
+    if (signin::IsDiceMigrationEnabled())
+      SetDiceMigrationOnStartup(client_->GetPrefs(), reconcile_is_noop_);
   }
   ScheduleStartReconcileIfChromeAccountsChanged();
 }
@@ -727,4 +748,16 @@ void AccountReconcilor::UnblockReconcile() {
     reconcile_on_unblock_ = false;
     StartReconcile();
   }
+}
+
+bool AccountReconcilor::ShouldMigrateToDiceOnStartup() {
+  return signin::IsDiceMigrationEnabled() &&
+         client_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref);
+}
+
+// static
+void AccountReconcilor::SetDiceMigrationOnStartup(PrefService* prefs,
+                                                  bool migrate) {
+  VLOG(1) << "Dice migration on next startup: " << migrate;
+  prefs->SetBoolean(kDiceMigrationOnStartupPref, migrate);
 }

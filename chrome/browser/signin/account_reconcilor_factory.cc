@@ -49,4 +49,5 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
 
 void AccountReconcilorFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  AccountReconcilor::RegisterProfilePrefs(registry);
 }

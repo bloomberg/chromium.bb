@@ -40,6 +40,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -187,10 +188,6 @@ void AccountReconcilorTest::SetUp() {
   profile_ = testing_profile_manager_.get()->CreateTestingProfile(
       "name", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
       base::UTF8ToUTF16("name"), 0, std::string(), factories);
-
-  test_signin_client_ =
-      static_cast<TestSigninClient*>(
-          ChromeSigninClientFactory::GetForProfile(profile()));
 
   token_service_ =
       static_cast<FakeProfileOAuth2TokenService*>(
@@ -857,9 +854,10 @@ TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
-  // Migration happened: Dice is now enabled.
-  EXPECT_TRUE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
-  EXPECT_TRUE(reconcilor->IsAccountConsistencyEnforced());
+  // Migration will happen on next startup.
+  EXPECT_TRUE(reconcilor->ShouldMigrateToDiceOnStartup());
+  EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
+  EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
 }
 
 // Tests that the Dice migration does not happen after a busy reconcile.
@@ -889,6 +887,7 @@ TEST_F(AccountReconcilorTest, DiceNoMigrationAfterReconcile) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration did not happen.
+  EXPECT_FALSE(reconcilor->ShouldMigrateToDiceOnStartup());
   EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
   EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
 }
@@ -1579,3 +1578,40 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_FALSE(reconcilor->error_during_last_reconcile_);
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Checks that Dice migration happens when the reconcilor is created.
+TEST(AccountReconcilorMigrationTest, MigrateAtCreation) {
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  AccountReconcilor::RegisterProfilePrefs(pref_service.registry());
+  signin::RegisterAccountConsistencyProfilePrefs(pref_service.registry());
+  TestSigninClient signin_client(&pref_service);
+
+  {
+    // Migration does not happen if SetDiceMigrationOnStartup() is not called.
+    signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+    EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
+    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr);
+    EXPECT_FALSE(reconcilor.ShouldMigrateToDiceOnStartup());
+    EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
+  }
+
+  AccountReconcilor::SetDiceMigrationOnStartup(&pref_service, true);
+
+  {
+    // Migration does not happen if Dice is not enabled.
+    signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_errors;
+    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr);
+    EXPECT_FALSE(reconcilor.ShouldMigrateToDiceOnStartup());
+    EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
+  }
+
+  {
+    // Migration happens.
+    signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr);
+    EXPECT_TRUE(reconcilor.ShouldMigrateToDiceOnStartup());
+    EXPECT_TRUE(signin::IsDiceEnabledForProfile(&pref_service));
+  }
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
