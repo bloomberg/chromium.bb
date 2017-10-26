@@ -51,7 +51,8 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClick) {
       [response objectForKey:notification_constants::kNotificationButtonIndex];
 
   EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
-  EXPECT_EQ(-1, buttonIndex.intValue);
+  EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
+            buttonIndex.intValue);
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
@@ -72,7 +73,8 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
       [response objectForKey:notification_constants::kNotificationButtonIndex];
 
   EXPECT_EQ(2 /* NOTIFICATION_SETTINGS */, operation.intValue);
-  EXPECT_EQ(-1, buttonIndex.intValue);
+  EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
+            buttonIndex.intValue);
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
@@ -149,7 +151,8 @@ TEST_F(NotificationResponseBuilderMacTest,
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
   EXPECT_EQ(2 /* NOTIFICATION_SETTINGS */, operation.intValue);
-  EXPECT_EQ(-1, buttonIndex.intValue);
+  EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
+            buttonIndex.intValue);
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationClose) {
@@ -170,7 +173,8 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClose) {
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
   EXPECT_EQ(1 /* NOTIFICATION_CLOSE */, operation.intValue);
-  EXPECT_EQ(-1, buttonIndex.intValue);
+  EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
+            buttonIndex.intValue);
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationExtension) {

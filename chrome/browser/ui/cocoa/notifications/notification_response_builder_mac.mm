@@ -53,7 +53,7 @@ enum NotificationOperation {
       notification.activationType == NSUserNotificationActivationTypeNone
           ? NOTIFICATION_CLOSE
           : NOTIFICATION_CLICK;
-  int buttonIndex = -1;
+  int buttonIndex = notification_constants::kNotificationInvalidButtonIndex;
 
   // Determine whether the user clicked on a button, and if they did, whether it
   // was a developer-provided button or the  Settings button.
@@ -73,7 +73,7 @@ enum NotificationOperation {
     if (!multipleButtons) {
       DCHECK(settingsButtonRequired);
       operation = NOTIFICATION_SETTINGS;
-      buttonIndex = -1;
+      buttonIndex = notification_constants::kNotificationInvalidButtonIndex;
     } else {
       // 0 based array containing.
       // Button 1
@@ -85,10 +85,11 @@ enum NotificationOperation {
                                              alternateButtons.count - 1)
                       ? NOTIFICATION_SETTINGS
                       : NOTIFICATION_CLICK;
-      buttonIndex = settingsButtonRequired && (actionIndex.unsignedLongValue ==
-                                               alternateButtons.count - 1)
-                        ? -1
-                        : actionIndex.intValue;
+      buttonIndex =
+          settingsButtonRequired &&
+                  (actionIndex.unsignedLongValue == alternateButtons.count - 1)
+              ? notification_constants::kNotificationInvalidButtonIndex
+              : actionIndex.intValue;
     }
   }
 
