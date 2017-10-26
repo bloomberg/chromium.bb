@@ -54,11 +54,9 @@ enum InstallableStatusCode {
   MAX_ERROR_CODE,
 };
 
-// Logs a message associated with |code| with a parameter |param| to the
-// devtools console attached to |web_contents|. Does nothing if |web_contents|
-// is nullptr.
+// Logs a message associated with |code| to the devtools console attached to
+// |web_contents|. Does nothing if |web_contents| is nullptr.
 void LogErrorToConsole(content::WebContents* web_contents,
-                       InstallableStatusCode code,
-                       const std::string& param);
+                       InstallableStatusCode code);
 
 #endif  // CHROME_BROWSER_INSTALLABLE_INSTALLABLE_LOGGING_H_
