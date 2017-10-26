@@ -543,9 +543,9 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   return request;
 }
 
-IDBRequest* IDBObjectStore::deleteFunction(ScriptState* script_state,
-                                           const ScriptValue& key,
-                                           ExceptionState& exception_state) {
+IDBRequest* IDBObjectStore::Delete(ScriptState* script_state,
+                                   const ScriptValue& key,
+                                   ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::deleteRequestSetup", "store_name",
              metadata_->name.Utf8());
   IDBRequest::AsyncTraceState metrics("IDBObjectStore::delete");

@@ -74,12 +74,12 @@ class IDBCursor : public ScriptWrappable {
 
   IDBRequest* update(ScriptState*, const ScriptValue&, ExceptionState&);
   void advance(unsigned, ExceptionState&);
-  void continueFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
+  void Continue(ScriptState*, const ScriptValue& key, ExceptionState&);
   void continuePrimaryKey(ScriptState*,
                           const ScriptValue& key,
                           const ScriptValue& primary_key,
                           ExceptionState&);
-  IDBRequest* deleteFunction(ScriptState*, ExceptionState&);
+  IDBRequest* Delete(ScriptState*, ExceptionState&);
 
   bool isKeyDirty() const { return key_dirty_; }
   bool isPrimaryKeyDirty() const { return primary_key_dirty_; }

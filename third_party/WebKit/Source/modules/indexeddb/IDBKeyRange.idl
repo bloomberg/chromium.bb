@@ -28,8 +28,8 @@
 [
     Exposed=(Window,Worker)
 ] interface IDBKeyRange {
-    [ImplementedAs=lowerValue, CallWith=ScriptState] readonly attribute any lower;
-    [ImplementedAs=upperValue, CallWith=ScriptState] readonly attribute any upper;
+    [ImplementedAs=LowerValue, CallWith=ScriptState] readonly attribute any lower;
+    [ImplementedAs=UpperValue, CallWith=ScriptState] readonly attribute any upper;
     readonly attribute boolean lowerOpen;
     readonly attribute boolean upperOpen;
 
