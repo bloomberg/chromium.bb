@@ -3595,6 +3595,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kModuleScriptsImportMetaUrlDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kModuleScriptsImportMetaUrl)},
 
+    {"stop-loading-in-background",
+     flag_descriptions::kStopLoadingInBackgroundName,
+     flag_descriptions::kStopLoadingInBackgroundDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kStopLoadingInBackground)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

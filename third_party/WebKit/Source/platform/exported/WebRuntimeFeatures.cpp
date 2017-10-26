@@ -482,4 +482,8 @@ void WebRuntimeFeatures::EnableWorkStealingInScriptRunner(bool enable) {
   RuntimeEnabledFeatures::SetWorkStealingInScriptRunnerEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableStopLoadingInBackgroundAndroid(bool enable) {
+  RuntimeEnabledFeatures::SetStopLoadingInBackgroundAndroidEnabled(enable);
+}
+
 }  // namespace blink

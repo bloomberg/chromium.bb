@@ -292,6 +292,11 @@ const base::Feature kSitePerProcess{"site-per-process",
 const base::Feature kSlimmingPaintInvalidation{
     "SlimmingPaintInvalidation", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Stop loading tasks and loading of resources in background, on Android,
+// after allowed grace time. Launch bug: https://crbug.com/775761.
+const base::Feature kStopLoadingInBackground{"stop-loading-in-background",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink timers in out-of-view cross origin frames.
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
