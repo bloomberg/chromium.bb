@@ -30,10 +30,19 @@ class CORE_EXPORT ClassicPendingScript final
   USING_PRE_FINALIZER(ClassicPendingScript, Prefinalize);
 
  public:
-  // For script from an external file.
-  static ClassicPendingScript* Create(ScriptElementBase*, ScriptResource*);
-  // For inline script.
-  static ClassicPendingScript* Create(ScriptElementBase*, const TextPosition&);
+  // For a script from an external file, calls ScriptResource::Fetch() and
+  // creates ClassicPendingScript. Returns nullptr if Fetch() returns nullptr.
+  static ClassicPendingScript* Fetch(ScriptElementBase*,
+                                     FetchParameters&,
+                                     Document&);
+
+  // For a script from an external file, with a supplied ScriptResource.
+  static ClassicPendingScript* CreateExternalForTest(ScriptElementBase*,
+                                                     ScriptResource*);
+
+  // For an inline script.
+  static ClassicPendingScript* CreateInline(ScriptElementBase*,
+                                            const TextPosition&);
 
   ~ClassicPendingScript() override;
 
@@ -73,8 +82,8 @@ class CORE_EXPORT ClassicPendingScript final
   };
 
   ClassicPendingScript(ScriptElementBase*,
-                       ScriptResource*,
-                       const TextPosition&);
+                       const TextPosition&,
+                       bool is_external);
   ClassicPendingScript() = delete;
 
   // Advances the current state of the script, reporting to the client if

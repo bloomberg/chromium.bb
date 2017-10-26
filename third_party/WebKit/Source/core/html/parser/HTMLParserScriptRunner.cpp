@@ -442,7 +442,7 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
   //  the parser that created the element.
   //  (There can only be one such script per Document at a time.)"
   CHECK(!ParserBlockingScript());
-  parser_blocking_script_ = script_loader->CreatePendingScript();
+  parser_blocking_script_ = script_loader->TakePendingScript();
   if (!ParserBlockingScript())
     return;
 
@@ -461,7 +461,7 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
 // 1st Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
 void HTMLParserScriptRunner::RequestDeferredScript(
     ScriptLoader* script_loader) {
-  PendingScript* pending_script = script_loader->CreatePendingScript();
+  PendingScript* pending_script = script_loader->TakePendingScript();
   if (!pending_script)
     return;
 
@@ -534,7 +534,7 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         //  (There can only be one such script per Document at a time.)"
         CHECK(!parser_blocking_script_);
         parser_blocking_script_ =
-            ClassicPendingScript::Create(element, script_start_position);
+            ClassicPendingScript::CreateInline(element, script_start_position);
       } else {
         // 6th Clause of Step 23.
         // "Immediately execute the script block,
@@ -545,7 +545,7 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
           parser_blocking_script_->Dispose();
         parser_blocking_script_ = nullptr;
         DoExecuteScript(
-            ClassicPendingScript::Create(element, script_start_position),
+            ClassicPendingScript::CreateInline(element, script_start_position),
             DocumentURLForScriptExecution(document_));
       }
     } else {

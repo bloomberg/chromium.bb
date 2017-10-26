@@ -50,7 +50,8 @@ class ScriptStreamingTest : public ::testing::Test {
         .WillRepeatedly(::testing::ReturnRef(*dummy_document_.Get()));
     EXPECT_CALL(*element, Loader()).WillRepeatedly(::testing::Return(nullptr));
 
-    pending_script_ = ClassicPendingScript::Create(element, resource_.Get());
+    pending_script_ =
+        ClassicPendingScript::CreateExternalForTest(element, resource_.Get());
     ScriptStreamer::SetSmallScriptThresholdForTesting(0);
   }
 

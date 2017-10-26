@@ -53,9 +53,11 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
   virtual void Trace(blink::Visitor* visitor) {}
 };
 
-// A container for an external script which may be loaded and executed.
-// This is used to receive a notification of "script is ready"
-// https://html.spec.whatwg.org/#the-script-is-ready via PendingScriptClient.
+// A container for an script after "prepare a script" until it is executed.
+// ScriptLoader creates a PendingScript in ScriptLoader::PrepareScript(), and
+// a Script is created via PendingScript::GetSource() when it becomes ready.
+// When "script is ready" https://html.spec.whatwg.org/#the-script-is-ready,
+// PendingScriptClient is notified.
 class CORE_EXPORT PendingScript
     : public GarbageCollectedFinalized<PendingScript>,
       public TraceWrapperBase {
