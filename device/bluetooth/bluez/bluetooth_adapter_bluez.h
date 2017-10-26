@@ -447,6 +447,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // True, if there is a pending request to start or stop discovery.
   bool discovery_request_pending_;
 
+  // If true that means the last pending stop discovery operation should assume
+  // that the discovery sessions have been deactivated even though it failed.
+  bool force_deactivate_discovery_;
+
   // List of queued requests to add new discovery sessions. While there is a
   // pending request to BlueZ to start or stop discovery, many requests from
   // within Chrome to start or stop discovery sessions may occur. We only
