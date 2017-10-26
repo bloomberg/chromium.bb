@@ -188,10 +188,8 @@ void GpuServiceImpl::InitializeWithHost(
     shutdown_event_ = owned_shutdown_event_.get();
   }
 
-  if (gpu_preferences_.enable_gpu_scheduler) {
-    scheduler_ = base::MakeUnique<gpu::Scheduler>(
-        base::ThreadTaskRunnerHandle::Get(), sync_point_manager_);
-  }
+  scheduler_ = base::MakeUnique<gpu::Scheduler>(
+      base::ThreadTaskRunnerHandle::Get(), sync_point_manager_);
 
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary

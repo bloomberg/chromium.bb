@@ -271,9 +271,6 @@ bool IsCheckerImagingEnabled() {
 }
 
 bool IsGpuAsyncWorkerContextEnabled() {
-  if (!base::FeatureList::IsEnabled(features::kGpuScheduler))
-    return false;
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuAsyncWorkerContext))
     return false;

@@ -9,6 +9,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -74,6 +75,7 @@ GpuChannelTestCommon::GpuChannelTestCommon()
     : task_runner_(new base::TestSimpleTaskRunner),
       io_task_runner_(new base::TestSimpleTaskRunner),
       sync_point_manager_(new SyncPointManager()),
+      scheduler_(new Scheduler(task_runner_, sync_point_manager_.get())),
       channel_manager_delegate_(new TestGpuChannelManagerDelegate()),
       channel_manager_(
           new GpuChannelManager(GpuPreferences(),
@@ -81,7 +83,7 @@ GpuChannelTestCommon::GpuChannelTestCommon()
                                 nullptr, /* watchdog */
                                 task_runner_.get(),
                                 io_task_runner_.get(),
-                                nullptr, /* scheduler */
+                                scheduler_.get(),
                                 sync_point_manager_.get(),
                                 nullptr, /* gpu_memory_buffer_factory */
                                 GpuFeatureInfo(),

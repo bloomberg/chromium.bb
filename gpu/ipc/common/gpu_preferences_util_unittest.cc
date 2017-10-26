@@ -65,8 +65,6 @@ TEST(GpuPreferencesUtilTest, EncodeDecode) {
 
     GPU_PREFERENCES_FIELD(single_process, true)
     GPU_PREFERENCES_FIELD(in_process_gpu, true)
-    GPU_PREFERENCES_FIELD(ui_prioritize_in_gpu_process, true)
-    GPU_PREFERENCES_FIELD(enable_gpu_scheduler, true)
     GPU_PREFERENCES_FIELD(disable_accelerated_video_decode, true)
     GPU_PREFERENCES_FIELD(gpu_startup_dialog, true)
     GPU_PREFERENCES_FIELD(disable_gpu_watchdog, true)

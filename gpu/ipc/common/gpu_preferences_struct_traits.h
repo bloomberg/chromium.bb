@@ -54,8 +54,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
                    gpu::GpuPreferences* out) {
     out->single_process = prefs.single_process();
     out->in_process_gpu = prefs.in_process_gpu();
-    out->ui_prioritize_in_gpu_process = prefs.ui_prioritize_in_gpu_process();
-    out->enable_gpu_scheduler = prefs.enable_gpu_scheduler();
     out->disable_accelerated_video_decode =
         prefs.disable_accelerated_video_decode();
     out->gpu_startup_dialog = prefs.gpu_startup_dialog();
@@ -105,12 +103,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool in_process_gpu(const gpu::GpuPreferences& prefs) {
     return prefs.in_process_gpu;
-  }
-  static bool ui_prioritize_in_gpu_process(const gpu::GpuPreferences& prefs) {
-    return prefs.ui_prioritize_in_gpu_process;
-  }
-  static bool enable_gpu_scheduler(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_gpu_scheduler;
   }
   static bool disable_accelerated_video_decode(
       const gpu::GpuPreferences& prefs) {

@@ -234,7 +234,6 @@ CONTENT_EXPORT extern const char kTouchEventFeatureDetectionAuto[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionEnabled[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionDisabled[];
 CONTENT_EXPORT extern const char kTouchTextSelectionStrategy[];
-CONTENT_EXPORT extern const char kUIPrioritizeInGpuProcess[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 CONTENT_EXPORT extern const char kContentImageTextureTarget[];
 CONTENT_EXPORT extern const char kVideoImageTextureTarget[];

@@ -41,23 +41,21 @@ class GLShareGroup;
 }
 
 namespace gpu {
-struct GpuPreferences;
-class PreemptionFlag;
-class Scheduler;
-class SyncPointManager;
-struct SyncToken;
-namespace gles2 {
-class MailboxManager;
-class Outputter;
-class ProgramCache;
-}
-}
 
-namespace gpu {
+struct GpuPreferences;
+struct SyncToken;
 class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
+class Scheduler;
+class SyncPointManager;
+
+namespace gles2 {
+class MailboxManager;
+class Outputter;
+class ProgramCache;
+}  // namespace gles2
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
@@ -175,8 +173,6 @@ class GPU_EXPORT GpuChannelManager {
   GpuWatchdogThread* watchdog_;
 
   scoped_refptr<gl::GLShareGroup> share_group_;
-
-  scoped_refptr<PreemptionFlag> preemption_flag_;
 
   std::unique_ptr<gles2::MailboxManager> mailbox_manager_;
   std::unique_ptr<gles2::Outputter> outputter_;

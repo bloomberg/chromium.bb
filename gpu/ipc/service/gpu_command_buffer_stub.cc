@@ -30,7 +30,6 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
@@ -881,12 +880,7 @@ GpuCommandBufferStub::OnCommandBatchProcessed() {
   GpuWatchdogThread* watchdog = channel_->gpu_channel_manager()->watchdog();
   if (watchdog)
     watchdog->CheckArmed();
-  bool pause = false;
-  if (channel_->scheduler()) {
-    pause = channel_->scheduler()->ShouldYield(sequence_id_);
-  } else if (channel_->preempted_flag()) {
-    pause = channel_->preempted_flag()->IsSet();
-  }
+  bool pause = channel_->scheduler()->ShouldYield(sequence_id_);
   return pause ? kPauseExecution : kContinueExecution;
 }
 
@@ -918,10 +912,8 @@ void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,
   CheckContextLost();
   if (wait_for_token_)
     LOG(ERROR) << "Got WaitForToken command while currently waiting for token.";
-  if (channel_->scheduler()) {
-    channel_->scheduler()->RaisePriorityForClientWait(sequence_id_,
-                                                      command_buffer_id_);
-  }
+  channel_->scheduler()->RaisePriorityForClientWait(sequence_id_,
+                                                    command_buffer_id_);
   wait_for_token_ =
       std::make_unique<WaitForCommandState>(start, end, reply_message);
   CheckCompleteWaits();
@@ -939,10 +931,8 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
     LOG(ERROR)
         << "Got WaitForGetOffset command while currently waiting for offset.";
   }
-  if (channel_->scheduler()) {
-    channel_->scheduler()->RaisePriorityForClientWait(sequence_id_,
-                                                      command_buffer_id_);
-  }
+  channel_->scheduler()->RaisePriorityForClientWait(sequence_id_,
+                                                    command_buffer_id_);
   wait_for_get_offset_ =
       std::make_unique<WaitForCommandState>(start, end, reply_message);
   wait_set_get_buffer_count_ = set_get_buffer_count;
@@ -976,8 +966,7 @@ void GpuCommandBufferStub::CheckCompleteWaits() {
       wait_for_get_offset_.reset();
     }
   }
-  if (channel_->scheduler() && has_wait &&
-      !(wait_for_token_ || wait_for_get_offset_)) {
+  if (has_wait && !(wait_for_token_ || wait_for_get_offset_)) {
     channel_->scheduler()->ResetPriorityForClientWait(sequence_id_,
                                                       command_buffer_id_);
   }

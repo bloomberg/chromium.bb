@@ -282,7 +282,6 @@ static bool IsBoringSwitch(const std::string& flag) {
     switches::kPpapiFlashArgs,
     switches::kPpapiFlashPath,
     switches::kRegisterPepperPlugins,
-    switches::kUIPrioritizeInGpuProcess,
     switches::kUseGL,
     switches::kUserDataDir,
     // Cros/CC flags are specified as raw strings to avoid dependency.

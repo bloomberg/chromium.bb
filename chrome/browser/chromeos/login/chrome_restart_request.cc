@@ -155,7 +155,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kTopChromeMD,
     ::switches::kTraceToConsole,
     ::switches::kUIDisablePartialSwap,
-    ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)
     ::switches::kUseCras,
 #endif
