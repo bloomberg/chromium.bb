@@ -63,7 +63,7 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
 
   // The touchscreen state which is associated with the global touchscreen
   // enabled source.
-  bool global_touchscreen_enabled_ = false;
+  bool global_touchscreen_enabled_ = true;
 
   // Observes user profile prefs for touch devices.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
