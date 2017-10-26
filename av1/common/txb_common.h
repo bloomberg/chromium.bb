@@ -329,6 +329,8 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   (void)tx_type;
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
+  const int width = 1 << bwl;
+
   int ctx = 0;
 #if CONFIG_EXT_TX
   int tx_class = get_tx_class(tx_type);
@@ -350,11 +352,16 @@ static INLINE int get_nz_map_ctx_from_count(int count,
     {
       if (row == 0 && col == 0) return offset + 0;
 
-      if (row + col < 2) return offset + ctx + 1;
+      if (width < height)
+        if (row < 2) return offset + 11 + ctx;
 
+      if (width > height)
+        if (col < 2) return offset + 16 + ctx;
+
+      if (row + col < 2) return offset + ctx + 1;
       if (row + col < 4) return offset + 5 + ctx + 1;
 
-      return offset + 11 + AOMMIN(ctx, 4);
+      return offset + 21 + AOMMIN(ctx, 4);
     }
   } else {
     if (tx_class == TX_CLASS_VERT) {
