@@ -2368,11 +2368,11 @@ crbug.com/669473 external/wpt/css/css-ui-3/outline-015.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui-3/outline-016.html [ Failure ]
 
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
-crbug.com/351753 external/wpt/webmessaging/broadcastchannel/blobs.html [ Failure ]
-crbug.com/351753 external/wpt/webmessaging/Channel_postMessage_Blob.htm [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/670024 virtual/mojo-blobs/external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
+crbug.com/351753 virtual/mojo-blobs/external/wpt/webmessaging/broadcastchannel/blobs.html [ Failure ]
+crbug.com/351753 virtual/mojo-blobs/external/wpt/webmessaging/Channel_postMessage_Blob.htm [ Failure ]
 crbug.com/660384 virtual/mojo-blobs/external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 virtual/mojo-blobs/external/wpt/webmessaging/without-ports/001.html [ Failure ]
 

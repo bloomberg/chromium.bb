@@ -26,6 +26,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -39,6 +40,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -305,6 +307,8 @@ class TestCacheStorageCache : public CacheStorageCache {
                           CreateTestPaddingKey()),
         delay_backend_creation_(false) {}
 
+  ~TestCacheStorageCache() override { base::RunLoop().RunUntilIdle(); }
+
   void CreateBackend(ErrorCallback callback) override {
     backend_creation_callback_ = std::move(callback);
     if (delay_backend_creation_)
@@ -428,23 +432,32 @@ class CacheStorageCacheTest : public testing::Test {
     blob_handle_ =
         blob_storage_context->context()->AddFinishedBlob(blob_data.get());
 
+    scoped_refptr<storage::BlobHandle> blob;
+    if (features::IsMojoBlobsEnabled()) {
+      blink::mojom::BlobPtr blob_ptr;
+      storage::BlobImpl::Create(
+          std::make_unique<storage::BlobDataHandle>(*blob_handle_),
+          MakeRequest(&blob_ptr));
+      blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+    }
+
     body_response_ = CreateResponse(
         "http://example.com/body.html",
         base::MakeUnique<ServiceWorkerHeaderMap>(headers), blob_handle_->uuid(),
-        expected_blob_data_.size(),
+        expected_blob_data_.size(), blob,
         base::MakeUnique<
             ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
 
     body_response_with_query_ =
         CreateResponse("http://example.com/body.html?query=test",
                        base::MakeUnique<ServiceWorkerHeaderMap>(headers),
-                       blob_handle_->uuid(), expected_blob_data_.size(),
+                       blob_handle_->uuid(), expected_blob_data_.size(), blob,
                        base::MakeUnique<ServiceWorkerHeaderList>(
                            1, "a") /* cors_exposed_header_names */);
 
     no_body_response_ = CreateResponse(
         "http://example.com/no_body.html",
-        base::MakeUnique<ServiceWorkerHeaderMap>(headers), "", 0,
+        base::MakeUnique<ServiceWorkerHeaderMap>(headers), "", 0, nullptr,
         base::MakeUnique<
             ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
   }
@@ -454,11 +467,12 @@ class CacheStorageCacheTest : public testing::Test {
       std::unique_ptr<ServiceWorkerHeaderMap> headers,
       const std::string& blob_uuid,
       uint64_t blob_size,
+      scoped_refptr<storage::BlobHandle> blob_handle,
       std::unique_ptr<ServiceWorkerHeaderList> cors_exposed_header_names) {
     return ServiceWorkerResponse(
         base::MakeUnique<std::vector<GURL>>(1, GURL(url)), 200, "OK",
         network::mojom::FetchResponseType::kDefault, std::move(headers),
-        blob_uuid, blob_size, nullptr /* blob */,
+        blob_uuid, blob_size, std::move(blob_handle),
         blink::kWebServiceWorkerResponseErrorUnknown, base::Time::Now(),
         false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,

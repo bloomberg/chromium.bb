@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -43,6 +44,7 @@
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -256,6 +258,14 @@ class CacheStorageManagerTest : public testing::Test {
   void DestroyStorageManager() {
     if (quota_manager_proxy_)
       quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+
+    callback_cache_handle_ = nullptr;
+    callback_bool_ = false;
+    callback_cache_handle_response_ = nullptr;
+    callback_data_handle_ = nullptr;
+    callback_cache_index_ = CacheStorageIndex();
+    callback_all_origins_usage_.clear();
+
     base::RunLoop().RunUntilIdle();
     quota_manager_proxy_ = nullptr;
 
@@ -264,13 +274,6 @@ class CacheStorageManagerTest : public testing::Test {
 
     quota_policy_ = nullptr;
     mock_quota_manager_ = nullptr;
-
-    callback_cache_handle_ = nullptr;
-    callback_bool_ = false;
-    callback_cache_handle_response_ = nullptr;
-    callback_data_handle_ = nullptr;
-    callback_cache_index_ = CacheStorageIndex();
-    callback_all_origins_usage_.clear();
 
     cache_manager_ = nullptr;
   }
@@ -403,19 +406,29 @@ class CacheStorageManagerTest : public testing::Test {
       FetchResponseType response_type = FetchResponseType::kDefault,
       const ServiceWorkerHeaderMap& response_headers =
           ServiceWorkerHeaderMap()) {
+    std::string blob_uuid = base::GenerateGUID();
     std::unique_ptr<storage::BlobDataBuilder> blob_data(
-        new storage::BlobDataBuilder(base::GenerateGUID()));
+        new storage::BlobDataBuilder(blob_uuid));
     blob_data->AppendData(request.url.spec());
 
-    std::unique_ptr<storage::BlobDataHandle> blob_handle =
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->AddFinishedBlob(blob_data.get());
+
+    scoped_refptr<storage::BlobHandle> blob_handle;
+    if (features::IsMojoBlobsEnabled()) {
+      blink::mojom::BlobPtr blob;
+      storage::BlobImpl::Create(std::move(blob_data_handle),
+                                MakeRequest(&blob));
+      blob_handle = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
+    }
+
     std::unique_ptr<std::vector<GURL>> url_list =
         base::MakeUnique<std::vector<GURL>>();
     url_list->push_back(request.url);
     ServiceWorkerResponse response(
         std::move(url_list), status_code, "OK", response_type,
-        base::MakeUnique<ServiceWorkerHeaderMap>(response_headers),
-        blob_handle->uuid(), request.url.spec().size(), nullptr /* blob */,
+        base::MakeUnique<ServiceWorkerHeaderMap>(response_headers), blob_uuid,
+        request.url.spec().size(), blob_handle,
         blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
         false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,

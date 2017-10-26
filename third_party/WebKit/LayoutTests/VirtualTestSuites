@@ -524,32 +524,32 @@
   {
     "prefix": "mojo-blobs",
     "base": "external/wpt/FileAPI",
-    "args": ["--enable-features=MojoBlobs"]
+    "args": ["--disable-features=MojoBlobs"]
   },
   {
     "prefix": "mojo-blobs",
     "base": "external/wpt/IndexedDB",
-    "args": ["--enable-features=MojoBlobs"]
+    "args": ["--disable-features=MojoBlobs"]
   },
   {
     "prefix": "mojo-blobs",
     "base": "external/wpt/fetch",
-    "args": ["--enable-features=MojoBlobs"]
+    "args": ["--disable-features=MojoBlobs"]
   },
   {
     "prefix": "mojo-blobs",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=MojoBlobs"]
+    "args": ["--disable-features=MojoBlobs"]
   },
   {
     "prefix": "mojo-blobs",
     "base": "external/wpt/webmessaging",
-    "args": ["--enable-features=MojoBlobs"]
+    "args": ["--disable-features=MojoBlobs"]
   },
   {
     "prefix": "mojo-blobs",
     "base": "fast/files",
-    "args": ["--enable-features=MojoBlobs"]
+    "args": ["--disable-features=MojoBlobs"]
   },
   {
     "prefix": "longtask-v2",
