@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/sandbox_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -33,7 +33,6 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -41,6 +40,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -66,8 +66,8 @@ void LogSandboxStarted(const std::string& sandbox_name) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           service_manager::switches::kProcessType);
   const std::string activated_sandbox =
-      "Activated " + sandbox_name + " sandbox for process type: " +
-      process_type + ".";
+      "Activated " + sandbox_name +
+      " sandbox for process type: " + process_type + ".";
   VLOG(1) << activated_sandbox;
 }
 
@@ -100,7 +100,7 @@ base::ScopedFD OpenProc(int proc_fd) {
 
 }  // namespace
 
-namespace content {
+namespace service_manager {
 
 SandboxLinux::SandboxLinux()
     : proc_fd_(-1),
@@ -355,9 +355,9 @@ bool SandboxLinux::InitializeSandboxImpl(
   if (!pre_initialized_)
     PreinitializeSandbox();
 
-  DCHECK(!HasOpenDirectories()) <<
-      "InitializeSandbox() called after unexpected directories have been " <<
-      "opened. This breaks the security of the setuid sandbox.";
+  DCHECK(!HasOpenDirectories())
+      << "InitializeSandbox() called after unexpected directories have been "
+      << "opened. This breaks the security of the setuid sandbox.";
 
   // Attempt to limit the future size of the address space of the process.
   LimitAddressSpace(process_type, options);
@@ -484,4 +484,4 @@ void SandboxLinux::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
       sandbox::ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.get(), thread));
 }
 
-}  // namespace content
+}  // namespace service_manager

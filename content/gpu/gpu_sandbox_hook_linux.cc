@@ -17,15 +17,15 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
 #include "content/public/common/content_switches.h"
 #include "media/gpu/features.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "services/service_manager/embedder/set_process_title.h"
+#include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 
 using sandbox::bpf_dsl::Policy;
 using sandbox::syscall_broker::BrokerFilePermission;
@@ -125,7 +125,7 @@ bool UpdateProcessTypeAndEnableSandbox(
     std::unique_ptr<Policy> (*broker_sandboxer_allocator)()) {
   DCHECK(broker_sandboxer_allocator);
   UpdateProcessTypeToGpuBroker();
-  return SandboxSeccompBPF::StartSandboxWithExternalPolicy(
+  return service_manager::SandboxSeccompBPF::StartSandboxWithExternalPolicy(
       broker_sandboxer_allocator(), base::ScopedFD());
 }
 
@@ -241,7 +241,7 @@ std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
   }
 
   auto result = std::make_unique<BrokerProcess>(
-      SandboxBPFBasePolicy::GetFSDeniedErrno(), permissions);
+      service_manager::SandboxBPFBasePolicy::GetFSDeniedErrno(), permissions);
   // The initialization callback will perform generic initialization and then
   // call broker_sandboxer_callback.
   CHECK(result->Init(base::Bind(&UpdateProcessTypeAndEnableSandbox,
@@ -251,7 +251,7 @@ std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
 }
 
 bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
-                       SandboxSeccompBPF::Options options) {
+                       service_manager::SandboxSeccompBPF::Options options) {
   // Warm up resources needed by the policy we're about to enable and
   // eventually start a broker process.
   const bool chromeos_arm_gpu = IsChromeOS() && IsArchitectureArm();
@@ -259,10 +259,10 @@ bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
   DCHECK(!chromeos_arm_gpu);
 
   // Create a new broker process with no extra files in whitelist.
-  static_cast<GpuProcessPolicy*>(policy)->set_broker_process(
+  static_cast<service_manager::GpuProcessPolicy*>(policy)->set_broker_process(
       InitGpuBrokerProcess(
           []() -> std::unique_ptr<Policy> {
-            return std::make_unique<GpuBrokerProcessPolicy>();
+            return std::make_unique<service_manager::GpuBrokerProcessPolicy>();
           },
           std::vector<BrokerFilePermission>(),
           options.accelerated_video_decode_enabled));
@@ -297,17 +297,19 @@ bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
   return true;
 }
 
-bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
-                              SandboxSeccompBPF::Options options) {
+bool CrosArmGpuPreSandboxHook(
+    sandbox::bpf_dsl::Policy* policy,
+    service_manager::SandboxSeccompBPF::Options options) {
   DCHECK(IsChromeOS() && IsArchitectureArm());
 
   // Add ARM-specific files to whitelist in the broker.
   std::vector<BrokerFilePermission> permissions;
   AddArmGpuWhitelist(&permissions);
-  static_cast<GpuProcessPolicy*>(policy)->set_broker_process(
+  static_cast<service_manager::GpuProcessPolicy*>(policy)->set_broker_process(
       InitGpuBrokerProcess(
           []() -> std::unique_ptr<Policy> {
-            return std::make_unique<CrosArmGpuBrokerProcessPolicy>();
+            return std::make_unique<
+                service_manager::CrosArmGpuBrokerProcessPolicy>();
           },
           permissions, options.accelerated_video_decode_enabled));
 
@@ -324,18 +326,20 @@ bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
   return true;
 }
 
-bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
-                              SandboxSeccompBPF::Options options) {
+bool CrosAmdGpuPreSandboxHook(
+    sandbox::bpf_dsl::Policy* policy,
+    service_manager::SandboxSeccompBPF::Options options) {
   DCHECK(IsChromeOS());
 
   // Add AMD-specific files to whitelist in the broker.
   std::vector<BrokerFilePermission> permissions;
   AddAmdGpuWhitelist(&permissions);
 
-  static_cast<GpuProcessPolicy*>(policy)->set_broker_process(
+  static_cast<service_manager::GpuProcessPolicy*>(policy)->set_broker_process(
       InitGpuBrokerProcess(
           []() -> std::unique_ptr<Policy> {
-            return std::make_unique<CrosAmdGpuBrokerProcessPolicy>();
+            return std::make_unique<
+                service_manager::CrosAmdGpuBrokerProcessPolicy>();
           },
           permissions, options.accelerated_video_decode_enabled));
 
@@ -357,7 +361,7 @@ bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
 
 }  // namespace
 
-SandboxSeccompBPF::PreSandboxHook GetGpuProcessPreSandboxHook(
+service_manager::SandboxSeccompBPF::PreSandboxHook GetGpuProcessPreSandboxHook(
     bool use_amd_specific_policies) {
   if (IsChromeOS()) {
     if (IsArchitectureArm())

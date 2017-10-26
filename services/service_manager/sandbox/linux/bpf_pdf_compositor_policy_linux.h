@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_LINUX_BPF_PDF_COMPOSITOR_POLICY_LINUX_H_
-#define CONTENT_COMMON_SANDBOX_LINUX_BPF_PDF_COMPOSITOR_POLICY_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_PDF_COMPOSITOR_POLICY_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_PDF_COMPOSITOR_POLICY_LINUX_H_
 
 #include "base/macros.h"
-#include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
 
-namespace content {
+namespace service_manager {
 
 // This policy can be used by pdf compositor utility processes.
 class PdfCompositorProcessPolicy : public SandboxBPFBasePolicy {
@@ -23,6 +23,6 @@ class PdfCompositorProcessPolicy : public SandboxBPFBasePolicy {
   DISALLOW_COPY_AND_ASSIGN(PdfCompositorProcessPolicy);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_LINUX_BPF_PDF_COMPOSITOR_POLICY_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_PDF_COMPOSITOR_POLICY_LINUX_H_

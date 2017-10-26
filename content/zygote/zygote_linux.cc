@@ -32,7 +32,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
@@ -44,6 +43,7 @@
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "services/service_manager/embedder/set_process_title.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
 
 // See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md

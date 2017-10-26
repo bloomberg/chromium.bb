@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_
-#define CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_
 
 #include "base/macros.h"
-#include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/export.h"
+#include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 
-namespace content {
+namespace service_manager {
 
 // This policy is for AMD GPUs running on Chrome OS.
-class CrosAmdGpuProcessPolicy : public GpuProcessPolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT CrosAmdGpuProcessPolicy
+    : public GpuProcessPolicy {
  public:
   CrosAmdGpuProcessPolicy();
   ~CrosAmdGpuProcessPolicy() override;
@@ -23,7 +25,8 @@ class CrosAmdGpuProcessPolicy : public GpuProcessPolicy {
   DISALLOW_COPY_AND_ASSIGN(CrosAmdGpuProcessPolicy);
 };
 
-class CrosAmdGpuBrokerProcessPolicy : public CrosAmdGpuProcessPolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT CrosAmdGpuBrokerProcessPolicy
+    : public CrosAmdGpuProcessPolicy {
  public:
   CrosAmdGpuBrokerProcessPolicy();
   ~CrosAmdGpuBrokerProcessPolicy() override;
@@ -35,6 +38,6 @@ class CrosAmdGpuBrokerProcessPolicy : public CrosAmdGpuProcessPolicy {
   DISALLOW_COPY_AND_ASSIGN(CrosAmdGpuBrokerProcessPolicy);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_

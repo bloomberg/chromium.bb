@@ -23,8 +23,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/font_utils_linux.h"
 #include "content/common/font_config_ipc_linux.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "ui/gfx/font.h"
@@ -178,15 +178,19 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
     HandleFontMatchRequest(fd, iter, fds);
   } else if (kind == FontConfigIPC::METHOD_OPEN) {
     HandleFontOpenRequest(fd, iter, fds);
-  } else if (kind == SandboxLinux::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
     HandleGetFallbackFontForChar(fd, iter, fds);
-  } else if (kind == SandboxLinux::METHOD_LOCALTIME) {
+  } else if (kind == service_manager::SandboxLinux::METHOD_LOCALTIME) {
     HandleLocaltime(fd, iter, fds);
-  } else if (kind == SandboxLinux::METHOD_GET_STYLE_FOR_STRIKE) {
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_GET_STYLE_FOR_STRIKE) {
     HandleGetStyleForStrike(fd, iter, fds);
-  } else if (kind == SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
     HandleMakeSharedMemorySegment(fd, iter, fds);
-  } else if (kind == SandboxLinux::METHOD_MATCH_WITH_FALLBACK) {
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_MATCH_WITH_FALLBACK) {
     HandleMatchWithFallback(fd, iter, fds);
   }
 }

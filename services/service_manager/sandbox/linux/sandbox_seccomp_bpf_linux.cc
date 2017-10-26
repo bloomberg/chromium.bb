@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -25,21 +25,21 @@
 
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "content/common/sandbox_linux/bpf_cdm_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_pdf_compositor_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_ppapi_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_utility_policy_linux.h"
-#include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "services/service_manager/sandbox/linux/bpf_cdm_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_pdf_compositor_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_ppapi_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_utility_policy_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
 
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
@@ -57,7 +57,7 @@ using sandbox::bpf_dsl::ResultExpr;
 
 #endif  // BUILDFLAG(USE_SECCOMP_BPF)
 
-namespace content {
+namespace service_manager {
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 namespace {
@@ -302,4 +302,4 @@ SandboxSeccompBPF::GetBaselinePolicy() {
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
-}  // namespace content
+}  // namespace service_manager

@@ -33,8 +33,6 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "content/common/font_config_ipc_linux.h"
-#include "content/common/sandbox_linux/sandbox_debug_handling_linux.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_switches.h"
@@ -48,6 +46,8 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
@@ -151,7 +151,7 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
                                         char* timezone_out,
                                         size_t timezone_out_len) {
   base::Pickle request;
-  request.WriteInt(SandboxLinux::METHOD_LOCALTIME);
+  request.WriteInt(service_manager::SandboxLinux::METHOD_LOCALTIME);
   request.WriteString(
       std::string(reinterpret_cast<char*>(&input), sizeof(input)));
 
@@ -502,7 +502,7 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
     CHECK(CreateInitProcessReaper(post_fork_parent_callback));
   }
 
-  CHECK(SandboxDebugHandling::SetDumpableStatusAndHandlers());
+  CHECK(service_manager::SandboxDebugHandling::SetDumpableStatusAndHandlers());
   return true;
 }
 
@@ -510,7 +510,7 @@ static void DropAllCapabilities(int proc_fd) {
   CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd));
 }
 
-static void EnterNamespaceSandbox(SandboxLinux* linux_sandbox,
+static void EnterNamespaceSandbox(service_manager::SandboxLinux* linux_sandbox,
                                   base::Closure* post_fork_parent_callback) {
   linux_sandbox->EngageNamespaceSandbox();
 
@@ -523,7 +523,7 @@ static void EnterNamespaceSandbox(SandboxLinux* linux_sandbox,
   }
 }
 
-static void EnterLayerOneSandbox(SandboxLinux* linux_sandbox,
+static void EnterLayerOneSandbox(service_manager::SandboxLinux* linux_sandbox,
                                  const bool using_layer1_sandbox,
                                  base::Closure* post_fork_parent_callback) {
   DCHECK(linux_sandbox);
@@ -555,8 +555,7 @@ bool ZygoteMain(
   g_am_zygote_or_renderer = true;
 
   std::vector<int> fds_to_close_post_fork;
-
-  SandboxLinux* linux_sandbox = SandboxLinux::GetInstance();
+  auto* linux_sandbox = service_manager::SandboxLinux::GetInstance();
 
   // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

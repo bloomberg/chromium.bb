@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
-#define CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
 
 #include <memory>
 
@@ -11,14 +11,16 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
+#include "services/service_manager/sandbox/export.h"
 
-namespace content {
+namespace service_manager {
 
 // The "baseline" BPF policy for content/. Any content/ seccomp-bpf policy
 // should inherit from it.
 // It implements the main Policy interface. Due to its nature
 // as a "kernel attack surface reduction" layer, it's implementation-defined.
-class SandboxBPFBasePolicy : public sandbox::bpf_dsl::Policy {
+class SERVICE_MANAGER_SANDBOX_EXPORT SandboxBPFBasePolicy
+    : public sandbox::bpf_dsl::Policy {
  public:
   SandboxBPFBasePolicy();
   ~SandboxBPFBasePolicy() override;
@@ -38,6 +40,6 @@ class SandboxBPFBasePolicy : public sandbox::bpf_dsl::Policy {
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFBasePolicy);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_

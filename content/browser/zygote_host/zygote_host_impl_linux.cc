@@ -15,7 +15,6 @@
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/sandbox_host_linux.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_switches.h"
@@ -23,6 +22,7 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/switches.h"
 
 namespace content {

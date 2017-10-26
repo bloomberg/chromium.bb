@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_LINUX_H_
-#define CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_LINUX_H_
 
 #include <memory>
 #include <string>
@@ -12,12 +12,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
-#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
+#include "services/service_manager/sandbox/export.h"
+#include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) ||    \
     defined(UNDEFINED_SANITIZER) || defined(SANITIZER_COVERAGE)
 #include <sanitizer/common_interface_defs.h>
 #define ANY_OF_AMTLU_SANITIZER 1
@@ -27,10 +28,12 @@ namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
 class Thread;
+}  // namespace base
+namespace sandbox {
+class SetuidSandboxClient;
 }
-namespace sandbox { class SetuidSandboxClient; }
 
-namespace content {
+namespace service_manager {
 
 // A singleton class to represent and change our sandboxing state for the
 // three main Linux sandboxes.
@@ -42,10 +45,11 @@ namespace content {
 // InitializeSandbox(). InitializeSandbox() is also responsible for "sealing"
 // the first layer of sandboxing. That is, InitializeSandbox must always be
 // called to have any meaningful sandboxing at all.
-class SandboxLinux {
+class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
  public:
   // This is a list of sandbox IPC methods which the renderer may send to the
-  // sandbox host. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  // sandbox host. See
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
   // This isn't the full list, values < 32 are reserved for methods called from
   // Skia.
   enum LinuxSandboxIPCMethods {
@@ -177,10 +181,10 @@ class SandboxLinux {
   int sandbox_status_flags_;
   // Did PreinitializeSandbox() run?
   bool pre_initialized_;
-  bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
+  bool seccomp_bpf_supported_;             // Accurate if pre_initialized_.
   bool seccomp_bpf_with_tsync_supported_;  // Accurate if pre_initialized_.
-  bool yama_is_enforcing_;  // Accurate if pre_initialized_.
-  bool initialize_sandbox_ran_;  // InitializeSandbox() was called.
+  bool yama_is_enforcing_;                 // Accurate if pre_initialized_.
+  bool initialize_sandbox_ran_;            // InitializeSandbox() was called.
   std::unique_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
 #if defined(ANY_OF_AMTLU_SANITIZER)
   std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
@@ -189,6 +193,6 @@ class SandboxLinux {
   DISALLOW_COPY_AND_ASSIGN(SandboxLinux);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_LINUX_H_

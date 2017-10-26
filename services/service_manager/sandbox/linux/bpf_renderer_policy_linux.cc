@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
 
 #include <errno.h>
 #include <sys/ioctl.h>
 
 #include "build/build_config.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 #if defined(OS_CHROMEOS)
 // TODO(vignatti): replace the local definitions below with #include
@@ -34,7 +34,7 @@ using sandbox::bpf_dsl::Arg;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::ResultExpr;
 
-namespace content {
+namespace service_manager {
 
 namespace {
 
@@ -77,7 +77,7 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
 // set rlim_max and rlim_cur together.
 //
 // See SandboxLinux::LimitAddressSpace() in
-// content/common/sandbox_linux/sandbox_linux.cc and
+// services/service_manager/sandbox/linux/sandbox_linux.cc and
 // ArrayBufferContents::ReserveMemory,
 // ArrayBufferContents::ReleaseReservedMemory in
 // third_party/WebKit/Source/platform/wtf/typed_arrays/ArrayBufferContents.cpp.
@@ -108,4 +108,4 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
   }
 }
 
-}  // namespace content
+}  // namespace service_manager
