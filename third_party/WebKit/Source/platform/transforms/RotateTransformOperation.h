@@ -33,21 +33,22 @@ namespace blink {
 
 class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
  public:
-  static RefPtr<RotateTransformOperation> Create(double angle,
-                                                 OperationType type) {
+  static scoped_refptr<RotateTransformOperation> Create(double angle,
+                                                        OperationType type) {
     return Create(Rotation(FloatPoint3D(0, 0, 1), angle), type);
   }
 
-  static RefPtr<RotateTransformOperation> Create(double x,
-                                                 double y,
-                                                 double z,
-                                                 double angle,
-                                                 OperationType type) {
+  static scoped_refptr<RotateTransformOperation> Create(double x,
+                                                        double y,
+                                                        double z,
+                                                        double angle,
+                                                        OperationType type) {
     return Create(Rotation(FloatPoint3D(x, y, z), angle), type);
   }
 
-  static RefPtr<RotateTransformOperation> Create(const Rotation& rotation,
-                                                 OperationType type) {
+  static scoped_refptr<RotateTransformOperation> Create(
+      const Rotation& rotation,
+      OperationType type) {
     DCHECK(IsMatchingOperationType(type));
     return WTF::AdoptRef(new RotateTransformOperation(rotation, type));
   }
@@ -85,10 +86,13 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
  protected:
   bool operator==(const TransformOperation&) const override;
 
-  RefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                   double progress,
-                                   bool blend_to_identity = false) override;
-  RefPtr<TransformOperation> Zoom(double factor) override { return this; }
+  scoped_refptr<TransformOperation> Blend(
+      const TransformOperation* from,
+      double progress,
+      bool blend_to_identity = false) override;
+  scoped_refptr<TransformOperation> Zoom(double factor) override {
+    return this;
+  }
 
   RotateTransformOperation(const Rotation& rotation, OperationType type)
       : rotation_(rotation), type_(type) {}
@@ -102,9 +106,8 @@ DEFINE_TRANSFORM_TYPE_CASTS(RotateTransformOperation);
 class PLATFORM_EXPORT RotateAroundOriginTransformOperation final
     : public RotateTransformOperation {
  public:
-  static RefPtr<RotateAroundOriginTransformOperation> Create(double angle,
-                                                             double origin_x,
-                                                             double origin_y) {
+  static scoped_refptr<RotateAroundOriginTransformOperation>
+  Create(double angle, double origin_x, double origin_y) {
     return WTF::AdoptRef(
         new RotateAroundOriginTransformOperation(angle, origin_x, origin_y));
   }
@@ -122,10 +125,11 @@ class PLATFORM_EXPORT RotateAroundOriginTransformOperation final
 
   bool operator==(const TransformOperation&) const override;
 
-  RefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                   double progress,
-                                   bool blend_to_identity = false) override;
-  RefPtr<TransformOperation> Zoom(double factor) override;
+  scoped_refptr<TransformOperation> Blend(
+      const TransformOperation* from,
+      double progress,
+      bool blend_to_identity = false) override;
+  scoped_refptr<TransformOperation> Zoom(double factor) override;
 
   double origin_x_;
   double origin_y_;

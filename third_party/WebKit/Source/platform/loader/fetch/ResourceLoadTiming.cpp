@@ -26,12 +26,12 @@ ResourceLoadTiming::ResourceLoadTiming()
       push_start_(0),
       push_end_(0) {}
 
-RefPtr<ResourceLoadTiming> ResourceLoadTiming::Create() {
+scoped_refptr<ResourceLoadTiming> ResourceLoadTiming::Create() {
   return WTF::AdoptRef(new ResourceLoadTiming);
 }
 
-RefPtr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
-  RefPtr<ResourceLoadTiming> timing = Create();
+scoped_refptr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
+  scoped_refptr<ResourceLoadTiming> timing = Create();
   timing->request_time_ = request_time_;
   timing->proxy_start_ = proxy_start_;
   timing->proxy_end_ = proxy_end_;

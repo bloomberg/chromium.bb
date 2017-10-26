@@ -27,8 +27,8 @@ inline void PrepareReferenceData(char* buffer, size_t size) {
     buffer[i] = static_cast<char>(i);
 }
 
-RefPtr<SharedBuffer> ReadFile(const char* file_name);
-RefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name);
+scoped_refptr<SharedBuffer> ReadFile(const char* file_name);
+scoped_refptr<SharedBuffer> ReadFile(const char* dir, const char* file_name);
 unsigned HashBitmap(const SkBitmap&);
 void CreateDecodingBaseline(DecoderCreator,
                             SharedBuffer*,

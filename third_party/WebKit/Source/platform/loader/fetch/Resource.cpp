@@ -122,7 +122,7 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
   void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
   void ClearCachedMetadata(CacheType) override;
-  RefPtr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
+  scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
   String Encoding() const override;
   // Sets the serialized metadata retrieved from the platform's cache.
   void SetSerializedCachedMetadata(const char*, size_t);
@@ -134,7 +134,7 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
     return resource_->GetResponse();
   }
 
-  RefPtr<CachedMetadata> cached_metadata_;
+  scoped_refptr<CachedMetadata> cached_metadata_;
 
  private:
   Member<Resource> resource_;
@@ -170,7 +170,8 @@ void Resource::CachedMetadataHandlerImpl::ClearCachedMetadata(
     SendToPlatform();
 }
 
-RefPtr<CachedMetadata> Resource::CachedMetadataHandlerImpl::GetCachedMetadata(
+scoped_refptr<CachedMetadata>
+Resource::CachedMetadataHandlerImpl::GetCachedMetadata(
     uint32_t data_type_id) const {
   if (!cached_metadata_ || cached_metadata_->DataTypeID() != data_type_id)
     return nullptr;
@@ -222,7 +223,7 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
   explicit ServiceWorkerResponseCachedMetadataHandler(Resource*,
                                                       SecurityOrigin*);
   String cache_storage_cache_name_;
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
 };
 
 Resource::ServiceWorkerResponseCachedMetadataHandler::
@@ -380,7 +381,7 @@ void Resource::AppendData(const char* data, size_t length) {
   SetEncodedSize(data_->size());
 }
 
-void Resource::SetResourceBuffer(RefPtr<SharedBuffer> resource_buffer) {
+void Resource::SetResourceBuffer(scoped_refptr<SharedBuffer> resource_buffer) {
   DCHECK(!is_revalidating_);
   DCHECK(!ErrorOccurred());
   DCHECK_EQ(options_.data_buffering_policy, kBufferData);

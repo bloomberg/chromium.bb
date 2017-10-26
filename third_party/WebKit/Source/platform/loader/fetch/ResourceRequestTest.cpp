@@ -27,7 +27,8 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));
   original.SetPriority(kResourceLoadPriorityLow, 20);
 
-  RefPtr<EncodedFormData> original_body(EncodedFormData::Create("Test Body"));
+  scoped_refptr<EncodedFormData> original_body(
+      EncodedFormData::Create("Test Body"));
   original.SetHTTPBody(original_body);
   original.SetAllowStoredCredentials(false);
   original.SetReportUploadProgress(false);

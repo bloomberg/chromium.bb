@@ -45,7 +45,7 @@ class MockFetchContext : public FetchContext {
     return security_origin_.get();
   }
 
-  void SetSecurityOrigin(RefPtr<SecurityOrigin> security_origin) {
+  void SetSecurityOrigin(scoped_refptr<SecurityOrigin> security_origin) {
     security_origin_ = security_origin;
   }
 
@@ -82,7 +82,7 @@ class MockFetchContext : public FetchContext {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest& request,
-      RefPtr<WebTaskRunner> task_runner) override {
+      scoped_refptr<WebTaskRunner> task_runner) override {
     if (!url_loader_factory_) {
       url_loader_factory_ =
           Platform::Current()->CreateDefaultURLLoaderFactory();
@@ -96,19 +96,21 @@ class MockFetchContext : public FetchContext {
     return frame_scheduler_.get();
   }
 
-  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override {
+  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override {
     return frame_scheduler_->GetTaskRunner(TaskType::kUnspecedLoading);
   }
 
  private:
   class MockFrameScheduler final : public scheduler::FakeWebFrameScheduler {
    public:
-    MockFrameScheduler(RefPtr<WebTaskRunner> runner)
+    MockFrameScheduler(scoped_refptr<WebTaskRunner> runner)
         : runner_(std::move(runner)) {}
-    RefPtr<WebTaskRunner> GetTaskRunner(TaskType) override { return runner_; }
+    scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override {
+      return runner_;
+    }
 
    private:
-    RefPtr<WebTaskRunner> runner_;
+    scoped_refptr<WebTaskRunner> runner_;
   };
 
   MockFetchContext(LoadPolicy load_policy)
@@ -120,8 +122,8 @@ class MockFetchContext : public FetchContext {
         transfer_size_(-1) {}
 
   enum LoadPolicy load_policy_;
-  RefPtr<WebTaskRunner> runner_;
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<WebTaskRunner> runner_;
+  scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<WebFrameScheduler> frame_scheduler_;
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
   bool complete_;

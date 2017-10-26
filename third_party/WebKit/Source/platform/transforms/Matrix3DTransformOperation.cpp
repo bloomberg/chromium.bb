@@ -1,3 +1,5 @@
+
+
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
@@ -29,7 +31,7 @@
 
 namespace blink {
 
-RefPtr<TransformOperation> Matrix3DTransformOperation::Blend(
+scoped_refptr<TransformOperation> Matrix3DTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
@@ -52,7 +54,8 @@ RefPtr<TransformOperation> Matrix3DTransformOperation::Blend(
   return Matrix3DTransformOperation::Create(to_t);
 }
 
-RefPtr<TransformOperation> Matrix3DTransformOperation::Zoom(double factor) {
+scoped_refptr<TransformOperation> Matrix3DTransformOperation::Zoom(
+    double factor) {
   TransformationMatrix result = matrix_;
   result.Zoom(factor);
   return Create(result);

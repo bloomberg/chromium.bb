@@ -32,9 +32,9 @@ namespace blink {
 
 class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
  public:
-  static RefPtr<SkewTransformOperation> Create(double angle_x,
-                                               double angle_y,
-                                               OperationType type) {
+  static scoped_refptr<SkewTransformOperation> Create(double angle_x,
+                                                      double angle_y,
+                                                      OperationType type) {
     return WTF::AdoptRef(new SkewTransformOperation(angle_x, angle_y, type));
   }
 
@@ -58,10 +58,11 @@ class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
     transform.Skew(angle_x_, angle_y_);
   }
 
-  RefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                   double progress,
-                                   bool blend_to_identity = false) override;
-  RefPtr<TransformOperation> Zoom(double factor) final { return this; }
+  scoped_refptr<TransformOperation> Blend(
+      const TransformOperation* from,
+      double progress,
+      bool blend_to_identity = false) override;
+  scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 
   SkewTransformOperation(double angle_x, double angle_y, OperationType type)
       : angle_x_(angle_x), angle_y_(angle_y), type_(type) {}

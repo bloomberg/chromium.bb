@@ -44,7 +44,7 @@ bool RotateTransformOperation::GetCommonAxis(const RotateTransformOperation* a,
                                  result_angle_a, result_angle_b);
 }
 
-RefPtr<TransformOperation> RotateTransformOperation::Blend(
+scoped_refptr<TransformOperation> RotateTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
@@ -108,7 +108,7 @@ bool RotateAroundOriginTransformOperation::operator==(
          origin_y_ == other_rotate.origin_y_;
 }
 
-RefPtr<TransformOperation> RotateAroundOriginTransformOperation::Blend(
+scoped_refptr<TransformOperation> RotateAroundOriginTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
@@ -130,7 +130,7 @@ RefPtr<TransformOperation> RotateAroundOriginTransformOperation::Blend(
       blink::Blend(from_rotate.origin_y_, origin_y_, progress));
 }
 
-RefPtr<TransformOperation> RotateAroundOriginTransformOperation::Zoom(
+scoped_refptr<TransformOperation> RotateAroundOriginTransformOperation::Zoom(
     double factor) {
   return Create(Angle(), origin_x_ * factor, origin_y_ * factor);
 }

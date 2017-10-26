@@ -302,7 +302,9 @@ class PLATFORM_EXPORT GIFImageReader final {
 
   ~GIFImageReader() {}
 
-  void SetData(RefPtr<blink::SegmentReader> data) { data_ = std::move(data); }
+  void SetData(scoped_refptr<blink::SegmentReader> data) {
+    data_ = std::move(data);
+  }
   bool Parse(blink::GIFImageDecoder::GIFParseQuery);
   bool Decode(size_t frame_index);
 
@@ -360,7 +362,7 @@ class PLATFORM_EXPORT GIFImageReader final {
 
   Vector<std::unique_ptr<GIFFrameContext>> frames_;
 
-  RefPtr<blink::SegmentReader> data_;
+  scoped_refptr<blink::SegmentReader> data_;
   bool parse_completed_;
 };
 

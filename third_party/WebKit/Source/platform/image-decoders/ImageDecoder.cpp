@@ -65,7 +65,7 @@ inline bool MatchesBMPSignature(const char* contents) {
 static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
 std::unique_ptr<ImageDecoder> ImageDecoder::Create(
-    RefPtr<SegmentReader> data,
+    scoped_refptr<SegmentReader> data,
     bool data_complete,
     AlphaOption alpha_option,
     const ColorBehavior& color_behavior,

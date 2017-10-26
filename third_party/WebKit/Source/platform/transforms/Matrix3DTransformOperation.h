@@ -33,7 +33,7 @@ namespace blink {
 class PLATFORM_EXPORT Matrix3DTransformOperation final
     : public TransformOperation {
  public:
-  static RefPtr<Matrix3DTransformOperation> Create(
+  static scoped_refptr<Matrix3DTransformOperation> Create(
       const TransformationMatrix& matrix) {
     return WTF::AdoptRef(new Matrix3DTransformOperation(matrix));
   }
@@ -59,10 +59,11 @@ class PLATFORM_EXPORT Matrix3DTransformOperation final
     transform.Multiply(TransformationMatrix(matrix_));
   }
 
-  RefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                   double progress,
-                                   bool blend_to_identity = false) override;
-  RefPtr<TransformOperation> Zoom(double factor) final;
+  scoped_refptr<TransformOperation> Blend(
+      const TransformOperation* from,
+      double progress,
+      bool blend_to_identity = false) override;
+  scoped_refptr<TransformOperation> Zoom(double factor) final;
 
   Matrix3DTransformOperation(const TransformationMatrix& mat) { matrix_ = mat; }
 

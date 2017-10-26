@@ -61,7 +61,7 @@ void Downsample(size_t max_decoded_bytes,
                 unsigned* output_width,
                 unsigned* output_height,
                 const char* image_file_path) {
-  RefPtr<SharedBuffer> data = ReadFile(image_file_path);
+  scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
@@ -80,7 +80,7 @@ void ReadYUV(size_t max_decoded_bytes,
              unsigned* output_uv_width,
              unsigned* output_uv_height,
              const char* image_file_path) {
-  RefPtr<SharedBuffer> data = ReadFile(image_file_path);
+  scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
@@ -115,7 +115,7 @@ void ReadYUV(size_t max_decoded_bytes,
   row_bytes[1] = decoder->DecodedYUVWidthBytes(1);
   row_bytes[2] = decoder->DecodedYUVWidthBytes(2);
 
-  RefPtr<ArrayBuffer> buffer(ArrayBuffer::Create(
+  scoped_refptr<ArrayBuffer> buffer(ArrayBuffer::Create(
       row_bytes[0] * y_size.Height() + row_bytes[1] * u_size.Height() +
           row_bytes[2] * v_size.Height(),
       1));
@@ -255,7 +255,7 @@ TEST(JPEGImageDecoderTest, yuv) {
 
   // Make sure we revert to RGBA decoding when we're about to downscale,
   // which can occur on memory-constrained android devices.
-  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
@@ -300,7 +300,7 @@ TEST(JPEGImageDecoderTest, mergeBuffer) {
 // This tests decoding a JPEG with many progressive scans.  Decoding should
 // fail, but not hang (crbug.com/642462).
 TEST(JPEGImageDecoderTest, manyProgressiveScans) {
-  RefPtr<SharedBuffer> test_data =
+  scoped_refptr<SharedBuffer> test_data =
       ReadFile(kDecodersTestingDir, "many-progressive-scans.jpg");
   ASSERT_TRUE(test_data.get());
 
@@ -313,7 +313,7 @@ TEST(JPEGImageDecoderTest, manyProgressiveScans) {
 
 TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
   const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
-  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder =
@@ -339,7 +339,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
   const char* jpeg_file =
       "/LayoutTests/images/resources/icc-v2-gbr.jpg";  // 275x207
 
-  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder =
@@ -364,7 +364,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
 
 TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
   const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
-  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
   // Limit the memory so that 128 would be the largest size possible.

@@ -21,17 +21,17 @@ class SharedBufferSegmentReader final : public SegmentReader {
   WTF_MAKE_NONCOPYABLE(SharedBufferSegmentReader);
 
  public:
-  SharedBufferSegmentReader(RefPtr<SharedBuffer>);
+  SharedBufferSegmentReader(scoped_refptr<SharedBuffer>);
   size_t size() const override;
   size_t GetSomeData(const char*& data, size_t position) const override;
   sk_sp<SkData> GetAsSkData() const override;
 
  private:
-  RefPtr<SharedBuffer> shared_buffer_;
+  scoped_refptr<SharedBuffer> shared_buffer_;
 };
 
 SharedBufferSegmentReader::SharedBufferSegmentReader(
-    RefPtr<SharedBuffer> buffer)
+    scoped_refptr<SharedBuffer> buffer)
     : shared_buffer_(std::move(buffer)) {}
 
 size_t SharedBufferSegmentReader::size() const {
@@ -181,16 +181,17 @@ sk_sp<SkData> ROBufferSegmentReader::GetAsSkData() const {
 
 // SegmentReader ---------------------------------------------------------------
 
-RefPtr<SegmentReader> SegmentReader::CreateFromSharedBuffer(
-    RefPtr<SharedBuffer> buffer) {
+scoped_refptr<SegmentReader> SegmentReader::CreateFromSharedBuffer(
+    scoped_refptr<SharedBuffer> buffer) {
   return WTF::AdoptRef(new SharedBufferSegmentReader(std::move(buffer)));
 }
 
-RefPtr<SegmentReader> SegmentReader::CreateFromSkData(sk_sp<SkData> data) {
+scoped_refptr<SegmentReader> SegmentReader::CreateFromSkData(
+    sk_sp<SkData> data) {
   return WTF::AdoptRef(new DataSegmentReader(std::move(data)));
 }
 
-RefPtr<SegmentReader> SegmentReader::CreateFromSkROBuffer(
+scoped_refptr<SegmentReader> SegmentReader::CreateFromSkROBuffer(
     sk_sp<SkROBuffer> buffer) {
   return WTF::AdoptRef(new ROBufferSegmentReader(std::move(buffer)));
 }

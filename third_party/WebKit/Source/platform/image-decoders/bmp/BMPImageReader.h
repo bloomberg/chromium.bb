@@ -286,7 +286,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   ImageFrame* buffer_;
 
   // The file to decode.
-  RefPtr<SegmentReader> data_;
+  scoped_refptr<SegmentReader> data_;
   FastSharedBufferReader fast_reader_;
 
   // An index into |data_| representing how much we've already decoded.

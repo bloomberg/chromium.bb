@@ -73,11 +73,11 @@ TransformOperations TransformOperations::BlendByMatchingOperations(
   unsigned to_size = Operations().size();
   unsigned size = std::max(from_size, to_size);
   for (unsigned i = 0; i < size; i++) {
-    RefPtr<TransformOperation> from_operation =
+    scoped_refptr<TransformOperation> from_operation =
         (i < from_size) ? from.Operations()[i].get() : nullptr;
-    RefPtr<TransformOperation> to_operation =
+    scoped_refptr<TransformOperation> to_operation =
         (i < to_size) ? Operations()[i].get() : nullptr;
-    RefPtr<TransformOperation> blended_operation =
+    scoped_refptr<TransformOperation> blended_operation =
         to_operation
             ? to_operation->Blend(from_operation.get(), progress)
             : (from_operation ? from_operation->Blend(nullptr, progress, true)
@@ -85,7 +85,7 @@ TransformOperations TransformOperations::BlendByMatchingOperations(
     if (blended_operation)
       result.Operations().push_back(blended_operation);
     else {
-      RefPtr<TransformOperation> identity_operation =
+      scoped_refptr<TransformOperation> identity_operation =
           IdentityTransformOperation::Create();
       if (progress > 0.5)
         result.Operations().push_back(to_operation ? to_operation
@@ -99,7 +99,8 @@ TransformOperations TransformOperations::BlendByMatchingOperations(
   return result;
 }
 
-RefPtr<TransformOperation> TransformOperations::BlendByUsingMatrixInterpolation(
+scoped_refptr<TransformOperation>
+TransformOperations::BlendByUsingMatrixInterpolation(
     const TransformOperations& from,
     double progress) const {
   if (DependsOnBoxSize() || from.DependsOnBoxSize())
@@ -279,9 +280,9 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
 
   *bounds = box;
   for (int i = size - 1; i >= 0; i--) {
-    RefPtr<TransformOperation> from_operation =
+    scoped_refptr<TransformOperation> from_operation =
         (i < from_size) ? from.Operations()[i] : nullptr;
-    RefPtr<TransformOperation> to_operation =
+    scoped_refptr<TransformOperation> to_operation =
         (i < to_size) ? Operations()[i] : nullptr;
 
     DCHECK(from_operation || to_operation);
@@ -309,8 +310,8 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
       case TransformOperation::kSkewX:
       case TransformOperation::kSkewY:
       case TransformOperation::kPerspective: {
-        RefPtr<TransformOperation> from_transform;
-        RefPtr<TransformOperation> to_transform;
+        scoped_refptr<TransformOperation> from_transform;
+        scoped_refptr<TransformOperation> to_transform;
         if (!to_operation) {
           from_transform = from_operation->Blend(to_operation.get(),
                                                  1 - min_progress, false);
@@ -340,7 +341,7 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
       case TransformOperation::kRotate3D:
       case TransformOperation::kRotateX:
       case TransformOperation::kRotateY: {
-        RefPtr<RotateTransformOperation> identity_rotation;
+        scoped_refptr<RotateTransformOperation> identity_rotation;
         const RotateTransformOperation* from_rotation = nullptr;
         const RotateTransformOperation* to_rotation = nullptr;
         if (from_operation) {

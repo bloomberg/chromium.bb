@@ -93,13 +93,13 @@ class PLATFORM_EXPORT ImageDecoder {
   // because there isn't enough data yet).
   // Sets |max_decoded_bytes_| to Platform::MaxImageDecodedBytes().
   static std::unique_ptr<ImageDecoder> Create(
-      RefPtr<SegmentReader> data,
+      scoped_refptr<SegmentReader> data,
       bool data_complete,
       AlphaOption,
       const ColorBehavior&,
       const SkISize& desired_size = SkISize::MakeEmpty());
   static std::unique_ptr<ImageDecoder> Create(
-      RefPtr<SharedBuffer> data,
+      scoped_refptr<SharedBuffer> data,
       bool data_complete,
       AlphaOption alpha_option,
       const ColorBehavior& color_behavior,
@@ -117,7 +117,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // failure is due to insufficient or bad data.
   static bool HasSufficientDataToSniffImageType(const SharedBuffer&);
 
-  void SetData(RefPtr<SegmentReader> data, bool all_data_received) {
+  void SetData(scoped_refptr<SegmentReader> data, bool all_data_received) {
     if (failed_)
       return;
     data_ = std::move(data);
@@ -125,7 +125,7 @@ class PLATFORM_EXPORT ImageDecoder {
     OnSetData(data_.get());
   }
 
-  void SetData(RefPtr<SharedBuffer> data, bool all_data_received) {
+  void SetData(scoped_refptr<SharedBuffer> data, bool all_data_received) {
     SetData(SegmentReader::CreateFromSharedBuffer(std::move(data)),
             all_data_received);
   }
@@ -365,7 +365,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // this method, the caller must verify that the frame exists.
   void CorrectAlphaWhenFrameBufferSawNoAlpha(size_t);
 
-  RefPtr<SegmentReader> data_;  // The encoded data.
+  scoped_refptr<SegmentReader> data_;  // The encoded data.
   Vector<ImageFrame, 1> frame_buffer_cache_;
   const bool premultiply_alpha_;
   const ColorBehavior color_behavior_;

@@ -158,7 +158,7 @@ void RawResource::DidAddClient(ResourceClient* c) {
   }
   if (!HasClient(c))
     return;
-  if (RefPtr<SharedBuffer> data = Data()) {
+  if (scoped_refptr<SharedBuffer> data = Data()) {
     data->ForEachSegment([this, &client](const char* segment,
                                          size_t segment_size,
                                          size_t segment_offset) -> bool {
