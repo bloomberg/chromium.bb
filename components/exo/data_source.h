@@ -21,10 +21,11 @@ class DataSource {
   explicit DataSource(DataSourceDelegate* delegate);
   ~DataSource();
 
-  // Adds an offered mime type.
+  // Notifies to DataSource that the client offers new mime type.
   void Offer(const std::string& mime_type);
 
-  // Sets the available drag-and-drop actions.
+  // Notifies the possible drag and drop actions selected by the data source to
+  // DataSource.
   void SetActions(const base::flat_set<DndAction>& dnd_actions);
 
  private:
