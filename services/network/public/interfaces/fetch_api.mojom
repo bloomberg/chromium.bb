@@ -4,10 +4,24 @@
 
 module network.mojom;
 
+// Corresponds to Fetch request's "mode" and "use-CORS-preflight flag":
+// https://fetch.spec.whatwg.org/#concept-request-mode
+//
+// This enum is also used in histograms. Append-only.
+enum FetchRequestMode {
+  kSameOrigin,
+  kNoCORS,
+  kCORS,
+  kCORSWithForcedPreflight,
+  kNavigate,
+  // Add a new type here, then update kLast and enums.xml.
+  kLast = kNavigate
+};
+
 // Corresponds to response types from the Fetch spec:
 // https://fetch.spec.whatwg.org/#concept-response-type
 //
-// This enum is used in histograms. Append-only.
+// This enum is also used in histograms. Append-only.
 enum FetchResponseType {
   kBasic,
   kCORS,

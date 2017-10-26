@@ -336,8 +336,8 @@ class ThreadableLoaderTest
   }
 
   void StartLoader(const KURL& url,
-                   WebURLRequest::FetchRequestMode fetch_request_mode =
-                       WebURLRequest::kFetchRequestModeNoCORS) {
+                   network::mojom::FetchRequestMode fetch_request_mode =
+                       network::mojom::FetchRequestMode::kNoCORS) {
     ResourceRequest request(url);
     request.SetRequestContext(WebURLRequest::kRequestContextObject);
     request.SetFetchRequestMode(fetch_request_mode);
@@ -653,7 +653,7 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
                              "Cross origin requests are not supported.")));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);
+  StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -668,7 +668,7 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailInStart) {
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);
+  StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -683,7 +683,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailInStart) {
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);
+  StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -702,7 +702,7 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
           "No 'Access-Control-Allow-Origin' header is present on the requested "
           "resource. Origin 'null' is therefore not allowed access.")));
 
-  StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
+  StartLoader(SuccessURL(), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -769,7 +769,7 @@ TEST_P(ThreadableLoaderTest, DidFailRedirectCheck) {
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailRedirectCheck());
 
-  StartLoader(RedirectLoopURL(), WebURLRequest::kFetchRequestModeCORS);
+  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -784,7 +784,7 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  StartLoader(RedirectLoopURL(), WebURLRequest::kFetchRequestModeCORS);
+  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -799,7 +799,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  StartLoader(RedirectLoopURL(), WebURLRequest::kFetchRequestModeCORS);
+  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -820,7 +820,7 @@ TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   // synchronously, but is saying that even when a response is served
   // synchronously it should not lead to a crash.
   StartLoader(KURL(NullURL(), "about:blank"),
-              WebURLRequest::kFetchRequestModeCORS);
+              network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
 }
 

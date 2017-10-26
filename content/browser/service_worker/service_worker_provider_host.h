@@ -30,6 +30,7 @@
 #include "content/public/common/service_worker_modes.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace blink {
@@ -220,7 +221,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns a handler for a request, the handler may return nullptr if
   // the request doesn't require special handling.
   std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
-      FetchRequestMode request_mode,
+      network::mojom::FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,

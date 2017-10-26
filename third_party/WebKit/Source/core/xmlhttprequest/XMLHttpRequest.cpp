@@ -1073,8 +1073,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetHTTPMethod(method_);
   request.SetRequestContext(WebURLRequest::kRequestContextXMLHttpRequest);
   request.SetFetchRequestMode(
-      upload_events ? WebURLRequest::kFetchRequestModeCORSWithForcedPreflight
-                    : WebURLRequest::kFetchRequestModeCORS);
+      upload_events ? network::mojom::FetchRequestMode::kCORSWithForcedPreflight
+                    : network::mojom::FetchRequestMode::kCORS);
   request.SetFetchCredentialsMode(
       with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
                         : WebURLRequest::kFetchCredentialsModeSameOrigin);

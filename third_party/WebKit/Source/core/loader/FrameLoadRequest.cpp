@@ -65,7 +65,7 @@ FrameLoadRequest::FrameLoadRequest(
           should_check_main_world_content_security_policy) {
   // These flags are passed to a service worker which controls the page.
   resource_request_.SetFetchRequestMode(
-      WebURLRequest::kFetchRequestModeNavigate);
+      network::mojom::FetchRequestMode::kNavigate);
   resource_request_.SetFetchCredentialsMode(
       WebURLRequest::kFetchCredentialsModeInclude);
   resource_request_.SetFetchRedirectMode(

@@ -89,7 +89,7 @@ void FileReaderLoader::Start(ExecutionContext* execution_context,
   // FIXME: Should this really be 'internal'? Do we know anything about the
   // actual request that generated this fetch?
   request.SetRequestContext(WebURLRequest::kRequestContextInternal);
-  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
 
   request.SetHTTPMethod(HTTPNames::GET);
 

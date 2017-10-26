@@ -301,7 +301,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   main_script_loader_->LoadAsynchronously(
       *shadow_page_->GetDocument(), worker_start_data_.script_url,
       WebURLRequest::kRequestContextServiceWorker,
-      WebURLRequest::kFetchRequestModeSameOrigin,
+      network::mojom::FetchRequestMode::kSameOrigin,
       WebURLRequest::kFetchCredentialsModeSameOrigin,
       worker_start_data_.address_space, WTF::Closure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,

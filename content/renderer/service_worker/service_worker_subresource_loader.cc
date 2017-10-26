@@ -322,9 +322,10 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // we can't simply fallback to the network here. It is because the CORS
   // preflight logic is implemented in Blink. So we return a "fallback required"
   // response to Blink.
-  if ((resource_request_.fetch_request_mode == FETCH_REQUEST_MODE_CORS ||
+  if ((resource_request_.fetch_request_mode ==
+           network::mojom::FetchRequestMode::kCORS ||
        resource_request_.fetch_request_mode ==
-           FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
+           network::mojom::FetchRequestMode::kCORSWithForcedPreflight) &&
       (!resource_request_.request_initiator.has_value() ||
        !resource_request_.request_initiator->IsSameOriginWith(
            url::Origin::Create(resource_request_.url)))) {

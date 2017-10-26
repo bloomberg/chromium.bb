@@ -34,7 +34,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetHasUserGesture(false);
   original.SetDownloadToFile(false);
   original.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kAll);
-  original.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  original.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   original.SetFetchCredentialsMode(
       WebURLRequest::kFetchCredentialsModeSameOrigin);
   original.SetRequestorID(30);
@@ -65,7 +65,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_FALSE(original.DownloadToFile());
   EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kAll,
             original.GetServiceWorkerMode());
-  EXPECT_EQ(WebURLRequest::kFetchRequestModeCORS,
+  EXPECT_EQ(network::mojom::FetchRequestMode::kCORS,
             original.GetFetchRequestMode());
   EXPECT_EQ(WebURLRequest::kFetchCredentialsModeSameOrigin,
             original.GetFetchCredentialsMode());
@@ -99,7 +99,8 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_FALSE(copy1.DownloadToFile());
   EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kAll,
             copy1.GetServiceWorkerMode());
-  EXPECT_EQ(WebURLRequest::kFetchRequestModeCORS, copy1.GetFetchRequestMode());
+  EXPECT_EQ(network::mojom::FetchRequestMode::kCORS,
+            copy1.GetFetchRequestMode());
   EXPECT_EQ(WebURLRequest::kFetchCredentialsModeSameOrigin,
             copy1.GetFetchCredentialsMode());
   EXPECT_EQ(30, copy1.RequestorID());
@@ -116,7 +117,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   copy1.SetHasUserGesture(true);
   copy1.SetDownloadToFile(true);
   copy1.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
-  copy1.SetFetchRequestMode(WebURLRequest::kFetchRequestModeNoCORS);
+  copy1.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   copy1.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeInclude);
 
   std::unique_ptr<CrossThreadResourceRequestData> data2(copy1.CopyData());
@@ -127,7 +128,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_TRUE(copy2.DownloadToFile());
   EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kNone,
             copy2.GetServiceWorkerMode());
-  EXPECT_EQ(WebURLRequest::kFetchRequestModeNoCORS,
+  EXPECT_EQ(network::mojom::FetchRequestMode::kNoCORS,
             copy1.GetFetchRequestMode());
   EXPECT_EQ(WebURLRequest::kFetchCredentialsModeInclude,
             copy1.GetFetchCredentialsMode());

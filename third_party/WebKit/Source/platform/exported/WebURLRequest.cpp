@@ -325,11 +325,11 @@ void WebURLRequest::SetShouldResetAppCache(bool set_should_reset_app_cache) {
   resource_request_->SetShouldResetAppCache(set_should_reset_app_cache);
 }
 
-WebURLRequest::FetchRequestMode WebURLRequest::GetFetchRequestMode() const {
+network::mojom::FetchRequestMode WebURLRequest::GetFetchRequestMode() const {
   return resource_request_->GetFetchRequestMode();
 }
 
-void WebURLRequest::SetFetchRequestMode(WebURLRequest::FetchRequestMode mode) {
+void WebURLRequest::SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
   return resource_request_->SetFetchRequestMode(mode);
 }
 

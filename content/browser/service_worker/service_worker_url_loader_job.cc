@@ -16,6 +16,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -75,7 +76,8 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       blob_client_binding_(this),
       binding_(this),
       weak_factory_(this) {
-  DCHECK_EQ(FETCH_REQUEST_MODE_NAVIGATE, resource_request_.fetch_request_mode);
+  DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
+            resource_request_.fetch_request_mode);
   DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
             resource_request_.fetch_credentials_mode);
   DCHECK_EQ(FetchRedirectMode::MANUAL_MODE,

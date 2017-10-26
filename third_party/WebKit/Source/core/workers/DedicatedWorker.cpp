@@ -22,6 +22,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -78,12 +79,12 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
 
 void DedicatedWorker::Start() {
   DCHECK(IsMainThread());
-  WebURLRequest::FetchRequestMode fetch_request_mode =
-      WebURLRequest::kFetchRequestModeSameOrigin;
+  network::mojom::FetchRequestMode fetch_request_mode =
+      network::mojom::FetchRequestMode::kSameOrigin;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
       WebURLRequest::kFetchCredentialsModeSameOrigin;
   if (script_url_.ProtocolIsData()) {
-    fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
+    fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
     fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
   }
 

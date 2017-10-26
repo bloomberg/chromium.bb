@@ -32,15 +32,6 @@ struct EnumTraits<blink::mojom::FetchRedirectMode, content::FetchRedirectMode> {
 };
 
 template <>
-struct EnumTraits<blink::mojom::FetchRequestMode, content::FetchRequestMode> {
-  static blink::mojom::FetchRequestMode ToMojom(
-      content::FetchRequestMode input);
-
-  static bool FromMojom(blink::mojom::FetchRequestMode input,
-                        content::FetchRequestMode* out);
-};
-
-template <>
 struct EnumTraits<blink::mojom::RequestContextFrameType,
                   content::RequestContextFrameType> {
   static blink::mojom::RequestContextFrameType ToMojom(
@@ -73,7 +64,7 @@ struct EnumTraits<blink::mojom::ServiceWorkerFetchType,
 template <>
 struct StructTraits<blink::mojom::FetchAPIRequestDataView,
                     content::ServiceWorkerFetchRequest> {
-  static content::FetchRequestMode mode(
+  static network::mojom::FetchRequestMode mode(
       const content::ServiceWorkerFetchRequest& request) {
     return request.mode;
   }

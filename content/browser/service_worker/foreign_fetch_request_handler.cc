@@ -73,7 +73,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     int process_id,
     int provider_id,
     ServiceWorkerMode service_worker_mode,
-    FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
@@ -200,7 +200,7 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
 ForeignFetchRequestHandler::ForeignFetchRequestHandler(
     ServiceWorkerContextWrapper* context,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-    FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,

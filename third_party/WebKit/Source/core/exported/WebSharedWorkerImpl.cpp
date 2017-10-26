@@ -70,6 +70,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebSettings.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -120,12 +121,12 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
       client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
 
-  WebURLRequest::FetchRequestMode fetch_request_mode =
-      WebURLRequest::kFetchRequestModeSameOrigin;
+  network::mojom::FetchRequestMode fetch_request_mode =
+      network::mojom::FetchRequestMode::kSameOrigin;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
       WebURLRequest::kFetchCredentialsModeSameOrigin;
   if ((static_cast<KURL>(url_)).ProtocolIsData()) {
-    fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
+    fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
     fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
   }
 

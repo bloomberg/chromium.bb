@@ -42,6 +42,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -69,7 +70,7 @@ class CORE_EXPORT WorkerScriptLoader final
   void LoadAsynchronously(ExecutionContext&,
                           const KURL&,
                           WebURLRequest::RequestContext,
-                          WebURLRequest::FetchRequestMode,
+                          network::mojom::FetchRequestMode,
                           WebURLRequest::FetchCredentialsMode,
                           WebAddressSpace,
                           WTF::Closure response_callback,

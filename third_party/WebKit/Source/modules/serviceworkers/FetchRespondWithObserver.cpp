@@ -146,7 +146,7 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     ExecutionContext* context,
     int fetch_event_id,
     const KURL& request_url,
-    WebURLRequest::FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchRedirectMode redirect_mode,
     WebURLRequest::FrameType frame_type,
     WebURLRequest::RequestContext request_context,
@@ -192,7 +192,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
     return;
   }
   if (response_type == network::mojom::FetchResponseType::kOpaque) {
-    if (request_mode_ != WebURLRequest::kFetchRequestModeNoCORS) {
+    if (request_mode_ != network::mojom::FetchRequestMode::kNoCORS) {
       OnResponseRejected(kWebServiceWorkerResponseErrorResponseTypeOpaque);
       return;
     }
@@ -279,7 +279,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
     ExecutionContext* context,
     int fetch_event_id,
     const KURL& request_url,
-    WebURLRequest::FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchRedirectMode redirect_mode,
     WebURLRequest::FrameType frame_type,
     WebURLRequest::RequestContext request_context,

@@ -76,7 +76,8 @@ BytesConsumer::Result BlobBytesConsumer::BeginRead(const char** buffer,
 
       ResourceRequest request(blob_url_);
       request.SetRequestContext(WebURLRequest::kRequestContextInternal);
-      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+      request.SetFetchRequestMode(
+          network::mojom::FetchRequestMode::kSameOrigin);
       request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
       request.SetUseStreamOnResponse(true);
       // We intentionally skip

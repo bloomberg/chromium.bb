@@ -66,7 +66,6 @@
 #include "public/platform/WebCORSPreflightResultCache.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -155,7 +154,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       is_using_data_consumer_handle_(false),
       async_(blocking_behavior == kLoadAsynchronously),
       request_context_(WebURLRequest::kRequestContextUnspecified),
-      fetch_request_mode_(WebURLRequest::kFetchRequestModeSameOrigin),
+      fetch_request_mode_(network::mojom::FetchRequestMode::kSameOrigin),
       fetch_credentials_mode_(WebURLRequest::kFetchCredentialsModeOmit),
       timeout_timer_(
           TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()),
@@ -197,7 +196,7 @@ void DocumentThreadableLoader::DispatchInitialRequestOutOfBlinkCORS(
 
 void DocumentThreadableLoader::HandleResponseOutOfBlinkCORS(
     unsigned long identifier,
-    WebURLRequest::FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
@@ -249,7 +248,8 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   fetch_credentials_mode_ = request.GetFetchCredentialsMode();
   redirect_mode_ = request.GetFetchRedirectMode();
 
-  if (request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeNoCORS) {
+  if (request.GetFetchRequestMode() ==
+      network::mojom::FetchRequestMode::kNoCORS) {
     SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(
         request_context_, request.GetServiceWorkerMode()));
   } else {
@@ -268,7 +268,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   // The CORS flag variable is not yet used at the step in the spec that
   // corresponds to this line, but divert |cors_flag_| here for convenience.
   if (cors_flag_ && request.GetFetchRequestMode() ==
-                        WebURLRequest::kFetchRequestModeSameOrigin) {
+                        network::mojom::FetchRequestMode::kSameOrigin) {
     probe::documentThreadableLoaderFailedToStartLoadingForClient(
         GetExecutionContext(), client_);
     ThreadableLoaderClient* client = client_;
@@ -468,7 +468,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
   }
 
   if (request.GetFetchRequestMode() !=
-      WebURLRequest::kFetchRequestModeCORSWithForcedPreflight) {
+      network::mojom::FetchRequestMode::kCORSWithForcedPreflight) {
     if (options_.preflight_policy == kPreventPreflight) {
       PrepareCrossOriginRequest(cross_origin_request);
       LoadRequest(cross_origin_request, cross_origin_options);
@@ -905,7 +905,7 @@ void DocumentThreadableLoader::ReportResponseReceived(
 
 void DocumentThreadableLoader::HandleResponse(
     unsigned long identifier,
-    WebURLRequest::FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
@@ -920,7 +920,7 @@ void DocumentThreadableLoader::HandleResponse(
 
 void DocumentThreadableLoader::HandleResponseBlinkCORS(
     unsigned long identifier,
-    WebURLRequest::FetchRequestMode request_mode,
+    network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
@@ -953,7 +953,7 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
     // We dispatch a CORS failure for the case.
     // TODO(yhirano): This is probably not spec conformant. Fix it after
     // https://github.com/w3c/preload/issues/100 is addressed.
-    if (request_mode != WebURLRequest::kFetchRequestModeNoCORS &&
+    if (request_mode != network::mojom::FetchRequestMode::kNoCORS &&
         response.ResponseTypeViaServiceWorker() ==
             network::mojom::FetchResponseType::kOpaque) {
       StringBuilder builder;
@@ -1158,8 +1158,10 @@ void DocumentThreadableLoader::LoadRequestAsync(
   }
 
   FetchParameters new_params(request, resource_loader_options);
-  if (request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeNoCORS)
+  if (request.GetFetchRequestMode() ==
+      network::mojom::FetchRequestMode::kNoCORS) {
     new_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
+  }
   DCHECK(!GetResource());
 
   ResourceFetcher* fetcher = loading_context_->GetResourceFetcher();
@@ -1204,7 +1206,8 @@ void DocumentThreadableLoader::LoadRequestSync(
     const ResourceRequest& request,
     ResourceLoaderOptions resource_loader_options) {
   FetchParameters fetch_params(request, resource_loader_options);
-  if (request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeNoCORS)
+  if (request.GetFetchRequestMode() ==
+      network::mojom::FetchRequestMode::kNoCORS)
     fetch_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
   Resource* resource = RawResource::FetchSynchronously(
       fetch_params, loading_context_->GetResourceFetcher());
@@ -1312,9 +1315,9 @@ void DocumentThreadableLoader::LoadRequest(
 }
 
 bool DocumentThreadableLoader::IsAllowedRedirect(
-    WebURLRequest::FetchRequestMode fetch_request_mode,
+    network::mojom::FetchRequestMode fetch_request_mode,
     const KURL& url) const {
-  if (fetch_request_mode == WebURLRequest::kFetchRequestModeNoCORS)
+  if (fetch_request_mode == network::mojom::FetchRequestMode::kNoCORS)
     return true;
 
   return !cors_flag_ && GetSecurityOrigin()->CanRequest(url);

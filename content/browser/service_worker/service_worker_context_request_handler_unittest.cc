@@ -121,11 +121,11 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestHandler::InitializeHandler(
         request, helper_->context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), provider_host_->provider_id(),
-        false /* skip_service_worker */, FETCH_REQUEST_MODE_NO_CORS,
-        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-        std::string() /* integrity */, RESOURCE_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
-        nullptr);
+        false /* skip_service_worker */,
+        network::mojom::FetchRequestMode::kNoCORS, FETCH_CREDENTIALS_MODE_OMIT,
+        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
+        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
   }
 
  protected:
@@ -254,7 +254,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
   ServiceWorkerRequestHandler::InitializeHandler(
       request.get(), helper_->context_wrapper(), &blob_storage_context_,
       helper_->mock_render_process_id(), provider_host_->provider_id(),
-      true /* skip_service_worker */, FETCH_REQUEST_MODE_NO_CORS,
+      true /* skip_service_worker */, network::mojom::FetchRequestMode::kNoCORS,
       FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
       std::string() /* integrity */, RESOURCE_TYPE_SERVICE_WORKER,
       REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,

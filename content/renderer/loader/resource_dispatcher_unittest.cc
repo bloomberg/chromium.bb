@@ -211,7 +211,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request->referrer_policy = blink::kWebReferrerPolicyDefault;
     request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     request->priority = net::LOW;
-    request->fetch_request_mode = FETCH_REQUEST_MODE_NO_CORS;
+    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
     request->fetch_frame_type = REQUEST_CONTEXT_FRAME_TYPE_NONE;
     request->download_to_file = download_to_file;
 

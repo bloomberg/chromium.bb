@@ -23,7 +23,7 @@ const char kFetchScriptError[] =
     "An unknown error occurred when fetching the script.";
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
-    : mode(FETCH_REQUEST_MODE_NO_CORS),
+    : mode(network::mojom::FetchRequestMode::kNoCORS),
       is_main_resource_load(false),
       request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
       frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
@@ -39,7 +39,7 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const ServiceWorkerHeaderMap& headers,
     const Referrer& referrer,
     bool is_reload)
-    : mode(FETCH_REQUEST_MODE_NO_CORS),
+    : mode(network::mojom::FetchRequestMode::kNoCORS),
       is_main_resource_load(false),
       request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
       frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),

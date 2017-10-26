@@ -574,9 +574,9 @@ bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(const WebHTTPHeaderMap& map) {
       map.GetHTTPHeaderMap());
 }
 
-bool IsCORSEnabledRequestMode(WebURLRequest::FetchRequestMode mode) {
-  return mode == WebURLRequest::kFetchRequestModeCORS ||
-         mode == WebURLRequest::kFetchRequestModeCORSWithForcedPreflight;
+bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode mode) {
+  return mode == network::mojom::FetchRequestMode::kCORS ||
+         mode == network::mojom::FetchRequestMode::kCORSWithForcedPreflight;
 }
 
 // No-CORS requests are allowed for all these contexts, and plugin contexts with

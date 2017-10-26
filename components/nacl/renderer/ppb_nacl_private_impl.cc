@@ -334,12 +334,11 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
   // Follow the original behavior in the trusted plugin and
   // PepperURLLoaderHost.
   if (document.GetSecurityOrigin().CanRequest(gurl)) {
-    request.SetFetchRequestMode(
-        blink::WebURLRequest::kFetchRequestModeSameOrigin);
+    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
     request.SetFetchCredentialsMode(
         blink::WebURLRequest::kFetchCredentialsModeSameOrigin);
   } else {
-    request.SetFetchRequestMode(blink::WebURLRequest::kFetchRequestModeCORS);
+    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
     request.SetFetchCredentialsMode(
         blink::WebURLRequest::kFetchCredentialsModeOmit);
   }

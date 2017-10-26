@@ -373,13 +373,13 @@ void FetchManager::Loader::DidReceiveResponse(
       // TODO(hiroshige): currently redirects to data URLs in no-cors
       // mode is also rejected by Chromium side.
       switch (request_->Mode()) {
-        case WebURLRequest::kFetchRequestModeNoCORS:
+        case network::mojom::FetchRequestMode::kNoCORS:
           tainting = FetchRequestData::kOpaqueTainting;
           break;
-        case WebURLRequest::kFetchRequestModeSameOrigin:
-        case WebURLRequest::kFetchRequestModeCORS:
-        case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
-        case WebURLRequest::kFetchRequestModeNavigate:
+        case network::mojom::FetchRequestMode::kSameOrigin:
+        case network::mojom::FetchRequestMode::kCORS:
+        case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
+        case network::mojom::FetchRequestMode::kNavigate:
           PerformNetworkError("Fetch API cannot load " +
                               request_->Url().GetString() +
                               ". Redirects to data: URL are allowed only when "
@@ -392,17 +392,17 @@ void FetchManager::Loader::DidReceiveResponse(
     // Recompute the tainting if the request was redirected to a different
     // origin.
     switch (request_->Mode()) {
-      case WebURLRequest::kFetchRequestModeSameOrigin:
+      case network::mojom::FetchRequestMode::kSameOrigin:
         NOTREACHED();
         break;
-      case WebURLRequest::kFetchRequestModeNoCORS:
+      case network::mojom::FetchRequestMode::kNoCORS:
         tainting = FetchRequestData::kOpaqueTainting;
         break;
-      case WebURLRequest::kFetchRequestModeCORS:
-      case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+      case network::mojom::FetchRequestMode::kCORS:
+      case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
         tainting = FetchRequestData::kCORSTainting;
         break;
-      case WebURLRequest::kFetchRequestModeNavigate:
+      case network::mojom::FetchRequestMode::kNavigate:
         LOG(FATAL);
         break;
     }
@@ -599,14 +599,14 @@ void FetchManager::Loader::Start() {
            ->IsSameSchemeHostPortAndSuborigin(request_->Origin().get())) ||
       (request_->Url().ProtocolIsData() && request_->SameOriginDataURLFlag()) ||
       (request_->Url().ProtocolIsAbout()) ||
-      (request_->Mode() == WebURLRequest::kFetchRequestModeNavigate)) {
+      (request_->Mode() == network::mojom::FetchRequestMode::kNavigate)) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch();
     return;
   }
 
   // "- |request|'s mode is |same-origin|"
-  if (request_->Mode() == WebURLRequest::kFetchRequestModeSameOrigin) {
+  if (request_->Mode() == network::mojom::FetchRequestMode::kSameOrigin) {
     // "A network error."
     PerformNetworkError("Fetch API cannot load " + request_->Url().GetString() +
                         ". Request mode is \"same-origin\" but the URL\'s "
@@ -616,7 +616,7 @@ void FetchManager::Loader::Start() {
   }
 
   // "- |request|'s mode is |no CORS|"
-  if (request_->Mode() == WebURLRequest::kFetchRequestModeNoCORS) {
+  if (request_->Mode() == network::mojom::FetchRequestMode::kNoCORS) {
     // "Set |request|'s response tainting to |opaque|."
     request_->SetResponseTainting(FetchRequestData::kOpaqueTainting);
     // "The result of performing a scheme fetch using |request|."
@@ -695,16 +695,17 @@ void FetchManager::Loader::PerformHTTPFetch() {
   request.SetHTTPMethod(request_->Method());
 
   switch (request_->Mode()) {
-    case WebURLRequest::kFetchRequestModeSameOrigin:
-    case WebURLRequest::kFetchRequestModeNoCORS:
-    case WebURLRequest::kFetchRequestModeCORS:
-    case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+    case network::mojom::FetchRequestMode::kSameOrigin:
+    case network::mojom::FetchRequestMode::kNoCORS:
+    case network::mojom::FetchRequestMode::kCORS:
+    case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
       request.SetFetchRequestMode(request_->Mode());
       break;
-    case WebURLRequest::kFetchRequestModeNavigate:
-      // Using kFetchRequestModeSameOrigin here to reduce the security risk.
+    case network::mojom::FetchRequestMode::kNavigate:
+      // Using kSameOrigin here to reduce the security risk.
       // "navigate" request is only available in ServiceWorker.
-      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+      request.SetFetchRequestMode(
+          network::mojom::FetchRequestMode::kSameOrigin);
       break;
   }
 

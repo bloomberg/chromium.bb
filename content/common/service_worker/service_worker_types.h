@@ -108,7 +108,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   size_t EstimatedStructSize();
 
   // Be sure to update EstimatedSize() when adding members.
-  FetchRequestMode mode;
+  network::mojom::FetchRequestMode mode;
   bool is_main_resource_load;
   RequestContextType request_context_type;
   RequestContextFrameType frame_type;

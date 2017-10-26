@@ -136,7 +136,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If any of |init|'s members are present, run these substeps:"
   if (init.AreAnyMembersSet()) {
     // "If |request|'s |mode| is "navigate", throw a TypeError."
-    if (request->Mode() == WebURLRequest::kFetchRequestModeNavigate) {
+    if (request->Mode() == network::mojom::FetchRequestMode::kNavigate) {
       exception_state.ThrowTypeError(
           "Cannot construct a Request with a Request whose mode is 'navigate' "
           "and a non-empty RequestInit.");
@@ -222,16 +222,16 @@ Request* Request::CreateRequestWithRequestOrString(
     return nullptr;
   }
   if (init.Mode() == "same-origin") {
-    request->SetMode(WebURLRequest::kFetchRequestModeSameOrigin);
+    request->SetMode(network::mojom::FetchRequestMode::kSameOrigin);
   } else if (init.Mode() == "no-cors") {
-    request->SetMode(WebURLRequest::kFetchRequestModeNoCORS);
+    request->SetMode(network::mojom::FetchRequestMode::kNoCORS);
   } else if (init.Mode() == "cors") {
-    request->SetMode(WebURLRequest::kFetchRequestModeCORS);
+    request->SetMode(network::mojom::FetchRequestMode::kCORS);
   } else {
     // |inputRequest| is directly checked here instead of setting and
     // checking |fallbackMode| as specified in the spec.
     if (!input_request)
-      request->SetMode(WebURLRequest::kFetchRequestModeCORS);
+      request->SetMode(network::mojom::FetchRequestMode::kCORS);
   }
 
   // "Let |credentials| be |init|'s credentials member if it is present, and
@@ -329,7 +329,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Empty |r|'s request's header list."
   r->request_->HeaderList()->ClearList();
   // "If |r|'s request's mode is "no-cors", run these substeps:
-  if (r->GetRequest()->Mode() == WebURLRequest::kFetchRequestModeNoCORS) {
+  if (r->GetRequest()->Mode() == network::mojom::FetchRequestMode::kNoCORS) {
     // "If |r|'s request's method is not a CORS-safelisted method, throw a
     // TypeError."
     if (!FetchUtils::IsCORSSafelistedMethod(r->GetRequest()->Method())) {
@@ -624,14 +624,14 @@ String Request::mode() const {
   // "The mode attribute's getter must return the value corresponding to the
   // first matching statement, switching on request's mode:"
   switch (request_->Mode()) {
-    case WebURLRequest::kFetchRequestModeSameOrigin:
+    case network::mojom::FetchRequestMode::kSameOrigin:
       return "same-origin";
-    case WebURLRequest::kFetchRequestModeNoCORS:
+    case network::mojom::FetchRequestMode::kNoCORS:
       return "no-cors";
-    case WebURLRequest::kFetchRequestModeCORS:
-    case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+    case network::mojom::FetchRequestMode::kCORS:
+    case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
       return "cors";
-    case WebURLRequest::kFetchRequestModeNavigate:
+    case network::mojom::FetchRequestMode::kNavigate:
       return "navigate";
   }
   NOTREACHED();

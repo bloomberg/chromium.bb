@@ -727,36 +727,40 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
       CreateSubresourceLoaderFactory(kScope.GetOrigin());
 
   struct TestCase {
-    FetchRequestMode fetch_request_mode;
+    network::mojom::FetchRequestMode fetch_request_mode;
     base::Optional<url::Origin> request_initiator;
     bool expected_was_fallback_required_by_service_worker;
   };
   const TestCase kTests[] = {
-      {FETCH_REQUEST_MODE_SAME_ORIGIN, base::Optional<url::Origin>(), false},
-      {FETCH_REQUEST_MODE_NO_CORS, base::Optional<url::Origin>(), false},
-      {FETCH_REQUEST_MODE_CORS, base::Optional<url::Origin>(), true},
-      {FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
+      {network::mojom::FetchRequestMode::kSameOrigin,
+       base::Optional<url::Origin>(), false},
+      {network::mojom::FetchRequestMode::kNoCORS, base::Optional<url::Origin>(),
+       false},
+      {network::mojom::FetchRequestMode::kCORS, base::Optional<url::Origin>(),
+       true},
+      {network::mojom::FetchRequestMode::kCORSWithForcedPreflight,
        base::Optional<url::Origin>(), true},
-      {FETCH_REQUEST_MODE_NAVIGATE, base::Optional<url::Origin>(), false},
-      {FETCH_REQUEST_MODE_SAME_ORIGIN,
+      {network::mojom::FetchRequestMode::kNavigate,
+       base::Optional<url::Origin>(), false},
+      {network::mojom::FetchRequestMode::kSameOrigin,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {FETCH_REQUEST_MODE_NO_CORS,
+      {network::mojom::FetchRequestMode::kNoCORS,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {FETCH_REQUEST_MODE_CORS,
+      {network::mojom::FetchRequestMode::kCORS,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
+      {network::mojom::FetchRequestMode::kCORSWithForcedPreflight,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {FETCH_REQUEST_MODE_NAVIGATE,
+      {network::mojom::FetchRequestMode::kNavigate,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {FETCH_REQUEST_MODE_SAME_ORIGIN,
+      {network::mojom::FetchRequestMode::kSameOrigin,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {FETCH_REQUEST_MODE_NO_CORS,
+      {network::mojom::FetchRequestMode::kNoCORS,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {FETCH_REQUEST_MODE_CORS,
+      {network::mojom::FetchRequestMode::kCORS,
        url::Origin::Create(GURL("https://other.example.com/")), true},
-      {FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
+      {network::mojom::FetchRequestMode::kCORSWithForcedPreflight,
        url::Origin::Create(GURL("https://other.example.com/")), true},
-      {FETCH_REQUEST_MODE_NAVIGATE,
+      {network::mojom::FetchRequestMode::kNavigate,
        url::Origin::Create(GURL("https://other.example.com/")), false}};
 
   for (const auto& test : kTests) {
