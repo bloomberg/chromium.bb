@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
@@ -56,19 +57,14 @@ bool MemoryMappedFile::MapFileRegionToMemory(
                                  &data_offset);
 
     // Ensure that the casts in the mmap call below are sane.
-    if (aligned_start < 0 || aligned_size < 0 ||
-        aligned_start > std::numeric_limits<off_t>::max() ||
-        static_cast<uint64_t>(aligned_size) >
-            std::numeric_limits<size_t>::max() ||
-        static_cast<uint64_t>(region.size) >
-            std::numeric_limits<size_t>::max()) {
+    if (aligned_start < 0 || aligned_size < 0) {
       DLOG(ERROR) << "Region bounds are not valid for mmap";
       return false;
     }
 
-    map_start = static_cast<off_t>(aligned_start);
-    map_size = static_cast<size_t>(aligned_size);
-    length_ = static_cast<size_t>(region.size);
+    map_start = base::checked_cast<off_t>(aligned_start);
+    map_size = base::checked_cast<size_t>(aligned_size);
+    length_ = base::checked_cast<size_t>(region.size);
   }
 
   int flags = 0;
