@@ -37,7 +37,9 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   service_manager::SandboxSeccompBPF::Options options;
   options.has_wasm_trap_handler =
       base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler);
-  service_manager::SandboxLinux::InitializeSandbox(
+  service_manager::Sandbox::Initialize(
+      service_manager::SandboxTypeFromCommandLine(
+          *base::CommandLine::ForCurrentProcess()),
       service_manager::SandboxSeccompBPF::PreSandboxHook(), options);
 
   // about:sandbox uses a value returned from SandboxLinux::GetStatus() before

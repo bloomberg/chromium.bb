@@ -122,6 +122,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_LINUX)
   service_manager::SandboxLinux::InitializeSandbox(
+      service_manager::SandboxTypeFromCommandLine(command_line),
       service_manager::SandboxSeccompBPF::PreSandboxHook(),
       service_manager::SandboxSeccompBPF::Options());
 #endif
