@@ -2855,6 +2855,30 @@ TEST(LayerAnimatorTest, SchedulePauseForProperties) {
   EXPECT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::OPACITY));
 }
 
+// Verifies that IsAnimatingOnePropertyOf() returns true iff at least one of the
+// input properties is animated.
+TEST(LayerAnimatorTest, IsAnimatingOnePropertyOf) {
+  TestLayerAnimationDelegate delegate;
+  scoped_refptr<LayerAnimator> animator(CreateImplicitTestAnimator(&delegate));
+  animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  animator->SetBrightness(0.5f);
+  animator->SetGrayscale(0.5f);
+  EXPECT_TRUE(animator->IsAnimatingOnePropertyOf(
+      LayerAnimationElement::LayerAnimationElement::BRIGHTNESS));
+  EXPECT_TRUE(animator->IsAnimatingOnePropertyOf(
+      LayerAnimationElement::LayerAnimationElement::GRAYSCALE));
+  EXPECT_TRUE(animator->IsAnimatingOnePropertyOf(
+      LayerAnimationElement::LayerAnimationElement::BRIGHTNESS |
+      LayerAnimationElement::LayerAnimationElement::GRAYSCALE));
+  EXPECT_TRUE(animator->IsAnimatingOnePropertyOf(
+      LayerAnimationElement::LayerAnimationElement::BRIGHTNESS |
+      LayerAnimationElement::LayerAnimationElement::TEMPERATURE));
+  EXPECT_FALSE(animator->IsAnimatingOnePropertyOf(
+      LayerAnimationElement::LayerAnimationElement::TEMPERATURE));
+  EXPECT_FALSE(animator->IsAnimatingOnePropertyOf(
+      LayerAnimationElement::LayerAnimationElement::TEMPERATURE |
+      LayerAnimationElement::LayerAnimationElement::BOUNDS));
+}
 
 class AnimatorOwner {
  public:

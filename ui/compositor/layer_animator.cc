@@ -331,11 +331,10 @@ void LayerAnimator::SchedulePauseForProperties(
                             properties_to_pause, duration)));
 }
 
-bool LayerAnimator::IsAnimatingProperty(
-    LayerAnimationElement::AnimatableProperty property) const {
-  for (AnimationQueue::const_iterator queue_iter = animation_queue_.begin();
-       queue_iter != animation_queue_.end(); ++queue_iter) {
-    if ((*queue_iter)->properties() & property)
+bool LayerAnimator::IsAnimatingOnePropertyOf(
+    LayerAnimationElement::AnimatableProperties properties) const {
+  for (auto& layer_animation_sequence : animation_queue_) {
+    if (layer_animation_sequence->properties() & properties)
       return true;
   }
   return false;
