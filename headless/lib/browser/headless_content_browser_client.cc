@@ -246,8 +246,9 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 
   // If we're spawning a renderer, then override the language switch.
-  if (command_line->GetSwitchValueASCII(::switches::kProcessType) ==
-      ::switches::kRendererProcess) {
+  std::string process_type =
+      command_line->GetSwitchValueASCII(::switches::kProcessType);
+  if (process_type == ::switches::kRendererProcess) {
     content::RenderProcessHost* render_process_host =
         content::RenderProcessHost::FromID(child_process_id);
     if (render_process_host) {
@@ -262,6 +263,21 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
                                         languages[0].as_string());
       }
     }
+  }
+
+  if (browser_->options()->append_command_line_flags_callback) {
+    HeadlessBrowserContextImpl* headless_browser_context_impl = nullptr;
+    if (process_type == ::switches::kRendererProcess) {
+      content::RenderProcessHost* render_process_host =
+          content::RenderProcessHost::FromID(child_process_id);
+      if (render_process_host) {
+        headless_browser_context_impl = HeadlessBrowserContextImpl::From(
+            render_process_host->GetBrowserContext());
+      }
+    }
+    browser_->options()->append_command_line_flags_callback.Run(
+        command_line, headless_browser_context_impl, process_type,
+        child_process_id);
   }
 }
 
