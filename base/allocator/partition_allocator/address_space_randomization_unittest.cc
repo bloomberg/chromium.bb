@@ -20,7 +20,9 @@
 
 namespace base {
 
-TEST(AddressSpaceRandomizationTest, GetRandomPageBase) {
+namespace {
+
+uintptr_t GetMask() {
   uintptr_t mask = internal::kASLRMask;
 #if defined(ARCH_CPU_64_BITS)
 #if defined(OS_WIN)
@@ -34,24 +36,47 @@ TEST(AddressSpaceRandomizationTest, GetRandomPageBase) {
   if (!IsWow64Process(GetCurrentProcess(), &is_wow64))
     is_wow64 = FALSE;
   if (!is_wow64) {
-    // ASLR is turned off on 32-bit Windows; check that result is null.
-    EXPECT_EQ(nullptr, base::GetRandomPageBase());
-    return;
+    mask = 0;
   }
 #endif  // defined(OS_WIN)
 #endif  // defined(ARCH_CPU_32_BITS)
-  // Sample the first 100 addresses.
+  return mask;
+}
+
+const size_t kSamples = 100;
+
+}  // namespace
+
+TEST(AddressSpaceRandomizationTest, DisabledASLR) {
+  uintptr_t mask = GetMask();
+  if (!mask) {
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
+    // ASLR should be turned off on 32-bit Windows.
+    EXPECT_EQ(nullptr, base::GetRandomPageBase());
+#else
+    // Otherwise, nullptr is very unexpected.
+    EXPECT_NE(nullptr, base::GetRandomPageBase());
+#endif
+  }
+}
+
+TEST(AddressSpaceRandomizationTest, Unpredictable) {
+  uintptr_t mask = GetMask();
+  // Configurations without ASLR are tested above, in DisabledASLR.
+  if (!mask)
+    return;
+
   std::set<uintptr_t> addresses;
   uintptr_t address_logical_sum = 0;
   uintptr_t address_logical_product = static_cast<uintptr_t>(-1);
-  for (int i = 0; i < 100; i++) {
+  for (size_t i = 0; i < kSamples; ++i) {
     uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
     // Test that address is in range.
     EXPECT_LE(internal::kASLROffset, address);
     EXPECT_GE(internal::kASLROffset + mask, address);
     // Test that address is page aligned.
     EXPECT_EQ(0ULL, (address & kPageAllocationGranularityOffsetMask));
-    // Test that address is unique (no collisions in 100 tries)
+    // Test that address is unique (no collisions in kSamples tries)
     CHECK_EQ(0ULL, addresses.count(address));
     addresses.insert(address);
     // Sum and product to test randomness at each bit position, below.
@@ -60,12 +85,47 @@ TEST(AddressSpaceRandomizationTest, GetRandomPageBase) {
     address_logical_product &= address;
   }
   // All randomized bits in address_logical_sum should be set, since the
-  // likelihood of never setting any of the bits is 1 / (2 ^ 100) with a good
-  // RNG. Likewise, all bits in address_logical_product should be cleared.
+  // likelihood of never setting any of the bits is 1 / (2 ^ kSamples) with a
+  // good RNG. Likewise, all bits in address_logical_product should be cleared.
   // Note that we don't test unmasked high bits. These may be set if kASLROffset
   // is larger than kASLRMask, or if adding kASLROffset generated a carry.
   EXPECT_EQ(mask, address_logical_sum & mask);
   EXPECT_EQ(0ULL, address_logical_product & mask);
+}
+
+TEST(AddressSpaceRandomizationTest, Predictable) {
+  uintptr_t mask = GetMask();
+  // Configurations without ASLR are tested above, in DisabledASLR.
+  if (!mask)
+    return;
+
+  const uintptr_t kInitialSeed = 0xfeed5eedULL;
+  base::SetRandomPageBaseSeed(kInitialSeed);
+
+  // Make sure the addresses look random but are predictable.
+  std::set<uintptr_t> addresses;
+  std::vector<uintptr_t> sequence;
+  for (size_t i = 0; i < kSamples; ++i) {
+    uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
+    sequence.push_back(address);
+    // Test that address is in range.
+    EXPECT_LE(internal::kASLROffset, address);
+    EXPECT_GE(internal::kASLROffset + mask, address);
+    // Test that address is page aligned.
+    EXPECT_EQ(0ULL, (address & kPageAllocationGranularityOffsetMask));
+    // Test that address is unique (no collisions in kSamples tries)
+    CHECK_EQ(0ULL, addresses.count(address));
+    addresses.insert(address);
+    // Test that (address - offset) == (predicted & mask).
+    address -= internal::kASLROffset;
+  }
+
+  // Make sure sequence is repeatable.
+  base::SetRandomPageBaseSeed(kInitialSeed);
+  for (size_t i = 0; i < kSamples; ++i) {
+    uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
+    EXPECT_EQ(address, sequence[i]);
+  }
 }
 
 }  // namespace base
