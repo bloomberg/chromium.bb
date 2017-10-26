@@ -533,7 +533,6 @@ post_process_cmdline() {
       soft_enable ext_comp_refs
       soft_enable ext_delta_q
       soft_enable parallel_deblocking
-      soft_enable simple_bwd_adapt
       soft_enable loopfilter_level
     fi
 
