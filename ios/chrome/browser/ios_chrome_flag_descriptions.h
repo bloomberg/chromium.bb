@@ -32,6 +32,10 @@ extern const char kDragAndDropDescription[];
 extern const char kExternalSearchName[];
 extern const char kExternalSearchDescription[];
 
+// Title and description for the flag to enable History batch filtering.
+extern const char kHistoryBatchUpdatesFilterName[];
+extern const char kHistoryBatchUpdatesFilterDescription[];
+
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
 extern const char kInProductHelpDemoModeName[];

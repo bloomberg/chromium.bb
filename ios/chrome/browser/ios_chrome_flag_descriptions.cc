@@ -35,6 +35,11 @@ const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 const char kExternalSearchName[] = "External Search";
 const char kExternalSearchDescription[] = "Enable support for External Search.";
 
+const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
+const char kHistoryBatchUpdatesFilterDescription[] =
+    "When enabled History inserts and deletes history items in the same "
+    "BatchUpdates block.";
+
 const char kInProductHelpDemoModeName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeDescription[] =
     "When enabled, in-product help promotions occur exactly once per cold "
