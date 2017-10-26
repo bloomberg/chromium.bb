@@ -3011,6 +3011,23 @@
             ]
         }
     ],
+    "SafeBrowsingAtRiskAccountFlagging": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncPasswordReuseEvent"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingScoutTransitionStudy": [
         {
             "platforms": [
@@ -3407,24 +3424,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SuperfishInterstitial"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncPasswordReuseEvent": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncPasswordReuseEvent"
                     ]
                 }
             ]
