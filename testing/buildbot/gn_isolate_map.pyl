@@ -1069,6 +1069,10 @@
     "args": [
       "performance_browser_tests",
       "--test-launcher-print-test-stdio=always",
+      # TODO(crbug.com/759866): Figure out why CastV2PerformanceTest/0 sometimes
+      # takes 15-30 seconds to start up and, once fixed, remove this workaround
+      # (extends the watchdog timeout to 2 minutes, normally 30 seconds).
+      "--test-launcher-timeout=120000",
       "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
       "--test-launcher-jobs=1",
       "--enable-gpu"
