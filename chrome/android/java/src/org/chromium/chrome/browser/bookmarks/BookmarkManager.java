@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.selection.SelectableBottomSheetContent.SelectableBottomSheetContentManager;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
@@ -39,7 +40,8 @@ import java.util.Stack;
  * views and shared logics between tablet and phone. For tablet/phone specific logics, see
  * {@link BookmarkActivity} (phone) and {@link BookmarkPage} (tablet).
  */
-public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
+public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
+                                        SelectableBottomSheetContentManager<BookmarkId> {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
     /**
@@ -190,7 +192,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     /**
      * Destroys and cleans up itself. This must be called after done using this class.
      */
-    public void destroy() {
+    @Override
+    public void onDestroyed() {
         mIsDestroyed = true;
 
         mSelectableListLayout.onDestroyed();
@@ -239,36 +242,24 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
         return false;
     }
 
+    @Override
     public View getView() {
         return mMainView;
     }
 
-    /**
-     * @return The {@link RecyclerView} that contains the list of bookmarks.
-     */
+    @Override
     public RecyclerView getRecyclerView() {
         return mRecyclerView;
     }
 
-    /**
-     * @return The {@link TextView} that's displayed when there are no bookmarks to display.
-     */
+    @Override
     public TextView getEmptyView() {
         return mEmptyView;
     }
 
-    /**
-     * See {@link SelectableListLayout#detachToolbarView()}.
-     */
+    @Override
     public SelectableListToolbar<BookmarkId> detachToolbarView() {
         return mSelectableListLayout.detachToolbarView();
-    }
-
-    /**
-     * @return The vertical scroll offset of the content view.
-     */
-    public int getVerticalScrollOffset() {
-        return mRecyclerView.computeVerticalScrollOffset();
     }
 
     /**
@@ -479,13 +470,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     @VisibleForTesting
     public BookmarkActionBar getToolbarForTests() {
         return mToolbar;
-    }
-
-    /**
-     * Called to scroll to the top of the bookmarks list.
-     */
-    public void scrollToTop() {
-        mRecyclerView.smoothScrollToPosition(0);
     }
 
     /**

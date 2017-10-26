@@ -60,7 +60,7 @@ public class BookmarkPage extends BasicNativePage {
 
     @Override
     public void destroy() {
-        mManager.destroy();
+        mManager.onDestroyed();
         mManager = null;
         super.destroy();
     }
