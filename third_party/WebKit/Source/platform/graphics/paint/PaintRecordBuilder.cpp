@@ -24,18 +24,14 @@ PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
   if (paint_controller) {
     paint_controller_ = paint_controller;
   } else {
-    paint_controller_ptr_ = PaintController::Create();
-    paint_controller_ = paint_controller_ptr_.get();
+    own_paint_controller_ = PaintController::Create();
+    paint_controller_ = own_paint_controller_.get();
   }
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     paint_controller_->UpdateCurrentPaintChunkProperties(
         nullptr, PropertyTreeState::Root());
   }
-
-#if DCHECK_IS_ON()
-  paint_controller_->SetUsage(PaintController::kForPaintRecordBuilder);
-#endif
 
   const HighContrastSettings* high_contrast_settings =
       containing_context ? &containing_context->high_contrast_settings()
@@ -49,12 +45,9 @@ PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());
     context_->SetPrinting(containing_context->Printing());
   }
-}
 
-PaintRecordBuilder::~PaintRecordBuilder() {
-#if DCHECK_IS_ON()
-  paint_controller_->SetUsage(PaintController::kForNormalUsage);
-#endif
+  if (!paint_controller)
+    cache_skipper_.emplace(*context_);
 }
 
 sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(

@@ -9,6 +9,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
@@ -45,7 +46,6 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
                      SkMetaData* = nullptr,
                      GraphicsContext* containing_context = nullptr,
                      PaintController* = nullptr);
-  ~PaintRecordBuilder();
 
   GraphicsContext& Context() { return *context_; }
 
@@ -67,9 +67,10 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
 
  private:
   PaintController* paint_controller_;
-  std::unique_ptr<PaintController> paint_controller_ptr_;
+  std::unique_ptr<PaintController> own_paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
   FloatRect bounds_;
+  Optional<DisplayItemCacheSkipper> cache_skipper_;
 };
 
 }  // namespace blink

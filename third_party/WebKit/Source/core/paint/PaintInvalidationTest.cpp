@@ -246,8 +246,9 @@ TEST_P(PaintInvalidationTest, SVGHiddenContainer) {
   EXPECT_EQ(PaintInvalidationReason::kFull,
             real_rect->GetPaintInvalidationReason());
 
-  // Should not invalidate DisplayItemClient of mask_rect.
-  EXPECT_EQ(PaintInvalidationReason::kNone,
+  // mask_rect has PaintInvalidationReason::kFull because it is not cached by
+  // any PaintController.
+  EXPECT_EQ(PaintInvalidationReason::kFull,
             mask_rect->GetPaintInvalidationReason());
 
   GetDocument().View()->SetTracksPaintInvalidations(false);
