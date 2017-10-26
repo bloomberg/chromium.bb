@@ -46,12 +46,10 @@ def check_property_parameters(property_to_check):
                 'should not implement parseShorthand'
 
 
-class CSSProperties(object):
-    def __init__(self, file_paths):
-        css_properties_file = json5_generator.Json5File.load_from_files(
-            [file_paths[0]])
 
-        self._default_parameters = css_properties_file.parameters
+class CSSProperties(json5_generator.Writer):
+    def __init__(self, file_paths):
+        json5_generator.Writer.__init__(self, [file_paths[0]])
 
         # StylePropertyMetadata assumes that there are at most 1024 properties
         # + aliases.
@@ -61,7 +59,8 @@ class CSSProperties(object):
         # 2: CSSPropertyVariable
         self._first_enum_value = 3
 
-        properties = css_properties_file.name_dictionaries
+        properties = self.json5_file.name_dictionaries
+
         # Sort properties by priority, then alphabetically.
         for property_ in properties:
             check_property_parameters(property_)
@@ -124,39 +123,10 @@ class CSSProperties(object):
             self._aliases[i] = updated_alias
         self._properties_including_aliases += self._aliases
 
-        self._last_unresolved_property_id = max(property_["enum_value"] for property_ in self._properties_including_aliases)
+        self.last_unresolved_property_id = max(property_["enum_value"] for property_ in self._properties_including_aliases)
 
-    @property
-    def default_parameters(self):
-        return self._default_parameters
-
-    @property
     def properties(self):
         return self._properties
-
-    @property
-    def properties_including_aliases(self):
-        return self._properties_including_aliases
-
-    @property
-    def aliases(self):
-        return self._aliases
-
-    @property
-    def first_property_id(self):
-        return self._first_enum_value
-
-    @property
-    def last_property_id(self):
-        return self._first_enum_value + len(self._properties) - 1
-
-    @property
-    def last_unresolved_property_id(self):
-        return self._last_unresolved_property_id
-
-    @property
-    def alias_offset(self):
-        return self._alias_offset
 
     def expand_parameters(self, property_):
         def set_if_none(property_, key, value):

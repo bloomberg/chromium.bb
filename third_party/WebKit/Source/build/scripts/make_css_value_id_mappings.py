@@ -103,7 +103,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
             'CSSValueIDMappingsGenerated.h': self.generate_css_value_mappings,
         }
         self.css_values_dictionary_file = json5_file_paths[2]
-        css_properties = [value for value in self.properties.values() if not value['longhands']]
+        css_properties = [value for value in self._properties.values() if not value['longhands']]
         # We sort the enum values based on each value's position in
         # the keywords as listed in CSSProperties.json5. This will ensure that if there is a continuous
         # segment in CSSProperties.json5 matching the segment in this enum then
@@ -111,7 +111,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
         # CSSProperties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
         css_properties = keyword_utils.sort_keyword_properties_by_canonical_order(
-            css_properties, json5_file_paths[2], self.default_parameters)
+            css_properties, json5_file_paths[2], self.json5_file.parameters)
 
 
     @template_expander.use_jinja('templates/CSSValueIDMappingsGenerated.h.tmpl')
@@ -120,7 +120,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
         include_paths = set()
         css_values_dictionary = json5_generator.Json5File.load_from_files(
             [self.css_values_dictionary_file],
-            default_parameters=self.default_parameters
+            default_parameters=self.json5_file.parameters
         ).name_dictionaries
         name_to_position_dictionary = dict(zip([x['name'] for x in css_values_dictionary], range(len(css_values_dictionary))))
 

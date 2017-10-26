@@ -124,16 +124,14 @@ CSSPropertyID cssPropertyID(const String& string)
 """
 
 
-class CSSPropertyNamesWriter(json5_generator.Writer):
+class CSSPropertyNamesWriter(css_properties.CSSProperties):
     class_name = "CSSPropertyNames"
 
     def __init__(self, json5_file_path):
         super(CSSPropertyNamesWriter, self).__init__(json5_file_path)
-        self._outputs = {
-            (self.class_name + ".h"): self.generate_header,
-            (self.class_name + ".cpp"): self.generate_implementation,
-        }
-        self._css_properties = css_properties.CSSProperties(json5_file_path)
+        self._outputs = {(self.class_name + ".h"): self.generate_header,
+                         (self.class_name + ".cpp"): self.generate_implementation,
+                        }
 
     def _enum_declaration(self, property_):
         return "    %(property_id)s = %(enum_value)s," % property_
@@ -144,38 +142,30 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
     @template_expander.use_jinja('templates/CSSPropertyNames.h.tmpl')
     def generate_header(self):
         return {
-            'alias_offset': self._css_properties.alias_offset,
+            'alias_offset': self._alias_offset,
             'class_name': self.class_name,
-            'property_enums': "\n".join(map(
-                self._enum_declaration,
-                self._css_properties.properties_including_aliases)),
-            'property_aliases': "\n".join(
-                map(self._array_item, self._css_properties.aliases)),
-            'first_property_id': self._css_properties.first_property_id,
-            'properties_count': len(self._css_properties.properties),
-            'last_property_id': self._css_properties.last_property_id,
-            'last_unresolved_property_id': self._css_properties.last_unresolved_property_id,
-            'max_name_length': max(map(len, self._css_properties.properties)),
+            'property_enums': "\n".join(map(self._enum_declaration, self._properties_including_aliases)),
+            'property_aliases': "\n".join(map(self._array_item, self._aliases)),
+            'first_property_id': self._first_enum_value,
+            'properties_count': len(self._properties),
+            'last_property_id': self._first_enum_value + len(self._properties) - 1,
+            'last_unresolved_property_id': self.last_unresolved_property_id,
+            'max_name_length': max(map(len, self._properties)),
         }
 
     def generate_implementation(self):
-        enum_value_to_name = {}
-        for property_ in self._css_properties.properties_including_aliases:
-            enum_value_to_name[property_['enum_value']] = property_['name']
+        enum_value_to_name = {property['enum_value']: property['name'] for property in self._properties_including_aliases}
         property_offsets = []
         property_names = []
         current_offset = 0
-        for enum_value in range(self._css_properties.first_property_id,
-                                max(enum_value_to_name) + 1):
+        for enum_value in range(self._first_enum_value, max(enum_value_to_name) + 1):
             property_offsets.append(current_offset)
             if enum_value in enum_value_to_name:
                 name = enum_value_to_name[enum_value]
                 property_names.append(name)
                 current_offset += len(name) + 1
 
-        css_name_and_enum_pairs = [
-            (property_['name'], property_['property_id'])
-            for property_ in self._css_properties.properties_including_aliases]
+        css_name_and_enum_pairs = [(property['name'], property['property_id']) for property in self._properties_including_aliases]
 
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),

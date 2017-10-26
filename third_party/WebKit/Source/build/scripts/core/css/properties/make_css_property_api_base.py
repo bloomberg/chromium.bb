@@ -19,23 +19,20 @@ class ApiClassData(
     pass
 
 
-class CSSPropertyAPIWriter(json5_generator.Writer):
+class CSSPropertyAPIWriter(css_properties.CSSProperties):
     def __init__(self, json5_file_paths):
-        super(CSSPropertyAPIWriter, self).__init__([])
-        self._input_files = json5_file_paths
+        super(CSSPropertyAPIWriter, self).__init__(json5_file_paths)
         self._outputs = {
             'CSSPropertyAPI.h': self.generate_property_api_header,
             'CSSPropertyAPI.cpp': self.generate_property_api_implementation,
         }
-
-        self._css_properties = css_properties.CSSProperties(json5_file_paths)
 
         # A list of (enum_value, property_id, api_class_name) tuples.
         self._api_classes_by_property_id = []
         # Just a set of class names.
         self._shorthand_api_classes = set()
         self._longhand_api_classes = set()
-        for property_ in self._css_properties.properties.values():
+        for property_ in self.properties().values():
             api_class = self.get_classname(property_)
             if api_class is None:
                 # Use the baseclass if no class was specified.
@@ -66,9 +63,6 @@ class CSSPropertyAPIWriter(json5_generator.Writer):
 
         # Sort by enum value.
         self._api_classes_by_property_id.sort(key=lambda t: t.enum_value)
-
-    def properties(self):
-        return self._css_properties.properties
 
     def get_classname(self, property_):
         """Gets the classname for a given property.
@@ -112,7 +106,8 @@ class CSSPropertyAPIWriter(json5_generator.Writer):
             'longhand_api_classnames': self._longhand_api_classes,
             'shorthand_api_classnames': self._shorthand_api_classes,
             'api_classes_by_property_id': self._api_classes_by_property_id,
-            'last_property_id': self._css_properties.last_property_id
+            'last_property_id': (self._first_enum_value +
+                                 len(self._properties) - 1)
         }
 
 
