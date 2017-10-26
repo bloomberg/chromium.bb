@@ -105,7 +105,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   // For V0
   ShadowRoot* YoungerShadowRoot() const;
   ShadowRoot* OlderShadowRoot() const;
-  ShadowRoot* olderShadowRootForBindings() const;
   void SetYoungerShadowRoot(ShadowRoot&);
   void SetOlderShadowRoot(ShadowRoot&);
   bool IsYoungest() const { return !YoungerShadowRoot(); }

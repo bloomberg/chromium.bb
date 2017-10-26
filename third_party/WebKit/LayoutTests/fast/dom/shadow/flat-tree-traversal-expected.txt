@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 87: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Tests for Composed Shadow DOM Tree Traversal APIs. Can only run within DRT
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -151,30 +150,6 @@ Traverse in backward.
 #b
 #a
 
-Test for Multiple ShadowRoots.
-Flat Tree:
-#a
-	#d
-	#b
-	#f
-	#c
-	#e
-
-Traverse in forward.
-#a
-#d
-#b
-#f
-#c
-#e
-Traverse in backward.
-#e
-#c
-#f
-#b
-#d
-#a
-
 Test for inactive insertion points.
 Flat Tree:
 #a
@@ -189,30 +164,6 @@ Traverse in backward.
 #c
 #b
 #a
-
-Test for an orphaned shadow subtree.
-Flat Tree:
-#a
-	#d
-
-Traverse in forward.
-#a
-#d
-Traverse in backward.
-#d
-#a
-
-Test for traversal, starting with a node in an orphaned shadow subtree.
-Flat Tree:
-#b
-	#c
-
-Traverse in forward.
-#b
-#c
-Traverse in backward.
-#c
-#b
 
 Test for a content element which does not select any nodes nor have fallback elements.
 Flat Tree:
@@ -349,21 +300,6 @@ Traverse in backward.
 #e
 #d
 #child-1
-#b
-#a
-
-Test for a shadow insertion point where nothing is distributed.
-Flat Tree:
-#a
-	#b
-	#c
-
-Traverse in forward.
-#a
-#b
-#c
-Traverse in backward.
-#c
 #b
 #a
 

@@ -52,27 +52,6 @@ function testSimpleShadow()
     debug('Finished testSimpleShadow().\n');
 }
 
-function testMultipleShadows()
-{
-    debug('Starting testMultipleShadows()...');
-    var container = document.createElement('div');
-    document.body.appendChild(container);
-    container.innerHTML = '<span id="host">DOCUMENT</span>';
-    document.getElementById('host').createShadowRoot().innerHTML = '<span>YOUNGER</span>';
-    document.getElementById('host').createShadowRoot().innerHTML = '<span>OLDER</span>';
-
-    var selection = getSelection();
-    selection.empty();
-    shouldBeFalse('testRunner.findString("DOCUMENT", [])');
-    selection.empty();
-    shouldBeFalse('testRunner.findString("YOUNGER", [])');
-    selection.empty();
-    shouldBeTrue('testRunner.findString("OLDER", [])');
-
-    document.body.removeChild(container);
-    debug('Finished testMultipleShadows().\n');
-}
-
 function testNestedShadows()
 {
     debug('Starting testNestedShadows()...');
@@ -125,7 +104,6 @@ function testDistribution()
 
 if (window.testRunner) {
     testSimpleShadow();
-    testMultipleShadows();
     testNestedShadows();
     testDistribution();
 } else {

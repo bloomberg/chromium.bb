@@ -4428,7 +4428,6 @@ interface ShadowRoot : DocumentFragment
     getter activeElement
     getter host
     getter innerHTML
-    getter olderShadowRoot
     getter styleSheets
     method cloneNode
     method constructor

@@ -44,49 +44,6 @@ testCase(function()
 
 testCase(function()
 {
-    debug('Inserted into / removed from an element having multiple shadow roots');
-
-    var div = createDOM('div', {}, createShadowRoot(), createShadowRoot());
-
-    shadowRoot.appendChild(div);
-    shouldBe('internals.countElementShadow(shadowRoot)', '1');
-
-    shadowRoot.removeChild(div);
-    shouldBe('internals.countElementShadow(shadowRoot)', '0');
-});
-
-testCase(function()
-{
-    debug('ShadowRoot is added');
-    var div = createDOM('div', {});
-    shadowRoot.appendChild(div);
-    shouldBe('internals.countElementShadow(shadowRoot)', '0');
-
-    div.createShadowRoot();
-    shouldBe('internals.countElementShadow(shadowRoot)', '1');
-
-    div.createShadowRoot();
-    shouldBe('internals.countElementShadow(shadowRoot)', '1');
-});
-
-testCase(function()
-{
-    debug('Should be counted by each shadow root (multiple shadow root case)');
-    youngerShadowRoot = host.createShadowRoot();
-
-    var div = createDOM('div', {}, createShadowRoot());
-
-    shadowRoot.appendChild(div);
-    shouldBe('internals.countElementShadow(shadowRoot)', '1');
-    shouldBe('internals.countElementShadow(youngerShadowRoot)', '0');
-
-    youngerShadowRoot.appendChild(div);
-    shouldBe('internals.countElementShadow(shadowRoot)', '0');
-    shouldBe('internals.countElementShadow(youngerShadowRoot)', '1');
-});
-
-testCase(function()
-{
     debug('Should be counted by each shadow root (nested shadow root case)');
     var div = createDOM('div', {}, createShadowRoot());
     nestedShadowRoot = internals.shadowRoot(div);

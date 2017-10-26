@@ -13,10 +13,7 @@
     <p>To test manually, hover over blue boxes and see if the tooltip says "PASS"</p>
     <div id="fromdoc" title="PASS-fromdoc"></div>
     <div id="distributed" title="NG-distributed"><div class="target">Distributed</div></div>
-    <div id="multiple" title="NG-multiple"><div class="target">Distributed to the youngest</div></div>
     <div id="multilevel" title="NG-multilevel"><div class="target">Multi-level Distributed</div></div>
-    <div id="older" title="NG-older"></div>
-    <div id="redistributed" title="NG-redistributed"><div class="target">Redistributed</div></div>
 </div>
 <script>
 setup({ explicit_done: true });
@@ -33,25 +30,10 @@ host = document.getElementById("distributed");
 createShadowRootWithInnerHtml(host, "<div title='PASS-distributed'><content></content></div>");
 testTooltipTextInShadow("The title of distributed elements inherits in the flat tree", host.querySelector(".target"), "PASS-distributed");
 
-host = document.getElementById("multiple");
-createShadowRootWithInnerHtml(host, "<div title='NG-multiple'><content></content></div>");
-createShadowRootWithInnerHtml(host, "<div title='PASS-multiple'><content></content></div>");
-testTooltipTextInShadow("The title of distributed elements inherits in the flat tree (multiple shadow roots)", host.querySelector(".target"), "PASS-multiple");
-
 host = document.getElementById("multilevel");
 var host2ndLevel = createShadowRootWithInnerHtml(host, "<div title='NG-multilevel'><content></content></div>").firstChild;
 createShadowRootWithInnerHtml(host2ndLevel, "<div title='PASS-multilevel'><content></content></div>");
 testTooltipTextInShadow("The title of distributed elements inherits in the flat tree (multiple levels)", host.querySelector(".target"), "PASS-multilevel");
-
-host = document.getElementById("older");
-root = createShadowRootWithInnerHtml(host, style + "<div class=target>Older</div>");
-createShadowRootWithInnerHtml(host, "<div title='PASS-older'><shadow></shadow></div>");
-testTooltipTextInShadow("The title of elements in older shadow roots inherits in the flat tree", root.querySelector(".target"), "PASS-older");
-
-host = document.getElementById("redistributed");
-createShadowRootWithInnerHtml(host, "<content></content>");
-createShadowRootWithInnerHtml(host, "<div title='PASS-redistributed'><shadow></shadow></div>");
-testTooltipTextInShadow("The title of re-distributed elements inherits in the flat tree (multiple shadow roots)", host.querySelector(".target"), "PASS-redistributed");
 
 function testTooltipTextInShadow(description, element, expected) {
     if (!window.eventSender || !window.testRunner)

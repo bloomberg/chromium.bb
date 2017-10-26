@@ -26,22 +26,6 @@
 
   document.body.removeChild(div);
 
-  debug("Creating multiple shadow dom subtrees.");
-  div = document.createElement("div");
-  document.body.appendChild(div);
-  shadow1 = div.createShadowRoot();
-  shadow1.innerHTML = "<div id='H'></div>";
-
-  var h = shadow1.getElementById("H");
-  shadow2 = h.createShadowRoot();
-  shadow2.innerHTML = "<div>shadow2</div>";
-  shadow3 = h.createShadowRoot();
-  shadow3.innerHTML = "<div>shadow3</div>";
-  shouldBe("internals.parentTreeScope(shadow2)", "shadow1");
-  shouldBe("internals.parentTreeScope(shadow3)", "shadow1");
-
-  document.body.removeChild(div);
-
   debug("Creating multiple shadow dom subtrees from bottom to top.");
   f = document.createElement("div");
   shadow3 = f.createShadowRoot();

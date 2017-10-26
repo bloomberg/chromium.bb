@@ -57,11 +57,9 @@ ShadowRoot& ElementShadow::AddShadowRoot(Element& shadow_host,
   EventDispatchForbiddenScope assert_no_event_dispatch;
   ScriptForbiddenScope forbid_script;
 
-  if (type == ShadowRootType::V0 && shadow_root_) {
-    DCHECK_EQ(shadow_root_->GetType(), ShadowRootType::V0);
-    Deprecation::CountDeprecation(shadow_host.GetDocument(),
-                                  WebFeature::kElementCreateShadowRootMultiple);
-  }
+  // Multiple ShadowRoots are removed.
+  // TODO(kochi): Further cleanup of unnecessary code for multiple shadow.
+  DCHECK(!shadow_root_);
 
   if (shadow_root_) {
     // TODO(hayato): Is the order, from the youngest to the oldest, important?

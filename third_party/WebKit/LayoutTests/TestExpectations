@@ -1400,7 +1400,6 @@ crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
-crbug.com/321237 [ Mac ] fast/dom/shadow/shadow-insertion-point-rendering-multiple-shadow-roots.html [ Failure ]
 crbug.com/321237 [ Mac ] fast/selectors/007a.html [ Failure ]
 crbug.com/321237 [ Mac Win ] fast/text-autosizing/inherited-multiplier.html [ Failure ]
 crbug.com/321237 [ Mac ] virtual/stable/fast/css3-text/css3-text-decoration/stable/first-letter-text-decoration.html [ Failure ]

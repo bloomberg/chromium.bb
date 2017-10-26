@@ -42,9 +42,6 @@ shouldBe("shadowRoot.querySelector('.class2')", "div2");
 shouldBeNull("shadowRoot.querySelector('.foo')");
 shouldBe("shadowRoot.querySelectorAll('div')", "[div1, div2]");
 shouldBe("shadowRoot.querySelectorAll('foo')", "[]");
-
-var youngerShadowRoot = shadowHost.createShadowRoot();
-shouldNotBe("youngerShadowRoot", "shadowRoot");
 </script>
 </body>
 </html>

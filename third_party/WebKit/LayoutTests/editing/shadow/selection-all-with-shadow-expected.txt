@@ -1,5 +1,3 @@
-CONSOLE WARNING: line 135: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4668884095336448 for more details.
-CONSOLE MESSAGE: line 150: [object Selection]
 SelectAll and Shadow DOM Tree
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -56,18 +54,6 @@ PASS selectionInHost4.anchorNode.nodeValue is "BEFORE"
 PASS selectionInHost4.anchorOffset is 0
 PASS selectionInHost4.focusNode.nodeValue is "BEFORE"
 PASS selectionInHost4.focusOffset is 6
-
-Select all from selecting node in youngest shadow DOM tree => select descendants of immediate child of shadow root containing start position
-PASS selectionInHost5.anchorNode.nodeValue is "BEFORE"
-PASS selectionInHost5.anchorOffset is 0
-PASS selectionInHost5.focusNode.nodeValue is "BEFORE"
-PASS selectionInHost5.focusOffset is 6
-
-Select all from selecting node in oldest shadow DOM tree => select descendants of immediate child of shadow root containing start position
-PASS selectionInHost5.anchorNode.nodeValue is "BEFORE"
-PASS selectionInHost5.anchorOffset is 0
-PASS selectionInHost5.focusNode.nodeValue is "BEFORE"
-PASS selectionInHost5.focusOffset is 6
 PASS successfullyParsed is true
 
 TEST COMPLETE

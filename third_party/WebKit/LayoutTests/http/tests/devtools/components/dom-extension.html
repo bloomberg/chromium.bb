@@ -12,10 +12,6 @@ function test() {
       }
 
       var component1 = createElementWithClass('div', 'component1');
-      var oldShadow = component1.createShadowRoot();
-      var oldContent = createElementWithClass('div', 'shadow-old-content');
-      oldContent.textContent = 'old content';
-      oldShadow.appendChild(oldContent);
       var shadow1 = component1.createShadowRoot();
       component1.createChild('div', 'component1-content').textContent = 'text 1';
       component1.createChild('div', 'component2-content').textContent = 'text 2';
