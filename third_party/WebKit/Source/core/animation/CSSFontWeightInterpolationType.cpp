@@ -98,6 +98,8 @@ InterpolationValue CSSFontWeightInterpolationType::MaybeConvertValue(
       return nullptr;
     case CSSValueNormal:
       return CreateFontWeightValue(NormalWeightValue());
+    case CSSValueBold:
+      return CreateFontWeightValue(BoldWeightValue());
 
     case CSSValueBolder:
     case CSSValueLighter: {
