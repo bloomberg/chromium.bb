@@ -1366,6 +1366,11 @@ void DevToolsUIBindings::ReadyToCommitNavigation(
       frontend_host_.reset();
       return;
     }
+    if (navigation_handle->GetRenderFrameHost() ==
+            web_contents_->GetMainFrame() &&
+        frontend_host_) {
+      return;
+    }
     frontend_host_.reset(content::DevToolsFrontendHost::Create(
         navigation_handle->GetRenderFrameHost(),
         base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
