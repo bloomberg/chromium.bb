@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/safe_browsing/net_event_logger.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -55,7 +54,6 @@ class BaseParallelResourceThrottle : public content::ResourceThrottle {
 
   const net::URLRequest* const request_;
   const content::ResourceType resource_type_;
-  NetEventLogger net_event_logger_;
   // Set to true if the throttle is currently either inside a ResourceThrottle
   // notification call or responsible for deferring the request.
   bool throttle_in_band_ = false;

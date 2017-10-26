@@ -5,10 +5,10 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/utils.h"
-#include "components/safe_browsing/net_event_logger.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/log/net_log_event_type.h"
@@ -37,10 +37,8 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
       web_contents_getter_(web_contents_getter) {}
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
-  if (deferred_ && net_event_logger_) {
-    net_event_logger_->EndNetLogEvent(
-        net::NetLogEventType::SAFE_BROWSING_DEFERRED, nullptr, nullptr);
-  }
+  if (deferred_)
+    TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
 }
 
 void BrowserURLLoaderThrottle::WillStartRequest(
@@ -50,13 +48,12 @@ void BrowserURLLoaderThrottle::WillStartRequest(
   DCHECK(!blocked_);
   DCHECK(!url_checker_);
 
+  original_url_ = request.url;
   pending_checks_++;
   url_checker_ = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
       request.headers, request.load_flags, request.resource_type,
       request.has_user_gesture, std::move(url_checker_delegate_),
       web_contents_getter_);
-  if (net_event_logger_)
-    url_checker_->set_net_event_logger(net_event_logger_);
 
   url_checker_->CheckUrl(
       request.url, request.method,
@@ -103,18 +100,8 @@ void BrowserURLLoaderThrottle::WillProcessResponse(
   deferred_ = true;
   defer_start_time_ = base::TimeTicks::Now();
   *defer = true;
-  if (net_event_logger_) {
-    net_event_logger_->BeginNetLogEvent(
-        net::NetLogEventType::SAFE_BROWSING_DEFERRED,
-        url_checker_->GetCurrentlyCheckingUrl(), "defer_reason", "at_response");
-  }
-}
-
-void BrowserURLLoaderThrottle::set_net_event_logger(
-    NetEventLogger* net_event_logger) {
-  net_event_logger_ = net_event_logger;
-  if (url_checker_)
-    url_checker_->set_net_event_logger(net_event_logger);
+  TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "Deferred", this, "original_url",
+                           original_url_.spec());
 }
 
 void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
@@ -137,10 +124,7 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
     if (pending_checks_ == 0 && deferred_) {
       LogDelay(base::TimeTicks::Now() - defer_start_time_);
       deferred_ = false;
-      if (net_event_logger_) {
-        net_event_logger_->EndNetLogEvent(
-            net::NetLogEventType::SAFE_BROWSING_DEFERRED, nullptr, nullptr);
-      }
+      TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
 
       delegate_->Resume();
     }

@@ -50,7 +50,6 @@ class BaseParallelResourceThrottle::URLLoaderThrottleHolder
 
   void Detach() {
     owner_ = nullptr;
-    throttle_->set_net_event_logger(nullptr);
   }
 
  private:
@@ -78,14 +77,11 @@ BaseParallelResourceThrottle::BaseParallelResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate)
-    : request_(request),
-      resource_type_(resource_type),
-      net_event_logger_(&request->net_log()) {
+    : request_(request), resource_type_(resource_type) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
   auto throttle = BrowserURLLoaderThrottle::MaybeCreate(
       std::move(url_checker_delegate), info->GetWebContentsGetterForRequest());
-  throttle->set_net_event_logger(&net_event_logger_);
   url_loader_throttle_holder_ =
       std::make_unique<URLLoaderThrottleHolder>(this, std::move(throttle));
 }
