@@ -29,7 +29,7 @@
 
 #include <string.h>
 #if defined(OS_LINUX)
-#include "sandbox/linux/services/resource_limits.h"
+#include "sandbox/linux/services/resource_limits.h"  // nogncheck
 #endif
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "platform/wtf/Assertions.h"
