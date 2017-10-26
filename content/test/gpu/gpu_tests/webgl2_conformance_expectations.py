@@ -161,10 +161,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['win', ('amd', 0x6613)], bug=687374)
 
-    # Win / Intel
-    self.Fail('conformance2/glsl3/' +
-        'texture-offset-uniform-texture-coordinate.html',
-        ['win', 'intel', 'd3d11'], bug=662644) # WebGL 2.0.1
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel', 'd3d11'], bug=617449)
     # Seems to cause the harness to fail immediately afterward
@@ -182,14 +178,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # until we can run them without GPU hangs and crashes.
     self.Skip('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel', 'd3d11'], bug=666392)
-
-    # Win 10 / Intel
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
-        ['win10', 'intel', 'd3d11', 'no_passthrough'], bug=483282)
-
-    # Intel HD 530
-    self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
-        ['win', 'intel', 'no_passthrough', 'd3d11'], bug=680797)
 
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
