@@ -335,13 +335,16 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
                                          base::TimeDelta::FromSeconds(5), 1);
-  // Start with a 1 second task.
   base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  // Start with a 1 second task.
   estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
   time += base::TimeDelta::FromMilliseconds(1000);
   estimator.OnTopLevelTaskCompleted(time);
+  time += base::TimeDelta::FromMilliseconds(4000);
 
-  // Now perform an invalid task.
+  // Now perform an invalid task. This will cause the windows involving this
+  // task to be ignored.
   estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
   time += base::TimeDelta::FromMilliseconds(35000);
   estimator.OnTopLevelTaskCompleted(time);
@@ -351,25 +354,79 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
   time += base::TimeDelta::FromMilliseconds(1000);
   estimator.OnTopLevelTaskCompleted(time);
 
-  // Flush the data by adding a task in the next window.
+  // Add a task in the next window.
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
   time += base::TimeDelta::FromMilliseconds(500);
   estimator.OnTopLevelTaskCompleted(time);
 
+  // Now perform another invalid task. This will cause the windows involving
+  // this task to be ignored. Therefore, the previous task is ignored.
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  time += base::TimeDelta::FromMilliseconds(35000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Flush by adding a task.
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  estimator.OnTopLevelTaskCompleted(time);
+
   EXPECT_THAT(client.expected_queueing_times(),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(100)));
   histogram_tester.ExpectTotalCount(
-      "RendererScheduler.ExpectedTaskQueueingDuration", 8);
+      "RendererScheduler.ExpectedTaskQueueingDuration", 2);
   histogram_tester.ExpectBucketCount(
-      "RendererScheduler.ExpectedTaskQueueingDuration", 0, 6);
+      "RendererScheduler.ExpectedTaskQueueingDuration", 100, 2);
+}
+
+// If we idle for too long, ignore idling time, even if the renderer is on the
+// foreground. Perhaps the user's machine went to sleep while we were idling.
+TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
+  HistogramTester histogram_tester;
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5), 1);
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  // Start with a 1 second task.
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+  time += base::TimeDelta::FromMilliseconds(4000);
+  // Dummy task to ensure this window is reported.
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Now go idle for long. This will cause the windows involving this
+  // time to be ignored.
+  time += base::TimeDelta::FromMilliseconds(35000);
+
+  // Perform another 1 second task.
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Add a task in the next window.
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  time += base::TimeDelta::FromMilliseconds(500);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Now go idle again. This will cause the windows involving this idle period
+  // to be ignored. Therefore, the previous task is ignored.
+  time += base::TimeDelta::FromMilliseconds(35000);
+
+  // Flush by adding a task.
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time, kDefaultQueueType);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  EXPECT_THAT(client.expected_queueing_times(),
+              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
+                                     base::TimeDelta::FromMilliseconds(100)));
+  histogram_tester.ExpectTotalCount(
+      "RendererScheduler.ExpectedTaskQueueingDuration", 2);
   histogram_tester.ExpectBucketCount(
       "RendererScheduler.ExpectedTaskQueueingDuration", 100, 2);
 }
