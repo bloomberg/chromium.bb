@@ -310,17 +310,20 @@ StoragePartition* BrowserContext::GetDefaultStoragePartition(
 
 // static
 void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
-                                            const char* data, size_t length,
-                                            const BlobCallback& callback) {
+                                            const char* data,
+                                            size_t length,
+                                            const std::string& content_type,
+                                            BlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
-                 base::WrapRefCounted(blob_context), data, length),
-      callback);
+      base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
+                     base::WrapRefCounted(blob_context), data, length,
+                     content_type),
+      std::move(callback));
 }
 
 // static
@@ -330,17 +333,17 @@ void BrowserContext::CreateFileBackedBlob(
     int64_t offset,
     int64_t size,
     const base::Time& expected_modification_time,
-    const BlobCallback& callback) {
+    BlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChromeBlobStorageContext::CreateFileBackedBlob,
-                 base::WrapRefCounted(blob_context), path, offset, size,
-                 expected_modification_time),
-      callback);
+      base::BindOnce(&ChromeBlobStorageContext::CreateFileBackedBlob,
+                     base::WrapRefCounted(blob_context), path, offset, size,
+                     expected_modification_time),
+      std::move(callback));
 }
 
 // static

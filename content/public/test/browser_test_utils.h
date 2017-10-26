@@ -919,13 +919,6 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
 // came from |process|. Used to simulate a compromised renderer.
 class PwnMessageHelper {
  public:
-  // Sends BlobStorageMsg_RegisterBlob
-  static void CreateBlobWithPayload(RenderProcessHost* process,
-                                    std::string uuid,
-                                    std::string content_type,
-                                    std::string content_disposition,
-                                    std::string payload);
-
   // Sends BlobHostMsg_RegisterPublicURL
   static void RegisterBlobURL(RenderProcessHost* process,
                               GURL url,

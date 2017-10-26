@@ -143,11 +143,13 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
     const char* data,
-    size_t length) {
+    size_t length,
+    const std::string& content_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
   storage::BlobDataBuilder blob_data_builder(uuid);
+  blob_data_builder.set_content_type(content_type);
   blob_data_builder.AppendData(data, length);
 
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle =

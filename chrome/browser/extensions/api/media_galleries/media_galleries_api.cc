@@ -709,7 +709,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
                          base::MakeUnique<base::ListValue>());
   metadata::AttachedImage* first_image = &attached_images->front();
   content::BrowserContext::CreateMemoryBackedBlob(
-      GetProfile(), first_image->data.c_str(), first_image->data.size(),
+      GetProfile(), first_image->data.c_str(), first_image->data.size(), "",
       base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob, this,
                  base::Passed(&result_dictionary),
                  base::Passed(&attached_images),
@@ -764,11 +764,9 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
     metadata::AttachedImage* next_image =
         &(*attached_images)[blob_uuids->size()];
     content::BrowserContext::CreateMemoryBackedBlob(
-        GetProfile(),
-        next_image->data.c_str(),
-        next_image->data.size(),
-        base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
-                   this, base::Passed(&result_dictionary),
+        GetProfile(), next_image->data.c_str(), next_image->data.size(), "",
+        base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob, this,
+                   base::Passed(&result_dictionary),
                    base::Passed(&attached_images), base::Passed(&blob_uuids)));
     return;
   }
