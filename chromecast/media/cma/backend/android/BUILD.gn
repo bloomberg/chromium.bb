@@ -36,14 +36,6 @@ source_set("cast_media_android") {
     "//chromecast/public/media",
     "//media",
   ]
-
-  if (enable_athings_loopback) {
-    deps += [ "//chromecast/internal/android/prebuilt/things:support_lib" ]
-    sources += [
-      "loopback_audio_manager.cc",
-      "loopback_audio_manager.h",
-    ]
-  }
 }
 
 generate_jni("audio_track_jni_headers") {
