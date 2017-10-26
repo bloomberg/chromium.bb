@@ -236,10 +236,10 @@ VisiblePositionInFlatTree HonorEditingBoundaryAtOrBefore(
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> HonorEditingBoundaryAtOrAfterTemplate(
-    const VisiblePositionTemplate<Strategy>& pos,
+static PositionWithAffinityTemplate<Strategy>
+HonorEditingBoundaryAtOrAfterTemplate(
+    const PositionWithAffinityTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {
-  DCHECK(pos.IsValid()) << pos;
   if (pos.IsNull())
     return pos;
 
@@ -247,39 +247,54 @@ static VisiblePositionTemplate<Strategy> HonorEditingBoundaryAtOrAfterTemplate(
 
   // Return empty position if |pos| is not somewhere inside the editable
   // region containing this position
-  if (highest_root &&
-      !pos.DeepEquivalent().AnchorNode()->IsDescendantOf(highest_root))
-    return VisiblePositionTemplate<Strategy>();
+  if (highest_root && !pos.AnchorNode()->IsDescendantOf(highest_root))
+    return PositionWithAffinityTemplate<Strategy>();
 
   // Return |pos| itself if the two are from the very same editable region, or
   // both are non-editable
   // TODO(yosin) In the non-editable case, just because the new position is
   // non-editable doesn't mean movement to it is allowed.
   // |VisibleSelection::adjustForEditableContent()| has this problem too.
-  if (HighestEditableRoot(pos.DeepEquivalent()) == highest_root)
+  if (HighestEditableRoot(pos.GetPosition()) == highest_root)
     return pos;
 
   // Return empty position if this position is non-editable, but |pos| is
   // editable.
   // TODO(yosin) Move to the next non-editable region.
   if (!highest_root)
-    return VisiblePositionTemplate<Strategy>();
+    return PositionWithAffinityTemplate<Strategy>();
 
   // Return the next position after |pos| that is in the same editable region
   // as this position
-  return FirstEditableVisiblePositionAfterPositionInRoot(pos.DeepEquivalent(),
-                                                         *highest_root);
+  return FirstEditablePositionAfterPositionInRoot(pos.GetPosition(),
+                                                  *highest_root);
+}
+
+PositionWithAffinity HonorEditingBoundaryAtOrAfter(
+    const PositionWithAffinity& pos,
+    const Position& anchor) {
+  return HonorEditingBoundaryAtOrAfterTemplate(pos, anchor);
+}
+
+PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrAfter(
+    const PositionInFlatTreeWithAffinity& pos,
+    const PositionInFlatTree& anchor) {
+  return HonorEditingBoundaryAtOrAfterTemplate(pos, anchor);
 }
 
 VisiblePosition HonorEditingBoundaryAtOrAfter(const VisiblePosition& pos,
                                               const Position& anchor) {
-  return HonorEditingBoundaryAtOrAfterTemplate(pos, anchor);
+  DCHECK(pos.IsValid()) << pos;
+  return CreateVisiblePosition(
+      HonorEditingBoundaryAtOrAfter(pos.ToPositionWithAffinity(), anchor));
 }
 
 VisiblePositionInFlatTree HonorEditingBoundaryAtOrAfter(
     const VisiblePositionInFlatTree& pos,
     const PositionInFlatTree& anchor) {
-  return HonorEditingBoundaryAtOrAfterTemplate(pos, anchor);
+  DCHECK(pos.IsValid()) << pos;
+  return CreateVisiblePosition(
+      HonorEditingBoundaryAtOrAfter(pos.ToPositionWithAffinity(), anchor));
 }
 
 template <typename Strategy>
