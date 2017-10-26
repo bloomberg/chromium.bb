@@ -2202,6 +2202,7 @@ if (enable_java_templates) {
   #     dependencies srcjar outputs will be compiled and added to the output jar.
   #   jar_path: Use this to explicitly set the output jar path. Defaults to
   #     "${target_gen_dir}/${target_name}.jar.
+  #   javac_args: Additional arguments to pass to javac.
   template("compile_java") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
@@ -2279,6 +2280,11 @@ if (enable_java_templates) {
       _dep_gen_dir = get_label_info(dep, "target_gen_dir")
       _dep_name = get_label_info(dep, "name")
       _java_srcjars += [ "$_dep_gen_dir/$_dep_name.srcjar" ]
+    }
+
+    _javac_args = []
+    if (defined(invoker.javac_args)) {
+      _javac_args = invoker.javac_args
     }
 
     # Mark srcjar_deps as used.
@@ -2382,6 +2388,7 @@ if (enable_java_templates) {
       foreach(e, _processor_args) {
         args += [ "--processor-arg=" + e ]
       }
+
       foreach(file_tuple, _additional_jar_files) {
         # Each element is of length two, [ path_to_file, path_to_put_in_jar ]
         inputs += [ file_tuple[0] ]
@@ -2390,6 +2397,9 @@ if (enable_java_templates) {
       }
       if (invoker.java_files != []) {
         args += [ "@" + rebase_path(invoker.java_sources_file, root_build_dir) ]
+      }
+      foreach(e, _javac_args) {
+        args += [ "--javac-arg=" + e ]
       }
     }
 
@@ -2658,6 +2668,7 @@ if (enable_java_templates) {
                                "processors_javac",
                                "processor_args_javac",
                                "provider_configurations",
+                               "javac_args",
                              ])
       jar_path = _jar_path
       build_config = _build_config
