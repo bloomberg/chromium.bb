@@ -587,8 +587,8 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   // TODO(jbauman): Use correct colorspace.
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
-  if (params.image[0]->color_space().IsValid()) {
-    src_color_space = params.image[0]->color_space();
+  if (image_dxgi && image_dxgi->color_space().IsValid()) {
+    src_color_space = image_dxgi->color_space();
   }
   Microsoft::WRL::ComPtr<ID3D11VideoContext1> context1;
   if (SUCCEEDED(video_context_.CopyTo(context1.GetAddressOf()))) {

@@ -31,7 +31,6 @@ class TextureImage : public gl::GLImage {
                        const gfx::Rect& rect) override {
     return false;
   }
-
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             gfx::OverlayTransform transform,
@@ -39,9 +38,8 @@ class TextureImage : public gl::GLImage {
                             const gfx::RectF& crop_rect) override {
     return false;
   }
-
+  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
-
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override {}

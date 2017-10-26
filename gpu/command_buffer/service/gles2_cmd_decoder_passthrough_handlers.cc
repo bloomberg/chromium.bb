@@ -1782,7 +1782,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
                                    edge_aa_mask, filter, bounds_rect);
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceForScanoutCHROMIUM(
+error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceMetadataCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   NOTIMPLEMENTED();

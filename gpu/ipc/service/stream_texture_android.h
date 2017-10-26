@@ -56,6 +56,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
@@ -63,6 +64,11 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
 
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
+  void NotifyPromotionHint(bool promotion_hint,
+                           int display_x,
+                           int display_y,
+                           int display_width,
+                           int display_height) override {}
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;

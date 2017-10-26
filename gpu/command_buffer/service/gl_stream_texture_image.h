@@ -15,21 +15,17 @@ namespace gles2 {
 // that supply a texture matrix.
 class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
  public:
-  GLStreamTextureImage() {}
-
   // Get the matrix.
   // Copy the texture matrix for this image into |matrix|.
   // Subclasses must return a matrix appropriate for a coordinate system where
   // UV=(0,0) corresponds to the top left corner of the image.
   virtual void GetTextureMatrix(float matrix[16]) = 0;
 
-  void Flush() override {}
-
   virtual void NotifyPromotionHint(bool promotion_hint,
                                    int display_x,
                                    int display_y,
                                    int display_width,
-                                   int display_height) {}
+                                   int display_height) = 0;
 
  protected:
   ~GLStreamTextureImage() override {}
@@ -46,9 +42,6 @@ class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
       matrix[i + 4] = -matrix[i + 4];
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLStreamTextureImage);
 };
 
 }  // namespace gles2

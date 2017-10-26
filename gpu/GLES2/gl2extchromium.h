@@ -1243,6 +1243,18 @@ typedef void(GL_APIENTRYP PFNGLTEXSTORAGE2DIMAGECHROMIUM)(GLenum target,
 #define GL_SCANOUT_CHROMIUM 0x6000
 #endif /* GL_CHROMIUM_texture_storage_image */
 
+#ifndef GL_CHROMIUM_color_space_metadata
+#define GL_CHROMIUM_color_space_metadata 1
+typedef struct _GLColorSpace* GLColorSpace;
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY
+glSetColorSpaceMetadataCHROMIUM(GLuint texture_id, GLColorSpace color_space);
+#endif
+typedef void(GL_APIENTRYP PFNGLSETCOLORSPACEMETADATACHROMIUM)(
+    GLuint texture_id,
+    GLColorSpace color_space);
+#endif /* GL_CHROMIUM_color_space_metadata */
+
 #ifdef __cplusplus
 }
 #endif

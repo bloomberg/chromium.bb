@@ -1497,12 +1497,6 @@ void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
       bounds_rect, filter);
 }
 void GL_APIENTRY
-GLES2SetColorSpaceForScanoutCHROMIUM(GLuint texture_id,
-                                     GLColorSpace color_space) {
-  gles2::GetGLContext()->SetColorSpaceForScanoutCHROMIUM(texture_id,
-                                                         color_space);
-}
-void GL_APIENTRY
 GLES2ScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures) {
   gles2::GetGLContext()->ScheduleCALayerInUseQueryCHROMIUM(count, textures);
 }
@@ -1800,6 +1794,10 @@ void GL_APIENTRY GLES2TexStorage2DImageCHROMIUM(GLenum target,
                                                 GLsizei height) {
   gles2::GetGLContext()->TexStorage2DImageCHROMIUM(target, internalFormat,
                                                    bufferUsage, width, height);
+}
+void GL_APIENTRY GLES2SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
+                                                    GLColorSpace color_space) {
+  gles2::GetGLContext()->SetColorSpaceMetadataCHROMIUM(texture_id, color_space);
 }
 
 namespace gles2 {
@@ -2935,11 +2933,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glScheduleCALayerCHROMIUM),
     },
     {
-        "glSetColorSpaceForScanoutCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glSetColorSpaceForScanoutCHROMIUM),
-    },
-    {
         "glScheduleCALayerInUseQueryCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glScheduleCALayerInUseQueryCHROMIUM),
@@ -3156,6 +3149,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glTexStorage2DImageCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glTexStorage2DImageCHROMIUM),
+    },
+    {
+        "glSetColorSpaceMetadataCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSetColorSpaceMetadataCHROMIUM),
     },
     {
         NULL, NULL,

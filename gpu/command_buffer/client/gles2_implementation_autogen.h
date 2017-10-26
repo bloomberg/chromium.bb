@@ -1052,9 +1052,6 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              const GLfloat* bounds_rect,
                              GLuint filter) override;
 
-void SetColorSpaceForScanoutCHROMIUM(GLuint texture_id,
-                                     GLColorSpace color_space) override;
-
 void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                        const GLuint* textures) override;
 
@@ -1262,5 +1259,8 @@ void TexStorage2DImageCHROMIUM(GLenum target,
                                GLenum bufferUsage,
                                GLsizei width,
                                GLsizei height) override;
+
+void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
+                                   GLColorSpace color_space) override;
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

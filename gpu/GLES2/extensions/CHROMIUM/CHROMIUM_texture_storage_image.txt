@@ -33,8 +33,6 @@ Dependencies
 
     This extension is written against the OpenGL ES 2.0 Specification.
     This extension depends on EXT_texture_storage.
-    CHROMIUM_scanout_color_space affects the definition of this extension.
-    CHROMIUM_schedule_ca_layer affects the definition of this extension.
 
 Overview
 
@@ -59,16 +57,6 @@ New Procedures and Functions
     SCANOUT_CHROMIUM which allows the texture to be used for scanout and in
     hardware overlays. The supported internal formats are RGBA8_OES,
     BGRA8_EXT, RGBAF16_EXT, and R8_EXT.
-
-Dependencices on CHROMIUM_scanout_color_space
-
-    SetColorSpaceForScanoutCHROMIUM may be used for specifying the color space
-    of scanout textures.
-
-Dependencies on CHROMIUM_schedule_ca_layer
-
-    Textures specified using TexStorage2DImageCHROMIUM with usage
-    SCANOUT_CHROMIUM may be used with ScheduleCALayerCHROMIUM.
 
 Errors
 

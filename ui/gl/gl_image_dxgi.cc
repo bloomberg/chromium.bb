@@ -56,6 +56,10 @@ bool GLImageDXGIBase::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   return false;
 }
 
+void GLImageDXGIBase::SetColorSpace(const gfx::ColorSpace& color_space) {
+  color_space_ = color_space;
+}
+
 void GLImageDXGIBase::Flush() {}
 
 void GLImageDXGIBase::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,

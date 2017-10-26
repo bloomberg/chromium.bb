@@ -3782,11 +3782,12 @@ class MockGLImage : public gl::GLImage {
                                           gfx::OverlayTransform,
                                           const gfx::Rect&,
                                           const gfx::RectF&));
+  MOCK_METHOD1(SetColorSpace, void(const gfx::ColorSpace&));
+  MOCK_METHOD0(Flush, void());
   MOCK_METHOD3(OnMemoryDump,
                void(base::trace_event::ProcessMemoryDump*,
                     uint64_t,
                     const std::string&));
-  void Flush() override {}
 
  protected:
   virtual ~MockGLImage() {}

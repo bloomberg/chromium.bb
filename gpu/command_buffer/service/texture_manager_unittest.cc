@@ -164,12 +164,20 @@ class GLStreamTextureImageStub : public GLStreamTextureImage {
                             const gfx::RectF& crop_rect) override {
     return false;
   }
+  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override {}
   bool EmulatingRGB() const override { return false; }
+
+  // Overridden from GLStreamTextureImage:
   void GetTextureMatrix(float matrix[16]) override {}
+  void NotifyPromotionHint(bool promotion_hint,
+                           int display_x,
+                           int display_y,
+                           int display_width,
+                           int display_height) override {}
 
  protected:
   ~GLStreamTextureImageStub() override {}

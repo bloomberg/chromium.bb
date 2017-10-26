@@ -2175,14 +2175,6 @@ void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
                                filter);
 }
 
-void GLES2TraceImplementation::SetColorSpaceForScanoutCHROMIUM(
-    GLuint texture_id,
-    GLColorSpace color_space) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::SetColorSpaceForScanoutCHROMIUM");
-  gl_->SetColorSpaceForScanoutCHROMIUM(texture_id, color_space);
-}
-
 void GLES2TraceImplementation::ScheduleCALayerInUseQueryCHROMIUM(
     GLsizei count,
     const GLuint* textures) {
@@ -2613,6 +2605,14 @@ void GLES2TraceImplementation::TexStorage2DImageCHROMIUM(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::TexStorage2DImageCHROMIUM");
   gl_->TexStorage2DImageCHROMIUM(target, internalFormat, bufferUsage, width,
                                  height);
+}
+
+void GLES2TraceImplementation::SetColorSpaceMetadataCHROMIUM(
+    GLuint texture_id,
+    GLColorSpace color_space) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::SetColorSpaceMetadataCHROMIUM");
+  gl_->SetColorSpaceMetadataCHROMIUM(texture_id, color_space);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

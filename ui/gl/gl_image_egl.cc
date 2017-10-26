@@ -43,8 +43,6 @@ gfx::Size GLImageEGL::GetSize() {
   return size_;
 }
 
-unsigned GLImageEGL::GetInternalFormat() { return GL_RGBA; }
-
 bool GLImageEGL::BindTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (egl_image_ == EGL_NO_IMAGE_KHR)
@@ -53,24 +51,6 @@ bool GLImageEGL::BindTexImage(unsigned target) {
   glEGLImageTargetTexture2DOES(target, egl_image_);
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   return true;
-}
-
-bool GLImageEGL::CopyTexImage(unsigned target) {
-  return false;
-}
-
-bool GLImageEGL::CopyTexSubImage(unsigned target,
-                                 const gfx::Point& offset,
-                                 const gfx::Rect& rect) {
-  return false;
-}
-
-bool GLImageEGL::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                      int z_order,
-                                      gfx::OverlayTransform transform,
-                                      const gfx::Rect& bounds_rect,
-                                      const gfx::RectF& crop_rect) {
-  return false;
 }
 
 }  // namespace gl

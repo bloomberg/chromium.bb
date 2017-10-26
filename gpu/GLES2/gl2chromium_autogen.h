@@ -329,8 +329,6 @@
 #define glScheduleCALayerSharedStateCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerSharedStateCHROMIUM)
 #define glScheduleCALayerCHROMIUM GLES2_GET_FUN(ScheduleCALayerCHROMIUM)
-#define glSetColorSpaceForScanoutCHROMIUM \
-  GLES2_GET_FUN(SetColorSpaceForScanoutCHROMIUM)
 #define glScheduleCALayerInUseQueryCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerInUseQueryCHROMIUM)
 #define glCommitOverlayPlanesCHROMIUM GLES2_GET_FUN(CommitOverlayPlanesCHROMIUM)
@@ -402,5 +400,7 @@
 #define glRasterCHROMIUM GLES2_GET_FUN(RasterCHROMIUM)
 #define glEndRasterCHROMIUM GLES2_GET_FUN(EndRasterCHROMIUM)
 #define glTexStorage2DImageCHROMIUM GLES2_GET_FUN(TexStorage2DImageCHROMIUM)
+#define glSetColorSpaceMetadataCHROMIUM \
+  GLES2_GET_FUN(SetColorSpaceMetadataCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

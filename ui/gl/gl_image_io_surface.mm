@@ -14,7 +14,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_binders.h"
@@ -430,6 +430,13 @@ base::ScopedCFTypeRef<CVPixelBufferRef> GLImageIOSurface::cv_pixel_buffer() {
 
 GLImage::Type GLImageIOSurface::GetType() const {
   return Type::IOSURFACE;
+}
+
+void GLImageIOSurface::SetColorSpace(const gfx::ColorSpace& color_space) {
+  if (color_space_ == color_space)
+    return;
+  color_space_ = color_space;
+  IOSurfaceSetColorSpace(io_surface_, color_space);
 }
 
 // static
