@@ -122,6 +122,11 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.credentials_mode;
   }
 
+  static blink::mojom::FetchCacheMode cache_mode(
+      const content::ServiceWorkerFetchRequest& request) {
+    return request.cache_mode;
+  }
+
   static content::FetchRedirectMode redirect_mode(
       const content::ServiceWorkerFetchRequest& request) {
     return request.redirect_mode;

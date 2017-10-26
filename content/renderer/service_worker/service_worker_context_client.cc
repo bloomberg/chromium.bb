@@ -219,6 +219,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
   web_request->SetIsMainResourceLoad(request.is_main_resource_load);
   web_request->SetCredentialsMode(
       GetBlinkFetchCredentialsMode(request.credentials_mode));
+  web_request->SetCacheMode(request.cache_mode);
   web_request->SetRedirectMode(
       GetBlinkFetchRedirectMode(request.redirect_mode));
   web_request->SetRequestContext(

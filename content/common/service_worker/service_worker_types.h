@@ -21,6 +21,7 @@
 #include "content/public/common/service_worker_modes.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
@@ -107,24 +108,29 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ~ServiceWorkerFetchRequest();
   size_t EstimatedStructSize();
 
+  static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(int load_flags);
+
   // Be sure to update EstimatedSize() when adding members.
-  network::mojom::FetchRequestMode mode;
-  bool is_main_resource_load;
-  RequestContextType request_context_type;
-  RequestContextFrameType frame_type;
+  network::mojom::FetchRequestMode mode =
+      network::mojom::FetchRequestMode::kNoCORS;
+  bool is_main_resource_load = false;
+  RequestContextType request_context_type = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
+  RequestContextFrameType frame_type = REQUEST_CONTEXT_FRAME_TYPE_NONE;
   GURL url;
   std::string method;
   ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
-  uint64_t blob_size;
+  uint64_t blob_size = 0;
   scoped_refptr<storage::BlobHandle> blob;
   Referrer referrer;
-  FetchCredentialsMode credentials_mode;
-  FetchRedirectMode redirect_mode;
+  FetchCredentialsMode credentials_mode = FETCH_CREDENTIALS_MODE_OMIT;
+  blink::mojom::FetchCacheMode cache_mode =
+      blink::mojom::FetchCacheMode::kDefault;
+  FetchRedirectMode redirect_mode = FetchRedirectMode::FOLLOW_MODE;
   std::string integrity;
   std::string client_id;
-  bool is_reload;
-  ServiceWorkerFetchType fetch_type;
+  bool is_reload = false;
+  ServiceWorkerFetchType fetch_type = ServiceWorkerFetchType::FETCH;
 };
 
 // Represents a response to a fetch.

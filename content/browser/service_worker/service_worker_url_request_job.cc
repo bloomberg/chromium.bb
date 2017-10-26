@@ -561,8 +561,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   uint64_t blob_size = 0;
   if (HasRequestBody())
     CreateRequestBodyBlob(&blob_uuid, &blob_size);
-  std::unique_ptr<ServiceWorkerFetchRequest> request(
-      new ServiceWorkerFetchRequest());
+  auto request = std::make_unique<ServiceWorkerFetchRequest>();
   request->mode = request_mode_;
   request->is_main_resource_load = IsMainResourceLoad();
   request->request_context_type = request_context_type_;
@@ -579,6 +578,8 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->blob_size = blob_size;
   request->blob = request_body_blob_handle_;
   request->credentials_mode = credentials_mode_;
+  request->cache_mode = ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(
+      request_->load_flags());
   request->redirect_mode = redirect_mode_;
   request->integrity = integrity_;
   request->client_id = client_id_;

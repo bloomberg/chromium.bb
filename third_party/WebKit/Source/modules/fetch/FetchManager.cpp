@@ -727,6 +727,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
     if (request_->AttachedCredential())
       request.SetAttachedCredential(request_->AttachedCredential());
   }
+  request.SetCacheMode(request_->CacheMode());
   request.SetFetchRedirectMode(request_->Redirect());
   request.SetUseStreamOnResponse(true);
   request.SetExternalRequestStateFromRequestorAddressSpace(

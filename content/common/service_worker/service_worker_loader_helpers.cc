@@ -16,8 +16,7 @@ namespace content {
 // static
 std::unique_ptr<ServiceWorkerFetchRequest>
 ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
-  std::unique_ptr<ServiceWorkerFetchRequest> new_request =
-      base::MakeUnique<ServiceWorkerFetchRequest>();
+  auto new_request = std::make_unique<ServiceWorkerFetchRequest>();
   new_request->mode = request.fetch_request_mode;
   new_request->is_main_resource_load =
       ServiceWorkerUtils::IsMainResourceType(request.resource_type);
@@ -31,6 +30,8 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
   new_request->blob_uuid.clear();
   new_request->blob_size = 0;
   new_request->credentials_mode = request.fetch_credentials_mode;
+  new_request->cache_mode =
+      ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags);
   new_request->redirect_mode = request.fetch_redirect_mode;
   new_request->is_reload = ui::PageTransitionCoreTypeIs(
       request.transition_type, ui::PAGE_TRANSITION_RELOAD);

@@ -443,6 +443,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   out->SetReferrer(referrer.referrer, static_cast<blink::WebReferrerPolicy>(
                                           referrer.referrer_policy));
   out->SetCredentialsMode(credentialsMode);
+  out->SetCacheMode(data.cache_mode());
   out->SetRedirectMode(redirectMode);
   out->SetIntegrity(integrity);
   out->SetClientId(clientId);
