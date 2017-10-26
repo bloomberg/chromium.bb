@@ -503,6 +503,9 @@ void ContentSettingsObserver::GetAllowedClientHintsFromSource(
   if (!content_setting_rules_)
     return;
 
+  if (content_setting_rules_->client_hints_rules.empty())
+    return;
+
   client_hints::GetAllowedClientHintsFromSource(
       url, content_setting_rules_->client_hints_rules, client_hints);
 }
