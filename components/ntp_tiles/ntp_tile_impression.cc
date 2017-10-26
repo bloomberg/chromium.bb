@@ -11,6 +11,7 @@ NTPTileImpression::NTPTileImpression()
                         /*source=*/TileSource::TOP_SITES,
                         /*title_source=*/TileTitleSource::UNKNOWN,
                         /*visual_type=*/TileVisualType::UNKNOWN_TILE_TYPE,
+                        /*icon_type=*/favicon_base::INVALID_ICON,
                         /*data_generation_time=*/base::Time(),
                         /*url_for_rappor=*/GURL()) {}
 
@@ -18,12 +19,14 @@ NTPTileImpression::NTPTileImpression(int index,
                                      TileSource source,
                                      TileTitleSource title_source,
                                      TileVisualType visual_type,
+                                     favicon_base::IconType icon_type,
                                      base::Time data_generation_time,
                                      const GURL& url_for_rappor)
     : index(index),
       source(source),
       title_source(title_source),
       visual_type(visual_type),
+      icon_type(icon_type),
       data_generation_time(data_generation_time),
       url_for_rappor(url_for_rappor) {}
 

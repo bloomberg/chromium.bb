@@ -42,6 +42,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -559,8 +560,8 @@ public class ArticleSnippetsTest {
             // Run the callback asynchronously in case the caller made that assumption.
             ThreadUtils.postOnUiThread(() -> {
                 // Return an arbitrary drawable.
-                callback.onLargeIconAvailable(
-                        getBitmap(R.drawable.star_green), largeIconSizePx, true);
+                callback.onLargeIconAvailable(getBitmap(R.drawable.star_green), largeIconSizePx,
+                        true, IconType.INVALID_ICON);
             });
         }
     }

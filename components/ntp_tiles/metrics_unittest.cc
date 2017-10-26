@@ -28,6 +28,9 @@ constexpr int kTitleTagTitleSource =
 constexpr int kInferredTitleSource =
     static_cast<int>(TileTitleSource::INFERRED);
 
+using favicon_base::INVALID_ICON;
+using favicon_base::TOUCH_ICON;
+using favicon_base::WEB_MANIFEST_ICON;
 using testing::ElementsAre;
 using testing::IsEmpty;
 
@@ -54,6 +57,10 @@ class Builder {
   }
   Builder& WithVisualType(TileVisualType visual_type) {
     impression_.visual_type = visual_type;
+    return *this;
+  }
+  Builder& WithIconType(favicon_base::IconType icon_type) {
+    impression_.icon_type = icon_type;
     return *this;
   }
   Builder& WithDataGenerationTime(base::Time data_generation_time) {
@@ -319,6 +326,29 @@ TEST(RecordTileImpressionTest, ShouldRecordAge) {
                   /*count=*/1)));
 }
 
+TEST(RecordTileImpressionTest, ShouldRecordUmaForIconType) {
+  base::HistogramTester histogram_tester;
+
+  RecordTileImpression(
+      Builder().WithVisualType(ICON_COLOR).WithIconType(TOUCH_ICON).Build(),
+      /*rappor_service=*/nullptr);
+  RecordTileImpression(Builder()
+                           .WithVisualType(ICON_REAL)
+                           .WithIconType(WEB_MANIFEST_ICON)
+                           .Build(),
+                       /*rappor_service=*/nullptr);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TileFaviconType.IconsColor"),
+      ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TileFaviconType.IconsReal"),
+      ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileFaviconType"),
+              ElementsAre(base::Bucket(/*min=*/2, /*count=*/1),
+                          base::Bucket(/*min=*/4, /*count=*/1)));
+}
+
 TEST(RecordTileClickTest, ShouldRecordUmaForIcon) {
   base::HistogramTester histogram_tester;
   RecordTileClick(Builder()
@@ -554,6 +584,28 @@ TEST(RecordTileClickTest, ShouldRecordClickAge) {
           IsBucketBetween((kSuggestionAge - kBucketTolerance).InSeconds(),
                           (kSuggestionAge + kBucketTolerance).InSeconds(),
                           /*count=*/1)));
+}
+
+TEST(RecordTileClickTest, ShouldRecordClicksForIconType) {
+  base::HistogramTester histogram_tester;
+
+  RecordTileClick(
+      Builder().WithVisualType(ICON_COLOR).WithIconType(TOUCH_ICON).Build());
+  RecordTileClick(Builder()
+                      .WithVisualType(ICON_REAL)
+                      .WithIconType(WEB_MANIFEST_ICON)
+                      .Build());
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TileFaviconTypeClicked.IconsColor"),
+              ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TileFaviconTypeClicked.IconsReal"),
+              ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TileFaviconTypeClicked"),
+      ElementsAre(base::Bucket(/*min=*/2, /*count=*/1),
+                  base::Bucket(/*min=*/4, /*count=*/1)));
 }
 
 }  // namespace

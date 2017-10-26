@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
@@ -166,7 +167,8 @@ public class TileRenderer {
                 if (icon == null) {
                     mImageFetcher.makeLargeIconRequest(siteData.url, mMinIconSize, iconCallback);
                 } else {
-                    iconCallback.onLargeIconAvailable(icon, Color.BLACK, false);
+                    iconCallback.onLargeIconAvailable(
+                            icon, Color.BLACK, false, IconType.INVALID_ICON);
                 }
             }
         };

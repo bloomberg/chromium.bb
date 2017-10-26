@@ -14501,6 +14501,23 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="FAILURE">Failure - favicon not available</int>
 </enum>
 
+<enum name="FaviconType">
+  <summary>
+    Defines the icon type stored as cached in the history backend.
+  </summary>
+  <int value="0" label="INVALID">Not an actual icon.</int>
+  <int value="1" label="FAVICON">
+    Regular favicon (e.g. rel=&quot;icon&quot;).
+  </int>
+  <int value="2" label="TOUCH_ICON">
+    Touch icon (rel=&quot;apple-touch-icon&quot;).
+  </int>
+  <int value="3" label="TOUCH_PRECOMPOSED_ICON">
+    Precomposed touch icon (rel=&quot;apple-touch-icon-precomposed&quot;).
+  </int>
+  <int value="4" label="WEB_MANIFEST_ICON">Icon listed in a Web Manifest.</int>
+</enum>
+
 <enum name="FeatureObserver">
 <!-- Generated from third_party/WebKit/public/platform/web_feature.mojom.-->
 
