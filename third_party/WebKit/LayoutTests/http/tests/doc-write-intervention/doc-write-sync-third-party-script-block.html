@@ -46,43 +46,79 @@
 </script>
 
 <script>
-    var jsLoaded = false;
-    var loadSuccess = false;
+    // The following tests are serialized and some steps are delayed by
+    // step_timeout()s in order to deflake the tests, because the intervention
+    // errors/warnings and the asynchronous request to the blocked script can
+    // be made just after the corresponding <script>'s onerror/onload.
 
-    var filePath = '/loading/resources/js-loaded.js?cross-origin';
-    src = crossOrigin + filePath;
-    document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true"></scr' + 'ipt>');
-</script>
+    var onload1;
+    var onerror1;
+    // Cross origin doc.written scripts are not blocked if cached.
+    function testCachedCrossOriginScriptNotBlocked(t) {
+        jsLoaded = false;
+        var filePath = '/loading/resources/js-loaded.js?cross-origin';
+        var src = crossOrigin + filePath;
 
-<script>
-    test(function () {
-        assert_true(jsLoaded);
-        assert_true(loadSuccess);
-    }, "cross-origin script not blocked since it is cached");
-    if (window.internals) {
-        header = internals.getResourceHeader(src, 'Intervention', document);
-        console.log(src + " Intervention header has value " + header);
+        onload1 = t.step_func(function() {
+            assert_true(jsLoaded,
+                        "script should be executed since it is cached");
+            if (window.internals) {
+                header = internals.getResourceHeader(src, 'Intervention',
+                                                     document);
+                assert_equals(header,
+                    '<https://www.chromestatus.com/feature/5718547946799104>; level="warning"',
+                    'Intervention header');
+            }
+
+            t.step_timeout(testNonCachedCrossOriginScriptBlocked.bind(undefined, t), 0);
+        });
+
+        onerror1 = t.unreached_func(
+            "script shouldn't be blocked since it is cached");
+
+        t.step_timeout(function() {
+            document.write('<scr' + 'ipt src="' + src +
+                '" onload="onload1()" onerror="onerror1()"></scr' + 'ipt>');
+        }, 0);
     }
-</script>
-<script>
-    jsLoaded = false;
-    loadSuccess = false;
-    var loadFailed = false;
 
-    filePath = '/loading/resources/js-loaded.js?cross-origin2';
-    src = crossOrigin + filePath;
-    document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true" onError="loadFailed=true"></scr' + 'ipt>');
-</script>
+    var onload2;
+    var onerror2;
+    // Cross origin doc.written scripts are blocked.
+    function testNonCachedCrossOriginScriptBlocked(t) {
+        jsLoaded = false;
+        var filePath = '/loading/resources/js-loaded.js?cross-origin2';
+        var src = crossOrigin + filePath;
 
-<script>
-    test(function () {
-        assert_false(jsLoaded);
-        assert_false(loadSuccess);
-        assert_true(loadFailed);
-    }, "cross origin doc.written scripts are blocked");
+        onload2 = t.unreached_func(
+            "non-cached cross origin doc.written script should be blocked");
 
-    if (window.internals) {
-        priority = internals.getResourcePriority(src, document);
-        console.log(src + " has priority " + priority);
+        onerror2 = function() {
+            t.step_timeout(function() {
+                assert_false(jsLoaded,
+                    "non-cached cross origin doc.written script " +
+                    "shouldn't be executed");
+
+                if (window.internals) {
+                    priority = internals.getResourcePriority(src, document);
+
+                    assert_equals(priority, 0,
+                        "The asynchronous request to the blocked script " +
+                        "should be sent with the lowest priority");
+                }
+                t.done();
+            }, 0);
+        };
+
+        document.write('<scr' + 'ipt src="' + src +
+            '" onload="onload2()" onError="onerror2()"></scr' + 'ipt>');
+
+        // Make sure that the intervention is not canceled by Oilpan GC.
+        gc();
     }
+
+    async_test(testCachedCrossOriginScriptNotBlocked, "cross-origin scripts");
+</script>
+
+<script>
 </script>

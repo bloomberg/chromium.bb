@@ -53,7 +53,6 @@ struct CrossThreadFetchParametersData;
 // one in CrossThreadFetchParametersData and write copying logic.
 class PLATFORM_EXPORT FetchParameters {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(FetchParameters);
 
  public:
   enum DeferOption { kNoDefer, kLazyLoad, kIdleLoad };

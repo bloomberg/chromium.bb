@@ -75,9 +75,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false),
       created_during_document_write_(created_during_document_write),
-      async_exec_type_(ScriptRunner::kNone),
-      document_write_intervention_(
-          DocumentWriteIntervention::kDocumentWriteInterventionNone) {
+      async_exec_type_(ScriptRunner::kNone) {
   // https://html.spec.whatwg.org/#already-started
   // "The cloning steps for script elements must set the "already started"
   //  flag on the copy if it is set on the element being cloned."
@@ -121,12 +119,6 @@ void ScriptLoader::Trace(blink::Visitor* visitor) {
 void ScriptLoader::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(pending_script_);
   visitor->TraceWrappers(module_tree_client_);
-}
-
-void ScriptLoader::SetFetchDocWrittenScriptDeferIdle() {
-  DCHECK(!created_during_document_write_);
-  document_write_intervention_ =
-      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle;
 }
 
 void ScriptLoader::DidNotifySubtreeInsertionsToDocument() {
@@ -424,8 +416,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         SubresourceIntegrityHelper::DoReport(element_document, report_info);
       }
 
-      if (!FetchClassicScript(url, element_document.Fetcher(), nonce_,
-                              integrity_metadata, parser_state, cross_origin,
+      if (!FetchClassicScript(url, element_document, nonce_, integrity_metadata,
+                              parser_state, cross_origin,
                               element_document.GetSecurityOrigin(), encoding)) {
         // TODO(hiroshige): Make this asynchronous. Currently we fire the error
         // event synchronously to keep the existing behavior.
@@ -523,18 +515,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         break;
       }
     }
-  }
-
-  // [Intervention]
-  // Since the asynchronous, low priority fetch for doc.written blocked
-  // script is not for execution, return early from here. Watch for its
-  // completion to be able to remove it from the memory cache.
-  if (GetScriptType() == ScriptType::kClassic &&
-      document_write_intervention_ ==
-          DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-    pending_script_ = CreatePendingScript();
-    pending_script_->WatchForLoad(this);
-    return true;
   }
 
   // 23. "Then, follow the first of the following options that describes the
@@ -695,7 +675,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
 bool ScriptLoader::FetchClassicScript(
     const KURL& url,
-    ResourceFetcher* fetcher,
+    Document& element_document,
     const String& nonce,
     const IntegrityMetadataSet& integrity_metadata,
     ParserDisposition parser_state,
@@ -715,25 +695,6 @@ bool ScriptLoader::FetchClassicScript(
   if (!parser_inserted_ || element_->AsyncAttributeValue() ||
       element_->DeferAttributeValue())
     defer = FetchParameters::kLazyLoad;
-
-  // [Intervention]
-  if (document_write_intervention_ ==
-      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-    resource_request.AddHTTPHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/feature/5718547946799104>");
-    defer = FetchParameters::kIdleLoad;
-  }
-
-  // [Intervention]
-  // For users on slow connections, we want to avoid blocking the parser in
-  // the main frame on script loads inserted via document.write, since it can
-  // add significant delays before page content is displayed on the screen.
-  if (MaybeDisallowFetchForDocWrittenScript(resource_request, defer,
-                                            element_->GetDocument())) {
-    document_write_intervention_ =
-        DocumentWriteIntervention::kDoNotFetchDocWrittenScript;
-  }
 
   ResourceLoaderOptions options;
   options.initiator_info.name = element_->InitiatorName();
@@ -764,10 +725,19 @@ bool ScriptLoader::FetchClassicScript(
   // |kLazyLoad| for module scripts in ModuleScriptLoader.
   params.SetDefer(defer);
 
-  resource_ = ScriptResource::Fetch(params, fetcher);
+  // [Intervention]
+  // For users on slow connections, we want to avoid blocking the parser in
+  // the main frame on script loads inserted via document.write, since it can
+  // add significant delays before page content is displayed on the screen.
+  auto* client_for_intervention =
+      MaybeDisallowFetchForDocWrittenScript(params, element_document);
 
+  resource_ = ScriptResource::Fetch(params, element_document.Fetcher());
   if (!resource_)
     return false;
+
+  if (client_for_intervention)
+    client_for_intervention->SetResource(resource_);
 
   return true;
 }
@@ -972,14 +942,6 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK(!will_be_parser_executed_);
   DCHECK_EQ(pending_script_, pending_script);
   DCHECK_EQ(pending_script_->GetScriptType(), GetScriptType());
-
-  if (document_write_intervention_ ==
-      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-    DCHECK_EQ(pending_script_->GetScriptType(), ScriptType::kClassic);
-    pending_script_->StopWatchingForLoad();
-    return;
-  }
-
   DCHECK(async_exec_type_ != ScriptRunner::kNone);
 
   Document* context_document = element_->GetDocument().ContextDocument();

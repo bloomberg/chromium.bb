@@ -41,7 +41,6 @@
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLParserScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
@@ -254,81 +253,6 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
   DCHECK(!IsExecutingScript());
 }
 
-void FetchBlockedDocWriteScript(ScriptElementBase* element,
-                                bool is_parser_inserted,
-                                const TextPosition& script_start_position) {
-  DCHECK(element);
-
-  ScriptLoader* script_loader =
-      ScriptLoader::Create(element, is_parser_inserted, false, false);
-  DCHECK(script_loader);
-  script_loader->SetFetchDocWrittenScriptDeferIdle();
-  script_loader->PrepareScript(script_start_position);
-  CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
-}
-
-void EmitWarningForDocWriteScripts(const String& url, Document& document) {
-  String message =
-      "The parser-blocking, cross site (i.e. different eTLD+1) "
-      "script, " +
-      url +
-      ", invoked via document.write was NOT BLOCKED on this page load, but MAY "
-      "be blocked by the browser in future page loads with poor network "
-      "connectivity.";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
-}
-
-void EmitErrorForDocWriteScripts(const String& url, Document& document) {
-  String message =
-      "Network request for the parser-blocking, cross site "
-      "(i.e. different eTLD+1) script, " +
-      url +
-      ", invoked via document.write was BLOCKED by the browser due to poor "
-      "network connectivity. ";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
-}
-
-void HTMLParserScriptRunner::PossiblyFetchBlockedDocWriteScript(
-    PendingScript* pending_script) {
-  // If the script was blocked as part of document.write intervention,
-  // then send an asynchronous GET request with an interventions header.
-
-  if (!ParserBlockingScript())
-    return;
-
-  if (ParserBlockingScript() != pending_script)
-    return;
-
-  ScriptElementBase* element = ParserBlockingScript()->GetElement();
-
-  ScriptLoader* script_loader = element->Loader();
-  if (!script_loader || !script_loader->DisallowedFetchForDocWrittenScript())
-    return;
-
-  // We don't allow document.write() and its intervention with module scripts.
-  CHECK_EQ(pending_script->GetScriptType(), ScriptType::kClassic);
-
-  if (!pending_script->ErrorOccurred()) {
-    EmitWarningForDocWriteScripts(
-        pending_script->UrlForClassicScript().GetString(), *document_);
-    return;
-  }
-
-  // Due to dependency violation, not able to check the exact error to be
-  // ERR_CACHE_MISS but other errors are rare with
-  // WebCachePolicy::ReturnCacheDataDontLoad.
-
-  // The ScriptResource is not on MemoryCache because it is errored.
-
-  EmitErrorForDocWriteScripts(pending_script->UrlForClassicScript().GetString(),
-                              *document_);
-  TextPosition starting_position = ParserBlockingScript()->StartingPosition();
-  bool is_parser_inserted = script_loader->IsParserInserted();
-  FetchBlockedDocWriteScript(element, is_parser_inserted, starting_position);
-}
-
 void HTMLParserScriptRunner::PendingScriptFinished(
     PendingScript* pending_script) {
   // Handle cancellations of parser-blocking script loads without
@@ -357,10 +281,6 @@ void HTMLParserScriptRunner::PendingScriptFinished(
 
     return;
   }
-
-  // If the script was blocked as part of document.write intervention,
-  // then send an asynchronous GET request with an interventions header.
-  PossiblyFetchBlockedDocWriteScript(pending_script);
 
   host_->NotifyScriptLoaded(pending_script);
 }
