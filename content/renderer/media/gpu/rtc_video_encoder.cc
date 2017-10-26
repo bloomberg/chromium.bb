@@ -22,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
@@ -522,7 +523,11 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
       }
       pending_timestamps_.pop_front();
     }
+#if !defined(OS_ANDROID)
+    // No capture timestamps available on Android at present. So generate rtp
+    // timestamps below.
     DCHECK(rtp_timestamp.has_value());
+#endif
   }
   if (!rtp_timestamp.has_value()) {
     failed_timestamp_match_ = true;
