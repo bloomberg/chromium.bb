@@ -5,6 +5,7 @@
 // Multiply-included file, no traditional include guard.
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_title_source.h"
@@ -29,12 +30,14 @@ IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::TileVisualType, ntp_tiles::TILE_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
                           THEME_BKGRND_IMAGE_ALIGN_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(favicon_base::IconType, favicon_base::ICON_TYPE_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(ntp_tiles::NTPTileImpression)
   IPC_STRUCT_TRAITS_MEMBER(index)
   IPC_STRUCT_TRAITS_MEMBER(source)
   IPC_STRUCT_TRAITS_MEMBER(title_source)
   IPC_STRUCT_TRAITS_MEMBER(visual_type)
+  IPC_STRUCT_TRAITS_MEMBER(icon_type)
   IPC_STRUCT_TRAITS_MEMBER(data_generation_time)
   IPC_STRUCT_TRAITS_MEMBER(url_for_rappor)
 IPC_STRUCT_TRAITS_END()

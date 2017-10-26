@@ -100,7 +100,7 @@ public class MostVisitedSitesBridge
     @Override
     public void recordTileImpression(Tile tile) {
         nativeRecordTileImpression(mNativeMostVisitedSitesBridge, tile.getIndex(), tile.getType(),
-                tile.getTitleSource(), tile.getSource(),
+                tile.getIconType(), tile.getTitleSource(), tile.getSource(),
                 tile.getData().dataGenerationTime.getTime(), tile.getUrl());
     }
 
@@ -197,7 +197,8 @@ public class MostVisitedSitesBridge
     private native void nativeRecordPageImpression(
             long nativeMostVisitedSitesBridge, int tilesCount);
     private native void nativeRecordTileImpression(long nativeMostVisitedSitesBridge, int index,
-            int type, int titleSource, int source, long dataGenerationTimeMs, String url);
+            int type, int iconType, int titleSource, int source, long dataGenerationTimeMs,
+            String url);
     private native void nativeRecordOpenedMostVisitedItem(long nativeMostVisitedSitesBridge,
             int index, int tileType, int titleSource, int source, long dataGenerationTimeMs);
 }

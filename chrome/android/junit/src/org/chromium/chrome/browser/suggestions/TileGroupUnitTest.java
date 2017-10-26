@@ -41,6 +41,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
@@ -493,7 +494,7 @@ public class TileGroupUnitTest {
 
         public void fulfillLargeIconRequests(Bitmap bitmap, int color, boolean isColorDefault) {
             for (LargeIconCallback callback : mCallbackList) {
-                callback.onLargeIconAvailable(bitmap, color, isColorDefault);
+                callback.onLargeIconAvailable(bitmap, color, isColorDefault, IconType.INVALID_ICON);
             }
             mCallbackList.clear();
         }

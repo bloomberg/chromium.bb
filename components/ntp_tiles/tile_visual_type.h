@@ -10,7 +10,7 @@ namespace ntp_tiles {
 // The visual type of an NTP tile.
 //
 // These values must stay in sync with the NTPTileVisualType enum in
-// histograms.xml.
+// histograms/enums.xml.
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.suggestions

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/metrics.h"
 
+#include "components/favicon_base/favicon_types.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_visual_type.h"
@@ -33,9 +34,10 @@ void RecordNTPTileImpression(int index,
                              base::Time data_generation_time,
                              const GURL& url) {
   ntp_tiles::metrics::RecordTileImpression(
-      ntp_tiles::NTPTileImpression(index, source, title_source,
-                                   VisualTypeFromAttributes(attributes),
-                                   data_generation_time, url),
+      ntp_tiles::NTPTileImpression(
+          index, source, title_source, VisualTypeFromAttributes(attributes),
+          // TODO(crbug.com/774977): Plumb icon type.
+          /*icon_type=*/favicon_base::INVALID_ICON, data_generation_time, url),
       GetApplicationContext()->GetRapporServiceImpl());
 }
 
@@ -47,5 +49,6 @@ void RecordNTPTileClick(int index,
                         const GURL& url) {
   ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
       index, source, title_source, VisualTypeFromAttributes(attributes),
-      data_generation_time, url));
+      // TODO(crbug.com/774977): Plumb icon type.
+      /*icon_type=*/favicon_base::INVALID_ICON, data_generation_time, url));
 }
