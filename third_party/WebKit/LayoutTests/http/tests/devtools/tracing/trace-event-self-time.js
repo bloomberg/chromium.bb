@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/timeline-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Test trace event self time.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+
   var sessionId = '6.23';
   var rawTraceEvents = [
     {
@@ -242,11 +245,4 @@ function test() {
       e => TestRunner.addResult(
           `${e.name}: ${e.startTime} ${(e.selfTime || 0).toFixed(2)}/${(e.duration || 0).toFixed(2)}`));
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-</body>
-</html>
-
+})();
