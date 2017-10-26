@@ -13,20 +13,20 @@ chrome.test.runTests(function() {
         ['touchend', []],
         ['touchcancel', []]
       ]);
-
-      this.listenerOptions = new Map();
     }
 
     addEventListener(type, listener, options) {
       if (this.listeners.has(type)) {
-        this.listeners.get(type).push(listener);
-        this.listenerOptions.set(listener, options);
+        this.listeners.get(type).push({
+          listener: listener,
+          options: options
+        });
       }
     }
 
     sendEvent(event) {
       for (let l of this.listeners.get(event.type))
-        l(event);
+        l.listener(event);
     }
   }
 
@@ -187,7 +187,7 @@ chrome.test.runTests(function() {
       // to being passive, we must set the value explicitly
       // (see crbug.com/675730).
       for (let l of stubElement.listeners.get('touchmove')) {
-        let options = stubElement.listenerOptions.get(l);
+        let options = l.options;
         chrome.test.assertTrue(!!options &&
                                typeof(options.passive) == 'boolean');
         chrome.test.assertFalse(options.passive);
