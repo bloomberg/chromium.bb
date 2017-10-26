@@ -8,7 +8,6 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -22,7 +21,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
-#include "content/public/common/screen_info.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -44,7 +42,7 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateResizeParams, OnUpdateResizeParams)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
                         OnUpdateViewportIntersection)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
@@ -273,27 +271,12 @@ void CrossProcessFrameConnector::UnlockMouse() {
     root_view->UnlockMouse();
 }
 
-void CrossProcessFrameConnector::OnUpdateResizeParams(
+void CrossProcessFrameConnector::OnFrameRectChanged(
     const gfx::Rect& frame_rect,
-    const ScreenInfo& screen_info,
     const viz::LocalSurfaceId& local_surface_id) {
-  // If the |frame_rect| or |screen_info| of the frame has changed, then the
-  // viz::LocalSurfaceId must also change.
-  if ((child_frame_rect_.size() != frame_rect.size() ||
-       screen_info_ != screen_info) &&
-      local_surface_id_ == local_surface_id) {
-    bad_message::ReceivedBadMessage(
-        frame_proxy_in_parent_renderer_->GetProcess(),
-        bad_message::CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED);
-    return;
-  }
-
-  child_frame_rect_ = frame_rect;
-  screen_info_ = screen_info;
   local_surface_id_ = local_surface_id;
   if (!frame_rect.size().IsEmpty())
     SetRect(frame_rect);
-  view_->GetRenderWidgetHost()->WasResized();
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
