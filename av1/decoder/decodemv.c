@@ -2591,23 +2591,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_COMPOUND_SINGLEREF
   if (is_singleref_comp_mode) assert(mbmi->motion_mode == SIMPLE_TRANSLATION);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_WARPED_MOTION
-  if (mbmi->motion_mode == WARPED_CAUSAL) {
-    mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
-
-#if CONFIG_EXT_WARPED_MOTION
-    if (mbmi->num_proj_ref[0] > 1)
-      mbmi->num_proj_ref[0] = sortSamples(pts_mv, &mbmi->mv[0].as_mv, pts,
-                                          pts_inref, mbmi->num_proj_ref[0]);
-#endif  // CONFIG_EXT_WARPED_MOTION
-
-    if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
-                        mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
-                        &mbmi->wm_params[0], mi_row, mi_col)) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid Warped Model");
-    }
-  }
-#endif  // CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
@@ -2658,6 +2641,27 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
   read_mb_interp_filter(cm, xd, mbmi, r);
 #endif  // CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
+
+#if CONFIG_WARPED_MOTION
+  if (mbmi->motion_mode == WARPED_CAUSAL) {
+    mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
+
+#if CONFIG_EXT_WARPED_MOTION
+    if (mbmi->num_proj_ref[0] > 1)
+      mbmi->num_proj_ref[0] = sortSamples(pts_mv, &mbmi->mv[0].as_mv, pts,
+                                          pts_inref, mbmi->num_proj_ref[0]);
+#endif  // CONFIG_EXT_WARPED_MOTION
+
+    if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
+                        mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
+                        &mbmi->wm_params[0], mi_row, mi_col)) {
+#if DEC_MISMATCH_DEBUG
+      printf("Warning: unexpected warped model from aomenc\n");
+#endif
+      mbmi->wm_params[0].invalid = 1;
+    }
+  }
+#endif  // CONFIG_WARPED_MOTION
 
 #if DEC_MISMATCH_DEBUG
   dec_dump_logs(cm, mi, mi_row, mi_col, inter_mode_ctx, mode_ctx);

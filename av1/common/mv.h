@@ -111,6 +111,7 @@ typedef struct {
   TransformationType wmtype;
   int32_t wmmat[8];
   int16_t alpha, beta, gamma, delta;
+  int8_t invalid;
 } WarpedMotionParams;
 
 /* clang-format off */
@@ -118,7 +119,8 @@ static const WarpedMotionParams default_warp_params = {
   IDENTITY,
   { 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0,
     0 },
-  0, 0, 0, 0
+  0, 0, 0, 0,
+  0,
 };
 /* clang-format on */
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
