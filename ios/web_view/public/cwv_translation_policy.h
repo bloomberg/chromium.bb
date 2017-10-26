@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_POLICY_H
-#define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_POLICY_H
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_POLICY_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_POLICY_H_
 
 #import <Foundation/Foundation.h>
 
@@ -45,4 +45,4 @@ CWV_EXPORT
 
 NS_ASSUME_NONNULL_END
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_POLICY_H
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_POLICY_H_
