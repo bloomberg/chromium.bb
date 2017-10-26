@@ -1899,7 +1899,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTrackerTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/PlatformNetworksManagerTest.java",
-  "junit/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderTest.java",
+  "junit/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactUnitTest.java",
   "junit/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",

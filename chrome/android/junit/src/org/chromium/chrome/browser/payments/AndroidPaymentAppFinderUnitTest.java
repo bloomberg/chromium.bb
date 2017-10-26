@@ -37,11 +37,11 @@ import java.util.Set;
 /** Tests for the native Android payment app finder. */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 21, manifest = Config.NONE)
-public class AndroidPaymentAppFinderTest {
+public class AndroidPaymentAppFinderUnitTest {
     private static final IntentArgumentMatcher sPayIntentArgumentMatcher =
             new IntentArgumentMatcher(new Intent("org.chromium.intent.action.PAY"));
 
-    public AndroidPaymentAppFinderTest() {}
+    public AndroidPaymentAppFinderUnitTest() {}
 
     /**
      * Argument matcher that matches Intents using |filterEquals| method.
