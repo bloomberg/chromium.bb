@@ -167,8 +167,8 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedMemoryDump, this);
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      base::trace_event::MemoryDumpLevelOfDetail::SUMMARY_ONLY};
+      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
   coordinator_->RequestGlobalMemoryDump(args, callback);
 
   // The callback keeps this object alive until the callback is invoked.

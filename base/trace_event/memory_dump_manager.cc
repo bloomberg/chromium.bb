@@ -550,7 +550,7 @@ void MemoryDumpManager::CreateProcessDump(
     // absent we fail the dump immediately. If heap profiler is enabled during
     // the dump, then the dump succeeds since the dump was requested before, and
     // the future process dumps will contain heap dumps.
-    if (args.level_of_detail != MemoryDumpLevelOfDetail::SUMMARY_ONLY &&
+    if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
         ShouldEnableMDPAllocatorHooks(heap_profiling_mode_) &&
         !heap_profiler_serialization_state_) {
       callback.Run(false /* success */, args.dump_guid, nullptr);
@@ -606,8 +606,7 @@ void MemoryDumpManager::SetupNextMemoryDump(
 
   // If we are in summary mode, we only need to invoke the providers
   // whitelisted for summary mode.
-  if (pmd_async_state->req_args.level_of_detail ==
-          MemoryDumpLevelOfDetail::SUMMARY_ONLY &&
+  if (pmd_async_state->req_args.dump_type == MemoryDumpType::SUMMARY_ONLY &&
       !mdpinfo->whitelisted_for_summary_mode) {
     pmd_async_state->pending_dump_providers.pop_back();
     return SetupNextMemoryDump(std::move(pmd_async_state));
