@@ -32,6 +32,7 @@ class RenderFrameHost;
 class Shell;
 class SiteInstance;
 class ToRenderFrameHost;
+struct ScreenInfo;
 
 // Navigates the frame represented by |node| to |url|, blocking until the
 // navigation finishes.
@@ -179,10 +180,10 @@ class UrlCommitObserver : WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(UrlCommitObserver);
 };
 
-// Class to sniff incoming IPCs for FrameHostMsg_FrameRectChanged messages.
-class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
+// Class to sniff incoming IPCs for FrameHostMsg_UpdateResizeParams messages.
+class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
  public:
-  FrameRectChangedMessageFilter();
+  UpdateResizeParamsMessageFilter();
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -192,19 +193,21 @@ class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
   void Reset();
 
  private:
-  ~FrameRectChangedMessageFilter() override;
+  ~UpdateResizeParamsMessageFilter() override;
 
-  void OnFrameRectChanged(const gfx::Rect& rect,
-                          const viz::LocalSurfaceId& local_surface_id);
+  void OnUpdateResizeParams(const gfx::Rect& rect,
+                            const ScreenInfo& screen_info,
+                            const viz::LocalSurfaceId& local_surface_id);
 
-  void OnFrameRectChangedOnUI(const gfx::Rect& rect,
-                              const viz::LocalSurfaceId& local_surface_id);
+  void OnUpdateResizeParamsOnUI(const gfx::Rect& rect,
+                                const ScreenInfo& screen_info,
+                                const viz::LocalSurfaceId& local_surface_id);
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   bool frame_rect_received_;
   gfx::Rect last_rect_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameRectChangedMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(UpdateResizeParamsMessageFilter);
 };
 
 }  // namespace content

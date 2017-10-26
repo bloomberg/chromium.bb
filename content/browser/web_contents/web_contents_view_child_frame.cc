@@ -60,10 +60,12 @@ void WebContentsViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) const {
   // to happen in RenderWidgetHostViewChildFrame, but it seems like the right
   // thing to do. We should keep an eye on this in case the else-clause below
   // causes problems.
-  if (web_contents_->GetOuterWebContents())
-    GetOuterView()->GetScreenInfo(screen_info);
-  else
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (!rwhv) {
     WebContentsView::GetDefaultScreenInfo(screen_info);
+    return;
+  }
+  rwhv->GetScreenInfo(screen_info);
 }
 
 void WebContentsViewChildFrame::GetContainerBounds(gfx::Rect* out) const {

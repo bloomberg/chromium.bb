@@ -23,6 +23,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/screen_info.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/frame_owner_properties.h"
 #include "content/renderer/loader/web_url_request_util.h"
@@ -229,6 +230,8 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   compositing_helper_.reset(
       ChildFrameCompositingHelper::CreateForRenderFrameProxy(this));
 
+  pending_resize_params_.screen_info = render_widget_->screen_info();
+
 #if defined(USE_AURA)
   if (IsRunningInMash()) {
     RendererWindowTreeClient* renderer_window_tree_client =
@@ -243,11 +246,10 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 #endif
 }
 
-void RenderFrameProxy::ResendFrameRects() {
-  // Reset |frame_rect_| in order to allocate a new viz::LocalSurfaceId.
-  gfx::Rect rect = frame_rect_;
-  frame_rect_ = gfx::Rect();
-  FrameRectsChanged(rect);
+void RenderFrameProxy::ResendResizeParams() {
+  // Reset |sent_resize_params_| in order to allocate a new viz::LocalSurfaceId.
+  sent_resize_params_ = base::nullopt;
+  WasResized();
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
@@ -262,6 +264,11 @@ void RenderFrameProxy::WillBeginCompositorFrame() {
 }
 
 void RenderFrameProxy::DidCommitCompositorFrame() {
+}
+
+void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
+  pending_resize_params_.screen_info = screen_info;
+  WasResized();
 }
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
@@ -302,19 +309,6 @@ void RenderFrameProxy::OnDidUpdateFramePolicy(const FramePolicy& frame_policy) {
   web_frame_->SetFrameOwnerPolicy(
       frame_policy.sandbox_flags,
       FeaturePolicyHeaderToWeb(frame_policy.container_policy));
-}
-
-void RenderFrameProxy::MaybeUpdateCompositingHelper() {
-  if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
-    return;
-
-  float device_scale_factor = render_widget_->GetOriginalDeviceScaleFactor();
-  viz::SurfaceInfo surface_info(
-      viz::SurfaceId(frame_sink_id_, local_surface_id_), device_scale_factor,
-      gfx::ScaleToCeiledSize(frame_rect_.size(), device_scale_factor));
-
-  if (enable_surface_synchronization_)
-    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
 }
 
 void RenderFrameProxy::SetChildFrameSurface(
@@ -411,7 +405,7 @@ void RenderFrameProxy::OnViewChanged(const viz::FrameSinkId& frame_sink_id) {
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
-  ResendFrameRects();
+  ResendResizeParams();
 }
 
 void RenderFrameProxy::OnDidStopLoading() {
@@ -494,6 +488,49 @@ void RenderFrameProxy::SetMusEmbeddedFrame(
   mus_embedded_frame_ = std::move(mus_embedded_frame);
 }
 #endif
+
+void RenderFrameProxy::WasResized() {
+  bool synchronized_params_changed =
+      !sent_resize_params_ ||
+      sent_resize_params_->frame_rect.size() !=
+          pending_resize_params_.frame_rect.size() ||
+      sent_resize_params_->screen_info != pending_resize_params_.screen_info;
+
+  if (synchronized_params_changed)
+    local_surface_id_ = local_surface_id_allocator_.GenerateId();
+
+  if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
+    float device_scale_factor = render_widget_->GetOriginalDeviceScaleFactor();
+    viz::SurfaceInfo surface_info(
+        viz::SurfaceId(frame_sink_id_, local_surface_id_), device_scale_factor,
+        gfx::ScaleToCeiledSize(frame_rect().size(), device_scale_factor));
+    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
+  }
+
+  bool rect_changed =
+      !sent_resize_params_ ||
+      sent_resize_params_->frame_rect != pending_resize_params_.frame_rect;
+  bool resize_params_changed = synchronized_params_changed || rect_changed;
+
+  gfx::Rect rect = frame_rect();
+
+#if defined(USE_AURA)
+  if (rect_changed && mus_embedded_frame_)
+    mus_embedded_frame_->SetWindowBounds(local_surface_id_, rect);
+#endif
+
+  if (IsUseZoomForDSFEnabled()) {
+    rect = gfx::ScaleToEnclosingRect(
+        rect, 1.f / render_widget_->GetOriginalDeviceScaleFactor());
+  }
+
+  if (resize_params_changed) {
+    // Let the browser know about the updated view rect.
+    Send(new FrameHostMsg_UpdateResizeParams(routing_id_, rect, screen_info(),
+                                             local_surface_id_));
+    sent_resize_params_ = pending_resize_params_;
+  }
+}
 
 void RenderFrameProxy::FrameDetached(DetachType type) {
 #if defined(USE_AURA)
@@ -582,30 +619,8 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
 }
 
 void RenderFrameProxy::FrameRectsChanged(const blink::WebRect& frame_rect) {
-  gfx::Rect rect = frame_rect;
-  const bool did_size_change = frame_rect_.size() != rect.size();
-#if defined(USE_AURA)
-  const bool did_rect_change = did_size_change || frame_rect_ != rect;
-#endif
-
-  frame_rect_ = rect;
-
-  if (did_size_change || !local_surface_id_.is_valid()) {
-    local_surface_id_ = local_surface_id_allocator_.GenerateId();
-    MaybeUpdateCompositingHelper();
-  }
-
-#if defined(USE_AURA)
-  if (did_rect_change && mus_embedded_frame_)
-    mus_embedded_frame_->SetWindowBounds(local_surface_id_, rect);
-#endif
-
-  if (IsUseZoomForDSFEnabled()) {
-    rect = gfx::ScaleToEnclosingRect(
-        rect, 1.f / render_widget_->GetOriginalDeviceScaleFactor());
-  }
-
-  Send(new FrameHostMsg_FrameRectChanged(routing_id_, rect, local_surface_id_));
+  pending_resize_params_.frame_rect = gfx::Rect(frame_rect);
+  WasResized();
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
@@ -657,10 +672,9 @@ void RenderFrameProxy::OnMusEmbeddedFrameSurfaceChanged(
 void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
-  MaybeUpdateCompositingHelper();
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
-  ResendFrameRects();
+  ResendResizeParams();
 }
 #endif
 

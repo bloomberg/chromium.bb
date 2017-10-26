@@ -18,6 +18,7 @@ class Message;
 
 namespace content {
 class RenderFrameProxyHost;
+struct ScreenInfo;
 
 // CrossProcessFrameConnector provides the platform view abstraction for
 // RenderWidgetHostViewChildFrame allowing RWHVChildFrame to remain ignorant
@@ -121,8 +122,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void ResetFrameRect();
 
   // Handlers for messages received from the parent frame.
-  void OnFrameRectChanged(const gfx::Rect& frame_rect,
-                          const viz::LocalSurfaceId& local_surface_id);
+  void OnUpdateResizeParams(const gfx::Rect& frame_rect,
+                            const ScreenInfo& screen_info,
+                            const viz::LocalSurfaceId& local_surface_id);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection);
   void OnVisibilityChanged(bool visible);
   void OnSetIsInert(bool);

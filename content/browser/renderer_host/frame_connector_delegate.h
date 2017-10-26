@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "content/public/common/screen_info.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(USE_AURA)
@@ -139,6 +140,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
     return local_surface_id_;
   }
 
+  // Returns the ScreenInfo propagated from the parent to be used by this
+  // child frame.
+  const ScreenInfo& screen_info() const { return screen_info_; }
+
   // Determines whether the current view's content is inert, either because
   // an HTMLDialogElement is being modally displayed in a higher-level frame,
   // or because the inert attribute has been specified.
@@ -168,6 +173,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // ViewportIntersection() can return a reference.
   gfx::Rect viewport_intersection_rect_;
 
+  ScreenInfo screen_info_;
   viz::LocalSurfaceId local_surface_id_;
 };
 

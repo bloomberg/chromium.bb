@@ -162,7 +162,7 @@ void BrowserPlugin::Attach() {
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
-  attach_params.view_rect = view_rect();
+  attach_params.frame_rect = frame_rect();
   attach_params.is_full_page_plugin = false;
   if (Container()) {
     blink::WebLocalFrame* frame = Container()->GetDocument().GetFrame();
@@ -194,7 +194,8 @@ void BrowserPlugin::Attach() {
     }
   }
 
-  ViewRectsChanged(view_rect());
+  sent_resize_params_ = base::nullopt;
+  WasResized();
 }
 
 void BrowserPlugin::Detach() {
@@ -210,6 +211,49 @@ void BrowserPlugin::Detach() {
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
+}
+
+void BrowserPlugin::WasResized() {
+  bool size_changed =
+      !sent_resize_params_ || sent_resize_params_->frame_rect.size() !=
+                                  pending_resize_params_.frame_rect.size();
+
+  bool synchronized_params_changed =
+      !sent_resize_params_ || size_changed ||
+      sent_resize_params_->screen_info != pending_resize_params_.screen_info;
+
+  if (synchronized_params_changed)
+    local_surface_id_ = local_surface_id_allocator_.GenerateId();
+
+  if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
+    RenderWidget* render_widget =
+        RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
+            ->GetRenderWidget();
+    float device_scale_factor = render_widget->GetOriginalDeviceScaleFactor();
+    viz::SurfaceInfo surface_info(
+        viz::SurfaceId(frame_sink_id_, local_surface_id_), device_scale_factor,
+        gfx::ScaleToCeiledSize(frame_rect().size(), device_scale_factor));
+    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
+  }
+
+  bool position_changed =
+      !sent_resize_params_ || sent_resize_params_->frame_rect.origin() !=
+                                  pending_resize_params_.frame_rect.origin();
+  bool resize_params_changed = synchronized_params_changed || position_changed;
+
+  if (resize_params_changed && attached()) {
+    // Let the browser know about the updated view rect.
+    BrowserPluginManager::Get()->Send(
+        new BrowserPluginHostMsg_UpdateResizeParams(browser_plugin_instance_id_,
+                                                    frame_rect(), screen_info(),
+                                                    local_surface_id_));
+  }
+
+  if (delegate_ && size_changed)
+    delegate_->DidResizeElement(frame_rect().size());
+
+  if (resize_params_changed && attached())
+    sent_resize_params_ = pending_resize_params_;
 }
 
 void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
@@ -231,12 +275,8 @@ void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id,
                                  const viz::FrameSinkId& frame_sink_id) {
   guest_crashed_ = false;
   frame_sink_id_ = frame_sink_id;
-  if (!view_rect_)
-    return;
-
-  gfx::Rect view_rect = *view_rect_;
-  view_rect_ = gfx::Rect();
-  ViewRectsChanged(view_rect);
+  sent_resize_params_ = base::nullopt;
+  WasResized();
 }
 
 void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
@@ -290,36 +330,6 @@ void BrowserPlugin::UpdateInternalInstanceId() {
       base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
 }
 
-void BrowserPlugin::ViewRectsChanged(const gfx::Rect& view_rect) {
-  bool rect_size_changed =
-      !view_rect_ || view_rect_->size() != view_rect.size();
-  if (rect_size_changed || !local_surface_id_.is_valid()) {
-    local_surface_id_ = local_surface_id_allocator_.GenerateId();
-    if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
-      RenderWidget* render_widget =
-          RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
-              ->GetRenderWidget();
-      float device_scale_factor = render_widget->GetOriginalDeviceScaleFactor();
-      viz::SurfaceInfo surface_info(
-          viz::SurfaceId(frame_sink_id_, local_surface_id_),
-          device_scale_factor,
-          gfx::ScaleToCeiledSize(view_rect.size(), device_scale_factor));
-      compositing_helper_->SetPrimarySurfaceInfo(surface_info);
-    }
-  }
-
-  view_rect_ = view_rect;
-
-  if (attached()) {
-    // Let the browser know about the updated view rect.
-    BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateGeometry(
-        browser_plugin_instance_id_, *view_rect_, local_surface_id_));
-  }
-
-  if (rect_size_changed && delegate_)
-    delegate_->DidResizeElement(view_rect_->size());
-}
-
 void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
   if (!attached())
     return;
@@ -328,6 +338,11 @@ void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
       browser_plugin_instance_id_,
       should_be_focused,
       focus_type));
+}
+
+void BrowserPlugin::ScreenInfoChanged(const ScreenInfo& screen_info) {
+  pending_resize_params_.screen_info = screen_info;
+  WasResized();
 }
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
@@ -365,6 +380,11 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
 
   compositing_helper_.reset(ChildFrameCompositingHelper::CreateForBrowserPlugin(
       weak_ptr_factory_.GetWeakPtr()));
+
+  RenderWidget* render_widget =
+      RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
+          ->GetRenderWidget();
+  pending_resize_params_.screen_info = render_widget->screen_info();
 
   return true;
 }
@@ -430,7 +450,7 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
       RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
           ->GetRenderWidget();
   render_widget->ConvertViewportToWindow(&rect_in_css);
-  gfx::Rect view_rect = rect_in_css;
+  gfx::Rect frame_rect = rect_in_css;
 
   if (!ready_) {
     if (delegate_)
@@ -438,7 +458,8 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
     ready_ = true;
   }
 
-  ViewRectsChanged(view_rect);
+  pending_resize_params_.frame_rect = frame_rect;
+  WasResized();
 }
 
 void BrowserPlugin::UpdateFocus(bool focused, blink::WebFocusType focus_type) {

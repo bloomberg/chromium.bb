@@ -47,27 +47,6 @@ void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
 }
 
 // static
-bool BrowserPluginEmbedder::NotifyScreenInfoChanged(
-    WebContents* guest_web_contents) {
-  if (guest_web_contents->GetRenderViewHost()) {
-    auto* render_widget_host = RenderWidgetHostImpl::From(
-        guest_web_contents->GetRenderViewHost()->GetWidget());
-    render_widget_host->NotifyScreenInfoChanged();
-  }
-
-  // Returns false to iterate over all guests.
-  return false;
-}
-
-void BrowserPluginEmbedder::ScreenInfoChanged() {
-  if (!GetBrowserPluginGuestManager())
-    return;
-
-  GetBrowserPluginGuestManager()->ForEachGuest(web_contents(), base::Bind(
-      &BrowserPluginEmbedder::NotifyScreenInfoChanged));
-}
-
-// static
 bool BrowserPluginEmbedder::CancelDialogs(WebContents* guest_web_contents) {
   static_cast<WebContentsImpl*>(guest_web_contents)
       ->CancelActiveAndPendingDialogs();
