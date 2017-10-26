@@ -19,7 +19,7 @@ namespace gl {
 namespace {
 
 const uint8_t kRed[] = {0xF0, 0x0, 0x0, 0xFF};
-const uint8_t kGreen[] = {0x0, 0xFF, 0x0, 0xFF};
+const uint8_t kYellow[] = {0xF0, 0xFF, 0x00, 0xFF};
 
 template <gfx::BufferUsage usage, gfx::BufferFormat format>
 class GLImageNativePixmapTestDelegate {
@@ -61,7 +61,7 @@ class GLImageNativePixmapTestDelegate {
   unsigned GetTextureTarget() const { return GL_TEXTURE_EXTERNAL_OES; }
 
   const uint8_t* GetImageColor() {
-    return format == gfx::BufferFormat::R_8 ? kRed : kGreen;
+    return format == gfx::BufferFormat::R_8 ? kRed : kYellow;
   }
 
   int GetAdmissibleError() const {
@@ -83,6 +83,15 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmapScanout,
                               GLImageTest,
                               GLImageScanoutType);
 
+using GLImageScanoutTypeDisabled = testing::Types<
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
+                                    gfx::BufferFormat::BGRX_1010102>>;
+
+// This test is disabled since we need mesa support for XR30 that is not
+// available on many boards yet.
+INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageNativePixmapScanout,
+                              GLImageTest,
+                              GLImageScanoutTypeDisabled);
 using GLImageReadWriteType = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::R_8>,
@@ -92,6 +101,8 @@ using GLImageReadWriteType = testing::Types<
 using GLImageBindTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::BGRA_8888>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::BGRX_1010102>,
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::R_8>,
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,

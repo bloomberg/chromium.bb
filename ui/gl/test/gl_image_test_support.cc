@@ -112,6 +112,19 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
+    case gfx::BufferFormat::BGRX_1010102:
+      DCHECK_EQ(0, plane);
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          *reinterpret_cast<uint32_t*>(&data[y * stride + x * 4]) =
+              0x3 << 30 |  // Alpha channel is unused
+              ((color[0] << 2) | (color[0] >> 6)) << 20 |  // R
+              ((color[1] << 2) | (color[1] >> 6)) << 10 |  // G
+              ((color[2] << 2) | (color[2] >> 6));         // B
+        }
+      }
+      return;
+
     case gfx::BufferFormat::BGRA_8888:
       DCHECK_EQ(0, plane);
       for (int y = 0; y < height; ++y) {

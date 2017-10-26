@@ -288,6 +288,8 @@ const char* BufferFormatToString(gfx::BufferFormat format) {
       return "RGBA_8888";
     case gfx::BufferFormat::BGRX_8888:
       return "BGRX_8888";
+    case gfx::BufferFormat::BGRX_1010102:
+      return "BGRX_1010102";
     case gfx::BufferFormat::BGRA_8888:
       return "BGRA_8888";
     case gfx::BufferFormat::RGBA_F16:
