@@ -52,11 +52,6 @@ namespace blink {
 
 namespace {
 
-bool CompareKeyframes(const scoped_refptr<StringKeyframe>& a,
-                      const scoped_refptr<StringKeyframe>& b) {
-  return a->Offset() < b->Offset();
-}
-
 // Validates the value of |offset| and throws an exception if out of range.
 bool CheckOffset(double offset,
                  double last_offset,
@@ -387,7 +382,7 @@ EffectModel* EffectInput::ConvertObjectForm(
     }
   }
 
-  std::sort(keyframes.begin(), keyframes.end(), CompareKeyframes);
+  std::sort(keyframes.begin(), keyframes.end(), Keyframe::CompareOffsets);
 
   DCHECK(!exception_state.HadException());
 
