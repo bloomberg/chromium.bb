@@ -19,12 +19,26 @@ import java.util.concurrent.Callable;
  *
  * <p>
  * If possible, use callbacks or testing delegates instead of criteria as they
- * do not introduce any polling delays.  Should only use Criteria if no suitable
+ * do not introduce any polling delays.  Should only use criteria if no suitable
  * other approach exists.
  *
  * <p>
+ * If you do not need failure reason, or only need static failure reason, the
+ * Callback flavor can be less verbose with lambda.
+ *
  * <pre>
- * Sample Usage:
+ * <code>
+ * private void assertMenuShown() {
+ *     CriteriaHelper.pollUiThread(() -> getActivity().getAppMenuHandler().isAppMenuShowing(),
+ *             "App menu was not shown");
+ * }
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * Criteria supports dynamic failure reason like this:
+ *
+ * <pre>
  * <code>
  * public void waitForTabFullyLoaded(final Tab tab) {
  *     CriteriaHelper.pollUiThread(new Criteria() {
@@ -95,6 +109,54 @@ public class CriteriaHelper {
     }
 
     /**
+     * Checks whether the given Callable<Boolean> is satisfied at a given interval, until either
+     * the criteria is satisfied, or the specified maxTimeoutMs number of ms has elapsed.
+     *
+     * <p>
+     * This evaluates the Callable<Boolean> on the test thread, which more often than not is not
+     * correct in an InstrumentationTest.  Use {@link #pollUiThread(Callable)} instead.
+     *
+     * @param criteria The Callable<Boolean> that will be checked.
+     * @param failureReason The static failure reason
+     * @param maxTimeoutMs The maximum number of ms that this check will be performed for
+     *                     before timeout.
+     * @param checkIntervalMs The number of ms between checks.
+     */
+    public static void pollInstrumentationThread(final Callable<Boolean> criteria,
+            String failureReason, long maxTimeoutMs, long checkIntervalMs) {
+        pollInstrumentationThread(
+                toCriteria(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
+     * Checks whether the given Callable<Boolean> is satisfied polling at a default interval.
+     *
+     * <p>
+     * This evaluates the Callable<Boolean> on the test thread, which more often than not is not
+     * correct in an InstrumentationTest.  Use {@link #pollUiThread(Callable)} instead.
+     *
+     * @param criteria The Callable<Boolean> that will be checked.
+     * @param failureReason The static failure reason
+     */
+    public static void pollInstrumentationThread(Callable<Boolean> criteria, String failureReason) {
+        pollInstrumentationThread(
+                criteria, failureReason, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Checks whether the given Callable<Boolean> is satisfied polling at a default interval.
+     *
+     * <p>
+     * This evaluates the Callable<Boolean> on the test thread, which more often than not is not
+     * correct in an InstrumentationTest.  Use {@link #pollUiThread(Callable)} instead.
+     *
+     * @param criteria The Callable<Boolean> that will be checked.
+     */
+    public static void pollInstrumentationThread(Callable<Boolean> criteria) {
+        pollInstrumentationThread(criteria, null);
+    }
+
+    /**
      * Checks whether the given Criteria is satisfied polling at a given interval on the UI
      * thread, until either the criteria is satisfied, or the maxTimeoutMs number of ms has elapsed.
      *
@@ -107,17 +169,10 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(final Criteria criteria, long maxTimeoutMs,
             long checkIntervalMs) {
-        final Callable<Boolean> callable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return criteria.isSatisfied();
-            }
-        };
-
         pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(callable);
+                return ThreadUtils.runOnUiThreadBlockingNoException(criteria::isSatisfied);
             }
 
             @Override
@@ -129,12 +184,67 @@ public class CriteriaHelper {
 
     /**
      * Checks whether the given Criteria is satisfied polling at a default interval on the UI
-     * thread.
+     * thread. If dynamic failure reason is not necessary, {@link #pollUiThread(Callable)} is
+     * simpler.
      * @param criteria The Criteria that will be checked.
      *
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThread(final Criteria criteria) {
         pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Checks whether the given Callable<Boolean> is satisfied polling at a given interval on the UI
+     * thread, until either the criteria is satisfied, or the maxTimeoutMs number of ms has elapsed.
+     *
+     * @param criteria The Callable<Boolean> that will be checked.
+     * @param failureReason The static failure reason
+     * @param maxTimeoutMs The maximum number of ms that this check will be performed for
+     *                     before timeout.
+     * @param checkIntervalMs The number of ms between checks.
+     *
+     * @see #pollInstrumentationThread(Criteria)
+     */
+    public static void pollUiThread(final Callable<Boolean> criteria, String failureReason,
+            long maxTimeoutMs, long checkIntervalMs) {
+        pollUiThread(toCriteria(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
+     * Checks whether the given Callable<Boolean> is satisfied polling at a default interval on the
+     * UI thread. A static failure reason is given.
+     * @param criteria The Callable<Boolean> that will be checked.
+     * @param failureReason The static failure reason
+     *
+     * @see #pollInstrumentationThread(Criteria)
+     */
+    public static void pollUiThread(final Callable<Boolean> criteria, String failureReason) {
+        pollUiThread(criteria, failureReason, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Checks whether the given Callable<Boolean> is satisfied polling at a default interval on the
+     * UI thread.
+     * @param criteria The Callable<Boolean> that will be checked.
+     *
+     * @see #pollInstrumentationThread(Criteria)
+     */
+    public static void pollUiThread(final Callable<Boolean> criteria) {
+        pollUiThread(criteria, null);
+    }
+
+    private static Criteria toCriteria(final Callable<Boolean> criteria, String failureReason) {
+        return new Criteria(failureReason) {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return criteria.call();
+                } catch (Exception e) {
+                    // If the exception keeps occurring, it would timeout.
+                    return false;
+                }
+            }
+        };
     }
 }
