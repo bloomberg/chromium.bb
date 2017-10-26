@@ -86,6 +86,18 @@ PasswordManagerPorter::PasswordManagerPorter(
 
 PasswordManagerPorter::~PasswordManagerPorter() {}
 
+void PasswordManagerPorter::Store() {
+  DCHECK(web_contents_);
+  PresentFileSelector(web_contents_,
+                      PasswordManagerPorter::Type::PASSWORD_EXPORT);
+}
+
+void PasswordManagerPorter::Load() {
+  DCHECK(web_contents_);
+  PresentFileSelector(web_contents_,
+                      PasswordManagerPorter::Type::PASSWORD_IMPORT);
+}
+
 void PasswordManagerPorter::PresentFileSelector(
     content::WebContents* web_contents,
     Type type) {
@@ -130,12 +142,6 @@ void PasswordManagerPorter::PresentFileSelector(
       &file_type_info, 1, file_type_info.extensions[0][0],
       web_contents->GetTopLevelNativeWindow(), reinterpret_cast<void*>(type));
 #endif
-}
-
-void PasswordManagerPorter::Store() {
-  DCHECK(web_contents_);
-  PresentFileSelector(web_contents_,
-                      PasswordManagerPorter::Type::PASSWORD_EXPORT);
 }
 
 void PasswordManagerPorter::FileSelected(const base::FilePath& path,

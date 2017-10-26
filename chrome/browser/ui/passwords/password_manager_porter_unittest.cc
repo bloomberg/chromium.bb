@@ -141,14 +141,14 @@ class PasswordManagerPorterTest : public testing::Test {
 TEST_F(PasswordManagerPorterTest, PasswordImport) {
   EXPECT_CALL(*password_manager_porter(), ImportPasswordsFromPath(_));
 
-  password_manager_porter()->PresentFileSelector(
-      web_contents(), PasswordManagerPorter::Type::PASSWORD_IMPORT);
+  password_manager_porter()->set_web_contents(web_contents());
+  password_manager_porter()->Load();
 }
 
 TEST_F(PasswordManagerPorterTest, PasswordExport) {
   EXPECT_CALL(*password_manager_porter(), ExportPasswordsToPath(_));
 
-  password_manager_porter()->PresentFileSelector(
-      web_contents(), PasswordManagerPorter::Type::PASSWORD_EXPORT);
+  password_manager_porter()->set_web_contents(web_contents());
+  password_manager_porter()->Store();
 }
 #endif

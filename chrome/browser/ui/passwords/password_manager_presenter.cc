@@ -418,8 +418,8 @@ void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
 
 void PasswordManagerPresenter::ImportPasswords(
     content::WebContents* web_contents) {
-  password_manager_porter_.PresentFileSelector(
-      web_contents, PasswordManagerPorter::Type::PASSWORD_IMPORT);
+  password_manager_porter_.set_web_contents(web_contents);
+  password_manager_porter_.Load();
 }
 
 void PasswordManagerPresenter::ExportPasswords(
