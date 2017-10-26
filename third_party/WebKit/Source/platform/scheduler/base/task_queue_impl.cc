@@ -239,7 +239,8 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
       Task(TaskQueue::PostedTask(
                base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask,
                           base::Unretained(this), base::Passed(&pending_task)),
-               FROM_HERE, base::TimeDelta(), base::Nestable::kNonNestable),
+               FROM_HERE, base::TimeDelta(), base::Nestable::kNonNestable,
+               pending_task.task_type()),
            base::TimeTicks(), thread_hop_task_sequence_number,
            thread_hop_task_sequence_number));
 }

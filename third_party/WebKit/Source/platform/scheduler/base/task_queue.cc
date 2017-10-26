@@ -31,16 +31,19 @@ TaskQueue::Task::Task(TaskQueue::PostedTask task,
     : PendingTask(task.posted_from,
                   std::move(task.callback),
                   desired_run_time,
-                  task.nestable) {}
+                  task.nestable),
+      task_type_(task.task_type) {}
 
 TaskQueue::PostedTask::PostedTask(base::OnceClosure callback,
                                   base::Location posted_from,
                                   base::TimeDelta delay,
-                                  base::Nestable nestable)
+                                  base::Nestable nestable,
+                                  base::Optional<TaskType> task_type)
     : callback(std::move(callback)),
       posted_from(posted_from),
       delay(delay),
-      nestable(nestable) {}
+      nestable(nestable),
+      task_type(task_type) {}
 
 void TaskQueue::UnregisterTaskQueue() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
