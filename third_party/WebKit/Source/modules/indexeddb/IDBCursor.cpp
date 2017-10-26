@@ -168,9 +168,9 @@ void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {
   backend_->Advance(count, request_->CreateWebCallbacks().release());
 }
 
-void IDBCursor::continueFunction(ScriptState* script_state,
-                                 const ScriptValue& key_value,
-                                 ExceptionState& exception_state) {
+void IDBCursor::Continue(ScriptState* script_state,
+                         const ScriptValue& key_value,
+                         ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continueRequestSetup");
   IDBRequest::AsyncTraceState metrics("IDBCursor::continue");
 
@@ -311,8 +311,8 @@ void IDBCursor::Continue(IDBKey* key,
                      request_->CreateWebCallbacks().release());
 }
 
-IDBRequest* IDBCursor::deleteFunction(ScriptState* script_state,
-                                      ExceptionState& exception_state) {
+IDBRequest* IDBCursor::Delete(ScriptState* script_state,
+                              ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::deleteRequestSetup");
   IDBRequest::AsyncTraceState metrics("IDBCursor::delete");
   if (!transaction_->IsActive()) {

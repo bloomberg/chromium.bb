@@ -270,9 +270,9 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise CacheStorage::deleteFunction(ScriptState* script_state,
-                                           const String& cache_name,
-                                           ExceptionState& exception_state) {
+ScriptPromise CacheStorage::Delete(ScriptState* script_state,
+                                   const String& cache_name,
+                                   ExceptionState& exception_state) {
   if (!CommonChecks(script_state, exception_state))
     return ScriptPromise();
 

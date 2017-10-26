@@ -74,11 +74,11 @@ void IDBKeyRange::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-ScriptValue IDBKeyRange::lowerValue(ScriptState* script_state) const {
+ScriptValue IDBKeyRange::LowerValue(ScriptState* script_state) const {
   return ScriptValue::From(script_state, lower_);
 }
 
-ScriptValue IDBKeyRange::upperValue(ScriptState* script_state) const {
+ScriptValue IDBKeyRange::UpperValue(ScriptState* script_state) const {
   return ScriptValue::From(script_state, upper_);
 }
 

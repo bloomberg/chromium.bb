@@ -49,10 +49,10 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   ScriptPromise addAll(ScriptState*,
                        const HeapVector<RequestInfo>&,
                        ExceptionState&);
-  ScriptPromise deleteFunction(ScriptState*,
-                               const RequestInfo&,
-                               const CacheQueryOptions&,
-                               ExceptionState&);
+  ScriptPromise Delete(ScriptState*,
+                       const RequestInfo&,
+                       const CacheQueryOptions&,
+                       ExceptionState&);
   ScriptPromise put(ScriptState*,
                     const RequestInfo&,
                     Response*,

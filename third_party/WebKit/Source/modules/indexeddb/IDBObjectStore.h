@@ -101,9 +101,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                   const ScriptValue&,
                   const ScriptValue& key,
                   ExceptionState&);
-  IDBRequest* deleteFunction(ScriptState*,
-                             const ScriptValue& key,
-                             ExceptionState&);
+  IDBRequest* Delete(ScriptState*, const ScriptValue& key, ExceptionState&);
   IDBRequest* clear(ScriptState*, ExceptionState&);
 
   IDBIndex* createIndex(ScriptState* script_state,

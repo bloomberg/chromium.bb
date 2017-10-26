@@ -497,13 +497,13 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
   test_cache->SetExpectedBatchOperations(&expected_delete_operations);
 
   ScriptPromise delete_result =
-      cache->deleteFunction(GetScriptState(), RequestToRequestInfo(request),
-                            options, exception_state);
+      cache->Delete(GetScriptState(), RequestToRequestInfo(request), options,
+                    exception_state);
   EXPECT_EQ("dispatchBatch",
             test_cache->GetAndClearLastErrorWebCacheMethodCalled());
   EXPECT_EQ(kNotImplementedString, GetRejectString(delete_result));
 
-  ScriptPromise string_delete_result = cache->deleteFunction(
+  ScriptPromise string_delete_result = cache->Delete(
       GetScriptState(), StringToRequestInfo(url), options, exception_state);
   EXPECT_EQ("dispatchBatch",
             test_cache->GetAndClearLastErrorWebCacheMethodCalled());
@@ -686,9 +686,9 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
       EXPECT_EQ(expected_urls[i], response->url());
   }
 
-  result = cache->deleteFunction(GetScriptState(),
-                                 StringToRequestInfo("http://some.url/"),
-                                 options, exception_state);
+  result =
+      cache->Delete(GetScriptState(), StringToRequestInfo("http://some.url/"),
+                    options, exception_state);
   script_value = GetResolveValue(result);
   EXPECT_TRUE(script_value.V8Value()->IsBoolean());
   EXPECT_EQ(true, script_value.V8Value().As<v8::Boolean>()->Value());

@@ -36,7 +36,7 @@
 
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest put(any value, [Default=Undefined] optional any key);
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest add(any value, [Default=Undefined] optional any key);
-    [NewObject, CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(any key);
+    [NewObject, CallWith=ScriptState, ImplementedAs=Delete, RaisesException] IDBRequest delete(any key);
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest clear();
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest get(any key);
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);

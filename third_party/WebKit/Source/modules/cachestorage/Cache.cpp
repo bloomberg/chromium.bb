@@ -422,10 +422,10 @@ ScriptPromise Cache::addAll(ScriptState* script_state,
   return AddAllImpl(script_state, requests, exception_state);
 }
 
-ScriptPromise Cache::deleteFunction(ScriptState* script_state,
-                                    const RequestInfo& request,
-                                    const CacheQueryOptions& options,
-                                    ExceptionState& exception_state) {
+ScriptPromise Cache::Delete(ScriptState* script_state,
+                            const RequestInfo& request,
+                            const CacheQueryOptions& options,
+                            ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
   if (request.IsRequest())
     return DeleteImpl(script_state, request.GetAsRequest(), options);
