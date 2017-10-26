@@ -1136,6 +1136,18 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     EXPECT_EQ(0u, GetErrorCount());
   }
 
+  // Application with an invalid url.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": ["
+        "{\"platform\": \"play\", \"url\": \"http://www.foo.com:co&uk\"}]}");
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'url' ignored, URL is invalid.", errors()[0]);
+    EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
+              errors()[1]);
+  }
+
   // Valid application, with id.
   {
     Manifest manifest = ParseManifest(
