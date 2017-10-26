@@ -3690,7 +3690,7 @@ crbug.com/591099 fast/css-grid-layout/grid-dynamic-updates-relayout.html [ Failu
 crbug.com/591099 fast/css-grid-layout/grid-gutters-and-flex-content.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-gutters-and-tracks.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-item-addition-auto-placement-update.html [ Failure ]
-crbug.com/591099 fast/css-grid-layout/grid-item-addition-track-breadth-update.html [ Timeout ]
+crbug.com/591099 fast/css-grid-layout/grid-item-addition-track-breadth-update.html [ Failure Timeout ]
 crbug.com/591099 fast/css-grid-layout/grid-item-auto-placement-automatic-span.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-item-auto-placement-definite-span.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-item-auto-placement-fixed-row-column.html [ Failure ]
