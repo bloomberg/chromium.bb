@@ -59,7 +59,8 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
       handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
       strides[i] = gbm_bo_get_plane_stride(bo, i);
       offsets[i] = gbm_bo_get_plane_offset(bo, i);
-      modifiers[i] = modifier;
+      if (addfb_flags & DRM_MODE_FB_MODIFIERS)
+        modifiers[i] = modifier;
     }
 
     // AddFramebuffer2 only considers the modifiers if addfb_flags has
