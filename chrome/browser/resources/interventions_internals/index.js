@@ -95,8 +95,7 @@ function setupLogClear() {
   $('clear-log-button').addEventListener('click', () => {
     // Remove hosts from table.
     let logsTable = $('message-logs-table');
-    let rows = logsTable.querySelectorAll('.log-message');
-    for (let row = rows.length; row > 0; row--) {
+    for (let row = logsTable.rows.length - 1; row > 0; row--) {
       logsTable.deleteRow(row);
     }
   });
@@ -197,8 +196,7 @@ InterventionsInternalPageImpl.prototype = {
 
     // Remove hosts from table.
     let blacklistedHostsTable = $('blacklisted-hosts-table');
-    let rows = blacklistedHostsTable.querySelectorAll('.blacklisted-host-row');
-    for (let row = rows.length; row > 0; row--) {
+    for (let row = blacklistedHostsTable.rows.length - 1; row > 0; row--) {
       blacklistedHostsTable.deleteRow(row);
     }
   },
