@@ -253,6 +253,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       factory = default_url_loader_factory_getter_->GetNetworkFactory()->get();
       default_loader_used_ = true;
     }
+    url_chain_.push_back(resource_request_->url);
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory,
         GetContentClient()->browser()->CreateURLLoaderThrottles(
@@ -294,6 +295,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     resource_request_->referrer_policy =
         Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
             redirect_info_.new_referrer_policy);
+    url_chain_.push_back(redirect_info_.new_url);
 
     Restart();
   }
@@ -306,6 +308,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       NavigationURLLoader::NavigationInterceptionCB callback) {
     std::move(callback).Run(std::move(resource_request_),
                             std::move(url_loader_),
+                            std::move(url_chain_),
                             std::move(completion_status_));
   }
 
@@ -432,6 +435,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   mojom::URLLoaderFactoryPtr webui_factory_ptr_;
   std::unique_ptr<ThrottlingURLLoader> url_loader_;
   BlobHandles blob_handles_;
+  std::vector<GURL> url_chain_;
 
   // Currently used by the AppCache loader to pass its factory to the
   // renderer which enables it to handle subresources.

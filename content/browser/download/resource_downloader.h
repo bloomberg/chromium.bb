@@ -39,6 +39,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const SSLStatus& ssl_status,
       std::unique_ptr<ThrottlingURLLoader> url_loader,
+      std::vector<GURL> url_chain,
       base::Optional<ResourceRequestCompletionStatus> completion_status);
 
   ResourceDownloader(base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
@@ -71,6 +72,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const SSLStatus& ssl_status,
+      std::vector<GURL> url_chain,
       base::Optional<ResourceRequestCompletionStatus> completion_status);
 
   base::WeakPtr<UrlDownloadHandler::Delegate> delegate_;

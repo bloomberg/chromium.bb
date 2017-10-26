@@ -74,6 +74,7 @@ ResourceDownloader::InterceptNavigationResponse(
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
     std::unique_ptr<ThrottlingURLLoader> url_loader,
+    std::vector<GURL> url_chain,
     base::Optional<ResourceRequestCompletionStatus> completion_status) {
   auto downloader = base::MakeUnique<ResourceDownloader>(
       delegate, std::move(resource_request),
@@ -81,6 +82,7 @@ ResourceDownloader::InterceptNavigationResponse(
       std::string(), false, false, false);
   downloader->InterceptResponse(std::move(url_loader), response,
                                 std::move(consumer_handle), ssl_status,
+                                std::move(url_chain),
                                 std::move(completion_status));
   return downloader;
 }
@@ -140,11 +142,13 @@ void ResourceDownloader::InterceptResponse(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
+    std::vector<GURL> url_chain,
     base::Optional<ResourceRequestCompletionStatus> completion_status) {
   url_loader_ = std::move(url_loader);
   url_loader_->set_forwarding_client(&response_handler_);
   net::SSLInfo info;
   info.cert_status = ssl_status.cert_status;
+  response_handler_.SetURLChain(std::move(url_chain));
   response_handler_.OnReceiveResponse(response->head,
                                       base::Optional<net::SSLInfo>(info),
                                       mojom::DownloadedTempFilePtr());
