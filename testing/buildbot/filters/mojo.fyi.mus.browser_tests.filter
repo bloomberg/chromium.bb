@@ -19,6 +19,8 @@
 
 # TODO: fix, see http://crbug.com/755272.
 -PDFExtensionTest.RedirectsFailInPlugin
+-SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
+-SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
 
 # TODO: fix, http://crbug.com/759156.
 -PolicyDisplayRotationDefault/DisplayRotationDefaultTest.RefreshSecondDisplay/2
