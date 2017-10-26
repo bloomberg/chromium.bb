@@ -6784,7 +6784,7 @@ crbug.com/591099 http/tests/devtools/startup/shadow-dom-rules.html [ Crash Pass 
 crbug.com/591099 http/tests/devtools/text-autosizing-override.js [ Failure ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Crash Failure ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.html [ Crash Failure ]
-crbug.com/591099 http/tests/devtools/tracing/worker-js-frames.html [ Crash Failure Pass ]
+crbug.com/591099 http/tests/devtools/tracing/worker-js-frames.js [ Crash Failure Pass ]
 crbug.com/591099 http/tests/feature-policy-experimental-features/vibrate-allowed-by-container-policy-relocate-and-no-reload.html [ Timeout ]
 crbug.com/591099 http/tests/feature-policy-experimental-features/vibrate-allowed-by-container-policy-relocate-and-reload.html [ Crash Timeout ]
 crbug.com/591099 http/tests/feature-policy-experimental-features/vibrate-allowed-by-container-policy.html [ Crash Timeout ]

@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Test the set of visible records is correctly update when category filter changes\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+
   var sessionId = '4.20';
   var mainThread = 1;
   var pid = 100;
@@ -117,15 +119,4 @@ function test() {
   function dumpVisibleRecords() {
     PerformanceTestRunner.walkTimelineEventTreeUnderNode(event => TestRunner.addResult(event.name), view._currentTree);
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Test the set of visible records is correctly update when category filter changes</a>
-</p>
-
-</body>
-</html>
+})();

@@ -1,3 +1,5 @@
+Test trace event self time.
+
 process_name: 0 0.00/0.00
 thread_name: 0 0.00/0.00
 TracingStartedInPage: 100 0.00/0.00
