@@ -41,9 +41,6 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
   void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;
-  void CheckPagesExistOffline(
-      const std::set<GURL>& urls,
-      const CheckPagesExistOfflineCallback& callback) override;
   void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,

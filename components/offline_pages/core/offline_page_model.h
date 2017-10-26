@@ -106,8 +106,6 @@ class OfflinePageModel : public base::SupportsUserData {
     virtual ~Observer() = default;
   };
 
-  using CheckPagesExistOfflineResult =
-      offline_pages::CheckPagesExistOfflineResult;
   using MultipleOfflinePageItemResult =
       offline_pages::MultipleOfflinePageItemResult;
   using DeletePageResult = offline_pages::DeletePageResult;
@@ -190,12 +188,6 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void GetPagesByRequestOrigin(
       const std::string& request_origin,
       const MultipleOfflinePageItemCallback& callback) = 0;
-
-  // Returns via callback all GURLs in |urls| that are equal to the online URL
-  // of any offline page.
-  virtual void CheckPagesExistOffline(
-      const std::set<GURL>& urls,
-      const CheckPagesExistOfflineCallback& callback) = 0;
 
   // Gets all offline ids where the offline page has the matching client id.
   virtual void GetOfflineIdsForClientId(

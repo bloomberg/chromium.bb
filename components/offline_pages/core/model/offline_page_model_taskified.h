@@ -96,10 +96,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       const std::string& request_origin,
       const MultipleOfflinePageItemCallback& callback) override;
 
-  void CheckPagesExistOffline(
-      const std::set<GURL>& urls,
-      const CheckPagesExistOfflineCallback& callback) override;
-
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
