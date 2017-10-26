@@ -913,7 +913,7 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
                   (function(id, message) {
                     var element = document.getElementById(id);
                     var fn = function() {
-                      if ((element.style.opacity == 1.0) &&
+                      if (element.classList.contains('show-logo') &&
                           (window.getComputedStyle(element).opacity == 1.0)) {
                         console.log(message);
                       } else {
