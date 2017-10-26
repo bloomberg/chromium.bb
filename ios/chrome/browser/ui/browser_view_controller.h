@@ -31,11 +31,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Notification sent when the location bar becomes first responder.
-extern NSString* const kLocationBarBecomesFirstResponderNotification;
-// Notification sent when the location bar resigns first responder.
-extern NSString* const kLocationBarResignsFirstResponderNotification;
-
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
 @interface BrowserViewController : UIViewController<SideSwipeControllerDelegate,

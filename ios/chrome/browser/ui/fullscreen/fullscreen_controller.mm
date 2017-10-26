@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
 #include <cmath>
 
 #include "base/logging.h"
 
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
+#import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
@@ -423,8 +424,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 - (BOOL)isEntryBrokenSSL:(web::NavigationItem*)item {
   if (!item)
     return NO;
-  // Only BROKEN results in an error (vs. a warning); see toolbar_model_impl.cc.
-  // TODO(qsr): Find a way to share this logic with the omnibox.
   const web::SSLStatus& ssl = item->GetSSL();
   switch (ssl.security_style) {
     case web::SECURITY_STYLE_UNKNOWN:

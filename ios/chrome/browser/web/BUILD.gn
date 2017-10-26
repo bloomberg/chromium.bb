@@ -215,6 +215,7 @@ source_set("test_support") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/web",
     "//ios/web",
     "//ios/web/public/test",

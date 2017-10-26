@@ -81,7 +81,6 @@ source_set("unit_tests") {
     "browser_view_controller_unittest.mm",
     "chrome_web_view_factory_unittest.mm",
     "file_locations_unittest.mm",
-    "fullscreen_controller_unittest.mm",
     "key_commands_provider_unittest.mm",
     "native_content_controller_unittest.mm",
     "network_activity_indicator_manager_unittest.mm",
@@ -229,8 +228,6 @@ source_set("ui_internal") {
     "external_file_remover_impl.mm",
     "fade_truncated_label.h",
     "fade_truncated_label.mm",
-    "fullscreen_controller.h",
-    "fullscreen_controller.mm",
     "key_commands_provider.h",
     "key_commands_provider.mm",
     "open_in_controller.h",
@@ -242,6 +239,7 @@ source_set("ui_internal") {
     "page_not_available_controller.mm",
   ]
   deps = [
+    ":notifications",
     ":resources",
     ":ui",
     "resources:custom_row_voice",
@@ -311,6 +309,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/external_search",
     "//ios/chrome/browser/ui/find_bar",
     "//ios/chrome/browser/ui/first_run",
+    "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/history_popup:coordinator",
     "//ios/chrome/browser/ui/history_popup/requirements",
@@ -388,6 +387,15 @@ source_set("ui_internal") {
   ]
 }
 
+# TODO(crbug.com/778008): Remove this target.
+source_set("notifications") {
+  sources = [
+    "location_bar_notification_names.h",
+    "location_bar_notification_names.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -439,8 +447,6 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "browser_view_controller_egtest.mm",
-    "fullscreen_egtest.mm",
-    "keyboard_commands_egtest.mm",
   ]
   deps = [
     ":ui",

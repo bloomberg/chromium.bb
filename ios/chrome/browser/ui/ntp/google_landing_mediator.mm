@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
