@@ -143,6 +143,12 @@ Builder& Builder::AddMojoServiceName(const std::string& mojo_service_name) {
   return *this;
 }
 
+Builder& Builder::SetAppendCommandLineFlagsCallback(
+    const Options::AppendCommandLineFlagsCallback& callback) {
+  options_.append_command_line_flags_callback = callback;
+  return *this;
+}
+
 #if defined(OS_WIN)
 Builder& Builder::SetInstance(HINSTANCE instance) {
   options_.instance = instance;
@@ -171,7 +177,7 @@ Builder& Builder::SetIncognitoMode(bool incognito_mode) {
 }
 
 Builder& Builder::SetOverrideWebPreferencesCallback(
-    base::Callback<void(WebPreferences*)> callback) {
+    const base::Callback<void(WebPreferences*)>& callback) {
   options_.override_web_preferences_callback = callback;
   return *this;
 }

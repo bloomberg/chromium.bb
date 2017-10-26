@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -184,6 +185,18 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // exposed WebPreferences API, so use with care.
   base::Callback<void(WebPreferences*)> override_web_preferences_callback;
 
+  // Set a callback that is invoked when a new child process is spawned or
+  // forked and allows adding additional command line flags to the child
+  // process's command line. Executed on the browser main thread.
+  // |child_browser_context| points to the BrowserContext of the child
+  // process, but will only be set if the child process is a renderer process.
+  using AppendCommandLineFlagsCallback =
+      base::Callback<void(base::CommandLine* command_line,
+                          HeadlessBrowserContext* child_browser_context,
+                          const std::string& child_process_type,
+                          int child_process_id)>;
+  AppendCommandLineFlagsCallback append_command_line_flags_callback;
+
   // Minidump crash reporter settings. Crash reporting is disabled by default.
   // By default crash dumps are written to the directory containing the
   // executable.
@@ -214,6 +227,8 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetEnableResourceScheduler(bool enable_resource_scheduler);
   Builder& SetGLImplementation(const std::string& gl_implementation);
   Builder& AddMojoServiceName(const std::string& mojo_service_name);
+  Builder& SetAppendCommandLineFlagsCallback(
+      const Options::AppendCommandLineFlagsCallback& callback);
 #if defined(OS_WIN)
   Builder& SetInstance(HINSTANCE instance);
   Builder& SetSandboxInfo(sandbox::SandboxInterfaceInfo* sandbox_info);
@@ -232,7 +247,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetIncognitoMode(bool incognito_mode);
   Builder& SetAllowCookies(bool allow_cookies);
   Builder& SetOverrideWebPreferencesCallback(
-      base::Callback<void(WebPreferences*)> callback);
+      const base::Callback<void(WebPreferences*)>& callback);
   Builder& SetCrashReporterEnabled(bool enabled);
   Builder& SetCrashDumpsDir(const base::FilePath& dir);
 

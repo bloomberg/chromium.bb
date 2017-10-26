@@ -930,4 +930,45 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, AllowInsecureLocalhostFlag) {
   EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
+class HeadlessBrowserTestAppendCommandLineFlags : public HeadlessBrowserTest {
+ public:
+  HeadlessBrowserTestAppendCommandLineFlags() {
+    options()->append_command_line_flags_callback = base::Bind(
+        &HeadlessBrowserTestAppendCommandLineFlags::AppendCommandLineFlags,
+        base::Unretained(this));
+  }
+
+  void AppendCommandLineFlags(base::CommandLine* command_line,
+                              HeadlessBrowserContext* child_browser_context,
+                              const std::string& child_process_type,
+                              int child_process_id) {
+    if (child_process_type != "renderer")
+      return;
+
+    callback_was_run_ = true;
+    EXPECT_LE(0, child_process_id);
+    EXPECT_NE(nullptr, command_line);
+    EXPECT_NE(nullptr, child_browser_context);
+  }
+
+ protected:
+  bool callback_was_run_ = false;
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
+                       AppendChildProcessCommandLineFlags) {
+  // Create a new renderer process, and verify that callback was executed.
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("about:blank"))
+          .Build();
+
+  EXPECT_TRUE(callback_was_run_);
+
+  // Used only for lifetime.
+  (void)web_contents;
+}
+
 }  // namespace headless
