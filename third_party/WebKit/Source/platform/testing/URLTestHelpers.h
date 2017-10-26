@@ -73,6 +73,10 @@ void RegisterMockedURLLoad(
     const WebString& file_path,
     const WebString& mime_type = WebString::FromUTF8("text/html"));
 
+// Unregisters a URL that has been registered, so that the same URL can be
+// registered again from the another test.
+void RegisterMockedURLUnregister(const WebURL&);
+
 // Registers with a custom response.
 void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
                                              const WebString& file_path,

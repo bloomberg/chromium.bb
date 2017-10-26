@@ -388,6 +388,14 @@ bool AnimationTicker::HasTickingAnimation() const {
   return false;
 }
 
+size_t AnimationTicker::TickingAnimationsCount() const {
+  size_t ticking_animations_count = 0;
+  for (const auto& it : animations_)
+    if (!it->is_finished())
+      ticking_animations_count++;
+  return ticking_animations_count;
+}
+
 bool AnimationTicker::HasNonDeletedAnimation() const {
   for (const auto& animation : animations_) {
     if (animation->run_state() != Animation::WAITING_FOR_DELETION)

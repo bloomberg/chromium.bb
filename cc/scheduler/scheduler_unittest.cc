@@ -215,6 +215,10 @@ class FakeSchedulerClient : public SchedulerClient,
     PushAction("RemoveObserver(this)");
   }
 
+  size_t CompositedAnimationsCount() const override { return 0; }
+  size_t MainThreadAnimationsCount() const override { return 0; }
+  size_t MainThreadCompositableAnimationsCount() const override { return 0; }
+
  protected:
   bool InsideBeginImplFrameCallback(bool state) {
     return inside_begin_impl_frame_ == state;

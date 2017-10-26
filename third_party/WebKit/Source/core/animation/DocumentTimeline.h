@@ -91,6 +91,10 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }
+  size_t PendingAnimationsCount() const {
+    return animations_needing_update_.size();
+  }
+  size_t MainThreadCompositableAnimationsCount() const;
   double ZeroTime();
   double currentTime(bool& is_null) override;
   double currentTime();
@@ -116,6 +120,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   Document* GetDocument() { return document_.Get(); }
   void Wake();
   void ResetForTesting();
+  bool HasAnimations() { return !animations_.IsEmpty(); }
 
   void Trace(blink::Visitor*) override;
 
