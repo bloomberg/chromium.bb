@@ -192,8 +192,8 @@ void ImageLoader::DispatchDecodeRequestsIfComplete() {
     Image* image = GetContent()->GetImage();
     frame->GetChromeClient().RequestDecode(
         frame, image->PaintImageForCurrentFrame(),
-        WTF::Bind(&ImageLoader::DecodeRequestFinished, WrapWeakPersistent(this),
-                  request->request_id()));
+        WTF::Bind(&ImageLoader::DecodeRequestFinished,
+                  WrapCrossThreadWeakPersistent(this), request->request_id()));
     request->NotifyDecodeDispatched();
   }
 }
