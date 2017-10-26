@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "BadPatternFinder.h"
 #include "CheckDispatchVisitor.h"
 #include "CheckFieldsVisitor.h"
 #include "CheckFinalizerVisitor.h"
@@ -122,6 +123,8 @@ void BlinkGCPluginConsumer::HandleTranslationUnit(ASTContext& context) {
     delete json_;
     json_ = 0;
   }
+
+  FindBadPatterns(context, reporter_);
 }
 
 void BlinkGCPluginConsumer::ParseFunctionTemplates(TranslationUnitDecl* decl) {
