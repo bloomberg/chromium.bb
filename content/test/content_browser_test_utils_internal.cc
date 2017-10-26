@@ -355,46 +355,48 @@ void UrlCommitObserver::DidFinishNavigation(
   }
 }
 
-FrameRectChangedMessageFilter::FrameRectChangedMessageFilter()
+UpdateResizeParamsMessageFilter::UpdateResizeParamsMessageFilter()
     : content::BrowserMessageFilter(FrameMsgStart),
       message_loop_runner_(new content::MessageLoopRunner),
       frame_rect_received_(false) {}
 
-bool FrameRectChangedMessageFilter::OnMessageReceived(
+bool UpdateResizeParamsMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(FrameRectChangedMessageFilter, message)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
+  IPC_BEGIN_MESSAGE_MAP(UpdateResizeParamsMessageFilter, message)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateResizeParams, OnUpdateResizeParams)
   IPC_END_MESSAGE_MAP()
   return false;
 }
 
-gfx::Rect FrameRectChangedMessageFilter::last_rect() const {
+gfx::Rect UpdateResizeParamsMessageFilter::last_rect() const {
   return last_rect_;
 }
 
-void FrameRectChangedMessageFilter::Wait() {
+void UpdateResizeParamsMessageFilter::Wait() {
   message_loop_runner_->Run();
 }
 
-void FrameRectChangedMessageFilter::Reset() {
+void UpdateResizeParamsMessageFilter::Reset() {
   last_rect_ = gfx::Rect();
   message_loop_runner_ = new content::MessageLoopRunner;
   frame_rect_received_ = false;
 }
 
-FrameRectChangedMessageFilter::~FrameRectChangedMessageFilter() {}
+UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
 
-void FrameRectChangedMessageFilter::OnFrameRectChanged(
+void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
     const gfx::Rect& rect,
+    const ScreenInfo& screen_info,
     const viz::LocalSurfaceId& local_surface_id) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&FrameRectChangedMessageFilter::OnFrameRectChangedOnUI,
-                     this, rect, local_surface_id));
+      base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdateResizeParamsOnUI,
+                     this, rect, screen_info, local_surface_id));
 }
 
-void FrameRectChangedMessageFilter::OnFrameRectChangedOnUI(
+void UpdateResizeParamsMessageFilter::OnUpdateResizeParamsOnUI(
     const gfx::Rect& rect,
+    const ScreenInfo& screen_info,
     const viz::LocalSurfaceId& local_surface_id) {
   last_rect_ = rect;
   if (!frame_rect_received_) {

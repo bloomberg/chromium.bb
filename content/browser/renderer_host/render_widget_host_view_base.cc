@@ -301,6 +301,10 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }
 
+void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
+  *screen_info = ScreenInfo();
+}
+
 uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
   return renderer_frame_number_;
 }

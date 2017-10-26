@@ -37,6 +37,7 @@ namespace content {
 class RenderWidgetHost;
 class RenderWidgetHostViewFrameSubscriber;
 class TouchSelectionControllerClientManager;
+struct ScreenInfo;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
@@ -243,6 +244,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // wants to have BeginFrame messages sent to it.  This should only be called
   // when the value has changed.  Views must initially default to false.
   virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
+
+  // This method returns the ScreenInfo used by the view to render.
+  virtual void GetScreenInfo(ScreenInfo* screen_info) = 0;
 
 #if defined(OS_MACOSX)
   // Return the accelerated widget which hosts the CALayers that draw the

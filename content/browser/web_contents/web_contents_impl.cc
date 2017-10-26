@@ -1970,19 +1970,8 @@ void WebContentsImpl::RenderWidgetWasResized(
   GetScreenInfo(&screen_info);
   SendPageMessage(new PageMsg_UpdateScreenInfo(MSG_ROUTING_NONE, screen_info));
 
-  // Send resize message to subframes.
-  for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree()) {
-    if (view != rfh->GetView())
-      view->GetRenderWidgetHost()->WasResized();
-  }
-
   for (auto& observer : observers_)
     observer.MainFrameWasResized(width_changed);
-}
-
-void WebContentsImpl::ScreenInfoChanged() {
-  if (browser_plugin_embedder_)
-    browser_plugin_embedder_->ScreenInfoChanged();
 }
 
 KeyboardEventProcessingResult WebContentsImpl::PreHandleKeyboardEvent(
