@@ -59,13 +59,12 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
       shared_context_provider, type);
 }
 
-bool LockAndCheckContextLost(
-    ui::ContextProviderCommandBuffer* context_provider) {
+bool CheckContextLost(viz::ContextProvider* context_provider) {
   if (!context_provider)
     return false;
 
-  viz::ContextProvider::ScopedContextLock lock(context_provider);
-  return lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+  auto status = context_provider->ContextGL()->GetGraphicsResetStatusKHR();
+  return status != GL_NO_ERROR;
 }
 
 }  // namespace
@@ -285,10 +284,7 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSinkForGpuChannel(
   if (!compositor)
     return;
 
-  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
-      CreateContextProvider(std::move(gpu_channel_host));
-
-  if (!context_provider) {
+  if (!CreateContextProviders(std::move(gpu_channel_host))) {
     // TODO(kylechar): Retry ContextProvider creation if it failed.
     NOTIMPLEMENTED();
     return;
@@ -332,41 +328,49 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSinkForGpuChannel(
 
   compositor->SetLayerTreeFrameSink(
       std::make_unique<viz::ClientLayerTreeFrameSink>(
-          std::move(context_provider), shared_worker_context_provider_,
+          compositor_context_provider_, shared_worker_context_provider_,
           &params));
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer>
-VizProcessTransportFactory::CreateContextProvider(
+bool VizProcessTransportFactory::CreateContextProviders(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  if (LockAndCheckContextLost(shared_worker_context_provider_.get()))
+  constexpr bool kSharedWorkerContextSupportsLocking = true;
+  constexpr bool kCompositorContextSupportsLocking = false;
+
+  if (CheckContextLost(compositor_context_provider_.get())) {
+    // Both will be lost because they are in the same share group.
     shared_worker_context_provider_ = nullptr;
+    compositor_context_provider_ = nullptr;
+  }
 
   if (!shared_worker_context_provider_) {
     shared_worker_context_provider_ = CreateContextProviderImpl(
-        gpu_channel_host, true /* support_locking */, nullptr,
+        gpu_channel_host, kSharedWorkerContextSupportsLocking, nullptr,
         ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
 
     auto result = shared_worker_context_provider_->BindToCurrentThread();
     if (result != gpu::ContextResult::kSuccess) {
       shared_worker_context_provider_ = nullptr;
-      return nullptr;
+      return false;
     }
   }
 
-  // TODO(crbug.com/776052): Use the same ContextProvider for all compositors.
-  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
-      CreateContextProviderImpl(
-          std::move(gpu_channel_host), false /* support_locking */,
-          shared_worker_context_provider_.get(),
-          ui::command_buffer_metrics::UI_COMPOSITOR_CONTEXT);
-  context_provider->SetDefaultTaskRunner(resize_task_runner_);
+  if (!compositor_context_provider_) {
+    compositor_context_provider_ = CreateContextProviderImpl(
+        std::move(gpu_channel_host), kCompositorContextSupportsLocking,
+        shared_worker_context_provider_.get(),
+        ui::command_buffer_metrics::UI_COMPOSITOR_CONTEXT);
+    compositor_context_provider_->SetDefaultTaskRunner(resize_task_runner_);
 
-  auto result = context_provider->BindToCurrentThread();
-  if (result != gpu::ContextResult::kSuccess)
-    return nullptr;
+    auto result = compositor_context_provider_->BindToCurrentThread();
+    if (result != gpu::ContextResult::kSuccess) {
+      compositor_context_provider_ = nullptr;
+      shared_worker_context_provider_ = nullptr;
+      return false;
+    }
+  }
 
-  return context_provider;
+  return true;
 }
 
 VizProcessTransportFactory::CompositorData::CompositorData() = default;
