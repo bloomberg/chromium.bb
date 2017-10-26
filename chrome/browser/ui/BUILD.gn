@@ -3595,6 +3595,8 @@ static_library("test_support") {
     "find_bar/find_bar_host_unittest_util.h",
     "login/login_handler_test_utils.cc",
     "login/login_handler_test_utils.h",
+    "passwords/password_ui_view_mock.cc",
+    "passwords/password_ui_view_mock.h",
     "toolbar/test_toolbar_action_view_controller.cc",
     "toolbar/test_toolbar_action_view_controller.h",
   ]
