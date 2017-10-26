@@ -1230,10 +1230,12 @@ COMMON_GTESTS = {
             'os': 'Windows-2008ServerR2-SP1'
           },
           # AMD Win 7
-          {
-            'gpu': '1002:6613',
-            'os': 'Windows-2008ServerR2-SP1'
-          },
+          # Temporarily disabled to prevent a recipe engine crash.
+          # TODO(jmadill): Re-enable when http://crbug.com713196 is fixed.
+          # {
+          #   'gpu': '1002:6613',
+          #   'os': 'Windows-2008ServerR2-SP1'
+          # },
         ],
       }
     ],

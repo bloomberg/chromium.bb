@@ -18767,26 +18767,6 @@
         },
         "test": "angle_deqp_gles2_tests",
         "use_xvfb": false
-      },
-      {
-        "args": [
-          "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-d3d11"
-        ],
-        "name": "angle_deqp_gles3_d3d11_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 12
-        },
-        "test": "angle_deqp_gles3_tests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": []
