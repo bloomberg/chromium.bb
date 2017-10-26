@@ -50,16 +50,19 @@ class GitCL(object):
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
         return self._host.executive.run_command(command, cwd=self._cwd)
 
-    def trigger_try_jobs(self, builders):
-        # Hack: This method assumes the bots to be triggered are Blink try bots,
-        # which are all on the master tryserver.blink, except android_blink_rel.
-        if 'android_blink_rel' in builders:
-            self.run(['try', '-b', 'android_blink_rel'])
-            builders = set(builders) - {'android_blink_rel'}
-        # The master name has to be explicitly added for some builders since
-        # git cl try doesn't necessarily have a reliable map of builder names
-        # to masters. See https://crbug.com/700552.
-        command = ['try', '-m', 'tryserver.blink']
+    def trigger_try_jobs(self, builders, master=None):
+        # TODO(crbug.com/700552): Let "git cl try" get the master automatically.
+        # (It tries to do this, but its map is unreliable.)
+        if not master:
+            # Assume Blink try bots (all on tryserver.blink except Android).
+            if 'android_blink_rel' in builders:
+                self.trigger_try_jobs(['android_blink_rel'],
+                                      master='tryserver.chromium.android')
+                builders = set(builders) - {'android_blink_rel'}
+            self.trigger_try_jobs(builders, 'tryserver.blink')
+            return
+
+        command = ['try', '-m', master]
         for builder in sorted(builders):
             command.extend(['-b', builder])
         self.run(command)
