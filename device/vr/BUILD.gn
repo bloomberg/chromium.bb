@@ -37,7 +37,7 @@ if (enable_vr) {
       "//ui/gfx",
     ]
 
-    if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
+    if (enable_daydream) {
       sources += [
         "android/gvr/cardboard_gamepad_data_fetcher.cc",
         "android/gvr/cardboard_gamepad_data_fetcher.h",
@@ -120,7 +120,7 @@ if (enable_vr) {
   }
 }
 
-if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
+if (enable_daydream) {
   java_sources_needing_jni =
       [ "android/java/src/org/chromium/device/vr/NonPresentingGvrContext.java" ]
 
