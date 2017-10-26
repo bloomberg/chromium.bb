@@ -248,6 +248,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
 
   web_contents_ = browser_context_->CreateWebContentsBuilder()
                       .SetAllowTabSockets(GetAllowTabSockets())
+                      .SetEnableBeginFrameControl(GetEnableBeginFrameControl())
                       .Build();
   web_contents_->AddObserver(this);
 
@@ -268,6 +269,10 @@ ProtocolHandlerMap HeadlessAsyncDevTooledBrowserTest::GetProtocolHandlers() {
 }
 
 bool HeadlessAsyncDevTooledBrowserTest::GetAllowTabSockets() {
+  return false;
+}
+
+bool HeadlessAsyncDevTooledBrowserTest::GetEnableBeginFrameControl() {
   return false;
 }
 
