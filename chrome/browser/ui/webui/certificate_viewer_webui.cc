@@ -104,7 +104,7 @@ CertNodeBuilder& CertNodeBuilder::ChildIfNotNull(
 std::unique_ptr<base::DictionaryValue> CertNodeBuilder::Build() {
   DCHECK(!built_);
   if (!children_.empty()) {
-    node_.Set("children", base::MakeUnique<base::Value>(std::move(children_)));
+    node_.SetKey("children", std::move(children_));
   }
   built_ = true;
   return base::MakeUnique<base::DictionaryValue>(std::move(node_));

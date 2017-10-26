@@ -214,15 +214,16 @@ void WebViewFindHelper::FindResults::AggregateResults(
 
 void WebViewFindHelper::FindResults::PrepareResults(
     base::DictionaryValue* results) {
-  results->SetInteger(webview::kFindNumberOfMatches, number_of_matches_);
-  results->SetInteger(webview::kFindActiveMatchOrdinal, active_match_ordinal_);
-  base::DictionaryValue rect;
-  rect.SetInteger(webview::kFindRectLeft, selection_rect_.x());
-  rect.SetInteger(webview::kFindRectTop, selection_rect_.y());
-  rect.SetInteger(webview::kFindRectWidth, selection_rect_.width());
-  rect.SetInteger(webview::kFindRectHeight, selection_rect_.height());
-  results->Set(webview::kFindSelectionRect,
-               std::make_unique<base::Value>(std::move(rect)));
+  results->SetKey(webview::kFindNumberOfMatches,
+                  base::Value(number_of_matches_));
+  results->SetKey(webview::kFindActiveMatchOrdinal,
+                  base::Value(active_match_ordinal_));
+  base::Value rect(base::Value::Type::DICTIONARY);
+  rect.SetKey(webview::kFindRectLeft, base::Value(selection_rect_.x()));
+  rect.SetKey(webview::kFindRectTop, base::Value(selection_rect_.y()));
+  rect.SetKey(webview::kFindRectWidth, base::Value(selection_rect_.width()));
+  rect.SetKey(webview::kFindRectHeight, base::Value(selection_rect_.height()));
+  results->SetKey(webview::kFindSelectionRect, std::move(rect));
 }
 
 WebViewFindHelper::FindUpdateEvent::FindUpdateEvent(

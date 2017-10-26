@@ -270,10 +270,9 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
       }
     }
     if (value.is_dict()) {
-      base::Value::DictStorage option_dict;
-      option_dict[kOptionKey] =
-          base::Value::ToUniquePtrValue(std::move(out_list));
-      out_caps->SetPath({path}, base::Value(option_dict));
+      base::Value option_dict(base::Value::Type::DICTIONARY);
+      option_dict.SetKey(kOptionKey, std::move(out_list));
+      out_caps->SetKey(path, std::move(option_dict));
     } else {
       out_caps->SetKey(path, std::move(out_list));
     }
