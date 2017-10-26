@@ -682,9 +682,7 @@ class ServiceWorkerRegistrationHandleTest
                     blink::mojom::ServiceWorkerErrorType error,
                     const base::Optional<std::string>& error_msg,
                     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-                        registration,
-                    const base::Optional<ServiceWorkerVersionAttributes>&
-                        attributes) {
+                        registration) {
                    ASSERT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
                              error);
                    *out_registration_info = std::move(registration);

@@ -101,7 +101,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   scoped_refptr<WebServiceWorkerRegistrationImpl>
   GetOrCreateRegistrationForServiceWorkerGlobalScope(
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
-      const ServiceWorkerVersionAttributes& attrs,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Returns the existing registration or a newly created one for service worker
@@ -110,8 +109,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // ServiceWorkerHandleReference.
   scoped_refptr<WebServiceWorkerRegistrationImpl>
   GetOrCreateRegistrationForServiceWorkerClient(
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
-      const ServiceWorkerVersionAttributes& attrs);
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
 
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender,
@@ -124,7 +122,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // Assumes that the given object information retains an interprocess handle
   // reference passed from the browser process, and adopts it.
   std::unique_ptr<ServiceWorkerHandleReference> Adopt(
-      const blink::mojom::ServiceWorkerObjectInfo& info);
+      blink::mojom::ServiceWorkerObjectInfoPtr info);
 
   base::SingleThreadTaskRunner* main_thread_task_runner() {
     return main_thread_task_runner_.get();

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 
 namespace content {
 
@@ -26,29 +27,29 @@ class CONTENT_EXPORT ServiceWorkerHandleReference {
   // Creates a new ServiceWorkerHandleReference and increments ref-count. If
   // the handle id is kInvalidServiceWorkerHandleId, returns null instead.
   static std::unique_ptr<ServiceWorkerHandleReference> Create(
-      const blink::mojom::ServiceWorkerObjectInfo& info,
-      ThreadSafeSender* sender);
+      blink::mojom::ServiceWorkerObjectInfoPtr info,
+      scoped_refptr<ThreadSafeSender> sender);
 
   // Creates a new ServiceWorkerHandleReference by adopting a ref-count. If
   // the handle id is kInvalidServiceWorkerHandleId, returns null instead.
   static std::unique_ptr<ServiceWorkerHandleReference> Adopt(
-      const blink::mojom::ServiceWorkerObjectInfo& info,
-      ThreadSafeSender* sender);
+      blink::mojom::ServiceWorkerObjectInfoPtr info,
+      scoped_refptr<ThreadSafeSender> sender);
 
   ~ServiceWorkerHandleReference();
 
-  const blink::mojom::ServiceWorkerObjectInfo& info() const { return info_; }
-  int handle_id() const { return info_.handle_id; }
-  const GURL& url() const { return info_.url; }
-  blink::mojom::ServiceWorkerState state() const { return info_.state; }
-  int64_t version_id() const { return info_.version_id; }
+  blink::mojom::ServiceWorkerObjectInfoPtr GetInfo() const;
+
+  int handle_id() const { return info_->handle_id; }
+  const GURL& url() const { return info_->url; }
+  blink::mojom::ServiceWorkerState state() const { return info_->state; }
+  int64_t version_id() const { return info_->version_id; }
 
  private:
-  ServiceWorkerHandleReference(
-      const blink::mojom::ServiceWorkerObjectInfo& info,
-      ThreadSafeSender* sender,
-      bool increment_ref_in_ctor);
-  blink::mojom::ServiceWorkerObjectInfo info_;
+  ServiceWorkerHandleReference(blink::mojom::ServiceWorkerObjectInfoPtr info,
+                               scoped_refptr<ThreadSafeSender> sender,
+                               bool increment_ref_in_ctor);
+  blink::mojom::ServiceWorkerObjectInfoPtr info_;
   scoped_refptr<ThreadSafeSender> sender_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleReference);
 };

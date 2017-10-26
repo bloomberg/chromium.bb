@@ -476,8 +476,8 @@ TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
   ServiceWorkerDispatcherHost* dispatcher_host =
       helper_->context()->GetDispatcherHost(process_id);
   ServiceWorkerRegistrationHandle* handle =
-      dispatcher_host->FindRegistrationHandle(provider_id,
-                                              sw_registration_1_->id());
+      dispatcher_host->FindServiceWorkerRegistrationHandle(
+          provider_id, sw_registration_1_->id());
   dispatcher_host->UnregisterServiceWorkerRegistrationHandle(
       handle->handle_id());
 

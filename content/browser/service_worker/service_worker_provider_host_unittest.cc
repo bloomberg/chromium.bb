@@ -148,9 +148,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
                           blink::mojom::ServiceWorkerErrorType error,
                           const base::Optional<std::string>& error_msg,
                           blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-                              registration,
-                          const base::Optional<ServiceWorkerVersionAttributes>&
-                              attributes) { *out_error = error; },
+                              registration) { *out_error = error; },
                        &error));
     base::RunLoop().RunUntilIdle();
     if (expected)
@@ -169,9 +167,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
                           blink::mojom::ServiceWorkerErrorType error,
                           const base::Optional<std::string>& error_msg,
                           blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-                              registration,
-                          const base::Optional<ServiceWorkerVersionAttributes>&
-                              attributes) { *out_error = error; },
+                              registration) { *out_error = error; },
                        &error));
     base::RunLoop().RunUntilIdle();
     if (expected)
@@ -188,9 +184,9 @@ class ServiceWorkerProviderHostTest : public testing::Test {
            blink::mojom::ServiceWorkerErrorType error,
            const base::Optional<std::string>& error_msg,
            base::Optional<std::vector<
-               blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>> infos,
-           const base::Optional<std::vector<ServiceWorkerVersionAttributes>>&
-               attrs) { *out_error = error; },
+               blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>> infos) {
+          *out_error = error;
+        },
         &error));
     base::RunLoop().RunUntilIdle();
     if (expected)

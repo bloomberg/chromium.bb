@@ -231,12 +231,20 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ResourceRequestBody> body,
       bool skip_service_worker);
 
+  // Returns an object info representing |registration|. The object info holds a
+  // Mojo connection to the ServiceWorkerRegistrationHandle for the
+  // |registration| to ensure the handle stays alive while the object info is
+  // alive. A new handle is created if one does not already exist.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  CreateServiceWorkerRegistrationObjectInfo(
+      ServiceWorkerRegistration* registration);
+
   // Used to get a ServiceWorkerObjectInfo to send to the renderer. Finds an
   // existing ServiceWorkerHandle, and increments its reference count, or else
   // creates a new one (initialized to ref count 1). Returns the
   // ServiceWorkerObjectInfo from the handle. The renderer is expected to use
   // ServiceWorkerHandleReference::Adopt to balance out the ref count.
-  blink::mojom::ServiceWorkerObjectInfo GetOrCreateServiceWorkerHandle(
+  blink::mojom::ServiceWorkerObjectInfoPtr GetOrCreateServiceWorkerHandle(
       ServiceWorkerVersion* version);
 
   // Returns true if |registration| can be associated with this provider.

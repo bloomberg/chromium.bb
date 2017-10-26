@@ -89,19 +89,20 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // SetRegistrationForServiceWorkerGlobalScope() is called during the setup for
   // service worker startup, so it is guaranteed to be called before
   // TakeRegistrationForServiceWorkerGlobalScope().
+  // |sender| is to initialize ServiceWorkerHandleReference which still needs to
+  // send legacy Incre/Decre IPCs, will disappear together with class
+  // ServiceWorkerHandleReference once ServiceWorkerObjectInfo starts to retain
+  // reference to ServiceWorkerHandle in the browser process.
   void SetRegistrationForServiceWorkerGlobalScope(
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
-      std::unique_ptr<ServiceWorkerHandleReference> installing,
-      std::unique_ptr<ServiceWorkerHandleReference> waiting,
-      std::unique_ptr<ServiceWorkerHandleReference> active);
+      scoped_refptr<ThreadSafeSender> sender);
 
   // For service worker execution contexts. Used for initializing
   // ServiceWorkerGlobalScope#registration. Called on the worker thread.
   // This takes ServiceWorkerRegistrationObjectHost ptr info from
   // ControllerState::registration.
-  void TakeRegistrationForServiceWorkerGlobalScope(
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* info,
-      ServiceWorkerVersionAttributes* attrs);
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  TakeRegistrationForServiceWorkerGlobalScope();
 
   // For service worker clients. The controller for
   // ServiceWorkerContainer#controller.

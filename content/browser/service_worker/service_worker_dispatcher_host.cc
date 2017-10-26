@@ -228,23 +228,6 @@ ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
   return nullptr;
 }
 
-blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-ServiceWorkerDispatcherHost::CreateRegistrationObjectInfo(
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerRegistration* registration) {
-  DCHECK(provider_host);
-  ServiceWorkerRegistrationHandle* existing_handle =
-      FindRegistrationHandle(provider_host->provider_id(), registration->id());
-  if (existing_handle) {
-    return existing_handle->CreateObjectInfo();
-  }
-  // ServiceWorkerRegistrationHandle ctor will register itself into
-  // |registration_handles_|.
-  auto* new_handle = new ServiceWorkerRegistrationHandle(
-      GetContext()->AsWeakPtr(), this, provider_host, registration);
-  return new_handle->CreateObjectInfo();
-}
-
 base::WeakPtr<ServiceWorkerDispatcherHost>
 ServiceWorkerDispatcherHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -453,13 +436,14 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
       // postMessage from keeping workers alive forever.
       base::TimeDelta timeout =
           sender_provider_host->running_hosted_version()->remaining_timeout();
+      blink::mojom::ServiceWorkerObjectInfoPtr worker_info =
+          sender_provider_host->GetOrCreateServiceWorkerHandle(
+              sender_provider_host->running_hosted_version());
       RunSoon(base::Bind(
           &ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal<
               blink::mojom::ServiceWorkerObjectInfo>,
           this, worker, message, source_origin, sent_message_ports,
-          base::make_optional(timeout), callback,
-          sender_provider_host->GetOrCreateServiceWorkerHandle(
-              sender_provider_host->running_hosted_version())));
+          base::make_optional(timeout), callback, *worker_info));
       break;
     }
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
@@ -639,8 +623,9 @@ void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
 }
 
 ServiceWorkerRegistrationHandle*
-ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
-                                                    int64_t registration_id) {
+ServiceWorkerDispatcherHost::FindServiceWorkerRegistrationHandle(
+    int provider_id,
+    int64_t registration_id) {
   for (RegistrationHandleMap::iterator iter(&registration_handles_);
        !iter.IsAtEnd(); iter.Advance()) {
     ServiceWorkerRegistrationHandle* handle = iter.GetCurrentValue();
@@ -650,21 +635,6 @@ ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
     }
   }
   return nullptr;
-}
-
-void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerRegistration* registration,
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* out_info,
-    ServiceWorkerVersionAttributes* out_attrs) {
-  *out_info = CreateRegistrationObjectInfo(provider_host, registration);
-
-  out_attrs->installing = provider_host->GetOrCreateServiceWorkerHandle(
-      registration->installing_version());
-  out_attrs->waiting = provider_host->GetOrCreateServiceWorkerHandle(
-      registration->waiting_version());
-  out_attrs->active = provider_host->GetOrCreateServiceWorkerHandle(
-      registration->active_version());
 }
 
 void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,

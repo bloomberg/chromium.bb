@@ -52,13 +52,14 @@ void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version->status()));
 }
 
-blink::mojom::ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
-  blink::mojom::ServiceWorkerObjectInfo info;
-  info.handle_id = handle_id_;
-  info.url = version_->script_url();
-  info.state =
+blink::mojom::ServiceWorkerObjectInfoPtr
+ServiceWorkerHandle::CreateObjectInfo() {
+  auto info = blink::mojom::ServiceWorkerObjectInfo::New();
+  info->handle_id = handle_id_;
+  info->url = version_->script_url();
+  info->state =
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
-  info.version_id = version_->version_id();
+  info->version_id = version_->version_id();
   return info;
 }
 
