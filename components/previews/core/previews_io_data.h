@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -36,12 +37,18 @@ typedef base::Callback<bool(PreviewsType)> PreviewsIsEnabledCallback;
 // A class to manage the IO portion of inter-thread communication between
 // previews/ objects. Created on the UI thread, but used only on the IO thread
 // after initialization.
-class PreviewsIOData : public PreviewsDecider {
+class PreviewsIOData : public PreviewsDecider,
+                       public PreviewsBlacklistDelegate {
  public:
   PreviewsIOData(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~PreviewsIOData() override;
+
+  // PreviewsBlacklistDelegate:
+  void OnNewBlacklistedHost(const std::string& host, base::Time time) override;
+  void OnUserBlacklistedStatusChange(bool blacklisted) override;
+  void OnBlacklistCleared(base::Time time) override;
 
   // Stores |previews_ui_service| as |previews_ui_service_| and posts a task to
   // InitializeOnIOThread on the IO thread.
@@ -89,7 +96,7 @@ class PreviewsIOData : public PreviewsDecider {
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store);
 
   // Sets a blacklist for testing.
-  void SetTestingPreviewsBlacklistForTesting(
+  void SetPreviewsBlacklistForTesting(
       std::unique_ptr<PreviewsBlackList> previews_back_list);
 
  private:

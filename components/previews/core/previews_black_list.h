@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
@@ -72,8 +73,11 @@ class PreviewsBlackList {
   // information, and can be null. When |opt_out_store| is null, the in-memory
   // map will be immediately loaded to empty. If |opt_out_store| is non-null,
   // it will be used to load the in-memory map asynchronously.
+  // |blacklist_delegate| is a single object listening for blacklist events, and
+  // it is guaranteed to overlive the life time of |this|.
   PreviewsBlackList(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
-                    std::unique_ptr<base::Clock> clock);
+                    std::unique_ptr<base::Clock> clock,
+                    PreviewsBlacklistDelegate* blacklist_delegate);
   virtual ~PreviewsBlackList();
 
   // Asynchronously adds a new navigation to to the in-memory black list and
@@ -156,6 +160,10 @@ class PreviewsBlackList {
   base::queue<base::Closure> pending_callbacks_;
 
   std::unique_ptr<base::Clock> clock_;
+
+  // The delegate listening to this blacklist. |blacklist_delegate_| lifetime is
+  // guaranteed to overlive |this|.
+  PreviewsBlacklistDelegate* blacklist_delegate_;
 
   base::ThreadChecker thread_checker_;
 

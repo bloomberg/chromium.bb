@@ -107,6 +107,13 @@ void PreviewsLogger::AddAndNotifyObserver(PreviewsLoggerObserver* observer) {
       ++decision_ptr;
     }
   }
+
+  // Push the current state of blacklist (user blacklisted state and all
+  // blacklisted hosts).
+  observer->OnUserBlacklistedStatusChange(user_blacklisted_status_);
+  for (auto entry : blacklisted_hosts_) {
+    observer->OnNewBlacklistedHost(entry.first, entry.second);
+  }
 }
 
 void PreviewsLogger::RemoveObserver(PreviewsLoggerObserver* observer) {
@@ -161,6 +168,31 @@ void PreviewsLogger::LogPreviewDecisionMade(PreviewsEligibilityReason reason,
   }
 
   decisions_logs_.emplace_back(kPreviewDecisionMade, description, url, time);
+}
+
+void PreviewsLogger::OnNewBlacklistedHost(const std::string& host,
+                                          base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blacklisted_hosts_[host] = time;
+  for (auto& observer : observer_list_) {
+    observer.OnNewBlacklistedHost(host, time);
+  }
+}
+
+void PreviewsLogger::OnUserBlacklistedStatusChange(bool blacklisted) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observer_list_) {
+    observer.OnUserBlacklistedStatusChange(blacklisted);
+  }
+  user_blacklisted_status_ = blacklisted;
+}
+
+void PreviewsLogger::OnBlacklistCleared(base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observer_list_) {
+    observer.OnBlacklistCleared(time);
+  }
+  blacklisted_hosts_.clear();
 }
 
 }  // namespace previews

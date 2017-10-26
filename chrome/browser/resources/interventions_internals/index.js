@@ -6,6 +6,25 @@
 const KEY_COLUMNS = ['log-type', 'log-description', 'log-url'];
 
 /**
+ * Convert milliseconds to human readable date/time format.
+ * The return format will be "MM/dd/YYYY hh:mm:ss.sss"
+ * @param {number} time Time in millisecond since Unix Epoch.
+ * @return The converted string format.
+ */
+function getTimeFormat(time) {
+  let date = new Date(time);
+  let options = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  };
+
+  let dateString = date.toLocaleDateString('en-US', options);
+  return dateString + ' ' + date.getHours() + ':' + date.getMinutes() + ':' +
+      date.getSeconds() + '.' + date.getMilliseconds();
+}
+
+/**
  * Switch the selected tab to 'selected-tab' class.
  */
 function setSelectedTab() {
@@ -104,8 +123,7 @@ InterventionsInternalPageImpl.prototype = {
     tableRow.setAttribute('class', 'log-message');
 
     let timeTd = document.createElement('td');
-    let date = new Date(log.time);
-    timeTd.textContent = date.toISOString();
+    timeTd.textContent = getTimeFormat(log.time);
     timeTd.setAttribute('class', 'log-time');
     tableRow.appendChild(timeTd);
 
@@ -125,6 +143,65 @@ InterventionsInternalPageImpl.prototype = {
     urlTd.setAttribute('class', 'log-url');
     urlTd.textContent = log.url.url;
     tableRow.appendChild(urlTd);
+  },
+
+  /**
+   * Update new blacklisted host to the web page.
+   *
+   * @override
+   * @param {!string} host The blacklisted host.
+   * @param {number} time The time when the host was blacklisted in milliseconds
+   * since Unix epoch.
+   */
+  onBlacklistedHost: function(host, time) {
+    let row = document.createElement('tr');
+    row.setAttribute('class', 'blacklisted-host-row');
+
+    let hostTd = document.createElement('td');
+    hostTd.setAttribute('class', 'host-blacklisted');
+    hostTd.textContent = host;
+    row.appendChild(hostTd);
+
+    let timeTd = document.createElement('td');
+    timeTd.setAttribute('class', 'host-blacklisted-time');
+    timeTd.textContent = getTimeFormat(time);
+    row.appendChild(timeTd);
+
+    // TODO(thanhdle): Insert row at correct index. crbug.com/776105.
+    $('blacklisted-hosts-table').appendChild(row);
+  },
+
+  /**
+   * Update to the page that the user blacklisted status has changed.
+   *
+   * @override
+   * @param {boolean} blacklisted The time of the event in milliseconds since
+   * Unix epoch.
+   */
+  onUserBlacklistedStatusChange: function(blacklisted) {
+    let userBlacklistedStatus = $('user-blacklisted-status');
+    userBlacklistedStatus.textContent = 'User blacklisted status: ' +
+        (blacklisted ? 'Blacklisted' : 'Not blacklisted');
+  },
+
+  /**
+   * Update the blacklist cleared status on the page.
+   *
+   * @override
+   * @param {number} time The time of the event in milliseconds since Unix
+   * epoch.
+   */
+  onBlacklistCleared: function(time) {
+    let blacklistClearedStatus = $('blacklist-cleared-status');
+    blacklistClearedStatus.textContent =
+        'Last blacklist cleared: ' + getTimeFormat(time);
+
+    // Remove hosts from table.
+    let blacklistedHostsTable = $('blacklisted-hosts-table');
+    let rows = blacklistedHostsTable.querySelectorAll('.blacklisted-host-row');
+    for (let row = rows.length - 1; row > 0; row--) {
+      blacklistedHostsTable.deleteRow(row);
+    }
   },
 };
 

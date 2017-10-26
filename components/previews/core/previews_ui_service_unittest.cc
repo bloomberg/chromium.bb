@@ -53,7 +53,7 @@ class TestPreviewsUIService : public PreviewsUIService {
 // Mock class of PreviewsLogger for checking passed in parameters.
 class TestPreviewsLogger : public PreviewsLogger {
  public:
-  TestPreviewsLogger() {}
+  TestPreviewsLogger() : navigation_opt_out_(false), user_blacklisted_(false) {}
 
   // PreviewsLogger:
   void LogPreviewNavigation(const GURL& url,
@@ -76,6 +76,19 @@ class TestPreviewsLogger : public PreviewsLogger {
     decision_type_ = type;
   }
 
+  void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
+    host_blacklisted_ = host;
+    host_blacklisted_time_ = time;
+  }
+
+  void OnUserBlacklistedStatusChange(bool blacklisted) override {
+    user_blacklisted_ = blacklisted;
+  }
+
+  void OnBlacklistCleared(base::Time time) override {
+    blacklist_cleared_time_ = time;
+  }
+
   // Return the passed in LogPreviewDecision parameters.
   PreviewsEligibilityReason decision_reason() const { return decision_reason_; }
   GURL decision_url() const { return decision_url_; }
@@ -87,6 +100,12 @@ class TestPreviewsLogger : public PreviewsLogger {
   bool navigation_opt_out() const { return navigation_opt_out_; }
   base::Time navigation_time() const { return navigation_time_; }
   PreviewsType navigation_type() const { return navigation_type_; }
+
+  // Return the passed in OnBlacklist events.
+  std::string host_blacklisted() const { return host_blacklisted_; }
+  base::Time host_blacklisted_time() const { return host_blacklisted_time_; }
+  bool user_blacklisted() const { return user_blacklisted_; }
+  base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
 
  private:
   // Passed in LogPreviewDecision parameters.
@@ -100,6 +119,12 @@ class TestPreviewsLogger : public PreviewsLogger {
   bool navigation_opt_out_;
   base::Time navigation_time_;
   PreviewsType navigation_type_;
+
+  // Passed in OnBlacklist events.
+  std::string host_blacklisted_;
+  base::Time host_blacklisted_time_;
+  bool user_blacklisted_;
+  base::Time blacklist_cleared_time_;
 };
 
 class PreviewsUIServiceTest : public testing::Test {
@@ -204,6 +229,30 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   EXPECT_EQ(url_b, logger_ptr_->decision_url());
   EXPECT_EQ(type_b, logger_ptr_->decision_type());
   EXPECT_EQ(time_b, logger_ptr_->decision_time());
+}
+
+TEST_F(PreviewsUIServiceTest, TestOnNewBlacklistedHostPassesCorrectParams) {
+  const std::string expected_host = "example.com";
+  const base::Time expected_time = base::Time::Now();
+  ui_service()->OnNewBlacklistedHost(expected_host, expected_time);
+
+  EXPECT_EQ(expected_host, logger_ptr_->host_blacklisted());
+  EXPECT_EQ(expected_time, logger_ptr_->host_blacklisted_time());
+}
+
+TEST_F(PreviewsUIServiceTest, TestOnUserBlacklistedPassesCorrectParams) {
+  ui_service()->OnUserBlacklistedStatusChange(true /* blacklisted */);
+  EXPECT_TRUE(logger_ptr_->user_blacklisted());
+
+  ui_service()->OnUserBlacklistedStatusChange(false /* blacklisted */);
+  EXPECT_FALSE(logger_ptr_->user_blacklisted());
+}
+
+TEST_F(PreviewsUIServiceTest, TestOnBlacklistClearedPassesCorrectParams) {
+  const base::Time expected_time = base::Time::Now();
+  ui_service()->OnBlacklistCleared(expected_time);
+
+  EXPECT_EQ(expected_time, logger_ptr_->blacklist_cleared_time());
 }
 
 }  // namespace previews

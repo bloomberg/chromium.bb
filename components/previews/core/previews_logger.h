@@ -7,6 +7,7 @@
 
 #include <list>
 #include <string>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -81,7 +82,25 @@ class PreviewsLogger {
                                       base::Time time,
                                       PreviewsType type);
 
+  // Notify observers that |host| is blacklisted at |time|. Virtualized in
+  // testing.
+  virtual void OnNewBlacklistedHost(const std::string& host, base::Time time);
+
+  // Notify observers that user blacklisted state has changed to |blacklisted|.
+  // Virtualized in testing.
+  virtual void OnUserBlacklistedStatusChange(bool blacklisted);
+
+  // Notify observers that the blacklist is cleared at |time|. Virtualized in
+  // testing.
+  virtual void OnBlacklistCleared(base::Time time);
+
  private:
+  // Keeping track of all blacklisted host to notify new observers.
+  std::unordered_map<std::string, base::Time> blacklisted_hosts_;
+
+  // The current user blacklisted status.
+  bool user_blacklisted_status_;
+
   // Collection of recorded navigation log messages.
   std::list<MessageLog> navigations_logs_;
 

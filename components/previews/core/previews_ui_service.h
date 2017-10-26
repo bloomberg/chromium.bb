@@ -49,6 +49,18 @@ class PreviewsUIService {
   // Clears the history of the black list between |begin_time| and |end_time|.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
 
+  // Notifies |logger_| that |host| has been blacklisted at |time|. Virtualized
+  // in testing.
+  virtual void OnNewBlacklistedHost(const std::string& host, base::Time time);
+
+  // Notifies |logger_| that the user blacklisted state has changed. Where
+  // |blacklisted| is the new user blacklisted status. Virtualized in testing.
+  virtual void OnUserBlacklistedStatusChange(bool blacklisted);
+
+  // Notifies |logger_| that the blacklist is cleared at |time|. Virtualized in
+  // testing.
+  virtual void OnBlacklistCleared(base::Time time);
+
   // Log the navigation to PreviewsLogger. Virtualized in testing.
   virtual void LogPreviewNavigation(const GURL& url,
                                     PreviewsType type,

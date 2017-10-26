@@ -4,6 +4,8 @@
 
 #include "components/previews/core/previews_logger.h"
 
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -27,7 +29,10 @@ const size_t kMaximumDecisionLogs = 25;
 // mojo::InterventionsInternalsPagePtr.
 class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
  public:
-  TestPreviewsLoggerObserver() {}
+  TestPreviewsLoggerObserver()
+      : host_blacklisted_called_(false),
+        user_status_change_calls_(0),
+        blacklist_cleared_called_(false) {}
 
   ~TestPreviewsLoggerObserver() override {}
 
@@ -36,6 +41,18 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
       const PreviewsLogger::MessageLog& message) override {
     message_ = base::MakeUnique<PreviewsLogger::MessageLog>(message);
     messages_.push_back(*message_);
+  }
+  void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
+    host_blacklisted_called_ = true;
+    blacklisted_hosts_[host] = time;
+  }
+  void OnUserBlacklistedStatusChange(bool blacklisted) override {
+    ++user_status_change_calls_;
+    user_blacklisted_ = blacklisted;
+  }
+  void OnBlacklistCleared(base::Time time) override {
+    blacklist_cleared_called_ = true;
+    blacklist_cleared_time_ = time;
   }
 
   // Expose the passed in MessageLog for testing.
@@ -46,12 +63,30 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
     return messages_;
   };
 
+  // Expose blacklist events info for testing.
+  const std::unordered_map<std::string, base::Time>& blacklisted_hosts() {
+    return blacklisted_hosts_;
+  }
+  bool host_blacklisted_called() const { return host_blacklisted_called_; }
+  size_t user_status_change_calls() const { return user_status_change_calls_; }
+  bool blacklist_cleared_called() const { return blacklist_cleared_called_; }
+  bool user_blacklisted() const { return user_blacklisted_; }
+  base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
+
  private:
   // Received messages.
   std::vector<PreviewsLogger::MessageLog> messages_;
 
   // The passed in MessageLog in OnNewMessageLogAdded.
   std::unique_ptr<PreviewsLogger::MessageLog> message_;
+
+  // Received blacklisted event info.
+  std::unordered_map<std::string, base::Time> blacklisted_hosts_;
+  bool user_blacklisted_;
+  base::Time blacklist_cleared_time_;
+  bool host_blacklisted_called_;
+  size_t user_status_change_calls_;
+  bool blacklist_cleared_called_;
 };
 
 class PreviewsLoggerTest : public testing::Test {
@@ -357,6 +392,123 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRules) {
       PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
   std::string expected_description = "Host blacklisted by server rules";
   EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, NotifyObserversOfNewBlacklistedHost) {
+  TestPreviewsLoggerObserver observers[3];
+
+  const size_t number_of_obs = 3;
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->AddAndNotifyObserver(&observers[i]);
+  }
+
+  const size_t removed_observer = 1;
+  logger_->RemoveObserver(&observers[removed_observer]);
+
+  const std::string expected_host = "example.com";
+  const base::Time expected_time = base::Time::Now();
+  const size_t expected_size = 1;
+  logger_->OnNewBlacklistedHost(expected_host, expected_time);
+
+  for (size_t i = 0; i < number_of_obs; i++) {
+    if (i != removed_observer) {
+      EXPECT_TRUE(observers[i].host_blacklisted_called());
+      EXPECT_EQ(expected_size, observers[i].blacklisted_hosts().size());
+      EXPECT_EQ(expected_time,
+                observers[i].blacklisted_hosts().find(expected_host)->second);
+    }
+  }
+  EXPECT_FALSE(observers[removed_observer].host_blacklisted_called());
+}
+
+TEST_F(PreviewsLoggerTest, NotifyObserversWhenUserBlacklisted) {
+  TestPreviewsLoggerObserver observers[3];
+
+  const size_t number_of_obs = 3;
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->AddAndNotifyObserver(&observers[i]);
+  }
+
+  const size_t removed_observer = 1;
+  logger_->RemoveObserver(&observers[removed_observer]);
+  logger_->OnUserBlacklistedStatusChange(true /* blacklisted */);
+  const size_t expected_times = 2;
+
+  for (size_t i = 0; i < number_of_obs; i++) {
+    if (i != removed_observer) {
+      EXPECT_EQ(expected_times, observers[i].user_status_change_calls());
+      EXPECT_TRUE(observers[i].user_blacklisted());
+    }
+  }
+  EXPECT_EQ(expected_times - 1,
+            observers[removed_observer].user_status_change_calls());
+}
+
+TEST_F(PreviewsLoggerTest, NotifyObserversWhenUserNotBlacklisted) {
+  TestPreviewsLoggerObserver observers[3];
+
+  const size_t number_of_obs = 3;
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->AddAndNotifyObserver(&observers[i]);
+  }
+
+  const size_t removed_observer = 1;
+  logger_->RemoveObserver(&observers[removed_observer]);
+  logger_->OnUserBlacklistedStatusChange(false /* blacklisted */);
+  const size_t expected_times = 2;
+
+  for (size_t i = 0; i < number_of_obs; i++) {
+    if (i != removed_observer) {
+      EXPECT_EQ(expected_times, observers[i].user_status_change_calls());
+      EXPECT_FALSE(observers[i].user_blacklisted());
+    }
+  }
+  EXPECT_EQ(expected_times - 1,
+            observers[removed_observer].user_status_change_calls());
+}
+
+TEST_F(PreviewsLoggerTest, NotifyObserversWhenBlacklistCleared) {
+  TestPreviewsLoggerObserver observers[3];
+
+  const size_t number_of_obs = 3;
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->AddAndNotifyObserver(&observers[i]);
+  }
+
+  const size_t removed_observer = 1;
+  logger_->RemoveObserver(&observers[removed_observer]);
+
+  const base::Time expected_time = base::Time::Now();
+  logger_->OnBlacklistCleared(expected_time);
+
+  for (size_t i = 0; i < number_of_obs; i++) {
+    if (i != removed_observer) {
+      EXPECT_TRUE(observers[i].blacklist_cleared_called());
+      EXPECT_EQ(expected_time, observers[i].blacklist_cleared_time());
+    }
+  }
+  EXPECT_FALSE(observers[removed_observer].blacklist_cleared_called());
+}
+
+TEST_F(PreviewsLoggerTest, ObserverNotifiedOfUserBlacklistedStateWhenAdded) {
+  TestPreviewsLoggerObserver observer;
+
+  const std::string host0 = "example0.com";
+  const std::string host1 = "example1.com";
+  const base::Time time0 = base::Time::Now();
+  const base::Time time1 = base::Time::Now();
+
+  logger_->OnUserBlacklistedStatusChange(true /* blacklisted */);
+  logger_->OnNewBlacklistedHost(host0, time0);
+  logger_->OnNewBlacklistedHost(host1, time1);
+  logger_->AddAndNotifyObserver(&observer);
+
+  const size_t expected_times = 1;
+  EXPECT_EQ(expected_times, observer.user_status_change_calls());
+  const size_t expected_size = 2;
+  EXPECT_EQ(expected_size, observer.blacklisted_hosts().size());
+  EXPECT_EQ(time0, observer.blacklisted_hosts().find(host0)->second);
+  EXPECT_EQ(time1, observer.blacklisted_hosts().find(host1)->second);
 }
 
 }  // namespace

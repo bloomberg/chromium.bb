@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_INTERVENTIONS_INTERNALS_INTERVENTIONS_INTERNALS_PAGE_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "components/previews/core/previews_logger.h"
@@ -29,6 +30,9 @@ class InterventionsInternalsPageHandler
   // previews::PreviewsLoggerObserver:
   void OnNewMessageLogAdded(
       const previews::PreviewsLogger::MessageLog& message) override;
+  void OnNewBlacklistedHost(const std::string& host, base::Time time) override;
+  void OnUserBlacklistedStatusChange(bool blacklisted) override;
+  void OnBlacklistCleared(base::Time time) override;
 
  private:
   mojo::Binding<mojom::InterventionsInternalsPageHandler> binding_;

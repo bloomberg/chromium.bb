@@ -53,6 +53,21 @@ void InterventionsInternalsPageHandler::OnNewMessageLogAdded(
   page_->LogNewMessage(std::move(mojo_message_ptr));
 }
 
+void InterventionsInternalsPageHandler::OnNewBlacklistedHost(
+    const std::string& host,
+    base::Time time) {
+  page_->OnBlacklistedHost(host, time.ToJavaTime());
+}
+
+void InterventionsInternalsPageHandler::OnUserBlacklistedStatusChange(
+    bool blacklisted) {
+  page_->OnUserBlacklistedStatusChange(blacklisted);
+}
+
+void InterventionsInternalsPageHandler::OnBlacklistCleared(base::Time time) {
+  page_->OnBlacklistCleared(time.ToJavaTime());
+}
+
 void InterventionsInternalsPageHandler::GetPreviewsEnabled(
     GetPreviewsEnabledCallback callback) {
   std::unordered_map<std::string, mojom::PreviewsStatusPtr> statuses;
