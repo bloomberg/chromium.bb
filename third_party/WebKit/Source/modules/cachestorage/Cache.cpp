@@ -26,6 +26,7 @@
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/http_names.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -165,43 +166,13 @@ class CacheWithRequestsCallbacks
   Persistent<ScriptPromiseResolver> resolver_;
 };
 
-// Used for UMA. Append only.
-enum class ResponseType {
-  kBasicType,
-  kCORSType,
-  kDefaultType,
-  kErrorType,
-  kOpaqueType,
-  kOpaqueRedirectType,
-  kEnumMax,
-};
-
 void RecordResponseTypeForAdd(const Member<Response>& response) {
-  ResponseType type = ResponseType::kEnumMax;
-  switch (response->GetResponse()->GetType()) {
-    case FetchResponseData::kBasicType:
-      type = ResponseType::kBasicType;
-      break;
-    case FetchResponseData::kCORSType:
-      type = ResponseType::kCORSType;
-      break;
-    case FetchResponseData::kDefaultType:
-      type = ResponseType::kDefaultType;
-      break;
-    case FetchResponseData::kErrorType:
-      type = ResponseType::kErrorType;
-      break;
-    case FetchResponseData::kOpaqueType:
-      type = ResponseType::kOpaqueType;
-      break;
-    case FetchResponseData::kOpaqueRedirectType:
-      type = ResponseType::kOpaqueRedirectType;
-      break;
-  }
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, response_type_histogram,
-                                  ("ServiceWorkerCache.Cache.AddResponseType",
-                                   static_cast<int>(ResponseType::kEnumMax)));
-  response_type_histogram.Count(static_cast<int>(type));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, response_type_histogram,
+      ("ServiceWorkerCache.Cache.AddResponseType",
+       static_cast<int>(network::mojom::FetchResponseType::kLast) + 1));
+  response_type_histogram.Count(
+      static_cast<int>(response->GetResponse()->GetType()));
 };
 
 bool VaryHeaderContainsAsterisk(const Response* response) {

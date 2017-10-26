@@ -16,6 +16,7 @@
 #include "public/platform/WebCORS.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -29,17 +30,6 @@ class MODULES_EXPORT FetchResponseData final
   WTF_MAKE_NONCOPYABLE(FetchResponseData);
 
  public:
-  // "A response has an associated type which is one of basic, CORS, default,
-  // error, opaque, and opaqueredirect. Unless stated otherwise, it is
-  // default."
-  enum Type {
-    kBasicType,
-    kCORSType,
-    kDefaultType,
-    kErrorType,
-    kOpaqueType,
-    kOpaqueRedirectType
-  };
   // "A response can have an associated termination reason which is one of
   // end-user abort, fatal, and timeout."
   enum TerminationReason {
@@ -71,7 +61,7 @@ class MODULES_EXPORT FetchResponseData final
 
   FetchResponseData* Clone(ScriptState*);
 
-  Type GetType() const { return type_; }
+  network::mojom::FetchResponseType GetType() const { return type_; }
   const KURL* Url() const;
   unsigned short Status() const { return status_; }
   AtomicString StatusMessage() const { return status_message_; }
@@ -119,9 +109,11 @@ class MODULES_EXPORT FetchResponseData final
   void Trace(blink::Visitor*);
 
  private:
-  FetchResponseData(Type, unsigned short, AtomicString);
+  FetchResponseData(network::mojom::FetchResponseType,
+                    unsigned short,
+                    AtomicString);
 
-  Type type_;
+  network::mojom::FetchResponseType type_;
   std::unique_ptr<TerminationReason> termination_reason_;
   Vector<KURL> url_list_;
   unsigned short status_;

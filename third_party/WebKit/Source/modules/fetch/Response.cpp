@@ -35,6 +35,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -90,7 +91,7 @@ FetchResponseData* CreateFetchResponseDataFromWebResponse(
     case network::mojom::FetchResponseType::kDefault:
       break;
     case network::mojom::FetchResponseType::kError:
-      DCHECK_EQ(response->GetType(), FetchResponseData::kErrorType);
+      DCHECK_EQ(response->GetType(), network::mojom::FetchResponseType::kError);
       break;
   }
 
@@ -320,17 +321,17 @@ Response* Response::redirect(ScriptState* script_state,
 String Response::type() const {
   // "The type attribute's getter must return response's type."
   switch (response_->GetType()) {
-    case FetchResponseData::kBasicType:
+    case network::mojom::FetchResponseType::kBasic:
       return "basic";
-    case FetchResponseData::kCORSType:
+    case network::mojom::FetchResponseType::kCORS:
       return "cors";
-    case FetchResponseData::kDefaultType:
+    case network::mojom::FetchResponseType::kDefault:
       return "default";
-    case FetchResponseData::kErrorType:
+    case network::mojom::FetchResponseType::kError:
       return "error";
-    case FetchResponseData::kOpaqueType:
+    case network::mojom::FetchResponseType::kOpaque:
       return "opaque";
-    case FetchResponseData::kOpaqueRedirectType:
+    case network::mojom::FetchResponseType::kOpaqueRedirect:
       return "opaqueredirect";
   }
   NOTREACHED();

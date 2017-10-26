@@ -13,36 +13,11 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
+using Type = network::mojom::FetchResponseType;
+
 namespace blink {
 
 namespace {
-
-network::mojom::FetchResponseType FetchTypeToWebType(
-    FetchResponseData::Type fetch_type) {
-  network::mojom::FetchResponseType web_type =
-      network::mojom::FetchResponseType::kDefault;
-  switch (fetch_type) {
-    case FetchResponseData::kBasicType:
-      web_type = network::mojom::FetchResponseType::kBasic;
-      break;
-    case FetchResponseData::kCORSType:
-      web_type = network::mojom::FetchResponseType::kCORS;
-      break;
-    case FetchResponseData::kDefaultType:
-      web_type = network::mojom::FetchResponseType::kDefault;
-      break;
-    case FetchResponseData::kErrorType:
-      web_type = network::mojom::FetchResponseType::kError;
-      break;
-    case FetchResponseData::kOpaqueType:
-      web_type = network::mojom::FetchResponseType::kOpaque;
-      break;
-    case FetchResponseData::kOpaqueRedirectType:
-      web_type = network::mojom::FetchResponseType::kOpaqueRedirect;
-      break;
-  }
-  return web_type;
-}
 
 WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
   // Can't just pass *headers to the WebVector constructor because HashSet
@@ -59,14 +34,14 @@ WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
 FetchResponseData* FetchResponseData::Create() {
   // "Unless stated otherwise, a response's url is null, status is 200, status
   // message is `OK`, header list is an empty header list, and body is null."
-  return new FetchResponseData(kDefaultType, 200, "OK");
+  return new FetchResponseData(Type::kDefault, 200, "OK");
 }
 
 FetchResponseData* FetchResponseData::CreateNetworkErrorResponse() {
   // "A network error is a response whose status is always 0, status message
   // is always the empty byte sequence, header list is aways an empty list,
   // and body is always null."
-  return new FetchResponseData(kErrorType, 0, "");
+  return new FetchResponseData(Type::kError, 0, "");
 }
 
 FetchResponseData* FetchResponseData::CreateWithBuffer(
@@ -77,12 +52,12 @@ FetchResponseData* FetchResponseData::CreateWithBuffer(
 }
 
 FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
-  DCHECK_EQ(type_, kDefaultType);
+  DCHECK_EQ(type_, Type::kDefault);
   // "A basic filtered response is a filtered response whose type is |basic|,
   // header list excludes any headers in internal response's header list whose
   // name is `Set-Cookie` or `Set-Cookie2`."
   FetchResponseData* response =
-      new FetchResponseData(kBasicType, status_, status_message_);
+      new FetchResponseData(Type::kBasic, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.first))
@@ -96,7 +71,7 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
 }
 
 FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
-  DCHECK_EQ(type_, kDefaultType);
+  DCHECK_EQ(type_, Type::kDefault);
   WebHTTPHeaderSet access_control_expose_header_set;
   String access_control_expose_headers;
   if (header_list_->Get(HTTPNames::Access_Control_Expose_Headers,
@@ -109,7 +84,7 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
 
 FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
     const WebHTTPHeaderSet& exposed_headers) const {
-  DCHECK_EQ(type_, kDefaultType);
+  DCHECK_EQ(type_, Type::kDefault);
   // "A CORS filtered response is a filtered response whose type is |CORS|,
   // header list excludes all headers in internal response's header list,
   // except those whose name is either one of `Cache-Control`,
@@ -118,7 +93,7 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   // parsing `Access-Control-Expose-Headers` in internal response's header
   // list."
   FetchResponseData* response =
-      new FetchResponseData(kCORSType, status_, status_message_);
+      new FetchResponseData(Type::kCORS, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
@@ -141,28 +116,28 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
 }
 
 FetchResponseData* FetchResponseData::CreateOpaqueFilteredResponse() const {
-  DCHECK_EQ(type_, kDefaultType);
+  DCHECK_EQ(type_, Type::kDefault);
   // "An opaque filtered response is a filtered response whose type is
   // 'opaque', url list is the empty list, status is 0, status message is the
   // empty byte sequence, header list is the empty list, body is null, and
   // cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
-  FetchResponseData* response = new FetchResponseData(kOpaqueType, 0, "");
+  FetchResponseData* response = new FetchResponseData(Type::kOpaque, 0, "");
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
 
 FetchResponseData* FetchResponseData::CreateOpaqueRedirectFilteredResponse()
     const {
-  DCHECK_EQ(type_, kDefaultType);
+  DCHECK_EQ(type_, Type::kDefault);
   // "An opaque filtered response is a filtered response whose type is
   // 'opaqueredirect', status is 0, status message is the empty byte sequence,
   // header list is the empty list, body is null, and cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
   FetchResponseData* response =
-      new FetchResponseData(kOpaqueRedirectType, 0, "");
+      new FetchResponseData(Type::kOpaqueRedirect, 0, "");
   response->SetURLList(url_list_);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
@@ -222,17 +197,17 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state) {
   new_response->cors_exposed_header_names_ = cors_exposed_header_names_;
 
   switch (type_) {
-    case kBasicType:
-    case kCORSType:
+    case Type::kBasic:
+    case Type::kCORS:
       DCHECK(internal_response_);
       DCHECK_EQ(buffer_, internal_response_->buffer_);
-      DCHECK_EQ(internal_response_->type_, kDefaultType);
+      DCHECK_EQ(internal_response_->type_, Type::kDefault);
       new_response->internal_response_ =
           internal_response_->Clone(script_state);
       buffer_ = internal_response_->buffer_;
       new_response->buffer_ = new_response->internal_response_->buffer_;
       break;
-    case kDefaultType: {
+    case Type::kDefault: {
       DCHECK(!internal_response_);
       if (buffer_) {
         BodyStreamBuffer* new1 = nullptr;
@@ -243,15 +218,15 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state) {
       }
       break;
     }
-    case kErrorType:
+    case Type::kError:
       DCHECK(!internal_response_);
       DCHECK(!buffer_);
       break;
-    case kOpaqueType:
-    case kOpaqueRedirectType:
+    case Type::kOpaque:
+    case Type::kOpaqueRedirect:
       DCHECK(internal_response_);
       DCHECK(!buffer_);
-      DCHECK_EQ(internal_response_->type_, kDefaultType);
+      DCHECK_EQ(internal_response_->type_, Type::kDefault);
       new_response->internal_response_ =
           internal_response_->Clone(script_state);
       break;
@@ -263,7 +238,7 @@ void FetchResponseData::PopulateWebServiceWorkerResponse(
     WebServiceWorkerResponse& response) {
   if (internal_response_) {
     internal_response_->PopulateWebServiceWorkerResponse(response);
-    response.SetResponseType(FetchTypeToWebType(type_));
+    response.SetResponseType(type_);
     response.SetCorsExposedHeaderNames(
         HeaderSetToWebVector(cors_exposed_header_names_));
     return;
@@ -271,7 +246,7 @@ void FetchResponseData::PopulateWebServiceWorkerResponse(
   response.SetURLList(url_list_);
   response.SetStatus(Status());
   response.SetStatusText(StatusMessage());
-  response.SetResponseType(FetchTypeToWebType(type_));
+  response.SetResponseType(type_);
   response.SetResponseTime(ResponseTime());
   response.SetCacheStorageCacheName(CacheStorageCacheName());
   response.SetCorsExposedHeaderNames(
@@ -290,11 +265,11 @@ FetchResponseData::FetchResponseData(Type type,
       header_list_(FetchHeaderList::Create()) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
-  if (type_ == kBasicType || type_ == kCORSType) {
+  if (type_ == Type::kBasic || type_ == Type::kCORS) {
     DCHECK(internal_response_);
     internal_response_->buffer_ = buffer;
     buffer_ = buffer;
-  } else if (type_ == kDefaultType) {
+  } else if (type_ == Type::kDefault) {
     DCHECK(!internal_response_);
     buffer_ = buffer;
   }
