@@ -4114,6 +4114,639 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   }
 }
 
+TEST_F(FormStructureTest, ParseQueryResponse_FillFirstWholePhoneNumberOnly) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Home Phone");
+  field.name = ASCIIToUTF16("homePhoneNumber");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Cell Phone");
+  field.name = ASCIIToUTF16("cellPhoneNumber");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_WHOLE_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_WHOLE_NUMBER);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Verify second phone field is set to be filled only when focused when the
+  // feature is on.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(4U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(3)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(3)->only_fill_when_focused());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(4U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+  }
+}
+
+TEST_F(FormStructureTest,
+       ParseQueryResponse_FillPhonePartsOnceOnly_FirstNumberInParts) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("phoneCountry");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area");
+  field.name = ASCIIToUTF16("areaCode");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Number");
+  field.name = ASCIIToUTF16("number");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Second Number");
+  field.name = ASCIIToUTF16("phoneNumber");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area Code Out Of Nowhere");
+  field.name = ASCIIToUTF16("strangeAreaCode");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_COUNTRY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_WHOLE_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Verify second phone field is set to be filled only when focused when the
+  // feature is on.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(7U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(5)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(5)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(6)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(6)->only_fill_when_focused());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(7U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(5)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(5)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(6)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(6)->only_fill_when_focused());
+  }
+}
+
+TEST_F(FormStructureTest,
+       ParseQueryResponse_FillPhonePartsOnceOnly_FirstNumberIsWholeNumber) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("phoneCountry");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area");
+  field.name = ASCIIToUTF16("areaCode");
+  form.fields.push_back(field);
+
+  // Winning phone number fields as it is the first complete number field.
+  field.label = ASCIIToUTF16("Phone Number");
+  field.name = ASCIIToUTF16("phoneNumber");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Number");
+  field.name = ASCIIToUTF16("number");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area Code Out Of Nowhere");
+  field.name = ASCIIToUTF16("strangeAreaCode");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_COUNTRY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_AND_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Verify second phone field is set to be filled only when focused when the
+  // feature is on.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(7U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER,
+              forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(5)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(5)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(6)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(6)->only_fill_when_focused());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(7U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER,
+              forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(5)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(5)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(6)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(6)->only_fill_when_focused());
+  }
+}
+
+TEST_F(
+    FormStructureTest,
+    ParseQueryResponse_FillPhonePartsOnceOnly_FirstNumberWithoutCountryCode) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  // area code + number makes a valid fill, without a country code
+  field.label = ASCIIToUTF16("Area");
+  field.name = ASCIIToUTF16("areaCode");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Number");
+  field.name = ASCIIToUTF16("number");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone Number");
+  field.name = ASCIIToUTF16("phoneNumber");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area Code Out Of Nowhere");
+  field.name = ASCIIToUTF16("strangeAreaCode");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_WHOLE_NUMBER);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Verify second phone field is set to be filled only when focused when the
+  // feature is on.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(6U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(4)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(5)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(5)->only_fill_when_focused());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(6U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+              forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(5)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(5)->only_fill_when_focused());
+  }
+}
+
+TEST_F(FormStructureTest, ParseQueryResponse_WillLeaveExtentionUnfilled) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country Code");
+  field.name = ASCIIToUTF16("countryCode");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area");
+  field.name = ASCIIToUTF16("areaCode");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Number");
+  field.name = ASCIIToUTF16("number");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Ext.");
+  field.name = ASCIIToUTF16("extention");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_COUNTRY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_NUMBER);
+  // Server might think it is a phone field, due to server bootstrapping issue.
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_NUMBER);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Verify second phone field is set to be filled only when focused when the
+  // feature is on.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(6U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(5)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(5)->only_fill_when_focused());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(6U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_NUMBER, forms[0]->field(5)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(5)->only_fill_when_focused());
+  }
+}
+
+TEST_F(FormStructureTest,
+       ParseQueryResponse_BestEffortWhenNoCompletePhoneFieldsFound) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country Code");
+  field.name = ASCIIToUTF16("countryCode");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Area");
+  field.name = ASCIIToUTF16("areaCode");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("AdditionalArea");
+  field.name = ASCIIToUTF16("additionalAreaCode");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_COUNTRY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+  response.add_field()->set_overall_type_prediction(PHONE_HOME_CITY_CODE);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Verify we do best-effort filling when no complete phone fields are found.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(5U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(4)->overall_server_type());
+    EXPECT_TRUE(forms[0]->field(4)->only_fill_when_focused());
+  }
+
+  // Sanity check that the enable/disabled works. Same output as when the
+  // feature is on.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure form_structure(form);
+    std::vector<FormStructure*> forms;
+    forms.push_back(&form_structure);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(5U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+              forms[0]->field(1)->overall_server_type());
+
+    EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(2)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(3)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(3)->only_fill_when_focused());
+
+    EXPECT_EQ(PHONE_HOME_CITY_CODE, forms[0]->field(4)->overall_server_type());
+    EXPECT_FALSE(forms[0]->field(4)->only_fill_when_focused());
+  }
+}
+
 TEST_F(FormStructureTest, FindLongestCommonPrefix) {
   // Normal case: All strings are longer than threshold; some are common.
   std::vector<base::string16> strings;

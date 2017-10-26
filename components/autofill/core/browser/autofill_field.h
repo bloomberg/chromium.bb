@@ -47,6 +47,7 @@ class AutofillField : public FormFieldData {
   PhonePart phone_part() const { return phone_part_; }
   bool previously_autofilled() const { return previously_autofilled_; }
   const base::string16& parseable_name() const { return parseable_name_; }
+  bool only_fill_when_focused() const { return only_fill_when_focused_; }
 
   // Setters for the detected type and section for this field.
   void set_section(const std::string& section) { section_ = section; }
@@ -66,6 +67,10 @@ class AutofillField : public FormFieldData {
   }
   void set_parseable_name(const base::string16& parseable_name) {
     parseable_name_ = parseable_name;
+  }
+
+  void set_only_fill_when_focused(bool fill_when_focused) {
+    only_fill_when_focused_ = fill_when_focused;
   }
 
   // Set the heuristic or server type, depending on whichever is currently
@@ -200,6 +205,9 @@ class AutofillField : public FormFieldData {
 
   // Whether the field was autofilled then later edited.
   bool previously_autofilled_;
+
+  // Whether the field should be filled when it is not the highlighted field.
+  bool only_fill_when_focused_;
 
   // The parseable name attribute, with unnecessary information removed (such as
   // a common prefix shared with other fields). Will be used for heuristics
