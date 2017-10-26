@@ -155,13 +155,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                             gfx::Size dest_size);
 #endif  // USE_X11
 
-  // Get a VAImage from a VASurface and map it into memory. The size and format
-  // are derived from the surface. Use GetVaImage() instead if |format| or
-  // |size| are different from surface internal representation. The VAImage
-  // should be released using the ReturnVaImage function. Returns true when
-  // successful.
-  bool GetDerivedVaImage(VASurfaceID va_surface_id, VAImage* image, void** mem);
-
   // Get a VAImage from a VASurface |va_surface_id| and map it into memory with
   // given |format| and |size|. The output is |image| and the mapped memory is
   // |mem|. If |format| doesn't equal to the internal format, the underlying
@@ -176,7 +169,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                   void** mem);
 
   // Release the VAImage (and the associated memory mapping) obtained from
-  // GetVaImage() or GetDerivedVaImage().
+  // GetVaImage().
   void ReturnVaImage(VAImage* image);
 
   // Upload contents of |frame| into |va_surface_id| for encode.
