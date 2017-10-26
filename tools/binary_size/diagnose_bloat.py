@@ -263,8 +263,8 @@ class _BuildHelper(object):
     if os.path.exists(os.path.join(os.path.dirname(_SRC_ROOT), 'src-internal')):
       self.extra_gn_args_str = ' is_chrome_branded=true'
     else:
-      self.extra_gn_args_str = (' exclude_unwind_tables=true '
-          'ffmpeg_branding="Chrome" proprietary_codecs=true')
+      self.extra_gn_args_str = (
+          ' ffmpeg_branding="Chrome" proprietary_codecs=true')
     if self.IsLinux():
       self.extra_gn_args_str += (
           ' is_cfi=false generate_linker_map=true')
