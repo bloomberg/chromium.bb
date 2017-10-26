@@ -3520,8 +3520,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'afdo_generate': True,
           # Disable hugepages before collecting AFDO profile.
           # Disable debug fission before collecting AFDO profile.
+          # Disable thinlto before collecting AFDO profile.
           'useflags': append_useflags(['-transparent_hugepage',
-                                       '-debug_fission']),
+                                       '-debug_fission',
+                                       '-thinlto']),
           'hw_tests': [hw_test_list.AFDORecordTest()]
       },
 
@@ -3746,7 +3748,9 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       sync_chrome=True,
       chrome_rev=constants.CHROME_REV_STICKY,
       hw_tests=[hw_test_list.AFDORecordTest()],
-      useflags=append_useflags(['-transparent_hugepage', '-debug_fission']),
+      useflags=append_useflags(['-transparent_hugepage',
+                                '-debug_fission',
+                                '-thinlto']),
       prebuilts=constants.PRIVATE,
   )
 

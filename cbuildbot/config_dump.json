@@ -6048,6 +6048,7 @@
         "manifest": "official.xml",
         "useflags": [
             "-debug_fission",
+            "-thinlto",
             "-transparent_hugepage",
             "chrome_internal"
         ],
@@ -23523,6 +23524,7 @@
         "sync_chrome": true,
         "useflags": [
             "-debug_fission",
+            "-thinlto",
             "-transparent_hugepage",
             "chrome_internal"
         ],
