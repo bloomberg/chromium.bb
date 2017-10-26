@@ -11,6 +11,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
@@ -281,6 +284,21 @@ public class WebApkUtilsTest {
     }
 
     /**
+     * Tests that {@link WebApkUtils#isInstalled} returns false for an installed but disabled app.
+     */
+    @Test
+    public void testReturnFalseForInstalledButDisabledApp() {
+        String packageName = BROWSER_INSTALLED_SUPPORTING_WEBAPKS;
+        PackageInfo info = new PackageInfo();
+        info.packageName = packageName;
+        info.applicationInfo = new ApplicationInfo();
+        info.applicationInfo.enabled = false;
+        mPackageManager.addPackage(info);
+
+        Assert.assertFalse(WebApkUtils.isInstalled((PackageManager) mPackageManager, packageName));
+    }
+
+    /**
      * Uninstall a browser. Note: this function only works for uninstalling the non default browser.
      */
     private void uninstallBrowser(String packageName) {
@@ -298,6 +316,8 @@ public class WebApkUtilsTest {
     private static ResolveInfo newResolveInfo(String packageName) {
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = packageName;
+        activityInfo.applicationInfo = new ApplicationInfo();
+        activityInfo.applicationInfo.enabled = true;
         ResolveInfo resolveInfo = new ResolveInfo();
         resolveInfo.activityInfo = activityInfo;
         return resolveInfo;
