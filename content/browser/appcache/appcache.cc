@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/browser/appcache/appcache_executable_handler.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_storage.h"
@@ -84,37 +83,6 @@ const AppCacheEntry* AppCache::GetEntryAndUrlWithResponseId(
     }
   }
   return nullptr;
-}
-
-AppCacheExecutableHandler* AppCache::GetExecutableHandler(int64_t response_id) {
-  HandlerMap::const_iterator found = executable_handlers_.find(response_id);
-  if (found != executable_handlers_.end())
-    return found->second.get();
-  return nullptr;
-}
-
-AppCacheExecutableHandler* AppCache::GetOrCreateExecutableHandler(
-    int64_t response_id,
-    net::IOBuffer* handler_source) {
-  AppCacheExecutableHandler* handler = GetExecutableHandler(response_id);
-  if (handler)
-    return handler;
-
-  GURL handler_url;
-  const AppCacheEntry* entry = GetEntryAndUrlWithResponseId(
-      response_id, &handler_url);
-  if (!entry || !entry->IsExecutable())
-    return nullptr;
-
-  DCHECK(storage_->service()->handler_factory());
-  std::unique_ptr<AppCacheExecutableHandler> own_ptr =
-      storage_->service()->handler_factory()->CreateHandler(handler_url,
-                                                            handler_source);
-  handler = own_ptr.get();
-  if (!handler)
-    return nullptr;
-  executable_handlers_[response_id] = std::move(own_ptr);
-  return handler;
 }
 
 GURL AppCache::GetNamespaceEntryUrl(const AppCacheNamespaceVector& namespaces,

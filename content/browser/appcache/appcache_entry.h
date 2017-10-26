@@ -26,7 +26,6 @@ class AppCacheEntry {
     FOREIGN = 1 << 3,
     FALLBACK = 1 << 4,
     INTERCEPT = 1 << 5,
-    EXECUTABLE = 1 << 6,
   };
 
   AppCacheEntry()
@@ -51,7 +50,6 @@ class AppCacheEntry {
   bool IsForeign() const { return (types_ & FOREIGN) != 0; }
   bool IsFallback() const { return (types_ & FALLBACK) != 0; }
   bool IsIntercept() const { return (types_ & INTERCEPT) != 0; }
-  bool IsExecutable() const { return (types_ & EXECUTABLE) != 0; }
 
   int64_t response_id() const { return response_id_; }
   void set_response_id(int64_t id) { response_id_ = id; }

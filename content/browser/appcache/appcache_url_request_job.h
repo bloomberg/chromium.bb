@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "content/browser/appcache/appcache_entry.h"
-#include "content/browser/appcache/appcache_executable_handler.h"
 #include "content/browser/appcache/appcache_job.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
@@ -81,19 +80,11 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public AppCacheJob,
 
   void MaybeBeginDelivery();
   void BeginDelivery();
-
-  // For executable response handling.
-  void BeginExecutableHandlerDelivery();
-  void OnExecutableSourceLoaded(int result);
-  void InvokeExecutableHandler(AppCacheExecutableHandler* handler);
-  void OnExecutableResponseCallback(
-      const AppCacheExecutableHandler::Response& response);
   void BeginErrorDelivery(const char* message);
 
   // AppCacheStorage::Delegate methods
   void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
                             int64_t response_id) override;
-  void OnCacheLoaded(AppCache* cache, int64_t cache_id) override;
 
   const net::HttpResponseInfo* http_info() const;
 
