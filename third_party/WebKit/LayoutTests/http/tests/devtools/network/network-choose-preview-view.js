@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
-async function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests to make sure the proper view is used for the data that is received in network panel.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   function createNetworkRequest(mimeType, content, statusCode, resourceType) {
     var request = new SDK.NetworkRequest(0, 'http://localhost');
     request._resourceType = resourceType;
@@ -24,10 +27,7 @@ async function test() {
 
   async function testPreviewer(mimeType, content, statusCode) {
     var testResourceTypes = [
-      Common.resourceTypes.XHR,
-      Common.resourceTypes.Fetch,
-      Common.resourceTypes.Document,
-      Common.resourceTypes.Other
+      Common.resourceTypes.XHR, Common.resourceTypes.Fetch, Common.resourceTypes.Document, Common.resourceTypes.Other
     ];
     TestRunner.addResult('Testing with MimeType: ' + mimeType + ', and StatusCode: ' + statusCode);
     TestRunner.addResult('Content: ' + content.replace(/\0/g, '**NULL**'));
@@ -36,7 +36,8 @@ async function test() {
       var request = createNetworkRequest(mimeType, content, statusCode, resourceType);
       var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
       previewView.wasShown();
-      TestRunner.addResult('ResourceType(' + resourceType.name() + '): ' + getViewName(await previewView._contentViewPromise));
+      TestRunner.addResult(
+          'ResourceType(' + resourceType.name() + '): ' + getViewName(await previewView._contentViewPromise));
     }
     TestRunner.addResult('');
   }
@@ -81,10 +82,4 @@ async function test() {
   await testPreviewer('image/png', '', 200);
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests to make sure the proper view is used for the data that is received in network panel.</p>
-</body>
-</html>
+})();

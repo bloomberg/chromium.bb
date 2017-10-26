@@ -131,8 +131,8 @@ crbug.com/678491 virtual/mojo-loading/http/tests/misc/webtiming-no-origin.html [
 # Slow tests. These are listed in SlowTests listed here also because
 # expectations are unfortunately not inherited automatically (e.g. see
 # https://crbug.com/594216)
-crbug.com/451577 http/tests/devtools/network/network-datareceived.html [ Timeout Pass ]
-crbug.com/451577 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.html [ Timeout Pass ]
+crbug.com/451577 http/tests/devtools/network/network-datareceived.js [ Timeout Pass ]
+crbug.com/451577 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.js [ Timeout Pass ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 

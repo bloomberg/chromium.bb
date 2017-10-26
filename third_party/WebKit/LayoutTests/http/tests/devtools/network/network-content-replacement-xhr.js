@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests NetworkResourcesData logic for XHR content replacement.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   NetworkTestRunner.recordNetwork();
   TestRunner.NetworkAgent.setDataSizeLimitsForTest(300, 200);
   // Here we test replacement logic. We save first two resources content,
@@ -61,11 +63,4 @@ function test() {
   function step5() {
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-    <p> Tests NetworkResourcesData logic for XHR content replacement.</p>
-</body>
-</html>
-
+})();

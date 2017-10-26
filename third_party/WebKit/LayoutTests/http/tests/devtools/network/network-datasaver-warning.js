@@ -1,11 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(`Tests to ensure datsaver logs warning in console if enabled and only shown once on reloads.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   TestRunner.addResult('Console messages:');
   ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.addResult('');
@@ -25,10 +27,4 @@ async function test() {
   ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests to ensure datsaver logs warning in console if enabled and only shown once on reloads.</p>
-</body>
-</html>
+})();
