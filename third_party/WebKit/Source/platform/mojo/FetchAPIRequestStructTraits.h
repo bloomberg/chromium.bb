@@ -100,6 +100,11 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
     return request.CredentialsMode();
   }
 
+  static ::blink::mojom::FetchCacheMode cache_mode(
+      const ::blink::WebServiceWorkerRequest& request) {
+    return request.CacheMode();
+  }
+
   static ::blink::WebURLRequest::FetchRedirectMode redirect_mode(
       const ::blink::WebServiceWorkerRequest& request) {
     return request.RedirectMode();

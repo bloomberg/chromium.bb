@@ -16,31 +16,25 @@ namespace blink {
 class WebServiceWorkerRequestPrivate
     : public RefCounted<WebServiceWorkerRequestPrivate> {
  public:
-  WebServiceWorkerRequestPrivate()
-      : mode_(network::mojom::FetchRequestMode::kNoCORS),
-        is_main_resource_load_(false),
-        credentials_mode_(WebURLRequest::kFetchCredentialsModeOmit),
-        cache_mode_(mojom::FetchCacheMode::kDefault),
-        redirect_mode_(WebURLRequest::kFetchRedirectModeFollow),
-        request_context_(WebURLRequest::kRequestContextUnspecified),
-        frame_type_(WebURLRequest::kFrameTypeNone),
-        client_id_(WebString()),
-        is_reload_(false) {}
   WebURL url_;
   WebString method_;
   HTTPHeaderMap headers_;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Referrer referrer_;
-  network::mojom::FetchRequestMode mode_;
-  bool is_main_resource_load_;
-  WebURLRequest::FetchCredentialsMode credentials_mode_;
-  mojom::FetchCacheMode cache_mode_;
-  WebURLRequest::FetchRedirectMode redirect_mode_;
-  WebURLRequest::RequestContext request_context_;
-  WebURLRequest::FrameType frame_type_;
+  network::mojom::FetchRequestMode mode_ =
+      network::mojom::FetchRequestMode::kNoCORS;
+  bool is_main_resource_load_ = false;
+  WebURLRequest::FetchCredentialsMode credentials_mode_ =
+      WebURLRequest::kFetchCredentialsModeOmit;
+  mojom::FetchCacheMode cache_mode_ = mojom::FetchCacheMode::kDefault;
+  WebURLRequest::FetchRedirectMode redirect_mode_ =
+      WebURLRequest::kFetchRedirectModeFollow;
+  WebURLRequest::RequestContext request_context_ =
+      WebURLRequest::kRequestContextUnspecified;
+  WebURLRequest::FrameType frame_type_ = WebURLRequest::kFrameTypeNone;
   WebString integrity_;
   WebString client_id_;
-  bool is_reload_;
+  bool is_reload_ = false;
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()

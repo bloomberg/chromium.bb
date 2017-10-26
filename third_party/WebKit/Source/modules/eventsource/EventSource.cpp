@@ -136,6 +136,7 @@ void EventSource::Connect() {
   request.SetFetchCredentialsMode(
       with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
                         : WebURLRequest::kFetchCredentialsModeSameOrigin);
+  request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
   if (parser_ && !parser_->LastEventId().IsEmpty()) {

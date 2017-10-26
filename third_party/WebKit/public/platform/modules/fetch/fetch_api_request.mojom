@@ -129,6 +129,7 @@ struct FetchAPIRequest {
   Blob? blob;
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
+  FetchCacheMode cache_mode;
   FetchRedirectMode redirect_mode;
   string? integrity;
   string? client_id;
