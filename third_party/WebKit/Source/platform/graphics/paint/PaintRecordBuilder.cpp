@@ -57,21 +57,21 @@ PaintRecordBuilder::~PaintRecordBuilder() {
 #endif
 }
 
-sk_sp<PaintRecord> PaintRecordBuilder::EndRecording() {
+sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
+    const PropertyTreeState& replay_state) {
   context_->BeginRecording(bounds_);
   paint_controller_->CommitNewDisplayItems();
-  paint_controller_->GetPaintArtifact().Replay(*context_);
+  paint_controller_->GetPaintArtifact().Replay(*context_, replay_state);
   return context_->EndRecording();
 }
 
-void PaintRecordBuilder::EndRecording(
-    PaintCanvas& canvas,
-    const PropertyTreeState& property_tree_state) {
+void PaintRecordBuilder::EndRecording(PaintCanvas& canvas,
+                                      const PropertyTreeState& replay_state) {
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     canvas.drawPicture(EndRecording());
   } else {
     paint_controller_->CommitNewDisplayItems();
-    paint_controller_->GetPaintArtifact().Replay(canvas, property_tree_state);
+    paint_controller_->GetPaintArtifact().Replay(canvas, replay_state);
   }
 }
 

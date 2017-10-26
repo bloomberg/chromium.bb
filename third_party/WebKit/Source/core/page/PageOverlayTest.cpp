@@ -142,12 +142,8 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   // replay that onto the mock canvas for examination.
   IntRect int_rect = rect;
   graphics_layer->Paint(&int_rect);
-
-  PaintController& paint_controller = graphics_layer->GetPaintController();
-  GraphicsContext graphics_context(paint_controller);
-  graphics_context.BeginRecording(int_rect);
-  paint_controller.GetPaintArtifact().Replay(graphics_context);
-  graphics_context.EndRecording()->Playback(&canvas);
+  canvas.drawPicture(
+      ToSkPicture(graphics_layer->CapturePaintRecord(), int_rect));
 }
 
 TEST_F(PageOverlayTest, PageOverlay_VisualRect) {
