@@ -65,6 +65,23 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 };
 
 template <>
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+    StructTraits<memory_instrumentation::mojom::GlobalRequestArgsDataView,
+                 base::trace_event::GlobalMemoryDumpRequestArgs> {
+  static base::trace_event::MemoryDumpType dump_type(
+      const base::trace_event::GlobalMemoryDumpRequestArgs& args) {
+    return args.dump_type;
+  }
+  static base::trace_event::MemoryDumpLevelOfDetail level_of_detail(
+      const base::trace_event::GlobalMemoryDumpRequestArgs& args) {
+    return args.level_of_detail;
+  }
+  static bool Read(
+      memory_instrumentation::mojom::GlobalRequestArgsDataView input,
+      base::trace_event::GlobalMemoryDumpRequestArgs* out);
+};
+
+template <>
 struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT StructTraits<
     memory_instrumentation::mojom::RawAllocatorDumpEdgeDataView,
     base::trace_event::ProcessMemoryDump::MemoryAllocatorDumpEdge> {

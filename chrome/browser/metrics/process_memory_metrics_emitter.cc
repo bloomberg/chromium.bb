@@ -166,8 +166,8 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   auto callback =
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedMemoryDump, this);
 
-  base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
+  base::trace_event::GlobalMemoryDumpRequestArgs args = {
+      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
   coordinator_->RequestGlobalMemoryDump(args, callback);
 

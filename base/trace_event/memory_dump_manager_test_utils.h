@@ -12,9 +12,12 @@
 namespace base {
 namespace trace_event {
 
-void RequestGlobalDumpForInProcessTesting(const MemoryDumpRequestArgs& args) {
+void RequestGlobalDumpForInProcessTesting(
+    const GlobalMemoryDumpRequestArgs& args) {
+  MemoryDumpRequestArgs local_args = {0 /* dump_guid */, args.dump_type,
+                                      args.level_of_detail};
   MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, ProcessMemoryDumpCallback());
+      local_args, ProcessMemoryDumpCallback());
 };
 
 // Short circuits the RequestGlobalDumpFunction() to CreateProcessDump(),

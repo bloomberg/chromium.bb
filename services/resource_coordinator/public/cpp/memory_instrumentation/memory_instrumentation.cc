@@ -47,8 +47,8 @@ MemoryInstrumentation::~MemoryInstrumentation() {
 void MemoryInstrumentation::RequestGlobalDump(
     RequestGlobalDumpCallback callback) {
   const auto& coordinator = GetCoordinatorBindingForCurrentThread();
-  base::trace_event::MemoryDumpRequestArgs args = {
-      0, MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::BACKGROUND};
+  base::trace_event::GlobalMemoryDumpRequestArgs args = {
+      MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::BACKGROUND};
   coordinator->RequestGlobalMemoryDump(args, callback);
 }
 
@@ -57,8 +57,8 @@ void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
     MemoryDumpLevelOfDetail level_of_detail,
     RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
   const auto& coordinator = GetCoordinatorBindingForCurrentThread();
-  base::trace_event::MemoryDumpRequestArgs args = {0, dump_type,
-                                                   level_of_detail};
+  base::trace_event::GlobalMemoryDumpRequestArgs args = {dump_type,
+                                                         level_of_detail};
   coordinator->RequestGlobalMemoryDumpAndAppendToTrace(args, callback);
 }
 
