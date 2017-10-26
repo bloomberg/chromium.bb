@@ -85,6 +85,7 @@ void SendRequestInterceptedEventOnUiThread(
     std::string interception_id,
     GlobalRequestID global_request_id,
     std::unique_ptr<protocol::Network::Request> network_request,
+    const base::UnguessableToken& frame_id,
     ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!network_handler)
@@ -94,7 +95,7 @@ void SendRequestInterceptedEventOnUiThread(
                                                   interception_id);
   }
   network_handler->frontend()->RequestIntercepted(
-      interception_id, std::move(network_request),
+      interception_id, std::move(network_request), frame_id.ToString(),
       ResourceTypeToString(resource_type), IsNavigationRequest(resource_type));
 }
 
@@ -102,6 +103,7 @@ void SendRedirectInterceptedEventOnUiThread(
     base::WeakPtr<protocol::NetworkHandler> network_handler,
     std::string interception_id,
     std::unique_ptr<protocol::Network::Request> network_request,
+    const base::UnguessableToken& frame_id,
     ResourceType resource_type,
     std::unique_ptr<protocol::Object> headers_object,
     int http_status_code,
@@ -110,7 +112,7 @@ void SendRedirectInterceptedEventOnUiThread(
   if (!network_handler)
     return;
   network_handler->frontend()->RequestIntercepted(
-      interception_id, std::move(network_request),
+      interception_id, std::move(network_request), frame_id.ToString(),
       ResourceTypeToString(resource_type), IsNavigationRequest(resource_type),
       std::move(headers_object), http_status_code, redirect_url);
 }
@@ -119,13 +121,14 @@ void SendAuthRequiredEventOnUiThread(
     base::WeakPtr<protocol::NetworkHandler> network_handler,
     std::string interception_id,
     std::unique_ptr<protocol::Network::Request> network_request,
+    const base::UnguessableToken& frame_id,
     ResourceType resource_type,
     std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!network_handler)
     return;
   network_handler->frontend()->RequestIntercepted(
-      interception_id, std::move(network_request),
+      interception_id, std::move(network_request), frame_id.ToString(),
       ResourceTypeToString(resource_type), IsNavigationRequest(resource_type),
       protocol::Maybe<protocol::Network::Headers>(), protocol::Maybe<int>(),
       protocol::Maybe<protocol::String>(), std::move(auth_challenge));
@@ -190,6 +193,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
     const std::string& interception_id,
     net::URLRequest* original_request,
     net::NetworkDelegate* original_network_delegate,
+    const base::UnguessableToken& devtools_token,
     const base::UnguessableToken& target_id,
     base::WeakPtr<protocol::NetworkHandler> network_handler,
     bool is_redirect,
@@ -207,6 +211,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
       intercepting_requests_(true),
       killed_(false),
       interception_id_(interception_id),
+      devtools_token_(devtools_token),
       target_id_(target_id),
       network_handler_(network_handler),
       is_redirect_(is_redirect),
@@ -253,7 +258,8 @@ void DevToolsURLInterceptorRequestJob::Start() {
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(SendRequestInterceptedEventOnUiThread, network_handler_,
                        interception_id_, global_request_id_,
-                       base::Passed(&network_request), resource_type_));
+                       base::Passed(&network_request), devtools_token_,
+                       resource_type_));
   }
 }
 
@@ -391,7 +397,8 @@ void DevToolsURLInterceptorRequestJob::OnAuthRequired(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(SendAuthRequiredEventOnUiThread, network_handler_,
                      interception_id_, base::Passed(&network_request),
-                     resource_type_, base::Passed(&auth_challenge)));
+                     devtools_token_, resource_type_,
+                     base::Passed(&auth_challenge)));
 }
 
 void DevToolsURLInterceptorRequestJob::OnCertificateRequested(
@@ -483,8 +490,9 @@ void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(SendRedirectInterceptedEventOnUiThread, network_handler_,
                      interception_id_, base::Passed(&network_request),
-                     resource_type_, base::Passed(&headers_object),
-                     redirectinfo.status_code, redirectinfo.new_url.spec()));
+                     devtools_token_, resource_type_,
+                     base::Passed(&headers_object), redirectinfo.status_code,
+                     redirectinfo.new_url.spec()));
 }
 
 void DevToolsURLInterceptorRequestJob::StopIntercepting() {

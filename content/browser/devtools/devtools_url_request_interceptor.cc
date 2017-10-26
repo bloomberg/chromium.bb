@@ -233,8 +233,9 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
   std::string interception_id = GetIdForRequestOnIO(request, &is_redirect);
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
       this, interception_id, request, network_delegate,
-      target_info->devtools_target_id, intercepted_page.network_handler,
-      is_redirect, resource_request_info->GetResourceType());
+      target_info->devtools_token, target_info->devtools_target_id,
+      intercepted_page.network_handler, is_redirect,
+      resource_request_info->GetResourceType());
   interception_id_to_job_map_[interception_id] = job;
   return job;
 }

@@ -34,6 +34,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
       const std::string& interception_id,
       net::URLRequest* original_request,
       net::NetworkDelegate* original_network_delegate,
+      const base::UnguessableToken& devtools_token,
       const base::UnguessableToken& target_id,
       base::WeakPtr<protocol::NetworkHandler> network_handler,
       bool is_redirect,
@@ -197,6 +198,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
 
   const std::string interception_id_;
+  base::UnguessableToken devtools_token_;
   // TODO(caseq): this really needs to be session id, not target id,
   // so that we can clean up pending intercept jobs for individual
   // session.
