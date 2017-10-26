@@ -148,6 +148,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // WidgetDelegate overrides:
   bool ShouldHandleSystemCommands() const override;
+  ui::AXRole GetAccessibleWindowRole() const override;
 
   // Overridden from views::View:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
