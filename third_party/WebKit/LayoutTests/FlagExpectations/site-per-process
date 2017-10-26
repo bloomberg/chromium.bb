@@ -144,6 +144,9 @@ crbug.com/650348 virtual/mojo-loading/http/tests/webaudio/autoplay-crossorigin.h
 # https://crbug.com/745881: Image diff in test due to font rendering issues.
 crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
 
+# https://crbug.com/778696: Not much info...
+crbug.com/778696 virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) external/wpt/html/syntax/parsing/html5lib_adoption01.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_adoption02.html [ Failure ]
