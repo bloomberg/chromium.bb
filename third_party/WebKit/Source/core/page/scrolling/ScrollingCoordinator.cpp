@@ -433,7 +433,6 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
   if (!page_ || !page_->MainFrame())
     return;
 
-  bool is_main_frame = IsForMainFrame(scrollable_area);
   GraphicsLayer* scrollbar_graphics_layer =
       orientation == kHorizontalScrollbar
           ? scrollable_area->LayerForHorizontalScrollbar()
@@ -481,8 +480,8 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
     // Root layer non-overlay scrollbars should be marked opaque to disable
     // blending.
     bool is_opaque_scrollbar = !scrollbar.IsOverlayScrollbar();
-    scrollbar_graphics_layer->SetContentsOpaque(is_main_frame &&
-                                                is_opaque_scrollbar);
+    scrollbar_graphics_layer->SetContentsOpaque(
+        IsForMainFrame(scrollable_area) && is_opaque_scrollbar);
   } else {
     RemoveWebScrollbarLayer(scrollable_area, orientation);
   }
@@ -1218,7 +1217,9 @@ bool ScrollingCoordinator::IsForMainFrame(
     return false;
 
   // FIXME(305811): Refactor for OOPI.
-  return scrollable_area == page_->DeprecatedLocalMainFrame()->View();
+  return scrollable_area == page_->DeprecatedLocalMainFrame()
+                                ->View()
+                                ->LayoutViewportScrollableArea();
 }
 
 void ScrollingCoordinator::FrameViewRootLayerDidChange(
