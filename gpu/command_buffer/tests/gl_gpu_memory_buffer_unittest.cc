@@ -142,6 +142,7 @@ void SetRow(gfx::BufferFormat format,
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -161,6 +162,7 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RG_88:
       return GL_RG;
     case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::BGRX_1010102:
       return GL_RGB;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:

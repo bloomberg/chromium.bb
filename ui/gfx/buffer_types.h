@@ -23,6 +23,7 @@ enum class BufferFormat {
   RGBX_8888,
   RGBA_8888,
   BGRX_8888,
+  BGRX_1010102,
   BGRA_8888,
   RGBA_F16,
   YVU_420,
