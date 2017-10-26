@@ -18,7 +18,7 @@ namespace blink {
 
 scoped_refptr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
                                                    LocalFrame* frame) {
-  return frame->FrameScheduler()->GetTaskRunner(type);
+  return frame->GetTaskRunner(type);
 }
 
 scoped_refptr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,

@@ -786,6 +786,10 @@ WebFrameScheduler* LocalFrame::FrameScheduler() {
   return frame_scheduler_.get();
 }
 
+scoped_refptr<WebTaskRunner> LocalFrame::GetTaskRunner(TaskType type) {
+  return frame_scheduler_->GetTaskRunner(type);
+}
+
 void LocalFrame::ScheduleVisualUpdateUnlessThrottled() {
   if (ShouldThrottleRendering())
     return;
