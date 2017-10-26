@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "media/base/media_switches.h"
 
 const char MediaEngagementScore::kVisitsKey[] = "visits";
 const char MediaEngagementScore::kMediaPlaybacksKey[] = "mediaPlaybacks";
@@ -17,9 +19,17 @@ const char MediaEngagementScore::kLastMediaPlaybackTimeKey[] =
     "lastMediaPlaybackTime";
 const char MediaEngagementScore::kHasHighScoreKey[] = "hasHighScore";
 
-const int MediaEngagementScore::kScoreMinVisits = 5;
+const char MediaEngagementScore::kScoreMinVisitsParamName[] = "min_visits";
+const char MediaEngagementScore::kHighScoreLowerThresholdParamName[] =
+    "lower_threshold";
+const char MediaEngagementScore::kHighScoreUpperThresholdParamName[] =
+    "upper_threshold";
 
 namespace {
+
+const int kScoreMinVisitsParamDefault = 5;
+const double kHighScoreLowerThresholdParamDefault = 0.5;
+const double kHighScoreUpperThresholdParamDefault = 0.7;
 
 std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
     const HostContentSettingsMap* settings,
@@ -38,6 +48,27 @@ std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
 }
 
 }  // namespace
+
+// static.
+double MediaEngagementScore::GetHighScoreLowerThreshold() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      media::kMediaEngagementBypassAutoplayPolicies,
+      kHighScoreLowerThresholdParamName, kHighScoreLowerThresholdParamDefault);
+}
+
+// static.
+double MediaEngagementScore::GetHighScoreUpperThreshold() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      media::kMediaEngagementBypassAutoplayPolicies,
+      kHighScoreUpperThresholdParamName, kHighScoreUpperThresholdParamDefault);
+}
+
+// static.
+int MediaEngagementScore::GetScoreMinVisits() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      media::kMediaEngagementBypassAutoplayPolicies, kScoreMinVisitsParamName,
+      kScoreMinVisitsParamDefault);
+}
 
 MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
                                            const GURL& origin,
@@ -140,16 +171,17 @@ bool MediaEngagementScore::UpdateScoreDict() {
 void MediaEngagementScore::Recalculate() {
   // Update the engagement score.
   actual_score_ = 0;
-  if (visits() >= kScoreMinVisits) {
+  if (visits() >= GetScoreMinVisits()) {
     actual_score_ =
         static_cast<double>(media_playbacks()) / static_cast<double>(visits());
   }
 
   // Recalculate whether the engagement score is considered high.
-  if (is_high_)
-    is_high_ = actual_score_ >= kHighScoreLowerThreshold;
-  else
-    is_high_ = actual_score_ >= kHighScoreUpperThreshold;
+  if (is_high_) {
+    is_high_ = actual_score_ >= GetHighScoreLowerThreshold();
+  } else {
+    is_high_ = actual_score_ >= GetHighScoreUpperThreshold();
+  }
 }
 
 void MediaEngagementScore::SetVisits(int visits) {

@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
@@ -16,6 +18,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,9 +46,6 @@ base::Time GetReferenceTime() {
 class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitFromCommandLine("RecordMediaEngagementScores",
-                                             std::string());
-
     ChromeRenderViewHostTestHarness::SetUp();
     test_clock.SetNow(GetReferenceTime());
     score_ = new MediaEngagementScore(&test_clock, GURL(), nullptr);
@@ -117,8 +117,46 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
               score->last_media_playback_time().ToJsTime());
   }
 
+  void OverrideFieldTrial(int min_visits,
+                          double lower_threshold,
+                          double upper_threshold) {
+    std::map<std::string, std::string> params;
+    params[MediaEngagementScore::kScoreMinVisitsParamName] =
+        std::to_string(min_visits);
+    params[MediaEngagementScore::kHighScoreLowerThresholdParamName] =
+        std::to_string(lower_threshold);
+    params[MediaEngagementScore::kHighScoreUpperThresholdParamName] =
+        std::to_string(upper_threshold);
+
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(nullptr));
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
+    const std::string kTrialName = "TrialName";
+    const std::string kGroupName = "GroupName";
+
+    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+    base::FieldTrial* field_trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        media::kMediaEngagementBypassAutoplayPolicies.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+
+    std::map<std::string, std::string> actual_params;
+    EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
+        media::kMediaEngagementBypassAutoplayPolicies, &actual_params));
+    EXPECT_EQ(params, actual_params);
+
+    score_->Recalculate();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // Test Mojo serialization.
@@ -321,4 +359,32 @@ TEST_F(MediaEngagementScoreTest, HighScoreThreshold) {
   // Test that a total score of 0.1 is not high.
   SetScore(10, 1);
   EXPECT_FALSE(score_->high_score());
+}
+
+TEST_F(MediaEngagementScoreTest, OverrideFieldTrial) {
+  EXPECT_EQ(5, MediaEngagementScore::GetScoreMinVisits());
+  EXPECT_EQ(0.5, MediaEngagementScore::GetHighScoreLowerThreshold());
+  EXPECT_EQ(0.7, MediaEngagementScore::GetHighScoreUpperThreshold());
+
+  SetScore(10, 8);
+  EXPECT_EQ(0.8, score_->actual_score());
+  EXPECT_TRUE(score_->high_score());
+
+  // Raise the upper threshold, since the score was already considered high we
+  // should still be high.
+  OverrideFieldTrial(5, 0.7, 0.9);
+  EXPECT_TRUE(score_->high_score());
+  EXPECT_EQ(0.7, MediaEngagementScore::GetHighScoreLowerThreshold());
+  EXPECT_EQ(0.9, MediaEngagementScore::GetHighScoreUpperThreshold());
+
+  // Raise the lower threshold, the score will no longer be high.
+  OverrideFieldTrial(5, 0.85, 0.9);
+  EXPECT_FALSE(score_->high_score());
+  EXPECT_EQ(0.85, MediaEngagementScore::GetHighScoreLowerThreshold());
+
+  // Raise the minimum visits, the score will now be zero as it does not meet
+  // the threshold requirements.
+  OverrideFieldTrial(15, 0.85, 0.9);
+  EXPECT_EQ(0.0, score_->actual_score());
+  EXPECT_EQ(15, MediaEngagementScore::GetScoreMinVisits());
 }

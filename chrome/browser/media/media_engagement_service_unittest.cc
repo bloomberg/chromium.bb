@@ -311,10 +311,10 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   // and we will ensure it has the same score. origin2 will have a score
   // that is zero and will remain zero. origin3 will have a score
   // and will be cleared. origin4 will have a normal score.
-  SetScores(origin1, MediaEngagementScore::kScoreMinVisits + 3, 2);
+  SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 3, 2);
   SetScores(origin2, 2, 1);
   SetScores(origin3, 2, 1);
-  SetScores(origin4, MediaEngagementScore::kScoreMinVisits, 2);
+  SetScores(origin4, MediaEngagementScore::GetScoreMinVisits(), 2);
 
   base::Time today = GetReferenceTime();
   base::Time yesterday = GetReferenceTime() - base::TimeDelta::FromDays(1);
@@ -335,14 +335,14 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   history->AddPage(origin3a, yesterday_afternoon, history::SOURCE_BROWSED);
 
   // Check that the scores are valid at the beginning.
-  ExpectScores(origin1, 0.25, MediaEngagementScore::kScoreMinVisits + 3, 2,
+  ExpectScores(origin1, 0.25, MediaEngagementScore::GetScoreMinVisits() + 3, 2,
                TimeNotSet());
   EXPECT_TRUE(GetActualScore(origin1));
   ExpectScores(origin2, 0.0, 2, 1, TimeNotSet());
   EXPECT_FALSE(GetActualScore(origin2));
   ExpectScores(origin3, 0.0, 2, 1, TimeNotSet());
   EXPECT_FALSE(GetActualScore(origin3));
-  ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
+  ExpectScores(origin4, 0.4, MediaEngagementScore::GetScoreMinVisits(), 2,
                TimeNotSet());
   EXPECT_TRUE(GetActualScore(origin4));
 
@@ -360,13 +360,14 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // should have a score that is zero but it's visits and playbacks should
     // have decreased. origin3 should have had a decrease in the number of
     // visits. origin4 should have the old score.
-    ExpectScores(origin1, 1.0 / 6.0, MediaEngagementScore::kScoreMinVisits + 1,
-                 1, TimeNotSet());
+    ExpectScores(origin1, 1.0 / 6.0,
+                 MediaEngagementScore::GetScoreMinVisits() + 1, 1,
+                 TimeNotSet());
     EXPECT_TRUE(GetActualScore(origin1));
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     EXPECT_FALSE(GetActualScore(origin2));
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
-    ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
+    ExpectScores(origin4, 0.4, MediaEngagementScore::GetScoreMinVisits(), 2,
                  TimeNotSet());
   }
 
@@ -386,11 +387,11 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     waiter.Wait();
 
     // origin1's score should have changed but the rest should remain the same.
-    ExpectScores(origin1, 0.0, MediaEngagementScore::kScoreMinVisits, 0,
+    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits(), 0,
                  TimeNotSet());
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
-    ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
+    ExpectScores(origin4, 0.4, MediaEngagementScore::GetScoreMinVisits(), 2,
                  TimeNotSet());
   }
 
@@ -412,11 +413,11 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // origin3's score should be removed but the rest should remain the same.
     std::map<GURL, double> scores = GetScoreMapForTesting();
     EXPECT_TRUE(scores.find(origin3) == scores.end());
-    ExpectScores(origin1, 0.0, MediaEngagementScore::kScoreMinVisits, 0,
+    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits(), 0,
                  TimeNotSet());
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
-    ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
+    ExpectScores(origin4, 0.4, MediaEngagementScore::GetScoreMinVisits(), 2,
                  TimeNotSet());
   }
 }

@@ -33,12 +33,12 @@ class MediaEngagementScore final {
 
   // Origins with a number of visits less than this number will recieve
   // a score of zero.
-  static const int kScoreMinVisits;
+  static int GetScoreMinVisits();
 
   // The upper and lower threshold of whether the total score is considered
   // to be high.
-  static constexpr double kHighScoreLowerThreshold = 0.5;
-  static constexpr double kHighScoreUpperThreshold = 0.7;
+  static double GetHighScoreLowerThreshold();
+  static double GetHighScoreUpperThreshold();
 
   MediaEngagementScore(base::Clock* clock,
                        const GURL& origin,
@@ -49,10 +49,10 @@ class MediaEngagementScore final {
   MediaEngagementScore& operator=(MediaEngagementScore&&);
 
   // Returns the total score, as per the formula.
-  double actual_score() const { return actual_score_; };
+  double actual_score() const { return actual_score_; }
 
   // Returns whether the total score is considered high.
-  bool high_score() const { return is_high_; };
+  bool high_score() const { return is_high_; }
 
   // Writes the values in this score into |settings_map_|. If there are multiple
   // instances of a score object for an origin, this could result in stale data
@@ -79,6 +79,10 @@ class MediaEngagementScore final {
   friend class MediaEngagementAutoplayBrowserTest;
   friend class MediaEngagementContentsObserverTest;
   friend class MediaEngagementService;
+
+  static const char kScoreMinVisitsParamName[];
+  static const char kHighScoreLowerThresholdParamName[];
+  static const char kHighScoreUpperThresholdParamName[];
 
   void SetVisits(int visits);
   void SetMediaPlaybacks(int media_playbacks);
