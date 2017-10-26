@@ -15,6 +15,7 @@
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -110,8 +111,10 @@ ACTION_P4(VerifyPostStartedContext,
   ASSERT_FALSE((*context)->GetResponseHeaders());
   ASSERT_TRUE(web_state->IsLoading());
   // TODO(crbug.com/676129): Reload does not create a pending item. Remove this
-  // workaround once the bug is fixed.
-  if (!ui::PageTransitionTypeIncludingQualifiersIs(
+  // workaround once the bug is fixed. The slim navigation manager fixes this
+  // bug.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+      !ui::PageTransitionTypeIncludingQualifiersIs(
           ui::PageTransition::PAGE_TRANSITION_RELOAD,
           (*context)->GetPageTransition())) {
     NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -256,8 +259,15 @@ ACTION_P3(VerifyReloadStartedContext, web_state, url, context) {
   EXPECT_TRUE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   // TODO(crbug.com/676129): Reload does not create a pending item. Check
-  // pending item once the bug is fixed.
-  EXPECT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
+  // pending item once the bug is fixed. The slim navigation manager fixes this
+  // bug.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    NavigationManager* navigation_manager = web_state->GetNavigationManager();
+    NavigationItem* item = navigation_manager->GetPendingItem();
+    EXPECT_EQ(url, item->GetURL());
+  } else {
+    EXPECT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
+  }
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) for reload navigation
