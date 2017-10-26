@@ -29,8 +29,8 @@ const char kTestInterimResult[] = "kitten";
 const char kTestResult[] = "cat";
 
 enum FakeRecognitionEvent {
-  SPEECH_RECOGNITION_START = 0,
-  SPEECH_RECOGNITION_END,
+  RECOGNITION_START = 0,
+  RECOGNITION_END,
   NETWORK_ERROR,
   SOUND_START,
   SOUND_END,
@@ -97,10 +97,10 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     content::SpeechRecognitionError error(
         content::SPEECH_RECOGNITION_ERROR_NETWORK);
     switch (event) {
-      case SPEECH_RECOGNITION_START:
+      case RECOGNITION_START:
         GetActiveListener()->OnRecognitionStart(kTestSessionId);
         break;
-      case SPEECH_RECOGNITION_END:
+      case RECOGNITION_END:
         GetActiveListener()->OnRecognitionEnd(kTestSessionId);
         break;
       case NETWORK_ERROR:
@@ -170,7 +170,8 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
 
 class SpeechRecognizerTestWrapper : public SpeechRecognizer {
  public:
-  SpeechRecognizerTestWrapper() : SpeechRecognizer(nullptr, nullptr, "en") {}
+  SpeechRecognizerTestWrapper()
+      : SpeechRecognizer(nullptr, nullptr, nullptr, "en") {}
 
   ~SpeechRecognizerTestWrapper() override {}
 
@@ -219,7 +220,7 @@ TEST_F(SpeechRecognizerTest, ReceiveSpeechResult) {
   // After receiving final speech result, speech recognition should send a reset
   // request.
   EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY))
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
       .InSequence(s);
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(INTERIM_RESULT);
@@ -241,18 +242,17 @@ TEST_F(SpeechRecognizerTest, ReceivedSpeechRecognitionStates) {
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR))
       .InSequence(s);
   EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY))
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
       .InSequence(s);
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(
-      SPEECH_RECOGNITION_START);
+      RECOGNITION_START);
   base::RunLoop().RunUntilIdle();
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(NETWORK_ERROR);
   base::RunLoop().RunUntilIdle();
 
-  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(
-      SPEECH_RECOGNITION_END);
+  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(RECOGNITION_END);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -269,7 +269,7 @@ TEST_F(SpeechRecognizerTest, NoSoundTimeout) {
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_IN_SPEECH))
       .InSequence(s);
   EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY))
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
       .InSequence(s);
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(SOUND_START);
@@ -292,7 +292,7 @@ TEST_F(SpeechRecognizerTest, SafeToResetAfterStart) {
               OnSpeechResult(base::ASCIIToUTF16("cat"), true))
       .Times(0);
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(
-      SPEECH_RECOGNITION_START);
+      RECOGNITION_START);
   base::RunLoop().RunUntilIdle();
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(FINAL_RESULT);

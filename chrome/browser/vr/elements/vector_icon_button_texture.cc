@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/elements/close_button_texture.h"
+#include "chrome/browser/vr/elements/vector_icon_button_texture.h"
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,12 +22,14 @@ constexpr float kIconScaleFactor = 0.5;
 
 }  // namespace
 
-CloseButtonTexture::CloseButtonTexture() = default;
+VectorIconButtonTexture::VectorIconButtonTexture(const gfx::VectorIcon& icon) {
+  icon_no_1x_.path = icon.path;
+}
 
-CloseButtonTexture::~CloseButtonTexture() = default;
+VectorIconButtonTexture::~VectorIconButtonTexture() = default;
 
-void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
-                              const gfx::Size& texture_size) {
+void VectorIconButtonTexture::Draw(SkCanvas* sk_canvas,
+                                   const gfx::Size& texture_size) {
   DCHECK_EQ(texture_size.height(), texture_size.width());
   cc::SkiaPaintCanvas paint_canvas(sk_canvas);
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
@@ -46,20 +49,21 @@ void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
   float icon_size = size_.height() * kIconScaleFactor;
   float icon_corner_offset = (size_.height() - icon_size) / 2;
   VectorIcon::DrawVectorIcon(
-      canvas, vector_icons::kClose16Icon, icon_size,
+      canvas, icon_no_1x_, icon_size,
       gfx::PointF(icon_corner_offset, icon_corner_offset),
       color_scheme().close_button_foreground);
 }
 
-gfx::Size CloseButtonTexture::GetPreferredTextureSize(int maximum_width) const {
+gfx::Size VectorIconButtonTexture::GetPreferredTextureSize(
+    int maximum_width) const {
   return gfx::Size(maximum_width, maximum_width);
 }
 
-gfx::SizeF CloseButtonTexture::GetDrawnSize() const {
+gfx::SizeF VectorIconButtonTexture::GetDrawnSize() const {
   return size_;
 }
 
-bool CloseButtonTexture::HitTest(const gfx::PointF& point) const {
+bool VectorIconButtonTexture::HitTest(const gfx::PointF& point) const {
   return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
 }
 

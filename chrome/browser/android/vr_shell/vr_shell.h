@@ -239,7 +239,6 @@ class VrShell : device::GvrGamepadDataProvider,
   std::unique_ptr<vr::WebContentsEventForwarder> web_contents_event_forwarder_;
   std::unique_ptr<AndroidUiGestureTarget> android_ui_gesture_target_;
   std::unique_ptr<VrMetricsHelper> metrics_helper_;
-  std::unique_ptr<vr::SpeechRecognizer> speech_recognizer_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
@@ -247,6 +246,9 @@ class VrShell : device::GvrGamepadDataProvider,
 
   vr::BrowserUiInterface* ui_;
   std::unique_ptr<vr::ToolbarHelper> toolbar_;
+  // SpeechRecognizer uses a pointer to ui_, which is essentially a gl_thread_.
+  // So it should appears after gl_thread_ to make sure it is destoryed first.
+  std::unique_ptr<vr::SpeechRecognizer> speech_recognizer_;
 
   device::mojom::GeolocationConfigPtr geolocation_config_;
 

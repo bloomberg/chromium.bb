@@ -65,6 +65,8 @@ class Ui : public BrowserUiInterface, public UiInterface {
   void SetBluetoothConnectedIndicator(bool enabled) override;
   void SetLocationAccessIndicator(bool enabled) override;
   void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
+  void SetSpeechRecognitionEnabled(bool enabled) override;
+  void OnSpeechRecognitionStateChanged(int new_state) override;
 
   // UiInterface
   bool ShouldRenderWebVr() override;

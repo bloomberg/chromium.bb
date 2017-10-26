@@ -33,6 +33,8 @@ class BrowserUiInterface {
   virtual void SetLocationAccessIndicator(bool enabled) = 0;
   virtual void SetExitVrPromptEnabled(bool enabled,
                                       UiUnsupportedMode reason) = 0;
+  virtual void SetSpeechRecognitionEnabled(bool enabled) = 0;
+  virtual void OnSpeechRecognitionStateChanged(int new_state) = 0;
 
   // Tab handling.
   virtual void AppendToTabList(bool incognito,

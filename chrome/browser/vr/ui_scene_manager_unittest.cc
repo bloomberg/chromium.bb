@@ -11,6 +11,7 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -59,6 +60,8 @@ const std::set<UiElementName> kHitTestableElements = {
     kWebVrTimeoutMessageButton,
     kWebVrTimeoutMessageButtonText,
     kVoiceSearchButton,
+    kSpeechRecognitionPromptMicrophoneIcon,
+    kSpeechRecognitionPromptBackplane,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
@@ -656,6 +659,31 @@ TEST_F(UiSceneManagerTest, WebVrTimeout) {
           kWebVrTimeoutMessageButtonText,
       },
       true);
+}
+
+TEST_F(UiSceneManagerTest, SpeechRecognitionPromptBindings) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  UiElement* growing_circle =
+      scene_->GetUiElementByName(kSpeechRecognitionPromptGrowingCircle);
+
+  model_->recognizing_speech = true;
+  EXPECT_TRUE(AnimateBy(MsToDelta(200)));
+  VerifyVisibility(
+      {kSpeechRecognitionPrompt, kSpeechRecognitionPromptBackplane}, true);
+  EXPECT_FALSE(IsVisible(k2dBrowsingForeground));
+  EXPECT_FALSE(IsAnimating(growing_circle, {CIRCLE_GROW}));
+
+  model_->speech_recognition_state = SPEECH_RECOGNITION_READY;
+  EXPECT_TRUE(AnimateBy(MsToDelta(300)));
+  EXPECT_TRUE(IsAnimating(growing_circle, {CIRCLE_GROW}));
+
+  model_->recognizing_speech = false;
+  model_->speech_recognition_state = SPEECH_RECOGNITION_END;
+  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  EXPECT_FALSE(IsAnimating(growing_circle, {CIRCLE_GROW}));
+  VerifyVisibility(
+      {kSpeechRecognitionPrompt, kSpeechRecognitionPromptBackplane}, false);
+  EXPECT_TRUE(IsVisible(k2dBrowsingForeground));
 }
 
 }  // namespace vr

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/vr/browser_ui_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
@@ -178,7 +179,7 @@ void SpeechRecognizerOnIO::StartSpeechTimeout(int timeout_seconds) {
 
 void SpeechRecognizerOnIO::SpeechTimeout() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_END);
   Stop();
 }
 
@@ -187,7 +188,7 @@ void SpeechRecognizerOnIO::OnRecognitionStart(int session_id) {
 }
 
 void SpeechRecognizerOnIO::OnRecognitionEnd(int session_id) {
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_END);
   Stop();
 }
 
@@ -248,7 +249,10 @@ void SpeechRecognizerOnIO::OnAudioLevelsChange(int session_id,
 
 void SpeechRecognizerOnIO::OnEnvironmentEstimationComplete(int session_id) {}
 
-void SpeechRecognizerOnIO::OnAudioStart(int session_id) {}
+void SpeechRecognizerOnIO::OnAudioStart(int session_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+}
 
 void SpeechRecognizerOnIO::OnAudioEnd(int session_id) {}
 
@@ -259,9 +263,11 @@ void SpeechRecognizerOnIO::SetTimerForTest(
 
 SpeechRecognizer::SpeechRecognizer(
     VoiceResultDelegate* delegate,
+    BrowserUiInterface* ui,
     net::URLRequestContextGetter* url_request_context_getter,
     const std::string& locale)
     : delegate_(delegate),
+      ui_(ui),
       url_request_context_getter_(url_request_context_getter),
       locale_(locale),
       speech_recognizer_on_io_(base::MakeUnique<SpeechRecognizerOnIO>()),
@@ -292,6 +298,8 @@ void SpeechRecognizer::Start() {
                      base::Unretained(speech_recognizer_on_io_.get()),
                      url_request_context_getter_, weak_factory_.GetWeakPtr(),
                      locale_, auth_scope, auth_token));
+  if (ui_)
+    ui_->SetSpeechRecognitionEnabled(true);
 }
 
 void SpeechRecognizer::Stop() {
@@ -304,6 +312,8 @@ void SpeechRecognizer::Stop() {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SpeechRecognizerOnIO::Stop,
                      base::Unretained(speech_recognizer_on_io_.get())));
+  if (ui_)
+    ui_->SetSpeechRecognitionEnabled(false);
 }
 
 void SpeechRecognizer::OnSpeechResult(const base::string16& query,
@@ -312,6 +322,8 @@ void SpeechRecognizer::OnSpeechResult(const base::string16& query,
   if (!is_final)
     return;
 
+  if (ui_)
+    ui_->SetSpeechRecognitionEnabled(false);
   if (delegate_)
     delegate_->OnVoiceResults(query);
 }
@@ -322,9 +334,23 @@ void SpeechRecognizer::OnSpeechSoundLevelChanged(float level) {
 }
 
 void SpeechRecognizer::OnSpeechRecognitionStateChanged(
-    vr::SpeechRecognitionState new_state) {
+    SpeechRecognitionState new_state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(bshe): notify VR UI thread state change.
+  if (!ui_)
+    return;
+  ui_->OnSpeechRecognitionStateChanged(new_state);
+  SpeechRecognitionState state = static_cast<SpeechRecognitionState>(new_state);
+  switch (state) {
+    case SPEECH_RECOGNITION_IN_SPEECH:
+    case SPEECH_RECOGNITION_READY:
+    case SPEECH_RECOGNITION_RECOGNIZING:
+    case SPEECH_RECOGNITION_NETWORK_ERROR:
+      break;
+    case SPEECH_RECOGNITION_OFF:
+    case SPEECH_RECOGNITION_END:
+      ui_->SetSpeechRecognitionEnabled(false);
+      break;
+  }
 }
 
 void SpeechRecognizer::GetSpeechAuthParameters(std::string* auth_scope,
