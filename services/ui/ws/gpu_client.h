@@ -41,8 +41,8 @@ class GpuClient : public mojom::Gpu {
   friend class test::GpuHostTest;
 
   // EstablishGpuChannelCallback:
-  void OnGpuChannelEstablished(const EstablishGpuChannelCallback& callback,
-                               mojo::ScopedMessagePipeHandle channel_handle);
+  void OnGpuChannelEstablished(mojo::ScopedMessagePipeHandle channel_handle);
+
   // mojom::Gpu overrides:
   void EstablishGpuChannel(
       const EstablishGpuChannelCallback& callback) override;
@@ -66,6 +66,7 @@ class GpuClient : public mojom::Gpu {
   const gpu::GpuFeatureInfo* gpu_feature_info_;
   viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::mojom::GpuService* gpu_service_;
+  EstablishGpuChannelCallback establish_callback_;
 
   base::WeakPtrFactory<GpuClient> weak_factory_;
 
