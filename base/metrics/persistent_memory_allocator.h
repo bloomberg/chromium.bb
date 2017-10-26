@@ -672,6 +672,7 @@ class BASE_EXPORT PersistentMemoryAllocator {
   // Record an error in the internal histogram.
   void RecordError(int error) const;
 
+  const size_t vm_page_size_;          // The page size used by the OS.
   const bool readonly_;                // Indicates access to read-only memory.
   mutable std::atomic<bool> corrupt_;  // Local version of "corrupted" flag.
 
