@@ -12,8 +12,10 @@
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -106,6 +108,7 @@ class BlobDispatcherHostTest : public testing::Test {
     if (!command_line->HasSwitch(switches::kDisableKillAfterBadIPC)) {
       command_line->AppendSwitch(switches::kDisableKillAfterBadIPC);
     }
+    scoped_feature_list_.InitAndDisableFeature(features::kMojoBlobs);
     // We run the run loop to initialize the chrome blob storage context.
     base::RunLoop().RunUntilIdle();
     context_ = chrome_blob_storage_context_->context();
@@ -262,6 +265,7 @@ class BlobDispatcherHostTest : public testing::Test {
     return BlobStatusIsPending(context_->GetBlobStatus(uuid));
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   IPC::TestSink sink_;
   TestBrowserThreadBundle browser_thread_bundle_;
   TestBrowserContext browser_context_;
