@@ -48126,7 +48126,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.Ap80211kSupport" enum="WiFiAp80211kSupport">
+<histogram name="Network.Shill.WiFi.Ap80211kSupport" enum="WiFiAp80211kSupport">
   <owner>matthewmwang@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of Wireless Access Points that
@@ -48134,7 +48134,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.Ap80211rSupport" enum="WiFiAp80211rSupport">
+<histogram name="Network.Shill.WiFi.Ap80211rSupport" enum="WiFiAp80211rSupport">
   <owner>matthewmwang@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of Wireless Access Points that
@@ -48142,7 +48142,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.Ap80211vBSSMaxIdlePeriodSupport"
+<histogram name="Network.Shill.WiFi.Ap80211vBSSMaxIdlePeriodSupport"
     enum="WiFiAp80211vBSSMaxIdlePeriodSupport">
   <owner>matthewmwang@chromium.org</owner>
   <summary>
@@ -48152,7 +48152,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.Ap80211vBSSTransitionSupport"
+<histogram name="Network.Shill.WiFi.Ap80211vBSSTransitionSupport"
     enum="WiFiAp80211vBSSTransitionSupport">
   <owner>matthewmwang@chromium.org</owner>
   <summary>
@@ -48162,7 +48162,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.Ap80211vDMSSupport"
+<histogram name="Network.Shill.WiFi.Ap80211vDMSSupport"
     enum="WiFiAp80211vDMSSupport">
   <owner>matthewmwang@chromium.org</owner>
   <summary>
