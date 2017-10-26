@@ -25,7 +25,9 @@ const char kOfflineDesciption[] = "Offline Previews";
 InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
     mojom::InterventionsInternalsPageHandlerRequest request,
     previews::PreviewsLogger* logger)
-    : binding_(this, std::move(request)), logger_(logger) {
+    : binding_(this, std::move(request)),
+      logger_(logger),
+      current_estimated_ect_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   DCHECK(logger_);
 }
 
@@ -38,7 +40,19 @@ void InterventionsInternalsPageHandler::SetClientPage(
     mojom::InterventionsInternalsPagePtr page) {
   page_ = std::move(page);
   DCHECK(page_);
+  OnEffectiveConnectionTypeChanged(current_estimated_ect_);
   logger_->AddAndNotifyObserver(this);
+}
+
+void InterventionsInternalsPageHandler::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType type) {
+  current_estimated_ect_ = type;
+  if (!page_) {
+    // Don't try to notify the page if |page_| is not ready.
+    return;
+  }
+  page_->OnEffectiveConnectionTypeChanged(
+      net::GetNameForEffectiveConnectionType(type));
 }
 
 void InterventionsInternalsPageHandler::OnNewMessageLogAdded(

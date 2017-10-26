@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
 #include "components/previews/core/previews_logger.h"
 
+class UINetworkQualityEstimatorService;
+
 // The WebUI for chrome://interventions-internals.
 class InterventionsInternalsUI
     : public MojoWebUIController<mojom::InterventionsInternalsPageHandler> {
@@ -25,6 +27,10 @@ class InterventionsInternalsUI
 
   // The PreviewsLogger that this handler is listening to.
   previews::PreviewsLogger* logger_;
+
+  // The network quality estimator service for getting the estimate effective
+  // conntection type.
+  UINetworkQualityEstimatorService* ui_nqe_service_;
 
   std::unique_ptr<InterventionsInternalsPageHandler> page_handler_;
 

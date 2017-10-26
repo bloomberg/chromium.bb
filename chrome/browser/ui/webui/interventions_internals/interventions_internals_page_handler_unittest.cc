@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_page_handler.h"
 
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -62,6 +64,11 @@ class TestInterventionsInternalsPage
   }
   void OnBlacklistCleared(int64_t time) override {
     blacklist_cleared_time_ = time;
+  }
+  void OnEffectiveConnectionTypeChanged(const std::string& type) override {
+    // Ignore.
+    // TODO(thanhdle): Add integration test to test behavior of the pipeline end
+    // to end. crbug.com/777936
   }
 
   // Expose passed in message in LogNewMessage for testing.
