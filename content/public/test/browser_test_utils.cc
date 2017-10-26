@@ -2162,22 +2162,6 @@ bool ConsoleObserverDelegate::DidAddMessageToConsole(
 }
 
 // static
-void PwnMessageHelper::CreateBlobWithPayload(RenderProcessHost* process,
-                                             std::string uuid,
-                                             std::string content_type,
-                                             std::string content_disposition,
-                                             std::string payload) {
-  std::vector<storage::DataElement> data_elements(1);
-  data_elements[0].SetToBytes(payload.c_str(), payload.size());
-
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      process->GetChannel(),
-      BlobStorageMsg_RegisterBlob(uuid, content_type, content_disposition,
-                                  data_elements));
-}
-
-
-// static
 void PwnMessageHelper::RegisterBlobURL(RenderProcessHost* process,
                                        GURL url,
                                        std::string uuid) {

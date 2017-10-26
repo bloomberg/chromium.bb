@@ -212,7 +212,7 @@ void ClipboardMessageFilter::OnReadAndEncodeImageFinished(
   if (png_data->size() < std::numeric_limits<uint32_t>::max()) {
     std::unique_ptr<content::BlobHandle> blob_handle =
         blob_storage_context_->CreateMemoryBackedBlob(
-            reinterpret_cast<char*>(png_data->data()), png_data->size());
+            reinterpret_cast<char*>(png_data->data()), png_data->size(), "");
     if (blob_handle) {
       ClipboardHostMsg_ReadImage::WriteReplyParams(
           reply_msg, blob_handle->GetUUID(), ui::Clipboard::kMimeTypePNG,

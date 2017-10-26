@@ -127,12 +127,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
 
-  using BlobCallback = base::Callback<void(std::unique_ptr<BlobHandle>)>;
+  using BlobCallback = base::OnceCallback<void(std::unique_ptr<BlobHandle>)>;
 
   // |callback| returns a nullptr scoped_ptr on failure.
   static void CreateMemoryBackedBlob(BrowserContext* browser_context,
-                                     const char* data, size_t length,
-                                     const BlobCallback& callback);
+                                     const char* data,
+                                     size_t length,
+                                     const std::string& content_type,
+                                     BlobCallback callback);
 
   // |callback| returns a nullptr scoped_ptr on failure.
   static void CreateFileBackedBlob(BrowserContext* browser_context,
@@ -140,7 +142,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
                                    int64_t offset,
                                    int64_t size,
                                    const base::Time& expected_modification_time,
-                                   const BlobCallback& callback);
+                                   BlobCallback callback);
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|.
