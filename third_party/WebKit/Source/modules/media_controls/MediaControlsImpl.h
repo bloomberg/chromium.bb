@@ -72,6 +72,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
   ~MediaControlsImpl() = default;
 
+  // Are the modern media controls enabled?
+  static bool IsModern();
+
   // Node override.
   Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
