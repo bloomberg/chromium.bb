@@ -710,8 +710,9 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   // 2. WasResized -> do nothing as resize_ack_pending_ is true
   // 3. WasHidden
   // 4. OnResizeOrRepaintACK from (1) processed. Does NOT invoke WasResized as
-  //    view is hidden. Now renderer/browser out of sync with what they think
-  //    size is.
+  // view
+  //    is hidden. Now renderer/browser out of sync with what they think size
+  //    is.
   // By invoking WasResized the renderer is updated as necessary. WasResized
   // does nothing if the sizes are already in sync.
   //
@@ -735,14 +736,7 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
 bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   *resize_params = ResizeParams();
 
-  // TODO(fsamuel): We should have a single code path for propagation of
-  // ScreenInfo. Ideally we should always grab the ScreenInfo from the
-  // view, and in the case of top level pages, we grab ScreenInfo from
-  // the WebContentsView through the RenderWidgetHostView.
-  if (view_ && view_->IsRenderWidgetHostViewChildFrame())
-    view_->GetScreenInfo(&resize_params->screen_info);
-  else
-    GetScreenInfo(&resize_params->screen_info);
+  GetScreenInfo(&resize_params->screen_info);
 
   if (delegate_) {
     resize_params->is_fullscreen_granted =

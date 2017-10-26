@@ -10,7 +10,6 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "content/common/feature_policy/feature_policy.h"
-#include "content/public/common/screen_info.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
@@ -125,10 +124,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();
 
-  // Out-of-process child frames receive a signal from RenderWidget when the
-  // ScreenInfo has changed.
-  void OnScreenInfoChanged(const ScreenInfo& screen_info);
-
   // Pass replicated information, such as security origin, to this
   // RenderFrameProxy's WebRemoteFrame.
   void SetReplicatedState(const FrameReplicationState& state);
@@ -151,16 +146,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void SetMusEmbeddedFrame(
       std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
 #endif
-
-  void WasResized();
-
-  const gfx::Rect& frame_rect() const {
-    return pending_resize_params_.frame_rect;
-  }
-
-  const ScreenInfo& screen_info() const {
-    return pending_resize_params_.screen_info;
-  }
 
   // blink::WebRemoteFrameClient implementation:
   void FrameDetached(DetachType type) override;
@@ -190,7 +175,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
             RenderViewImpl* render_view,
             RenderWidget* render_widget);
 
-  void ResendResizeParams();
+  void ResendFrameRects();
+
+  void MaybeUpdateCompositingHelper();
 
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                             const viz::SurfaceSequence& sequence);
@@ -249,19 +236,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   RenderViewImpl* render_view_;
   RenderWidget* render_widget_;
 
-  // TODO(fsamuel): We might want to unify this with content::ResizeParams.
-  struct ResizeParams {
-    gfx::Rect frame_rect;
-    ScreenInfo screen_info;
-  };
-
-  // The last ResizeParams sent to the browser process, if any.
-  base::Optional<ResizeParams> sent_resize_params_;
-
-  // The current set of ResizeParams. This may or may not match
-  // |sent_resize_params_|.
-  ResizeParams pending_resize_params_;
-
+  gfx::Rect frame_rect_;
   viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
   viz::LocalSurfaceIdAllocator local_surface_id_allocator_;

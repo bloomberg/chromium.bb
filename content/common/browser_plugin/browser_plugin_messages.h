@@ -15,7 +15,6 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/screen_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -41,7 +40,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
   // The new size of the guest view.
-  IPC_STRUCT_MEMBER(gfx::Rect, frame_rect)
+  IPC_STRUCT_MEMBER(gfx::Rect, view_rect)
   // Whether the browser plugin is a full page plugin document.
   IPC_STRUCT_MEMBER(bool, is_full_page_plugin)
 IPC_STRUCT_END()
@@ -154,10 +153,9 @@ IPC_MESSAGE_CONTROL1(BrowserPluginHostMsg_UnlockMouse_ACK,
                      int /* browser_plugin_instance_id */)
 
 // Sent when plugin's position has changed.
-IPC_MESSAGE_CONTROL4(BrowserPluginHostMsg_UpdateResizeParams,
+IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_UpdateGeometry,
                      int /* browser_plugin_instance_id */,
-                     gfx::Rect /* frame_rect */,
-                     content::ScreenInfo /* screen_info */,
+                     gfx::Rect /* view_rect */,
                      viz::LocalSurfaceId /* local_surface_id */)
 
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SatisfySequence,
