@@ -8,6 +8,8 @@ import("//testing/test.gni")
 
 static_library("zucchini_lib") {
   sources = [
+    "abs32_utils.cc",
+    "abs32_utils.h",
     "address_translator.cc",
     "address_translator.h",
     "algorithm.h",
@@ -124,6 +126,7 @@ fuzzer_test("zucchini_patch_fuzzer") {
 
 test("zucchini_unittests") {
   sources = [
+    "abs32_utils_unittest.cc",
     "address_translator_unittest.cc",
     "algorithm_unittest.cc",
     "binary_data_histogram_unittest.cc",

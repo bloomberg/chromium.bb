@@ -25,6 +25,16 @@ constexpr offset_t kInvalidOffset = static_cast<offset_t>(-1);
 // key_t is used to identify an offset in a table.
 using key_t = uint32_t;
 
+enum Bitness : uint8_t {
+  // The numerical values are intended to simplify WidthOf() below.
+  kBit32 = 4,
+  kBit64 = 8
+};
+
+inline uint32_t WidthOf(Bitness bitness) {
+  return static_cast<uint32_t>(bitness);
+}
+
 // Used to uniquely identify a reference type.
 // Strongly typed objects are used to avoid ambiguitees with PoolTag.
 struct TypeTag : public TypedValue<TypeTag, uint8_t> {

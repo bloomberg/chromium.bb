@@ -128,6 +128,22 @@ TEST_F(BufferViewTest, Write) {
   EXPECT_DEATH(buffer.write<uint32_t>(7, 0xFFFFFFFF), "");
 }
 
+TEST_F(BufferViewTest, CanAccess) {
+  MutableBufferView buffer =
+      MutableBufferView::FromRange(std::begin(bytes_), std::end(bytes_));
+  EXPECT_TRUE(buffer.can_access<uint32_t>(0));
+  EXPECT_TRUE(buffer.can_access<uint32_t>(6));
+  EXPECT_FALSE(buffer.can_access<uint32_t>(7));
+  EXPECT_FALSE(buffer.can_access<uint32_t>(10));
+  EXPECT_FALSE(buffer.can_access<uint32_t>(0xFFFFFFFFU));
+
+  EXPECT_TRUE(buffer.can_access<uint8_t>(0));
+  EXPECT_TRUE(buffer.can_access<uint8_t>(7));
+  EXPECT_TRUE(buffer.can_access<uint8_t>(9));
+  EXPECT_FALSE(buffer.can_access<uint8_t>(10));
+  EXPECT_FALSE(buffer.can_access<uint8_t>(0xFFFFFFFF));
+}
+
 TEST_F(BufferViewTest, Region) {
   ConstBufferView view(std::begin(bytes_), kLen);
 

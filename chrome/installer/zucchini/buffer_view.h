@@ -65,8 +65,13 @@ class BufferViewBase {
       : first_(first), last_(first_ + size) {
     DCHECK_GE(last_, first_);
   }
+
   template <class U>
-  explicit BufferViewBase(const BufferViewBase<U>& that)
+  BufferViewBase(const BufferViewBase<U>& that)
+      : first_(that.begin()), last_(that.end()) {}
+
+  template <class U>
+  BufferViewBase(BufferViewBase<U>&& that)
       : first_(that.begin()), last_(that.end()) {}
 
   BufferViewBase(const BufferViewBase&) = default;
@@ -115,6 +120,11 @@ class BufferViewBase {
   void write(size_type pos, const U& value) {
     CHECK_LE(pos + sizeof(U), size());
     *reinterpret_cast<U*>(begin() + pos) = value;
+  }
+
+  template <class U>
+  bool can_access(size_type pos) const {
+    return pos < size() && size() - pos >= sizeof(U);
   }
 
   // Returns a BufferRegion describing the full view.
