@@ -65,13 +65,12 @@ class PLATFORM_EXPORT PaintArtifact final {
   size_t ApproximateUnsharedMemoryUsage() const;
 
   // Draws the paint artifact to a GraphicsContext.
-  void Replay(GraphicsContext&) const;
+  // In SPv175+ mode, replays into the ancestor state given by |replay_state|.
+  void Replay(GraphicsContext&, const PropertyTreeState& replay_state) const;
 
-  // Draws the paint artifact to a PaintCanvas. For SPv175+ only.
-  // Replays into the ancestor state given by |replay_state|.
-  void Replay(
-      PaintCanvas&,
-      const PropertyTreeState& replay_state = PropertyTreeState::Root()) const;
+  // Draws the paint artifact to a PaintCanvas, into the ancestor state given
+  // by |replay_state|. For SPv175+ only.
+  void Replay(PaintCanvas&, const PropertyTreeState& replay_state) const;
 
   // Writes the paint artifact into a WebDisplayItemList.
   void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,

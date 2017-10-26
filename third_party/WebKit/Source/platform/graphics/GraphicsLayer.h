@@ -285,6 +285,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetLayerState(PropertyTreeState&&, const IntPoint& layer_offset);
 
+  // Capture the last painted result into a PaintRecord.
+  sk_sp<PaintRecord> CapturePaintRecord() const;
+
  protected:
   String DebugName(cc::Layer*) const;
   bool ShouldFlattenTransform() const { return should_flatten_transform_; }
@@ -338,8 +341,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void AddTransformJSONProperties(JSONObject&, RenderingContextMap&) const;
   void AddFlattenInheritedTransformJSON(JSONObject&) const;
   class LayersAsJSONArray;
-
-  sk_sp<PaintRecord> CaptureRecord();
 
   Vector<const PaintChunk*> AllChunkPointers() const;
   CompositedLayerRasterInvalidator& EnsureRasterInvalidator();

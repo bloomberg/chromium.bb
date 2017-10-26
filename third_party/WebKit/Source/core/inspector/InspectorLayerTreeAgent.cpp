@@ -434,7 +434,6 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
     return Response::Error("Layer does not draw content");
 
   IntSize size = ExpandedIntSize(layer->Size());
-
   IntRect interest_rect(IntPoint(0, 0), size);
   suppress_layer_paint_events_ = true;
 
@@ -451,11 +450,8 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 
   suppress_layer_paint_events_ = false;
 
-  GraphicsContext context(layer->GetPaintController());
-  context.BeginRecording(interest_rect);
-  layer->GetPaintController().GetPaintArtifact().Replay(context);
-  scoped_refptr<PictureSnapshot> snapshot = WTF::AdoptRef(
-      new PictureSnapshot(ToSkPicture(context.EndRecording(), interest_rect)));
+  auto snapshot = WTF::AdoptRef(new PictureSnapshot(
+      ToSkPicture(layer->CapturePaintRecord(), interest_rect)));
 
   *snapshot_id = String::Number(++last_snapshot_id_);
   bool new_entry = snapshot_by_id_.insert(*snapshot_id, snapshot).is_new_entry;
