@@ -41,12 +41,15 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
                       embedded_worker_test_helper()->context_wrapper()) {}
   ~BackgroundFetchJobControllerTest() override = default;
 
-  // Creates a new Background Fetch registration, whose id will be stored in
-  // the |*registration_id|, and registers it with the DataManager for the
-  // included |request_data|. Should be wrapped in ASSERT_NO_FATAL_FAILURE().
+  // Creates a new Background Fetch registration, whose id will be stored in the
+  // |*registration_id|, and registers it with the DataManager for the included
+  // |request_data|. If |auto_complete_requests| is true, the request will
+  // immediately receive a successful response. Should be wrapped in
+  // ASSERT_NO_FATAL_FAILURE().
   void CreateRegistrationForRequests(
       BackgroundFetchRegistrationId* registration_id,
-      std::map<GURL, std::string /* method */> request_data) {
+      std::map<GURL, std::string /* method */> request_data,
+      bool auto_complete_requests) {
     DCHECK(registration_id);
 
     int64_t service_worker_registration_id = RegisterServiceWorker();
@@ -78,13 +81,15 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-    // Provide fake responses for the given |request_data| pairs.
-    for (const auto& pair : request_data) {
-      CreateRequestWithProvidedResponse(
-          pair.second, pair.first,
-          TestResponseBuilder(200 /* response_code */)
-              .SetResponseData(kExampleResponseData)
-              .Build());
+    if (auto_complete_requests) {
+      // Provide fake responses for the given |request_data| pairs.
+      for (const auto& pair : request_data) {
+        CreateRequestWithProvidedResponse(
+            pair.second /* method */, pair.first /* url */,
+            TestResponseBuilder(200 /* response_code */)
+                .SetResponseData(kExampleResponseData)
+                .Build());
+      }
     }
   }
 
@@ -105,7 +110,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
             base::Unretained(this)),
-        base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
+        base::BindOnce(&BackgroundFetchJobControllerTest::DidFinishJob,
                        base::Unretained(this)));
   }
 
@@ -113,7 +118,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   BackgroundFetchDataManager data_manager_;
 
   uint64_t last_downloaded_ = 0;
-  bool did_complete_job_ = false;
+  bool did_finish_job_ = false;
+  bool was_aborted_ = false;
 
   // Closure that will be invoked every time the JobController receives a
   // progress update from a download.
@@ -148,13 +154,10 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       job_progress_closure_.Run();
   }
 
-  void DidCompleteJob(BackgroundFetchJobController* controller) {
-    DCHECK(controller);
-    EXPECT_TRUE(
-        controller->state() == BackgroundFetchJobController::State::ABORTED ||
-        controller->state() == BackgroundFetchJobController::State::COMPLETED);
-
-    did_complete_job_ = true;
+  void DidFinishJob(const BackgroundFetchRegistrationId& registration_id,
+                    bool aborted) {
+    did_finish_job_ = true;
+    was_aborted_ = aborted;
 
     if (job_completed_closure_)
       std::move(job_completed_closure_).Run();
@@ -167,18 +170,16 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   BackgroundFetchRegistrationId registration_id;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}}));
+      &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
+      true /* auto_complete_requests */));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);
 
-  EXPECT_EQ(controller->state(),
-            BackgroundFetchJobController::State::INITIALIZED);
-
   controller->Start();
-  EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
 
-  // Mark the single download item as finished, completing the job.
+  // Continue spinning until the Job Controller has completed the request.
+  // The Delegate has been told to automatically mark it as finished.
   {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
@@ -186,9 +187,8 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
     run_loop.Run();
   }
 
-  EXPECT_EQ(controller->state(),
-            BackgroundFetchJobController::State::COMPLETED);
-  EXPECT_TRUE(did_complete_job_);
+  EXPECT_TRUE(did_finish_job_);
+  EXPECT_FALSE(was_aborted_);
 }
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
@@ -199,52 +199,46 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   ASSERT_GT(5u, kMaximumBackgroundFetchParallelRequests);
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"},
-                         {GURL("https://example.com/scary_cat.png"), "GET"},
-                         {GURL("https://example.com/crazy_cat.png"), "GET"},
-                         {GURL("https://example.com/silly_cat.png"), "GET"},
-                         {GURL("https://example.com/happy_cat.png"), "GET"}}));
+      &registration_id,
+      {{GURL("https://example.com/funny_cat.png"), "GET"},
+       {GURL("https://example.com/scary_cat.png"), "GET"},
+       {GURL("https://example.com/crazy_cat.png"), "GET"},
+       {GURL("https://example.com/silly_cat.png"), "GET"},
+       {GURL("https://example.com/happy_cat.png"), "GET"}},
+      true /* auto_complete_requests */));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);
 
-  EXPECT_EQ(controller->state(),
-            BackgroundFetchJobController::State::INITIALIZED);
-
   // Continue spinning until the Job Controller has completed all the requests.
-  // The Download Manager has been told to automatically mark them as finished.
+  // The Delegate has been told to automatically mark them as finished.
   {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
 
     controller->Start();
-    EXPECT_EQ(controller->state(),
-              BackgroundFetchJobController::State::FETCHING);
 
     run_loop.Run();
   }
 
-  EXPECT_EQ(controller->state(),
-            BackgroundFetchJobController::State::COMPLETED);
-  EXPECT_TRUE(did_complete_job_);
+  EXPECT_TRUE(did_finish_job_);
+  EXPECT_FALSE(was_aborted_);
 }
 
-TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
+TEST_F(BackgroundFetchJobControllerTest, Abort) {
   BackgroundFetchRegistrationId registration_id;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{GURL("https://example.com/sad_cat.png"), "GET"}}));
+      &registration_id, {{GURL("https://example.com/sad_cat.png"), "GET"}},
+      false /* auto_complete_requests */));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);
 
-  EXPECT_EQ(controller->state(),
-            BackgroundFetchJobController::State::INITIALIZED);
-
-  // Start the first few requests, and abort them immediately after.
+  // Start the request, and abort it immediately after.
   controller->Start();
-  EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
 
+  // TODO(delphick): Add test for AbortFromUser as well.
   controller->Abort();
 
   // Run until idle to ensure that spurious download successful tasks are not
@@ -254,15 +248,16 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
   // TODO(peter): Verify that the issued download items have had their state
   // updated to be cancelled as well.
 
-  EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::ABORTED);
-  EXPECT_TRUE(did_complete_job_);
+  EXPECT_TRUE(did_finish_job_);
+  EXPECT_TRUE(was_aborted_);
 }
 
 TEST_F(BackgroundFetchJobControllerTest, Progress) {
   BackgroundFetchRegistrationId registration_id;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{GURL("https://example.com/slow_cat.png"), "GET"}}));
+      &registration_id, {{GURL("https://example.com/slow_cat.png"), "GET"}},
+      true /* auto_complete_requests */));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);
@@ -284,7 +279,7 @@ TEST_F(BackgroundFetchJobControllerTest, Progress) {
     run_loop.Run();
   }
 
-  EXPECT_TRUE(did_complete_job_);
+  EXPECT_TRUE(did_finish_job_);
   EXPECT_EQ(last_downloaded_, strlen(kExampleResponseData));
 }
 

@@ -21,7 +21,6 @@
 namespace content {
 
 class BackgroundFetchDelegate;
-class BackgroundFetchJobController;
 
 // Proxy class for passing messages between BackgroundFetchJobControllers on the
 // IO thread and BackgroundFetchDelegate on the UI thread.
@@ -48,6 +47,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     virtual void DidCompleteRequest(
         const scoped_refptr<BackgroundFetchRequestInfo>& request,
         const std::string& download_guid) = 0;
+
+    // Called when the user aborts a Background Fetch registration.
+    virtual void AbortFromUser() = 0;
 
     virtual ~Controller() {}
   };
@@ -79,15 +81,13 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
                     const url::Origin& origin,
                     scoped_refptr<BackgroundFetchRequestInfo> request);
 
-  // Updates the representation of this Background Fetch in the user interface
-  // to match the given |title|.
-  // Should only be called from the BackgroundFetchJobController (on the IO
-  // thread).
-  void UpdateUI(const std::string& title);
+  // Updates the representation of this registration in the user interface to
+  // match the given |title|. Called from the Controller (on the IO thread).
+  void UpdateUI(const std::string& job_unique_id, const std::string& title);
 
-  // Immediately aborts the job identified by |job_unique_id| by request of the
-  // developer. Should only be called from the BackgroundFetchJobController (on
-  // the IO thread).
+  // Aborts in progress downloads for the given registration. Called from the
+  // Controller (on the IO thread) after it is aborted, either by the user or
+  // website. May occur even if all requests already called OnDownloadComplete.
   void Abort(const std::string& job_unique_id);
 
  private:

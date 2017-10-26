@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -19,6 +20,10 @@
 namespace content {
 
 namespace {
+
+void IgnoreError(blink::mojom::BackgroundFetchError) {
+  // TODO(johnme): Log errors to UMA.
+}
 
 // Records the |error| status issued by the DataManager after it was requested
 // to create and store a new Background Fetch registration.
@@ -88,23 +93,6 @@ void BackgroundFetchContext::DidCreateRegistration(
   std::move(callback).Run(error, registration);
 }
 
-BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
-    const std::string& unique_id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  auto iter = active_fetches_.find(unique_id);
-  if (iter == active_fetches_.end())
-    return nullptr;
-
-  BackgroundFetchJobController* controller = iter->second.get();
-  if (controller->state() == BackgroundFetchJobController::State::ABORTED ||
-      controller->state() == BackgroundFetchJobController::State::COMPLETED) {
-    return nullptr;
-  }
-
-  return controller;
-}
-
 void BackgroundFetchContext::AddRegistrationObserver(
     const std::string& unique_id,
     blink::mojom::BackgroundFetchRegistrationObserverPtr observer) {
@@ -122,49 +110,65 @@ void BackgroundFetchContext::CreateController(
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_.get())),
-      base::BindOnce(&BackgroundFetchContext::DidCompleteJob,
-                     weak_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundFetchContext::DidFinishJob,
+                     weak_factory_.GetWeakPtr(), base::Bind(&IgnoreError)));
 
   // Start fetching the first few requests immediately. At some point in the
   // future we may want a more elaborate scheduling mechanism here.
   controller->Start();
 
-  active_fetches_.insert(
+  job_controllers_.insert(
       std::make_pair(registration_id.unique_id(), std::move(controller)));
 }
 
-void BackgroundFetchContext::DidCompleteJob(
-    BackgroundFetchJobController* controller) {
+void BackgroundFetchContext::Abort(
+    const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchService::AbortCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const BackgroundFetchRegistrationId& registration_id =
-      controller->registration_id();
+  DidFinishJob(std::move(callback), registration_id, true /* aborted */);
+}
 
-  // Delete observers for the registration, there won't be any future updates.
-  registration_notifier_->RemoveObservers(registration_id.unique_id());
+void BackgroundFetchContext::DidFinishJob(
+    base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
+    const BackgroundFetchRegistrationId& registration_id,
+    bool aborted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK_GT(active_fetches_.count(registration_id.unique_id()), 0u);
-  switch (controller->state()) {
-    case BackgroundFetchJobController::State::ABORTED:
-      event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-          registration_id,
-          base::Bind(&BackgroundFetchContext::DeleteRegistration,
-                     weak_factory_.GetWeakPtr(), registration_id,
-                     std::vector<std::unique_ptr<BlobHandle>>()));
-      return;
-    case BackgroundFetchJobController::State::COMPLETED:
-      data_manager_.GetSettledFetchesForRegistration(
-          registration_id,
-          base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
-                         weak_factory_.GetWeakPtr(), registration_id));
-      return;
-    case BackgroundFetchJobController::State::INITIALIZED:
-    case BackgroundFetchJobController::State::FETCHING:
-      // These cases should not happen. Fall through to the NOTREACHED() below.
-      break;
+  // If |aborted| is true, this will also propagate the event to any active
+  // JobController for the registration, to terminate in-progress requests.
+  data_manager_.MarkRegistrationForDeletion(
+      registration_id, aborted,
+      base::BindOnce(&BackgroundFetchContext::DidMarkForDeletion,
+                     weak_factory_.GetWeakPtr(), registration_id, aborted,
+                     std::move(callback)));
+}
+
+void BackgroundFetchContext::DidMarkForDeletion(
+    const BackgroundFetchRegistrationId& registration_id,
+    bool aborted,
+    base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
+    blink::mojom::BackgroundFetchError error) {
+  std::move(callback).Run(error);
+
+  // It's normal to get INVALID_ID errors here - it means the registration was
+  // already inactive (marked for deletion). This happens when an abort (from
+  // developer or from user) races with the download completing/failing, or even
+  // when two aborts race. TODO(johnme): Log STORAGE_ERRORs to UMA though.
+  if (error != blink::mojom::BackgroundFetchError::NONE)
+    return;
+
+  if (aborted) {
+    CleanupRegistration(registration_id, {});
+
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+        registration_id, base::Bind(&base::DoNothing));
+  } else {
+    data_manager_.GetSettledFetchesForRegistration(
+        registration_id,
+        base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
+                       weak_factory_.GetWeakPtr(), registration_id));
   }
-
-  NOTREACHED();
 }
 
 void BackgroundFetchContext::DidGetSettledFetches(
@@ -176,7 +180,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    DeleteRegistration(registration_id, std::move(blob_handles));
+    CleanupRegistration(registration_id, {});
     return;
   }
 
@@ -186,30 +190,55 @@ void BackgroundFetchContext::DidGetSettledFetches(
   if (background_fetch_succeeded) {
     event_dispatcher_.DispatchBackgroundFetchedEvent(
         registration_id, std::move(settled_fetches),
-        base::Bind(&BackgroundFetchContext::DeleteRegistration,
+        base::Bind(&BackgroundFetchContext::CleanupRegistration,
                    weak_factory_.GetWeakPtr(), registration_id,
+                   // The blob uuid is sent as part of |settled_fetches|. Bind
+                   // |blob_handles| to the callback to keep them alive until
+                   // the waitUntil event is resolved.
                    std::move(blob_handles)));
   } else {
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
         registration_id, std::move(settled_fetches),
-        base::Bind(&BackgroundFetchContext::DeleteRegistration,
+        base::Bind(&BackgroundFetchContext::CleanupRegistration,
                    weak_factory_.GetWeakPtr(), registration_id,
+                   // The blob uuid is sent as part of |settled_fetches|. Bind
+                   // |blob_handles| to the callback to keep them alive until
+                   // the waitUntil event is resolved.
                    std::move(blob_handles)));
   }
 }
 
-void BackgroundFetchContext::DeleteRegistration(
+void BackgroundFetchContext::CleanupRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<std::unique_ptr<BlobHandle>>& blob_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_GT(active_fetches_.count(registration_id.unique_id()), 0u);
 
-  // Delete all persistent information associated with the |registration_id|.
+  // If we had an active JobController, it is no longer necessary, as the
+  // notification's UI can no longer be updated after the fetch is aborted, or
+  // after the waitUntil promise of the backgroundfetched/backgroundfetchfail
+  // event has been resolved.
+  job_controllers_.erase(registration_id.unique_id());
+
+  // At this point, JavaScript can no longer obtain BackgroundFetchRegistration
+  // objects for this registration, and those objects are the only thing that
+  // requires us to keep the registration's data around. So once the
+  // RegistrationNotifier informs us that all existing observers (and hence
+  // BackgroundFetchRegistration objects) have been garbage collected, it'll be
+  // safe to delete the registration. This callback doesn't run if the browser
+  // is shutdown before that happens - BackgroundFetchDataManager::Cleanup acts
+  // as a fallback in that case, and deletes the registration on next startup.
+  registration_notifier_->AddGarbageCollectionCallback(
+      registration_id.unique_id(),
+      base::Bind(&BackgroundFetchContext::LastObserverGarbageCollected,
+                 weak_factory_.GetWeakPtr(), registration_id));
+}
+
+void BackgroundFetchContext::LastObserverGarbageCollected(
+    const BackgroundFetchRegistrationId& registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   data_manager_.DeleteRegistration(
       registration_id, base::BindOnce(&RecordRegistrationDeletedError));
-
-  // Delete the local state associated with the |registration_id|.
-  active_fetches_.erase(registration_id.unique_id());
 }
 
 }  // namespace content

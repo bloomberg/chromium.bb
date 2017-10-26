@@ -138,13 +138,11 @@ BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
     const std::string& method,
     const GURL& url,
     std::unique_ptr<TestResponse> response) {
-  GURL gurl(url);
-
   // Register the |response| with the faked delegate.
   delegate_->RegisterResponse(url, std::move(response));
 
   // Create a ServiceWorkerFetchRequest request with the same information.
-  return ServiceWorkerFetchRequest(gurl, method, ServiceWorkerHeaderMap(),
+  return ServiceWorkerFetchRequest(url, method, ServiceWorkerHeaderMap(),
                                    Referrer(), false /* is_reload */);
 }
 

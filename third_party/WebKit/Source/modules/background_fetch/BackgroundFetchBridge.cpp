@@ -61,7 +61,9 @@ void BackgroundFetchBridge::Fetch(const String& developer_id,
 void BackgroundFetchBridge::Abort(const String& developer_id,
                                   const String& unique_id,
                                   AbortCallback callback) {
-  GetService()->Abort(unique_id, ConvertToBaseCallback(std::move(callback)));
+  GetService()->Abort(GetSupplementable()->WebRegistration()->RegistrationId(),
+                      GetSecurityOrigin(), developer_id, unique_id,
+                      ConvertToBaseCallback(std::move(callback)));
 }
 
 void BackgroundFetchBridge::UpdateUI(const String& developer_id,

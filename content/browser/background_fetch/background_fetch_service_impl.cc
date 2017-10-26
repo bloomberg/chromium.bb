@@ -101,24 +101,22 @@ void BackgroundFetchServiceImpl::UpdateUI(const std::string& unique_id,
       unique_id, title, std::move(callback));
 }
 
-void BackgroundFetchServiceImpl::Abort(const std::string& unique_id,
+void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
+                                       const url::Origin& origin,
+                                       const std::string& developer_id,
+                                       const std::string& unique_id,
                                        AbortCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!ValidateUniqueId(unique_id)) {
+  if (!ValidateDeveloperId(developer_id) || !ValidateUniqueId(unique_id)) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
     return;
   }
 
-  BackgroundFetchJobController* controller =
-      background_fetch_context_->GetActiveFetch(unique_id);
-
-  if (controller)
-    controller->Abort();
-
-  std::move(callback).Run(controller
-                              ? blink::mojom::BackgroundFetchError::NONE
-                              : blink::mojom::BackgroundFetchError::INVALID_ID);
+  background_fetch_context_->Abort(
+      BackgroundFetchRegistrationId(service_worker_registration_id, origin,
+                                    developer_id, unique_id),
+      std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::GetRegistration(

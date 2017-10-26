@@ -26,18 +26,23 @@ namespace content {
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the DataManager and dispatch them
 // to the DownloadManager. It lives entirely on the IO thread.
+//
+// Lifetime: It is created lazily only once a Background Fetch registration
+// starts downloading, and it is destroyed once no more communication with the
+// DownloadManager or Offline Items Collection is necessary (i.e. once the
+// registration has been aborted, or once it has completed/failed and the
+// waitUntil promise has been resolved so UpdateUI can no longer be called).
 class CONTENT_EXPORT BackgroundFetchJobController final
     : public BackgroundFetchDelegateProxy::Controller,
       public BackgroundFetchDataManager::Controller {
  public:
-  enum class State { INITIALIZED, FETCHING, ABORTED, COMPLETED };
+  using FinishedCallback =
+      base::OnceCallback<void(const BackgroundFetchRegistrationId&,
+                              bool /* aborted */)>;
   using ProgressCallback =
       base::RepeatingCallback<void(const std::string& /* unique_id */,
                                    uint64_t /* download_total */,
                                    uint64_t /* downloaded */)>;
-  using CompletedCallback =
-      base::OnceCallback<void(BackgroundFetchJobController*)>;
-
   BackgroundFetchJobController(
       BackgroundFetchDelegateProxy* delegate_proxy,
       const BackgroundFetchRegistrationId& registration_id,
@@ -45,7 +50,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const BackgroundFetchRegistration& registration,
       BackgroundFetchDataManager* data_manager,
       ProgressCallback progress_callback,
-      CompletedCallback completed_callback);
+      FinishedCallback finished_callback);
   ~BackgroundFetchJobController() override;
 
   // Starts fetching the first few requests. The controller will continue to
@@ -55,12 +60,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // BackgroundFetchDataManager::Controller implementation:
   void UpdateUI(const std::string& title) override;
   uint64_t GetInProgressDownloadedBytes() override;
-
-  // Immediately aborts this Background Fetch by request of the developer.
-  void Abort();
-
-  // Returns the current state of this Job Controller.
-  State state() const { return state_; }
+  void Abort() override;
 
   // Returns the registration id for which this job is fetching data.
   const BackgroundFetchRegistrationId& registration_id() const {
@@ -84,8 +84,14 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   void DidCompleteRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request,
       const std::string& download_guid) override;
+  void AbortFromUser() override;
 
  private:
+  // Aborts a job updating the registration with the new state. If
+  // |cancel_download| is true, the ongoing download is also cancelled
+  // (otherwise it assumes that has already happened).
+  void Abort(bool cancel_download);
+
   // Requests the download manager to start fetching |request|.
   void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
 
@@ -105,9 +111,6 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // delivering progress events without having to read from the database.
   uint64_t complete_requests_downloaded_bytes_cache_;
 
-  // The current state of this Job Controller.
-  State state_ = State::INITIALIZED;
-
   // The DataManager's lifetime is controlled by the BackgroundFetchContext and
   // will be kept alive until after the JobController is destroyed.
   BackgroundFetchDataManager* data_manager_;
@@ -119,8 +122,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Callback run each time download progress updates.
   ProgressCallback progress_callback_;
 
-  // Callback for when all fetches have been completed.
-  CompletedCallback completed_callback_;
+  // Callback for when all fetches have completed/failed/aborted.
+  FinishedCallback finished_callback_;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;
 

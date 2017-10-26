@@ -18,6 +18,8 @@ namespace content {
 
 namespace {
 
+const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
+
 class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
  public:
   FakeBackgroundFetchDelegate() {}
@@ -99,6 +101,8 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
     request_completed_ = true;
   }
 
+  void AbortFromUser() override {}
+
   bool request_started_ = false;
   bool request_completed_ = false;
   base::WeakPtrFactory<FakeController> weak_ptr_factory_;
@@ -128,7 +132,7 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
 
-  delegate_proxy_.StartRequest("jobid1",
+  delegate_proxy_.StartRequest(kExampleUniqueId,
                                controller.weak_ptr_factory_.GetWeakPtr(),
                                url::Origin(), request);
   base::RunLoop().RunUntilIdle();
@@ -147,7 +151,7 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   EXPECT_FALSE(controller.request_completed_);
 
   delegate_.set_complete_downloads(false);
-  delegate_proxy_.StartRequest("jobid1",
+  delegate_proxy_.StartRequest(kExampleUniqueId,
                                controller.weak_ptr_factory_.GetWeakPtr(),
                                url::Origin(), request);
   base::RunLoop().RunUntilIdle();
