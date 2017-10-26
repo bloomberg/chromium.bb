@@ -265,7 +265,7 @@ void Scheduler::OnBeginFrameSourcePausedChanged(bool paused) {
 bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
 
-  if (!state_machine_.BeginFrameNeeded()) {
+  if (ShouldDropBeginFrame(args)) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
                          TRACE_EVENT_SCOPE_THREAD);
     // Since we don't use the BeginFrame, we may later receive the same
@@ -760,6 +760,22 @@ void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
   compositor_timing_history_->SetRecordingEnabled(
       state_machine_.HasInitializedLayerTreeFrameSink() &&
       state_machine_.visible());
+}
+
+bool Scheduler::ShouldDropBeginFrame(const viz::BeginFrameArgs& args) const {
+  // Drop the BeginFrame if we don't need one.
+  if (!state_machine_.BeginFrameNeeded())
+    return true;
+
+  // Also ignore MISSED args in full-pipe mode, because a missed BeginFrame may
+  // have already been completed by the DisplayScheduler. In such a case,
+  // handling it now would be likely to mess up future full-pipe BeginFrames.
+  if (args.type == viz::BeginFrameArgs::MISSED &&
+      settings_.wait_for_all_pipeline_stages_before_draw) {
+    return true;
+  }
+
+  return false;
 }
 
 bool Scheduler::ShouldRecoverMainLatency(
