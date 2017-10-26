@@ -34,8 +34,6 @@
         {
             if (window.internals && window.testRunner) {
                 var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_ROOT_LAYER);
-                if (layerTree.indexOf('\n    {\n\n    }\n') != -1)
-                    layerTree = internals.layerTreeAsText(document, 1 | internals.LAYER_TREE_INCLUDES_ROOT_LAYER);
                 testRunner.setCustomTextOutput(layerTree);
             }
         }, true);
