@@ -954,9 +954,6 @@
       status: "experimental",
     },
     {
-      name: "SlimmingPaintStrictCullRectClipping",
-    },
-    {
       name: "SlimmingPaintV175",
       implied_by: ["SlimmingPaintV2"],
     },
