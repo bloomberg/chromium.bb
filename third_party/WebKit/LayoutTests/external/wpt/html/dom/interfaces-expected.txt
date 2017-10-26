@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5284 tests; 5165 PASS, 119 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5285 tests; 5165 PASS, 120 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -1209,6 +1209,7 @@ PASS HTMLIFrameElement interface: attribute referrerPolicy
 PASS HTMLIFrameElement interface: attribute contentDocument
 PASS HTMLIFrameElement interface: attribute contentWindow
 PASS HTMLIFrameElement interface: operation getSVGDocument()
+FAIL HTMLIFrameElement interface: attribute delegateStickyUserActivation assert_true: The prototype object must have a property "delegateStickyUserActivation" expected true got false
 PASS HTMLIFrameElement interface: attribute align
 PASS HTMLIFrameElement interface: attribute scrolling
 PASS HTMLIFrameElement interface: attribute frameBorder

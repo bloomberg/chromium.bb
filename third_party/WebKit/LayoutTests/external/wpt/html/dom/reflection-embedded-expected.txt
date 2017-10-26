@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6997 tests; 6897 PASS, 100 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 7027 tests; 6898 PASS, 129 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS picture.title: 32 tests
 PASS picture.lang: 32 tests
 PASS picture.dir: 62 tests
@@ -126,6 +126,36 @@ NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
 NOTRUN test
 PASS iframe.referrerPolicy: 5 tests
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS iframe.align: 32 tests
 PASS iframe.scrolling: 32 tests
 PASS iframe.frameBorder: 32 tests
