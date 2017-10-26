@@ -216,7 +216,7 @@ typedef struct {
 // A restoration line buffer needs space for two lines plus a horizontal filter
 // margin of RESTORATION_EXTRA_HORZ on each side.
 #define RESTORATION_LINEBUFFER_WIDTH \
-  (RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ)
+  (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_EXTRA_HORZ)
 
 typedef struct {
   // Temporary buffers to save/restore 2 lines above/below the restoration
