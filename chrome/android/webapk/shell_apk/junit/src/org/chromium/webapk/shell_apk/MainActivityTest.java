@@ -6,6 +6,7 @@ package org.chromium.webapk.shell_apk;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -209,6 +210,8 @@ public final class MainActivityTest {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = packageName;
         packageInfo.versionName = "Developer Build";
+        packageInfo.applicationInfo = new ApplicationInfo();
+        packageInfo.applicationInfo.enabled = true;
         return packageInfo;
     }
 }

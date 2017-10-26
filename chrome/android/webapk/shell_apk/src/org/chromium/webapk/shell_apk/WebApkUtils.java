@@ -97,16 +97,17 @@ public class WebApkUtils {
         return sHostPackage;
     }
 
-    /** Returns whether the application is installed. */
-    private static boolean isInstalled(PackageManager packageManager, String packageName) {
+    /** Returns whether the application is installed and enabled. */
+    public static boolean isInstalled(PackageManager packageManager, String packageName) {
         if (TextUtils.isEmpty(packageName)) return false;
 
+        ApplicationInfo info;
         try {
-            packageManager.getApplicationInfo(packageName, 0);
+            info = packageManager.getApplicationInfo(packageName, 0);
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
-        return true;
+        return info.enabled;
     }
 
     /** Returns the <meta-data> value in the Android Manifest for {@link key}. */
@@ -207,6 +208,8 @@ public class WebApkUtils {
     /** Returns a list of ResolveInfo for all of the installed browsers. */
     public static List<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+        // Note: {@link PackageManager#queryIntentActivities()} does not return ResolveInfos for
+        // disabled browsers.
         return packageManager.queryIntentActivities(browserIntent, PackageManager.MATCH_ALL);
     }
 
