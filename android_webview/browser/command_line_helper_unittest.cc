@@ -4,10 +4,10 @@
 
 #include "android_webview/browser/command_line_helper.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Test;

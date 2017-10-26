@@ -121,9 +121,6 @@ const char kDisableWebGL[] = "disable-webgl";
 // Disable WebGL2.
 const char kDisableWebGL2[] = "disable-webgl2";
 
-// Comma-separated list of feature names to disable. See also kEnableFeatures.
-const char kDisableFeatures[]               = "disable-features";
-
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
@@ -373,9 +370,6 @@ const char kEnableExperimentalWebPlatformFeatures[] =
 // Disables all RuntimeEnabledFeatures that can be enabled via OriginTrials.
 const char kDisableOriginTrialControlledBlinkFeatures[] =
     "disable-origin-trial-controlled-blink-features";
-
-// Comma-separated list of feature names to enable. See also kDisableFeatures.
-const char kEnableFeatures[] = "enable-features";
 
 // Makes the GL worker context run asynchronously by using a separate stream.
 const char kEnableGpuAsyncWorkerContext[] = "enable-gpu-async-worker-context";

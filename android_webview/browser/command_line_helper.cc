@@ -6,12 +6,12 @@
 
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "content/public/common/content_switches.h"
 
 using std::string;
 using std::vector;

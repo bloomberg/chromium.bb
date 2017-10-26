@@ -336,15 +336,17 @@ void TestSuite::SuppressErrorDialogs() {
 }
 
 void TestSuite::Initialize() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if !defined(OS_IOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWaitForDebugger)) {
+  if (command_line->HasSwitch(switches::kWaitForDebugger)) {
     debug::WaitForDebugger(60, true);
   }
 #endif
   // Set up a FeatureList instance, so that code using that API will not hit a
   // an error that it's not set. It will be cleared automatically.
-  // TODO(chaopeng) Should load the actually features in command line here.
-  scoped_feature_list_.InitFromCommandLine(std::string(), std::string());
+  scoped_feature_list_.InitFromCommandLine(
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
 #if defined(OS_IOS)
   InitIOSTestMessageLoop();
@@ -364,7 +366,7 @@ void TestSuite::Initialize() {
 
   // In some cases, we do not want to see standard error dialogs.
   if (!debug::BeingDebugged() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch("show-error-dialogs")) {
+      !command_line->HasSwitch("show-error-dialogs")) {
     SuppressErrorDialogs();
     debug::SetSuppressDebugUI(true);
     assert_handler_ = std::make_unique<logging::ScopedLogAssertHandler>(

@@ -16,7 +16,6 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/pref_names.h"
-#include "content/public/common/content_switches.h"
 
 namespace android_webview {
 namespace {

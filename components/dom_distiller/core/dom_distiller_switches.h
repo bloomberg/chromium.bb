@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SWITCHES_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SWITCHES_H_
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 
 namespace switches {
