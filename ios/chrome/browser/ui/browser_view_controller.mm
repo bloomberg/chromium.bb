@@ -3999,16 +3999,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   params.referrer = referrer;
   params.transition_type = transition;
   params.is_renderer_initiated = rendererInitiated;
-  Tab* currentTab = [_model currentTab];
-  DCHECK(currentTab);
-  BOOL wasVoiceSearchTab = currentTab.isVoiceSearchResultsTab;
-  currentTab.navigationManager->LoadURLWithParams(params);
-  // When a Tab becomes a voice search Tab, the voice search bar doesn't need
-  // to be animated on screen because the transition animator will handle the
-  // animations.  When a Tab stops being a voice search Tab, the voice search
-  // bar should be animated away.
-  if (currentTab.isVoiceSearchResultsTab != wasVoiceSearchTab)
-    [self updateVoiceSearchBarVisibilityAnimated:wasVoiceSearchTab];
+  DCHECK([_model currentTab]);
+  [[_model currentTab] navigationManager]->LoadURLWithParams(params);
 }
 
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
