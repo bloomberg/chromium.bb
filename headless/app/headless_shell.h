@@ -90,8 +90,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
   void WriteFile(const std::string& switch_string,
                  const std::string& default_file_name,
-                 const std::string& data);
-  void OnFileOpened(const std::string& data,
+                 const std::string& base64_data);
+  void OnFileOpened(const std::string& decoded_data,
                     const base::FilePath file_name,
                     base::File::Error error_code);
   void OnFileWritten(const base::FilePath file_name,
