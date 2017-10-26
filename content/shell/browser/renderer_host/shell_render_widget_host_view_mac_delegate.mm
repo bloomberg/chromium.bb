@@ -53,4 +53,7 @@
                                  consumed:(BOOL)consumed {
 }
 
+- (void)rendererHandledOverscrollEvent:(const ui::DidOverscrollParams&)params {
+}
+
 @end

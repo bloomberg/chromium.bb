@@ -348,6 +348,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
+  void DidOverscroll(const ui::DidOverscrollParams& params) override;
+
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
 

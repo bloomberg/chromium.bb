@@ -12,6 +12,10 @@ class WebGestureEvent;
 class WebMouseWheelEvent;
 }
 
+namespace ui {
+struct DidOverscrollParams;
+}
+
 // This protocol is used as a delegate for the NSView class used in the
 // hierarchy. There are two ways to extend the view:
 // - Implement the methods listed in the protocol below.
@@ -57,6 +61,7 @@ class WebMouseWheelEvent;
                          consumed:(BOOL)consumed;
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed;
+- (void)rendererHandledOverscrollEvent:(const ui::DidOverscrollParams&)params;
 @end
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_

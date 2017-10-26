@@ -114,6 +114,8 @@
 - (void)touchesEndedWithEvent:(NSEvent*)event {}
 - (void)beginGestureWithEvent:(NSEvent*)event {}
 - (void)endGestureWithEvent:(NSEvent*)event {}
+- (void)rendererHandledOverscrollEvent:(const ui::DidOverscrollParams&)params {
+}
 
 @end
 

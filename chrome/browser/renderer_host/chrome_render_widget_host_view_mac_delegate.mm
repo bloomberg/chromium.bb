@@ -148,6 +148,10 @@ using content::RenderViewHost;
   [historySwiper_ rendererHandledGestureScrollEvent:event consumed:consumed];
 }
 
+- (void)rendererHandledOverscrollEvent:(const ui::DidOverscrollParams&)params {
+  [historySwiper_ onOverscrolled:params];
+}
+
 // Spellchecking methods
 // The next five methods are implemented here since this class is the first
 // responder for anything in the browser.
