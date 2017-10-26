@@ -3072,12 +3072,12 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_AMVR
     if (cm->allow_screen_content_tools) {
       if (aom_rb_read_bit(rb)) {
-        cm->seq_mv_precision_level = 2;
+        cm->seq_force_integer_mv = 2;
       } else {
-        cm->seq_mv_precision_level = aom_rb_read_bit(rb) ? 0 : 1;
+        cm->seq_force_integer_mv = aom_rb_read_bit(rb);
       }
     } else {
-      cm->seq_mv_precision_level = 0;
+      cm->seq_force_integer_mv = 0;
     }
 #endif
 #if CONFIG_TEMPMV_SIGNALING
@@ -3206,13 +3206,20 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
 #if CONFIG_AMVR
-      if (cm->seq_mv_precision_level == 2) {
-        cm->cur_frame_mv_precision_level = aom_rb_read_bit(rb) ? 0 : 1;
+      if (cm->seq_force_integer_mv == 2) {
+        cm->cur_frame_force_integer_mv = aom_rb_read_bit(rb);
       } else {
-        cm->cur_frame_mv_precision_level = cm->seq_mv_precision_level;
+        cm->cur_frame_force_integer_mv = cm->seq_force_integer_mv;
       }
-#endif
+
+      if (cm->cur_frame_force_integer_mv) {
+        cm->allow_high_precision_mv = 0;
+      } else {
+        cm->allow_high_precision_mv = aom_rb_read_bit(rb);
+      }
+#else
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
+#endif
       cm->interp_filter = read_frame_interp_filter(rb);
 #if CONFIG_TEMPMV_SIGNALING
       if (frame_might_use_prev_frame_mvs(cm))
@@ -3394,7 +3401,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 #if CONFIG_AMVR
-  xd->cur_frame_mv_precision_level = cm->cur_frame_mv_precision_level;
+  xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 #endif
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {
@@ -3567,7 +3574,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
 #if !CONFIG_NEW_MULTISYMBOL
 #if CONFIG_AMVR
-    if (cm->cur_frame_mv_precision_level == 0) {
+    if (cm->cur_frame_force_integer_mv == 0) {
 #endif
       for (int i = 0; i < NMV_CONTEXTS; ++i)
         read_mv_probs(&fc->nmvc[i], cm->allow_high_precision_mv, &r);

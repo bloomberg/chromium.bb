@@ -262,9 +262,10 @@ typedef struct AV1Common {
 
   int allow_high_precision_mv;
 #if CONFIG_AMVR
-  int seq_mv_precision_level;        // 0 the default in AOM, 1 only integer, 2
-                                     // adaptive
-  int cur_frame_mv_precision_level;  // 0 the default in AOM, 1 only integer
+  int seq_force_integer_mv;        // 0 - Not to force. MV can be in 1/4 or 1/8
+                                   // 1 - force to integer
+                                   // 2 - adaptive
+  int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
 #endif
 
   int allow_screen_content_tools;

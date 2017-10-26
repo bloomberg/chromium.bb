@@ -706,7 +706,7 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
 #if CONFIG_AMVR
-    if (cm->cur_frame_mv_precision_level) {
+    if (cm->cur_frame_force_integer_mv) {
       av1_build_nmv_cost_table(x->nmv_vec_cost[nmv_ctx], x->nmvcost[nmv_ctx],
                                &cm->fc->nmvc[nmv_ctx], MV_SUBPEL_NONE);
     } else {

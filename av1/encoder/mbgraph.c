@@ -50,7 +50,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
 // Try sub-pixel MC
 // if (bestsme > error_thresh && bestsme < INT_MAX)
 #if CONFIG_AMVR
-  if (cpi->common.cur_frame_mv_precision_level == 1) {
+  if (cpi->common.cur_frame_force_integer_mv == 1) {
     x->best_mv.as_mv.row *= 8;
     x->best_mv.as_mv.col *= 8;
   } else {

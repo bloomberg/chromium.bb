@@ -280,15 +280,14 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
 static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv
 #if CONFIG_AMVR
                                   ,
-                                  int cur_frame_mv_precision_level
+                                  int cur_frame_force_integer_mv
 #endif
                                   ) {
   MACROBLOCK *const mb = &cpi->td.mb;
   cpi->common.allow_high_precision_mv = allow_high_precision_mv;
 
 #if CONFIG_AMVR
-  if (cpi->common.allow_high_precision_mv &&
-      cur_frame_mv_precision_level == 0) {
+  if (cpi->common.allow_high_precision_mv && cur_frame_force_integer_mv == 0) {
 #else
   if (cpi->common.allow_high_precision_mv) {
 #endif
@@ -2559,7 +2558,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->common.ans_window_size_log2 = cpi->oxcf.ans_window_size_log2;
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 #if CONFIG_AMVR
-  cm->seq_mv_precision_level = 2;
+  cm->seq_force_integer_mv = 2;
 #endif
 }
 
@@ -4145,7 +4144,7 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   if (!frame_is_intra_only(cm)) {
 #if CONFIG_AMVR
     set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH,
-                          cpi->common.cur_frame_mv_precision_level);
+                          cpi->common.cur_frame_force_integer_mv);
 #else
     set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
 #endif
@@ -6481,17 +6480,16 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #if CONFIG_AMVR
   cpi->cur_poc++;
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
-    if (cpi->common.seq_mv_precision_level == 2) {
+    if (cpi->common.seq_force_integer_mv == 2) {
       struct lookahead_entry *previous_entry =
           cpi->lookahead->buf + cpi->previsous_index;
-      cpi->common.cur_frame_mv_precision_level = is_integer_mv(
+      cpi->common.cur_frame_force_integer_mv = is_integer_mv(
           cpi, cpi->source, &previous_entry->img, cpi->previsou_hash_table);
     } else {
-      cpi->common.cur_frame_mv_precision_level =
-          cpi->common.seq_mv_precision_level;
+      cpi->common.cur_frame_force_integer_mv = cpi->common.seq_force_integer_mv;
     }
   } else {
-    cpi->common.cur_frame_mv_precision_level = 0;
+    cpi->common.cur_frame_force_integer_mv = 0;
   }
 #endif
 

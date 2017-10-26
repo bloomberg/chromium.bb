@@ -183,7 +183,7 @@ static INLINE void av1_make_inter_predictor(
                   &final_warp_params));
   if (do_warp
 #if CONFIG_AMVR
-      && xd->cur_frame_mv_precision_level == 0
+      && xd->cur_frame_force_integer_mv == 0
 #endif
       ) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];

@@ -1134,8 +1134,12 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                      mi_col, NULL, NULL, inter_mode_ctx);
 
     int_mv nearestmv, nearmv;
-    av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
 
+#if CONFIG_AMVR
+    av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv, 0);
+#else
+    av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
+#endif
     int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
     if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
     xd->corrupted |=
@@ -1834,7 +1838,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)mi_col;
   (void)bsize;
 #if CONFIG_AMVR
-  if (cm->cur_frame_mv_precision_level) {
+  if (cm->cur_frame_force_integer_mv) {
     allow_hp = MV_SUBPEL_NONE;
   }
 #endif
@@ -1879,7 +1883,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                           mi_col, mi_row, block
 #if CONFIG_AMVR
                                           ,
-                                          cm->cur_frame_mv_precision_level
+                                          cm->cur_frame_force_integer_mv
 #endif
                                           )
                          .as_int;
@@ -1889,7 +1893,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                             mi_col, mi_row, block
 #if CONFIG_AMVR
                                             ,
-                                            cm->cur_frame_mv_precision_level
+                                            cm->cur_frame_force_integer_mv
 #endif
                                             )
                            .as_int;
@@ -2073,7 +2077,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                           mi_col, mi_row, block
 #if CONFIG_AMVR
                                           ,
-                                          cm->cur_frame_mv_precision_level
+                                          cm->cur_frame_force_integer_mv
 #endif
                                           )
                          .as_int;
@@ -2082,7 +2086,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                           mi_col, mi_row, block
 #if CONFIG_AMVR
                                           ,
-                                          cm->cur_frame_mv_precision_level
+                                          cm->cur_frame_force_integer_mv
 #endif
                                           )
                          .as_int;
@@ -2258,7 +2262,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                               bsize, mi_col, mi_row, 0
 #if CONFIG_AMVR
                                               ,
-                                              cm->cur_frame_mv_precision_level
+                                              cm->cur_frame_force_integer_mv
 #endif
                                               )
                              .as_int;
@@ -2269,7 +2273,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                      mi_row, 0
 #if CONFIG_AMVR
                                      ,
-                                     cm->cur_frame_mv_precision_level
+                                     cm->cur_frame_force_integer_mv
 #endif
                                      )
                     .as_int
@@ -2281,9 +2285,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         if (rf[ref] == NONE_FRAME) continue;
 #if CONFIG_AMVR
         lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp,
-                           cm->cur_frame_mv_precision_level);
+                           cm->cur_frame_force_integer_mv);
         lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp,
-                           cm->cur_frame_mv_precision_level);
+                           cm->cur_frame_force_integer_mv);
 #else
         lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp);
         lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp);
@@ -2335,7 +2339,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_AMVR
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
                             &nearestmv[ref], &nearmv[ref],
-                            cm->cur_frame_mv_precision_level);
+                            cm->cur_frame_force_integer_mv);
 #else
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
                             &nearestmv[ref], &nearmv[ref]);
@@ -2357,9 +2361,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
 #if CONFIG_AMVR
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
-                           cm->cur_frame_mv_precision_level);
+                           cm->cur_frame_force_integer_mv);
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
-                           cm->cur_frame_mv_precision_level);
+                           cm->cur_frame_force_integer_mv);
 #else
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
@@ -2374,7 +2378,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_AMVR
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
-                           cm->cur_frame_mv_precision_level);
+                           cm->cur_frame_force_integer_mv);
 #else
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
 #endif
@@ -2382,7 +2386,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
 #if CONFIG_AMVR
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
-                           cm->cur_frame_mv_precision_level);
+                           cm->cur_frame_force_integer_mv);
 #else
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
 #endif
@@ -2398,7 +2402,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
           nearmv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
 #if CONFIG_AMVR
           lower_mv_precision(&nearmv[0].as_mv, allow_hp,
-                             cm->cur_frame_mv_precision_level);
+                             cm->cur_frame_force_integer_mv);
 #else
         lower_mv_precision(&nearmv[0].as_mv, allow_hp);
 #endif
@@ -2408,7 +2412,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
           nearmv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
 #if CONFIG_AMVR
           lower_mv_precision(&nearmv[1].as_mv, allow_hp,
-                             cm->cur_frame_mv_precision_level);
+                             cm->cur_frame_force_integer_mv);
 #else
         lower_mv_precision(&nearmv[1].as_mv, allow_hp);
 #endif

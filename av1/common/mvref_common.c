@@ -243,7 +243,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
-        col_offset + i, weight, cm->cur_frame_mv_precision_level,
+        col_offset + i, weight, cm->cur_frame_force_integer_mv,
         xd->mi[0]->mbmi.sb_type, mi_row, mi_col, xd->plane[0].subsampling_x,
         xd->plane[0].subsampling_y);
 #else
@@ -313,7 +313,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
-        col_offset, weight, cm->cur_frame_mv_precision_level,
+        col_offset, weight, cm->cur_frame_force_integer_mv,
         xd->mi[0]->mbmi.sb_type, mi_row, mi_col, xd->plane[0].subsampling_x,
         xd->plane[0].subsampling_y);
 #else
@@ -361,9 +361,8 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
-        mi_pos.col, 2, cm->cur_frame_mv_precision_level,
-        xd->mi[0]->mbmi.sb_type, mi_row, mi_col, xd->plane[0].subsampling_x,
-        xd->plane[0].subsampling_y);
+        mi_pos.col, 2, cm->cur_frame_force_integer_mv, xd->mi[0]->mbmi.sb_type,
+        mi_row, mi_col, xd->plane[0].subsampling_x, xd->plane[0].subsampling_y);
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -593,7 +592,7 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
       int_mv this_refmv = prev_frame_mvs->mv[ref];
 #if CONFIG_AMVR
       lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
-                         cm->cur_frame_mv_precision_level);
+                         cm->cur_frame_force_integer_mv);
 #else
       lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
 #endif
@@ -1246,22 +1245,21 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                             mi_col, mi_row, 0
 #if CONFIG_AMVR
                                             ,
-                                            cm->cur_frame_mv_precision_level
+                                            cm->cur_frame_force_integer_mv
 #endif
                                             )
                            .as_int;
-    zeromv[1].as_int =
-        (rf[1] != NONE_FRAME)
-            ? gm_get_motion_vector(&cm->global_motion[rf[1]],
-                                   cm->allow_high_precision_mv, bsize, mi_col,
-                                   mi_row, 0
+    zeromv[1].as_int = (rf[1] != NONE_FRAME)
+                           ? gm_get_motion_vector(&cm->global_motion[rf[1]],
+                                                  cm->allow_high_precision_mv,
+                                                  bsize, mi_col, mi_row, 0
 #if CONFIG_AMVR
-                                   ,
-                                   cm->cur_frame_mv_precision_level
+                                                  ,
+                                                  cm->cur_frame_force_integer_mv
 #endif
-                                   )
-                  .as_int
-            : 0;
+                                                  )
+                                 .as_int
+                           : 0;
   } else {
     zeromv[0].as_int = zeromv[1].as_int = 0;
   }

@@ -723,7 +723,7 @@ typedef struct macroblockd {
   int lossless[MAX_SEGMENTS];
   int corrupted;
 #if CONFIG_AMVR
-  int cur_frame_mv_precision_level;
+  int cur_frame_force_integer_mv;
 // same with that in AV1_COMMON
 #endif
   struct aom_internal_error_info *error_info;
@@ -1457,7 +1457,7 @@ static INLINE MOTION_MODE motion_mode_allowed(
     const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 #if CONFIG_AMVR
-  if (xd->cur_frame_mv_precision_level == 0) {
+  if (xd->cur_frame_force_integer_mv == 0) {
 #endif
 #if CONFIG_GLOBAL_MOTION
     const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
@@ -1476,7 +1476,7 @@ static INLINE MOTION_MODE motion_mode_allowed(
     if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 1 &&
         !av1_is_scaled(&(xd->block_refs[0]->sf))) {
 #if CONFIG_AMVR
-      if (xd->cur_frame_mv_precision_level) {
+      if (xd->cur_frame_force_integer_mv) {
         return OBMC_CAUSAL;
       }
 #endif

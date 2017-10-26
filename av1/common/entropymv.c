@@ -235,7 +235,7 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
       for (j = 0; j < MV_OFFSET_BITS; ++j)
         comp->bits[j] = av1_mode_mv_merge_probs(pre_comp->bits[j], c->bits[j]);
 #if CONFIG_AMVR
-      if (cm->cur_frame_mv_precision_level == 0) {
+      if (cm->cur_frame_force_integer_mv == 0) {
 #endif
         for (j = 0; j < CLASS0_SIZE; ++j)
           aom_tree_merge_probs(av1_mv_fp_tree, pre_comp->class0_fp[j],

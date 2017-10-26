@@ -171,7 +171,7 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
   int i;
   int nmv_ctx = 0;
 #if CONFIG_AMVR
-  if (cm->cur_frame_mv_precision_level) {
+  if (cm->cur_frame_force_integer_mv) {
     return;
   }
 #endif
@@ -195,7 +195,7 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
 #if CONFIG_AMVR
-  if (cpi->common.cur_frame_mv_precision_level) {
+  if (cpi->common.cur_frame_force_integer_mv) {
     usehp = MV_SUBPEL_NONE;
   }
 #endif
@@ -324,7 +324,7 @@ void av1_update_mv_count(ThreadData *td) {
   const MB_MODE_INFO_EXT *mbmi_ext = td->mb.mbmi_ext;
 #if CONFIG_AMVR
   MvSubpelPrecision precision = 1;
-  if (xd->cur_frame_mv_precision_level) {
+  if (xd->cur_frame_force_integer_mv) {
     precision = MV_SUBPEL_NONE;
   }
 #endif

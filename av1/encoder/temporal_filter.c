@@ -288,7 +288,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 
 // Ignore mv costing by sending NULL pointer instead of cost array
 #if CONFIG_AMVR
-  if (cpi->common.cur_frame_mv_precision_level == 1) {
+  if (cpi->common.cur_frame_force_integer_mv == 1) {
     const uint8_t *const src_address = x->plane[0].src.buf;
     const int src_stride = x->plane[0].src.stride;
     const uint8_t *const y = xd->plane[0].pre[0].buf;

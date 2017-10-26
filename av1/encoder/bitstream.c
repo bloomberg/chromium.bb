@@ -3993,11 +3993,11 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_AMVR
     if (cm->allow_screen_content_tools) {
-      if (cm->seq_mv_precision_level == 2) {
+      if (cm->seq_force_integer_mv == 2) {
         aom_wb_write_bit(wb, 1);
       } else {
         aom_wb_write_bit(wb, 0);
-        aom_wb_write_bit(wb, cm->seq_mv_precision_level == 0);
+        aom_wb_write_bit(wb, cm->seq_force_integer_mv);
       }
     }
 #endif
@@ -4077,12 +4077,17 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_AMVR
-      if (cm->seq_mv_precision_level == 2) {
-        aom_wb_write_bit(wb, cm->cur_frame_mv_precision_level == 0);
+      if (cm->seq_force_integer_mv == 2) {
+        aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
       }
-#endif
+      if (cm->cur_frame_force_integer_mv) {
+        cm->allow_high_precision_mv = 0;
+      } else {
+        aom_wb_write_bit(wb, cm->allow_high_precision_mv);
+      }
+#else
       aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-
+#endif
       fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
 #if CONFIG_TEMPMV_SIGNALING
@@ -4270,11 +4275,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_AMVR
     if (cm->allow_screen_content_tools) {
-      if (cm->seq_mv_precision_level == 2) {
+      if (cm->seq_force_integer_mv == 2) {
         aom_wb_write_bit(wb, 1);
       } else {
         aom_wb_write_bit(wb, 0);
-        aom_wb_write_bit(wb, cm->seq_mv_precision_level == 0);
+        aom_wb_write_bit(wb, cm->seq_force_integer_mv == 0);
       }
     }
 #endif
@@ -4356,8 +4361,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_AMVR
-    if (cm->seq_mv_precision_level == 2) {
-      aom_wb_write_bit(wb, cm->cur_frame_mv_precision_level == 0);
+    if (cm->seq_force_integer_mv == 2) {
+      aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv == 0);
     }
 #endif
     aom_wb_write_bit(wb, cm->allow_high_precision_mv);
