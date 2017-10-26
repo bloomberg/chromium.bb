@@ -662,10 +662,10 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
   HANDLE handle;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
-
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(new gl::GLImageDXGIHandle(
-      texture_size, base::win::ScopedHandle(handle), 0));
-  ASSERT_TRUE(image_dxgi->Initialize());
+  // The format doesn't matter, since we aren't binding.
+  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
+      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
+  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
 
   ui::DCRendererLayerParams params(
       false, gfx::Rect(), 1, gfx::Transform(),

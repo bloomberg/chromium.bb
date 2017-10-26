@@ -415,7 +415,10 @@ test("gl_unittests") {
   }
 
   if (is_win) {
-    sources += [ "wgl_api_unittest.cc" ]
+    sources += [
+      "gl_image_dxgi_unittest.cc",
+      "wgl_api_unittest.cc",
+    ]
   }
 
   include_dirs = [ "//third_party/khronos" ]

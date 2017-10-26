@@ -14,8 +14,14 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
+
+#if defined(OS_WIN)
+#include "ui/gl/init/gl_factory.h"
+#include "ui/gl/test/gl_surface_test_support.h"
+#endif
 
 namespace gpu {
 
@@ -34,6 +40,12 @@ class GpuMemoryBufferImplTest : public testing::Test {
                           size, format, usage, handle),
                       base::Unretained(destroyed));
   }
+
+#if defined(OS_WIN)
+  // Overridden from testing::Test:
+  void SetUp() override { gl::GLSurfaceTestSupport::InitializeOneOff(); }
+  void TearDown() override { gl::init::ShutdownGL(); }
+#endif
 
  private:
   void FreeGpuMemoryBuffer(const base::Closure& free_callback,

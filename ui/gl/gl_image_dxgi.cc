@@ -13,7 +13,129 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 
+#ifndef EGL_ANGLE_d3d_texture_client_buffer
+#define EGL_ANGLE_d3d_texture_client_buffer 1
+#define EGL_D3D_TEXTURE_ANGLE 0x33A3
+#endif /* EGL_ANGLE_d3d_texture_client_buffer */
+
 namespace gl {
+
+namespace {
+// Keys used to acquire and release the keyed mutex.  Will need to be kept in
+// sync with any other code that reads from or draws to the same DXGI handle.
+const static UINT64 KEY_BIND = 0;
+const static UINT64 KEY_RELEASE = 1;
+
+bool SupportedBindFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+      return true;
+    default:
+      return false;
+  };
+}
+
+bool HasAlpha(gfx::BufferFormat format) {
+  DCHECK(SupportedBindFormat(format));
+  switch (format) {
+    case gfx::BufferFormat::RGBA_8888:
+      return true;
+    case gfx::BufferFormat::RGBX_8888:
+      return false;
+    default:
+      NOTREACHED();
+      return false;
+  };
+}
+
+EGLConfig ChooseCompatibleConfig(gfx::BufferFormat format) {
+  DCHECK(SupportedBindFormat(format));
+
+  const EGLint buffer_bind_to_texture =
+      HasAlpha(format) ? EGL_BIND_TO_TEXTURE_RGBA : EGL_BIND_TO_TEXTURE_RGB;
+  const EGLint buffer_size = HasAlpha(format) ? 32 : 24;
+  EGLint const attrib_list[] = {EGL_RED_SIZE,
+                                8,
+                                EGL_GREEN_SIZE,
+                                8,
+                                EGL_BLUE_SIZE,
+                                8,
+                                EGL_SURFACE_TYPE,
+                                EGL_PBUFFER_BIT,
+                                buffer_bind_to_texture,
+                                EGL_TRUE,
+                                EGL_BUFFER_SIZE,
+                                buffer_size,
+                                EGL_NONE};
+
+  EGLint num_config;
+  EGLDisplay display = gl::GLSurfaceEGL::GetHardwareDisplay();
+  EGLBoolean result =
+      eglChooseConfig(display, attrib_list, nullptr, 0, &num_config);
+  if (result != EGL_TRUE)
+    return nullptr;
+  std::vector<EGLConfig> all_configs(num_config);
+  result = eglChooseConfig(gl::GLSurfaceEGL::GetHardwareDisplay(), attrib_list,
+                           all_configs.data(), num_config, &num_config);
+  if (result != EGL_TRUE)
+    return nullptr;
+  for (EGLConfig config : all_configs) {
+    EGLint bits;
+    if (!eglGetConfigAttrib(display, config, EGL_RED_SIZE, &bits) ||
+        bits != 8) {
+      continue;
+    }
+
+    if (!eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &bits) ||
+        bits != 8) {
+      continue;
+    }
+
+    if (!eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &bits) ||
+        bits != 8) {
+      continue;
+    }
+
+    if (HasAlpha(format) &&
+        (!eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &bits) ||
+         bits != 8)) {
+      continue;
+    }
+
+    return config;
+  }
+  return nullptr;
+}
+
+EGLSurface CreatePbuffer(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
+                         gfx::BufferFormat format,
+                         EGLConfig config,
+                         unsigned target) {
+  DCHECK(SupportedBindFormat(format));
+
+  D3D11_TEXTURE2D_DESC desc;
+  texture->GetDesc(&desc);
+  EGLint width = desc.Width;
+  EGLint height = desc.Height;
+
+  EGLint pBufferAttributes[] = {
+      EGL_WIDTH,
+      width,
+      EGL_HEIGHT,
+      height,
+      EGL_TEXTURE_TARGET,
+      EGL_TEXTURE_2D,
+      EGL_TEXTURE_FORMAT,
+      HasAlpha(format) ? EGL_TEXTURE_RGBA : EGL_TEXTURE_RGB,
+      EGL_NONE};
+
+  return eglCreatePbufferFromClientBuffer(
+      gl::GLSurfaceEGL::GetHardwareDisplay(), EGL_D3D_TEXTURE_ANGLE,
+      texture.Get(), config, pBufferAttributes);
+}
+
+}  // namespace
 
 GLImageDXGIBase::GLImageDXGIBase(const gfx::Size& size) : size_(size) {}
 
@@ -207,14 +329,20 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
 
 CopyingGLImageDXGI::~CopyingGLImageDXGI() {}
 
+GLImageDXGIHandle::~GLImageDXGIHandle() {
+  if (surface_ != EGL_NO_SURFACE) {
+    eglDestroySurface(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_);
+  }
+}
+
 GLImageDXGIHandle::GLImageDXGIHandle(const gfx::Size& size,
-                                     base::win::ScopedHandle handle,
-                                     uint32_t level)
-    : GLImageDXGIBase(size), handle_(std::move(handle)) {
+                                     uint32_t level,
+                                     gfx::BufferFormat format)
+    : GLImageDXGIBase(size), format_(format) {
   level_ = level;
 }
 
-bool GLImageDXGIHandle::Initialize() {
+bool GLImageDXGIHandle::Initialize(base::win::ScopedHandle handle) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device)
@@ -225,18 +353,65 @@ bool GLImageDXGIHandle::Initialize() {
     return false;
 
   if (FAILED(d3d11_device1->OpenSharedResource1(
-          handle_.Get(), IID_PPV_ARGS(texture_.GetAddressOf())))) {
+          handle.Get(), IID_PPV_ARGS(texture_.GetAddressOf())))) {
     return false;
   }
   D3D11_TEXTURE2D_DESC desc;
   texture_->GetDesc(&desc);
-  if (desc.Format != DXGI_FORMAT_NV12 || desc.ArraySize <= level_)
+  if (desc.ArraySize <= level_)
     return false;
   if (FAILED(texture_.CopyTo(keyed_mutex_.GetAddressOf())))
     return false;
+
+  handle_ = std::move(handle);
   return true;
 }
 
-GLImageDXGIHandle::~GLImageDXGIHandle() {}
+unsigned GLImageDXGIHandle::GetInternalFormat() {
+  return HasAlpha(format_) ? GL_RGBA : GL_RGB;
+}
+
+bool GLImageDXGIHandle::BindTexImage(unsigned target) {
+  DCHECK(texture_);
+  DCHECK(keyed_mutex_);
+  if (!SupportedBindFormat(format_))
+    return false;
+
+  // Lazy-initialize surface_, as it is only used for binding.
+  if (surface_ == EGL_NO_SURFACE) {
+    EGLConfig config = ChooseCompatibleConfig(format_);
+    if (!config)
+      return false;
+    surface_ = CreatePbuffer(texture_, format_, config, target);
+    if (surface_ == EGL_NO_SURFACE)
+      return false;
+  }
+
+  // We don't wait, just return immediately.
+  HRESULT hrWait = keyed_mutex_->AcquireSync(KEY_BIND, 0);
+
+  if (hrWait == WAIT_TIMEOUT || hrWait == WAIT_ABANDONED || FAILED(hrWait)) {
+    NOTREACHED();
+    return false;
+  }
+
+  return eglBindTexImage(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_,
+                         EGL_BACK_BUFFER) == EGL_TRUE;
+}
+
+void GLImageDXGIHandle::ReleaseTexImage(unsigned target) {
+  DCHECK(texture_);
+  DCHECK(keyed_mutex_);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> device =
+      QueryD3D11DeviceObjectFromANGLE();
+  Microsoft::WRL::ComPtr<ID3D11Device1> device1;
+  device.CopyTo(device1.GetAddressOf());
+
+  keyed_mutex_->ReleaseSync(KEY_RELEASE);
+
+  eglReleaseTexImage(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_,
+                     EGL_BACK_BUFFER);
+}
 
 }  // namespace gl

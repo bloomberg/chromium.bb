@@ -35,7 +35,7 @@ bool AreNativeGpuMemoryBuffersEnabled() {
 GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   GpuMemoryBufferConfigurationSet configurations;
 
-#if defined(USE_OZONE) || defined(OS_MACOSX)
+#if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN)
   if (AreNativeGpuMemoryBuffersEnabled()) {
     const gfx::BufferFormat kNativeFormats[] = {
         gfx::BufferFormat::R_8,       gfx::BufferFormat::RG_88,
@@ -79,14 +79,14 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
       }
     }
   }
-#endif  // defined(USE_OZONE) || defined(OS_MACOSX)
+#endif  // defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN)
 
   return configurations;
 }
 
 uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                gfx::BufferUsage usage) {
-#if defined(USE_OZONE) || defined(OS_MACOSX)
+#if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN)
   GpuMemoryBufferConfigurationSet native_configurations =
       GetNativeGpuMemoryBufferConfigurations();
   if (native_configurations.find(std::make_pair(format, usage)) ==
@@ -105,6 +105,8 @@ uint32_t GetImageTextureTarget(gfx::BufferFormat format,
     case gfx::SHARED_MEMORY_BUFFER:
     case gfx::EMPTY_BUFFER:
       break;
+    case gfx::DXGI_SHARED_HANDLE:
+      return GL_TEXTURE_2D;
   }
   NOTREACHED();
   return GL_TEXTURE_2D;

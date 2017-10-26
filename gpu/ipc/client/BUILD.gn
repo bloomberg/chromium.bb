@@ -35,6 +35,12 @@ source_set("ipc_client_sources") {
       "gpu_process_hosted_ca_layer_tree_params.h",
     ]
   }
+  if (is_win) {
+    sources += [
+      "gpu_memory_buffer_impl_dxgi.cc",
+      "gpu_memory_buffer_impl_dxgi.h",
+    ]
+  }
   if (is_linux) {
     sources += [
       "gpu_memory_buffer_impl_native_pixmap.cc",
