@@ -155,6 +155,10 @@ const char kUniquePtrUsedWithGC[] =
     "[blink-gc] Disallowed use of %0 found; %1 is a garbage-collected type. "
     "std::unique_ptr cannot hold garbage-collected objects.";
 
+const char kOptionalUsedWithGC[] =
+    "[blink-gc] Disallowed construction of %0 found; %1 is a garbage-collected "
+    "type. optional cannot hold garbage-collected objects.";
+
 } // namespace
 
 DiagnosticBuilder DiagnosticsReporter::ReportDiagnostic(
@@ -266,6 +270,8 @@ DiagnosticsReporter::DiagnosticsReporter(
 
   diag_unique_ptr_used_with_gc_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kUniquePtrUsedWithGC);
+  diag_optional_used_with_gc_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kOptionalUsedWithGC);
 }
 
 bool DiagnosticsReporter::hasErrorOccurred() const
@@ -587,4 +593,12 @@ void DiagnosticsReporter::UniquePtrUsedWithGC(
     const clang::CXXRecordDecl* gc_type) {
   ReportDiagnostic(expr->getLocStart(), diag_unique_ptr_used_with_gc_)
       << bad_function << gc_type << expr->getSourceRange();
+}
+
+void DiagnosticsReporter::OptionalUsedWithGC(
+    const clang::Expr* expr,
+    const clang::CXXRecordDecl* optional,
+    const clang::CXXRecordDecl* gc_type) {
+  ReportDiagnostic(expr->getLocStart(), diag_optional_used_with_gc_)
+      << optional << gc_type << expr->getSourceRange();
 }
