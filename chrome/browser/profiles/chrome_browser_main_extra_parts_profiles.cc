@@ -63,6 +63,7 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_investigator_factory.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -198,9 +199,10 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
 
   AboutSigninInternalsFactory::GetInstance();
-  AccountInvestigatorFactory::GetInstance();
-  AccountTrackerServiceFactory::GetInstance();
   AccountFetcherServiceFactory::GetInstance();
+  AccountInvestigatorFactory::GetInstance();
+  AccountReconcilorFactory::GetInstance();
+  AccountTrackerServiceFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
