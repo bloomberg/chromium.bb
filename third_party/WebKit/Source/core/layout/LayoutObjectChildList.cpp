@@ -182,14 +182,21 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (new_child->WasNotifiedOfSubtreeChange())
     owner->NotifyAncestorsOfSubtreeChange();
 
+  // Clear NeedsCollectInlines to ensure the marking doesn't stop on
+  // |new_child|.
+  new_child->ClearNeedsCollectInlines();
+
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
       LayoutInvalidationReason::kAddedToLayout);
   new_child->SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason::kAppeared);
   new_child->SetSubtreeNeedsPaintPropertyUpdate();
-  if (!owner->NormalChildNeedsLayout())
+  if (!owner->NormalChildNeedsLayout()) {
     owner->SetChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.
+  } else {
+    owner->MarkContainerNeedsCollectInlines();
+  }
 
   if (!owner->DocumentBeingDestroyed())
     owner->NotifyOfSubtreeChange();
