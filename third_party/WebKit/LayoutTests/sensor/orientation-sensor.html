@@ -20,18 +20,15 @@ const kRotationMatrix = [1,  0,  0,  0,
 const kRotationDOMMatrix = new DOMMatrix(kRotationMatrix);
 
 function update_sensor_reading(buffer) {
-  buffer[2] = 1;
-  buffer[3] = 0;
-  buffer[4] = 0;
-  buffer[5] = 0;
+  buffer.set(kQuaternion, 2)
 }
 
 function verify_sensor_reading(sensor, should_be_null) {
   if (should_be_null)
-    return sensor.quaternion == null && sensor.timestamp == null;
+    return sensor.quaternion === null && sensor.timestamp === null;
 
-  if (sensor.timestamp == null ||
-      sensor.quaternion.toString() != kQuaternion.toString())
+  if (sensor.timestamp === null ||
+      sensor.quaternion.some((e, i) => {e !== kQuaternion[i]}))
     return false;
 
   return true;
@@ -54,9 +51,7 @@ function checkPopulateMatrix(sensor, sensorType) {
   sensorObject.start();
 
   return sensor.mockSensorProvider.getCreatedSensor()
-    .then(mockSensor => {
-      return mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
-    })
+    .then(mockSensor => mockSensor.setUpdateSensorReadingFunction(update_sensor_reading))
     .then(mockSensor => {
       return new Promise((resolve, reject) => {
         let wrapper = new CallbackWrapper(() => {

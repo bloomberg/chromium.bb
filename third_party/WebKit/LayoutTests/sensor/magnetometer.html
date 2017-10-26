@@ -12,27 +12,16 @@
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-const kDefaultReadingValueX = -19.2;
-const kDefaultReadingValueY = 12.1;
-const kDefaultReadingValueZ = -44.3;
+const kDefaultReading = [-19.2, 12.1, -44.3];
 
 function update_sensor_reading(buffer) {
-  buffer[2] = kDefaultReadingValueX;
-  buffer[3] = kDefaultReadingValueY;
-  buffer[4] = kDefaultReadingValueZ;
+  buffer.set(kDefaultReading, 2);
 }
 
-function verify_sensor_reading(sensor, should_be_null) {
-  if (should_be_null) {
-    return sensor.x == null &&
-           sensor.y == null &&
-           sensor.z == null &&
-           sensor.timestamp == null;
-  }
-  return sensor.x == kDefaultReadingValueX &&
-         sensor.y == kDefaultReadingValueY &&
-         sensor.z == kDefaultReadingValueZ &&
-         sensor.timestamp != null;
+function verify_sensor_reading({x, y, z, timestamp}, is_null) {
+  if (is_null)
+    return [x, y, z, timestamp].every(r => r === null);
+  return [x, y, z].every((r, i) => r === kDefaultReading[i]) && timestamp !== null;
 }
 
 runGenericSensorTests(Magnetometer, update_sensor_reading, verify_sensor_reading);
