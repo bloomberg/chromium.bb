@@ -88,8 +88,7 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
       DCHECK(!child.fragment);
       AddChild(std::move(child.layout_result), child.offset);
       DCHECK(!child.layout_result);
-    } else {
-      DCHECK(child.fragment);
+    } else if (child.fragment) {
       AddChild(std::move(child.fragment), child.offset);
       DCHECK(!child.fragment);
     }

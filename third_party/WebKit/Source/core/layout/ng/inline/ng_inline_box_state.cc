@@ -282,19 +282,6 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     (*line_box)[placeholder.fragment_end].layout_result = box.ToBoxFragment();
   }
   box_placeholders_.clear();
-
-  // Add the list to line_box by skipping null fragments; i.e., fragments added
-  // to box children.
-  NGLineBoxFragmentBuilder::ChildList new_children;
-  new_children.ReserveInitialCapacity(line_box->size());
-  for (unsigned i = 0; i < (*line_box).size(); i++) {
-    NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
-    if (child.layout_result)
-      new_children.AddChild(std::move(child.layout_result), child.offset);
-    else if (child.fragment)
-      new_children.AddChild(std::move(child.fragment), child.offset);
-  }
-  *line_box = std::move(new_children);
 }
 
 NGInlineLayoutStateStack::PositionPending

@@ -95,6 +95,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     Vector<Child, 16> children_;
   };
 
+  // Add all items in ChildList. Skips null Child if any.
   void AddChildren(ChildList&);
 
   // Creates the fragment. Can only be called once.
