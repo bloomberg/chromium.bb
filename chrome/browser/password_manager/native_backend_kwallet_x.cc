@@ -22,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/dbus/dbus_thread_linux.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -294,9 +295,7 @@ void UMALogDeserializationStatus(bool success) {
 NativeBackendKWallet::NativeBackendKWallet(
     LocalProfileId id,
     base::nix::DesktopEnvironment desktop_env)
-    : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
-      profile_id_(id),
+    : profile_id_(id),
       kwallet_dbus_(desktop_env),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
   folder_name_ = GetProfileSpecificFolderName();
@@ -311,7 +310,7 @@ NativeBackendKWallet::~NativeBackendKWallet() {
   // scope. The NativeBackend will be destroyed before that occurs, but that's
   // OK.
   if (kwallet_dbus_.GetSessionBus()) {
-    background_task_runner_->PostTask(
+    chrome::GetDBusTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock,
                                   kwallet_dbus_.GetSessionBus()));
   }
@@ -332,7 +331,7 @@ bool NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   // NativeBackendKWallet isn't reference counted, but we wait for InitWithBus
   // to finish, so we can safely use base::Unretained here.
-  background_task_runner_->PostTask(
+  chrome::GetDBusTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeBackendKWallet::InitOnBackgroundTaskRunner,
                      base::Unretained(this), optional_bus, &event, &success));
@@ -349,7 +348,7 @@ void NativeBackendKWallet::InitOnBackgroundTaskRunner(
     scoped_refptr<dbus::Bus> optional_bus,
     base::WaitableEvent* event,
     bool* success) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(chrome::GetDBusTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!kwallet_dbus_.GetSessionBus());
   if (optional_bus.get()) {
     // The optional_bus parameter is given when this method is called in tests.
@@ -371,7 +370,7 @@ void NativeBackendKWallet::InitOnBackgroundTaskRunner(
 }
 
 NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(chrome::GetDBusTaskRunner()->RunsTasksInCurrentSequence());
 
   // Check that KWallet is enabled.
   bool enabled = false;
@@ -564,7 +563,7 @@ bool NativeBackendKWallet::GetAllLogins(
 
 scoped_refptr<base::SequencedTaskRunner>
 NativeBackendKWallet::GetBackgroundTaskRunner() {
-  return background_task_runner_;
+  return chrome::GetDBusTaskRunner();
 }
 
 bool NativeBackendKWallet::GetLoginsList(
@@ -813,7 +812,7 @@ NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
 }
 
 int NativeBackendKWallet::WalletHandle() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(chrome::GetDBusTaskRunner()->RunsTasksInCurrentSequence());
 
   // Open the wallet.
   // TODO(mdm): Are we leaking these handles? Find out.
