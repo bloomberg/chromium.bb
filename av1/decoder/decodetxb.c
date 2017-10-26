@@ -324,7 +324,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   int is_equal = 0;
 
   for (int i = 1; i < max_eob_pt; i++) {
-    int eob_pos_ctx = get_eob_pos_ctx(i);
+    int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
     is_equal = av1_read_record_bin(
         counts, r, ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_pos_ctx], 2,
         ACCT_STR);

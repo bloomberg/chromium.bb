@@ -130,18 +130,19 @@ static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
   return error;
 }
 
-void av1_update_eob_context(int eob, int seg_eob, TX_SIZE txsize,
-                            PLANE_TYPE plane, FRAME_CONTEXT *ec_ctx,
-                            FRAME_COUNTS *counts) {
+void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
+                            TX_TYPE tx_type, PLANE_TYPE plane,
+                            FRAME_CONTEXT *ec_ctx, FRAME_COUNTS *counts) {
   int16_t eob_extra;
   int16_t eob_pt = get_eob_pos_token(eob, &eob_extra);
   int16_t dummy;
   int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
+  TX_SIZE txs_ctx = get_txsize_context(tx_size);
 
   for (int i = 1; i < max_eob_pt; i++) {
-    int eob_pos_ctx = get_eob_pos_ctx(i);
-    counts->eob_flag[txsize][plane][eob_pos_ctx][eob_pt == i]++;
-    update_cdf(ec_ctx->eob_flag_cdf[txsize][plane][eob_pos_ctx], eob_pt == i,
+    int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
+    counts->eob_flag[txs_ctx][plane][eob_pos_ctx][eob_pt == i]++;
+    update_cdf(ec_ctx->eob_flag_cdf[txs_ctx][plane][eob_pos_ctx], eob_pt == i,
                2);
     if (eob_pt == i) {
       break;
@@ -151,13 +152,13 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE txsize,
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
-    counts->eob_extra[txsize][plane][eob_pt][bit]++;
-    update_cdf(ec_ctx->eob_extra_cdf[txsize][plane][eob_pt], bit, 2);
+    counts->eob_extra[txs_ctx][plane][eob_pt][bit]++;
+    update_cdf(ec_ctx->eob_extra_cdf[txs_ctx][plane][eob_pt], bit, 2);
   }
 }
 
 static int get_eob_cost(int eob, int seg_eob,
-                        const LV_MAP_COEFF_COST *txb_costs) {
+                        const LV_MAP_COEFF_COST *txb_costs, TX_TYPE tx_type) {
   int16_t eob_extra;
   int16_t eob_pt = get_eob_pos_token(eob, &eob_extra);
   int16_t dummy;
@@ -166,7 +167,7 @@ static int get_eob_cost(int eob, int seg_eob,
 
   // printf("Enc: [%d, %d], (%d, %d) ", seg_eob, eob, eob_pt, eob_extra);
   for (int i = 1; i < max_eob_pt; i++) {
-    int eob_pos_ctx = get_eob_pos_ctx(i);
+    int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
     eob_cost += txb_costs->eob_cost[eob_pos_ctx][eob_pt == i];
     if (eob_pt == i) {
       break;
@@ -408,7 +409,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   // printf("Enc: [%d, %d], (%d, %d) ", seg_eob, eob, eob_pt, eob_extra);
   for (int i = 1; i < max_eob_pt; i++) {
-    int eob_pos_ctx = get_eob_pos_ctx(i);
+    int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
 
     aom_write_bin(w, eob_pt == i,
                   ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_pos_ctx], 2);
@@ -774,7 +775,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 #endif
 
   const int seg_eob = tx_size_2d[tx_size];
-  int eob_cost = get_eob_cost(eob, seg_eob, coeff_costs);
+  int eob_cost = get_eob_cost(eob, seg_eob, coeff_costs, tx_type);
 
   cost += eob_cost;
   for (c = eob - 1; c >= 0; --c) {
@@ -1794,7 +1795,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   // forward optimize the nz_map`
   const int init_eob = txb_info->eob;
   const int seg_eob = txb_info->seg_eob;
-  int eob_cost = get_eob_cost(init_eob, seg_eob, txb_costs);
+  int eob_cost = get_eob_cost(init_eob, seg_eob, txb_costs, txb_info->tx_type);
 
   // backward optimize the level-k map
   int64_t accu_rate = eob_cost;
@@ -1813,7 +1814,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
       accu_rate += stats.rate;
     } else {
       // check if it is better to make this the last significant coefficient
-      int cur_eob_rate = get_eob_cost(si + 1, seg_eob, txb_costs);
+      int cur_eob_rate =
+          get_eob_cost(si + 1, seg_eob, txb_costs, txb_info->tx_type);
       cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
       prev_eob_rd_cost =
           RDCOST(txb_info->rdmult, accu_rate + stats.nz_rate, accu_dist);
@@ -2295,7 +2297,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
       &(td->counts->nz_map[txsize_ctx][plane_type]);
-  av1_update_eob_context(eob, seg_eob, txsize_ctx, plane_type, ec_ctx,
+  av1_update_eob_context(eob, seg_eob, tx_size, tx_type, plane_type, ec_ctx,
                          td->counts);
   for (c = eob - 1; c >= 0; --c) {
     tran_low_t v = qcoeff[scan[c]];

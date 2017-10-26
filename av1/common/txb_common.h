@@ -18,7 +18,7 @@
 extern const int16_t k_eob_group_start[12];
 extern const int16_t k_eob_offset_bits[12];
 int16_t get_eob_pos_token(int eob, int16_t *extra);
-int get_eob_pos_ctx(int eob_token);
+int av1_get_eob_pos_ctx(TX_TYPE tx_type, int eob_token);
 
 extern const int16_t av1_coeff_band_4x4[16];
 
