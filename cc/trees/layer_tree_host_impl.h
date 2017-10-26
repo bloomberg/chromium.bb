@@ -624,9 +624,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   LayerImpl* ViewportMainScrollLayer();
 
-  void QueueImageDecode(const PaintImage& image,
-                        const base::Callback<void(bool)>& embedder_callback);
-  std::vector<base::Closure> TakeCompletedImageDecodeCallbacks();
+  void QueueImageDecode(int request_id, const PaintImage& image);
+  std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();
 
   void ClearImageCacheOnNavigation();
 
@@ -741,8 +740,7 @@ class CC_EXPORT LayerTreeHostImpl
                                    base::TimeDelta delayed_by);
 
   void SetContextVisibility(bool is_visible);
-  void ImageDecodeFinished(const base::Callback<void(bool)>& embedder_callback,
-                           bool decode_succeeded);
+  void ImageDecodeFinished(int request_id, bool decode_succeeded);
 
   // This function keeps track of sources of scrolls that are handled in the
   // compositor side. The information gets shared by the main thread as part of
@@ -914,9 +912,10 @@ class CC_EXPORT LayerTreeHostImpl
   // in SetPropertyTrees.
   ElementId scroll_animating_latched_element_id_;
 
-  // These callbacks are stored here to be transfered to the main thread when we
-  // begin main frame. These callbacks must only be called on the main thread.
-  std::vector<base::Closure> completed_image_decode_callbacks_;
+  // These completion states to be transfered to the main thread when we
+  // begin main frame. The pair represents a request id and the completion (ie
+  // success) state.
+  std::vector<std::pair<int, bool>> completed_image_decode_requests_;
 
   // These are used to transfer usage of touch and wheel scrolls to the main
   // thread.

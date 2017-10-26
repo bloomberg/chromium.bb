@@ -521,8 +521,8 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
   begin_main_frame_state->scroll_info = host_impl_->ProcessScrollDeltas();
   begin_main_frame_state->evicted_ui_resources =
       host_impl_->EvictedUIResourcesExist();
-  begin_main_frame_state->completed_image_decode_callbacks =
-      host_impl_->TakeCompletedImageDecodeCallbacks();
+  begin_main_frame_state->completed_image_decode_requests =
+      host_impl_->TakeCompletedImageDecodeRequests();
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,

@@ -214,10 +214,8 @@ void SingleThreadProxy::DoCommit() {
 void SingleThreadProxy::IssueImageDecodeFinishedCallbacks() {
   DCHECK(task_runner_provider_->IsImplThread());
 
-  auto completed_decode_callbacks =
-      host_impl_->TakeCompletedImageDecodeCallbacks();
-  for (auto& callback : completed_decode_callbacks)
-    callback.Run();
+  layer_tree_host_->ImageDecodesFinished(
+      host_impl_->TakeCompletedImageDecodeRequests());
 }
 
 void SingleThreadProxy::CommitComplete() {
