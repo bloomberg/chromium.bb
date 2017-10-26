@@ -1092,15 +1092,8 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
 
   DCHECK(status != SERVICE_WORKER_OK || registration);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
-  if (status != SERVICE_WORKER_OK || registration->is_uninstalling()) {
-    info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
-    info->options = blink::mojom::ServiceWorkerRegistrationOptions::New();
-    info->active = blink::mojom::ServiceWorkerObjectInfo::New();
-    info->waiting = blink::mojom::ServiceWorkerObjectInfo::New();
-    info->installing = blink::mojom::ServiceWorkerObjectInfo::New();
-  } else {
+  if (status == SERVICE_WORKER_OK && !registration->is_uninstalling())
     info = CreateServiceWorkerRegistrationObjectInfo(registration.get());
-  }
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                           base::nullopt, std::move(info));

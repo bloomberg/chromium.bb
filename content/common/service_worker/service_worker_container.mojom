@@ -18,7 +18,7 @@ import "url/mojo/url.mojom";
 interface ServiceWorkerContainerHost {
   // Corresponds to navigator.serviceWorker.register().
   // Registers a service worker from |script_url| with |options|.
-  // On success, |error| is kNone with |registration| and |attributes| set.
+  // On success, |error| is kNone with |registration| set.
   // Otherwise, |error| and |error_msg| describe the failure.
   Register(url.mojom.Url script_url,
            blink.mojom.ServiceWorkerRegistrationOptions options)
@@ -28,7 +28,9 @@ interface ServiceWorkerContainerHost {
 
   // Corresponds to navigator.serviceWorker.getRegistration().
   // Gets the service worker registration for the |client_url|.
-  // On success, |error| is kNone with |registration| and |attributes| set.
+  // On success, |error| is kNone with |registration| set.
+  // In case there is no registration at |client_url|, or the registration is
+  // uninstalling, |error| is still kNone but with null |registration|.
   // Otherwise, |error| and |error_msg| describe the failure.
   GetRegistration(url.mojom.Url client_url)
     => (blink.mojom.ServiceWorkerErrorType error,
@@ -38,8 +40,8 @@ interface ServiceWorkerContainerHost {
   // Corresponds to navigator.serviceWorker.getRegistrations().
   // Gets all service worker registrations which have the same origin with
   // the ServiceWorkerContainer that this interface hosts.
-  // On success, |error| is kNone with |infos| and |attrs| set. Otherwise,
-  // |error| and |error_msg| describe the failure.
+  // On success, |error| is kNone with |infos| set. Otherwise, |error| and
+  // |error_msg| describe the failure.
   GetRegistrations()
     => (blink.mojom.ServiceWorkerErrorType error,
         string? error_msg,

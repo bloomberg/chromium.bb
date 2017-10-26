@@ -61,6 +61,8 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
         blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
     provider_info->registration->options =
         blink::mojom::ServiceWorkerRegistrationOptions::New();
+    registration_object_host_request_ =
+        mojo::MakeRequest(&(provider_info->registration->host_ptr_info));
     provider_info->registration->installing =
         blink::mojom::ServiceWorkerObjectInfo::New();
     provider_info->registration->waiting =
@@ -98,6 +100,8 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
 
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
+      registration_object_host_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ProviderHostEndpoints);
 };
