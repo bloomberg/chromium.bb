@@ -52,10 +52,6 @@ class NotifierController {
       const message_center::NotifierId& notifier_id,
       const std::string* notification_id) {}
 
-  // Release temporary resouces tagged with notifier list that is returned last
-  // time.
-  virtual void OnNotifierSettingsClosing() {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NotifierController);
 };

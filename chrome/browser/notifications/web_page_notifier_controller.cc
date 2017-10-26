@@ -127,12 +127,6 @@ void WebPageNotifierController::SetNotifierEnabled(
   observer_->OnNotifierEnabledChanged(notifier_id, enabled);
 }
 
-void WebPageNotifierController::OnNotifierSettingsClosing() {
-  DCHECK(favicon_tracker_.get());
-  favicon_tracker_->TryCancelAll();
-  patterns_.clear();
-}
-
 void WebPageNotifierController::OnFaviconLoaded(
     const GURL& url,
     const favicon_base::FaviconImageResult& favicon_result) {

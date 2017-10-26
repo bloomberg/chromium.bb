@@ -158,9 +158,6 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
   virtual void SetNotifierEnabled(const NotifierId& notifier_id,
                                   bool enabled) = 0;
 
-  // Called when the settings window is closed.
-  virtual void OnNotifierSettingsClosing() = 0;
-
   // Called upon request for more information about a particular notifier.
   virtual void OnNotifierAdvancedSettingsRequested(
       const NotifierId& notifier_id,
