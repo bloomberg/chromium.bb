@@ -560,45 +560,40 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         super(ComputedStyleBaseWriter, self).__init__(json5_file_paths)
 
         # Ignore shorthand properties
-        longhands = []
-        for property_ in self.properties.values():
-            if not property_['longhands']:
-                longhands.append(property_)
-                # Set default values for extra parameters in
-                # ComputedStyleExtraFields.json5.
-                property_['custom_copy'] = False
-                property_['custom_compare'] = False
-                property_['mutable'] = False
-
+        for property_ in self._properties.values():
             if property_['field_template'] is not None:
                 assert not property_['longhands'], \
-                    "Shorthand '{}' cannot have a field_template.".format(
-                        property_['name'])
+                    "Shorthand '{}' cannot have a field_template.".format(property_['name'])
 
+        css_properties = [value for value in self._properties.values() if not value['longhands']]
         # We sort the enum values based on each value's position in
-        # the keywords as listed in CSSProperties.json5. This will ensure that
-        # if there is a continuous
+        # the keywords as listed in CSSProperties.json5. This will ensure that if there is a continuous
         # segment in CSSProperties.json5 matching the segment in this enum then
         # the generated enum will have the same order and continuity as
         # CSSProperties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
-        longhands = keyword_utils.sort_keyword_properties_by_canonical_order(
-            longhands, json5_file_paths[4], self.default_parameters)
+        css_properties = keyword_utils.sort_keyword_properties_by_canonical_order(
+            css_properties, json5_file_paths[4], self.json5_file.parameters)
 
-        # Read ComputedStyleExtraFields.json5 using the parameter specification
-        # from the CSS properties file.
+        for property_ in css_properties:
+            # Set default values for extra parameters in ComputedStyleExtraFields.json5.
+            property_['custom_copy'] = False
+            property_['custom_compare'] = False
+            property_['mutable'] = False
+
+        # Read ComputedStyleExtraFields.json5 using the parameter specification from the CSS properties file.
         extra_fields = json5_generator.Json5File.load_from_files(
             [json5_file_paths[2]],
-            default_parameters=self.default_parameters
+            default_parameters=self.json5_file.parameters
         ).name_dictionaries
 
         for property_ in extra_fields:
             if property_['mutable']:
                 assert property_['field_template'] == 'monotonic_flag', \
                     'mutable keyword only implemented for monotonic_flag'
-            self._json5_properties.expand_parameters(property_)
+            self.expand_parameters(property_)
 
-        all_properties = longhands + extra_fields
+        all_properties = css_properties + extra_fields
 
         self._generated_enums = _create_enums(all_properties)
 
@@ -629,7 +624,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def generate_base_computed_style_h(self):
         return {
             'input_files': self._input_files,
-            'properties': self.properties,
+            'properties': self._properties,
             'enums': self._generated_enums,
             'include_paths': self._include_paths,
             'computed_style': self._root_group,
@@ -640,7 +635,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def generate_base_computed_style_cpp(self):
         return {
             'input_files': self._input_files,
-            'properties': self.properties,
+            'properties': self._properties,
             'enums': self._generated_enums,
             'include_paths': self._include_paths,
             'computed_style': self._root_group,
