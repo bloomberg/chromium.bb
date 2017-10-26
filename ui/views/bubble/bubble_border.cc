@@ -187,11 +187,6 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
       images_(nullptr),
       background_color_(color),
       use_theme_background_color_(false) {
-#if defined(OS_MACOSX)
-  // On Mac, use the NO_ASSETS bubble border. WindowServer on Mac is able to
-  // generate drop shadows for dialogs, hence we don't use raster shadows.
-  shadow_ = NO_ASSETS;
-#endif  // OS_MACOSX
   DCHECK(shadow_ < SHADOW_COUNT);
   if (UseMd()) {
     // Harmony bubbles don't use arrows.

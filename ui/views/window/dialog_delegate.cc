@@ -212,7 +212,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_TITLE),
       gfx::Insets());
-  const BubbleBorder::Shadow kShadow = BubbleBorder::SMALL_SHADOW;
+  const BubbleBorder::Shadow kShadow = BubbleBorder::DIALOG_SHADOW;
   std::unique_ptr<BubbleBorder> border(
       new BubbleBorder(BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor));
   border->set_use_theme_background_color(true);

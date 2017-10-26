@@ -490,6 +490,9 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
       [window_ setHasShadow:NO];
       break;
     case Widget::InitParams::SHADOW_TYPE_DEFAULT:
+      // Controls should get views shadows instead of native shadows.
+      [window_ setHasShadow:params.type != Widget::InitParams::TYPE_CONTROL];
+      break;
     case Widget::InitParams::SHADOW_TYPE_DROP:
       [window_ setHasShadow:YES];
       break;

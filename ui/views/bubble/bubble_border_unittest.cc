@@ -343,13 +343,6 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const BubbleBorder::Shadow shadow = static_cast<BubbleBorder::Shadow>(i);
     SCOPED_TRACE(testing::Message() << "BubbleBorder::Shadow: " << shadow);
     views::BubbleBorder border(BubbleBorder::TOP_LEFT, shadow, SK_ColorWHITE);
-#if defined(OS_MACOSX)
-    // Mac always uses NO_ASSETS, no matter what we tell it to use. No point in
-    // testing any other shadow.
-    EXPECT_EQ(BubbleBorder::NO_ASSETS, border.shadow());
-    if (shadow != BubbleBorder::NO_ASSETS)
-      continue;
-#endif
 
     const gfx::Rect kAnchor(100, 100, 20, 30);
     const gfx::Size kContentSize(500, 600);

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -104,6 +105,15 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     // platforms that provide their own shadows.
     NO_ASSETS,
     SHADOW_COUNT,
+
+#if defined(OS_MACOSX)
+    // On Mac, the native window server should provide its own shadow for
+    // windows that could overlap the browser window.
+    DIALOG_SHADOW = NO_ASSETS,
+#else
+    DIALOG_SHADOW = SMALL_SHADOW,
+#endif
+
   };
 
   // The position of the bubble in relation to the anchor.
