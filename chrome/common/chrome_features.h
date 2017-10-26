@@ -256,6 +256,8 @@ extern const base::Feature kUseGoogleLocalNtp;
 extern const base::Feature kVoiceSearchOnLocalNtp;
 #endif
 
+extern const base::Feature kVrShell;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;
 
