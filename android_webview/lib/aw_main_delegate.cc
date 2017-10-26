@@ -152,6 +152,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddDisabledFeature(*cl,
                                         media::kMediaDrmPersistentLicense.name);
 
+  CommandLineHelper::AddEnabledFeature(*cl, features::kLoadingWithMojo.name);
+
   android_webview::RegisterPathProvider();
 
   safe_browsing_api_handler_.reset(
