@@ -108,8 +108,14 @@ class CORE_EXPORT NGOffsetMapping {
   // TODO(xiaochengh): Change the functions to take Positions instead of (node,
   // offset) pairs.
 
-  // Returns the mapping object of the block laying out the given DOM offset.
-  static const NGOffsetMapping* GetFor(const Node&, unsigned);
+  // Note: any Position passed to the APIs must be in either of the two types:
+  // 1. Offset-in-anchor in text node
+  // 2. Before/After-anchor of BR or atomic inline
+  // TODO(crbug.com/776843): support non-atomic inlines
+  static bool AcceptsPosition(const Position&);
+
+  // Returns the mapping object of the block laying out the given position.
+  static const NGOffsetMapping* GetFor(const Position&);
 
   // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
   // node. If there are multiple qualifying units, returns the last one.

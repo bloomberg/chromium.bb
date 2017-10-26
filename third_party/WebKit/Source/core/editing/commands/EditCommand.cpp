@@ -68,8 +68,7 @@ bool EditCommand::IsRenderedCharacter(const Position& position) {
   const int offset_in_node = position.OffsetInContainerNode();
 
   // Use NG offset mapping when LayoutNG is enabled.
-  if (const NGOffsetMapping* mapping =
-          NGOffsetMapping::GetFor(node, offset_in_node)) {
+  if (auto* mapping = NGOffsetMapping::GetFor(position)) {
     return mapping->IsBeforeNonCollapsedCharacter(node, offset_in_node);
   }
 

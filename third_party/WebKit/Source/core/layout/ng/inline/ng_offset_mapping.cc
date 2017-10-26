@@ -21,6 +21,15 @@ Position CreatePositionForOffsetMapping(const Node& node, unsigned dom_offset) {
   return dom_offset ? Position::AfterNode(node) : Position::BeforeNode(node);
 }
 
+std::pair<const Node&, unsigned> ToNodeOffsetPair(const Position& position) {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
+  if (position.AnchorNode()->IsTextNode())
+    return {*position.AnchorNode(), position.OffsetInContainerNode()};
+  if (position.IsBeforeAnchor())
+    return {*position.AnchorNode(), 0};
+  return {*position.AnchorNode(), 1};
+}
+
 }  // namespace
 
 NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
@@ -82,9 +91,28 @@ unsigned NGOffsetMappingUnit::ConvertTextContentToLastDOMOffset(
 }
 
 // static
-const NGOffsetMapping* NGOffsetMapping::GetFor(const Node& node,
-                                               unsigned offset) {
-  const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
+bool NGOffsetMapping::AcceptsPosition(const Position& position) {
+  if (position.IsNull())
+    return false;
+  if (position.AnchorNode()->IsTextNode()) {
+    return position.IsOffsetInAnchor();
+  }
+  if (!position.IsBeforeAnchor() && !position.IsAfterAnchor())
+    return false;
+  if (IsHTMLBRElement(position.AnchorNode()))
+    return true;
+  const LayoutObject* layout_object = position.AnchorNode()->GetLayoutObject();
+  // TODO(crbug.com/776843): Support non-atomic inlines.
+  return layout_object && layout_object->IsAtomicInlineLevel();
+}
+
+// static
+const NGOffsetMapping* NGOffsetMapping::GetFor(const Position& position) {
+  if (!NGOffsetMapping::AcceptsPosition(position))
+    return nullptr;
+  auto node_offset_pair = ToNodeOffsetPair(position);
+  const LayoutObject* layout_object =
+      AssociatedLayoutObjectOf(node_offset_pair.first, node_offset_pair.second);
   if (!layout_object || !layout_object->IsInline())
     return nullptr;
   LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();

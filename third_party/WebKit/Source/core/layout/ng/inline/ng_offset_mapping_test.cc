@@ -581,10 +581,10 @@ TEST_F(NGOffsetMappingTest, FirstLetterInDifferentBlock) {
   Element* div = GetDocument().getElementById("t");
   const Node* text_node = div->firstChild();
 
-  const NGOffsetMapping* mapping0 = NGOffsetMapping::GetFor(*text_node, 0);
-  const NGOffsetMapping* mapping1 = NGOffsetMapping::GetFor(*text_node, 1);
-  const NGOffsetMapping* mapping2 = NGOffsetMapping::GetFor(*text_node, 2);
-  const NGOffsetMapping* mapping3 = NGOffsetMapping::GetFor(*text_node, 3);
+  auto* mapping0 = NGOffsetMapping::GetFor(Position(text_node, 0));
+  auto* mapping1 = NGOffsetMapping::GetFor(Position(text_node, 1));
+  auto* mapping2 = NGOffsetMapping::GetFor(Position(text_node, 2));
+  auto* mapping3 = NGOffsetMapping::GetFor(Position(text_node, 3));
 
   ASSERT_TRUE(mapping0);
   ASSERT_TRUE(mapping1);
