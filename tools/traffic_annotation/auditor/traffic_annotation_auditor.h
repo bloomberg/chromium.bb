@@ -129,7 +129,7 @@ class TrafficAnnotationAuditor {
     return extracted_calls_;
   }
 
-  const std::vector<AuditorResult>& errors() const { return errors_; }
+  std::vector<AuditorResult> errors() { return errors_; }
 
   void ClearErrorsForTesting() { errors_.clear(); }
 
