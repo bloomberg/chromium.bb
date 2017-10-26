@@ -62,6 +62,7 @@
 namespace {
 
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 using base::HistogramBase;
 
 const int kTinyEdgeSize = 10;
@@ -422,21 +423,12 @@ class HistoryBackendTest : public HistoryBackendTestBase {
     return icon_mappings.size();
   }
 
-  // Returns the icon mappings for |page_url| sorted alphabetically by icon
-  // URL in ascending order. Returns true if there is at least one icon
-  // mapping.
-  bool GetSortedIconMappingsForPageURL(
-      const GURL& page_url,
-      std::vector<IconMapping>* icon_mappings) {
-    if (!backend_->thumbnail_db_->GetIconMappingsForPageURL(page_url,
-                                                            icon_mappings)) {
-      return false;
-    }
-    std::sort(icon_mappings->begin(), icon_mappings->end(),
-              [](const history::IconMapping& a, const history::IconMapping& b) {
-                return a.icon_url < b.icon_url;
-              });
-    return true;
+  // Returns the icon mappings for |page_url|.
+  std::vector<IconMapping> GetIconMappingsForPageURL(const GURL& page_url) {
+    std::vector<IconMapping> icon_mappings;
+    backend_->thumbnail_db_->GetIconMappingsForPageURL(page_url,
+                                                       &icon_mappings);
+    return icon_mappings;
   }
 
   // Returns the favicon bitmaps for |icon_id| sorted by pixel size in
@@ -1954,9 +1946,8 @@ TEST_F(HistoryBackendTest, SetFaviconsDeleteBitmaps) {
   backend_->SetFavicons({page_url}, favicon_base::FAVICON, icon_url, bitmaps);
 
   // Test initial state.
-  std::vector<IconMapping> icon_mappings;
-  EXPECT_TRUE(GetSortedIconMappingsForPageURL(page_url, &icon_mappings));
-  EXPECT_EQ(1u, icon_mappings.size());
+  std::vector<IconMapping> icon_mappings = GetIconMappingsForPageURL(page_url);
+  ASSERT_EQ(1u, icon_mappings.size());
   EXPECT_EQ(icon_url, icon_mappings[0].icon_url);
   EXPECT_EQ(favicon_base::FAVICON, icon_mappings[0].icon_type);
   favicon_base::FaviconID favicon_id = icon_mappings[0].icon_id;
@@ -3176,6 +3167,46 @@ TEST_F(HistoryBackendTest, GetFaviconsFromDBMultipleIconTypes) {
     ASSERT_EQ(1u, bitmap_results_out.size());
     EXPECT_EQ(test_case.expected_icon_url, bitmap_results_out[0].icon_url);
   }
+}
+
+// Test that CloneFaviconMappingsForPages() propagates favicon mappings to the
+// provided pages and their redirects.
+TEST_F(HistoryBackendTest, CloneFaviconMappingsForPages) {
+  const GURL landing_page_url1("http://www.google.com/landing");
+  const GURL landing_page_url2("http://www.google.ca/landing");
+  const GURL redirecting_page_url1("http://www.google.com/redirect");
+  const GURL redirecting_page_url2("http://www.google.ca/redirect");
+  const GURL icon_url("http://www.google.com/icon.png");
+
+  // Setup
+  {
+    // A mapping exists for |landing_page_url1|.
+    std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
+    backend_->SetFavicons({landing_page_url1}, favicon_base::FAVICON, icon_url,
+                          {CreateBitmap(SK_ColorBLUE, kSmallEdgeSize)});
+
+    // Init recent_redirects_.
+    backend_->recent_redirects_.Put(
+        landing_page_url1,
+        RedirectList{redirecting_page_url1, landing_page_url1});
+    backend_->recent_redirects_.Put(
+        landing_page_url2,
+        RedirectList{redirecting_page_url2, landing_page_url2});
+    ClearBroadcastedNotifications();
+  }
+
+  std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results_out;
+  backend_->CloneFaviconMappingsForPages(
+      landing_page_url1, favicon_base::FAVICON,
+      {landing_page_url1, landing_page_url2});
+
+  EXPECT_THAT(favicon_changed_notifications_page_urls(),
+              UnorderedElementsAre(redirecting_page_url1, landing_page_url2,
+                                   redirecting_page_url2));
+
+  EXPECT_EQ(1U, GetIconMappingsForPageURL(redirecting_page_url1).size());
+  EXPECT_EQ(1U, GetIconMappingsForPageURL(landing_page_url2).size());
+  EXPECT_EQ(1U, GetIconMappingsForPageURL(redirecting_page_url2).size());
 }
 
 // Test that GetFaviconsFromDB() correctly sets the expired flag for bitmap

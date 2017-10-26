@@ -234,6 +234,14 @@ void FaviconServiceImpl::SetFavicons(const base::flat_set<GURL>& page_urls,
                                 ExtractSkBitmapsToStore(image));
 }
 
+void FaviconServiceImpl::CloneFaviconMappingsForPages(
+    const GURL& page_url_to_read,
+    int icon_types,
+    const base::flat_set<GURL>& page_urls_to_write) {
+  history_service_->CloneFaviconMappingsForPages(page_url_to_read, icon_types,
+                                                 page_urls_to_write);
+}
+
 void FaviconServiceImpl::SetOnDemandFavicons(
     const GURL& page_url,
     const GURL& icon_url,

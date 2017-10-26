@@ -1758,6 +1758,49 @@ void HistoryBackend::SetFavicons(const base::flat_set<GURL>& page_urls,
                   FaviconBitmapType::ON_VISIT);
 }
 
+void HistoryBackend::CloneFaviconMappingsForPages(
+    const GURL& page_url_to_read,
+    int icon_types,
+    const base::flat_set<GURL>& page_urls_to_write) {
+  if (!db_ || !thumbnail_db_)
+    return;
+
+  // Update mappings including redirects for each entry in |page_urls_to_write|.
+  base::flat_set<GURL> page_urls_to_update_mappings;
+  for (const GURL& update_mappings_for_page : page_urls_to_write) {
+    RedirectList redirects = GetCachedRecentRedirects(update_mappings_for_page);
+    page_urls_to_update_mappings.insert(redirects.begin(), redirects.end());
+  }
+
+  // No need to update mapping for |page_url_to_read|, because this is where
+  // we're getting the mappings from.
+  page_urls_to_update_mappings.erase(page_url_to_read);
+
+  if (page_urls_to_update_mappings.empty())
+    return;
+
+  // Get FaviconIDs for |page_url_to_read| and one of |icon_types|.
+  std::vector<IconMapping> icon_mappings;
+  thumbnail_db_->GetIconMappingsForPageURL(page_url_to_read, icon_types,
+                                           &icon_mappings);
+  if (icon_mappings.empty())
+    return;
+
+  std::set<GURL> changed_page_urls;
+  for (const IconMapping& icon_mapping : icon_mappings) {
+    std::vector<GURL> v = SetFaviconMappingsForPages(
+        page_urls_to_update_mappings, icon_mapping.icon_type,
+        icon_mapping.icon_id);
+    changed_page_urls.insert(std::make_move_iterator(v.begin()),
+                             std::make_move_iterator(v.end()));
+  }
+
+  if (!changed_page_urls.empty()) {
+    NotifyFaviconsChanged(changed_page_urls, GURL());
+    ScheduleCommit();
+  }
+}
+
 bool HistoryBackend::SetOnDemandFavicons(const GURL& page_url,
                                          favicon_base::IconType icon_type,
                                          const GURL& icon_url,
@@ -2118,8 +2161,10 @@ bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
   // Find all the pages whose favicons we should set, we want to set it for
   // all the pages in the redirect chain if it redirected.
   RedirectList redirects = GetCachedRecentRedirects(page_url);
-  bool mappings_changed = SetFaviconMappingsForPages(
-      base::flat_set<GURL>(redirects), icon_type, icon_id);
+  bool mappings_changed =
+      !SetFaviconMappingsForPages(base::flat_set<GURL>(redirects), icon_type,
+                                  icon_id)
+           .empty();
   if (page_url.has_ref() &&
       !base::FeatureList::IsEnabled(kAvoidStrippingRefFromFaviconPageUrls)) {
     // Refs often gets added by Javascript, but the redirect chain is keyed to
@@ -2130,21 +2175,25 @@ bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
     replacements.ClearRef();
     GURL page_url_without_ref = page_url.ReplaceComponents(replacements);
     redirects = GetCachedRecentRedirects(page_url_without_ref);
-    mappings_changed |= SetFaviconMappingsForPages(
-        base::flat_set<GURL>(redirects), icon_type, icon_id);
+    mappings_changed |=
+        !SetFaviconMappingsForPages(base::flat_set<GURL>(redirects), icon_type,
+                                    icon_id)
+             .empty();
   }
 
   return mappings_changed;
 }
 
-bool HistoryBackend::SetFaviconMappingsForPages(
+std::vector<GURL> HistoryBackend::SetFaviconMappingsForPages(
     const base::flat_set<GURL>& page_urls,
     favicon_base::IconType icon_type,
     favicon_base::FaviconID icon_id) {
-  bool mappings_changed = false;
-  for (const GURL& page_url : page_urls)
-    mappings_changed |= SetFaviconMappingsForPage(page_url, icon_type, icon_id);
-  return mappings_changed;
+  std::vector<GURL> changed_page_urls;
+  for (const GURL& page_url : page_urls) {
+    if (SetFaviconMappingsForPage(page_url, icon_type, icon_id))
+      changed_page_urls.push_back(page_url);
+  }
+  return changed_page_urls;
 }
 
 bool HistoryBackend::SetFaviconMappingsForPage(
