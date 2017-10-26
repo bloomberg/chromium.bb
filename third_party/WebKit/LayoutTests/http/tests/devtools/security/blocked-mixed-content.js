@@ -1,15 +1,18 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/security-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests active mixed content blocking in the security panel.\n`);
+  await TestRunner.loadModule('security_test_runner');
+  await TestRunner.showPanel('security');
+
   /** @type {!Protocol.Security.InsecureContentStatus} */
   var insecureContentStatus = {
     ranMixedContent: false,
     displayedMixedContent: false,
     ranContentWithCertErrors: false,
-    displayedContentWithCertErrors: false,
+    displayedContentWithCertErrors: true,
     ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure,
     displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral
   };
@@ -29,20 +32,5 @@ function test() {
   for (var i = 0; i < explanations.length; i++)
     TestRunner.dumpDeepInnerHTML(explanations[i]);
 
-  // Test that the explanations are cleared on navigation. Regression test for https://crbug.com/601944.
-  TestRunner.mainTarget.model(SDK.ResourceTreeModel)
-      .dispatchEventToListeners(
-          SDK.ResourceTreeModel.Events.MainFrameNavigated, TestRunner.resourceTreeModel.mainFrame);
-  explanations =
-      Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName('security-explanation');
-  for (var i = 0; i < explanations.length; i++)
-    TestRunner.dumpDeepInnerHTML(explanations[i]);
-
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests active mixed content blocking in the security panel.</p>
-</body>
-</html>
+})();
