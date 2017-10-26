@@ -1730,6 +1730,7 @@ Bug(none) paint/invalidation/selection/invalidation-rect-includes-newline-for-ve
 Bug(none) paint/invalidation/selection/invalidation-rect-includes-newline-for-vertical-rl.html [ Failure ]
 Bug(none) paint/invalidation/selection/invalidation-rect-includes-newline.html [ Failure ]
 Bug(none) paint/invalidation/selection/invalidation-rect-with-br-includes-newline.html [ Failure ]
+Bug(none) svg/foreign-object-under-shadow-root-under-hidden.html [ Crash Failure ]
 Bug(none) svg/W3C-SVG-1.1-SE/filters-image-03-f.svg [ Failure ]
 Bug(none) svg/W3C-SVG-1.1-SE/filters-image-05-f.svg [ Failure ]
 Bug(none) svg/W3C-SVG-1.1-SE/painting-marker-05-f.svg [ Failure ]
