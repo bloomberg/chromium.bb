@@ -38,8 +38,6 @@ class CONTENT_EXPORT AppCacheBackendImpl {
                    const GURL& manifest_url);
   void GetResourceList(
       int host_id, std::vector<AppCacheResourceInfo>* resource_infos);
-  bool SelectCacheForWorker(int host_id, int parent_process_id,
-                            int parent_host_id);
   bool SelectCacheForSharedWorker(int host_id, int64_t appcache_id);
   bool MarkAsForeignEntry(int host_id,
                           const GURL& document_url,

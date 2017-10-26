@@ -41,8 +41,6 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_SetSpawningHostId, OnSetSpawningHostId)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_GetResourceList, OnGetResourceList)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCache, OnSelectCache)
-    IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCacheForWorker,
-                        OnSelectCacheForWorker)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCacheForSharedWorker,
                         OnSelectCacheForSharedWorker)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_MarkAsForeignEntry,
@@ -104,19 +102,6 @@ void AppCacheDispatcherHost::OnSelectCache(
                                    cache_document_was_loaded_from,
                                    opt_manifest_url)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_SELECT_CACHE);
-    }
-  } else {
-    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
-  }
-}
-
-void AppCacheDispatcherHost::OnSelectCacheForWorker(
-    int host_id, int parent_process_id, int parent_host_id) {
-  if (appcache_service_.get()) {
-    if (!backend_impl_.SelectCacheForWorker(host_id, parent_process_id,
-                                            parent_host_id)) {
-      bad_message::ReceivedBadMessage(
-          this, bad_message::ACDH_SELECT_CACHE_FOR_WORKER);
     }
   } else {
     frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());

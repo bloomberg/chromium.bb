@@ -421,40 +421,6 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_FALSE(host.swappable_cache_.get());  // group2 had no newest cache
 }
 
-TEST_F(AppCacheHostTest, ForDedicatedWorker) {
-  const int kMockProcessId = 1;
-  const int kParentHostId = 1;
-  const int kWorkerHostId = 2;
-
-  AppCacheBackendImpl backend_impl;
-  backend_impl.Initialize(&service_, &mock_frontend_, kMockProcessId);
-  backend_impl.RegisterHost(kParentHostId);
-  backend_impl.RegisterHost(kWorkerHostId);
-
-  AppCacheHost* parent_host = backend_impl.GetHost(kParentHostId);
-  EXPECT_FALSE(parent_host->is_for_dedicated_worker());
-
-  AppCacheHost* worker_host = backend_impl.GetHost(kWorkerHostId);
-  worker_host->SelectCacheForWorker(kParentHostId, kMockProcessId);
-  EXPECT_TRUE(worker_host->is_for_dedicated_worker());
-  EXPECT_EQ(parent_host, worker_host->GetParentAppCacheHost());
-
-  // We should have received an OnCacheSelected msg for the worker_host.
-  // The host for workers always indicates 'no cache selected' regardless
-  // of its parent's state. This is OK because the worker cannot access
-  // the scriptable interface, the only function available is resource
-  // loading (see appcache_request_handler_unittests those tests).
-  EXPECT_EQ(kWorkerHostId, mock_frontend_.last_host_id_);
-  EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
-
-  // Simulate the parent being torn down.
-  backend_impl.UnregisterHost(kParentHostId);
-  parent_host = NULL;
-  EXPECT_EQ(NULL, backend_impl.GetHost(kParentHostId));
-  EXPECT_EQ(NULL, worker_host->GetParentAppCacheHost());
-}
-
 TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
       new MockQuotaManagerProxy);
@@ -545,7 +511,6 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
 
   // Select methods should bail if cache has already been selected.
   EXPECT_FALSE(host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL()));
-  EXPECT_FALSE(host.SelectCacheForWorker(0, 0));
   EXPECT_FALSE(host.SelectCacheForSharedWorker(kAppCacheNoCacheId));
   EXPECT_FALSE(host.MarkAsForeignEntry(kDocAndOriginUrl, kAppCacheNoCacheId));
 }
