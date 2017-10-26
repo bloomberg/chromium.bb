@@ -333,7 +333,7 @@ def _SymbolizeEntries(entries):
         return 'at ' + relpath + ':' + m.group(2)
       filtered_line = filename_re.sub(RelativizePath, output_line)
 
-      if '??' in filtered_line:
+      if '??' in filtered_line.split():
         # If symbolization fails just output the raw backtrace.
         filtered_line = raw
       else:
