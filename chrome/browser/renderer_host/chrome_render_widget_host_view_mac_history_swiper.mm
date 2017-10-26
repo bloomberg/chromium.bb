@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
+#include "ui/events/blink/did_overscroll_params.h"
 
 namespace {
 // The horizontal distance required to cause the browser to perform a history
@@ -151,6 +152,13 @@ BOOL forceMagicMouse = NO;
   }
 }
 
+- (void)onOverscrolled:(const ui::DidOverscrollParams&)params {
+  rendererDisabledOverscroll_ =
+      params.scroll_boundary_behavior.x !=
+      cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
+          kScrollBoundaryBehaviorTypeAuto;
+}
+
 - (void)beginGestureWithEvent:(NSEvent*)event {
   inGesture_ = YES;
 
@@ -210,6 +218,7 @@ BOOL forceMagicMouse = NO;
   gestureStartPointValid_ = NO;
   gestureTotalY_ = 0;
   firstScrollUnconsumed_ = NO;
+  rendererDisabledOverscroll_ = NO;
   waitingForFirstGestureScroll_ = NO;
   recognitionState_ = history_swiper::kPending;
 }
@@ -535,6 +544,10 @@ BOOL forceMagicMouse = NO;
   // Don't enable history swiping until the renderer has decided to not consume
   // the event with phase NSEventPhaseBegan.
   if (!firstScrollUnconsumed_)
+    return NO;
+
+  // History swiping should be prevented if the renderer disables it.
+  if (rendererDisabledOverscroll_)
     return NO;
 
   // Magic mouse and touchpad swipe events are identical except magic mouse
