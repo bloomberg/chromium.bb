@@ -398,6 +398,13 @@ int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
                 << s->sample_rate << " vs " << frame->sample_rate;
     return AVERROR(EINVAL);
   }
+  if (s->sample_rate < limits::kMinSampleRate ||
+      s->sample_rate > limits::kMaxSampleRate) {
+    DLOG(ERROR) << "Requested sample rate (" << s->sample_rate
+                << ") is outside supported range (" << limits::kMinSampleRate
+                << " to " << limits::kMaxSampleRate << ").";
+    return AVERROR(EINVAL);
+  }
 
   // Determine how big the buffer should be and allocate it. FFmpeg may adjust
   // how big each channel data is in order to meet the alignment policy, so
