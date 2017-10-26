@@ -28,13 +28,9 @@ class PlatformSensorProviderTest : public DeviceServiceTestBase {
     // Default
     ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
         .WillByDefault(Invoke(
-            [this](mojom::SensorType type, void* buffer,
-                   const FakePlatformSensorProvider::CreateSensorCallback&
-                       callback) {
-              auto sensor = base::MakeRefCounted<FakePlatformSensor>(
-                  type, mojo::ScopedSharedBufferMapping(buffer),
-                  provider_.get());
-              callback.Run(sensor);
+            [](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
+               const PlatformSensorProvider::CreateSensorCallback& callback) {
+              callback.Run(std::move(sensor));
             }));
   }
 
@@ -53,8 +49,8 @@ TEST_F(PlatformSensorProviderTest, ResourcesAreFreed) {
   // Failure.
   EXPECT_CALL(*provider_, DoCreateSensorInternal(_, _, _))
       .WillOnce(Invoke(
-          [](mojom::SensorType, void*,
-             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
+          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
+             const PlatformSensorProvider::CreateSensorCallback& callback) {
             callback.Run(nullptr);
           }));
 
@@ -67,9 +63,9 @@ TEST_F(PlatformSensorProviderTest, ResourcesAreNotFreedOnPendingRequest) {
   EXPECT_CALL(*provider_, FreeResources()).Times(0);
   // Suspend.
   EXPECT_CALL(*provider_, DoCreateSensorInternal(_, _, _))
-      .WillOnce(Invoke(
-          [](mojom::SensorType, void*,
-             const FakePlatformSensorProvider::CreateSensorCallback&) {}));
+      .WillOnce(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                    const PlatformSensorProvider::CreateSensorCallback&) {}));
 
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,

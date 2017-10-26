@@ -43,7 +43,9 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
 
   MOCK_METHOD0(FreeResources, void());
   MOCK_METHOD3(DoCreateSensorInternal,
-               void(mojom::SensorType, void*, const CreateSensorCallback&));
+               void(mojom::SensorType,
+                    scoped_refptr<PlatformSensor>,
+                    const CreateSensorCallback&));
 
  private:
   void CreateSensorInternal(mojom::SensorType type,

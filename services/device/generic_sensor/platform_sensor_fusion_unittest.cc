@@ -37,13 +37,9 @@ class PlatformSensorFusionTest : public DeviceServiceTestBase {
     // Default
     ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
         .WillByDefault(Invoke(
-            [this](mojom::SensorType type, void* buffer,
-                   const FakePlatformSensorProvider::CreateSensorCallback&
-                       callback) {
-              auto sensor = base::MakeRefCounted<FakePlatformSensor>(
-                  type, mojo::ScopedSharedBufferMapping(buffer),
-                  provider_.get());
-              callback.Run(sensor);
+            [](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
+               const PlatformSensorProvider::CreateSensorCallback& callback) {
+              callback.Run(std::move(sensor));
             }));
   }
 
@@ -143,7 +139,7 @@ TEST_F(PlatformSensorFusionTest, SourceSensorIsNotAvailable) {
   // Accelerometer is not available.
   ON_CALL(*provider_, DoCreateSensorInternal(SensorType::ACCELEROMETER, _, _))
       .WillByDefault(Invoke(
-          [](mojom::SensorType, void*,
+          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
              const FakePlatformSensorProvider::CreateSensorCallback& callback) {
             callback.Run(nullptr);
           }));
@@ -184,7 +180,7 @@ TEST_F(PlatformSensorFusionTest, BothSourceSensorsAreNotAvailable) {
   // Failure.
   ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
       .WillByDefault(Invoke(
-          [](mojom::SensorType, void*,
+          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
              const FakePlatformSensorProvider::CreateSensorCallback& callback) {
             callback.Run(nullptr);
           }));
@@ -215,7 +211,7 @@ TEST_F(PlatformSensorFusionTest,
   // Magnetometer is not available.
   ON_CALL(*provider_, DoCreateSensorInternal(SensorType::MAGNETOMETER, _, _))
       .WillByDefault(Invoke(
-          [](mojom::SensorType, void*,
+          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
              const FakePlatformSensorProvider::CreateSensorCallback& callback) {
             callback.Run(nullptr);
           }));
@@ -230,7 +226,7 @@ TEST_F(PlatformSensorFusionTest,
   // Magnetometer is not available.
   ON_CALL(*provider_, DoCreateSensorInternal(SensorType::MAGNETOMETER, _, _))
       .WillByDefault(Invoke(
-          [](mojom::SensorType, void*,
+          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
              const FakePlatformSensorProvider::CreateSensorCallback& callback) {
             callback.Run(nullptr);
           }));
