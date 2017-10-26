@@ -651,7 +651,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
       JavaScriptDialogTabHelper::FromWebContents(tab);
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
-  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16("confirm()"));
   dialog_wait.Run();
 #if !defined(OS_MACOSX)
   if (chrome::FindLastActive() != browser())
@@ -695,7 +696,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderWindowOpener) {
       JavaScriptDialogTabHelper::FromWebContents(tab);
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
-  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16("confirm()"));
   dialog_wait.Run();
 #if !defined(OS_MACOSX)
   if (chrome::FindLastActive() != browser())
@@ -733,7 +735,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderSubframe) {
       JavaScriptDialogTabHelper::FromWebContents(tab);
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
-  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16("confirm()"));
   dialog_wait.Run();
 #if !defined(OS_MACOSX)
   if (chrome::FindLastActive() != browser())
@@ -771,7 +774,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderNoOpener) {
       JavaScriptDialogTabHelper::FromWebContents(tab);
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
-  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16("confirm()"));
   dialog_wait.Run();
 #if !defined(OS_MACOSX)
   if (chrome::FindLastActive() != browser())
