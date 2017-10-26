@@ -171,7 +171,8 @@ const char kPrivacyLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
-const char kMyActivityUrl[] = "https://myactivity.google.com";
+const char kMyActivityUrlInClearBrowsingData[] =
+    "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
 
 const char kDoNotTrackLearnMoreURL[] =
 #if defined(OS_CHROMEOS)

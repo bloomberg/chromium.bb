@@ -63,4 +63,13 @@ public class UrlConstants {
 
     public static final String GOOGLE_ACCOUNT_ACTIVITY_CONTROLS_URL =
             "https://myaccount.google.com/activitycontrols/search";
+
+    public static final String MY_ACTIVITY_URL_IN_CBD =
+            "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
+
+    public static final String MY_ACTIVITY_URL_IN_CBD_NOTICE =
+            "https://myactivity.google.com/myactivity/?utm_source=chrome_n";
+
+    public static final String MY_ACTIVITY_URL_IN_HISTORY =
+            "https://myactivity.google.com/myactivity/?utm_source=chrome_h";
 }

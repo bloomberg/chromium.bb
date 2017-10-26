@@ -468,11 +468,12 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       "clearBrowsingHistorySummarySignedIn",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN,
-          base::ASCIIToUTF16(chrome::kMyActivityUrl)));
-  html_source->AddString("clearBrowsingHistorySummarySynced",
-                         l10n_util::GetStringFUTF16(
-                             IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNCED,
-                             base::ASCIIToUTF16(chrome::kMyActivityUrl)));
+          base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
+  html_source->AddString(
+      "clearBrowsingHistorySummarySynced",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNCED,
+          base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
   html_source->AddString(
       "otherFormsOfBrowsingHistory",
       l10n_util::GetStringFUTF16(
@@ -484,7 +485,7 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE,
           l10n_util::GetStringUTF16(
-              IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_DIALOG)));
+              IDS_SETTINGS_CLEAR_DATA_MYACTIVITY_URL_IN_DIALOG)));
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
