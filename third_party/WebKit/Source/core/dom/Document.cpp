@@ -7164,7 +7164,7 @@ service_manager::InterfaceProvider* Document::GetInterfaceProvider() {
 
 scoped_refptr<WebTaskRunner> Document::GetTaskRunner(TaskType type) {
   if (ContextDocument() && ContextDocument()->GetFrame())
-    return ContextDocument()->GetFrame()->FrameScheduler()->GetTaskRunner(type);
+    return ContextDocument()->GetFrame()->GetTaskRunner(type);
   // In most cases, ContextDocument() will get us to a relevant Frame. In some
   // cases, though, there isn't a good candidate (most commonly when either the
   // passed-in document or ContextDocument() used to be attached to a Frame but
