@@ -93,7 +93,7 @@ TEST_F(NotificationTemplateBuilderTest, SimpleToast) {
   <binding template="ToastGeneric">
    <text>My Title</text>
    <text>My Message</text>
-   <text>example.com</text>
+   <text placement="attribution">example.com</text>
   </binding>
  </visual>
 </toast>
@@ -119,7 +119,7 @@ TEST_F(NotificationTemplateBuilderTest, Buttons) {
   <binding template="ToastGeneric">
    <text>My Title</text>
    <text>My Message</text>
-   <text>example.com</text>
+   <text placement="attribution">example.com</text>
   </binding>
  </visual>
  <actions>
@@ -152,7 +152,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineReplies) {
   <binding template="ToastGeneric">
    <text>My Title</text>
    <text>My Message</text>
-   <text>example.com</text>
+   <text placement="attribution">example.com</text>
   </binding>
  </visual>
  <actions>
@@ -189,7 +189,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
   <binding template="ToastGeneric">
    <text>My Title</text>
    <text>My Message</text>
-   <text>example.com</text>
+   <text placement="attribution">example.com</text>
   </binding>
  </visual>
  <actions>
@@ -223,7 +223,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesTextTypeNotFirst) {
   <binding template="ToastGeneric">
    <text>My Title</text>
    <text>My Message</text>
-   <text>example.com</text>
+   <text placement="attribution">example.com</text>
   </binding>
  </visual>
  <actions>

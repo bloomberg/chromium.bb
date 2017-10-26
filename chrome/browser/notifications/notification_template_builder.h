@@ -41,6 +41,9 @@ class NotificationTemplateBuilder {
   base::string16 GetNotificationTemplate() const;
 
  private:
+  // The different types of text nodes to output.
+  enum class TextType { NORMAL, ATTRIBUTION };
+
   NotificationTemplateBuilder();
 
   // Formats the |origin| for display in the notification template.
@@ -59,8 +62,12 @@ class NotificationTemplateBuilder {
   void StartBindingElement(const std::string& template_name);
   void EndBindingElement();
 
-  // Writes the <text> element with the given |id| and |content|.
-  void WriteTextElement(const std::string& id, const std::string& content);
+  // Writes the <text> element with the given |id| and |content|. If
+  // |text_type| is ATTRIBUTION then |content| is treated as the source that the
+  // notification is attributed to.
+  void WriteTextElement(const std::string& id,
+                        const std::string& content,
+                        TextType text_type);
 
   // Writes the <actions> element.
   void StartActionsElement();
