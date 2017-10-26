@@ -1,4 +1,5 @@
-Caption
+Test
+Fader
 {
   "layers": [
     {
@@ -18,10 +19,19 @@ Caption
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='caption'",
-      "bounds": [200, 100],
-      "backgroundColor": "#008000",
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='compositing'",
+      "bounds": [1, 1],
+      "drawsContent": false,
       "transform": 1
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='test')",
+      "position": [-9992, -1],
+      "bounds": [10100, 100]
     }
   ],
   "transforms": [
@@ -31,8 +41,9 @@ Caption
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 13, 0, 1]
-      ]
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

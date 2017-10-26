@@ -1,4 +1,3 @@
-Caption
 {
   "layers": [
     {
@@ -8,19 +7,20 @@ Caption
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [800, 600],
+      "bounds": [800, 585],
       "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [800, 600],
+      "bounds": [1808, 585],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='caption'",
-      "bounds": [200, 100],
-      "backgroundColor": "#008000",
+      "name": "LayoutBlockFlow DIV id='composited'",
+      "bounds": [1800, 10],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF",
       "transform": 1
     }
   ],
@@ -31,7 +31,7 @@ Caption
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 13, 0, 1]
+        [8, 8, 0, 1]
       ]
     }
   ]

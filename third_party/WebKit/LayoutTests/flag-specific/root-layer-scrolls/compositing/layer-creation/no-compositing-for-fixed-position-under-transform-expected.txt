@@ -1,4 +1,4 @@
-Caption
+TEST
 {
   "layers": [
     {
@@ -18,9 +18,8 @@ Caption
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='caption'",
-      "bounds": [200, 100],
-      "backgroundColor": "#008000",
+      "name": "LayoutBlockFlow DIV class='transform'",
+      "bounds": [100, 30],
       "transform": 1
     }
   ],
@@ -31,7 +30,7 @@ Caption
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 13, 0, 1]
+        [8, 8, 0, 1]
       ]
     }
   ]

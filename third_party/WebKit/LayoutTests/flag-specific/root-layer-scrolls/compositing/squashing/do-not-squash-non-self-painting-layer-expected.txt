@@ -1,4 +1,4 @@
-Caption
+Item 1
 {
   "layers": [
     {
@@ -18,21 +18,10 @@ Caption
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='caption'",
-      "bounds": [200, 100],
-      "backgroundColor": "#008000",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 13, 0, 1]
-      ]
+      "name": "LayoutBlockFlow DIV id='composited-container'",
+      "position": [8, 8],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden"
     }
   ]
 }
