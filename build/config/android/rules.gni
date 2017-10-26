@@ -1247,6 +1247,8 @@ if (enable_java_templates) {
   #     Pass a list of length-2 lists with format
   #     [ [ path_to_file, path_to_put_in_jar ] ]
   #
+  #   javac_args: Additional arguments to pass to javac.
+  #
   #
   #   data_deps, testonly
   #
@@ -1697,6 +1699,7 @@ if (enable_java_templates) {
   #     (mipmaps are still included).
   #   xxxhdpi_whitelist: A list of globs used when exclude_xxxhdpi=true. Files
   #     that match this whitelist will still be included.
+  #   javac_args: Additional arguments to pass to javac.
   #
   # Example
   #   android_apk("foo_apk") {
@@ -2160,6 +2163,7 @@ if (enable_java_templates) {
                                "java_files",
                                "run_findbugs_override",
                                "no_build_hooks",
+                               "javac_args",
                              ])
       supports_android = true
       requires_android = true
@@ -2718,6 +2722,7 @@ if (enable_java_templates) {
   #     libraries depend on other shared_library targets, those dependencies will
   #     also be included in the apk (e.g. for is_component_build).
   #   apk_under_test: The apk being tested.
+  #   javac_args: Additional arguments to pass to javac.
   #
   # Example
   #   instrumentation_test_apk("foo_test_apk") {
