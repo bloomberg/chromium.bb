@@ -256,3 +256,17 @@ TEST_F('InterventionsInternalsUITest', 'UpdateUserBlacklisted', function() {
 
   mocha.run();
 });
+
+TEST_F('InterventionsInternalsUITest', 'OnECTChanged', function() {
+  test('UpdateETCOnChange', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let ectTypes = ['type1', 'type2', 'type3'];
+    ectTypes.forEach((type) => {
+      pageImpl.onEffectiveConnectionTypeChanged(type);
+      let actual = $('nqe-type').textContent;
+      expectEquals(type, actual);
+    });
+  });
+
+  mocha.run();
+});

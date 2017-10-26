@@ -56,4 +56,9 @@ interface InterventionsInternalsPage {
   // called by InterventionsInternalsPageHandler when PreviewsUIService clears
   // the blacklist.
   OnBlacklistCleared(int64 time);
+
+  // Notify the page on the new estimated effective connection type is |type|.
+  // This is called by InterventionsInternalsPageHandler when the estimate
+  // network quality changes.
+  OnEffectiveConnectionTypeChanged(string type);
 };

@@ -12,9 +12,12 @@
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/nqe/effective_connection_type.h"
+#include "net/nqe/effective_connection_type_observer.h"
 
 class InterventionsInternalsPageHandler
     : public previews::PreviewsLoggerObserver,
+      public net::EffectiveConnectionTypeObserver,
       public mojom::InterventionsInternalsPageHandler,
       public MojoWebUIHandler {
  public:
@@ -35,11 +38,18 @@ class InterventionsInternalsPageHandler
   void OnBlacklistCleared(base::Time time) override;
 
  private:
+  // net::EffectiveConnectionTypeObserver:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override;
+
   mojo::Binding<mojom::InterventionsInternalsPageHandler> binding_;
 
   // The PreviewsLogger that this handler is listening to, and guaranteed to
   // outlive |this|.
   previews::PreviewsLogger* logger_;
+
+  // The current estimated effective connection type.
+  net::EffectiveConnectionType current_estimated_ect_;
 
   // Handle back to the page by which we can pass in new log messages.
   mojom::InterventionsInternalsPagePtr page_;
