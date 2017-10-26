@@ -20,22 +20,23 @@ class DataSourceDelegate {
   // chance to remove themselves.
   virtual void OnDataSourceDestroying(DataSource* source) = 0;
 
-  // Called when a target accepts an offered mime type.
+  // Called when a client accepts a |mime_type|.
   virtual void OnTarget(const std::string& mime_type) = 0;
 
   // Called when the data is requested.
   virtual void OnSend(const std::string& mime_type, base::ScopedFD fd) = 0;
 
-  // Called when selection was cancelled.
+  // Called when selection or drag and drop operation was cancelled.
   virtual void OnCancelled() = 0;
 
-  // Called when the drag-and-drop operation physically finished.
+  // Called when a user performes drop operation.
   virtual void OnDndDropPerformed() = 0;
 
-  // Called when the drag-and-drop operation concluded.
+  // Called when the drag and drop operation completes and compositor stop using
+  // the data source.
   virtual void OnDndFinished() = 0;
 
-  // Called when the action is selected by the compositor.
+  // Called when the compositor selects one drag and drop action.
   virtual void OnAction(DndAction dnd_action) = 0;
 
  protected:
