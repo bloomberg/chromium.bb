@@ -41,14 +41,25 @@ def main():
                            'one from the SDK')
   parser.add_argument('--no-autorun', action='store_true',
                       help='Disable generating an autorun file')
+  parser.add_argument('--extra-file', action='append', default=[],
+                      help='Extra file to add to bootfs, '
+                           '<bootfs_path>=<local_path>')
   args, child_args = parser.parse_known_args()
 
+  runtime_deps = ReadRuntimeDeps(args.runtime_deps_path, args.output_directory)
+  for extra_file in args.extra_file:
+    parts = extra_file.split("=", 1)
+    if len(parts) < 2:
+      print 'Invalid --extra-file: ', extra_file
+      print 'Expected format: --extra-file <bootfs_path>=<local_path>'
+      return 2
+    runtime_deps.append(tuple(parts))
+
   bootfs = BuildBootfs(
-      args.output_directory,
-      ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
-      args.exe_name, child_args, args.dry_run, args.bootdata,
-      summary_output=None, shutdown_machine=False, target_cpu=args.target_cpu,
-      use_device=args.device, use_autorun=not args.no_autorun)
+      args.output_directory, runtime_deps, args.exe_name, child_args,
+      args.dry_run, args.bootdata, summary_output=None, shutdown_machine=False,
+      target_cpu=args.target_cpu, use_device=args.device,
+      use_autorun=not args.no_autorun)
   if not bootfs:
     return 2
 
