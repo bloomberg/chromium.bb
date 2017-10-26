@@ -46,15 +46,15 @@ std::unique_ptr<HidService> HidService::Create() {
 #endif
 }
 
-void HidService::GetDevices(const GetDevicesCallback& callback) {
+void HidService::GetDevices(GetDevicesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool was_empty = pending_enumerations_.empty();
-  pending_enumerations_.push_back(callback);
+  pending_enumerations_.push_back(std::move(callback));
   if (enumeration_ready_ && was_empty) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&HidService::RunPendingEnumerations, GetWeakPtr()));
+        base::BindOnce(&HidService::RunPendingEnumerations, GetWeakPtr()));
   }
 }
 
@@ -121,11 +121,11 @@ void HidService::RunPendingEnumerations() {
   callbacks.swap(pending_enumerations_);
 
   // Clone and pass device::mojom::HidDeviceInfoPtr vector for each clients.
-  for (const auto& callback : callbacks) {
+  for (auto& callback : callbacks) {
     std::vector<device::mojom::HidDeviceInfoPtr> devices;
     for (const auto& map_entry : devices_)
       devices.push_back(map_entry.second->device()->Clone());
-    callback.Run(std::move(devices));
+    std::move(callback).Run(std::move(devices));
   }
 }
 

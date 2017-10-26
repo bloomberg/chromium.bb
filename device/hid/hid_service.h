@@ -44,7 +44,7 @@ class HidService {
   };
 
   using GetDevicesCallback =
-      base::Callback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
+      base::OnceCallback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
   using ConnectCallback =
       base::Callback<void(scoped_refptr<HidConnection> connection)>;
 
@@ -59,7 +59,7 @@ class HidService {
 
   // Enumerates available devices. The provided callback will always be posted
   // to the calling thread's task runner.
-  void GetDevices(const GetDevicesCallback& callback);
+  void GetDevices(GetDevicesCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

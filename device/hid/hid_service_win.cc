@@ -43,8 +43,8 @@ HidServiceWin::HidServiceWin()
     device_observer_.Add(device_monitor);
 
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HidServiceWin::EnumerateBlocking,
-                            weak_factory_.GetWeakPtr(), task_runner_));
+      FROM_HERE, base::BindOnce(&HidServiceWin::EnumerateBlocking,
+                                weak_factory_.GetWeakPtr(), task_runner_));
 }
 
 HidServiceWin::~HidServiceWin() {}
@@ -54,7 +54,7 @@ void HidServiceWin::Connect(const std::string& device_guid,
   DCHECK(thread_checker_.CalledOnValidThread());
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));
     return;
   }
   scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
@@ -62,13 +62,14 @@ void HidServiceWin::Connect(const std::string& device_guid,
   base::win::ScopedHandle file(OpenDevice(device_info->platform_device_id()));
   if (!file.IsValid()) {
     HID_PLOG(EVENT) << "Failed to open device";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));
     return;
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback, base::MakeRefCounted<HidConnectionWin>(
-                                          device_info, std::move(file))));
+      FROM_HERE,
+      base::BindOnce(callback, base::MakeRefCounted<HidConnectionWin>(
+                                   device_info, std::move(file))));
 }
 
 base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {
@@ -122,7 +123,8 @@ void HidServiceWin::EnumerateBlocking(
   }
 
   task_runner->PostTask(
-      FROM_HERE, base::Bind(&HidServiceWin::FirstEnumerationComplete, service));
+      FROM_HERE,
+      base::BindOnce(&HidServiceWin::FirstEnumerationComplete, service));
 }
 
 // static
@@ -265,16 +267,16 @@ void HidServiceWin::AddDeviceBlocking(
       max_input_report_size, max_output_report_size, max_feature_report_size));
 
   HidD_FreePreparsedData(preparsed_data);
-  task_runner->PostTask(
-      FROM_HERE, base::Bind(&HidServiceWin::AddDevice, service, device_info));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&HidServiceWin::AddDevice,
+                                                  service, device_info));
 }
 
 void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::string& device_path) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&HidServiceWin::AddDeviceBlocking, weak_factory_.GetWeakPtr(),
-                 task_runner_, device_path));
+      base::BindOnce(&HidServiceWin::AddDeviceBlocking,
+                     weak_factory_.GetWeakPtr(), task_runner_, device_path));
 }
 
 void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
@@ -282,9 +284,9 @@ void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing),
-      base::Bind(&HidServiceWin::RemoveDevice, weak_factory_.GetWeakPtr(),
-                 device_path));
+      FROM_HERE, base::BindOnce(&base::DoNothing),
+      base::BindOnce(&HidServiceWin::RemoveDevice, weak_factory_.GetWeakPtr(),
+                     device_path));
 }
 
 // static
