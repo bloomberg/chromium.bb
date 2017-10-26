@@ -1588,4 +1588,131 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxConcurrent) {
   EXPECT_EQ(Entry::State::PAUSED, model_->Get(entry3.guid)->state);
 }
 
+TEST_F(DownloadServiceControllerImplTest, DownloadTaskQueuesAfterFinish) {
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry2 = test::BuildBasicEntry(Entry::State::AVAILABLE);
+  Entry entry3 = test::BuildBasicEntry(Entry::State::AVAILABLE);
+  entry3.scheduling_params.network_requirements =
+      SchedulingParams::NetworkRequirements::UNMETERED;
+  std::vector<Entry> entries = {entry1, entry2, entry3};
+
+  DriverEntry dentry1 =
+      BuildDriverEntry(entry1, DriverEntry::State::IN_PROGRESS);
+  std::vector<DriverEntry> dentries = {dentry1};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
+
+  // Setup the Configuration.
+  config_->max_concurrent_downloads = 1u;
+  config_->max_running_downloads = 1u;
+
+  // Setup the controller.
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::METERED));
+  driver_->AddTestData(dentries);
+  InitializeController();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  file_monitor_->TriggerInit(true);
+  store_->AutomaticallyTriggerAllFutureCallbacks(true);
+
+  ON_CALL(*scheduler_, Next(_, _)).WillByDefault(Return(nullptr));
+
+  // This will happen as the controller initializes and realizes it has more
+  // work to do but isn't running a job.
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
+
+  // When the first download is done, it will attempt to clean up and schedule a
+  // task.
+  EXPECT_CALL(*task_scheduler_,
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+      .Times(2);
+
+  driver_->MakeReady();
+  task_runner_->RunUntilIdle();
+
+  // Simulate a task start, which should limit our calls to Reschedule() because
+  // we are in a task.
+  controller_->OnStartScheduledTask(DownloadTaskType::DOWNLOAD_TASK,
+                                    base::Bind(&NotifyTaskFinished));
+
+  // Set up new expectations to start a new download.
+  ON_CALL(*scheduler_, Next(_, _))
+      .WillByDefault(Return(model_->Get(entry2.guid)));
+
+  {
+    // We should not reschedule if we still are doing work inside the job.
+    EXPECT_CALL(*scheduler_, Reschedule(_)).Times(0);
+
+    // Simulate a download success event, which will trigger the controller to
+    // start a new download.
+    base::Optional<DriverEntry> dentry1 = driver_->Find(entry1.guid);
+    EXPECT_TRUE(dentry1.has_value());
+    driver_->NotifyDownloadSucceeded(dentry1.value());
+    task_runner_->RunUntilIdle();
+  }
+
+  ON_CALL(*scheduler_, Next(_, _)).WillByDefault(Return(nullptr));
+
+  {
+    EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
+
+    // Simulate a download success event, which will trigger the controller to
+    // end it's task and schedule the task once (because the task is currently
+    // running).
+    base::Optional<DriverEntry> dentry2 = driver_->Find(entry2.guid);
+    EXPECT_TRUE(dentry2.has_value());
+    driver_->NotifyDownloadSucceeded(dentry2.value());
+    task_runner_->RunUntilIdle();
+  }
+}
+
+TEST_F(DownloadServiceControllerImplTest, CleanupTaskQueuesAfterFinish) {
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry2 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  std::vector<Entry> entries = {entry1, entry2};
+
+  DriverEntry dentry1 =
+      BuildDriverEntry(entry1, DriverEntry::State::IN_PROGRESS);
+  DriverEntry dentry2 =
+      BuildDriverEntry(entry2, DriverEntry::State::IN_PROGRESS);
+  std::vector<DriverEntry> dentries = {dentry1, dentry2};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
+
+  // Setup the Configuration.
+  config_->max_concurrent_downloads = 2u;
+  config_->max_running_downloads = 2u;
+
+  // Setup the controller.
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+  driver_->AddTestData(dentries);
+  InitializeController();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  file_monitor_->TriggerInit(true);
+  store_->AutomaticallyTriggerAllFutureCallbacks(true);
+  driver_->MakeReady();
+
+  // No cleanup tasks expected until we stop the job.
+  EXPECT_CALL(*task_scheduler_,
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+      .Times(0);
+  controller_->OnStartScheduledTask(DownloadTaskType::CLEANUP_TASK,
+                                    base::Bind(&NotifyTaskFinished));
+
+  // Trigger download succeed events, which should not schedule a cleanup until
+  // the existing cleanup has finished.
+  task_runner_->RunUntilIdle();
+  driver_->NotifyDownloadSucceeded(driver_->Find(entry1.guid).value());
+  task_runner_->RunUntilIdle();
+  driver_->NotifyDownloadSucceeded(driver_->Find(entry2.guid).value());
+  task_runner_->RunUntilIdle();
+
+  // Now finish the job.  We expect a cleanup task to be scheduled.
+  EXPECT_CALL(*task_scheduler_,
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+      .Times(1);
+  controller_->OnStopScheduledTask(DownloadTaskType::CLEANUP_TASK);
+}
+
 }  // namespace download

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
+#include "components/download/internal/scheduler/network_status_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,6 +117,45 @@ TEST_F(DeviceStatusListenerTest, InitialNoOptState) {
   EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(1);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceStatus(), listener_->CurrentDeviceStatus());
+}
+
+TEST_F(DeviceStatusListenerTest, TestValidStateChecks) {
+  ChangeNetworkType(ConnectionType::CONNECTION_NONE);
+  SimulateBatteryChange(true);
+  EXPECT_EQ(DeviceStatus(), listener_->CurrentDeviceStatus());
+
+  {
+    EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(0);
+    listener_->Start(&mock_observer_);
+    EXPECT_FALSE(listener_->is_valid_state());
+  }
+
+  {
+    EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(1);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(listener_->is_valid_state());
+  }
+
+  // Simulate a connection change directly on the DeviceStatusListener itself to
+  // allow validating the state correctly here.
+  static_cast<NetworkStatusListener::Observer*>(listener_.get())
+      ->OnNetworkChanged(ConnectionType::CONNECTION_4G);
+  EXPECT_FALSE(listener_->is_valid_state());
+
+  {
+    EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(1);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(listener_->is_valid_state());
+  }
+
+  {
+    EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(1);
+    static_cast<NetworkStatusListener::Observer*>(listener_.get())
+        ->OnNetworkChanged(ConnectionType::CONNECTION_NONE);
+    EXPECT_TRUE(listener_->is_valid_state());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(listener_->is_valid_state());
+  }
 }
 
 // Ensures the observer is notified when network condition changes.
