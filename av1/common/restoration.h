@@ -41,7 +41,7 @@ extern "C" {
 #if CONFIG_STRIPED_LOOP_RESTORATION
 #define WIENER_BORDER_VERT 2  // Vertical border used for Wiener
 #else
-#define WIENER_BORDER_VERT 1  // Vertical border used for Wiener
+#define WIENER_BORDER_VERT 3  // Vertical border used for Wiener
 #endif
 #define WIENER_HALFWIN 3
 #define WIENER_BORDER_HORZ (WIENER_HALFWIN)  // Horizontal border for Wiener

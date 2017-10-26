@@ -364,38 +364,6 @@ static void restore_processing_stripe_boundary(
 #undef REAL_PTR
 #endif
 
-static void stepdown_wiener_kernel(const InterpKernel orig, InterpKernel vert,
-                                   int boundary_dist, int istop) {
-  memcpy(vert, orig, sizeof(InterpKernel));
-  switch (boundary_dist) {
-    case 0:
-      vert[WIENER_HALFWIN] += vert[2] + vert[1] + vert[0];
-      vert[2] = vert[1] = vert[0] = 0;
-      break;
-    case 1:
-      vert[2] += vert[1] + vert[0];
-      vert[1] = vert[0] = 0;
-      break;
-    case 2:
-      vert[1] += vert[0];
-      vert[0] = 0;
-      break;
-    default: break;
-  }
-  if (!istop) {
-    int tmp;
-    tmp = vert[0];
-    vert[0] = vert[WIENER_WIN - 1];
-    vert[WIENER_WIN - 1] = tmp;
-    tmp = vert[1];
-    vert[1] = vert[WIENER_WIN - 2];
-    vert[WIENER_WIN - 2] = tmp;
-    tmp = vert[2];
-    vert[2] = vert[WIENER_WIN - 3];
-    vert[WIENER_WIN - 3] = tmp;
-  }
-}
-
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
 #define wiener_convolve8_add_src aom_convolve8_add_src_hip
 #else
@@ -411,40 +379,13 @@ static void wiener_filter_stripe(const RestorationUnitInfo *rui,
   (void)bit_depth;
   assert(bit_depth == 8);
 
-  const int mid_height =
-      stripe_height - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2;
-  assert(mid_height > 0);
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, (stripe_width - j + 15) & ~15);
     const uint8_t *src_p = src + j;
     uint8_t *dst_p = dst + j;
-    for (int b = 0; b < WIENER_HALFWIN - WIENER_BORDER_VERT; ++b) {
-      InterpKernel vertical_top;
-      stepdown_wiener_kernel(rui->wiener_info.vfilter, vertical_top,
-                             WIENER_BORDER_VERT + b, 1);
-      wiener_convolve8_add_src(src_p, src_stride, dst_p, dst_stride,
-                               rui->wiener_info.hfilter, 16, vertical_top, 16,
-                               w, 1);
-      src_p += src_stride;
-      dst_p += dst_stride;
-    }
-
     wiener_convolve8_add_src(src_p, src_stride, dst_p, dst_stride,
                              rui->wiener_info.hfilter, 16,
-                             rui->wiener_info.vfilter, 16, w, mid_height);
-    src_p += src_stride * mid_height;
-    dst_p += dst_stride * mid_height;
-
-    for (int b = WIENER_HALFWIN - WIENER_BORDER_VERT - 1; b >= 0; --b) {
-      InterpKernel vertical_bot;
-      stepdown_wiener_kernel(rui->wiener_info.vfilter, vertical_bot,
-                             WIENER_BORDER_VERT + b, 0);
-      wiener_convolve8_add_src(src_p, src_stride, dst_p, dst_stride,
-                               rui->wiener_info.hfilter, 16, vertical_bot, 16,
-                               w, 1);
-      src_p += src_stride;
-      dst_p += dst_stride;
-    }
+                             rui->wiener_info.vfilter, 16, w, stripe_height);
   }
 }
 
@@ -1203,41 +1144,13 @@ static void wiener_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                         int bit_depth) {
   (void)tmpbuf;
 
-  const int mid_height =
-      stripe_height - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2;
-  assert(mid_height > 0);
-
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, (stripe_width - j + 15) & ~15);
     const uint8_t *src8_p = src8 + j;
     uint8_t *dst8_p = dst8 + j;
-
-    for (int b = 0; b < WIENER_HALFWIN - WIENER_BORDER_VERT; ++b) {
-      InterpKernel vertical_top;
-      stepdown_wiener_kernel(rui->wiener_info.vfilter, vertical_top,
-                             WIENER_BORDER_VERT + b, 1);
-      wiener_highbd_convolve8_add_src(src8_p, src_stride, dst8_p, dst_stride,
-                                      rui->wiener_info.hfilter, 16,
-                                      vertical_top, 16, w, 1, bit_depth);
-      src8_p += src_stride;
-      dst8_p += dst_stride;
-    }
-    assert(stripe_height > (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
     wiener_highbd_convolve8_add_src(
         src8_p, src_stride, dst8_p, dst_stride, rui->wiener_info.hfilter, 16,
-        rui->wiener_info.vfilter, 16, w, mid_height, bit_depth);
-    src8_p += src_stride * (mid_height);
-    dst8_p += dst_stride * (mid_height);
-    for (int b = WIENER_HALFWIN - WIENER_BORDER_VERT - 1; b >= 0; --b) {
-      InterpKernel vertical_bot;
-      stepdown_wiener_kernel(rui->wiener_info.vfilter, vertical_bot,
-                             WIENER_BORDER_VERT + b, 0);
-      wiener_highbd_convolve8_add_src(src8_p, src_stride, dst8_p, dst_stride,
-                                      rui->wiener_info.hfilter, 16,
-                                      vertical_bot, 16, w, 1, bit_depth);
-      src8_p += src_stride;
-      dst8_p += dst_stride;
-    }
+        rui->wiener_info.vfilter, 16, w, stripe_height, bit_depth);
   }
 }
 
@@ -1461,8 +1374,6 @@ void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
     int h = setup_processing_stripe_boundary(&remaining_stripes, rsb,
                                              procunit_height, ss_y, highbd,
                                              data8, stride, rlbs);
-    // The wiener filter needs a height>=4 in order to not assert on mid_height
-    if (unit_rtype == RESTORE_WIENER) h = ALIGN_POWER_OF_TWO(h, 2);
 #else
     const int h = AOMMIN(procunit_height, (unit_h - i + 15) & ~15);
 #endif
