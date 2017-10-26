@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -92,6 +93,10 @@ ContentSetting GetContentSettingFromRules(
   }
   NOTREACHED();
   return CONTENT_SETTING_DEFAULT;
+}
+
+bool IsScriptDisabledForPreview(const content::RenderFrame* render_frame) {
+  return render_frame->GetPreviewsState() & content::NOSCRIPT_ON;
 }
 
 }  // namespace
@@ -311,6 +316,8 @@ bool ContentSettingsObserver::AllowIndexedDB(const WebString& name,
 bool ContentSettingsObserver::AllowScript(bool enabled_per_settings) {
   if (!enabled_per_settings)
     return false;
+  if (IsScriptDisabledForPreview(render_frame()))
+    return false;
   if (is_interstitial_page_)
     return true;
 
@@ -339,6 +346,8 @@ bool ContentSettingsObserver::AllowScriptFromSource(
     bool enabled_per_settings,
     const blink::WebURL& script_url) {
   if (!enabled_per_settings)
+    return false;
+  if (IsScriptDisabledForPreview(render_frame()))
     return false;
   if (is_interstitial_page_)
     return true;
