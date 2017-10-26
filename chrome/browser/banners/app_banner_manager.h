@@ -159,7 +159,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns true if |triggered_by_devtools_| is true or the
   // kBypassAppBannerEngagementChecks flag is set.
-  virtual bool IsDebugMode() const;
+  bool IsDebugMode() const;
 
   // Returns true if the webapp at |start_url| has already been installed.
   virtual bool IsWebAppInstalled(content::BrowserContext* browser_context,

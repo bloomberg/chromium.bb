@@ -126,8 +126,6 @@ class AppBannerManagerTest : public AppBannerManager {
   }
 
  private:
-  bool IsDebugMode() const override { return false; }
-
   base::Closure on_done_;
 
   // If non-null, |on_banner_prompt_reply_| will be invoked from
@@ -700,6 +698,35 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
                                 SHOWING_WEB_APP_BANNER, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, OverlappingDebugRequest) {
+  base::HistogramTester histograms;
+  GURL test_url =
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  SiteEngagementService* service =
+      SiteEngagementService::Get(browser()->profile());
+  service->ResetBaseScoreForURL(test_url, 10);
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  base::RunLoop run_loop;
+  manager->PrepareDone(run_loop.QuitClosure());
+
+  // Call RequestAppBanner to start the pipeline, then call it again in debug
+  // mode to ensure that this doesn't fail.
+  manager->RequestAppBanner(test_url, false);
+  EXPECT_EQ(State::FETCHING_MANIFEST, manager->state());
+  manager->RequestAppBanner(test_url, true);
+  run_loop.Run();
+
+  EXPECT_TRUE(manager->banner_shown());
+  EXPECT_EQ(State::COMPLETE, manager->state());
+
+  // Ensure that we do not record any status code histogram.
+  histograms.ExpectTotalCount(banners::kInstallableStatusCodeHistogram, 0);
 }
 
 }  // namespace banners

@@ -97,7 +97,7 @@ class TrackingStatusReporter
     : public banners::AppBannerManager::StatusReporter {
  public:
   TrackingStatusReporter() : done_(false) {}
-  ~TrackingStatusReporter() override { DCHECK(done_); }
+  ~TrackingStatusReporter() override {}
 
   // Records code via an UMA histogram.
   void ReportStatus(content::WebContents* web_contents,
