@@ -19,7 +19,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -317,6 +319,11 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
       mem_type_(memory.type),
       mem_size_(static_cast<uint32_t>(size)),
       mem_page_(static_cast<uint32_t>((page_size ? page_size : size))),
+#if defined(OS_NACL)
+      vm_page_size_(4096U),  // SysInfo is not built for NACL.
+#else
+      vm_page_size_(SysInfo::VMAllocationGranularity()),
+#endif
       readonly_(readonly),
       corrupt_(0),
       allocs_histogram_(nullptr),
@@ -722,6 +729,28 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
         block->next.load(std::memory_order_relaxed) != 0) {
       SetCorrupt();
       return kReferenceNull;
+    }
+
+    // Make sure the memory exists by writing to the first byte of every memory
+    // page it touches beyond the one containing the block header itself.
+    // As the underlying storage is often memory mapped from disk or shared
+    // space, sometimes things go wrong and those address don't actually exist
+    // leading to a SIGBUS (or Windows equivalent) at some arbitrary location
+    // in the code. This should concentrate all those failures into this
+    // location for easy tracking and, eventually, proper handling.
+    volatile char* mem_end = reinterpret_cast<volatile char*>(block) + size;
+    volatile char* mem_begin = reinterpret_cast<volatile char*>(
+        (reinterpret_cast<uintptr_t>(block) + sizeof(BlockHeader) +
+         (vm_page_size_ - 1)) &
+        ~static_cast<uintptr_t>(vm_page_size_ - 1));
+    for (volatile char* memory = mem_begin; memory < mem_end;
+         memory += vm_page_size_) {
+      // It's required that a memory segment start as all zeros and thus the
+      // newly allocated block is all zeros at this point. Thus, writing a
+      // zero to it allows testing that the memory exists without actually
+      // changing its contents. The compiler doesn't know about the requirement
+      // and so cannot optimize-away these writes.
+      *memory = 0;
     }
 
     // Load information into the block header. There is no "release" of the
