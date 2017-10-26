@@ -327,6 +327,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                    const GURL& icon_url,
                    const std::vector<SkBitmap>& bitmaps);
 
+  void CloneFaviconMappingsForPages(
+      const GURL& page_url_to_read,
+      int icon_types,
+      const base::flat_set<GURL>& page_urls_to_write);
+
   bool SetOnDemandFavicons(const GURL& page_url,
                            favicon_base::IconType icon_type,
                            const GURL& icon_url,
@@ -564,6 +569,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, NoFaviconChangedNotifications);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            UpdateFaviconMappingsAndFetchMultipleIconTypes);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, CloneFaviconMappingsForPages);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBEmpty);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            GetFaviconsFromDBNoFaviconBitmaps);
@@ -765,11 +771,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                              favicon_base::FaviconID icon_id);
 
   // Maps the favicon ID |icon_id| to URLs in |page_urls| for |icon_type|.
-  // Returns true if the function changed at least one of the |page_urls|
-  // mappings.
-  bool SetFaviconMappingsForPages(const base::flat_set<GURL>& page_urls,
-                                  favicon_base::IconType icon_type,
-                                  favicon_base::FaviconID icon_id);
+  // Returns page URLs among |page_urls| whose mappings were changed (might be
+  // empty).
+  std::vector<GURL> SetFaviconMappingsForPages(
+      const base::flat_set<GURL>& page_urls,
+      favicon_base::IconType icon_type,
+      favicon_base::FaviconID icon_id);
 
   // Maps the favicon ID |icon_ids| to |page_url| for |icon_type|.
   // Returns true if the function changed at least one of |page_url|'s mappings.

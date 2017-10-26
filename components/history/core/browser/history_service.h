@@ -753,6 +753,14 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
                    const GURL& icon_url,
                    const std::vector<SkBitmap>& bitmaps);
 
+  // Causes each page in |page_urls_to_write| to be associated to the same
+  // icon as the page |page_url_to_read| for icon types matching |icon_types|.
+  // No-op if |page_url_to_read| has no mappings for |icon_types|.
+  void CloneFaviconMappingsForPages(
+      const GURL& page_url_to_read,
+      int icon_types,
+      const base::flat_set<GURL>& page_urls_to_write);
+
   // Same as SetFavicons with three differences:
   // 1) It will be a no-op if there is an existing cached favicon for *any* type
   //    for |page_url|.

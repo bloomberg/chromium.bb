@@ -104,6 +104,10 @@ class FaviconServiceImpl : public FaviconService {
                    const GURL& icon_url,
                    favicon_base::IconType icon_type,
                    const gfx::Image& image) override;
+  void CloneFaviconMappingsForPages(
+      const GURL& page_url_to_read,
+      int icon_types,
+      const base::flat_set<GURL>& page_urls_to_write) override;
   void SetOnDemandFavicons(const GURL& page_url,
                            const GURL& icon_url,
                            favicon_base::IconType icon_type,

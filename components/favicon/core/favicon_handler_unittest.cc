@@ -597,6 +597,64 @@ TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetchWithMultipleURLs) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Test that CloneFaviconMappingsForPages() is called for the simplest case,
+// i.e. a single page without redirect URLs to update mappings for (no known
+// in-same-document navigation). This is important in case there are server-side
+// redirects to update (that are only known within HistoryService).
+TEST_F(FaviconHandlerTest, CloneFaviconMappingsForPageInHistory) {
+  favicon_service_.fake()->Store(kPageURL, kIconURL16x16,
+                                 CreateRawBitmapResult(kIconURL16x16));
+
+  EXPECT_CALL(favicon_service_,
+              CloneFaviconMappingsForPages(kPageURL, FAVICON,
+                                           base::flat_set<GURL>{kPageURL}));
+
+  std::unique_ptr<FaviconHandler> handler = base::MakeUnique<FaviconHandler>(
+      &favicon_service_, &delegate_, FaviconDriverObserver::NON_TOUCH_16_DIP);
+  handler->FetchFavicon(kPageURL, /*is_same_document=*/false);
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test that CloneFaviconMappingsForPages() is called when there is data in the
+// database for the page URL, for the case where multiple page URLs exist due to
+// a quick in-same-document navigation (e.g. fragment navigation).
+// FaviconService should be told to propagate the mappings from the last page
+// URL (lookup hit) to the rest of the URLs.
+TEST_F(FaviconHandlerTest, CloneFaviconMappingsWithMultipleURLs) {
+  const GURL kPageURLInHistory = GURL("http://www.google.com/other");
+
+  favicon_service_.fake()->Store(kPageURLInHistory, kIconURL16x16,
+                                 CreateRawBitmapResult(kIconURL16x16));
+
+  std::unique_ptr<FaviconHandler> handler = base::MakeUnique<FaviconHandler>(
+      &favicon_service_, &delegate_, FaviconDriverObserver::NON_TOUCH_16_DIP);
+  handler->FetchFavicon(kPageURL, /*is_same_document=*/false);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(favicon_service_,
+              CloneFaviconMappingsForPages(
+                  kPageURLInHistory, FAVICON,
+                  base::flat_set<GURL>{kPageURL, kPageURLInHistory}));
+
+  handler->FetchFavicon(kPageURLInHistory, /*is_same_document=*/true);
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test that CloneFaviconMappingsForPages() is not called for incognito tabs.
+TEST_F(FaviconHandlerTest, NotCloneFaviconMappingsInIncognito) {
+  ON_CALL(delegate_, IsOffTheRecord()).WillByDefault(Return(true));
+
+  favicon_service_.fake()->Store(kPageURL, kIconURL16x16,
+                                 CreateRawBitmapResult(kIconURL16x16));
+
+  EXPECT_CALL(favicon_service_, CloneFaviconMappingsForPages(_, _, _)).Times(0);
+
+  std::unique_ptr<FaviconHandler> handler = base::MakeUnique<FaviconHandler>(
+      &favicon_service_, &delegate_, FaviconDriverObserver::NON_TOUCH_16_DIP);
+  handler->FetchFavicon(kPageURL, /*is_same_document=*/false);
+  base::RunLoop().RunUntilIdle();
+}
+
 // Test that the FaviconHandler process finishes when:
 // - There is data in the database for neither the page URL nor the icon URL.
 // AND

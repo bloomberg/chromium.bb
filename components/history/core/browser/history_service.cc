@@ -633,6 +633,19 @@ void HistoryService::SetFavicons(const base::flat_set<GURL>& page_urls,
                           page_urls_to_save, icon_type, icon_url, bitmaps));
 }
 
+void HistoryService::CloneFaviconMappingsForPages(
+    const GURL& page_url_to_read,
+    int icon_types,
+    const base::flat_set<GURL>& page_urls_to_write) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::CloneFaviconMappingsForPages,
+                          history_backend_, page_url_to_read, icon_types,
+                          page_urls_to_write));
+}
+
 void HistoryService::SetOnDemandFavicons(const GURL& page_url,
                                          favicon_base::IconType icon_type,
                                          const GURL& icon_url,

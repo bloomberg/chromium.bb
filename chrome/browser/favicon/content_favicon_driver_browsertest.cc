@@ -318,6 +318,45 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
       GetFaviconForPageURL(landing_url, favicon_base::FAVICON).bitmap_data);
 }
 
+// Test that a page which uses a meta refresh tag to redirect gets associated
+// to the favicons listed in the landing page, for the case that the landing
+// page has been visited earlier (favicon cached). Similar behavior is expected
+// for server-side redirects although not covered in this test.
+IN_PROC_BROWSER_TEST_F(
+    ContentFaviconDriverTest,
+    AssociateIconWithInitialPageDespiteMetaRefreshTagAndLandingPageCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_with_meta_refresh_tag = embedded_test_server()->GetURL(
+      "/favicon/page_with_meta_refresh_tag.html");
+  GURL landing_url =
+      embedded_test_server()->GetURL("/favicon/page_with_favicon.html");
+
+  // Initial visit in order to populate the cache.
+  {
+    PendingTaskWaiter waiter(web_contents());
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), landing_url, WindowOpenDisposition::CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
+    waiter.Wait();
+  }
+  ASSERT_NE(
+      nullptr,
+      GetFaviconForPageURL(landing_url, favicon_base::FAVICON).bitmap_data);
+
+  PendingTaskWaiter waiter(web_contents(), landing_url);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url_with_meta_refresh_tag, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  waiter.Wait();
+
+  EXPECT_NE(nullptr, GetFaviconForPageURL(url_with_meta_refresh_tag,
+                                          favicon_base::FAVICON)
+                         .bitmap_data);
+  EXPECT_NE(
+      nullptr,
+      GetFaviconForPageURL(landing_url, favicon_base::FAVICON).bitmap_data);
+}
+
 // Test that a page gets a server-side redirect followed by a meta refresh tag
 // gets associated to the favicons listed in the landing page.
 IN_PROC_BROWSER_TEST_F(
