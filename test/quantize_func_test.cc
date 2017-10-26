@@ -130,7 +130,7 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     }
 
     const int16_t *quant_shift = qtab_->quant.y_quant_shift[q];
-    const int16_t *dequant = qtab_->dequant.y_dequant[q];
+    const int16_t *dequant = qtab_->dequant.y_dequant_QTX[q];
 
     for (int i = 0; i < test_num; ++i) {
       if (is_loop) FillCoeffRandom();
@@ -276,7 +276,7 @@ TEST_P(QuantizeTest, DISABLED_Speed) {
   const int16_t *round_fp = qtab_->quant.y_round_fp[q];
   const int16_t *quant_fp = qtab_->quant.y_quant_fp[q];
   const int16_t *quant_shift = qtab_->quant.y_quant_shift[q];
-  const int16_t *dequant = qtab_->dequant.y_dequant[q];
+  const int16_t *dequant = qtab_->dequant.y_dequant_QTX[q];
   const int kNumTests = 5000000;
   aom_usec_timer timer;
 

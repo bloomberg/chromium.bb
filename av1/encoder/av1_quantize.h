@@ -36,11 +36,13 @@ typedef struct QUANT_PARAM {
 typedef void (*AV1_QUANT_FACADE)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                  const MACROBLOCK_PLANE *p,
                                  tran_low_t *qcoeff_ptr,
-                                 const MACROBLOCKD_PLANE *pd,
                                  tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                                  const SCAN_ORDER *sc,
                                  const QUANT_PARAM *qparam);
 
+// The QUANTS structure is used only for internal quantizer setup in
+// av1_quantize.c.
+// All of its fields use the same coefficient shift/scaling at TX.
 typedef struct {
 #if CONFIG_NEW_QUANT
   DECLARE_ALIGNED(
@@ -69,14 +71,25 @@ typedef struct {
   DECLARE_ALIGNED(16, int16_t, uv_round[QINDEX_RANGE][8]);
 } QUANTS;
 
+// The Dequants structure is used only for internal quantizer setup in
+// av1_quantize.c.
+// Fields are sufffixed according to whether or not they're expressed in
+// the same coefficient shift/precision as TX or a fixed Q3 format.
 typedef struct {
-  DECLARE_ALIGNED(16, int16_t, y_dequant[QINDEX_RANGE][8]);   // 8: SIMD width
-  DECLARE_ALIGNED(16, int16_t, uv_dequant[QINDEX_RANGE][8]);  // 8: SIMD width
+  DECLARE_ALIGNED(16, int16_t,
+                  y_dequant_QTX[QINDEX_RANGE][8]);  // 8: SIMD width
+  DECLARE_ALIGNED(16, int16_t,
+                  uv_dequant_QTX[QINDEX_RANGE][8]);             // 8: SIMD width
+  DECLARE_ALIGNED(16, int16_t, y_dequant_Q3[QINDEX_RANGE][8]);  // 8: SIMD width
+  DECLARE_ALIGNED(16, int16_t,
+                  uv_dequant_Q3[QINDEX_RANGE][8]);  // 8: SIMD width
 #if CONFIG_NEW_QUANT
-  DECLARE_ALIGNED(16, dequant_val_type_nuq,
-                  y_dequant_val_nuq[QUANT_PROFILES][QINDEX_RANGE][COEF_BANDS]);
-  DECLARE_ALIGNED(16, dequant_val_type_nuq,
-                  uv_dequant_val_nuq[QUANT_PROFILES][QINDEX_RANGE][COEF_BANDS]);
+  DECLARE_ALIGNED(
+      16, dequant_val_type_nuq,
+      y_dequant_val_nuq_QTX[QUANT_PROFILES][QINDEX_RANGE][COEF_BANDS]);
+  DECLARE_ALIGNED(
+      16, dequant_val_type_nuq,
+      uv_dequant_val_nuq_QTX[QUANT_PROFILES][QINDEX_RANGE][COEF_BANDS]);
 #endif  // CONFIG_NEW_QUANT
 } Dequants;
 
@@ -105,51 +118,42 @@ void av1_quantize_skip(intptr_t n_coeffs, tran_low_t *qcoeff_ptr,
 
 void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
-                            const MACROBLOCKD_PLANE *pd,
                             tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                             const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                            const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
-                           const MACROBLOCKD_PLANE *pd, tran_low_t *dqcoeff_ptr,
-                           uint16_t *eob_ptr, const SCAN_ORDER *sc,
-                           const QUANT_PARAM *qparam);
+                           tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                           const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 void av1_quantize_dc_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
-                            const MACROBLOCKD_PLANE *pd,
                             tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                             const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 #if CONFIG_NEW_QUANT
 void av1_quantize_fp_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                 const MACROBLOCK_PLANE *p,
-                                tran_low_t *qcoeff_ptr,
-                                const MACROBLOCKD_PLANE *pd,
-                                tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
-                                const SCAN_ORDER *sc,
+                                tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                                uint16_t *eob_ptr, const SCAN_ORDER *sc,
                                 const QUANT_PARAM *qparam);
 
 void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                const MACROBLOCK_PLANE *p,
-                               tran_low_t *qcoeff_ptr,
-                               const MACROBLOCKD_PLANE *pd,
-                               tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
-                               const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
+                               tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                               uint16_t *eob_ptr, const SCAN_ORDER *sc,
+                               const QUANT_PARAM *qparam);
 
 void av1_quantize_dc_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                 const MACROBLOCK_PLANE *p,
-                                tran_low_t *qcoeff_ptr,
-                                const MACROBLOCKD_PLANE *pd,
-                                tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
-                                const SCAN_ORDER *sc,
+                                tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                                uint16_t *eob_ptr, const SCAN_ORDER *sc,
                                 const QUANT_PARAM *qparam);
 #endif  // CONFIG_NEW_QUANT
 
 void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
                                    intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
                                    tran_low_t *qcoeff_ptr,
-                                   const MACROBLOCKD_PLANE *pd,
                                    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                                    const SCAN_ORDER *sc,
                                    const QUANT_PARAM *qparam);
@@ -157,7 +161,6 @@ void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
 void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
                                   intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
                                   tran_low_t *qcoeff_ptr,
-                                  const MACROBLOCKD_PLANE *pd,
                                   tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                                   const SCAN_ORDER *sc,
                                   const QUANT_PARAM *qparam);
@@ -165,7 +168,6 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
 void av1_highbd_quantize_dc_facade(const tran_low_t *coeff_ptr,
                                    intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
                                    tran_low_t *qcoeff_ptr,
-                                   const MACROBLOCKD_PLANE *pd,
                                    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                                    const SCAN_ORDER *sc,
                                    const QUANT_PARAM *qparam);
@@ -173,21 +175,18 @@ void av1_highbd_quantize_dc_facade(const tran_low_t *coeff_ptr,
 #if CONFIG_NEW_QUANT
 void av1_highbd_quantize_fp_nuq_facade(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
-    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
-    const QUANT_PARAM *qparam);
+    tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+    const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 void av1_highbd_quantize_b_nuq_facade(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
-    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
-    const QUANT_PARAM *qparam);
+    tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+    const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 void av1_highbd_quantize_dc_nuq_facade(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
-    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
-    const QUANT_PARAM *qparam);
+    tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+    const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 #endif  // CONFIG_NEW_QUANT
 
 #ifdef __cplusplus

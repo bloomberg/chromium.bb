@@ -41,14 +41,19 @@ typedef struct macroblock_plane {
   struct buf_2d src;
 
   // Quantizer setings
-  const int16_t *quant_fp;
-  const int16_t *round_fp;
-  const int16_t *quant;
-  const int16_t *quant_shift;
-  const int16_t *zbin;
-  const int16_t *round;
+  // These are used/accessed only in the quantization process
+  // RDO does not / must not depend on any of these values
+  // All values below share the coefficient scale/shift used in TX
+  const int16_t *quant_fp_QTX;
+  const int16_t *round_fp_QTX;
+  const int16_t *quant_QTX;
+  const int16_t *quant_shift_QTX;
+  const int16_t *zbin_QTX;
+  const int16_t *round_QTX;
+  const int16_t *dequant_QTX;
 #if CONFIG_NEW_QUANT
   const cuml_bins_type_nuq *cuml_bins_nuq[QUANT_PROFILES];
+  const dequant_val_type_nuq *dequant_val_nuq_QTX[QUANT_PROFILES];
 #endif  // CONFIG_NEW_QUANT
 } MACROBLOCK_PLANE;
 

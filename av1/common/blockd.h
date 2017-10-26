@@ -521,10 +521,14 @@ typedef struct macroblockd_plane {
   struct buf_2d pre[2];
   ENTROPY_CONTEXT *above_context;
   ENTROPY_CONTEXT *left_context;
-  int16_t seg_dequant[MAX_SEGMENTS][2];
+
+  // The dequantizers below are true dequntizers used only in the
+  // dequantization process.  They have the same coefficient
+  // shift/scale as TX.
+  int16_t seg_dequant_QTX[MAX_SEGMENTS][2];
 #if CONFIG_NEW_QUANT
-  dequant_val_type_nuq seg_dequant_nuq[MAX_SEGMENTS][QUANT_PROFILES]
-                                      [COEF_BANDS];
+  dequant_val_type_nuq seg_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES]
+                                          [COEF_BANDS];
 #endif
   uint8_t *color_index_map;
 
@@ -539,11 +543,12 @@ typedef struct macroblockd_plane {
   qm_val_t *seg_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
   qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 #endif
-  // encoder
-  const int16_t *dequant;
-#if CONFIG_NEW_QUANT
-  const dequant_val_type_nuq *dequant_val_nuq[QUANT_PROFILES];
-#endif  // CONFIG_NEW_QUANT
+
+  // the 'dequantizers' below are not literal dequantizer values.
+  // They're used by encoder RDO to generate ad-hoc lambda values.
+  // They use a hardwired Q3 coeff shift and do not necessarily match
+  // the TX scale in use.
+  const int16_t *dequant_Q3;
 
 #if CONFIG_DIST_8X8
   DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);

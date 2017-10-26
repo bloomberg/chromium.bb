@@ -356,7 +356,7 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
                             TX_TYPE tx_type, int16_t *max_scan_line,
                             aom_reader *r, int seg_id) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int16_t *const dequant = pd->seg_dequant[seg_id];
+  const int16_t *const dequant = pd->seg_dequant_QTX[seg_id];
   const int ctx =
       get_entropy_context(tx_size, pd->above_context + x, pd->left_context + y);
 #if CONFIG_NEW_QUANT
@@ -372,7 +372,7 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
   const int eob =
       decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size, tx_type, dequant,
 #if CONFIG_NEW_QUANT
-                   pd->seg_dequant_nuq[seg_id][dq],
+                   pd->seg_dequant_nuq_QTX[seg_id][dq],
 #else
 #if CONFIG_AOM_QM
                    pd->seg_iqmatrix[seg_id],

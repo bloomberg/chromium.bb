@@ -300,8 +300,12 @@ typedef struct AV1Common {
   int y_dc_delta_q;
   int uv_dc_delta_q;
   int uv_ac_delta_q;
-  int16_t y_dequant[MAX_SEGMENTS][2];
-  int16_t uv_dequant[MAX_SEGMENTS][2];
+
+  // The dequantizers below are true dequntizers used only in the
+  // dequantization process.  They have the same coefficient
+  // shift/scale as TX.
+  int16_t y_dequant_QTX[MAX_SEGMENTS][2];
+  int16_t uv_dequant_QTX[MAX_SEGMENTS][2];
 
 #if CONFIG_AOM_QM
   // Global quant matrix tables
@@ -320,8 +324,10 @@ typedef struct AV1Common {
   int max_qmlevel;
 #endif
 #if CONFIG_NEW_QUANT
-  dequant_val_type_nuq y_dequant_nuq[MAX_SEGMENTS][QUANT_PROFILES][COEF_BANDS];
-  dequant_val_type_nuq uv_dequant_nuq[MAX_SEGMENTS][QUANT_PROFILES][COEF_BANDS];
+  dequant_val_type_nuq y_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES]
+                                        [COEF_BANDS];
+  dequant_val_type_nuq uv_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES]
+                                         [COEF_BANDS];
 #endif
 
   /* We allocate a MODE_INFO struct for each macroblock, together with
@@ -678,24 +684,26 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
     xd->plane[i].dqcoeff = dqcoeff;
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
-      memcpy(xd->plane[i].seg_dequant, cm->y_dequant, sizeof(cm->y_dequant));
+      memcpy(xd->plane[i].seg_dequant_QTX, cm->y_dequant_QTX,
+             sizeof(cm->y_dequant_QTX));
 #if CONFIG_AOM_QM
       memcpy(xd->plane[i].seg_iqmatrix, cm->y_iqmatrix, sizeof(cm->y_iqmatrix));
 #endif
 
 #if CONFIG_NEW_QUANT
-      memcpy(xd->plane[i].seg_dequant_nuq, cm->y_dequant_nuq,
-             sizeof(cm->y_dequant_nuq));
+      memcpy(xd->plane[i].seg_dequant_nuq_QTX, cm->y_dequant_nuq_QTX,
+             sizeof(cm->y_dequant_nuq_QTX));
 #endif
     } else {
-      memcpy(xd->plane[i].seg_dequant, cm->uv_dequant, sizeof(cm->uv_dequant));
+      memcpy(xd->plane[i].seg_dequant_QTX, cm->uv_dequant_QTX,
+             sizeof(cm->uv_dequant_QTX));
 #if CONFIG_AOM_QM
       memcpy(xd->plane[i].seg_iqmatrix, cm->uv_iqmatrix,
              sizeof(cm->uv_iqmatrix));
 #endif
 #if CONFIG_NEW_QUANT
-      memcpy(xd->plane[i].seg_dequant_nuq, cm->uv_dequant_nuq,
-             sizeof(cm->uv_dequant_nuq));
+      memcpy(xd->plane[i].seg_dequant_nuq_QTX, cm->uv_dequant_nuq_QTX,
+             sizeof(cm->uv_dequant_nuq_QTX));
 #endif
     }
   }

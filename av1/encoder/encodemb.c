@@ -136,7 +136,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  const int16_t *const dequant_ptr = pd->dequant;
+  const int16_t *const dequant_ptr = p->dequant_QTX;
   const uint8_t *const band_translate = get_band_translate(tx_size);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -154,7 +154,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
-  const dequant_val_type_nuq *dequant_val = pd->dequant_val_nuq[dq];
+  const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
 #endif  // CONFIG_NEW_QUANT
   int64_t rd_cost0, rd_cost1;
   int16_t t0, t1;
@@ -568,7 +568,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
       quant_func_list[xform_quant_idx][is_hbd](
-          coeff, tx2d_size, p, qcoeff, pd, dqcoeff, eob, scan_order, &qparam);
+          coeff, tx2d_size, p, qcoeff, dqcoeff, eob, scan_order, &qparam);
     } else {
       av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
     }
