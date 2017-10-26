@@ -314,13 +314,11 @@ void HostFrameSinkManager::OnAggregatedHitTestRegionListUpdated(
     mojo::ScopedSharedBufferHandle idle_handle,
     uint32_t idle_handle_size) {
   auto iter = display_hit_test_query_.find(frame_sink_id);
-  if (iter == display_hit_test_query_.end()) {
-    // TODO(riajiang): Report security fault. http://crbug.com/746470
-    // Or verify if it is the case that display got destroyed, but viz doesn't
-    // know it yet.
-    NOTREACHED();
+  // The corresponding HitTestQuery has already been deleted, so drop the
+  // in-flight hit-test data.
+  if (iter == display_hit_test_query_.end())
     return;
-  }
+
   iter->second->OnAggregatedHitTestRegionListUpdated(
       std::move(active_handle), active_handle_size, std::move(idle_handle),
       idle_handle_size);
@@ -330,11 +328,13 @@ void HostFrameSinkManager::SwitchActiveAggregatedHitTestRegionList(
     const FrameSinkId& frame_sink_id,
     uint8_t active_handle_index) {
   auto iter = display_hit_test_query_.find(frame_sink_id);
-  if (iter == display_hit_test_query_.end() ||
-      (active_handle_index != 0u && active_handle_index != 1u)) {
+  // The corresponding HitTestQuery has already been deleted, so drop the
+  // in-flight hit-test data.
+  if (iter == display_hit_test_query_.end())
+    return;
+
+  if (active_handle_index != 0u && active_handle_index != 1u) {
     // TODO(riajiang): Report security fault. http://crbug.com/746470
-    // Or verify if it is the case that display got destroyed, but viz doesn't
-    // know it yet.
     NOTREACHED();
     return;
   }

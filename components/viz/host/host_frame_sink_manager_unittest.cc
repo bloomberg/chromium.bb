@@ -552,4 +552,46 @@ TEST_F(HostFrameSinkManagerRemoteTest, RestartOnGpuCrash) {
   EXPECT_TRUE(IsBoundToFrameSinkManager());
 }
 
+// Verify that HostFrameSinkManager does early return when trying to send
+// hit-test data after HitTestQuery was deleted.
+TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
+  FakeHostFrameSinkClient host_client;
+
+  // Register a FrameSinkId, and create a RootCompositorFrameSink, which should
+  // create a HitTestQuery.
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  mojom::CompositorFrameSinkAssociatedPtrInfo
+      compositor_frame_sink_associated_info;
+  MockCompositorFrameSinkClient compositor_frame_sink_client;
+  mojom::DisplayPrivateAssociatedPtr display_private;
+  host().CreateRootCompositorFrameSink(
+      kFrameSinkChild1, 0 /* surface_handle */,
+      RendererSettings() /* renderer_settings */,
+      MakeRequest(&compositor_frame_sink_associated_info),
+      compositor_frame_sink_client.BindInterfacePtr(),
+      MakeRequest(&display_private));
+
+  EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
+
+  // Verify RootCompositorFrameSink was created on other end of message pipe.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(impl(), MockCreateRootCompositorFrameSink(kFrameSinkChild1))
+        .WillOnce(InvokeClosure(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  GetFrameSinkManagerClient()->SwitchActiveAggregatedHitTestRegionList(
+      kFrameSinkChild1, 0);
+  // Continue to send hit-test data to HitTestQuery associated with
+  // kFrameSinkChild1.
+
+  host().InvalidateFrameSinkId(kFrameSinkChild1);
+  // Invalidating kFrameSinkChild1 would delete the corresponding HitTestQuery,
+  // so further msgs to that HitTestQuery should be dropped.
+  EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
+  GetFrameSinkManagerClient()->SwitchActiveAggregatedHitTestRegionList(
+      kFrameSinkChild1, 1);
+}
+
 }  // namespace viz
