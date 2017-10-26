@@ -31,8 +31,8 @@
 
 namespace {
 // |kTestHashAddress| is the hash corresponding to identifier |kTestNSUUID|.
-const char* const kTestNSUUID = "00000000-1111-2222-3333-444444444444";
-const std::string kTestHashAddress = "D1:6F:E3:22:FD:5B";
+const char kTestNSUUID[] = "00000000-1111-2222-3333-444444444444";
+const char kTestHashAddress[] = "D1:6F:E3:22:FD:5B";
 const int kTestRssi = 0;
 }  // namespace
 

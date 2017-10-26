@@ -118,7 +118,7 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
   if (device_ordinal > 6 || device_ordinal < 1)
     return nullptr;
 
-  base::Optional<std::string> device_name = kTestDeviceName;
+  base::Optional<std::string> device_name = std::string(kTestDeviceName);
   std::string device_address = kTestDeviceAddress1;
   std::vector<std::string> service_uuids;
   BluetoothTransport device_type = BLUETOOTH_TRANSPORT_LE;
@@ -137,10 +137,10 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
       service_data[kTestUUIDImmediateAlert] = {0x00, 0x02};
       break;
     case 3:
-      device_name = kTestDeviceNameEmpty;
+      device_name = std::string(kTestDeviceNameEmpty);
       break;
     case 4:
-      device_name = kTestDeviceNameEmpty;
+      device_name = std::string(kTestDeviceNameEmpty);
       device_address = kTestDeviceAddress2;
       break;
     case 5:

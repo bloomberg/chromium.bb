@@ -580,7 +580,7 @@ TEST_F(BluetoothBlueZTest, SetPoweredWhenNotPresent) {
 TEST_F(BluetoothBlueZTest, ChangeAdapterName) {
   GetAdapter();
 
-  static const std::string new_name(".__.");
+  const std::string new_name(".__.");
 
   adapter_->SetName(new_name, GetCallback(), GetErrorCallback());
   EXPECT_EQ(1, callback_count_);
@@ -2358,7 +2358,7 @@ TEST_F(BluetoothBlueZTest, DeviceNameChanged) {
       fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
           bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
-  static const std::string new_name("New Device Name");
+  const std::string new_name("New Device Name");
   properties->name.ReplaceValue(new_name);
 
   EXPECT_EQ(1, observer.device_changed_count());

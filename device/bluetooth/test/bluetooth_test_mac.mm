@@ -83,9 +83,9 @@ scoped_nsobject<NSDictionary> CreateAdvertisementData(
 }  // namespace
 
 // UUID1 hashes to kTestDeviceAddress1, and UUID2 to kTestDeviceAddress2.
-const std::string BluetoothTestMac::kTestPeripheralUUID1 =
+const char BluetoothTestMac::kTestPeripheralUUID1[] =
     "34045B00-0000-0000-0000-000000000000";
-const std::string BluetoothTestMac::kTestPeripheralUUID2 =
+const char BluetoothTestMac::kTestPeripheralUUID2[] =
     "EC1B8F00-0000-0000-0000-000000000000";
 
 BluetoothTestMac::BluetoothTestMac() : BluetoothTestBase() {}
@@ -168,53 +168,53 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
 
   switch (device_ordinal) {
     case 1:
-      identifier = kTestPeripheralUUID1.c_str();
-      name = @(kTestDeviceName.c_str());
+      identifier = kTestPeripheralUUID1;
+      name = @(kTestDeviceName);
       rssi = @(static_cast<int8_t>(TestRSSI::LOWEST));
       uuids = @[
-        [CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())],
-        [CBUUID UUIDWithString:@(kTestUUIDGenericAttribute.c_str())]
+        [CBUUID UUIDWithString:@(kTestUUIDGenericAccess)],
+        [CBUUID UUIDWithString:@(kTestUUIDGenericAttribute)]
       ];
       service_data = @{
-        [CBUUID UUIDWithString:@(kTestUUIDHeartRate.c_str())] :
+        [CBUUID UUIDWithString:@(kTestUUIDHeartRate)] :
             [NSData dataWithBytes:(unsigned char[]){1} length:1]
       };
       tx_power = @(static_cast<int8_t>(TestTxPower::LOWEST));
       break;
     case 2:
-      identifier = kTestPeripheralUUID1.c_str();
-      name = @(kTestDeviceName.c_str());
+      identifier = kTestPeripheralUUID1;
+      name = @(kTestDeviceName);
       rssi = @(static_cast<int8_t>(TestRSSI::LOWER));
       uuids = @[
-        [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())],
-        [CBUUID UUIDWithString:@(kTestUUIDLinkLoss.c_str())]
+        [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert)],
+        [CBUUID UUIDWithString:@(kTestUUIDLinkLoss)]
       ];
       service_data = @{
-        [CBUUID UUIDWithString:@(kTestUUIDHeartRate.c_str())] :
+        [CBUUID UUIDWithString:@(kTestUUIDHeartRate)] :
             [NSData dataWithBytes:(unsigned char[]){} length:0],
-        [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())] :
+        [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert)] :
             [NSData dataWithBytes:(unsigned char[]){0, 2} length:2]
       };
       tx_power = @(static_cast<int8_t>(TestTxPower::LOWER));
       break;
     case 3:
-      identifier = kTestPeripheralUUID1.c_str();
-      name = @(kTestDeviceNameEmpty.c_str());
+      identifier = kTestPeripheralUUID1;
+      name = @(kTestDeviceNameEmpty);
       rssi = @(static_cast<int8_t>(TestRSSI::LOW));
       uuids = nil;
       service_data = nil;
       tx_power = nil;
       break;
     case 4:
-      identifier = kTestPeripheralUUID2.c_str();
-      name = @(kTestDeviceNameEmpty.c_str());
+      identifier = kTestPeripheralUUID2;
+      name = @(kTestDeviceNameEmpty);
       rssi = @(static_cast<int8_t>(TestRSSI::MEDIUM));
       uuids = nil;
       service_data = nil;
       tx_power = nil;
       break;
     case 5:
-      identifier = kTestPeripheralUUID1.c_str();
+      identifier = kTestPeripheralUUID1;
       name = nil;
       rssi = @(static_cast<int8_t>(TestRSSI::HIGH));
       uuids = nil;
@@ -260,17 +260,15 @@ void BluetoothTestMac::SimulateConnectedLowEnergyDevice(
   scoped_nsobject<NSMutableSet> cbUUIDs([[NSMutableSet alloc] init]);
   switch (device_ordinal) {
     case ConnectedDeviceType::GENERIC_DEVICE:
-      name = @(kTestDeviceName.c_str());
-      identifier = kTestPeripheralUUID1.c_str();
-      [cbUUIDs
-          addObject:[CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())]];
+      name = @(kTestDeviceName);
+      identifier = kTestPeripheralUUID1;
+      [cbUUIDs addObject:[CBUUID UUIDWithString:@(kTestUUIDGenericAccess)]];
       break;
     case ConnectedDeviceType::HEART_RATE_DEVICE:
-      name = @(kTestDeviceName.c_str());
-      identifier = kTestPeripheralUUID2.c_str();
-      [cbUUIDs
-          addObject:[CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())]];
-      [cbUUIDs addObject:[CBUUID UUIDWithString:@(kTestUUIDHeartRate.c_str())]];
+      name = @(kTestDeviceName);
+      identifier = kTestPeripheralUUID2;
+      [cbUUIDs addObject:[CBUUID UUIDWithString:@(kTestUUIDGenericAccess)]];
+      [cbUUIDs addObject:[CBUUID UUIDWithString:@(kTestUUIDHeartRate)]];
       break;
   }
   DCHECK(name);

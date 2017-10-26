@@ -62,15 +62,15 @@ class BluetoothTestBase : public testing::Test {
     INDICATE,
   };
 
-  static const std::string kTestAdapterName;
-  static const std::string kTestAdapterAddress;
+  static const char kTestAdapterName[];
+  static const char kTestAdapterAddress[];
 
-  static const std::string kTestDeviceName;
-  static const std::string kTestDeviceNameEmpty;
+  static const char kTestDeviceName[];
+  static const char kTestDeviceNameEmpty[];
 
-  static const std::string kTestDeviceAddress1;
-  static const std::string kTestDeviceAddress2;
-  static const std::string kTestDeviceAddress3;
+  static const char kTestDeviceAddress1[];
+  static const char kTestDeviceAddress2[];
+  static const char kTestDeviceAddress3[];
 
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.bluetooth.test
   enum class TestRSSI {
@@ -88,23 +88,23 @@ class BluetoothTestBase : public testing::Test {
   };
 
   // Services
-  static const std::string kTestUUIDGenericAccess;
-  static const std::string kTestUUIDGenericAttribute;
-  static const std::string kTestUUIDImmediateAlert;
-  static const std::string kTestUUIDLinkLoss;
-  static const std::string kTestUUIDHeartRate;
+  static const char kTestUUIDGenericAccess[];
+  static const char kTestUUIDGenericAttribute[];
+  static const char kTestUUIDImmediateAlert[];
+  static const char kTestUUIDLinkLoss[];
+  static const char kTestUUIDHeartRate[];
   // Characteristics
   // The following three characteristics are for kTestUUIDGenericAccess.
-  static const std::string kTestUUIDDeviceName;
-  static const std::string kTestUUIDAppearance;
-  static const std::string kTestUUIDReconnectionAddress;
+  static const char kTestUUIDDeviceName[];
+  static const char kTestUUIDAppearance[];
+  static const char kTestUUIDReconnectionAddress[];
   // This characteristic is for kTestUUIDHeartRate.
-  static const std::string kTestUUIDHeartRateMeasurement;
+  static const char kTestUUIDHeartRateMeasurement[];
   // Descriptors
-  static const std::string kTestUUIDCharacteristicUserDescription;
-  static const std::string kTestUUIDClientCharacteristicConfiguration;
-  static const std::string kTestUUIDServerCharacteristicConfiguration;
-  static const std::string kTestUUIDCharacteristicPresentationFormat;
+  static const char kTestUUIDCharacteristicUserDescription[];
+  static const char kTestUUIDClientCharacteristicConfiguration[];
+  static const char kTestUUIDServerCharacteristicConfiguration[];
+  static const char kTestUUIDCharacteristicPresentationFormat[];
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;

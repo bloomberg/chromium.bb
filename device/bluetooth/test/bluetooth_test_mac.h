@@ -27,8 +27,8 @@ class BluetoothAdapterMac;
 // Mac implementation of BluetoothTestBase.
 class BluetoothTestMac : public BluetoothTestBase {
  public:
-  static const std::string kTestPeripheralUUID1;
-  static const std::string kTestPeripheralUUID2;
+  static const char kTestPeripheralUUID1[];
+  static const char kTestPeripheralUUID2[];
 
   BluetoothTestMac();
   ~BluetoothTestMac() override;
