@@ -80,14 +80,6 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/runtime_enabled_features.h"
 
-namespace {
-
-bool IsModern() {
-  return blink::RuntimeEnabledFeatures::ModernMediaControlsEnabled();
-}
-
-}  // namespace.
-
 namespace blink {
 
 namespace {
@@ -274,6 +266,11 @@ class MediaControlsImpl::MediaElementMutationCallback
   Member<MediaControlsImpl> controls_;
   Member<MutationObserver> observer_;
 };
+
+// static.
+bool MediaControlsImpl::IsModern() {
+  return blink::RuntimeEnabledFeatures::ModernMediaControlsEnabled();
+}
 
 MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
     : HTMLDivElement(media_element.GetDocument()),

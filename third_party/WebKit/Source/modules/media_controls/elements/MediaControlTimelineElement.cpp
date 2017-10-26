@@ -26,10 +26,6 @@
 
 namespace {
 
-bool IsModern() {
-  return blink::RuntimeEnabledFeatures::ModernMediaControlsEnabled();
-}
-
 const double kCurrentTimeBufferedDelta = 1.0;
 
 }  // namespace.
@@ -40,8 +36,8 @@ namespace blink {
 //
 // MediaControlTimelineElement
 //   (-webkit-media-controls-timeline)
-//   The child elements are only present if IsModern() is enabled.
-//   These three <div>'s are used to show the buffering animation.
+//   The child elements are only present if MediaControlsImpl::IsModern() is
+//   enabled. These three <div>'s are used to show the buffering animation.
 // +-div (-internal-track-segment-buffering)
 // +-div (-internal-track-segment-buffering)
 // +-div (-internal-track-segment-buffering)
@@ -51,7 +47,7 @@ MediaControlTimelineElement::MediaControlTimelineElement(
     : MediaControlSliderElement(media_controls, kMediaSlider) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
 
-  if (IsModern()) {
+  if (MediaControlsImpl::IsModern()) {
     Element& track = GetTrackElement();
     MediaControlElementsHelper::CreateDiv("-internal-track-segment-buffering",
                                           &track);
