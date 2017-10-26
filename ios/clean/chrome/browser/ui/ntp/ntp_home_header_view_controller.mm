@@ -84,7 +84,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 #pragma mark - ContentSuggestionsHeaderControlling
 
-- (void)updateFakeOmniboxForOffset:(CGFloat)offset width:(CGFloat)width {
+- (void)updateFakeOmniboxForOffset:(CGFloat)offset
+                       screenWidth:(CGFloat)screenWidth
+                    safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   // The scroll offset at which point the fake omnibox's frame should stop
   // growing.
   CGFloat maxScaleOffset =
