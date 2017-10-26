@@ -923,7 +923,7 @@ class SymbolGroup(BaseSymbol):
     return self.GroupedBy(extract_namespace, min_count=min_count)
 
   def GroupedByPath(self, depth=0, fallback='{no path}',
-                  fallback_to_object_path=True, min_count=0):
+                    fallback_to_object_path=True, min_count=0):
     """Groups by source_path.
 
     Due to path sharing (symbols where path looks like foo/bar/{shared}/3),
@@ -932,7 +932,8 @@ class SymbolGroup(BaseSymbol):
     Args:
       depth: When 0 (default), groups by entire path. When 1, groups by
              top-level directory, when 2, groups by top 2 directories, etc.
-      fallback: Use this value when no namespace exists.
+      fallback: Use this value when no path exists. Pass None here to omit
+             symbols that do not path information.
       fallback_to_object_path: When True (default), uses object_path when
              source_path is missing.
       min_count: Miniumum number of symbols for a group. If fewer than this many
@@ -945,6 +946,8 @@ class SymbolGroup(BaseSymbol):
       if fallback_to_object_path and not path:
         path = symbol.object_path
       path = path or fallback
+      if path is None:
+        return None
       # Group by base of foo/bar/{shared}/2
       shared_idx = path.find('{shared}')
       if shared_idx != -1:

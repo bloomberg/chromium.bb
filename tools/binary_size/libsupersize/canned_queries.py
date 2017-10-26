@@ -99,6 +99,8 @@ def _CategorizeGenerated(symbols):
   #     than having them be inline.
   symbols = g.Add('RegisterJNI', symbols.WhereFullNameMatches(
       r'Register.*JNIEnv\*\)|RegisteredMethods$'))
+  symbols = g.Add('gl_bindings_autogen',
+      symbols.WherePathMatches('gl_bindings_autogen'))
 
   symbols = symbols.WhereSourceIsGenerated()
   symbols = g.Add('Protocol Buffers', symbols.Filter(lambda s: (
@@ -118,6 +120,14 @@ def _CategorizeGenerated(symbols):
       'WebKit/Source/core' in s.object_path)))
   symbols = g.Add('Blink (Other)', symbols.Filter(lambda s: (
       'WebKit' in s.object_path or 'blink/' in s.object_path)))
+  symbols = g.Add('prepopulated_engines.cc', symbols.Filter(lambda s: (
+      'prepopulated_engines' in s.object_path)))
+  symbols = g.Add('Metrics-related code', symbols.Filter(lambda s: (
+      '/metrics/' in s.object_path)))
+  symbols = g.Add('gpu_driver_bug_list_autogen.cc', symbols.Filter(lambda s: (
+      'gpu_driver_bug_list' in s.object_path)))
+  symbols = g.Add('components/policy', symbols.Filter(lambda s: (
+      'components/policy' in s.object_path)))
 
   return g.Finalize(symbols)
 
@@ -154,3 +164,10 @@ class CannedQueries(object):
     symbols = self._SymbolsArg(symbols)
     # GCC generates "_GLOBAL__" symbols. Clang generates "startup".
     return symbols.WhereNameMatches('^startup$|^_GLOBAL__')
+
+  def LargeFiles(self, symbols=None, min_size=50 * 1024):
+    """Lists source files that are larger than a certain size (default 50kb)."""
+    symbols = self._SymbolsArg(symbols)
+    # GCC generates "_GLOBAL__" symbols. Clang generates "startup".
+    return symbols.GroupedByPath(fallback=None).WherePssBiggerThan(
+        min_size).Sorted()
