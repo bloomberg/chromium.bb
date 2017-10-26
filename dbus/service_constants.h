@@ -21,6 +21,7 @@
 #include "permission_broker/dbus-constants.h"
 #include "power_manager/dbus-constants.h"
 #include "shill/dbus-constants.h"
+#include "smbprovider/dbus-constants.h"
 #include "update_engine/dbus-constants.h"
 
 namespace dbus {
