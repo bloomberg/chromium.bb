@@ -197,8 +197,7 @@ HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
 
 // If the point is not in the viewport, returns false. Otherwise, adjusts the
 // point to account for the frame's zoom and scroll.
-static bool PointWithScrollAndZoomIfPossible(Document& document,
-                                             IntPoint& point) {
+static bool PointInFrameContentIfVisible(Document& document, IntPoint& point) {
   LocalFrame* frame = document.GetFrame();
   if (!frame)
     return false;
@@ -206,18 +205,31 @@ static bool PointWithScrollAndZoomIfPossible(Document& document,
   if (!frame_view)
     return false;
 
-  // The visibleContentRect check below requires that scrollbars are up-to-date.
+  // The VisibleContentRect check below requires that scrollbars are up-to-date.
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  FloatPoint point_in_document(point);
-  point_in_document.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
-  point_in_document.Move(frame_view->GetScrollOffset());
-  IntPoint rounded_point_in_document = RoundedIntPoint(point_in_document);
-
-  if (!frame_view->VisibleContentRect().Contains(rounded_point_in_document))
+  FloatPoint point_in_document_content(point);
+  point_in_document_content.Scale(frame->PageZoomFactor(),
+                                  frame->PageZoomFactor());
+  auto* scrollable_area = frame_view->LayoutViewportScrollableArea();
+  point_in_document_content.Move(scrollable_area->GetScrollOffset());
+  IntPoint rounded_point_in_document_content =
+      RoundedIntPoint(point_in_document_content);
+  if (!scrollable_area->VisibleContentRect().Contains(
+          rounded_point_in_document_content)) {
     return false;
+  }
 
-  point = rounded_point_in_document;
+  // If the root layer handles scrolling, the point only needs to be adjusted by
+  // the frame's scale.
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    FloatPoint scaled_point(point);
+    scaled_point.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
+    point = RoundedIntPoint(scaled_point);
+    return true;
+  }
+
+  point = rounded_point_in_document_content;
   return true;
 }
 
@@ -229,7 +241,7 @@ HitTestResult HitTestInDocument(Document* document,
     return HitTestResult();
 
   IntPoint hit_point(x, y);
-  if (!PointWithScrollAndZoomIfPossible(*document, hit_point))
+  if (!PointInFrameContentIfVisible(*document, hit_point))
     return HitTestResult();
 
   HitTestResult result(request, hit_point);
@@ -297,7 +309,7 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
 HeapVector<Member<Element>> TreeScope::ElementsFromPoint(int x, int y) const {
   Document& document = RootNode().GetDocument();
   IntPoint hit_point(x, y);
-  if (!PointWithScrollAndZoomIfPossible(document, hit_point))
+  if (!PointInFrameContentIfVisible(document, hit_point))
     return HeapVector<Member<Element>>();
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
