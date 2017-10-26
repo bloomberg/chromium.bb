@@ -65,13 +65,10 @@ include_rules = [
   "+ui/events/devices/device_hotplug_event_observer.h",
   "+ui/events/devices/input_device.h",
   "+ui/events/devices/input_device_event_observer.h",
+  "+ui/events/devices/input_device_manager.h",
   "+ui/events/devices/stylus_state.h",
   "+ui/events/devices/touch_device_transform.h",
   "+ui/events/devices/touchscreen_device.h",
-
-  # TODO: This is temporary, ash should not use these. http://crbug.com/747415.
-  "+ui/events/devices/device_data_manager.h",
-  "+ui/events/devices/input_device_manager.h",
 
   # SessionManager/UserManager is not part of ash. Use SessionController.
   "-components/session_manager/core",

@@ -61,6 +61,16 @@ void InputDeviceClient::RemoveObserver(ui::InputDeviceEventObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void InputDeviceClient::SetKeyboardDevicesForTesting(
+    const std::vector<InputDevice>& devices) {
+  OnKeyboardDeviceConfigurationChanged(devices);
+}
+
+void InputDeviceClient::SetTouchscreenDevicesForTesting(
+    const std::vector<TouchscreenDevice>& devices) {
+  OnTouchscreenDeviceConfigurationChanged(devices, false);
+}
+
 InputDeviceClient::InputDeviceClient(bool is_input_device_manager)
     : binding_(this), is_input_device_manager_(is_input_device_manager) {
   if (is_input_device_manager_)
