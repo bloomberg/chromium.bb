@@ -378,35 +378,6 @@ TEST_F(PasswordManagerPresenterTest, TestFailedReauthOnView) {
   GetUIController()->GetPasswordManagerPresenter()->RequestShowPassword(0);
   EXPECT_TRUE(reauth_called);
 }
-
-TEST_F(PasswordManagerPresenterTest, TestPassedReauthOnGetAll) {
-  bool reauth_called = false;
-  GetUIController()->GetPasswordManagerPresenter()->SetOsReauthCallForTesting(
-      base::BindRepeating(&FakeOsReauthCall, &reauth_called,
-                          ReauthResult::PASS));
-
-  AddPasswordEntry(GURL("http://abc1.com"), "test@gmail.com", "test");
-  std::vector<std::unique_ptr<autofill::PasswordForm>> passwords =
-      GetUIController()->GetPasswordManagerPresenter()->GetAllPasswords();
-  EXPECT_TRUE(reauth_called);
-  EXPECT_EQ(1u, passwords.size());
-  EXPECT_EQ(base::ASCIIToUTF16("test@gmail.com"), passwords[0]->username_value);
-  EXPECT_EQ(base::ASCIIToUTF16("test"), passwords[0]->password_value);
-  EXPECT_EQ(GURL("http://abc1.com"), passwords[0]->origin);
-}
-
-TEST_F(PasswordManagerPresenterTest, TestFailedReauthOnGetAll) {
-  bool reauth_called = false;
-  GetUIController()->GetPasswordManagerPresenter()->SetOsReauthCallForTesting(
-      base::BindRepeating(&FakeOsReauthCall, &reauth_called,
-                          ReauthResult::FAIL));
-
-  AddPasswordEntry(GURL("http://abc1.com"), "test@gmail.com", "test");
-  EXPECT_THAT(
-      GetUIController()->GetPasswordManagerPresenter()->GetAllPasswords(),
-      testing::IsEmpty());
-  EXPECT_TRUE(reauth_called);
-}
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace
