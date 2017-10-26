@@ -381,6 +381,13 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   RANGE_CHECK(extra_cfg, ans_window_size_log2, 8, 23);
 #endif
+
+#if CONFIG_DIST_8X8
+  RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_DAALA_DIST);
+#else
+  RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);
+#endif
+
   return AOM_CODEC_OK;
 }
 
