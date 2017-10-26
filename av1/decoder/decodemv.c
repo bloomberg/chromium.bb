@@ -1184,17 +1184,21 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
         for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
-          mbmi->curr_delta_lf[lf_id] = xd->curr_delta_lf[lf_id] =
+          const int tmp_lvl =
               xd->prev_delta_lf[lf_id] +
               read_delta_lflevel(cm, xd, r, lf_id, mbmi, mi_col, mi_row) *
                   cm->delta_lf_res;
+          mbmi->curr_delta_lf[lf_id] = xd->curr_delta_lf[lf_id] =
+              clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
           xd->prev_delta_lf[lf_id] = xd->curr_delta_lf[lf_id];
         }
       } else {
-        mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
+        const int tmp_lvl =
             xd->prev_delta_lf_from_base +
             read_delta_lflevel(cm, xd, r, -1, mbmi, mi_col, mi_row) *
                 cm->delta_lf_res;
+        mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
+            clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
         xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
       }
 #else
@@ -1203,7 +1207,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
           read_delta_lflevel(cm, xd, r, mbmi, mi_col, mi_row) *
               cm->delta_lf_res;
       mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
-          clamp(current_delta_lf_from_base, 0, MAX_LOOP_FILTER);
+          clamp(current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
       xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
 #endif  // CONFIG_LOOPFILTER_LEVEL
     }
@@ -2716,17 +2720,21 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
         for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
-          mbmi->curr_delta_lf[lf_id] = xd->curr_delta_lf[lf_id] =
+          const int tmp_lvl =
               xd->prev_delta_lf[lf_id] +
               read_delta_lflevel(cm, xd, r, lf_id, mbmi, mi_col, mi_row) *
                   cm->delta_lf_res;
+          mbmi->curr_delta_lf[lf_id] = xd->curr_delta_lf[lf_id] =
+              clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
           xd->prev_delta_lf[lf_id] = xd->curr_delta_lf[lf_id];
         }
       } else {
-        mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
+        const int tmp_lvl =
             xd->prev_delta_lf_from_base +
             read_delta_lflevel(cm, xd, r, -1, mbmi, mi_col, mi_row) *
                 cm->delta_lf_res;
+        mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
+            clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
         xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
       }
 #else
@@ -2735,7 +2743,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
           read_delta_lflevel(cm, xd, r, mbmi, mi_col, mi_row) *
               cm->delta_lf_res;
       mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
-          clamp(current_delta_lf_from_base, 0, MAX_LOOP_FILTER);
+          clamp(current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
       xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
 #endif  // CONFIG_LOOPFILTER_LEVEL
     }
