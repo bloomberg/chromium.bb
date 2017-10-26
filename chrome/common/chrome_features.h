@@ -257,6 +257,7 @@ extern const base::Feature kVoiceSearchOnLocalNtp;
 #endif
 
 extern const base::Feature kVrShell;
+extern const base::Feature kVrShellExperimentalRendering;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;

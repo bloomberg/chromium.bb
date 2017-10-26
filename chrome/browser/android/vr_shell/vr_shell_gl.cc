@@ -30,6 +30,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "chrome/browser/vr/vr_shell_renderer.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
@@ -98,6 +99,8 @@ static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
 
 static constexpr int kNumSamplesPerPixelBrowserUi = 2;
 static constexpr int kNumSamplesPerPixelWebVr = 1;
+
+static constexpr float kRedrawSceneAngleDeltaDegrees = 1.0;
 
 // Provides the direction the head is looking towards as a 3x1 unit vector.
 gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose) {
@@ -195,6 +198,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       fps_meter_(new vr::FPSMeter()),
       webvr_js_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
       webvr_render_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
+      skips_redraw_when_not_dirty_(base::FeatureList::IsEnabled(
+          features::kVrShellExperimentalRendering)),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -389,6 +394,7 @@ void VrShellGl::OnSwapContents(int new_content_id) {
 
 void VrShellGl::OnContentFrameAvailable() {
   content_surface_texture_->UpdateTexImage();
+  content_frame_available_ = true;
 }
 
 void VrShellGl::OnWebVRFrameAvailable() {
@@ -757,10 +763,11 @@ void VrShellGl::HandleControllerAppButtonActivity(
                                   base::Unretained(ui_.get()), direction));
       }
     }
-    if (direction == vr::UiInterface::NONE)
+    if (direction == vr::UiInterface::NONE) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&vr::UiInterface::OnAppButtonClicked,
                                 base::Unretained(ui_.get())));
+    }
   }
 }
 
@@ -880,6 +887,8 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     return;
   }
 
+  base::TimeTicks current_time = base::TimeTicks::Now();
+
   CHECK(!acquired_frame_);
 
   // Reset the viewport list to just the pair of viewports for the
@@ -912,31 +921,6 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     }
   }
 
-  TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");
-  acquired_frame_ = swap_chain_->AcquireFrame();
-  TRACE_EVENT_END0("gpu", "VrShellGl::AcquireFrame");
-  if (!acquired_frame_)
-    return;
-  DrawIntoAcquiredFrame(frame_index);
-}
-
-void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
-  TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
-  base::TimeTicks current_time = base::TimeTicks::Now();
-
-  acquired_frame_.BindBuffer(kFramePrimaryBuffer);
-
-  // We're redrawing over the entire viewport, but it's generally more
-  // efficient on mobile tiling GPUs to clear anyway as a hint that
-  // we're done with the old content. TODO(klausw,crbug.com/700389):
-  // investigate using glDiscardFramebufferEXT here since that's more
-  // efficient on desktop, but it would need a capability check since
-  // it's not supported on older devices such as Nexus 5X.
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  if (ShouldDrawWebVr())
-    DrawWebVr();
-
   // When using async reprojection, we need to know which pose was
   // used in the WebVR app for drawing this frame and supply it when
   // submitting. Technically we don't need a pose if not reprojecting,
@@ -953,9 +937,11 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
         gvr_api_.get(), &render_info_primary_.head_pose);
   }
 
+  gfx::Vector3dF forward_vector =
+      GetForwardVector(render_info_primary_.head_pose);
+
   // Update the render position of all UI elements (including desktop).
-  bool scene_changed = ui_->scene()->OnBeginFrame(
-      current_time, GetForwardVector(render_info_primary_.head_pose));
+  bool scene_changed = ui_->scene()->OnBeginFrame(current_time, forward_vector);
 
   // WebVR handles controller input in OnVsync.
   if (!ShouldDrawWebVr())
@@ -963,8 +949,52 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
 
   bool textures_changed = ui_->scene()->UpdateTextures();
 
-  DVLOG(1) << "scene changed: " << (scene_changed ? "true, " : "false, ")
-           << "textures changed: " << (textures_changed ? "true" : "false");
+  // TODO(mthiesse): For now, just pretend the controller isn't dirty, even
+  // though it is, so that we can measure/test this rendering path that avoids
+  // redaws. This is fine because this is still behind a flag.
+  static bool controller_dirty_ = false;
+
+  // TODO(mthiesse): Refine this notion of when we need to redraw. If only a
+  // portion of the screen is dirtied, we can update just redraw that portion.
+  bool redraw_needed = controller_dirty_ || scene_changed || textures_changed ||
+                       content_frame_available_;
+
+  gfx::Vector3dF old_forward_vector = GetForwardVector(last_used_head_pose_);
+  float angle =
+      gfx::AngleBetweenVectorsInDegrees(forward_vector, old_forward_vector);
+  bool head_moved = std::abs(angle) > kRedrawSceneAngleDeltaDegrees;
+
+  bool dirty = ShouldDrawWebVr() || head_moved || redraw_needed;
+
+  if (!dirty && skips_redraw_when_not_dirty_)
+    return;
+
+  TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");
+  acquired_frame_ = swap_chain_->AcquireFrame();
+  TRACE_EVENT_END0("gpu", "VrShellGl::AcquireFrame");
+  if (!acquired_frame_)
+    return;
+
+  DrawIntoAcquiredFrame(frame_index);
+}
+
+void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
+  TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
+
+  last_used_head_pose_ = render_info_primary_.head_pose;
+
+  acquired_frame_.BindBuffer(kFramePrimaryBuffer);
+
+  // We're redrawing over the entire viewport, but it's generally more
+  // efficient on mobile tiling GPUs to clear anyway as a hint that
+  // we're done with the old content. TODO(klausw,crbug.com/700389):
+  // investigate using glDiscardFramebufferEXT here since that's more
+  // efficient on desktop, but it would need a capability check since
+  // it's not supported on older devices such as Nexus 5X.
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  if (ShouldDrawWebVr())
+    DrawWebVr();
 
   UpdateEyeInfos(render_info_primary_.head_pose, kViewportListPrimaryOffset,
                  render_info_primary_.surface_texture_size,
@@ -977,6 +1007,8 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
   // viewport.  NB: this is not just 2d browsing stuff, we may have a splash
   // screen showing in WebVR mode that must also fill the screen.
   ui_->ui_renderer()->Draw(render_info_primary_, controller_info_);
+
+  content_frame_available_ = false;
   acquired_frame_.Unbind();
 
   std::vector<const vr::UiElement*> overlay_elements;

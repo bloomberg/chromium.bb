@@ -1675,6 +1675,9 @@ extern const char kEnableVrShellDescription[];
 extern const char kVrCustomTabBrowsingName[];
 extern const char kVrCustomTabBrowsingDescription[];
 
+extern const char kVrShellExperimentalRenderingName[];
+extern const char kVrShellExperimentalRenderingDescription[];
+
 extern const char kWebVrAutopresentName[];
 extern const char kWebVrAutopresentDescription[];
 
