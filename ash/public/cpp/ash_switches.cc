@@ -148,6 +148,14 @@ const char kSpuriousPowerButtonKeyboardAccel[] =
 const char kSpuriousPowerButtonLidAngleChange[] =
     "spurious-power-button-lid-angle-change";
 
+// Chromebases' touchscreens can be used to wake from suspend, unlike the
+// touchscreens on other Chrome OS devices. If set, the touchscreen is kept
+// enabled while the screen is off so that it can be used to turn the screen
+// back on after it has been turned off for inactivity but before the system has
+// suspended.
+const char kTouchscreenUsableWhileScreenOff[] =
+    "touchscreen-usable-while-screen-off";
+
 // By default we use classic IME (i.e. InputMethodChromeOS) in kMus. This flag
 // enables the IME service (i.e. InputMethodMus) instead.
 const char kUseIMEService[] = "use-ime-service";

@@ -88,6 +88,10 @@ class ASH_EXPORT PowerButtonDisplayController
   // Saves the most recent timestamp that screen state changed.
   base::TimeTicks screen_state_last_changed_;
 
+  // Controls whether the touchscreen is disabled when the screen is turned off
+  // due to user inactivity.
+  bool disable_touchscreen_while_screen_off_ = true;
+
   // Time source for performed action times.
   base::TickClock* tick_clock_;  // Not owned.
 
