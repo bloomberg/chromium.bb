@@ -285,4 +285,8 @@ const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";
 // be applied.
 const char kMinimumRequiredChromeVersion[] = "cros.min_version.chrome";
 
+// String indicating what name should be advertised for casting to.
+// If the string is empty or blank the system name will be used.
+const char kCastReceiverName[] = "cros.device.cast_receiver.name";
+
 }  // namespace chromeos

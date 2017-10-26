@@ -132,6 +132,8 @@ CHROMEOS_EXPORT extern const char kTPMFirmwareUpdateSettings[];
 
 CHROMEOS_EXPORT extern const char kMinimumRequiredChromeVersion[];
 
+CHROMEOS_EXPORT extern const char kCastReceiverName[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
