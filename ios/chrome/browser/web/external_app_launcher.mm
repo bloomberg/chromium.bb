@@ -85,7 +85,7 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
 // Returns the Phone/FaceTime call argument from |URL|.
 + (NSString*)formatCallArgument:(NSURL*)URL;
 
-// YES when there is a prompt shown by |requestToOpenURL|.
+// Returns whether there is a prompt shown by |requestToOpenURL| or not.
 @property(nonatomic, getter=isPromptActive) BOOL promptActive;
 // Used to check for repeated launches and provide policy for launching apps.
 @property(nonatomic, strong) ExternalAppsLaunchPolicyDecider* policyDecider;
@@ -111,12 +111,12 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
 // if there is no such application available.
 - (BOOL)openURL:(const GURL&)gURL linkClicked:(BOOL)linkClicked;
 // Presents an alert controller on the root view controller with |prompt| as
-// body text, |accept label| and |reject label| as button labels, with
-// |acceptHandler| and |rejectHandlers| as handlers for the buttons.
+// body text, |accept label| and |reject label| as button labels, and
+// a non null |responseHandler| that takes a boolean to handle user response.
 - (void)showExternalAppLauncherPrompt:(NSString*)prompt
                           acceptLabel:(NSString*)acceptLabel
                           rejectLabel:(NSString*)rejectLabel
-                      responseHandler:(void (^)(BOOL response))responseHandler;
+                      responseHandler:(void (^_Nonnull)(BOOL))responseHandler;
 @end
 
 @implementation ExternalAppLauncher
@@ -212,7 +212,7 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
 - (void)showExternalAppLauncherPrompt:(NSString*)prompt
                           acceptLabel:(NSString*)acceptLabel
                           rejectLabel:(NSString*)rejectLabel
-                      responseHandler:(void (^)(BOOL response))responseHandler {
+                      responseHandler:(void (^_Nonnull)(BOOL))responseHandler {
   UIAlertController* alertController =
       [UIAlertController alertControllerWithTitle:nil
                                           message:prompt
@@ -282,6 +282,7 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
     case ExternalAppLaunchPolicyPrompt: {
       __weak ExternalAppLauncher* weakSelf = self;
       GURL appURL = gURL;
+      GURL sourceURL = sourcePageURL;
       _promptActive = YES;
       NSString* promptBody =
           l10n_util::GetNSString(IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP);
@@ -295,9 +296,9 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
                             acceptLabel:allowLabel
                             rejectLabel:blockLabel
                         responseHandler:^(BOOL allowed) {
-                          if (!weakSelf)
-                            return;
                           ExternalAppLauncher* strongSelf = weakSelf;
+                          if (!strongSelf)
+                            return;
                           if (allowed) {
                             // By confirming that user want to launch the
                             // application, there is no need to check for
@@ -308,8 +309,8 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
                             // dialogs are implemented, update this to
                             // always prompt instead of blocking the app.
                             [strongSelf.policyDecider
-                                blockLaunchingAppURL:gURL
-                                   fromSourcePageURL:sourcePageURL];
+                                blockLaunchingAppURL:appURL
+                                   fromSourcePageURL:sourceURL];
                           }
                           UMA_HISTOGRAM_BOOLEAN(
                               "IOS.RepeatedExternalAppPromptResponse", allowed);

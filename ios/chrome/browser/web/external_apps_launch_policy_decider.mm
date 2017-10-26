@@ -16,12 +16,12 @@ const int kMaxAllowedConsecutiveExternalAppLaunches = 2;
 
 @interface ExternalAppsLaunchPolicyDecider ()
 // Maps between external application redirection key and state.
-// the key is a space separated combination of the absloute string for the
+// the key is a space separated combination of the absolute string for the
 // original source URL, and the scheme of the external Application URL.
 @property(nonatomic, strong)
     NSMutableDictionary<NSString*, ExternalAppLaunchingState*>*
         appLaunchingStates;
-// Generates key for |appURL| and |sourceURL| to be used to reterieve state from
+// Generates key for |appURL| and |sourceURL| to be used to retrieve state from
 // |appLaunchingStates|.
 + (NSString*)stateKeyForAppURL:(const GURL&)appURL
                      sourceURL:(const GURL&)sourceURL;

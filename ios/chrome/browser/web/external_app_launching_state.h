@@ -7,23 +7,21 @@
 
 #import <Foundation/Foundation.h>
 
-// Default maximum allowed seconds betwene 2 launches to be considered
+// Default maximum allowed seconds between 2 launches to be considered
 // consecutive.
-extern const double kDefaultMaxSecondsBetweenConsecutiveLaunches;
+extern const double kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches;
 
 // ExternalAppLaunchingState is a state for a single external application
 // represented by timestamp of the last time the app was launched, and the
 // number of consecutive launches. Launches are considered consecutive when the
 // time difference between them are less than
-// |kDefaultMaxSecondsBetweenConsecutiveLaunches|.
+// |kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches|.
 // The ExternalAppLaunchingState doesn't know the source URL nor the destination
 // URL, the ExternalAppsLaunchPolicyDecider object will have an
 // ExternalAppLaunchingState object for  each sourceURL/Application Scheme pair.
 @interface ExternalAppLaunchingState : NSObject
-// Updates the maximum time allowed between 2 launches to be considered
-// consecutive launches.
-+ (void)setMaxSecondsBetweenConsecutiveLaunches:(double)seconds;
-
+// The max allowed seconds between 2 launches to be considered consecutive.
+@property(class, nonatomic) double maxSecondsBetweenConsecutiveLaunches;
 // Counts the number of current consecutive launches for the app.
 @property(nonatomic, readonly) int consecutiveLaunchesCount;
 // YES if the user blocked this app from launching for the current session.

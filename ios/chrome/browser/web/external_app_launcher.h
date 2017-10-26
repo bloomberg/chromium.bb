@@ -18,8 +18,8 @@ class GURL;
 // by the |sourcePageURL| page in a short time frame, in that case a prompt will
 // appear to the user with an option to block the application from launching.
 // Then the method also checks for user interaction and for schemes that require
-// special handling (eg. facetome, mailto) and may present the user with a
-// confirmation dialog to open the applicaiton.
+// special handling (eg. facetime, mailto) and may present the user with a
+// confirmation dialog to open the application.
 // If there is no such application available or it's not possible to open the
 // application the method returns NO.
 - (BOOL)requestToOpenURL:(const GURL&)gURL

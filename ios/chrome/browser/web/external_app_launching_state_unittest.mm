@@ -19,6 +19,8 @@ using ExternalAppLaunchingStateTest = PlatformTest;
 // predefined max allowed time between consecutive launches.
 TEST_F(ExternalAppLaunchingStateTest, TestUpdateWithLaunchRequest) {
   ExternalAppLaunchingState* state = [[ExternalAppLaunchingState alloc] init];
+  EXPECT_EQ(kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches,
+            [ExternalAppLaunchingState maxSecondsBetweenConsecutiveLaunches]);
   double maxSecondsBetweenLaunches = 0.25;
   [ExternalAppLaunchingState
       setMaxSecondsBetweenConsecutiveLaunches:maxSecondsBetweenLaunches];
@@ -38,4 +40,8 @@ TEST_F(ExternalAppLaunchingStateTest, TestUpdateWithLaunchRequest) {
   EXPECT_EQ(1, state.consecutiveLaunchesCount);
   [state updateWithLaunchRequest];
   EXPECT_EQ(2, state.consecutiveLaunchesCount);
+  // reset back to the default value.
+  [ExternalAppLaunchingState
+      setMaxSecondsBetweenConsecutiveLaunches:
+          kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches];
 }
