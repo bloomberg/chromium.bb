@@ -39,7 +39,6 @@ class MessageCenterSettingsControllerChromeOs
       override;
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
-  void OnNotifierSettingsClosing() override;
   void OnNotifierAdvancedSettingsRequested(
       const message_center::NotifierId& notifier_id,
       const std::string* notification_id) override;

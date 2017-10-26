@@ -28,8 +28,6 @@ class WebPageNotifierController : public NotifierController {
                           const message_center::NotifierId& notifier_id,
                           bool enabled) override;
 
-  void OnNotifierSettingsClosing() override;
-
  private:
   void OnFaviconLoaded(const GURL& url,
                        const favicon_base::FaviconImageResult& favicon_result);

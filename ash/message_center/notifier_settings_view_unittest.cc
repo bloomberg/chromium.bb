@@ -51,9 +51,6 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
   void SetNotifierEnabled(const NotifierId& notifier_id,
                           bool enabled) override {}
 
-  // Called when the settings window is closed.
-  void OnNotifierSettingsClosing() override {}
-
   void OnNotifierAdvancedSettingsRequested(
       const NotifierId& notifier_id,
       const std::string* notification_id) override {

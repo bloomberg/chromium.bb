@@ -98,12 +98,6 @@ void MessageCenterSettingsControllerChromeOs::SetNotifierEnabled(
                                                  enabled);
 }
 
-void MessageCenterSettingsControllerChromeOs::OnNotifierSettingsClosing() {
-  for (auto& source : sources_) {
-    source.second->OnNotifierSettingsClosing();
-  }
-}
-
 void MessageCenterSettingsControllerChromeOs::
     OnNotifierAdvancedSettingsRequested(const NotifierId& notifier_id,
                                         const std::string* notification_id) {

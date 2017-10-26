@@ -101,12 +101,6 @@ void ArcApplicationNotifierControllerChromeOS::OnNotificationsEnabledChanged(
       enabled);
 }
 
-void ArcApplicationNotifierControllerChromeOS::OnNotifierSettingsClosing() {
-  icons_.clear();
-  package_to_app_ids_.clear();
-  StopObserving();
-}
-
 void ArcApplicationNotifierControllerChromeOS::OnIconUpdated(ArcAppIcon* icon) {
   observer_->OnIconImageUpdated(
       message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,

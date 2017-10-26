@@ -36,7 +36,6 @@ class ArcApplicationNotifierControllerChromeOS
   void SetNotifierEnabled(Profile* profile,
                           const message_center::NotifierId& notifier_id,
                           bool enabled) override;
-  void OnNotifierSettingsClosing() override;
 
  private:
   // Overriden from ArcAppIcon::Observer.
