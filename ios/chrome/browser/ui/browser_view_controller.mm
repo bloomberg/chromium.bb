@@ -1988,7 +1988,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       _toolbarCoordinator.webToolbarController;
 
   _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
-  _sadTabCoordinator.dispatcher = _dispatcher;
+  _sadTabCoordinator.baseViewController = self;
+  _sadTabCoordinator.dispatcher = self.dispatcher;
 
   _pageInfoCoordinator =
       [[PageInfoLegacyCoordinator alloc] initWithBaseViewController:self];
@@ -5157,7 +5158,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)userTappedSendFeedback:(UIView*)view {
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppFeedbackChosen"));
   _rateThisAppDialog = nil;
-  [self.dispatcher showReportAnIssue];
+  [self.dispatcher showReportAnIssueFromViewController:self];
 }
 
 - (void)userTappedDismiss:(UIView*)view {

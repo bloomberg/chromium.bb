@@ -64,7 +64,7 @@ const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     0,                                    nil },
   { IDS_IOS_OPTIONS_REPORT_AN_ISSUE,      kToolsMenuReportAnIssueId,
     TOOLS_REPORT_AN_ISSUE,
-    @selector(showReportAnIssue),       ToolbarTypeAll,
+    nullptr,                              ToolbarTypeAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_FIND_IN_PAGE,      kToolsMenuFindInPageId,
     TOOLS_SHOW_FIND_IN_PAGE,

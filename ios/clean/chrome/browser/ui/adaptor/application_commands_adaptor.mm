@@ -63,8 +63,9 @@
   [self showAlert:@"showSavePasswordsSettings"];
 }
 
-- (void)showReportAnIssue {
-  [self showAlert:@"showReportAnIssue"];
+- (void)showReportAnIssueFromViewController:
+    (UIViewController*)baseViewController {
+  [self showAlert:@"showReportAnIssueFromViewController:"];
 }
 
 - (void)openURL:(OpenUrlCommand*)command {
