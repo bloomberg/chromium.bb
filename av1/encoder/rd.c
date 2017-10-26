@@ -595,11 +595,9 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
         av1_cost_tokens_from_cdf(pcost->eob_cost[ctx],
                                  fc->eob_flag_cdf[tx_size][plane][ctx], NULL);
 
-#if CONFIG_EOB_FIRST
       for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->eob_extra_cost[ctx],
                                  fc->eob_extra_cdf[tx_size][plane][ctx], NULL);
-#endif
 
       for (int ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->dc_sign_cost[ctx],

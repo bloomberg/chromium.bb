@@ -15,12 +15,10 @@
 #define REDUCE_CONTEXT_DEPENDENCY 0
 #define MIN_SCAN_IDX_REDUCE_CONTEXT_DEPENDENCY 0
 
-#if CONFIG_EOB_FIRST
 extern const int16_t k_eob_group_start[12];
 extern const int16_t k_eob_offset_bits[12];
 int16_t get_eob_pos_token(int eob, int16_t *extra);
 int get_eob_pos_ctx(int eob_token);
-#endif
 
 extern const int16_t av1_coeff_band_4x4[16];
 
@@ -159,21 +157,12 @@ static INLINE int get_base_ctx(const uint8_t *const levels,
 }
 
 #define BR_CONTEXT_POSITION_NUM 8  // Base range coefficient context
-#if CONFIG_EOB_FIRST
 static const int br_ref_offset[BR_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
   { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 },
   { 0, 1 },   { 1, -1 }, { 1, 0 },  { 1, 1 },
   /* clang-format on*/
 };
-#else
-static const int br_ref_offset[BR_CONTEXT_POSITION_NUM][2] = {
-  /* clang-format off*/
-  { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 },
-  { 0, 1 },   { 1, -1 }, { 1, 0 },  { 1, 1 },
-  /* clang-format on*/
-};
-#endif
 
 static const int br_level_map[9] = {
   0, 0, 1, 1, 2, 2, 3, 3, 3,
@@ -278,7 +267,7 @@ static INLINE int get_br_ctx_coeff(const tran_low_t *const tcoeffs,
 }
 
 #define SIG_REF_OFFSET_NUM 7
-#if CONFIG_EOB_FIRST
+
 static const int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { 2, 1 }, { 2, 0 }, { 1, 2 }, { 1, 1 }, { 1, 0 }, { 0, 2 }, { 0, 1 },
 };
@@ -316,52 +305,6 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
   }
   return count;
 }
-#else
-static const int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
-  { -2, -1 }, { -2, 0 }, { -1, -2 }, { -1, -1 },
-  { -1, 0 },  { 0, -2 }, { 0, -1 },
-};
-
-#if REDUCE_CONTEXT_DEPENDENCY
-static INLINE int get_nz_count(const void *const tcoeffs, const int bwl,
-                               const int height, const int row, const int col,
-                               const int coeff_is_byte_flag, const int prev_row,
-                               const int prev_col) {
-  int count = 0;
-  for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
-    const int ref_row = row + sig_ref_offset[idx][0];
-    const int ref_col = col + sig_ref_offset[idx][1];
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
-        ref_col >= (1 << bwl) || (prev_row == ref_row && prev_col == ref_col))
-      continue;
-    const int nb_pos = (ref_row << bwl) + ref_col;
-    count +=
-        ((coeff_is_byte_flag ? ((const uint8_t *)tcoeffs)[nb_pos]
-                             : ((const tran_low_t *)tcoeffs)[nb_pos]) != 0);
-  }
-  return count;
-}
-#else
-static INLINE int get_nz_count(const void *const tcoeffs, const int bwl,
-                               const int height, const int row, const int col,
-                               const int coeff_is_byte_flag) {
-  int count = 0;
-  for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
-    const int ref_row = row + sig_ref_offset[idx][0];
-    const int ref_col = col + sig_ref_offset[idx][1];
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
-        ref_col >= (1 << bwl))
-      continue;
-    const int nb_pos = (ref_row << bwl) + ref_col;
-    count +=
-        ((coeff_is_byte_flag ? ((const uint8_t *)tcoeffs)[nb_pos]
-                             : ((const tran_low_t *)tcoeffs)[nb_pos]) != 0);
-  }
-  return count;
-}
-#endif
-
-#endif
 
 static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
   switch (tx_type) {
@@ -381,10 +324,7 @@ static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
 // count to ctx
 static INLINE int get_nz_map_ctx_from_count(int count,
                                             int coeff_idx,  // raster order
-                                            int bwl,
-#if CONFIG_EOB_FIRST
-                                            int height,
-#endif
+                                            int bwl, int height,
                                             TX_TYPE tx_type) {
   (void)tx_type;
   const int row = coeff_idx >> bwl;
@@ -403,7 +343,6 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   int offset = 0;
 #endif
 
-#if CONFIG_EOB_FIRST
   (void)height;
   ctx = (count + 1) >> 1;
 
@@ -428,41 +367,6 @@ static INLINE int get_nz_map_ctx_from_count(int count,
       return offset + 10 + ctx;
     }
   }
-#else
-  if (row == 0 && col == 0) return offset + 0;
-
-  if (row == 0 && col == 1) return offset + 1 + count;
-
-  if (row == 1 && col == 0) return offset + 3 + count;
-
-  if (row == 1 && col == 1) {
-    ctx = (count + 1) >> 1;
-
-    assert(5 + ctx <= 7);
-
-    return offset + 5 + ctx;
-  }
-
-  if (row == 0) {
-    ctx = (count + 1) >> 1;
-
-    assert(ctx < 2);
-    return offset + 8 + ctx;
-  }
-
-  if (col == 0) {
-    ctx = (count + 1) >> 1;
-
-    assert(ctx < 2);
-    return offset + 10 + ctx;
-  }
-
-  ctx = count >> 1;
-
-  assert(12 + ctx < 16);
-
-  return offset + 12 + ctx;
-#endif
 }
 
 static INLINE int get_nz_map_ctx(const void *const tcoeffs, const int scan_idx,
@@ -472,35 +376,11 @@ static INLINE int get_nz_map_ctx(const void *const tcoeffs, const int scan_idx,
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
-#if REDUCE_CONTEXT_DEPENDENCY
-  int prev_coeff_idx;
-  int prev_row;
-  int prev_col;
-  if (scan_idx > MIN_SCAN_IDX_REDUCE_CONTEXT_DEPENDENCY) {
-    prev_coeff_idx = scan[scan_idx - 1];  // raster order
-    prev_row = prev_coeff_idx >> bwl;
-    prev_col = prev_coeff_idx - (prev_row << bwl);
-  } else {
-    prev_coeff_idx = -1;
-    prev_row = -1;
-    prev_col = -1;
-  }
-  const int count = get_nz_count(tcoeffs, bwl, height, row, col,
-                                 coeff_is_byte_flag, prev_row, prev_col);
-#else
-#if CONFIG_EOB_FIRST
+
   int tx_class = get_tx_class(tx_type);
   int count = get_nz_count(tcoeffs, bwl, height, row, col, tx_class,
                            coeff_is_byte_flag);
-#else
-  int count = get_nz_count(tcoeffs, bwl, height, row, col, coeff_is_byte_flag);
-#endif
-#endif
-  return get_nz_map_ctx_from_count(count, coeff_idx, bwl,
-#if CONFIG_EOB_FIRST
-                                   height,
-#endif
-                                   tx_type);
+  return get_nz_map_ctx_from_count(count, coeff_idx, bwl, height, tx_type);
 }
 
 static INLINE int get_eob_ctx(const int coeff_idx,  // raster order

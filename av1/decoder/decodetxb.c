@@ -255,7 +255,6 @@ static INLINE int read_nz_map_horiz(aom_reader *r, uint8_t *levels, int plane,
 }
 #endif
 
-#if CONFIG_EOB_FIRST
 static INLINE int rec_eob_pos(int16_t eob_token, int16_t extra) {
   int eob = k_eob_group_start[eob_token];
   if (eob > 2) {
@@ -263,7 +262,6 @@ static INLINE int rec_eob_pos(int16_t eob_token, int16_t extra) {
   }
   return eob;
 }
-#endif
 
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             aom_reader *r, int blk_row, int blk_col, int block,
@@ -315,8 +313,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
-
-#if CONFIG_EOB_FIRST
 
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
       (counts) ? &counts->nz_map[txs_ctx][plane_type] : NULL;
@@ -389,42 +385,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
   }
-#else
 
-#if CONFIG_CTX1D
-  const int16_t *iscan = scan_order->iscan;
-  TX_CLASS tx_class = get_tx_class(tx_type);
-  if (tx_class == TX_CLASS_2D) {
-    *eob =
-        read_nz_map(r, levels, plane, scan, tx_size, tx_type, ec_ctx, counts);
-  } else {
-#if LV_MAP_PROB
-    const int eob_mode = av1_read_record_bin(
-        counts, r, ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], 2,
-        ACCT_STR);
-#else
-    const int eob_mode =
-        aom_read(r, ec_ctx->eob_mode[txs_ctx][plane_type][tx_class], ACCT_STR);
-#endif
-    if (counts) ++counts->eob_mode[txs_ctx][plane_type][tx_class][eob_mode];
-    if (eob_mode == 0) {
-      *eob =
-          read_nz_map(r, levels, plane, scan, tx_size, tx_type, ec_ctx, counts);
-    } else {
-      assert(tx_class == TX_CLASS_VERT || tx_class == TX_CLASS_HORIZ);
-      if (tx_class == TX_CLASS_VERT)
-        *eob = read_nz_map_vert(r, levels, plane, scan, iscan, tx_size, tx_type,
-                                ec_ctx, counts);
-      else
-        *eob = read_nz_map_horiz(r, levels, plane, scan, iscan, tx_size,
-                                 tx_type, ec_ctx, counts);
-    }
-  }
-#else
-  *eob = read_nz_map(r, levels, plane, scan, tx_size, tx_type, ec_ctx, counts);
-#endif
-
-#endif
   *max_scan_line = *eob;
 
   int i;

@@ -149,14 +149,12 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
         fc->eob_flag_cdf[tx_size][plane][ctx][2] = 0;
       }
 
-#if CONFIG_EOB_FIRST
       for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
         fc->eob_extra_cdf[tx_size][plane][ctx][0] =
             AOM_ICDF(128 * (aom_cdf_prob)fc->eob_extra[tx_size][plane][ctx]);
         fc->eob_extra_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
         fc->eob_extra_cdf[tx_size][plane][ctx][2] = 0;
       }
-#endif
     }
   }
 
@@ -233,7 +231,6 @@ void av1_init_lv_map(AV1_COMMON *cm) {
   }
 }
 
-#if CONFIG_EOB_FIRST
 const int16_t k_eob_group_start[12] = { 0,  1,  2,  3,   5,   9,
                                         17, 33, 65, 129, 257, 513 };
 const int16_t k_eob_offset_bits[12] = { 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -276,5 +273,3 @@ int16_t get_eob_pos_token(int eob, int16_t *extra) {
 
   return t;
 }
-
-#endif
