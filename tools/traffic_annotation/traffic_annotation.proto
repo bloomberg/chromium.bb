@@ -62,18 +62,11 @@ message NetworkTrafficAnnotation {
 
   // Meta information about the network request.
   message TrafficSemantics {
-    // Justification for an empty AuditPolicy policy.
-    // Typically this can be either a TODO or a hint that the annotation is
-    // made upstream in the code. For example, if net::URLFetcher::Create() has
-    // an annotation, the net::TCPClientSocket() that is used by the URLFetcher
-    // does not need to be annotated as well.
-    string empty_policy_justification = 1;
-
     // What component triggers the request. The components should be human
     // readable and don’t need to reflect the components/ directory. Avoid
     // abbreviations.
     // Examples: spellchecker, component updater, website
-    string sender = 2;
+    string sender = 1;
 
     // Plaintext description of the network request in language that is
     // understandable by admins (ideally also users). Please avoid acronyms.
@@ -87,21 +80,21 @@ message NetworkTrafficAnnotation {
     //   language. Google returns a list of suggested spellings, which will be
     //   displayed in the context menu.
     // - A network request that comes from web content (a page the user visits)
-    string description = 3;
+    string description = 2;
 
     // What triggered the network request. Use a textual description. This
     // should be a human readable string.
     // For things that are clearly part of the website (resource load, form
     // submission, fetch by a service worker,...), you *may* just put “website”
     // here.
-    string trigger = 4;
+    string trigger = 3;
 
     // What nature of data is being sent. This should be a human readable
     // string. Any user data and/or PII should be pointed out.
     // Examples: “log files from /var/...”, “statistics about foobar”, “the
     // signature of a form of a website”, “installed extensions and their
     // version”, “a word on a website the user tapped on”
-    string data = 5;
+    string data = 4;
 
     enum Destination {
       // Do not use this value. It's just a placeholder for default value.
@@ -123,15 +116,20 @@ message NetworkTrafficAnnotation {
       // need more categories.
       OTHER = 1000;
     }
-    Destination destination = 6;
+    Destination destination = 5;
 
     // Human readable description in case the destination points to OTHER.
-    string destination_other = 7;
+    string destination_other = 6;
   }
 
   TrafficSemantics semantics = 3;
 
   message TrafficPolicy {
+    // Justification for an empty traffic policy.
+    // This can be used for network requests that do not have any traffic
+    // control policy, such as those inside the network stack.
+    string empty_policy_justification = 1;
+
     enum CookiesAllowed {
       // Do not use this value. It's just a placeholder for default value.
       UNSPECIFIED = 0;
@@ -141,7 +139,7 @@ message NetworkTrafficAnnotation {
       // correct).
       YES = 2;
     }
-    CookiesAllowed cookies_allowed = 1;
+    CookiesAllowed cookies_allowed = 2;
 
     // If a request sends or stores cookies/channel IDs/... (i.e. if
     // cookies_allowed is true), we want to know which cookie store is being
@@ -156,21 +154,20 @@ message NetworkTrafficAnnotation {
     //   io_thread()->system_url_request_context_getter()), put "system" here.
     // Otherwise, please explain (e.g. SafeBrowsing uses a separate cookie
     // store).
-    string cookies_store = 2;
+    string cookies_store = 3;
 
     // Human readable description of how to enable/disable a feature that
-    // triggers this network request by a user. Use “NA”, if no such setting
-    // exists (e.g. “Disable ‘Use a web service to help resolve spelling
-    // errors.’ in Chrome’s settings under Advanced”).
-    string setting = 3;
+    // triggers this network request by a user (e.g. “Disable ‘Use a web service
+    // to help resolve spelling errors.’ in settings under Advanced”).
+    string setting = 4;
 
     // Example policy configuration that disables this network request.
     // This would be a text serialized protobuf of any enterprise policy.
     // see out/Debug/gen/components/policy/proto/chrome_settings.proto
-    repeated enterprise_management.ChromeSettingsProto chrome_policy = 4;
+    repeated enterprise_management.ChromeSettingsProto chrome_policy = 5;
 
     // Justification for not having a policy that disables this feature.
-    string policy_exception_justification = 5;
+    string policy_exception_justification = 6;
   }
 
   TrafficPolicy policy = 4;

@@ -180,8 +180,8 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
                           const std::vector<AnnotationInstance>& annotations) {
   std::vector<std::string> lines;
   std::string title =
-      "Unique ID\tReview by pconunsel\tEmpty Policy Justification\t"
-      "Sender\tDescription\tTrigger\tData\tDestination\tCookies Allowed\t"
+      "Unique ID\tReview by pconunsel\tSender\tDescription\tTrigger\t"
+      "Data\tDestination\tEmpty Policy Justification\tCookies Allowed\t"
       "Cookies Store\tSetting\tChrome Policy\tComments\tSource File\tHash Code";
 
   for (auto& instance : annotations) {
@@ -193,8 +193,6 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
 
     // Semantics.
     const auto semantics = instance.proto.semantics();
-    line += base::StringPrintf("\t%s",
-                               semantics.empty_policy_justification().c_str());
     line += base::StringPrintf("\t%s", semantics.sender().c_str());
     line += base::StringPrintf(
         "\t%s", UpdateTextForTSV(semantics.description()).c_str());
@@ -231,6 +229,8 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
 
     // Policy.
     const auto policy = instance.proto.policy();
+    line +=
+        base::StringPrintf("\t%s", policy.empty_policy_justification().c_str());
     line +=
         policy.cookies_allowed() ==
                 traffic_annotation::
