@@ -8,12 +8,11 @@
 #include <tuple>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/installer/zucchini/algorithm.h"
 #include "chrome/installer/zucchini/io_utils.h"
 #include "chrome/installer/zucchini/type_win_pe.h"
-
-#include "base/logging.h"
 
 namespace zucchini {
 

@@ -11,6 +11,11 @@
 
 namespace zucchini {
 
+TEST(ImageUtilsTest, Bitness) {
+  EXPECT_EQ(4U, WidthOf(kBit32));
+  EXPECT_EQ(8U, WidthOf(kBit64));
+}
+
 TEST(ImageUtilsTest, IsMarked) {
   EXPECT_FALSE(IsMarked(0x00000000));
   EXPECT_TRUE(IsMarked(0x80000000));
