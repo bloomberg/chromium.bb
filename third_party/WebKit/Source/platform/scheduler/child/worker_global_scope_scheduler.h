@@ -7,10 +7,12 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/web_task_runner_impl.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {
+
+class WebTaskRunner;
+
 namespace scheduler {
 
 class WorkerScheduler;
@@ -37,7 +39,7 @@ class PLATFORM_EXPORT WorkerGlobalScopeScheduler {
   // state of the parent document (https://crbug.com/670534).
 
  private:
-  scoped_refptr<WebTaskRunnerImpl> unthrottled_task_runner_;
+  scoped_refptr<TaskQueue> task_queue_;
 
 #if DCHECK_IS_ON()
   bool is_disposed_ = false;
