@@ -185,11 +185,6 @@ public class BottomSheetContentController
                 clearBottomSheetContents(mBottomSheet.getCurrentSheetContent() == null);
             }
         }
-
-        @Override
-        public void onSheetLayout(int windowHeight, int containerHeight) {
-            setTranslationY(containerHeight - windowHeight);
-        }
     };
 
     private BottomSheet mBottomSheet;
