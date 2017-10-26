@@ -20,10 +20,9 @@ const string kNavigation_ServiceWorkerSpec = "navigation:service_worker";
 // worker.
 struct ServiceWorkerProviderInfoForStartWorker {
   int32 provider_id;
-  // |registration| and |attributes| are information about the service worker's
+  // |registration| is information about the service worker's
   // registration used to populate ServiceWorkerGlobalScope#registration.
   blink.mojom.ServiceWorkerRegistrationObjectInfo registration;
-  ServiceWorkerVersionAttributes attributes;
 
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;

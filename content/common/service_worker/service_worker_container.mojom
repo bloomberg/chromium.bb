@@ -24,8 +24,7 @@ interface ServiceWorkerContainerHost {
            blink.mojom.ServiceWorkerRegistrationOptions options)
     => (blink.mojom.ServiceWorkerErrorType error,
         string? error_msg,
-        blink.mojom.ServiceWorkerRegistrationObjectInfo? registration,
-        ServiceWorkerVersionAttributes? attributes);
+        blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
 
   // Corresponds to navigator.serviceWorker.getRegistration().
   // Gets the service worker registration for the |client_url|.
@@ -34,8 +33,7 @@ interface ServiceWorkerContainerHost {
   GetRegistration(url.mojom.Url client_url)
     => (blink.mojom.ServiceWorkerErrorType error,
         string? error_msg,
-        blink.mojom.ServiceWorkerRegistrationObjectInfo? registration,
-        ServiceWorkerVersionAttributes? attributes);
+        blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
 
   // Corresponds to navigator.serviceWorker.getRegistrations().
   // Gets all service worker registrations which have the same origin with
@@ -45,16 +43,14 @@ interface ServiceWorkerContainerHost {
   GetRegistrations()
     => (blink.mojom.ServiceWorkerErrorType error,
         string? error_msg,
-        array<blink.mojom.ServiceWorkerRegistrationObjectInfo>? infos,
-        array<ServiceWorkerVersionAttributes>? attrs);
+        array<blink.mojom.ServiceWorkerRegistrationObjectInfo>? infos);
 
   // Corresponds to navigator.serviceWorker.ready.
   // Returns the service worker registration for the ServiceWorkerContainer that
   // this interface hosts, once such a registration exists and has an active
   // service worker.
   GetRegistrationForReady()
-    => (blink.mojom.ServiceWorkerRegistrationObjectInfo? registration,
-        ServiceWorkerVersionAttributes? attributes);
+    => (blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
 
   // S13nServiceWorker:
   // Gets a Mojo end point to the controller ServiceWorker. This may start a

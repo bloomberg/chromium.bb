@@ -38,10 +38,8 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationHandle;
 class ServiceWorkerVersion;
-struct ServiceWorkerVersionAttributes;
 
 // ServiceWorkerDispatcherHost is the browser-side endpoint for several IPC
 // messages for service workers. There is a 1:1 correspondence between
@@ -99,24 +97,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
-
-  // Gets or creates the registration and version handles appropriate for
-  // representing |registration| inside of |provider_host|. Sets |out_info| and
-  // |out_attrs| accordingly for these handles.
-  void GetRegistrationObjectInfoAndVersionAttributes(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerRegistration* registration,
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* out_info,
-      ServiceWorkerVersionAttributes* out_attrs);
-
-  // Returns an object info representing |registration|. The object info holds a
-  // Mojo connection to the ServiceWorkerRegistrationHandle for the
-  // |registration| to ensure the handle stays alive while the object info is
-  // alive. A new handle is created if one does not already exist.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  CreateRegistrationObjectInfo(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerRegistration* registration);
+  ServiceWorkerRegistrationHandle* FindServiceWorkerRegistrationHandle(
+      int provider_id,
+      int64_t registration_id);
 
   ResourceContext* resource_context() { return resource_context_; }
 
@@ -203,10 +186,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void ReleaseSourceInfo(const ServiceWorkerClientInfo& source_info);
   void ReleaseSourceInfo(
       const blink::mojom::ServiceWorkerObjectInfo& source_info);
-
-  ServiceWorkerRegistrationHandle* FindRegistrationHandle(
-      int provider_id,
-      int64_t registration_id);
 
   ServiceWorkerContextCore* GetContext();
   // Returns the provider host with id equal to |provider_id|, or nullptr

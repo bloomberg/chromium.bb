@@ -774,10 +774,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
 
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
-  ServiceWorkerVersionAttributes version_attrs;
-  provider_context_->TakeRegistrationForServiceWorkerGlobalScope(
-      &registration_info, &version_attrs);
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
+      provider_context_->TakeRegistrationForServiceWorkerGlobalScope();
   DCHECK_NE(registration_info->registration_id,
             blink::mojom::kInvalidServiceWorkerRegistrationId);
 
@@ -793,8 +791,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
         std::move(pending_controller_request_), GetWeakPtr());
   }
 
-  SetRegistrationInServiceWorkerGlobalScope(std::move(registration_info),
-                                            version_attrs);
+  SetRegistrationInServiceWorkerGlobalScope(std::move(registration_info));
 
   (*instance_host_)->OnThreadStarted(WorkerThread::GetCurrentId());
 
@@ -1381,8 +1378,7 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
 }
 
 void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
-    const ServiceWorkerVersionAttributes& attrs) {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
@@ -1392,7 +1388,7 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
   // living on the worker thread.
   proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
       dispatcher->GetOrCreateRegistrationForServiceWorkerGlobalScope(
-          std::move(info), attrs, io_thread_task_runner_)));
+          std::move(info), io_thread_task_runner_)));
 }
 
 void ServiceWorkerContextClient::DispatchActivateEvent(
@@ -1522,8 +1518,8 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
          event->source.service_worker_info.version_id !=
              blink::mojom::kInvalidServiceWorkerVersionId);
   std::unique_ptr<ServiceWorkerHandleReference> handle =
-      ServiceWorkerHandleReference::Adopt(event->source.service_worker_info,
-                                          sender_.get());
+      ServiceWorkerHandleReference::Adopt(
+          event->source.service_worker_info.Clone(), sender_);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           sender_.get(), main_thread_task_runner_.get());

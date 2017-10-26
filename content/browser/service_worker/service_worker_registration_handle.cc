@@ -75,6 +75,7 @@ ServiceWorkerRegistrationHandle::~ServiceWorkerRegistrationHandle() {
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationHandle::CreateObjectInfo() {
+  DCHECK(provider_host_);
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
   info->handle_id = handle_id_;
   info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
@@ -83,6 +84,13 @@ ServiceWorkerRegistrationHandle::CreateObjectInfo() {
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
   if (!remote_registration_)
     info->request = mojo::MakeRequest(&remote_registration_);
+
+  info->installing = provider_host_->GetOrCreateServiceWorkerHandle(
+      registration_->installing_version());
+  info->waiting = provider_host_->GetOrCreateServiceWorkerHandle(
+      registration_->waiting_version());
+  info->active = provider_host_->GetOrCreateServiceWorkerHandle(
+      registration_->active_version());
   return info;
 }
 
