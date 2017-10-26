@@ -18,4 +18,9 @@ Keyframe::PropertySpecificKeyframe::CreateInterpolation(
       const_cast<PropertySpecificKeyframe*>(&end));
 }
 
+bool Keyframe::CompareOffsets(const scoped_refptr<Keyframe>& a,
+                              const scoped_refptr<Keyframe>& b) {
+  return a->Offset() < b->Offset();
+}
+
 }  // namespace blink
