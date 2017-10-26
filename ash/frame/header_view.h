@@ -28,7 +28,9 @@ class Widget;
 namespace ash {
 
 class DefaultHeaderPainter;
+class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
+enum class FrameBackButtonState;
 
 // View which paints the frame header (title, caption buttons...). It slides off
 // and on screen in immersive fullscreen.
@@ -49,6 +51,8 @@ class ASH_EXPORT HeaderView : public views::View,
 
   void set_is_immersive_delegate(bool value) { is_immersive_delegate_ = value; }
 
+  FrameCaptionButton* back_button() { return back_button_; }
+
   // Schedules a repaint for the entire title.
   void SchedulePaintForTitle();
 
@@ -66,6 +70,8 @@ class ASH_EXPORT HeaderView : public views::View,
 
   // Sets the avatar icon to be displayed on the frame header.
   void SetAvatarIcon(const gfx::ImageSkia& avatar);
+
+  void SetBackButtonState(FrameBackButtonState state);
 
   void SizeConstraintsChanged();
 
@@ -107,6 +113,8 @@ class ASH_EXPORT HeaderView : public views::View,
   std::unique_ptr<DefaultHeaderPainter> header_painter_;
 
   views::ImageView* avatar_icon_;
+
+  FrameCaptionButton* back_button_ = nullptr;
 
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;

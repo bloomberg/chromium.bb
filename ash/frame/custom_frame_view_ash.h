@@ -25,6 +25,12 @@ class HeaderView;
 class ImmersiveFullscreenController;
 class ImmersiveFullscreenControllerDelegate;
 
+enum class FrameBackButtonState {
+  kInvisible,
+  kVisibleEnabled,
+  kVisibleDisabled,
+};
+
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
 // client view takes up the entire widget and the window header is an overlay.
@@ -60,6 +66,10 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // will have some transparency added when the frame is drawn.
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
 
+  // Set the back buttons status. If |show| is true, the button becomes visible.
+  // |enabled| controls the enabled/disabled state of the back button.
+  void SetBackButtonState(FrameBackButtonState state);
+
   // Sets the height of the header. If |height| has no value (the default), the
   // preferred height is used.
   void SetHeaderHeight(base::Optional<int> height);
@@ -86,6 +96,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void SchedulePaintInRect(const gfx::Rect& r) override;
+  void SetVisible(bool visible) override;
 
   const views::View* GetAvatarIconViewForTest() const;
 

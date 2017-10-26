@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/frame/caption_buttons/frame_back_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -32,12 +33,31 @@ TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {
   w->Show();
 
   DefaultHeaderPainter painter;
-  painter.Init(w.get(), w->non_client_view()->frame_view(), &container);
+  painter.Init(w.get(), w->non_client_view()->frame_view(), &container,
+               nullptr);
   painter.UpdateLeftHeaderView(&window_icon);
   painter.LayoutHeader();
   gfx::Rect title_bounds = painter.GetTitleBounds();
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
             title_bounds.CenterPoint().y());
+}
+
+TEST_F(DefaultHeaderPainterTest, BackButtonAlignment) {
+  std::unique_ptr<Widget> w = CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
+  ash::FrameCaptionButtonContainerView container(w.get());
+  ash::FrameBackButton back;
+
+  DefaultHeaderPainter painter;
+  painter.Init(w.get(), w->non_client_view()->frame_view(), &container,
+               nullptr);
+  painter.UpdateBackButton(&back);
+  painter.LayoutHeader();
+  gfx::Rect title_bounds = painter.GetTitleBounds();
+  // The back button should be positioned at the left edge, and
+  // vertically centered.
+  EXPECT_EQ(back.bounds().CenterPoint().y(), title_bounds.CenterPoint().y());
+  EXPECT_EQ(0, back.bounds().x());
 }
 
 // Ensure the light icons are used when appropriate.
@@ -51,7 +71,8 @@ TEST_F(DefaultHeaderPainterTest, LightIcons) {
   w->Show();
 
   DefaultHeaderPainter painter;
-  painter.Init(w.get(), w->non_client_view()->frame_view(), &container);
+  painter.Init(w.get(), w->non_client_view()->frame_view(), &container,
+               nullptr);
 
   // Check by default light icons are not used.
   painter.mode_ = HeaderPainter::MODE_ACTIVE;

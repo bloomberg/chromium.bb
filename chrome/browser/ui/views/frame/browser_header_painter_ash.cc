@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 
 #include "ash/ash_layout_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -125,7 +126,8 @@ void BrowserHeaderPainterAsh::Init(
     BrowserView* browser_view,
     BrowserNonClientFrameViewAsh* header_view,
     views::View* window_icon,
-    ash::FrameCaptionButtonContainerView* caption_button_container) {
+    ash::FrameCaptionButtonContainerView* caption_button_container,
+    ash::FrameCaptionButton* back_button) {
   DCHECK(frame);
   DCHECK(browser_view);
   DCHECK(header_view);
@@ -142,6 +144,10 @@ void BrowserHeaderPainterAsh::Init(
   // Use light images in incognito, even when a custom theme is installed. The
   // incognito window with a custom theme is still darker than a normal window.
   caption_button_container_->SetUseLightImages(is_incognito_);
+
+  back_button_ = back_button;
+  if (back_button_)
+    back_button_->set_use_light_images(is_incognito_);
 }
 
 int BrowserHeaderPainterAsh::GetMinimumHeaderWidth() const {
@@ -227,6 +233,12 @@ void BrowserHeaderPainterAsh::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
 }
 
+void BrowserHeaderPainterAsh::SetPaintAsActive(bool paint_as_active) {
+  caption_button_container_->SetPaintAsActive(paint_as_active);
+  if (back_button_)
+    back_button_->set_paint_as_active(paint_as_active);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // gfx::AnimationDelegate overrides:
 
@@ -301,6 +313,7 @@ gfx::Rect BrowserHeaderPainterAsh::GetPaintedBounds() const {
 }
 
 gfx::Rect BrowserHeaderPainterAsh::GetTitleBounds() const {
-  return ash::HeaderPainterUtil::GetTitleBounds(window_icon_,
-      caption_button_container_, BrowserFrame::GetTitleFontList());
+  views::View* left_view = window_icon_ ? window_icon_ : back_button_;
+  return ash::HeaderPainterUtil::GetTitleBounds(
+      left_view, caption_button_container_, BrowserFrame::GetTitleFontList());
 }

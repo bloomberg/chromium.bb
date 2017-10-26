@@ -17,6 +17,7 @@
 class TabIconView;
 
 namespace ash {
+class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 class HeaderPainter;
 }
@@ -83,6 +84,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ToggleTabletModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
+                           V1BackButton);
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
                            FrameLayout);
 
@@ -108,6 +111,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
+
+  ash::FrameCaptionButton* back_button_;
 
   // For popups, the window icon.
   TabIconView* window_icon_;

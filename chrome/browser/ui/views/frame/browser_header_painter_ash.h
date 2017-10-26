@@ -15,6 +15,7 @@ class BrowserNonClientFrameViewAsh;
 class BrowserView;
 
 namespace ash {
+class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 }
 
@@ -35,11 +36,13 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   ~BrowserHeaderPainterAsh() override;
 
   // BrowserHeaderPainterAsh does not take ownership of any of the parameters.
+  // |back_button| can be nullptr, and the frame will not have a back button.
   void Init(views::Widget* frame,
             BrowserView* browser_view,
             BrowserNonClientFrameViewAsh* header_view,
             views::View* window_icon,
-            ash::FrameCaptionButtonContainerView* caption_button_container);
+            ash::FrameCaptionButtonContainerView* caption_button_container,
+            ash::FrameCaptionButton* back_button);
 
   // ash::HeaderPainter overrides:
   int GetMinimumHeaderWidth() const override;
@@ -49,6 +52,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   int GetHeaderHeightForPainting() const override;
   void SetHeaderHeightForPainting(int height) override;
   void SchedulePaintForTitle() override;
+  void SetPaintAsActive(bool paint_as_active) override;
 
  private:
   // gfx::AnimationDelegate override:
@@ -85,6 +89,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   BrowserNonClientFrameViewAsh* view_;
 
   views::View* window_icon_;
+  ash::FrameCaptionButton* back_button_ = nullptr;
   ash::FrameCaptionButtonContainerView* caption_button_container_;
   int painted_height_;
 

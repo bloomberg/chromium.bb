@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
 #include "ash/ash_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -439,4 +441,43 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeBrowserViewTest,
                                     {IDC_SELECT_PREVIOUS_TAB, 0}};
   for (const auto& datum : test_data)
     RunTest(datum.command, datum.expected_index);
+}
+
+namespace {
+
+class BrowserNonClientFrameViewAshBackButtonTest : public InProcessBrowserTest {
+ public:
+  BrowserNonClientFrameViewAshBackButtonTest() = default;
+  ~BrowserNonClientFrameViewAshBackButtonTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(ash::switches::kAshEnableV1AppBackButton);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAshBackButtonTest);
+};
+
+}  // namespace
+
+// Test if the V1 apps' frame has a back button.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
+                       V1BackButton) {
+  browser()->window()->Close();
+
+  // Open a new browser window (app or tabbed depending on a parameter).
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(),
+      browser()->profile(), true);
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser = new Browser(params);
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+      browser->window()->GetNativeWindow());
+
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+  ASSERT_TRUE(frame_view->back_button_);
+  EXPECT_TRUE(frame_view->back_button_->visible());
+  EXPECT_TRUE(frame_view->back_button_->enabled());
 }

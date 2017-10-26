@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -16,6 +17,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -311,6 +314,111 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   EXPECT_EQ(
       GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
       delegate->GetCustomFrameViewTopBorderHeight());
+}
+
+namespace {
+
+class TestTarget : public ui::AcceleratorTarget {
+ public:
+  TestTarget() = default;
+  ~TestTarget() override = default;
+
+  size_t count() const { return count_; }
+
+  // Overridden from ui::AcceleratorTarget:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+    ++count_;
+    return true;
+  }
+
+  bool CanHandleAccelerators() const override { return true; }
+
+ private:
+  size_t count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTarget);
+};
+
+}  // namespace
+
+TEST_F(CustomFrameViewAshTest, BackButton) {
+  ash::AcceleratorController* controller =
+      ash::Shell::Get()->accelerator_controller();
+
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  views::Widget* widget = new views::Widget();
+  views::Widget::InitParams params;
+  params.context = CurrentContext();
+  params.delegate = delegate;
+  widget->Init(params);
+  widget->Show();
+
+  ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+  accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
+  TestTarget target_back_press;
+  controller->Register({accelerator_back_press}, &target_back_press);
+
+  ui::Accelerator accelerator_back_release(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+  accelerator_back_release.set_key_state(ui::Accelerator::KeyState::RELEASED);
+  TestTarget target_back_release;
+  controller->Register({accelerator_back_release}, &target_back_release);
+
+  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  HeaderView* header_view =
+      static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
+  EXPECT_FALSE(header_view->back_button());
+  custom_frame_view->SetBackButtonState(FrameBackButtonState::kVisibleDisabled);
+  EXPECT_TRUE(header_view->back_button());
+  EXPECT_FALSE(header_view->back_button()->enabled());
+
+  // Back button is disabled, so clicking on it should not should
+  // generate back key sequence.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(header_view->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_EQ(0u, target_back_press.count());
+  EXPECT_EQ(0u, target_back_release.count());
+
+  custom_frame_view->SetBackButtonState(FrameBackButtonState::kVisibleEnabled);
+  EXPECT_TRUE(header_view->back_button());
+  EXPECT_TRUE(header_view->back_button()->enabled());
+
+  // Back button is now enabled, so clicking on it should generate
+  // back key sequence.
+  generator.MoveMouseTo(header_view->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_EQ(1u, target_back_press.count());
+  EXPECT_EQ(1u, target_back_release.count());
+
+  custom_frame_view->SetBackButtonState(FrameBackButtonState::kInvisible);
+  EXPECT_FALSE(header_view->back_button());
+}
+
+// Make sure that client view occupies the entire window when the
+// frame is hidden.
+TEST_F(CustomFrameViewAshTest, FrameVisibility) {
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  views::Widget* widget = new views::Widget();
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(10, 10, 200, 100);
+  params.context = CurrentContext();
+  params.delegate = delegate;
+  widget->Init(params);
+  widget->Show();
+
+  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  EXPECT_EQ(gfx::Size(200, 67), widget->client_view()->GetLocalBounds().size());
+
+  custom_frame_view->SetVisible(false);
+  widget->GetRootView()->Layout();
+  EXPECT_EQ(gfx::Size(200, 100),
+            widget->client_view()->GetLocalBounds().size());
+  EXPECT_FALSE(widget->non_client_view()->frame_view()->visible());
+
+  custom_frame_view->SetVisible(true);
+  widget->GetRootView()->Layout();
+  EXPECT_EQ(gfx::Size(200, 67), widget->client_view()->GetLocalBounds().size());
+  EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
 }
 
 }  // namespace ash
