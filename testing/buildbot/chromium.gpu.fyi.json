@@ -157,23 +157,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",
@@ -564,23 +547,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "args": [
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
       {
         "args": [
           "context_lost",
@@ -1430,23 +1396,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",
@@ -1869,23 +1818,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",
@@ -2276,23 +2208,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "args": [
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
       {
         "args": [
           "context_lost",
