@@ -10,9 +10,9 @@
 #include "components/spellcheck/renderer/spellcheck_worditerator.h"
 #include "components/spellcheck/renderer/spelling_engine.h"
 
-
-SpellcheckLanguage::SpellcheckLanguage()
-    : platform_spelling_engine_(CreateNativeSpellingEngine()) {
+SpellcheckLanguage::SpellcheckLanguage(
+    service_manager::LocalInterfaceProvider* embedder_provider)
+    : platform_spelling_engine_(CreateNativeSpellingEngine(embedder_provider)) {
 }
 
 SpellcheckLanguage::~SpellcheckLanguage() {

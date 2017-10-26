@@ -15,6 +15,10 @@
 #include "base/strings/string16.h"
 #include "components/spellcheck/renderer/spellcheck_worditerator.h"
 
+namespace service_manager {
+class LocalInterfaceProvider;
+}
+
 class SpellingEngine;
 
 class SpellcheckLanguage {
@@ -30,7 +34,8 @@ class SpellcheckLanguage {
     IS_MISSPELLED
   };
 
-  SpellcheckLanguage();
+  explicit SpellcheckLanguage(
+      service_manager::LocalInterfaceProvider* embedder_provider);
   ~SpellcheckLanguage();
 
   void Init(base::File file, const std::string& language);

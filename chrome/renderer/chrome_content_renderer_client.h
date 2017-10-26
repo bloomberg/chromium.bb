@@ -22,11 +22,13 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_thread.h"
 #include "extensions/features/features.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "v8/include/v8.h"
 
 #if defined (OS_CHROMEOS)
@@ -106,7 +108,9 @@ enum YouTubeRewriteStatus {
 
 }  // namespace internal
 
-class ChromeContentRendererClient : public content::ContentRendererClient {
+class ChromeContentRendererClient
+    : public content::ContentRendererClient,
+      public service_manager::LocalInterfaceProvider {
  public:
   ChromeContentRendererClient();
   ~ChromeContentRendererClient() override;
@@ -243,6 +247,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
+
+  // service_manager::LocalInterfaceProvider:
+  void GetInterface(const std::string& name,
+                    mojo::ScopedMessagePipeHandle request_handle) override;
 
   // Initialises |safe_browsing_| if it is not already initialised.
   void InitSafeBrowsingIfNecessary();

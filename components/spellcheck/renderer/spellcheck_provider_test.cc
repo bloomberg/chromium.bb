@@ -29,12 +29,12 @@ void FakeTextCheckingCompletion::DidCancelCheckingText() {
 }
 
 TestingSpellCheckProvider::TestingSpellCheckProvider()
-    : SpellCheckProvider(nullptr, new SpellCheck),
+    : SpellCheckProvider(nullptr, new SpellCheck(nullptr), nullptr),
       spelling_service_call_count_(0),
       binding_(this) {}
 
 TestingSpellCheckProvider::TestingSpellCheckProvider(SpellCheck* spellcheck)
-    : SpellCheckProvider(nullptr, spellcheck),
+    : SpellCheckProvider(nullptr, spellcheck, nullptr),
       spelling_service_call_count_(0),
       binding_(this) {}
 

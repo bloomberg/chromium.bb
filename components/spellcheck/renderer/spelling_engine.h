@@ -11,8 +11,13 @@
 #include "base/files/file.h"
 #include "base/strings/string16.h"
 
+namespace service_manager {
+class LocalInterfaceProvider;
+}
+
 // Creates the platform's "native" spelling engine.
-class SpellingEngine* CreateNativeSpellingEngine();
+class SpellingEngine* CreateNativeSpellingEngine(
+    service_manager::LocalInterfaceProvider* embedder_provider);
 
 // Interface to different spelling engines.
 class SpellingEngine {

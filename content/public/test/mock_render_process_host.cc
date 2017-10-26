@@ -34,6 +34,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "media/media_features.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
@@ -53,6 +54,9 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       is_process_backgrounded_(false),
       is_unused_(true),
       keep_alive_ref_count_(0),
+      child_identity_(mojom::kRendererServiceName,
+                      BrowserContext::GetServiceUserIdFor(browser_context),
+                      base::StringPrintf("%d", id_)),
       shared_bitmap_allocation_notifier_impl_(
           viz::ServerSharedBitmapManager::current()),
       weak_ptr_factory_(this) {

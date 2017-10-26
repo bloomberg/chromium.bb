@@ -601,7 +601,7 @@ class TestSpellCheckMessageFilter : public content::BrowserMessageFilter,
   }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  void ShellCheckHostRequest(spellcheck::mojom::SpellCheckHostRequest request) {
+  void SpellCheckHostRequest(spellcheck::mojom::SpellCheckHostRequest request) {
     EXPECT_FALSE(binding_.is_bound());
     binding_.Bind(std::move(request));
   }
@@ -666,25 +666,25 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  void ExposeInterfacesToRenderer(
-      service_manager::BinderRegistry* registry,
-      content::AssociatedInterfaceRegistry* associated_registry,
-      content::RenderProcessHost* render_process_host) override {
-    // Expose the default interfaces.
-    ChromeContentBrowserClient::ExposeInterfacesToRenderer(
-        registry, associated_registry, render_process_host);
+  void OverrideOnBindInterface(
+      const service_manager::BindSourceInfo& remote_info,
+      const std::string& name,
+      mojo::ScopedMessagePipeHandle* handle) override {
+    if (name != spellcheck::mojom::SpellCheckHost::Name_)
+      return;
 
-    scoped_refptr<TestSpellCheckMessageFilter> filter =
-        GetSpellCheckMessageFilterForProcess(render_process_host);
-    CHECK(filter);
+    spellcheck::mojom::SpellCheckHostRequest request(std::move(*handle));
 
     // Override the default SpellCheckHost interface.
     auto ui_task_runner = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::UI);
-    registry->AddInterface(
-        base::Bind(&TestSpellCheckMessageFilter::ShellCheckHostRequest, filter),
-        ui_task_runner);
+    ui_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&TestBrowserClientForSpellCheck::BindSpellCheckHostRequest,
+                   base::Unretained(this), base::Passed(&request),
+                   remote_info));
   }
+
 #endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   // Retrieves the registered filter for the given RenderProcessHost. It will
@@ -701,6 +701,19 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   }
 
  private:
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  void BindSpellCheckHostRequest(
+      spellcheck::mojom::SpellCheckHostRequest request,
+      const service_manager::BindSourceInfo& source_info) {
+    content::RenderProcessHost* host =
+        content::RenderProcessHost::FromRendererIdentity(source_info.identity);
+    scoped_refptr<TestSpellCheckMessageFilter> filter =
+        GetSpellCheckMessageFilterForProcess(host);
+    CHECK(filter);
+    filter->SpellCheckHostRequest(std::move(request));
+  }
+#endif
+
   std::vector<scoped_refptr<TestSpellCheckMessageFilter>> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserClientForSpellCheck);
@@ -787,24 +800,23 @@ class TestBrowserClientForSpellCheckPanelHost
   TestBrowserClientForSpellCheckPanelHost() = default;
 
   // ContentBrowserClient overrides.
-  void ExposeInterfacesToRenderer(
-      service_manager::BinderRegistry* registry,
-      content::AssociatedInterfaceRegistry* associated_registry,
-      content::RenderProcessHost* render_process_host) override {
-    hosts_.push_back(
-        base::MakeUnique<TestSpellCheckPanelHost>(render_process_host));
+  void OverrideOnBindInterface(
+      const service_manager::BindSourceInfo& remote_info,
+      const std::string& name,
+      mojo::ScopedMessagePipeHandle* handle) override {
+    if (name != spellcheck::mojom::SpellCheckPanelHost::Name_)
+      return;
 
-    // Expose the default interfaces.
-    ChromeContentBrowserClient::ExposeInterfacesToRenderer(
-        registry, associated_registry, render_process_host);
+    spellcheck::mojom::SpellCheckPanelHostRequest request(std::move(*handle));
 
-    // Override the default SpellCheckPanelHost interface.
+    // Override the default SpellCheckHost interface.
     auto ui_task_runner = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::UI);
-    registry->AddInterface(
-        base::Bind(&TestSpellCheckPanelHost::SpellCheckPanelHostRequest,
-                   base::Unretained(hosts_.back().get())),
-        ui_task_runner);
+    ui_task_runner->PostTask(
+        FROM_HERE, base::Bind(&TestBrowserClientForSpellCheckPanelHost::
+                                  BindSpellCheckPanelHostRequest,
+                              base::Unretained(this), base::Passed(&request),
+                              remote_info));
   }
 
   TestSpellCheckPanelHost* GetTestSpellCheckPanelHostForProcess(
@@ -816,7 +828,26 @@ class TestBrowserClientForSpellCheckPanelHost
     return nullptr;
   }
 
+  void RunUntilBind() {
+    base::RunLoop run_loop;
+    quit_on_bind_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
  private:
+  void BindSpellCheckPanelHostRequest(
+      spellcheck::mojom::SpellCheckPanelHostRequest request,
+      const service_manager::BindSourceInfo& source_info) {
+    content::RenderProcessHost* render_process_host =
+        content::RenderProcessHost::FromRendererIdentity(source_info.identity);
+    auto spell_check_panel_host =
+        std::make_unique<TestSpellCheckPanelHost>(render_process_host);
+    spell_check_panel_host->SpellCheckPanelHostRequest(std::move(request));
+    hosts_.push_back(std::move(spell_check_panel_host));
+    std::move(quit_on_bind_closure_).Run();
+  }
+
+  base::OnceClosure quit_on_bind_closure_;
   std::vector<std::unique_ptr<TestSpellCheckPanelHost>> hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserClientForSpellCheckPanelHost);
@@ -844,6 +875,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckPanelTest) {
   cross_site_subframe->GetRemoteInterfaces()->GetInterface(
       &spell_check_panel_client);
   spell_check_panel_client->ToggleSpellPanel(false);
+  browser_client.RunUntilBind();
 
   TestSpellCheckPanelHost* host =
       browser_client.GetTestSpellCheckPanelHostForProcess(

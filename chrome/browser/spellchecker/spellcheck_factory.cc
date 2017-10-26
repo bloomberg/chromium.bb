@@ -15,6 +15,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -25,15 +26,13 @@ SpellcheckService* SpellcheckServiceFactory::GetForContext(
 }
 
 // static
-SpellcheckService* SpellcheckServiceFactory::GetForRenderProcessId(
-    int render_process_id) {
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id);
-  if (!host)
-    return NULL;
-  content::BrowserContext* context = host->GetBrowserContext();
+SpellcheckService* SpellcheckServiceFactory::GetForRenderer(
+    const service_manager::Identity& renderer_identity) {
+  content::BrowserContext* context =
+      content::BrowserContext::GetBrowserContextForServiceUserId(
+          renderer_identity.user_id());
   if (!context)
-    return NULL;
+    return nullptr;
   return GetForContext(context);
 }
 

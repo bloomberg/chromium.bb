@@ -15,6 +15,7 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "services/service_manager/public/cpp/local_interface_provider.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
@@ -26,7 +27,8 @@ class VisitedLinkSlave;
 
 namespace android_webview {
 
-class AwContentRendererClient : public content::ContentRendererClient {
+class AwContentRendererClient : public content::ContentRendererClient,
+                                public service_manager::LocalInterfaceProvider {
  public:
   AwContentRendererClient();
   ~AwContentRendererClient() override;
@@ -67,6 +69,10 @@ class AwContentRendererClient : public content::ContentRendererClient {
   bool ShouldUseMediaPlayerForURL(const GURL& url) override;
 
  private:
+  // service_manager::LocalInterfaceProvider:
+  void GetInterface(const std::string& name,
+                    mojo::ScopedMessagePipeHandle request_handle) override;
+
   // Returns |true| if we should use the SafeBrowsing mojo service. Initialises
   // |safe_browsing_| on the first call as a side-effect.
   bool UsingSafeBrowsingMojoService();

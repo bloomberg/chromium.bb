@@ -13,6 +13,8 @@
           "mash::mojom::Launchable"
         ],
         "renderer": [
+          "spellcheck::mojom::SpellCheckHost",
+          "spellcheck::mojom::SpellCheckPanelHost",
           "startup_metric_utils::mojom::StartupMetricHost"
         ]
       },

@@ -171,7 +171,7 @@ void ChromeRenderViewTest::InitChromeContentRendererClient(
           std::make_unique<ChromeExtensionsDispatcherDelegate>()));
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  client->SetSpellcheck(new SpellCheck());
+  client->SetSpellcheck(new SpellCheck(nullptr));
 #endif
 }
 

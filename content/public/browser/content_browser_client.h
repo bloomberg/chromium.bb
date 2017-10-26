@@ -147,6 +147,11 @@ namespace mojom {
 class NetworkContext;
 }
 
+CONTENT_EXPORT void OverrideOnBindInterface(
+    const service_manager::BindSourceInfo& remote_info,
+    const std::string& name,
+    mojo::ScopedMessagePipeHandle* handle);
+
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
 // principal implementation. The methods are assumed to be called on the UI
@@ -727,6 +732,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Registers services to be loaded in the browser process by the Service
   // Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+
+  virtual void OverrideOnBindInterface(
+      const service_manager::BindSourceInfo& remote_info,
+      const std::string& name,
+      mojo::ScopedMessagePipeHandle* handle) {}
 
   using OutOfProcessServiceMap = std::map<std::string, base::string16>;
 

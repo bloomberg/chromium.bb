@@ -256,7 +256,10 @@ void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
   // language code for text breaking to the renderer. (Text breaking is required
   // for the context menu to show spelling suggestions.) Initialization must
   // happen on UI thread.
-  SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (host)
+    SpellcheckServiceFactory::GetForRenderer(host->GetChildIdentity());
 
   // SpellingRequest self-destructs.
   SpellingRequest* request =

@@ -9,6 +9,7 @@
 #include "components/spellcheck/browser/spelling_service_client.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 #if !BUILDFLAG(ENABLE_SPELLCHECK)
 #error "Spellcheck should be enabled."
@@ -21,11 +22,12 @@ struct SpellCheckResult;
 
 class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
  public:
-  explicit SpellCheckHostImpl(int render_process_id);
+  explicit SpellCheckHostImpl(
+      const service_manager::Identity& renderer_identity);
   ~SpellCheckHostImpl() override;
 
-  static void Create(int render_process_id,
-                     spellcheck::mojom::SpellCheckHostRequest request);
+  static void Create(spellcheck::mojom::SpellCheckHostRequest request,
+                     const service_manager::BindSourceInfo& source_info);
 
  private:
   friend class TestSpellCheckHostImpl;
@@ -57,8 +59,8 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
   // is null if the render process is being shut down.
   virtual SpellcheckService* GetSpellcheckService() const;
 
-  // The process ID of our render process host.
-  const int render_process_id_;
+  // The identity of the renderer service.
+  const service_manager::Identity renderer_identity_;
 
   // A JSON-RPC client that calls the remote Spelling service.
   SpellingServiceClient client_;
