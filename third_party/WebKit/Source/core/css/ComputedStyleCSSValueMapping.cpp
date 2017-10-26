@@ -1208,14 +1208,14 @@ static CSSValue* ValueForGridPosition(const GridPosition& position) {
   return list;
 }
 
-static LayoutRect SizingBox(const LayoutObject* layout_object) {
-  if (!layout_object->IsBox())
+static LayoutRect SizingBox(const LayoutObject& layout_object) {
+  if (!layout_object.IsBox())
     return LayoutRect();
 
-  const LayoutBox* box = ToLayoutBox(layout_object);
-  return box->Style()->BoxSizing() == EBoxSizing::kBorderBox
-             ? box->BorderBoxRect()
-             : box->ComputedCSSContentBoxRect();
+  const LayoutBox& box = ToLayoutBox(layout_object);
+  return box.StyleRef().BoxSizing() == EBoxSizing::kBorderBox
+             ? box.BorderBoxRect()
+             : box.ComputedCSSContentBoxRect();
 }
 
 static CSSValue* RenderTextDecorationFlagsToCSSValue(
@@ -2205,17 +2205,31 @@ ComputedStyleCSSValueMapping::GetVariables(const ComputedStyle& style) {
   return nullptr;
 }
 
-static bool WidthOrHeightPropertyAppliesToObject(const LayoutObject& object) {
+// https://drafts.csswg.org/cssom/#resolved-value
+//
+// For 'width' and 'height':
+//
+// If the property applies to the element or pseudo-element and the resolved
+// value of the display property is not none or contents, then the resolved
+// value is the used value. Otherwise the resolved value is the computed value
+// (https://drafts.csswg.org/css-cascade-4/#computed-value).
+//
+// (Note that the computed value exists even when the property does not apply.)
+static bool WidthOrHeightShouldReturnUsedValue(const LayoutObject* object) {
+  // The display property is 'none'.
+  if (!object)
+    return false;
   // According to
   // http://www.w3.org/TR/CSS2/visudet.html#the-width-property and
   // http://www.w3.org/TR/CSS2/visudet.html#the-height-property, the "width" or
   // "height" property does not apply to non-atomic inline elements.
-  if (!object.IsAtomicInlineLevel() && object.IsInline())
+  if (!object->IsAtomicInlineLevel() && object->IsInline())
     return false;
-
-  // Non-root SVG should be treated as non-atomic inline no matter how we
-  // implement it internally (e.g. LayoutSVGBlock is based on LayoutBlockFlow).
-  return !object.IsSVGChild();
+  // Non-root SVG objects return the resolved value.
+  // TODO(fs): Return the used value for <image>, <rect> and <foreignObject> (to
+  // which 'width' or 'height' can be said to apply) too? We don't return the
+  // used value for other geometric properties ('x', 'y' et.c.)
+  return !object->IsSVGChild();
 }
 
 const CSSValue* ComputedStyleCSSValueMapping::Get(
@@ -2725,10 +2739,9 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
                                         allow_visited_style);
 
     case CSSPropertyHeight:
-      if (layout_object) {
-        if (!WidthOrHeightPropertyAppliesToObject(*layout_object))
-          return CSSIdentifierValue::Create(CSSValueAuto);
-        return ZoomAdjustedPixelValue(SizingBox(layout_object).Height(), style);
+      if (WidthOrHeightShouldReturnUsedValue(layout_object)) {
+        return ZoomAdjustedPixelValue(SizingBox(*layout_object).Height(),
+                                      style);
       }
       return ZoomAdjustedPixelValueForLength(style.Height(), style);
     case CSSPropertyWebkitHighlight:
@@ -3105,11 +3118,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSPrimitiveValue::Create(style.Widows(),
                                        CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWidth:
-      if (layout_object) {
-        if (!WidthOrHeightPropertyAppliesToObject(*layout_object))
-          return CSSIdentifierValue::Create(CSSValueAuto);
-        return ZoomAdjustedPixelValue(SizingBox(layout_object).Width(), style);
-      }
+      if (WidthOrHeightShouldReturnUsedValue(layout_object))
+        return ZoomAdjustedPixelValue(SizingBox(*layout_object).Width(), style);
       return ZoomAdjustedPixelValueForLength(style.Width(), style);
     case CSSPropertyWillChange:
       return ValueForWillChange(style.WillChangeProperties(),
