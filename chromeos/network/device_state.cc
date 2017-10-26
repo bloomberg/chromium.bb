@@ -48,17 +48,20 @@ bool DeviceState::PropertyChanged(const std::string& key,
   } else if (key == shill::kProviderRequiresRoamingProperty) {
     return GetBooleanValue(key, value, &provider_requires_roaming_);
   } else if (key == shill::kHomeProviderProperty) {
+    if (!value.is_dict()) {
+      operator_name_.clear();
+      country_code_.clear();
+      return true;
+    }
     const base::Value* operator_name = value.FindKey(shill::kOperatorNameKey);
     if (operator_name)
       operator_name_ = operator_name->GetString();
     if (operator_name_.empty()) {
       const base::Value* operator_code = value.FindKey(shill::kOperatorCodeKey);
-      if (operator_code)
-        operator_name_ = operator_code->GetString();
+      operator_name_ = operator_code ? operator_code->GetString() : "";
     }
     const base::Value* country_code = value.FindKey(shill::kOperatorCountryKey);
-    if (country_code)
-      country_code_ = country_code->GetString();
+    country_code_ = country_code ? country_code->GetString() : "";
   } else if (key == shill::kTechnologyFamilyProperty) {
     return GetStringValue(key, value, &technology_family_);
   } else if (key == shill::kCarrierProperty) {
