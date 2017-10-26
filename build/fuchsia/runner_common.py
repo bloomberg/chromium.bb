@@ -29,10 +29,13 @@ GUEST_NET = '192.168.3.0/24'
 GUEST_IP_ADDRESS = '192.168.3.9'
 HOST_IP_ADDRESS = '192.168.3.2'
 
+# A string used to uniquely identify this invocation of Fuchsia.
+INSTANCE_ID = str(uuid.uuid1())
+
 # Signals to the host that the the remote binary has finished executing.
 # The UUID reduces the likelihood of the remote end generating the signal
 # by coincidence.
-ALL_DONE_MESSAGE = '*** RUN FINISHED: %s' % uuid.uuid1()
+ALL_DONE_MESSAGE = '*** RUN FINISHED: %s' % INSTANCE_ID
 
 
 def _RunAndCheck(dry_run, args):
@@ -491,12 +494,13 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     # Deploy the boot image to the device.
     bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
     bootserver_command = [bootserver_path, '-1', kernel_path,
-                          bootfs_data.bootfs]
+                          bootfs_data.bootfs, '--', '-o',
+                          'zircon.nodename=%s' % INSTANCE_ID]
     _RunAndCheck(dry_run, bootserver_command)
 
     # Start listening for logging lines.
     process = subprocess.Popen(
-        [os.path.join(SDK_ROOT, 'tools', 'loglistener')],
+        [os.path.join(SDK_ROOT, 'tools', 'loglistener'), INSTANCE_ID],
         stdout=subprocess.PIPE, stdin=open(os.devnull))
   else:
     qemu_path = os.path.join(
