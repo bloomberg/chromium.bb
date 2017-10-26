@@ -742,6 +742,7 @@ shared_library("libchrome") {
   }
 
   public_configs = extra_chrome_shared_library_configs
+  deps += extra_chrome_shared_library_deps
 }
 
 # Ensure that .pak files are built only once (build them in the default
@@ -914,6 +915,7 @@ if (!android_64bit_target_cpu ||
     }
 
     public_configs = extra_chrome_shared_library_configs
+    deps += extra_chrome_shared_library_deps
   }
 } else {
   group("monochrome_secondary_abi_lib") {

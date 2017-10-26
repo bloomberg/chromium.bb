@@ -31,6 +31,9 @@ if (is_android) {
   if (!defined(extra_chrome_shared_library_configs)) {
     extra_chrome_shared_library_configs = []
   }
+  if (!defined(extra_chrome_shared_library_deps)) {
+    extra_chrome_shared_library_deps = []
+  }
 
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_tools/ndk"
