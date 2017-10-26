@@ -9,7 +9,8 @@
 
 using content::RenderThread;
 
-SpellingEngine* CreateNativeSpellingEngine() {
+SpellingEngine* CreateNativeSpellingEngine(
+    service_manager::LocalInterfaceProvider* embedder_provider) {
   return new PlatformSpellingEngine();
 }
 

@@ -22,7 +22,8 @@ class MemoryMappedFile;
 
 class HunspellEngine : public SpellingEngine {
  public:
-  HunspellEngine();
+  explicit HunspellEngine(
+      service_manager::LocalInterfaceProvider* embedder_provider);
   ~HunspellEngine() override;
 
   void Init(base::File file) override;
@@ -58,6 +59,8 @@ class HunspellEngine : public SpellingEngine {
 
   // This flag is true if we have requested dictionary.
   bool dictionary_requested_;
+
+  service_manager::LocalInterfaceProvider* embedder_provider_;
 };
 
 #endif  // COMPONENTS_SPELLCHECK_RENDERER_HUNSPELL_ENGINE_H_

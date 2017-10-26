@@ -30,6 +30,10 @@ struct WebTextCheckingResult;
 template <typename T> class WebVector;
 }
 
+namespace service_manager {
+class LocalInterfaceProvider;
+}
+
 // TODO(morrita): Needs reorg with SpellCheckProvider.
 // See http://crbug.com/73699.
 // Shared spellchecking logic/data for a RenderProcess. All RenderViews use
@@ -45,7 +49,8 @@ class SpellCheck : public content::RenderThreadObserver,
     USE_NATIVE_CHECKER,  // Use native checker to double-check.
   };
 
-  SpellCheck();
+  explicit SpellCheck(
+      service_manager::LocalInterfaceProvider* embedder_provider);
   ~SpellCheck() override;
 
   void AddSpellcheckLanguage(base::File file, const std::string& language);
@@ -156,6 +161,8 @@ class SpellCheck : public content::RenderThreadObserver,
 
   // Custom dictionary spelling engine.
   CustomDictionaryEngine custom_dictionary_;
+
+  service_manager::LocalInterfaceProvider* embedder_provider_;
 
   // Remember state for spellchecking.
   bool spellcheck_enabled_;

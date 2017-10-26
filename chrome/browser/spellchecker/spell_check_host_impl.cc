@@ -12,21 +12,22 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/common/spellcheck_result.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-SpellCheckHostImpl::SpellCheckHostImpl(int render_process_id)
-    : render_process_id_(render_process_id) {}
+SpellCheckHostImpl::SpellCheckHostImpl(
+    const service_manager::Identity& renderer_identity)
+    : renderer_identity_(renderer_identity) {}
 
 SpellCheckHostImpl::~SpellCheckHostImpl() = default;
 
 // static
 void SpellCheckHostImpl::Create(
-    int render_process_id,
-    spellcheck::mojom::SpellCheckHostRequest request) {
+    spellcheck::mojom::SpellCheckHostRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<SpellCheckHostImpl>(render_process_id),
+      base::MakeUnique<SpellCheckHostImpl>(source_info.identity),
       std::move(request));
 }
 
@@ -43,8 +44,7 @@ void SpellCheckHostImpl::RequestDictionary() {
 
   // The spellchecker initialization already started and finished; just
   // send it to the renderer.
-  spellcheck->InitForRenderer(
-      content::RenderProcessHost::FromID(render_process_id_));
+  spellcheck->InitForRenderer(renderer_identity_);
 
   // TODO(rlp): Ensure that we do not initialize the hunspell dictionary
   // more than once if we get requests from different renderers.
@@ -73,16 +73,15 @@ void SpellCheckHostImpl::CallSpellingService(
   }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id_);
-
   // Checks the user profile and sends a JSON-RPC request to the Spelling
   // service if a user enables the "Ask Google for suggestions" option. When
   // a response is received (including an error) from the remote Spelling
   // service, calls CallSpellingServiceDone.
+  content::BrowserContext* context =
+      content::BrowserContext::GetBrowserContextForServiceUserId(
+          renderer_identity_.user_id());
   client_.RequestTextCheck(
-      host ? host->GetBrowserContext() : nullptr,
-      SpellingServiceClient::SPELLCHECK, text,
+      context, SpellingServiceClient::SPELLCHECK, text,
       base::Bind(&SpellCheckHostImpl::CallSpellingServiceDone,
                  base::Unretained(this), base::Passed(&callback)));
 #else
@@ -128,5 +127,5 @@ std::vector<SpellCheckResult> SpellCheckHostImpl::FilterCustomWordResults(
 #endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 SpellcheckService* SpellCheckHostImpl::GetSpellcheckService() const {
-  return SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  return SpellcheckServiceFactory::GetForRenderer(renderer_identity_);
 }

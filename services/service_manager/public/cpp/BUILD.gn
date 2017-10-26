@@ -14,6 +14,7 @@ component("cpp") {
     "interface_binder.h",
     "interface_provider.cc",
     "interface_provider.h",
+    "local_interface_provider.h",
     "service.cc",
     "service.h",
     "service_context.cc",

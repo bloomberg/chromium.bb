@@ -15,7 +15,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -39,11 +39,14 @@ static_assert(int(blink::kWebTextDecorationTypeGrammar) ==
                   int(SpellCheckResult::GRAMMAR),
               "mismatching enums");
 
-SpellCheckProvider::SpellCheckProvider(content::RenderFrame* render_frame,
-                                       SpellCheck* spellcheck)
+SpellCheckProvider::SpellCheckProvider(
+    content::RenderFrame* render_frame,
+    SpellCheck* spellcheck,
+    service_manager::LocalInterfaceProvider* embedder_provider)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
-      spellcheck_(spellcheck) {
+      spellcheck_(spellcheck),
+      embedder_provider_(embedder_provider) {
   DCHECK(spellcheck_);
   if (render_frame)  // NULL in unit tests.
     render_frame->GetWebFrame()->SetTextCheckClient(this);
@@ -56,9 +59,9 @@ spellcheck::mojom::SpellCheckHost& SpellCheckProvider::GetSpellCheckHost() {
   if (spell_check_host_)
     return *spell_check_host_;
 
-  DCHECK(content::RenderThread::Get());
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName, &spell_check_host_);
+  // nullptr in tests.
+  if (embedder_provider_)
+    embedder_provider_->GetInterface(&spell_check_host_);
   return *spell_check_host_;
 }
 

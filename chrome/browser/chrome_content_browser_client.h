@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_service.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/network_service.mojom.h"
 #include "extensions/features/features.h"

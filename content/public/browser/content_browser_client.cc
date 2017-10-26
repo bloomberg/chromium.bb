@@ -33,6 +33,13 @@
 
 namespace content {
 
+void OverrideOnBindInterface(const service_manager::BindSourceInfo& remote_info,
+                             const std::string& name,
+                             mojo::ScopedMessagePipeHandle* handle) {
+  GetContentClient()->browser()->OverrideOnBindInterface(remote_info, name,
+                                                         handle);
+}
+
 BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
   return nullptr;

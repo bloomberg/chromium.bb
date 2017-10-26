@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -166,10 +167,13 @@ void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   OnUseSpellingServiceChanged();
 }
 
-void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
+void SpellcheckService::InitForRenderer(
+    const service_manager::Identity& renderer_identity) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  content::BrowserContext* context = process->GetBrowserContext();
+  content::BrowserContext* context =
+      content::BrowserContext::GetBrowserContextForServiceUserId(
+          renderer_identity.user_id());
   if (SpellcheckServiceFactory::GetForContext(context) != this)
     return;
 
@@ -192,7 +196,9 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   }
 
   spellcheck::mojom::SpellCheckerPtr spellchecker;
-  content::BindInterface(process, &spellchecker);
+  content::BindInterface(
+      content::RenderProcessHost::FromRendererIdentity(renderer_identity),
+      &spellchecker);
   spellchecker->Initialize(std::move(dictionaries), custom_words, enable);
 }
 
@@ -248,7 +254,9 @@ void SpellcheckService::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
-  InitForRenderer(content::Source<content::RenderProcessHost>(source).ptr());
+  InitForRenderer(content::Source<content::RenderProcessHost>(source)
+                      .ptr()
+                      ->GetChildIdentity());
 }
 
 void SpellcheckService::OnCustomDictionaryLoaded() {
@@ -310,7 +318,7 @@ void SpellcheckService::InitForAllRenderers() {
        !i.IsAtEnd(); i.Advance()) {
     content::RenderProcessHost* process = i.GetCurrentValue();
     if (process && process->GetHandle())
-      InitForRenderer(process);
+      InitForRenderer(process->GetChildIdentity());
   }
 }
 

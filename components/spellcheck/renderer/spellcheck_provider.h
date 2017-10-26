@@ -23,6 +23,10 @@ class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 }
 
+namespace service_manager {
+class LocalInterfaceProvider;
+}
+
 // This class deals with asynchronously invoking text spelling and grammar
 // checking services provided by the browser process (host).
 class SpellCheckProvider
@@ -33,8 +37,10 @@ class SpellCheckProvider
   using WebTextCheckCompletions =
       base::IDMap<blink::WebTextCheckingCompletion*>;
 
-  SpellCheckProvider(content::RenderFrame* render_frame,
-                     SpellCheck* spellcheck);
+  SpellCheckProvider(
+      content::RenderFrame* render_frame,
+      SpellCheck* spellcheck,
+      service_manager::LocalInterfaceProvider* embedder_provider);
   ~SpellCheckProvider() override;
 
   // Requests async spell and grammar checks from the platform text checker
@@ -119,6 +125,8 @@ class SpellCheckProvider
 
   // Weak pointer to shared (per renderer) spellcheck data.
   SpellCheck* spellcheck_;
+
+  service_manager::LocalInterfaceProvider* embedder_provider_;
 
   // Interface to the SpellCheckHost.
   spellcheck::mojom::SpellCheckHostPtr spell_check_host_;

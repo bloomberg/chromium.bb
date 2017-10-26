@@ -54,13 +54,11 @@ class SpellCheckTest : public testing::Test {
   }
 
   void ReinitializeSpellCheck(const std::string& language) {
-    spell_check_.reset(new SpellCheck());
+    spell_check_.reset(new SpellCheck(nullptr));
     InitializeSpellCheck(language);
   }
 
-  void UninitializeSpellCheck() {
-    spell_check_.reset(new SpellCheck());
-  }
+  void UninitializeSpellCheck() { spell_check_.reset(new SpellCheck(nullptr)); }
 
   bool InitializeIfNeeded() {
     return spell_check()->InitializeIfNeeded();
@@ -75,9 +73,10 @@ class SpellCheckTest : public testing::Test {
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
-    spell_check_->languages_.push_back(base::MakeUnique<SpellcheckLanguage>());
+    spell_check_->languages_.push_back(
+        base::MakeUnique<SpellcheckLanguage>(nullptr));
     spell_check_->languages_.front()->platform_spelling_engine_.reset(
-        new HunspellEngine);
+        new HunspellEngine(nullptr));
     spell_check_->languages_.front()->Init(std::move(file), language);
 #else
     spell_check_->AddSpellcheckLanguage(std::move(file), language);

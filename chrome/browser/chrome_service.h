@@ -29,6 +29,9 @@ class ChromeService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle handle) override;
 
   service_manager::BinderRegistry registry_;
+  service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>
+      registry_with_source_info_;
 
 #if defined(OS_CHROMEOS)
   chromeos::Launchable launchable_;

@@ -169,7 +169,9 @@ class SpellCheck::SpellcheckRequest {
 // and as such the SpellCheckProviders will never be notified of different
 // values.
 // TODO(groby): Simplify this.
-SpellCheck::SpellCheck() : spellcheck_enabled_(true) {
+SpellCheck::SpellCheck(
+    service_manager::LocalInterfaceProvider* embedder_provider)
+    : embedder_provider_(embedder_provider), spellcheck_enabled_(true) {
   if (!content::ChildThread::Get())
     return;  // Can be NULL in tests.
 
@@ -261,7 +263,8 @@ void SpellCheck::CustomDictionaryChanged(
 // AddSpellcheckLanguage() is called.
 void SpellCheck::AddSpellcheckLanguage(base::File file,
                                        const std::string& language) {
-  languages_.push_back(base::MakeUnique<SpellcheckLanguage>());
+  languages_.push_back(
+      base::MakeUnique<SpellcheckLanguage>(embedder_provider_));
   languages_.back()->Init(std::move(file), language);
 }
 
