@@ -203,9 +203,9 @@ class TwoClientUssSyncTest : public SyncTest {
     // The test infra creates a profile before the two made for sync tests.
     number_of_clients_ignored_ = 1;
 #if defined(OS_CHROMEOS)
-    // ChromeOS will force loading a signin profile and a lock screen apps
-    // profile, so we need to ingore two more clients.
-    number_of_clients_ignored_ += 2;
+    // ChromeOS will force loading a signin profile, so we need to ignore one
+    // more client.
+    number_of_clients_ignored_ += 1;
 #endif
   }
 
