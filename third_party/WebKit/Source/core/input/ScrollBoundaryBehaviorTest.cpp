@@ -63,8 +63,8 @@ void ScrollBoundaryBehaviorTest::SetInnerScrollBoundaryBehavior(
     EScrollBoundaryBehavior x,
     EScrollBoundaryBehavior y) {
   Element* inner = GetDocument().getElementById("inner");
-  inner->MutableComputedStyle()->SetScrollBoundaryBehaviorX(x);
-  inner->MutableComputedStyle()->SetScrollBoundaryBehaviorY(y);
+  inner->MutableComputedStyle()->SetOverscrollBehaviorX(x);
+  inner->MutableComputedStyle()->SetOverscrollBehaviorY(y);
 }
 
 void ScrollBoundaryBehaviorTest::Scroll(double x, double y) {
