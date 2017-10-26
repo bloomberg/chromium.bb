@@ -40,9 +40,11 @@ const char kDataURL[] =
     "<script src=\"../../resources/testharness.js\"></script>"
     "<script src=\"../../resources/testharnessreport.js\"></script>"
     "<script>"
+    "  let i=0;"
     "  document.addEventListener('mousemove', () => {"
     "    var end = performance.now() + 20;"
     "    while(performance.now() < end);"
+    "    document.body.style.backgroundColor = 'rgb(' + (i++) + ',0,0)'"
     "  });"
     "</script>"
     "<style>"
@@ -249,6 +251,8 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
                        gfx::Vector2dF(250, 250));
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED,
             filter->GetAckStateWaitIfNecessary());
+  content::MainThreadFrameObserver observer(GetWidgetHost());
+  observer.Wait();
   const base::Value& trace_data = StopTracing();
 
   const base::DictionaryValue* trace_data_dict;

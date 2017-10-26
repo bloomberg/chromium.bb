@@ -365,8 +365,9 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 
   latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
   // If this event couldn't have caused a gesture event, and it didn't trigger
-  // rendering, we're done processing it.
-  if (!rendering_scheduled) {
+  // rendering, we're done processing it. If the event got coalesced then
+  // terminate it as well.
+  if (!rendering_scheduled || latency->coalesced()) {
     latency->AddLatencyNumber(
         ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, 0);
   }
