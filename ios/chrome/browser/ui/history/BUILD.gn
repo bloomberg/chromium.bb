@@ -31,6 +31,7 @@ source_set("history") {
     "ios_browsing_history_driver.mm",
   ]
   deps = [
+    ":history_base_feature",
     "//base",
     "//base:i18n",
     "//components/browser_sync",
@@ -77,6 +78,16 @@ source_set("history") {
     "MobileCoreServices.framework",
     "QuartzCore.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("history_base_feature") {
+  sources = [
+    "history_base_feature.h",
+    "history_base_feature.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
