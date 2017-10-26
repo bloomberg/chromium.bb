@@ -95,7 +95,7 @@ void ClientProcessImpl::OnChromeMemoryDumpDone(
 }
 
 void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
-    const base::trace_event::MemoryDumpRequestArgs& args) {
+    const base::trace_event::GlobalMemoryDumpRequestArgs& args) {
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,

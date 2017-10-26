@@ -19,6 +19,7 @@ type_mappings = [
   "memory_instrumentation.mojom.HeapProfilingMode=base::trace_event::HeapProfilingMode",
   "memory_instrumentation.mojom.LevelOfDetail=base::trace_event::MemoryDumpLevelOfDetail",
   "memory_instrumentation.mojom.RequestArgs=base::trace_event::MemoryDumpRequestArgs",
+  "memory_instrumentation.mojom.GlobalRequestArgs=base::trace_event::GlobalMemoryDumpRequestArgs",
   "memory_instrumentation.mojom.RawAllocatorDumpEdge=base::trace_event::ProcessMemoryDump::MemoryAllocatorDumpEdge",
   "memory_instrumentation.mojom.RawAllocatorDumpEntry=base::trace_event::MemoryAllocatorDump::Entry[move_only]",
   "memory_instrumentation.mojom.RawAllocatorDump=std::unique_ptr<base::trace_event::MemoryAllocatorDump>[move_only]",

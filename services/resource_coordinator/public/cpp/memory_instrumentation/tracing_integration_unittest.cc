@@ -27,6 +27,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+using testing::AnyNumber;
+using testing::Invoke;
+using testing::Return;
+
+using base::trace_event::GlobalMemoryDumpRequestArgs;
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpArgs;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -39,10 +45,6 @@ using base::trace_event::ProcessMemoryDump;
 using base::trace_event::TraceConfig;
 using base::trace_event::TraceLog;
 using base::trace_event::TraceResultBuffer;
-using testing::_;
-using testing::AnyNumber;
-using testing::Invoke;
-using testing::Return;
 
 namespace memory_instrumentation {
 
@@ -116,11 +118,11 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
   void RegisterClientProcess(mojom::ClientProcessPtr,
                              mojom::ProcessType) override {}
 
-  void RequestGlobalMemoryDump(const MemoryDumpRequestArgs& args,
+  void RequestGlobalMemoryDump(const GlobalMemoryDumpRequestArgs& args,
                                const RequestGlobalMemoryDumpCallback&) override;
 
   void RequestGlobalMemoryDumpAndAppendToTrace(
-      const MemoryDumpRequestArgs& args,
+      const GlobalMemoryDumpRequestArgs& args,
       const RequestGlobalMemoryDumpAndAppendToTraceCallback&) override;
 
   void GetVmRegionsForHeapProfiler(
@@ -237,17 +239,17 @@ class MemoryTracingIntegrationTest : public testing::Test {
 };
 
 void MockCoordinator::RequestGlobalMemoryDump(
-    const MemoryDumpRequestArgs& args,
+    const GlobalMemoryDumpRequestArgs& args,
     const RequestGlobalMemoryDumpCallback& callback) {
   client_->RequestChromeDump(args.dump_type, args.level_of_detail);
   callback.Run(true, mojom::GlobalMemoryDumpPtr());
 }
 
 void MockCoordinator::RequestGlobalMemoryDumpAndAppendToTrace(
-    const MemoryDumpRequestArgs& args,
+    const GlobalMemoryDumpRequestArgs& args,
     const RequestGlobalMemoryDumpAndAppendToTraceCallback& callback) {
   client_->RequestChromeDump(args.dump_type, args.level_of_detail);
-  callback.Run(args.dump_guid, true);
+  callback.Run(1, true);
 }
 
 // Checks that is the ClientProcessImpl is initialized after tracing already

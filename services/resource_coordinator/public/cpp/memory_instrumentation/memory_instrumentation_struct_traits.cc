@@ -166,6 +166,18 @@ bool StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
 }
 
 // static
+bool StructTraits<memory_instrumentation::mojom::GlobalRequestArgsDataView,
+                  base::trace_event::GlobalMemoryDumpRequestArgs>::
+    Read(memory_instrumentation::mojom::GlobalRequestArgsDataView input,
+         base::trace_event::GlobalMemoryDumpRequestArgs* out) {
+  if (!input.ReadDumpType(&out->dump_type))
+    return false;
+  if (!input.ReadLevelOfDetail(&out->level_of_detail))
+    return false;
+  return true;
+}
+
+// static
 bool StructTraits<
     memory_instrumentation::mojom::RawAllocatorDumpEdgeDataView,
     base::trace_event::ProcessMemoryDump::MemoryAllocatorDumpEdge>::

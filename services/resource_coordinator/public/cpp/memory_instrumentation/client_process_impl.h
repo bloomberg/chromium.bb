@@ -57,7 +57,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   // This function will be called by the MemoryDumpScheduler::OnTick and
   // MemoryPeakDetector.
   void RequestGlobalMemoryDump_NoCallback(
-      const base::trace_event::MemoryDumpRequestArgs&);
+      const base::trace_event::GlobalMemoryDumpRequestArgs&);
 
   // mojom::ClientProcess implementation. The Coordinator calls this.
   void RequestChromeMemoryDump(
