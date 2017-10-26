@@ -923,11 +923,10 @@ static bool NeedsControlClipFragmentationAdjustment(const LayoutBox& box) {
 static inline LayoutPoint VisualOffsetFromPaintOffsetRoot(
     const PaintPropertyTreeBuilderFragmentContext& context,
     const PaintLayer* child) {
-  const LayoutBoxModelObject* paint_offset_root =
-      context.current.paint_offset_root;
+  const LayoutObject* paint_offset_root = context.current.paint_offset_root;
   PaintLayer* painting_layer = paint_offset_root->PaintingLayer();
   LayoutPoint result = child->VisualOffsetFromAncestor(painting_layer);
-  if (!paint_offset_root->Layer()) {
+  if (!paint_offset_root->HasLayer()) {
     result.Move(-paint_offset_root->OffsetFromAncestorContainer(
         &painting_layer->GetLayoutObject()));
   }
@@ -1601,7 +1600,13 @@ void PaintPropertyTreeBuilder::UpdateFragments(
     // SVG resources are painted within one or more other locations in the
     // SVG during paint, and hence have their own independent paint property
     // trees, paint offset, etc.
-    full_context.fragments.Fill(PaintPropertyTreeBuilderFragmentContext(), 1);
+    PaintPropertyTreeBuilderFragmentContext context;
+    context.current.paint_offset_root =
+        context.absolute_position.paint_offset_root =
+            context.fixed_position.paint_offset_root = &object;
+
+    full_context.fragments.Fill(context, 1);
+    object.GetMutableForPainting().FirstFragment().ClearNextFragment();
   }
 }
 
