@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CSS numeric factory function tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#numeric-factory">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+const gValidUnits = [
+  'number',
+  'percent',
+  'em',
+  'ex',
+  'ch',
+  'ic',
+  'rem',
+  'lh',
+  'rlh',
+  'vw',
+  'vh',
+  'vi',
+  'vb',
+  'vmin',
+  'vmax',
+  'cm',
+  'mm',
+  'q',
+  'in',
+  'pt',
+  'pc',
+  'px',
+  'deg',
+  'grad',
+  'rad',
+  'turn',
+  's',
+  'ms',
+  'Hz',
+  'kHz',
+  'dpi',
+  'dpcm',
+  'dppx',
+  'fr',
+];
+
+for (const unit of gValidUnits) {
+  test(() => {
+    const result = CSS[unit](12.3);
+    assert_not_equals(result, null);
+    assert_equals(result.constructor.name, CSSUnitValue.name);
+    assert_equals(result.value, 12.3);
+    assert_equals(result.unit, unit);
+  }, 'CSS.' + unit + ' returns a CSSUnitValue with correct value and unit');
+}
+
+</script>
