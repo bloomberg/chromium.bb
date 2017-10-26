@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
@@ -45,6 +46,12 @@
 #import "ios/web/public/web_state/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state) {
+  // Tab's WebStateObserver callbacks expect VoieSearchNavigationTabHelper's
+  // calbacks to be executed first so that state stays in sync.
+  // TODO(crbug.com/778416): Remove this ordering requirement by relying solely
+  // on the tab helper without going through Tab.
+  VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
+
   // TabIdHelper sets up the tab ID which is required for the creation of the
   // Tab by LegacyTabHelper.
   TabIdTabHelper::CreateForWebState(web_state);
