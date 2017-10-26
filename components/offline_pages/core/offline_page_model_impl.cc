@@ -562,32 +562,6 @@ void OfflinePageModelImpl::DoDeleteCachedPagesByURLPredicate(
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
 
-void OfflinePageModelImpl::CheckPagesExistOffline(
-    const std::set<GURL>& urls,
-    const CheckPagesExistOfflineCallback& callback) {
-  OfflinePageModelQueryBuilder builder;
-  builder
-      .SetUrls(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
-               std::vector<GURL>(urls.begin(), urls.end()),
-               URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
-               false /* strip_fragment */)
-      .RequireRestrictedToOriginalTab(
-          OfflinePageModelQueryBuilder::Requirement::EXCLUDE_MATCHING);
-  auto pages_to_urls = base::Bind(
-      [](const CheckPagesExistOfflineCallback& callback,
-         const MultipleOfflinePageItemResult& pages) {
-        CheckPagesExistOfflineResult result;
-        for (auto& page : pages)
-          result.insert(page.url);
-        callback.Run(result);
-      },
-      callback);
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
-      weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), pages_to_urls));
-}
-
 void OfflinePageModelImpl::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
   OfflinePageModelQueryBuilder builder;

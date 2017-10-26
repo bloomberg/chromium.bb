@@ -18,10 +18,7 @@ import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -532,35 +529,6 @@ public class OfflinePageBridge {
         return nativeIsShowingDownloadButtonInErrorPage(mNativeOfflinePageBridge, webContents);
     }
 
-    private static class CheckPagesExistOfflineCallbackInternal {
-        private Callback<Set<String>> mCallback;
-
-        CheckPagesExistOfflineCallbackInternal(Callback<Set<String>> callback) {
-            mCallback = callback;
-        }
-
-        @CalledByNative("CheckPagesExistOfflineCallbackInternal")
-        public void onResult(String[] results) {
-            Set<String> resultSet = new HashSet<>();
-            Collections.addAll(resultSet, results);
-            mCallback.onResult(resultSet);
-        }
-    }
-
-    /**
-     * Returns via callback any urls in <code>urls</code> for which there exist offline pages.
-     *
-     * TODO(http://crbug.com/598006): Add metrics for preventing UI jank.
-     * TODO(http://crbug.com/693514): Now unused in production code. Can be removed.
-     */
-    public void checkPagesExistOffline(Set<String> urls, Callback<Set<String>> callback) {
-        String[] urlArray = urls.toArray(new String[urls.size()]);
-
-        CheckPagesExistOfflineCallbackInternal callbackInternal =
-                new CheckPagesExistOfflineCallbackInternal(callback);
-        nativeCheckPagesExistOffline(mNativeOfflinePageBridge, urlArray, callbackInternal);
-    }
-
     /** Tells the native side that a new tab has been added for this profile. */
     void registerRecentTab(int tabId) {
         nativeRegisterRecentTab(mNativeOfflinePageBridge, tabId);
@@ -720,8 +688,6 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
             final Callback<List<OfflinePageItem>> callback);
-    private native void nativeCheckPagesExistOffline(long nativeOfflinePageBridge, Object[] urls,
-            CheckPagesExistOfflineCallbackInternal callback);
     private native void nativeRegisterRecentTab(long nativeOfflinePageBridge, int tabId);
     private native void nativeWillCloseTab(long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeUnregisterRecentTab(long nativeOfflinePageBridge, int tabId);

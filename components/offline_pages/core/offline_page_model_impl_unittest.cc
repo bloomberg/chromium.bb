@@ -93,7 +93,6 @@ class OfflinePageModelImplTest
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   void OnAddPageDone(AddPageResult result, int64_t offline_id);
   void OnDeletePageDone(DeletePageResult result);
-  void OnCheckPagesExistOfflineDone(const CheckPagesExistOfflineResult& result);
   void OnGetOfflineIdsForClientIdDone(MultipleOfflineIdResult* storage,
                                       const MultipleOfflineIdResult& result);
   void OnGetSingleOfflinePageItemResult(
@@ -178,8 +177,6 @@ class OfflinePageModelImplTest
 
   bool HasPages(std::string name_space);
 
-  CheckPagesExistOfflineResult CheckPagesExistOffline(std::set<GURL>);
-
   MultipleOfflineIdResult GetOfflineIdsForClientId(const ClientId& client_id);
 
   std::unique_ptr<OfflinePageItem> GetPageByOfflineId(int64_t offline_id);
@@ -245,7 +242,6 @@ class OfflinePageModelImplTest
   int64_t last_deleted_offline_id_;
   ClientId last_deleted_client_id_;
   std::string last_deleted_request_origin_;
-  CheckPagesExistOfflineResult last_pages_exist_result_;
   int last_cleared_pages_count_;
   DeletePageResult last_clear_page_result_;
   bool last_expire_page_result_;
@@ -327,11 +323,6 @@ void OfflinePageModelImplTest::OnDeletePageDone(DeletePageResult result) {
   last_delete_result_ = result;
 }
 
-void OfflinePageModelImplTest::OnCheckPagesExistOfflineDone(
-    const CheckPagesExistOfflineResult& result) {
-  last_pages_exist_result_ = result;
-}
-
 void OfflinePageModelImplTest::OnStoreUpdateDone(bool /* success - ignored */) {
 }
 
@@ -387,7 +378,6 @@ void OfflinePageModelImplTest::ResetResults() {
   last_save_result_ = SavePageResult::CANCELLED;
   last_delete_result_ = DeletePageResult::CANCELLED;
   last_archiver_path_.clear();
-  last_pages_exist_result_.clear();
   last_cleared_pages_count_ = 0;
 }
 
@@ -497,15 +487,6 @@ void OfflinePageModelImplTest::DeletePagesByClientIds(
       client_ids,
       base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
   PumpLoop();
-}
-
-CheckPagesExistOfflineResult OfflinePageModelImplTest::CheckPagesExistOffline(
-    std::set<GURL> pages) {
-  model()->CheckPagesExistOffline(
-      pages, base::Bind(&OfflinePageModelImplTest::OnCheckPagesExistOfflineDone,
-                        AsWeakPtr()));
-  PumpLoop();
-  return last_pages_exist_result_;
 }
 
 MultipleOfflineIdResult OfflinePageModelImplTest::GetOfflineIdsForClientId(
@@ -1265,27 +1246,6 @@ TEST_F(OfflinePageModelImplTest, GetPagesByAllURLS) {
   EXPECT_EQ(kTestUrl, pages[1 - i].url);
   EXPECT_EQ(kTestClientId1, pages[1 - i].client_id);
   EXPECT_EQ(kTestUrl2, pages[1 - i].original_url);
-}
-
-TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {
-  SavePage(kTestUrl, kTestClientId1);
-  SavePage(kTestUrl2, kTestClientId2);
-
-  const ClientId last_n_client_id(kOriginalTabNamespace, "1234");
-  SavePage(kTestUrl3, last_n_client_id);
-
-  std::set<GURL> input;
-  input.insert(kTestUrl);
-  input.insert(kTestUrl2);
-  input.insert(kTestUrl3);
-  input.insert(kTestUrl4);
-
-  CheckPagesExistOfflineResult existing_pages = CheckPagesExistOffline(input);
-  EXPECT_EQ(2U, existing_pages.size());
-  EXPECT_NE(existing_pages.end(), existing_pages.find(kTestUrl));
-  EXPECT_NE(existing_pages.end(), existing_pages.find(kTestUrl2));
-  EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl3));
-  EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl4));
 }
 
 TEST_F(OfflinePageModelImplTest, CanSaveURL) {

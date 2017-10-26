@@ -96,13 +96,6 @@ const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
   return archive_manager_->GetPersistentArchivesDir();
 }
 
-void OfflinePageModelTaskified::CheckPagesExistOffline(
-    const std::set<GURL>& urls,
-    const CheckPagesExistOfflineCallback& callback) {
-  // TODO(romax): Remove the method after switch.
-  NOTIMPLEMENTED();
-}
-
 bool OfflinePageModelTaskified::is_loaded() const {
   NOTIMPLEMENTED();
   // TODO(romax): Remove the method after switch. No longer needed with

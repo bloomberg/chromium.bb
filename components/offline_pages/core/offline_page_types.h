@@ -81,15 +81,12 @@ enum class URLSearchMode {
   SEARCH_BY_ALL_URLS,
 };
 
-typedef std::set<GURL> CheckPagesExistOfflineResult;
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
 typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
 typedef base::Callback<void(AddPageResult, int64_t)> AddPageCallback;
 typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
-typedef base::Callback<void(const CheckPagesExistOfflineResult&)>
-    CheckPagesExistOfflineCallback;
 typedef base::Callback<void(bool)> HasPagesCallback;
 typedef base::Callback<void(const MultipleOfflineIdResult&)>
     MultipleOfflineIdCallback;
