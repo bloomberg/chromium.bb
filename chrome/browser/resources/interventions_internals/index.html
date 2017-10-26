@@ -25,7 +25,8 @@
         <span>Logs</span>
       </label>
       <label>
-        <input type="radio" id="blacklist" name="tabs" value="blacklist-status">
+        <input type="radio" id="blacklist-tab" name="tabs"
+            value="blacklist-status">
         <span>Blacklist Status</span>
       </label>
       <label>
@@ -53,10 +54,12 @@
 
     <div class="tab-content" id="blacklist-status">
       <div id="user-blacklisted-status">
-        User blacklisted status: N/A
+        User blacklisted status:
+        <span id="user-blacklisted-status-value">N/A</span>
       </div>
       <div id="blacklist-cleared-status">
-        Last blacklist cleared: N/A
+        Last blacklist cleared:
+        <span id="blacklist-last-cleared-time">N/A</span>
       </div>
 
       <div id="blacklisted-hosts">

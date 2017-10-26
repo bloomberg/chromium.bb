@@ -93,8 +93,7 @@ InterventionsInternalsUITest.prototype = {
     };
 
     getBlacklistedStatus = function(blacklisted) {
-      return 'User blacklisted status: ' +
-          (blacklisted ? 'Blacklisted' : 'Not blacklisted');
+      return (blacklisted ? 'Blacklisted' : 'Not blacklisted');
     };
   },
 };
@@ -243,7 +242,7 @@ TEST_F('InterventionsInternalsUITest', 'HostAlreadyBlacklisted', function() {
 TEST_F('InterventionsInternalsUITest', 'UpdateUserBlacklisted', function() {
   test('UpdateUserBlacklistedDisplayCorrectly', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);
-    let state = $('user-blacklisted-status');
+    let state = $('user-blacklisted-status-value');
 
     pageImpl.onUserBlacklistedStatusChange(true /* blacklisted */);
     expectEquals(
@@ -252,6 +251,23 @@ TEST_F('InterventionsInternalsUITest', 'UpdateUserBlacklisted', function() {
     pageImpl.onUserBlacklistedStatusChange(false /* blacklisted */);
     expectEquals(
         getBlacklistedStatus(false /* blacklisted */), state.textContent);
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'OnBlacklistCleared', function() {
+  test('OnBlacklistClearedRemovesAllBlacklistedHostInTable', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let state = $('user-blacklisted-status-value');
+    let time = 758675653000;  // Jan 15 1994 23:14:13 UTC
+
+    pageImpl.onBlacklistCleared(time);
+    let actualClearedTime = $('blacklist-last-cleared-time').textContent;
+    expectEquals(getTimeFormat(time), actualClearedTime);
+    let blacklistedTable = $('blacklisted-hosts-table');
+    let rows = blacklistedTable.querySelectorAll('.blacklisted-host-row');
+    expectEquals(0, rows.length);
   });
 
   mocha.run();
