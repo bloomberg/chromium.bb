@@ -744,13 +744,6 @@ public class BottomSheet
                     keyboardHeight = (int) (mContainerHeight - heightMinusKeyboard);
                 }
 
-                if (previousHeight != mContainerHeight
-                        || mPreviousKeyboardHeight != keyboardHeight) {
-                    for (BottomSheetObserver o : mObservers) {
-                        o.onSheetLayout((int) mContainerHeight, heightMinusKeyboard);
-                    }
-                }
-
                 if (keyboardHeight != mPreviousKeyboardHeight) {
                     // If the keyboard height changed, recompute the padding for the content area.
                     // This shrinks the content size while retaining the default background color
