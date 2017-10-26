@@ -1567,6 +1567,10 @@ group("extra_resources") {
       "//chrome/browser/resources:sync_file_system_internals_resources",
     ]
   }
+
+  if (enable_print_preview) {
+    public_deps += [ "//chrome/browser/resources:print_preview_resources" ]
+  }
 }
 
 if (is_chrome_branded && !is_android) {

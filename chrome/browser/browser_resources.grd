@@ -389,7 +389,6 @@
       <include name="IDR_POLICY_TOOL_CSS" file="resources\policy_tool.css" type="BINDATA"/>
       <include name="IDR_POLICY_TOOL_JS" file="resources\policy_tool.js" type="BINDATA"/>
       <if expr="enable_print_preview">
-        <include name="IDR_NEW_PRINT_PREVIEW_HTML" file="resources\print_preview\new\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML" file="resources\print_preview\pdf_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

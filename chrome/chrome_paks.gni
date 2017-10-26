@@ -168,6 +168,10 @@ template("chrome_extra_paks") {
         "//extensions:extensions_resources",
       ]
     }
+    if (enable_print_preview) {
+      sources += [ "$root_gen_dir/chrome/print_preview_resources.pak" ]
+      deps += [ "//chrome/browser/resources:print_preview_resources" ]
+    }
     if (enable_vr) {
       sources += [ "$root_gen_dir/chrome/vr_shell_resources.pak" ]
       deps += [ "//chrome/browser/resources:vr_shell_resources" ]
