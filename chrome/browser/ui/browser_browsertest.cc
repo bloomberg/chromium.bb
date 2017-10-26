@@ -469,7 +469,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   EXPECT_EQ(test_title, tab_title);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
+// TODO(avi): confirm() is the only dialog type left that activates. Remove this
+// test when activation is removed from it.
+IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptConfirmActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(base::FilePath(
       base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -483,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("alert('Activate!');"));
+      ASCIIToUTF16("confirm('Activate!');"));
   dialog_wait.Run();
   js_helper->HandleJavaScriptDialog(second_tab, true, nullptr);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
