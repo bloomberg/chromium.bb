@@ -288,7 +288,6 @@ AuditorResult AnnotationInstance::CreateCompleteAnnotation(
   traffic_annotation::NetworkTrafficAnnotation_TrafficSemantics* dst_semantics =
       combination->proto.mutable_semantics();
 
-  MERGE_STRING_FIELDS(src_semantics, dst_semantics, empty_policy_justification);
   MERGE_STRING_FIELDS(src_semantics, dst_semantics, sender);
   MERGE_STRING_FIELDS(src_semantics, dst_semantics, description);
   MERGE_STRING_FIELDS(src_semantics, dst_semantics, trigger);
@@ -320,6 +319,7 @@ AuditorResult AnnotationInstance::CreateCompleteAnnotation(
   traffic_annotation::NetworkTrafficAnnotation_TrafficPolicy* dst_policy =
       combination->proto.mutable_policy();
 
+  MERGE_STRING_FIELDS(src_policy, dst_policy, empty_policy_justification);
   MERGE_STRING_FIELDS(src_policy, dst_policy, cookies_store);
   MERGE_STRING_FIELDS(src_policy, dst_policy, setting);
 
