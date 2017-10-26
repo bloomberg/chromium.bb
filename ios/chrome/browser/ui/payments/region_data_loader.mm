@@ -19,6 +19,23 @@ namespace {
 const int64_t kTimeoutInMilliseconds = 5000;
 }  // namespace
 
+@implementation RegionData
+
+@synthesize regionCode = _regionCode;
+@synthesize regionName = _regionName;
+
+- (instancetype)initWithRegionCode:(NSString*)regionCode
+                        regionName:(NSString*)regionName {
+  self = [super init];
+  if (self) {
+    _regionCode = regionCode;
+    _regionName = regionName;
+  }
+  return self;
+}
+
+@end
+
 RegionDataLoader::RegionDataLoader(id<RegionDataLoaderConsumer> consumer)
     : consumer_(consumer) {
   region_model_.AddObserver(this);
@@ -41,15 +58,18 @@ void RegionDataLoader::OnComboboxModelChanged(ui::ComboboxModel* model) {
   if (region_model->IsPendingRegionDataLoad())
     return;
 
-  NSMutableDictionary<NSString*, NSString*>* regions =
-      [[NSMutableDictionary alloc] init];
+  // Use an array of RegionData objects, to preserve order.
+  NSMutableArray<RegionData*>* regions = [[NSMutableArray alloc] init];
   if (!region_model->failed_to_load_data()) {
     for (int i = 0; i < region_model->GetItemCount(); ++i) {
       if (!region_model->IsItemSeparatorAt(i)) {
         const std::pair<std::string, std::string>& region =
             region_model->GetRegions()[i];
-        [regions setObject:base::SysUTF8ToNSString(region.second)
-                    forKey:base::SysUTF8ToNSString(region.first)];
+        [regions addObject:[[RegionData alloc]
+                               initWithRegionCode:base::SysUTF8ToNSString(
+                                                      region.first)
+                                       regionName:base::SysUTF8ToNSString(
+                                                      region.second)]];
       }
     }
   }
