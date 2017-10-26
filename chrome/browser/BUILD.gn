@@ -2010,6 +2010,8 @@ split_static_library("browser") {
       "android/omnibox/autocomplete_controller_android.h",
       "android/omnibox/omnibox_prerender.cc",
       "android/omnibox/omnibox_prerender.h",
+      "android/oom_intervention/near_oom_monitor.cc",
+      "android/oom_intervention/near_oom_monitor.h",
       "android/partner_browser_customizations.cc",
       "android/partner_browser_customizations.h",
       "android/password_ui_view_android.cc",
