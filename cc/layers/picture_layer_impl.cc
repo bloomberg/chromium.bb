@@ -834,10 +834,17 @@ bool PictureLayerImpl::ShouldAnimate(PaintImage::Id paint_image_id) const {
   //
   //  Additionally only animate images which are on-screen, animations are
   //  paused once they are not visible.
-  return HasValidTilePriorities() && raster_source_->GetDisplayItemList()
-                                         ->discardable_image_map()
-                                         .GetRegionForImage(paint_image_id)
-                                         .Intersects(visible_layer_rect());
+  if (!HasValidTilePriorities())
+    return false;
+
+  const auto& rects = raster_source_->GetDisplayItemList()
+                          ->discardable_image_map()
+                          .GetRectsForImage(paint_image_id);
+  for (const auto& r : rects.container()) {
+    if (r.Intersects(visible_layer_rect()))
+      return true;
+  }
+  return false;
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
@@ -1578,9 +1585,11 @@ void PictureLayerImpl::InvalidateRegionForImages(
 
   InvalidationRegion image_invalidation;
   for (auto image_id : images_to_invalidate) {
-    image_invalidation.Union(raster_source_->GetDisplayItemList()
-                                 ->discardable_image_map()
-                                 .GetRegionForImage(image_id));
+    const auto& rects = raster_source_->GetDisplayItemList()
+                            ->discardable_image_map()
+                            .GetRectsForImage(image_id);
+    for (const auto& r : rects.container())
+      image_invalidation.Union(r);
   }
   Region invalidation;
   image_invalidation.Swap(&invalidation);
