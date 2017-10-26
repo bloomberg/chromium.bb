@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.survey;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -29,11 +31,11 @@ import org.chromium.content_public.browser.WebContentsObserver;
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
  */
 public class ChromeHomeSurveyController {
-    private static final String SURVEY_INFO_BAR_DISPLAYED = "chrome_home_survey_info_bar_displayed";
-    private static final String SURVEY_FORCE_ENABLE_SWITCH = "force-enable-survey";
-    private static final String TRIAL_NAME = "ChromeHome";
+    static final String SURVEY_INFO_BAR_DISPLAYED = "chrome_home_survey_info_bar_displayed";
+    static final long ONE_WEEK_IN_MILLIS = 604800000L;
+
     private static final String PARAM_NAME = "survey_override_site_id";
-    private static final long ONE_WEEK_IN_MILLIS = 604800000L;
+    private static final String TRIAL_NAME = "ChromeHome";
 
     private TabModelSelector mTabModelSelector;
 
@@ -77,18 +79,13 @@ public class ChromeHomeSurveyController {
     }
 
     private boolean doesUserQualifyForSurvey() {
-        if (CommandLine.getInstance().hasSwitch(SURVEY_FORCE_ENABLE_SWITCH)) return true;
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)) {
+            return true;
+        }
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
         if (hasInfoBarBeenDisplayed()) return false;
         if (!FeatureUtilities.isChromeHomeEnabled()) return true;
-
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-            long earliestLoggedDate = sharedPreferences.getLong(
-                    ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY, Long.MAX_VALUE);
-            if (System.currentTimeMillis() - earliestLoggedDate > ONE_WEEK_IN_MILLIS) return true;
-        }
-        return false;
+        return wasChromeHomeEnabledForMinimumOneWeek();
     }
 
     private void onSurveyAvailable(String siteId) {
@@ -132,15 +129,32 @@ public class ChromeHomeSurveyController {
         sharedPreferences.edit().putBoolean(SURVEY_INFO_BAR_DISPLAYED, true).apply();
     }
 
-    private boolean hasInfoBarBeenDisplayed() {
-        // TODO(danielpark) Refine logic for whether user has seen a survey (crbug.com/772081).
+    @VisibleForTesting
+    boolean hasInfoBarBeenDisplayed() {
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
             return sharedPreferences.getBoolean(SURVEY_INFO_BAR_DISPLAYED, false);
         }
     }
 
-    private boolean isValidTabForSurvey(Tab tab) {
+    @VisibleForTesting
+    boolean wasChromeHomeEnabledForMinimumOneWeek() {
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+            long earliestLoggedDate = sharedPreferences.getLong(
+                    ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY, Long.MAX_VALUE);
+            if (System.currentTimeMillis() - earliestLoggedDate >= ONE_WEEK_IN_MILLIS) return true;
+        }
+        return false;
+    }
+
+    @VisibleForTesting
+    boolean isValidTabForSurvey(Tab tab) {
         return tab != null && tab.getWebContents() != null && !tab.isIncognito();
+    }
+
+    @VisibleForTesting
+    public static ChromeHomeSurveyController createChromeHomeSurveyControllerForTests() {
+        return new ChromeHomeSurveyController();
     }
 }
