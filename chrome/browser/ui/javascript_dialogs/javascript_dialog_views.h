@@ -47,6 +47,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   void DeleteDelegate() override;
 
   // views::WidgetDelegate:
+  bool ShouldShowCloseButton() const override;
   views::View* GetContentsView() override;
   views::View* GetInitiallyFocusedView() override;
   views::Widget* GetWidget() override;
