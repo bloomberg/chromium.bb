@@ -46,39 +46,10 @@
 
 extern const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8];
 
-typedef void (*ProjectPointsFunc)(const int32_t *mat, int *points, int *proj,
-                                  const int n, const int stride_points,
-                                  const int stride_proj,
-                                  const int subsampling_x,
-                                  const int subsampling_y);
-
-void project_points_translation(const int32_t *mat, int *points, int *proj,
-                                const int n, const int stride_points,
-                                const int stride_proj, const int subsampling_x,
-                                const int subsampling_y);
-
-void project_points_rotzoom(const int32_t *mat, int *points, int *proj,
-                            const int n, const int stride_points,
-                            const int stride_proj, const int subsampling_x,
-                            const int subsampling_y);
-
 void project_points_affine(const int32_t *mat, int *points, int *proj,
                            const int n, const int stride_points,
                            const int stride_proj, const int subsampling_x,
                            const int subsampling_y);
-
-void project_points_hortrapezoid(const int32_t *mat, int *points, int *proj,
-                                 const int n, const int stride_points,
-                                 const int stride_proj, const int subsampling_x,
-                                 const int subsampling_y);
-void project_points_vertrapezoid(const int32_t *mat, int *points, int *proj,
-                                 const int n, const int stride_points,
-                                 const int stride_proj, const int subsampling_x,
-                                 const int subsampling_y);
-void project_points_homography(const int32_t *mat, int *points, int *proj,
-                               const int n, const int stride_points,
-                               const int stride_proj, const int subsampling_x,
-                               const int subsampling_y);
 
 // Returns the error between the result of applying motion 'wm' to the frame
 // described by 'ref' and the frame described by 'dst'.
