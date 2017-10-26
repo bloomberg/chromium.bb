@@ -22,18 +22,12 @@ class GestureDetector {
         /** @type {function(!Event)} */ (this.onTouchStart_.bind(this)),
         {passive: true});
 
+    let boundOnTouch =
+        /** @type {function(!Event)} */ (this.onTouch_.bind(this));
+    this.element_.addEventListener('touchmove', boundOnTouch, {passive: false});
+    this.element_.addEventListener('touchend', boundOnTouch, {passive: true});
     this.element_.addEventListener(
-        'touchmove',
-        /** @type {function(!Event)} */ (this.onTouch_.bind(this)),
-        {passive: false});
-    this.element_.addEventListener(
-        'touchend',
-        /** @type {function(!Event)} */ (this.onTouch_.bind(this)),
-        {passive: true});
-    this.element_.addEventListener(
-        'touchcancel',
-        /** @type {function(!Event)} */ (this.onTouch_.bind(this)),
-        {passive: true});
+        'touchcancel', boundOnTouch, {passive: true});
 
     this.pinchStartEvent_ = null;
     this.lastTouchTouchesCount_ = 0;
