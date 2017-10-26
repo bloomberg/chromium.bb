@@ -1,7 +1,8 @@
 # IndexedDB (IDB) Overview for Database People
 
 This document is intended to help people with some database experience quickly
-understand IndexedDB. In the interest of brevity, non-essential quirks and edge cases are not covered. [The IDB Specification](https://w3c.github.io/IndexedDB/)
+understand IndexedDB. In the interest of brevity, non-essential quirks and edge
+cases are not covered. [The IDB Specification](https://w3c.github.io/IndexedDB/)
 covers all the details, and is good follow-up reading.
 
 IDB's storage hierarchy is as follows:
