@@ -261,7 +261,6 @@ blink::WebURL WebServiceWorkerRegistrationImpl::Scope() const {
 }
 
 void WebServiceWorkerRegistrationImpl::Update(
-    blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) {
   DCHECK(state_ == LifecycleState::kAttachedAndBound ||
          state_ == LifecycleState::kUnbound);
@@ -271,7 +270,6 @@ void WebServiceWorkerRegistrationImpl::Update(
 }
 
 void WebServiceWorkerRegistrationImpl::Unregister(
-    blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks) {
   DCHECK(state_ == LifecycleState::kAttachedAndBound ||
          state_ == LifecycleState::kUnbound);
@@ -282,7 +280,6 @@ void WebServiceWorkerRegistrationImpl::Unregister(
 
 void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
     bool enable,
-    blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) {
   GetRegistrationObjectHost()->EnableNavigationPreload(
       enable,

@@ -77,8 +77,7 @@ ScriptPromise NavigationPreloadManager::SetEnabled(bool enable,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   registration_->WebRegistration()->EnableNavigationPreload(
-      enable, client->Provider(),
-      WTF::MakeUnique<EnableNavigationPreloadCallbacks>(resolver));
+      enable, WTF::MakeUnique<EnableNavigationPreloadCallbacks>(resolver));
   return promise;
 }
 

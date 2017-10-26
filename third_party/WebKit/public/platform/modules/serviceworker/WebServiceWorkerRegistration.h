@@ -52,15 +52,12 @@ class WebServiceWorkerRegistration {
 
   virtual WebURL Scope() const { return WebURL(); }
   virtual int64_t RegistrationId() const = 0;
-  virtual void Update(WebServiceWorkerProvider*,
-                      std::unique_ptr<WebServiceWorkerUpdateCallbacks>) {}
+  virtual void Update(std::unique_ptr<WebServiceWorkerUpdateCallbacks>) {}
   virtual void Unregister(
-      WebServiceWorkerProvider*,
       std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>) {}
 
   virtual void EnableNavigationPreload(
       bool enable,
-      WebServiceWorkerProvider*,
       std::unique_ptr<WebEnableNavigationPreloadCallbacks>) {}
   virtual void GetNavigationPreloadState(
       WebServiceWorkerProvider*,

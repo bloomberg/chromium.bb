@@ -101,7 +101,6 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Update(
-      client->Provider(),
       WTF::MakeUnique<
           CallbackPromiseAdapter<void, ServiceWorkerErrorForUpdate>>(resolver));
   return promise;
@@ -121,7 +120,6 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Unregister(
-      client->Provider(),
       WTF::MakeUnique<CallbackPromiseAdapter<bool, ServiceWorkerError>>(
           resolver));
   return promise;

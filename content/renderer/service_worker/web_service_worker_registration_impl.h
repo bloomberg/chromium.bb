@@ -104,14 +104,11 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   blink::WebServiceWorkerRegistrationProxy* Proxy() override;
   blink::WebURL Scope() const override;
   void Update(
-      blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) override;
-  void Unregister(blink::WebServiceWorkerProvider* provider,
-                  std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>
+  void Unregister(std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>
                       callbacks) override;
   void EnableNavigationPreload(
       bool enable,
-      blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) override;
   void GetNavigationPreloadState(
       blink::WebServiceWorkerProvider* provider,
