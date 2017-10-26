@@ -129,10 +129,13 @@ public class ActionItem extends OptionalLeaf {
      * Perform the Action associated with this ActionItem.
      * @param uiDelegate A {@link SuggestionsUiDelegate} to provide context.
      * @param onFailure A {@link Runnable} that will be run if the action was to fetch more
-     *                  suggestions but that action failed.
+     *         suggestions, but that action failed.
+     * @param onNoNewSuggestions A {@link Runnable} that will be run if the action was to fetch more
+     *         suggestions, the fetch succeeded but there were no new suggestions.
      */
     @VisibleForTesting
-    void performAction(SuggestionsUiDelegate uiDelegate, @Nullable Runnable onFailure) {
+    void performAction(SuggestionsUiDelegate uiDelegate, @Nullable Runnable onFailure,
+            @Nullable Runnable onNoNewSuggestions) {
         assert mState == State.BUTTON;
 
         uiDelegate.getEventReporter().onMoreButtonClicked(this);
@@ -144,7 +147,7 @@ public class ActionItem extends OptionalLeaf {
                 mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
                 return;
             case ContentSuggestionsAdditionalAction.FETCH:
-                mParentSection.fetchSuggestions(onFailure);
+                mParentSection.fetchSuggestions(onFailure, onNoNewSuggestions);
                 return;
             case ContentSuggestionsAdditionalAction.NONE:
             default:
@@ -169,7 +172,7 @@ public class ActionItem extends OptionalLeaf {
             mButton = itemView.findViewById(R.id.action_button);
             mUiDelegate = uiDelegate;
             mButton.setOnClickListener(v -> mActionListItem.performAction(uiDelegate,
-                    this::showFetchFailureSnackbar));
+                    this::showFetchFailureSnackbar, this::showNoNewSuggestionsSnackbar));
 
             new ImpressionTracker(itemView, () -> {
                 if (mActionListItem != null && !mActionListItem.mImpressionTracked) {
@@ -185,6 +188,16 @@ public class ActionItem extends OptionalLeaf {
                     new SnackbarManager.SnackbarController() { },
                     Snackbar.TYPE_ACTION,
                     Snackbar.UMA_SNIPPET_FETCH_FAILED)
+            );
+        }
+
+        private void showNoNewSuggestionsSnackbar() {
+            mUiDelegate.getSnackbarManager().showSnackbar(Snackbar.make(
+                    itemView.getResources().getString(
+                            R.string.ntp_suggestions_fetch_no_new_suggestions),
+                    new SnackbarManager.SnackbarController() { },
+                    Snackbar.TYPE_ACTION,
+                    Snackbar.UMA_SNIPPET_FETCH_NO_NEW_SUGGESTIONS)
             );
         }
 
