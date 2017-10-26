@@ -153,6 +153,10 @@ class StreamMixer {
 
     // Returns the volume multiplier of the stream.
     virtual float EffectiveVolume() = 0;
+
+    // Returns the largest volume multiplier applied to the last buffer
+    // retrieved. This differs from EffectiveVolume() during transients.
+    virtual float InstantaneousVolume() = 0;
   };
 
   enum State {

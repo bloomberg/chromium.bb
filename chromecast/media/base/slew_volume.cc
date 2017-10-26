@@ -93,6 +93,10 @@ void SlewVolume::SetVolume(double volume_scale) {
   }
 }
 
+float SlewVolume::LastBufferMaxMultiplier() {
+  return std::max(current_volume_, last_starting_volume_);
+}
+
 void SlewVolume::SetMaxSlewTimeMs(int max_slew_time_ms) {
   CHECK_GE(max_slew_time_ms, 0);
 

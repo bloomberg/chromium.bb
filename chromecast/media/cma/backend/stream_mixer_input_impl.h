@@ -141,6 +141,7 @@ class StreamMixerInputImpl : public StreamMixer::InputQueue {
   void SetContentTypeVolume(float volume, int fade_ms) override;
   void SetMuted(bool muted) override;
   float EffectiveVolume() override;
+  float InstantaneousVolume() override;
 
   // Tells the mixer to delete |this|. Makes sure not to call |delete_cb_| more
   // than once for |this|.
