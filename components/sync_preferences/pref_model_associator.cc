@@ -283,9 +283,9 @@ std::unique_ptr<base::Value> PrefModelAssociator::MergeListValues(
     const base::Value& from_value,
     const base::Value& to_value) {
   if (from_value.type() == base::Value::Type::NONE)
-    return base::MakeUnique<base::Value>(to_value.Clone());
+    return base::Value::ToUniquePtrValue(to_value.Clone());
   if (to_value.type() == base::Value::Type::NONE)
-    return base::MakeUnique<base::Value>(from_value.Clone());
+    return base::Value::ToUniquePtrValue(from_value.Clone());
 
   DCHECK(from_value.type() == base::Value::Type::LIST);
   DCHECK(to_value.type() == base::Value::Type::LIST);
@@ -297,7 +297,7 @@ std::unique_ptr<base::Value> PrefModelAssociator::MergeListValues(
       list.emplace_back(value.Clone());
   }
 
-  return base::MakeUnique<base::Value>(std::move(result));
+  return base::Value::ToUniquePtrValue(std::move(result));
 }
 
 base::Value PrefModelAssociator::MergeDictionaryValues(

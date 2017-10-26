@@ -1256,16 +1256,15 @@ void UsbIsochronousTransferFunction::OnCompleted(
     }
   }
 
-  std::unique_ptr<base::DictionaryValue> transfer_info(
-      new base::DictionaryValue());
-  transfer_info->SetInteger(kResultCodeKey, static_cast<int>(status));
-  transfer_info->Set(kDataKey,
-                     std::make_unique<base::Value>(std::move(buffer)));
+  base::Value transfer_info(base::Value::Type::DICTIONARY);
+  transfer_info.SetKey(kResultCodeKey, base::Value(static_cast<int>(status)));
+  transfer_info.SetKey(kDataKey, base::Value(std::move(buffer)));
   if (status == UsbTransferStatus::COMPLETED) {
-    Respond(OneArgument(std::move(transfer_info)));
+    Respond(
+        OneArgument(base::Value::ToUniquePtrValue(std::move(transfer_info))));
   } else {
-    std::unique_ptr<base::ListValue> error_args(new base::ListValue());
-    error_args->Append(std::move(transfer_info));
+    auto error_args = std::make_unique<base::ListValue>();
+    error_args->GetList().push_back(std::move(transfer_info));
     // Using ErrorWithArguments is discouraged but required to provide the
     // detailed transfer info as the transfer may have partially succeeded.
     Respond(ErrorWithArguments(std::move(error_args),

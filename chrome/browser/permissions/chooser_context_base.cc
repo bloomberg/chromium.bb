@@ -59,7 +59,7 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
     // Steal ownership of |object| from |object_list|.
     std::unique_ptr<base::DictionaryValue> object_dict =
         base::DictionaryValue::From(
-            base::MakeUnique<base::Value>(std::move(object)));
+            base::Value::ToUniquePtrValue(std::move(object)));
     if (object_dict && IsValidObject(*object_dict))
       results.push_back(std::move(object_dict));
   }
