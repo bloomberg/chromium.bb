@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/scoped_account_consistency.h"
@@ -33,12 +34,14 @@ class SigninHeaderHelperTest : public testing::Test {
   void SetUp() override {
     content_settings::CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
+    signin::RegisterAccountConsistencyProfilePrefs(prefs_.registry());
 
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* incognito_profile */, false /* guest_profile */,
         false /* store_last_modified */);
     cookie_settings_ =
         new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
+    dice_enabled_pref_member_ = signin::CreateDicePrefMember(&prefs_);
   }
 
   void TearDown() override { settings_map_->ShutdownOnUIThread(); }
@@ -63,6 +66,7 @@ class SigninHeaderHelperTest : public testing::Test {
                                       PROFILE_MODE_DEFAULT);
     AppendOrRemoveDiceRequestHeader(url_request.get(), GURL(), account_id,
                                     sync_enabled_, sync_has_auth_error_,
+                                    dice_enabled_pref_member_.get(),
                                     cookie_settings_.get());
     return url_request;
   }
@@ -115,6 +119,7 @@ class SigninHeaderHelperTest : public testing::Test {
 
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  std::unique_ptr<BooleanPrefMember> dice_enabled_pref_member_;
 };
 
 // Tests that no Mirror request is returned when the user is not signed in (no
@@ -216,6 +221,31 @@ TEST_F(SigninHeaderHelperTest, TestNoDiceRequestWhenDisabled) {
   ScopedAccountConsistencyMirror scoped_mirror;
   CheckDiceHeaderRequest(GURL("https://accounts.google.com"), "0123456789",
                          "mode=0,enable_account_consistency=true", "");
+}
+
+// Tests that the signout confirmation is requested iff the Dice migration is
+// complete.
+TEST_F(SigninHeaderHelperTest, TestDiceMigration) {
+  ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+  std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+  ASSERT_FALSE(client_id.empty());
+
+  // No signout confirmation by default.
+  CheckDiceHeaderRequest(
+      GURL("https://accounts.google.com"), "0123456789",
+      "mode=0,enable_account_consistency=false",
+      base::StringPrintf("version=%s,client_id=%s,signin_mode=all_accounts,"
+                         "signout_mode=no_confirmation",
+                         kDiceProtocolVersion, client_id.c_str()));
+
+  // Signout confirmation after the migration is complete.
+  MigrateProfileToDice(&prefs_);
+  CheckDiceHeaderRequest(
+      GURL("https://accounts.google.com"), "0123456789",
+      "mode=0,enable_account_consistency=false",
+      base::StringPrintf("version=%s,client_id=%s,signin_mode=all_accounts,"
+                         "signout_mode=show_confirmation",
+                         kDiceProtocolVersion, client_id.c_str()));
 }
 
 // Tests that a Dice request is returned only when there is an authentication

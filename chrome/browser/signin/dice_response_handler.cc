@@ -318,6 +318,11 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
         account_tracker_service_->PickAccountIdForAccount(gaia_ids[i],
                                                           emails[i]);
     if (signed_out_account == current_account) {
+      // If Dice migration is not complete, the token for the main account must
+      // not be deleted when signing out of the web.
+      if (!signin::IsDiceEnabledForProfile(signin_client_->GetPrefs()))
+        continue;
+
       VLOG(1) << "[Dice] Signing out all accounts.";
       RecordDiceResponseHeader(kSignoutPrimary);
       signin_manager_->SignOutAndRemoveAllAccounts(

@@ -115,6 +115,9 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceLastKnownFirstAccount);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceMigrationAfterNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           DiceNoMigrationAfterReconcile);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceReconcileReuseGaiaFirstAccount);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, TokensNotLoaded);
@@ -166,8 +169,10 @@ class AccountReconcilor : public KeyedService,
 
   // The reconcilor is enabled if Sync or Dice is enabled.
   bool IsEnabled();
-  // Returns true if account consistency is enabled (Mirror or Dice).
-  bool IsAccountConsistencyEnabled();
+  // Returns true if account consistency is enforced (Mirror or Dice).
+  // If this is false, reconcile is done, but its results are discarded and no
+  // changes to the accounts are made.
+  bool IsAccountConsistencyEnforced();
 
   // All actions with side effects, only doing meaningful work if account
   // consistency is enabled. Virtual so that they can be overridden in tests.
@@ -254,6 +259,10 @@ class AccountReconcilor : public KeyedService,
 
   // True iff an error occured during the last attempt to reconcile.
   bool error_during_last_reconcile_;
+
+  // Used for Dice migration: migration can happen if the accounts are
+  // consistent, which is indicated by reconcile being a no-op.
+  bool reconcile_is_noop_;
 
   // Used during reconcile action.
   // These members are used to validate the gaia cookie.  |gaia_accounts_|
