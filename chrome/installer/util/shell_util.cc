@@ -25,6 +25,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -763,6 +764,9 @@ bool LaunchDefaultAppsSettingsModernDialog(const wchar_t* protocol) {
       L"windows.immersivecontrolpanel_cw5n1h2txyewy"
       L"!microsoft.windows.immersivecontrolpanel";
 
+  static constexpr base::Feature kHighlightProtocolInWindowsSettings{
+      "HighlightProtocolInWindowsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
+
   Microsoft::WRL::ComPtr<IApplicationActivationManager> activator;
   HRESULT hr = ::CoCreateInstance(CLSID_ApplicationActivationManager, nullptr,
                                   CLSCTX_ALL, IID_PPV_ARGS(&activator));
@@ -772,7 +776,8 @@ bool LaunchDefaultAppsSettingsModernDialog(const wchar_t* protocol) {
     hr = activator->ActivateApplication(kControlPanelAppModelId,
                                         L"page=SettingsPageAppsDefaults",
                                         AO_NONE, &pid);
-    if (SUCCEEDED(hr)) {
+    if (SUCCEEDED(hr) &&
+        base::FeatureList::IsEnabled(kHighlightProtocolInWindowsSettings)) {
       hr = activator->ActivateApplication(
           kControlPanelAppModelId,
           base::StringPrintf(L"page=SettingsPageAppsDefaults&target=%ls",
