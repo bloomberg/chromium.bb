@@ -13,11 +13,11 @@
 
 namespace web {
 
-WebStateObserver::WebStateObserver(WebState* web_state) : web_state_(nullptr) {
+WebStateObserver::WebStateObserver() = default;
+
+WebStateObserver::WebStateObserver(WebState* web_state) {
   Observe(web_state);
 }
-
-WebStateObserver::WebStateObserver() : web_state_(nullptr) {}
 
 WebStateObserver::~WebStateObserver() {
   if (web_state_)
@@ -37,6 +37,10 @@ void WebStateObserver::Observe(WebState* web_state) {
 }
 
 void WebStateObserver::ResetWebState() {
+  // If this DCHECK fails, it mean that the WebStateObserver's subclass manages
+  // the registration of the observer manually but didn't unregister this object
+  // in WebStateDestroyed method. This is a bug in the subclass's client code.
+  DCHECK(web_state_);
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }

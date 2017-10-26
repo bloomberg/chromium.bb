@@ -300,16 +300,14 @@ class WebState : public base::SupportsUserData {
   virtual void TakeSnapshot(const SnapshotCallback& callback,
                             CGSize target_size) const = 0;
 
- protected:
-  friend class WebStateObserver;
-  friend class WebStatePolicyDecider;
-
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
   // sure to remove the observer before they go away.
-  // TODO(droger): Move these methods to WebStateImpl once it is in ios/.
   virtual void AddObserver(WebStateObserver* observer) = 0;
   virtual void RemoveObserver(WebStateObserver* observer) = 0;
+
+ protected:
+  friend class WebStatePolicyDecider;
 
   // Adds and removes policy deciders for navigation actions. The order in which
   // deciders are called is undefined, and will stop on the first decider that
@@ -327,6 +325,8 @@ class WebState : public base::SupportsUserData {
   // and only call must be in WebStateWeakPtrFactory. Please consult that class
   // for more details. Remove as part of http://crbug.com/556736.
   virtual base::WeakPtr<WebState> AsWeakPtr() = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(WebState);
 };
 
 }  // namespace web
