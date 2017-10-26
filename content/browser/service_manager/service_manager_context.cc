@@ -62,6 +62,7 @@
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/cpp/constants.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/viz/public/interfaces/constants.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -71,6 +72,10 @@
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
 #endif
 
 namespace content {
@@ -213,6 +218,16 @@ void GetGeolocationRequestContextFromContentClient(
         callback) {
   GetContentClient()->browser()->GetGeolocationRequestContext(
       std::move(callback));
+}
+
+bool ShouldEnableVizService() {
+#if defined(USE_AURA)
+  // aura::Env can be null in tests.
+  return aura::Env::GetInstanceDontCreate() &&
+         aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -440,6 +455,11 @@ ServiceManagerContext::ServiceManagerContext() {
   out_of_process_services[media::mojom::kCdmServiceName] =
       base::ASCIIToUTF16("Content Decryption Module Service");
 #endif
+
+  if (ShouldEnableVizService()) {
+    out_of_process_services[viz::mojom::kVizServiceName] =
+        base::ASCIIToUTF16("Visuals Service");
+  }
 
   for (const auto& service : out_of_process_services) {
     packaged_services_connection_->AddServiceRequestHandler(

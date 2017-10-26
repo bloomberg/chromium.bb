@@ -75,7 +75,8 @@
         "*": [ "app" ],
         "catalog": [ "app" ],
         "service_manager": [ "service_manager:all_users" ],
-        "ui": [ "ozone" ]
+        "ui": [ "ozone" ],
+        "viz": [ "viz_host" ]
       }
     }
   }

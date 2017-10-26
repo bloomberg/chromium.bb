@@ -34,6 +34,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 #include "content/public/browser/zygote_handle_linux.h"
@@ -292,6 +293,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       switches::kIgnoreCertificateErrorsSPKIList,
       switches::kLogNetLog,
       switches::kNoSandbox,
+      switches::kOverrideUseSoftwareGLForTests,
       switches::kProxyServer,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
@@ -302,6 +304,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       switches::kForceMediaFoundationVideoCapture,
 #endif  // defined(OS_WIN)
       switches::kUtilityStartupDialog,
+      switches::kUseGL
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                arraysize(kSwitchNames));

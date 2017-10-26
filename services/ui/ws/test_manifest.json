@@ -14,7 +14,8 @@
         "ui": [
           "window_manager",
           "window_tree_host_factory"
-        ]
+        ],
+        "viz": [ "viz_host" ]
       }
     }
   }

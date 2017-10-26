@@ -25,6 +25,8 @@
 #include "services/shape_detection/shape_detection_service.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
+#include "services/viz/public/interfaces/constants.mojom.h"
+#include "services/viz/service.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
@@ -105,6 +107,10 @@ std::unique_ptr<service_manager::Service> CreateDataDecoderService() {
   return data_decoder::DataDecoderService::Create();
 }
 
+std::unique_ptr<service_manager::Service> CreateVizService() {
+  return std::make_unique<viz::Service>();
+}
+
 }  // namespace
 
 UtilityServiceFactory::UtilityServiceFactory()
@@ -136,6 +142,10 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   data_decoder_info.factory = base::Bind(&CreateDataDecoderService);
   services->insert(
       std::make_pair(data_decoder::mojom::kServiceName, data_decoder_info));
+
+  service_manager::EmbeddedServiceInfo viz_info;
+  viz_info.factory = base::Bind(&CreateVizService);
+  services->insert(std::make_pair(viz::mojom::kVizServiceName, viz_info));
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     GetContentClient()->utility()->RegisterNetworkBinders(

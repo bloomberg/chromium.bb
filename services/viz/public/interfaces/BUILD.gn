@@ -29,6 +29,7 @@ mojom("interfaces") {
     "compositing/texture_mailbox.mojom",
     "compositing/texture_mailbox_releaser.mojom",
     "compositing/transferable_resource.mojom",
+    "constants.mojom",
     "hit_test/hit_test_region_list.mojom",
   ]
 

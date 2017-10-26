@@ -277,8 +277,8 @@ void Service::OnStart() {
   input_device_server_.RegisterAsObserver();
 
   window_server_ = base::MakeUnique<ws::WindowServer>(this);
-  std::unique_ptr<ws::GpuHost> gpu_host =
-      base::MakeUnique<ws::DefaultGpuHost>(window_server_.get());
+  std::unique_ptr<ws::GpuHost> gpu_host = base::MakeUnique<ws::DefaultGpuHost>(
+      window_server_.get(), context()->connector());
   window_server_->SetGpuHost(std::move(gpu_host));
 
   ime_driver_.Init(context()->connector(), test_config_);
