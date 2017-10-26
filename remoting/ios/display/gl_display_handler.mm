@@ -171,16 +171,21 @@ void Core::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
 
 void Core::OnFrameRendered() {
   [eagl_context_ presentRenderbuffer:GL_RENDERBUFFER];
+  // Do not directly use |handler_delegate_| in the block. That will force the
+  // block to dereference |this|, which is thread unsafe because it doesn't
+  // support ARC.
+  __weak id<GlDisplayHandlerDelegate> handler_delegate = handler_delegate_;
   runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
-                                         [handler_delegate_ rendererTicked];
+                                         [handler_delegate rendererTicked];
                                        }));
 }
 
 void Core::OnSizeChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  __weak id<GlDisplayHandlerDelegate> handler_delegate = handler_delegate_;
   runtime_->ui_task_runner()->PostTask(
       FROM_HERE, base::BindBlockArc(^() {
-        [handler_delegate_ canvasSizeChanged:CGSizeMake(width, height)];
+        [handler_delegate canvasSizeChanged:CGSizeMake(width, height)];
       }));
 }
 
