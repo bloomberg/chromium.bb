@@ -3359,6 +3359,12 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestFocusWhileFocused) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, NestedGuestContainerBounds) {
+  // TODO(crbug.com/776539): Disabled due to being flaky.
+  if (GetParam() == true) {
+    DLOG(ERROR) << "Disabled due to flakiness.";
+    return;
+  }
+
   TestHelper("testPDFInWebview", "web_view/shim", NO_TEST_SERVER);
 
   std::vector<content::WebContents*> guest_web_contents_list;
