@@ -3684,6 +3684,9 @@ crbug.com/777222 virtual/mojo-loading/http/tests/devtools/import-open-inspector.
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 crbug.com/777259 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
 
+crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
+crbug.com/778745 virtual/mojo-loading/http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
+
 # Sheriff failures 2017-10-24
 crbug.com/777777 [ Mac10.11 ] external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Pass Failure ]
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
