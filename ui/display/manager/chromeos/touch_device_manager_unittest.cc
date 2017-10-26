@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/manager/chromeos/touchscreen_util.h"
+#include "ui/display/manager/chromeos/touch_device_manager.h"
 
 #include <memory>
 #include <string>
@@ -10,16 +10,17 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen_base.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace display {
 namespace {
-
 uint32_t ToIdentifier(const ui::TouchscreenDevice& device) {
   return TouchCalibrationData::GenerateTouchDeviceIdentifier(device);
 }
@@ -37,18 +38,21 @@ ui::TouchscreenDevice CreateTouchscreenDevice(int id,
 
 using DisplayInfoList = std::vector<ManagedDisplayInfo>;
 
-class TouchscreenUtilTest : public testing::Test {
+class TouchAssociationTest : public testing::Test {
  public:
-  TouchscreenUtilTest() {}
-  ~TouchscreenUtilTest() override {}
+  TouchAssociationTest() {}
+  ~TouchAssociationTest() override {}
 
   DisplayManager* display_manager() { return display_manager_.get(); }
+
+  TouchDeviceManager* touch_device_manager() { return touch_device_manager_; }
 
   // testing::Test:
   void SetUp() override {
     // Recreate for each test, DisplayManager has a lot of state.
     display_manager_ =
         std::make_unique<DisplayManager>(std::make_unique<ScreenBase>());
+    touch_device_manager_ = display_manager_->touch_device_manager();
 
     // Internal display will always match to internal touchscreen. If internal
     // touchscreen can't be detected, it is then associated to a touch screen
@@ -97,17 +101,18 @@ class TouchscreenUtilTest : public testing::Test {
  protected:
   DisplayInfoList displays_;
   std::unique_ptr<DisplayManager> display_manager_;
+  TouchDeviceManager* touch_device_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TouchscreenUtilTest);
+  DISALLOW_COPY_AND_ASSIGN(TouchAssociationTest);
 };
 
-TEST_F(TouchscreenUtilTest, NoTouchscreens) {
+TEST_F(TouchAssociationTest, NoTouchscreens) {
   std::vector<ui::TouchscreenDevice> devices;
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   for (size_t i = 0; i < displays_.size(); ++i)
     EXPECT_EQ(0u, displays_[i].touch_device_identifiers().size());
@@ -115,7 +120,7 @@ TEST_F(TouchscreenUtilTest, NoTouchscreens) {
 
 // Verify that if there are a lot of touchscreens, they will all get associated
 // with a display.
-TEST_F(TouchscreenUtilTest, ManyTouchscreens) {
+TEST_F(TouchAssociationTest, ManyTouchscreens) {
   std::vector<ui::TouchscreenDevice> devices;
   for (int i = 0; i < 5; ++i) {
     devices.push_back(CreateTouchscreenDevice(
@@ -127,13 +132,13 @@ TEST_F(TouchscreenUtilTest, ManyTouchscreens) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays, devices);
 
   for (int i = 0; i < 5; ++i)
     EXPECT_TRUE(displays[0].HasTouchDevice(ToIdentifier(devices[i])));
 }
 
-TEST_F(TouchscreenUtilTest, OneToOneMapping) {
+TEST_F(TouchAssociationTest, OneToOneMapping) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(800, 600)));
@@ -142,7 +147,7 @@ TEST_F(TouchscreenUtilTest, OneToOneMapping) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].touch_device_identifiers().size());
   EXPECT_EQ(1u, displays_[1].touch_device_identifiers().size());
@@ -152,14 +157,14 @@ TEST_F(TouchscreenUtilTest, OneToOneMapping) {
   EXPECT_TRUE(displays_[3].HasTouchDevice(ToIdentifier(devices[1])));
 }
 
-TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
+TEST_F(TouchAssociationTest, MapToCorrectDisplaySize) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1024, 768)));
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].touch_device_identifiers().size());
   EXPECT_EQ(0u, displays_[1].touch_device_identifiers().size());
@@ -168,7 +173,7 @@ TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
   EXPECT_TRUE(displays_[3].HasTouchDevice(ToIdentifier(devices[0])));
 }
 
-TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
+TEST_F(TouchAssociationTest, MapWhenSizeDiffersByOne) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(801, 600)));
@@ -177,7 +182,7 @@ TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].touch_device_identifiers().size());
   EXPECT_EQ(1u, displays_[1].touch_device_identifiers().size());
@@ -187,7 +192,7 @@ TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
   EXPECT_TRUE(displays_[3].HasTouchDevice(ToIdentifier(devices[1])));
 }
 
-TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
+TEST_F(TouchAssociationTest, MapWhenSizesDoNotMatch) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1022, 768)));
@@ -200,15 +205,17 @@ TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays[0].id());
-  AssociateTouchscreens(&displays, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays, devices);
 
+  // The touch devices should match to the internal display if they were not
+  // matched in any of the steps.
   EXPECT_EQ(0u, displays[0].touch_device_identifiers().size());
   EXPECT_EQ(2u, displays[1].touch_device_identifiers().size());
   EXPECT_TRUE(displays[1].HasTouchDevice(ToIdentifier(devices[0])));
   EXPECT_TRUE(displays[1].HasTouchDevice(ToIdentifier(devices[1])));
 }
 
-TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
+TEST_F(TouchAssociationTest, MapInternalTouchscreen) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1920, 1080)));
@@ -221,7 +228,7 @@ TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays[0].id());
-  AssociateTouchscreens(&displays, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays, devices);
 
   // Internal touchscreen is always mapped to internal display.
   EXPECT_EQ(1u, displays[0].touch_device_identifiers().size());
@@ -230,7 +237,7 @@ TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
   EXPECT_TRUE(displays[1].HasTouchDevice(ToIdentifier(devices[0])));
 }
 
-TEST_F(TouchscreenUtilTest, MultipleInternal) {
+TEST_F(TouchAssociationTest, MultipleInternal) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1920, 1080)));
@@ -239,7 +246,7 @@ TEST_F(TouchscreenUtilTest, MultipleInternal) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(2u, displays_[0].touch_device_identifiers().size());
   EXPECT_EQ(0u, displays_[1].touch_device_identifiers().size());
@@ -247,7 +254,7 @@ TEST_F(TouchscreenUtilTest, MultipleInternal) {
   EXPECT_EQ(0u, displays_[3].touch_device_identifiers().size());
 }
 
-TEST_F(TouchscreenUtilTest, MultipleInternalAndExternal) {
+TEST_F(TouchAssociationTest, MultipleInternalAndExternal) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1920, 1080)));
@@ -258,7 +265,7 @@ TEST_F(TouchscreenUtilTest, MultipleInternalAndExternal) {
 
   test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                 displays_[0].id());
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(2u, displays_[0].touch_device_identifiers().size());
   EXPECT_TRUE(displays_[0].HasTouchDevice(ToIdentifier(devices[0])));
@@ -270,7 +277,7 @@ TEST_F(TouchscreenUtilTest, MultipleInternalAndExternal) {
 }
 
 // crbug.com/515201
-TEST_F(TouchscreenUtilTest, TestWithNoInternalDisplay) {
+TEST_F(TouchAssociationTest, TestWithNoInternalDisplay) {
   std::vector<ui::TouchscreenDevice> devices;
   devices.push_back(CreateTouchscreenDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1920, 1080)));
@@ -278,13 +285,54 @@ TEST_F(TouchscreenUtilTest, TestWithNoInternalDisplay) {
       2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(9999, 888)));
 
   // Internal touchscreen should not be associated with any display
-  AssociateTouchscreens(&displays_, devices);
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(1u, displays_[0].touch_device_identifiers().size());
   EXPECT_TRUE(displays_[0].HasTouchDevice(ToIdentifier(devices[0])));
   EXPECT_EQ(0u, displays_[1].touch_device_identifiers().size());
   EXPECT_EQ(0u, displays_[2].touch_device_identifiers().size());
   EXPECT_EQ(0u, displays_[3].touch_device_identifiers().size());
+}
+
+TEST_F(TouchAssociationTest, MatchRemainingDevicesToInternalDisplay) {
+  std::vector<ui::TouchscreenDevice> devices;
+  devices.push_back(CreateTouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(123, 456)));
+  devices.push_back(CreateTouchscreenDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(234, 567)));
+  devices.push_back(CreateTouchscreenDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(345, 678)));
+
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
+
+  EXPECT_EQ(3u, displays_[0].touch_device_identifiers().size());
+  EXPECT_TRUE(displays_[0].HasTouchDevice(ToIdentifier(devices[0])));
+  EXPECT_TRUE(displays_[0].HasTouchDevice(ToIdentifier(devices[1])));
+  EXPECT_TRUE(displays_[0].HasTouchDevice(ToIdentifier(devices[2])));
+  EXPECT_EQ(0u, displays_[1].touch_device_identifiers().size());
+  EXPECT_EQ(0u, displays_[2].touch_device_identifiers().size());
+  EXPECT_EQ(0u, displays_[3].touch_device_identifiers().size());
+}
+
+TEST_F(TouchAssociationTest, MatchRemainingDevicesWithInternalDisplayPresent) {
+  std::vector<ui::TouchscreenDevice> devices;
+  devices.push_back(CreateTouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(123, 456)));
+  devices.push_back(CreateTouchscreenDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(234, 567)));
+  devices.push_back(CreateTouchscreenDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(345, 678)));
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
+
+  std::size_t total = 0;
+  for (const auto& display : displays_)
+    total += display.touch_device_identifiers().size();
+
+  // Make sure all devices were matched.
+  EXPECT_EQ(total, devices.size());
 }
 
 }  // namespace display

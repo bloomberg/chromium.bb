@@ -6,6 +6,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/display/manager/chromeos/touch_device_manager.h"
+#endif
+
 namespace display {
 namespace {
 
@@ -146,6 +150,7 @@ TEST_F(DisplayInfoTest, TouchDevicesTest) {
   EXPECT_EQ(0u, copy_info.touch_device_identifiers().size());
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(DisplayInfoTest, TouchCalibrationTest) {
   ManagedDisplayInfo info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
@@ -185,5 +190,6 @@ TEST_F(DisplayInfoTest, TouchCalibrationTest) {
   // There should be no touch device data associated with this display.
   EXPECT_FALSE(info.touch_calibration_data_map().size());
 }
+#endif  // OS_CHROMEOS
 
 }  // namespace display
