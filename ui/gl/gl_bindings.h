@@ -436,6 +436,11 @@ struct GL_EXPORT DriverGL {
 
   ProcsGL fn;
   ExtensionsGL ext;
+
+  DriverGL() {
+    // InitializeStaticBindings() requires that fn is null-initialized.
+    ClearBindings();
+  }
 };
 
 struct GL_EXPORT CurrentGL {
