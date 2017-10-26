@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/passwords/credential_provider_interface.h"
 #include "chrome/browser/ui/passwords/password_access_authenticator.h"
 #include "chrome/browser/ui/passwords/password_manager_porter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "components/prefs/pref_member.h"
 #include "components/undo/undo_manager.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -39,7 +39,7 @@ class PasswordUIView;
 // PasswordStore operations and updates the view on PasswordStore changes.
 class PasswordManagerPresenter
     : public password_manager::PasswordStore::Observer,
-      public CredentialProviderInterface {
+      public password_manager::CredentialProviderInterface {
  public:
   // |password_view| the UI view that owns this presenter, must not be NULL.
   explicit PasswordManagerPresenter(PasswordUIView* password_view);
@@ -57,7 +57,7 @@ class PasswordManagerPresenter
   // Gets the password entry at |index|.
   const autofill::PasswordForm* GetPassword(size_t index);
 
-  // CredentialProviderInterface:
+  // password::manager::CredentialProviderInterface:
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords()
       override;
 

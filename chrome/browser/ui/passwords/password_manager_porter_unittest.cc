@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -70,11 +71,12 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   DISALLOW_ASSIGN(TestSelectFileDialogFactory);
 };
 
-class TestCredentialProviderInterface : public CredentialProviderInterface {
+class TestCredentialProviderInterface
+    : public password_manager::CredentialProviderInterface {
  public:
   TestCredentialProviderInterface() {}
 
-  // CredentialProviderInterface:
+  // password_manager::CredentialProviderInterface:
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords()
       override {
     return std::vector<std::unique_ptr<autofill::PasswordForm>>();

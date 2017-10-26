@@ -10,11 +10,11 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/passwords/credential_provider_interface.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/export/password_exporter.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,7 +80,8 @@ void PasswordImportConsumer::ConsumePassword(
 }  // namespace
 
 PasswordManagerPorter::PasswordManagerPorter(
-    CredentialProviderInterface* credential_provider_interface)
+    password_manager::CredentialProviderInterface*
+        credential_provider_interface)
     : credential_provider_interface_(credential_provider_interface) {}
 
 PasswordManagerPorter::~PasswordManagerPorter() {}
