@@ -36,8 +36,6 @@ class PaletteTrayTestApi {
     palette_tray_->OnStylusStateChanged(state);
   }
 
-  bool IsStylusWatcherActive() { return !!palette_tray_->watcher_; }
-
  private:
   PaletteTray* palette_tray_ = nullptr;
 

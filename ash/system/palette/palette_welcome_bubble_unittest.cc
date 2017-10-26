@@ -41,7 +41,7 @@ class PaletteWelcomeBubbleTest : public AshTestBase {
         AccountId::FromUserEmail(kUser2Email));
   }
 
-  void ShowBubble() { welcome_bubble_->Show(); }
+  void ShowBubble() { welcome_bubble_->Show(false /* shown_by_stylus */); }
   void HideBubble() { welcome_bubble_->Hide(); }
 
   // AshTestBase:
@@ -70,13 +70,13 @@ class PaletteWelcomeBubbleTest : public AshTestBase {
 
 // Test the basic Show/Hide functions work.
 TEST_F(PaletteWelcomeBubbleTest, Basic) {
-  EXPECT_FALSE(welcome_bubble_->BubbleShown());
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
 
   ShowBubble();
-  EXPECT_TRUE(welcome_bubble_->BubbleShown());
+  EXPECT_TRUE(welcome_bubble_->bubble_shown());
 
   HideBubble();
-  EXPECT_FALSE(welcome_bubble_->BubbleShown());
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
 
   // Verify that the pref changes after the bubble is hidden.
   EXPECT_TRUE(
@@ -87,14 +87,17 @@ TEST_F(PaletteWelcomeBubbleTest, Basic) {
 TEST_F(PaletteWelcomeBubbleTest, ShowIfNeeded) {
   user1_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble, true);
 
-  welcome_bubble_->ShowIfNeeded();
-  EXPECT_FALSE(welcome_bubble_->BubbleShown());
+  welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
+
+  welcome_bubble_->ShowIfNeeded(true /* shown_by_stylus */);
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
 }
 
 // Verify that tapping the close button on the welcome bubble closes the bubble.
 TEST_F(PaletteWelcomeBubbleTest, CloseButton) {
   ShowBubble();
-  ASSERT_TRUE(welcome_bubble_->BubbleShown());
+  ASSERT_TRUE(welcome_bubble_->bubble_shown());
   ASSERT_TRUE(welcome_bubble_->GetCloseButtonForTest());
 
   GetEventGenerator().set_current_location(
@@ -102,28 +105,28 @@ TEST_F(PaletteWelcomeBubbleTest, CloseButton) {
           ->GetBoundsInScreen()
           .CenterPoint());
   GetEventGenerator().ClickLeftButton();
-  EXPECT_FALSE(welcome_bubble_->BubbleShown());
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
 }
 
 // Verify that tapping on the screen outside of the welcome bubble closes the
 // bubble.
 TEST_F(PaletteWelcomeBubbleTest, TapOutsideOfBubble) {
   ShowBubble();
-  ASSERT_TRUE(welcome_bubble_->BubbleShown());
+  ASSERT_TRUE(welcome_bubble_->bubble_shown());
   ASSERT_TRUE(welcome_bubble_->GetBubbleBoundsForTest().has_value());
 
   // The bubble remains open if a tap occurs on the bubble.
   GetEventGenerator().set_current_location(
       welcome_bubble_->GetBubbleBoundsForTest()->CenterPoint());
   GetEventGenerator().ClickLeftButton();
-  EXPECT_TRUE(welcome_bubble_->BubbleShown());
+  EXPECT_TRUE(welcome_bubble_->bubble_shown());
 
   // Tap anywhere outside the bubble.
   ASSERT_FALSE(
       welcome_bubble_->GetBubbleBoundsForTest()->Contains(gfx::Point()));
   GetEventGenerator().set_current_location(gfx::Point());
   GetEventGenerator().ClickLeftButton();
-  EXPECT_FALSE(welcome_bubble_->BubbleShown());
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
 }
 
 // Verify that a second user sees the bubble even after a first user has seen it
@@ -132,7 +135,7 @@ TEST_F(PaletteWelcomeBubbleTest, BubbleShownForSecondUser) {
   // Show the bubble for the first user, and verify that the pref is set when
   // the bubble is hidden.
   ShowBubble();
-  EXPECT_TRUE(welcome_bubble_->BubbleShown());
+  EXPECT_TRUE(welcome_bubble_->bubble_shown());
   HideBubble();
   ASSERT_TRUE(
       user1_pref_service()->GetBoolean(prefs::kShownPaletteWelcomeBubble));
@@ -142,8 +145,8 @@ TEST_F(PaletteWelcomeBubbleTest, BubbleShownForSecondUser) {
       AccountId::FromUserEmail(kUser2Email));
   EXPECT_FALSE(
       user2_pref_service()->GetBoolean(prefs::kShownPaletteWelcomeBubble));
-  welcome_bubble_->ShowIfNeeded();
-  EXPECT_TRUE(welcome_bubble_->BubbleShown());
+  welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
+  EXPECT_TRUE(welcome_bubble_->bubble_shown());
 }
 
 }  // namespace ash
