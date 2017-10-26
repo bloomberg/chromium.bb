@@ -2718,6 +2718,13 @@ const char kVrCustomTabBrowsingDescription[] =
     "Allow browsing with a VR headset in a Custom Tab if available for this "
     "device.";
 
+const char kVrShellExperimentalRenderingName[] =
+    "Enable Chrome VR experimental rendering "
+    "features.";
+const char kVrShellExperimentalRenderingDescription[] =
+    "Turns on experimental rendering features for Chrome VR, like power saving "
+    "rendering modes.";
+
 const char kWebVrAutopresentName[] = "Enable WebVr auto presentation";
 const char kWebVrAutopresentDescription[] =
     "Allows auto presentation of WebVr content from trusted first-party apps";
