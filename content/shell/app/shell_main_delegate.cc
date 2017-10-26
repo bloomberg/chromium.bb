@@ -83,8 +83,10 @@
 
 namespace {
 
+#if !defined(OS_FUCHSIA)
 base::LazyInstance<content::ShellCrashReporterClient>::Leaky
     g_shell_crash_client = LAZY_INSTANCE_INITIALIZER;
+#endif
 
 #if defined(OS_WIN)
 // If "Content Shell" doesn't show up in your list of trace providers in
@@ -156,6 +158,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif  // OS_MACOSX
 
   InitLogging(command_line);
+
   if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
     // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
     // continue and try to load the fonts in BlinkTestPlatformInitialize
@@ -259,7 +262,9 @@ void ShellMainDelegate::PreSandboxStartup() {
   base::CPU cpu_info;
 #endif
 
-  // Disable platform crash handling & initialize Breakpad, if requested.
+// Disable platform crash handling & initialize Breakpad, if requested.
+// TODO(753619): Implement crash reporter integration for Fuchsia.
+#if !defined(OS_FUCHSIA)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     std::string process_type =
@@ -287,6 +292,7 @@ void ShellMainDelegate::PreSandboxStartup() {
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
 #endif  // defined(OS_ANDROID)
   }
+#endif  // !defined(OS_FUCHSIA)
 
   InitializeResourceBundle();
 }

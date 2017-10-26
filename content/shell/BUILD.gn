@@ -287,7 +287,9 @@ static_library("content_shell_lib") {
     "//v8",
   ]
 
-  if (!is_fuchsia) {
+  if (is_fuchsia) {
+    sources += [ "app/blink_test_platform_support_fuchsia.cc" ]
+  } else {
     deps +=
         [ "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted" ]
   }
@@ -586,6 +588,13 @@ if (is_android) {
     if (is_linux && !is_component_build) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+  }
+
+  if (is_fuchsia) {
+    fuchsia_executable_runner("content_shell_fuchsia") {
+      testonly = true
+      exe_target = ":content_shell"
     }
   }
 }
