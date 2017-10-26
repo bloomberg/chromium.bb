@@ -94,7 +94,8 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // limitations. This will instantiate the SandboxLinux singleton if it
   // doesn't already exist.
   // This function should only be called without any thread running.
-  static bool InitializeSandbox(SandboxSeccompBPF::PreSandboxHook hook,
+  static bool InitializeSandbox(SandboxType sandbox_type,
+                                SandboxSeccompBPF::PreSandboxHook hook,
                                 const SandboxSeccompBPF::Options& options);
 
   // Stop |thread| in a way that can be trusted by the sandbox.
@@ -152,7 +153,8 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
 
   // Some methods are static and get an instance of the Singleton. These
   // are the non-static implementations.
-  bool InitializeSandboxImpl(SandboxSeccompBPF::PreSandboxHook hook,
+  bool InitializeSandboxImpl(SandboxType sandbox_type,
+                             SandboxSeccompBPF::PreSandboxHook hook,
                              const SandboxSeccompBPF::Options& options);
   void StopThreadImpl(base::Thread* thread);
   // We must have been pre_initialized_ before using these.

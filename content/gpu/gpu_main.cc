@@ -365,6 +365,8 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
 #endif
 
   bool res = service_manager::SandboxLinux::InitializeSandbox(
+      service_manager::SandboxTypeFromCommandLine(
+          *base::CommandLine::ForCurrentProcess()),
       GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies),
       sandbox_options);
 

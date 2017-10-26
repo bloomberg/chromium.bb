@@ -199,10 +199,11 @@ std::vector<int> SandboxLinux::GetFileDescriptorsToClose() {
 }
 
 bool SandboxLinux::InitializeSandbox(
+    SandboxType sandbox_type,
     SandboxSeccompBPF::PreSandboxHook hook,
     const SandboxSeccompBPF::Options& options) {
-  return SandboxLinux::GetInstance()->InitializeSandboxImpl(std::move(hook),
-                                                            options);
+  return SandboxLinux::GetInstance()->InitializeSandboxImpl(
+      sandbox_type, std::move(hook), options);
 }
 
 void SandboxLinux::StopThread(base::Thread* thread) {
@@ -290,6 +291,7 @@ bool SandboxLinux::StartSeccompBPF(service_manager::SandboxType sandbox_type,
 }
 
 bool SandboxLinux::InitializeSandboxImpl(
+    SandboxType sandbox_type,
     SandboxSeccompBPF::PreSandboxHook hook,
     const SandboxSeccompBPF::Options& options) {
   DCHECK(!initialize_sandbox_ran_);
@@ -298,8 +300,6 @@ bool SandboxLinux::InitializeSandboxImpl(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string process_type = command_line->GetSwitchValueASCII(
       service_manager::switches::kProcessType);
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(*command_line);
 
   // We need to make absolutely sure that our sandbox is "sealed" before
   // returning.
