@@ -92,7 +92,7 @@ float FilterGroup::MixAndFilter(int chunk_size) {
       input->VolumeScaleAccumulate(c != 0, temp_->channel(c), chunk_size,
                                    mixed_->channel(c));
     }
-    volume = std::max(volume, input->EffectiveVolume());
+    volume = std::max(volume, input->InstantaneousVolume());
   }
 
   mixed_->ToInterleaved<::media::FloatSampleTypeTraits<float>>(chunk_size,

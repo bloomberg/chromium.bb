@@ -22,6 +22,11 @@ class SlewVolume {
 
   void SetSampleRate(int sample_rate);
   void SetVolume(double volume_scale);
+
+  // Return the largest multiplier that was applied in the last call to
+  // ProcessFMAC() or ProcessFMUL(). The largest multiplier is used because
+  // that determines the largest possible value in the buffer.
+  float LastBufferMaxMultiplier();
   void SetMaxSlewTimeMs(int max_slew_time_ms);
 
   // Called to indicate that the stream was interrupted; volume changes can be

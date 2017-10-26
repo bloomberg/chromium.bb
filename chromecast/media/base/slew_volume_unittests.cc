@@ -148,6 +148,43 @@ TEST_F(SlewVolumeBaseTest, BadSlewTime) {
 
 #endif  // defined(ASSERT_DEATH)
 
+TEST_F(SlewVolumeBaseTest, InstantVolumeDecreasing) {
+  slew_volume_->SetMaxSlewTimeMs(10);
+  slew_volume_->SetSampleRate(10000);
+  // Max slew per sample = 1000 / (max_time * sample_rate)
+  //                     = 0.01
+  slew_volume_->SetVolume(1.0);
+  ClearInterrupted();
+  slew_volume_->SetVolume(0.0);
+  const int kFramesPerTransaction = 10;
+  // LastVolume lags, so 101 steps are needed.
+  for (int i = 0; i < 101; i += kFramesPerTransaction) {
+    for (size_t ch = 0; ch < data_.size(); ++ch) {
+      slew_volume_->ProcessFMAC(ch != 0, data_[ch], 10, 1, data_2_[ch]);
+    }
+    ASSERT_FLOAT_EQ(1.0 - (0.01 * i), slew_volume_->LastBufferMaxMultiplier());
+  }
+}
+
+TEST_F(SlewVolumeBaseTest, InstantVolumeIncreasing) {
+  slew_volume_->SetMaxSlewTimeMs(10);
+  slew_volume_->SetSampleRate(10000);
+  // Max slew per sample = 1000 / (max_time * sample_rate)
+  //                     = 0.01
+  slew_volume_->SetVolume(0.0);
+  ClearInterrupted();
+  slew_volume_->SetVolume(1.0);
+  const int kFramesPerTransaction = 10;
+  // LastVolume leads, so 100 steps are needed.
+  for (int i = 0; i < 100; i += kFramesPerTransaction) {
+    for (size_t ch = 0; ch < data_.size(); ++ch) {
+      slew_volume_->ProcessFMAC(ch != 0, data_[ch], 10, 1, data_2_[ch]);
+    }
+    ASSERT_FLOAT_EQ(0.01 * (i + kFramesPerTransaction),
+                    slew_volume_->LastBufferMaxMultiplier());
+  }
+}
+
 class SlewVolumeSteadyStateTest : public SlewVolumeBaseTest {
  protected:
   SlewVolumeSteadyStateTest() = default;
