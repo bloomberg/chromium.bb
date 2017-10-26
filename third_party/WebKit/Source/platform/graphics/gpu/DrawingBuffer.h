@@ -434,9 +434,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Whether the WebGL client wants a depth or stencil buffer.
   bool WantDepthOrStencil();
 
-  // The format to use when creating a multisampled renderbuffer.
-  GLenum GetMultisampledRenderbufferFormat();
-
   // Helpers to ensure correct behavior of BlitFramebuffer when using
   // an emulated RGB CHROMIUM_image back buffer.
   bool SetupRGBEmulationForBlitFramebuffer(bool is_user_draw_framebuffer_bound);
@@ -456,8 +453,13 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   const bool discard_framebuffer_supported_;
   // Did the user request an alpha channel be allocated.
   const bool want_alpha_channel_;
-  // Do we create an alpha channel for our allocation.
+  // Do we explicitly allocate an alpha channel in our ColorBuffer allocations.
+  // Note that this does not apply to |multisample_renderbuffer_|.
   bool allocate_alpha_channel_ = false;
+  // Does our allocation have an alpha channel (potentially implicitly created).
+  // Note that this determines if |multisample_renderbuffer_| allocates an alpha
+  // channel.
+  bool have_alpha_channel_ = false;
   const bool premultiplied_alpha_;
   const bool software_rendering_;
   bool has_implicit_stencil_buffer_ = false;

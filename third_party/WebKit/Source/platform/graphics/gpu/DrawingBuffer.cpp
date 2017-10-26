@@ -235,17 +235,7 @@ bool DrawingBuffer::RequiresAlphaChannelToBePreserved() {
 }
 
 bool DrawingBuffer::DefaultBufferRequiresAlphaChannelToBePreserved() {
-  if (WantExplicitResolve()) {
-    return !want_alpha_channel_ &&
-           GetMultisampledRenderbufferFormat() == GL_RGBA8_OES;
-  }
-
-  bool rgb_emulation =
-      ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-          gpu::DISABLE_GL_RGB_FORMAT) ||
-      (ShouldUseChromiumImage() &&
-       ContextProvider()->GetCapabilities().chromium_image_rgb_emulation);
-  return !want_alpha_channel_ && rgb_emulation;
+  return !want_alpha_channel_ && have_alpha_channel_;
 }
 
 std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
@@ -656,35 +646,50 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       anti_aliasing_mode_ == kScreenSpaceAntialiasing;
   sample_count_ = std::min(8, max_sample_count);
 
-  // Initialize texture target and alpha allocation parameters based on the
-  // features and workarounds in use.
   texture_target_ = GL_TEXTURE_2D;
-  if (want_alpha_channel_) {
-    allocate_alpha_channel_ = true;
-  } else if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-                 gpu::DISABLE_GL_RGB_FORMAT)) {
-    allocate_alpha_channel_ = true;
-  } else {
-    allocate_alpha_channel_ = DefaultBufferRequiresAlphaChannelToBePreserved();
-  }
 #if defined(OS_MACOSX)
-  if (ShouldUseChromiumImage() &&
-      Platform::Current()->GetGpuMemoryBufferManager()) {
+  if (ShouldUseChromiumImage()) {
     // A CHROMIUM_image backed texture requires a specialized set of parameters
     // on OSX.
     texture_target_ = GC3D_TEXTURE_RECTANGLE_ARB;
-    if (want_alpha_channel_) {
-      allocate_alpha_channel_ = true;
-    } else if (ContextProvider()
-                   ->GetCapabilities()
-                   .chromium_image_rgb_emulation) {
-      allocate_alpha_channel_ = false;
-    } else {
-      allocate_alpha_channel_ =
-          DefaultBufferRequiresAlphaChannelToBePreserved();
-    }
   }
 #endif
+
+  // Initialize the alpha allocation settings based on the features and
+  // workarounds in use.
+  if (want_alpha_channel_) {
+    allocate_alpha_channel_ = true;
+    have_alpha_channel_ = true;
+  } else {
+    allocate_alpha_channel_ = false;
+    have_alpha_channel_ = false;
+    if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+            gpu::DISABLE_GL_RGB_FORMAT)) {
+      // This configuration will
+      //  - allow invalid CopyTexImage to RGBA targets
+      //  - fail valid FramebufferBlit from RGB targets
+      // https://crbug.com/776269
+      allocate_alpha_channel_ = true;
+      have_alpha_channel_ = true;
+    }
+    if (WantExplicitResolve() &&
+        ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+            gpu::DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE)) {
+      // This configuration avoids the above issues because
+      //  - CopyTexImage is invalid from multisample renderbuffers
+      //  - FramebufferBlit is invalid to multisample renderbuffers
+      allocate_alpha_channel_ = true;
+      have_alpha_channel_ = true;
+    }
+    if (ShouldUseChromiumImage() &&
+        ContextProvider()->GetCapabilities().chromium_image_rgb_emulation) {
+      // This configuration avoids the above issues by
+      //  - extra command buffer validation for CopyTexImage
+      //  - explicity re-binding as RGB for FramebufferBlit
+      allocate_alpha_channel_ = false;
+      have_alpha_channel_ = true;
+    }
+  }
 
   state_restorer_->SetFramebufferBindingDirty();
   gl_->GenFramebuffers(1, &fbo_);
@@ -853,9 +858,13 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
     state_restorer_->SetRenderbufferBindingDirty();
     gl_->BindFramebuffer(GL_FRAMEBUFFER, multisample_fbo_);
     gl_->BindRenderbuffer(GL_RENDERBUFFER, multisample_renderbuffer_);
+    // Note that the multisample rendertarget will allocate an alpha channel
+    // based on |have_alpha_channel_|, not |allocate_alpha_channel_|, since it
+    // will resolve into the ColorBuffer.
     gl_->RenderbufferStorageMultisampleCHROMIUM(
-        GL_RENDERBUFFER, sample_count_, GetMultisampledRenderbufferFormat(),
-        size.Width(), size.Height());
+        GL_RENDERBUFFER, sample_count_,
+        have_alpha_channel_ ? GL_RGBA8_OES : GL_RGB8_OES, size.Width(),
+        size.Height());
 
     if (gl_->GetError() == GL_OUT_OF_MEMORY)
       return false;
@@ -1179,7 +1188,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       Platform::Current()->GetGpuMemoryBufferManager();
-  if (ShouldUseChromiumImage() && gpu_memory_buffer_manager) {
+  if (ShouldUseChromiumImage()) {
     gfx::BufferFormat buffer_format;
     GLenum gl_format = GL_NONE;
     if (allocate_alpha_channel_) {
@@ -1235,8 +1244,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   }
 
   // Clear the alpha channel if this is RGB emulated.
-  if (image_id && !want_alpha_channel_ &&
-      ContextProvider()->GetCapabilities().chromium_image_rgb_emulation) {
+  if (image_id && !want_alpha_channel_ && have_alpha_channel_) {
     GLuint fbo = 0;
 
     state_restorer_->SetClearStateDirty();
@@ -1285,20 +1293,6 @@ bool DrawingBuffer::WantDepthOrStencil() {
   return want_depth_ || want_stencil_;
 }
 
-GLenum DrawingBuffer::GetMultisampledRenderbufferFormat() {
-  DCHECK(WantExplicitResolve());
-  if (want_alpha_channel_)
-    return GL_RGBA8_OES;
-  if (ShouldUseChromiumImage() &&
-      ContextProvider()->GetCapabilities().chromium_image_rgb_emulation)
-    return GL_RGBA8_OES;
-  if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-          gpu::DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE)) {
-    return GL_RGBA8_OES;
-  }
-  return GL_RGB8_OES;
-}
-
 bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
     bool is_user_draw_framebuffer_bound) {
   // We only need to do this work if:
@@ -1311,20 +1305,16 @@ bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
     return false;
   }
 
-  if (want_alpha_channel_ || anti_aliasing_mode_ != kNone) {
-    return false;
-  }
-
-  if (!(ShouldUseChromiumImage() &&
-        ContextProvider()->GetCapabilities().chromium_image_rgb_emulation))
+  if (anti_aliasing_mode_ != kNone)
     return false;
 
-  if (!back_color_buffer_)
+  bool has_emulated_rgb = !allocate_alpha_channel_ && have_alpha_channel_;
+  if (!has_emulated_rgb)
     return false;
 
-  // If for some reason the back buffer doesn't have a CHROMIUM_image,
-  // don't proceed with this workaround.
-  if (!back_color_buffer_->image_id)
+  // If for some reason the back buffer doesn't exist or doesn't have a
+  // CHROMIUM_image, don't proceed with this workaround.
+  if (!back_color_buffer_ || !back_color_buffer_->image_id)
     return false;
 
   // Before allowing the BlitFramebuffer call to go through, it's necessary
@@ -1412,7 +1402,8 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
 
 bool DrawingBuffer::ShouldUseChromiumImage() {
   return RuntimeEnabledFeatures::WebGLImageChromiumEnabled() &&
-         chromium_image_usage_ == kAllowChromiumImage;
+         chromium_image_usage_ == kAllowChromiumImage &&
+         Platform::Current()->GetGpuMemoryBufferManager();
 }
 
 }  // namespace blink
