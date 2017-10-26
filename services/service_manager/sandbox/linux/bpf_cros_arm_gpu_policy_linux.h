@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
-#define CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
 
 #include "base/macros.h"
-#include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/export.h"
+#include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 
-namespace content {
+namespace service_manager {
 
 // This policy is for Chrome OS ARM.
-class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT CrosArmGpuProcessPolicy
+    : public GpuProcessPolicy {
  public:
   explicit CrosArmGpuProcessPolicy(bool allow_shmat);
   ~CrosArmGpuProcessPolicy() override;
@@ -26,7 +28,8 @@ class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
   DISALLOW_COPY_AND_ASSIGN(CrosArmGpuProcessPolicy);
 };
 
-class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT CrosArmGpuBrokerProcessPolicy
+    : public CrosArmGpuProcessPolicy {
  public:
   CrosArmGpuBrokerProcessPolicy();
   ~CrosArmGpuBrokerProcessPolicy() override;
@@ -38,6 +41,6 @@ class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
   DISALLOW_COPY_AND_ASSIGN(CrosArmGpuBrokerProcessPolicy);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_

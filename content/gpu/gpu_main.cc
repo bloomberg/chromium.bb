@@ -78,10 +78,10 @@
 
 #if defined(OS_LINUX)
 #include "content/common/font_config_ipc_linux.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/gpu/gpu_sandbox_hook_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/sandbox_init.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #endif
 
@@ -348,12 +348,12 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
   if (watchdog_thread) {
     // SandboxLinux needs to be able to ensure that the thread
     // has really been stopped.
-    SandboxLinux::StopThread(watchdog_thread);
+    service_manager::SandboxLinux::StopThread(watchdog_thread);
   }
 
   // SandboxLinux::InitializeSandbox() must always be called
   // with only one thread.
-  SandboxSeccompBPF::Options sandbox_options;
+  service_manager::SandboxSeccompBPF::Options sandbox_options;
   sandbox_options.use_amd_specific_policies =
       gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
   sandbox_options.accelerated_video_decode_enabled =
@@ -364,7 +364,7 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
       !gpu_prefs.disable_vaapi_accelerated_video_encode;
 #endif
 
-  bool res = SandboxLinux::InitializeSandbox(
+  bool res = service_manager::SandboxLinux::InitializeSandbox(
       GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies),
       sandbox_options);
 

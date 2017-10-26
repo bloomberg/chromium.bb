@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
 
 #include <errno.h>
 
@@ -12,7 +12,7 @@
 
 using sandbox::bpf_dsl::ResultExpr;
 
-namespace content {
+namespace service_manager {
 
 namespace {
 
@@ -39,4 +39,4 @@ int SandboxBPFBasePolicy::GetFSDeniedErrno() {
   return kFSDeniedErrno;
 }
 
-}  // namespace content.
+}  // namespace service_manager.

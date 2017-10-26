@@ -42,8 +42,8 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/public/common/sandbox_init.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -121,8 +121,9 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(OS_LINUX)
-  SandboxLinux::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(),
-                                  SandboxSeccompBPF::Options());
+  service_manager::SandboxLinux::InitializeSandbox(
+      service_manager::SandboxSeccompBPF::PreSandboxHook(),
+      service_manager::SandboxSeccompBPF::Options());
 #endif
 
   ChildProcess ppapi_process;

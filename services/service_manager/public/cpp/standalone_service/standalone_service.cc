@@ -33,7 +33,7 @@ namespace service_manager {
 namespace {
 
 #if defined(OS_LINUX)
-std::unique_ptr<SandboxLinux> InitializeSandbox() {
+std::unique_ptr<deprecated::SandboxLinux> InitializeSandbox() {
   using sandbox::syscall_broker::BrokerFilePermission;
   // Warm parts of base in the copy of base in the mojo runner.
   base::RandUint64();
@@ -47,7 +47,7 @@ std::unique_ptr<SandboxLinux> InitializeSandbox() {
   std::vector<BrokerFilePermission> permissions;
   permissions.push_back(
       BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
-  std::unique_ptr<SandboxLinux> sandbox(new SandboxLinux(permissions));
+  auto sandbox = std::make_unique<deprecated::SandboxLinux>(permissions);
   sandbox->Warmup();
   sandbox->EngageNamespaceSandbox();
   sandbox->EngageSeccompSandbox();
@@ -67,7 +67,7 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
 #endif
 
 #if defined(OS_LINUX)
-  std::unique_ptr<SandboxLinux> sandbox;
+  std::unique_ptr<deprecated::SandboxLinux> sandbox;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableSandbox))

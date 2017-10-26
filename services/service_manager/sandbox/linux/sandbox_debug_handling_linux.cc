@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/sandbox_debug_handling_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -16,7 +16,7 @@
 #include "base/strings/safe_sprintf.h"
 #include "services/service_manager/sandbox/switches.h"
 
-namespace content {
+namespace service_manager {
 
 namespace {
 
@@ -76,4 +76,4 @@ bool SandboxDebugHandling::SetDumpableStatusAndHandlers() {
   return prctl(PR_GET_DUMPABLE) == 0;
 }
 
-}  // namespace content
+}  // namespace service_manager

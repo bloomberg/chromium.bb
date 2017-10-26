@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
-#define CONTENT_COMMON_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
 
 #include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
+#include "services/service_manager/sandbox/export.h"
+#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
 
-namespace content {
+namespace service_manager {
 
-class GpuProcessPolicy : public SandboxBPFBasePolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT GpuProcessPolicy
+    : public SandboxBPFBasePolicy {
  public:
   GpuProcessPolicy();
   ~GpuProcessPolicy() override;
@@ -43,7 +45,8 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   DISALLOW_COPY_AND_ASSIGN(GpuProcessPolicy);
 };
 
-class GpuBrokerProcessPolicy : public GpuProcessPolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT GpuBrokerProcessPolicy
+    : public GpuProcessPolicy {
  public:
   GpuBrokerProcessPolicy();
   ~GpuBrokerProcessPolicy() override;
@@ -55,6 +58,6 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
   DISALLOW_COPY_AND_ASSIGN(GpuBrokerProcessPolicy);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_

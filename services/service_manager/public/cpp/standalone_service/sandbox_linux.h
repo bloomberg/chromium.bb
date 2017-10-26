@@ -14,6 +14,7 @@
 #include "sandbox/linux/syscall_broker/broker_process.h"
 
 namespace service_manager {
+namespace deprecated {
 
 // Encapsulates all tasks related to raising the sandbox for a standalone
 // service.
@@ -47,6 +48,7 @@ class SandboxLinux {
   DISALLOW_COPY_AND_ASSIGN(SandboxLinux);
 };
 
+}  // namespace deprecated
 }  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_SANDBOX_LINUX_H_

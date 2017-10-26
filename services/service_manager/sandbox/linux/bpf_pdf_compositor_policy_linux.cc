@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/bpf_pdf_compositor_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_pdf_compositor_policy_linux.h"
 
 #include <errno.h>
 
 #include "build/build_config.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 using sandbox::SyscallSets;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::ResultExpr;
 
-namespace content {
+namespace service_manager {
 
 PdfCompositorProcessPolicy::PdfCompositorProcessPolicy() {}
 PdfCompositorProcessPolicy::~PdfCompositorProcessPolicy() {}
@@ -52,4 +52,4 @@ ResultExpr PdfCompositorProcessPolicy::EvaluateSyscall(int sysno) const {
   }
 }
 
-}  // namespace content
+}  // namespace service_manager

@@ -280,30 +280,6 @@ source_set("common") {
     "sandbox_init_linux.cc",
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",
-    "sandbox_linux/bpf_cdm_policy_linux.cc",
-    "sandbox_linux/bpf_cdm_policy_linux.h",
-    "sandbox_linux/bpf_cros_amd_gpu_policy_linux.cc",
-    "sandbox_linux/bpf_cros_amd_gpu_policy_linux.h",
-    "sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc",
-    "sandbox_linux/bpf_cros_arm_gpu_policy_linux.h",
-    "sandbox_linux/bpf_gpu_policy_linux.cc",
-    "sandbox_linux/bpf_gpu_policy_linux.h",
-    "sandbox_linux/bpf_pdf_compositor_policy_linux.cc",
-    "sandbox_linux/bpf_pdf_compositor_policy_linux.h",
-    "sandbox_linux/bpf_ppapi_policy_linux.cc",
-    "sandbox_linux/bpf_ppapi_policy_linux.h",
-    "sandbox_linux/bpf_renderer_policy_linux.cc",
-    "sandbox_linux/bpf_renderer_policy_linux.h",
-    "sandbox_linux/bpf_utility_policy_linux.cc",
-    "sandbox_linux/bpf_utility_policy_linux.h",
-    "sandbox_linux/sandbox_bpf_base_policy_linux.cc",
-    "sandbox_linux/sandbox_bpf_base_policy_linux.h",
-    "sandbox_linux/sandbox_debug_handling_linux.cc",
-    "sandbox_linux/sandbox_debug_handling_linux.h",
-    "sandbox_linux/sandbox_linux.cc",
-    "sandbox_linux/sandbox_linux.h",
-    "sandbox_linux/sandbox_seccomp_bpf_linux.cc",
-    "sandbox_linux/sandbox_seccomp_bpf_linux.h",
     "sandbox_win.cc",
     "sandbox_win.h",
     "savable_subframe.h",
@@ -455,8 +431,8 @@ source_set("common") {
   if (is_android && use_seccomp_bpf) {
     set_sources_assignment_filter([])
     sources += [
-      "sandbox_linux/sandbox_bpf_base_policy_linux.cc",
-      "sandbox_linux/sandbox_bpf_base_policy_linux.h",
+      "//services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.cc",
+      "//services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   }

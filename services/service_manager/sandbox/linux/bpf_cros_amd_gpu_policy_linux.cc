@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -31,7 +31,7 @@ using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::ResultExpr;
 
-namespace content {
+namespace service_manager {
 
 CrosAmdGpuProcessPolicy::CrosAmdGpuProcessPolicy() {}
 
@@ -88,4 +88,4 @@ ResultExpr CrosAmdGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   }
 }
 
-}  // namespace content
+}  // namespace service_manager

@@ -20,7 +20,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(OS_LINUX)
-#include "content/common/sandbox_linux/sandbox_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
 
 #if defined(OS_WIN)
@@ -50,8 +50,9 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // TODO(jorgelo): move this after GTK initialization when we enable a strict
   // Seccomp-BPF policy.
   if (parameters.zygote_child) {
-    SandboxLinux::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(),
-                                    SandboxSeccompBPF::Options());
+    service_manager::SandboxLinux::InitializeSandbox(
+        service_manager::SandboxSeccompBPF::PreSandboxHook(),
+        service_manager::SandboxSeccompBPF::Options());
   }
 #elif defined(OS_WIN)
   g_utility_target_services = parameters.sandbox_info->target_services;

@@ -10,10 +10,10 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 namespace content {
 
@@ -34,16 +34,17 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox.md
   //
   // Anything else is started in InitializeSandbox().
-  SandboxSeccompBPF::Options options;
+  service_manager::SandboxSeccompBPF::Options options;
   options.has_wasm_trap_handler =
       base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler);
-  SandboxLinux::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(), options);
+  service_manager::SandboxLinux::InitializeSandbox(
+      service_manager::SandboxSeccompBPF::PreSandboxHook(), options);
 
   // about:sandbox uses a value returned from SandboxLinux::GetStatus() before
   // any renderer has been started.
   // Here, we test that the status of SeccompBpf in the renderer is consistent
   // with what SandboxLinux::GetStatus() said we would do.
-  class SandboxLinux* linux_sandbox = SandboxLinux::GetInstance();
+  auto* linux_sandbox = service_manager::SandboxLinux::GetInstance();
   if (linux_sandbox->GetStatus() & service_manager::Sandbox::kSeccompBPF) {
     CHECK(linux_sandbox->seccomp_bpf_started());
   }
