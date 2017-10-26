@@ -11,6 +11,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -35,6 +36,7 @@ class PromptDelegateImpl
       Browser* browser,
       ChromeCleanerRebootDialogControllerImpl* controller) override;
   void OpenSettingsPage(Browser* browser) override;
+  void OnSettingsPageIsActiveTab() override;
 };
 
 void PromptDelegateImpl::ShowChromeCleanerRebootPrompt(
@@ -52,6 +54,8 @@ void PromptDelegateImpl::OpenSettingsPage(Browser* browser) {
   chrome_cleaner_util::OpenSettingsPage(
       browser, WindowOpenDisposition::NEW_BACKGROUND_TAB);
 }
+
+void PromptDelegateImpl::OnSettingsPageIsActiveTab() {}
 
 void RecordSettingsPageActiveOnRebootRequired(
     SettingsPageActiveOnRebootRequiredHistogramValue value) {
@@ -116,6 +120,17 @@ void ChromeCleanerRebootDialogControllerImpl::Close() {
   OnInteractionDone();
 }
 
+void ChromeCleanerRebootDialogControllerImpl::OnBrowserSetLastActive(
+    Browser* browser) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(waiting_for_browser_);
+  DCHECK(browser);
+
+  waiting_for_browser_ = false;
+  BrowserList::RemoveObserver(this);
+  StartRebootPromptForBrowser(browser);
+}
+
 ChromeCleanerRebootDialogControllerImpl::
     ChromeCleanerRebootDialogControllerImpl(
         ChromeCleanerController* cleaner_controller,
@@ -139,10 +154,9 @@ void ChromeCleanerRebootDialogControllerImpl::MaybeStartRebootPrompt() {
     RecordSettingsPageActiveOnRebootRequired(
         SETTINGS_PAGE_ON_REBOOT_REQUIRED_NO_BROWSER);
 
-    // TODO(crbug.com/770749) Register to decide if a prompt should be shown
-    //                        once a window becomes available.
+    waiting_for_browser_ = true;
+    BrowserList::AddObserver(this);
 
-    OnInteractionDone();
     return;
   }
 
@@ -156,6 +170,7 @@ void ChromeCleanerRebootDialogControllerImpl::StartRebootPromptForBrowser(
     RecordSettingsPageActiveOnRebootRequired(
         SETTINGS_PAGE_ON_REBOOT_REQUIRED_ACTIVE_TAB);
 
+    prompt_delegate_->OnSettingsPageIsActiveTab();
     OnInteractionDone();
     return;
   }
