@@ -322,23 +322,9 @@ void GpuChannelManager::OnApplicationBackgrounded() {
 
 void GpuChannelManager::HandleMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // Set a low limit on cache size for MEMORY_PRESSURE_LEVEL_MODERATE.
-  size_t limit = gpu_preferences_.gpu_program_cache_size / 4;
-  if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    limit = 0;
-  }
-
-  if (!program_cache_) {
-    return;
-  }
-
-  size_t bytes_freed = program_cache_->Trim(limit);
-  if (bytes_freed > 0) {
-    UMA_HISTOGRAM_COUNTS_100000(
-        "GPU.ProgramCache.MemoryReleasedOnPressure",
-        static_cast<base::HistogramBase::Sample>(bytes_freed) / 1024);
-  }
+  if (program_cache_)
+    program_cache_->HandleMemoryPressure(memory_pressure_level);
+  discardable_manager_.HandleMemoryPressure(memory_pressure_level);
 }
 
 }  // namespace gpu

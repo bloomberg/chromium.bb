@@ -462,5 +462,64 @@ TEST_F(ServiceDiscardableManagerTest, BindGeneratedTextureSizeChange) {
   ExpectTextureDeletion(kClientId);
 }
 
+TEST_F(ServiceDiscardableManagerTest, MemoryPressure) {
+  // Size textures so that four fit in the discardable manager.
+  const size_t cache_size_limit = 4 * 1024 * 1024;
+  const size_t texture_size = cache_size_limit / 4;
+
+  discardable_manager_.SetCacheSizeLimitForTesting(cache_size_limit);
+
+  // Create 4 textures, this should fill up the discardable cache.
+  for (int i = 1; i < 5; ++i) {
+    texture_manager_->CreateTexture(i, i);
+    auto handle = CreateLockedServiceHandleForTesting();
+    discardable_manager_.InsertLockedTexture(i, texture_size, texture_manager_,
+                                             handle);
+  }
+
+  // A memory pressure call should have no impact, as all textures are locked.
+  discardable_manager_.HandleMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+
+  // Unlock one texture.
+  gles2::TextureRef* texture_to_unbind;
+  EXPECT_TRUE(discardable_manager_.UnlockTexture(3, texture_manager_,
+                                                 &texture_to_unbind));
+  EXPECT_NE(nullptr, texture_to_unbind);
+
+  // Send memory pressure critical again - this should delete the unlocked
+  // texture, but not the others.
+  ExpectUnlockedTextureDeletion(3);
+  discardable_manager_.HandleMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+
+  // Unlock the remaining textures
+  EXPECT_TRUE(discardable_manager_.UnlockTexture(1, texture_manager_,
+                                                 &texture_to_unbind));
+  EXPECT_NE(nullptr, texture_to_unbind);
+  EXPECT_TRUE(discardable_manager_.UnlockTexture(2, texture_manager_,
+                                                 &texture_to_unbind));
+  EXPECT_NE(nullptr, texture_to_unbind);
+  EXPECT_TRUE(discardable_manager_.UnlockTexture(4, texture_manager_,
+                                                 &texture_to_unbind));
+  EXPECT_NE(nullptr, texture_to_unbind);
+
+  // Send memory pressure moderate - this should delete all but one texture
+  // (cache is capped at 1/4 size).
+  {
+    InSequence s;
+    ExpectUnlockedTextureDeletion(1);
+    ExpectUnlockedTextureDeletion(2);
+  }
+  discardable_manager_.HandleMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+
+  // Send memory pressure critical again - this should delete the remaining
+  // textures.
+  ExpectUnlockedTextureDeletion(4);
+  discardable_manager_.HandleMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+}
+
 }  // namespace gles2
 }  // namespace gpu
