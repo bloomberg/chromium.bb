@@ -20,3 +20,6 @@ metadata.html
 */patterns/
 */site/
 */templates/
+
+# iron-flex-layout
+iron-flex-layout/classes/
