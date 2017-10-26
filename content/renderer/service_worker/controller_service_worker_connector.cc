@@ -31,6 +31,14 @@ ControllerServiceWorkerConnector::GetControllerServiceWorker() {
   return controller_service_worker_.get();
 }
 
+void ControllerServiceWorkerConnector::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ControllerServiceWorkerConnector::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void ControllerServiceWorkerConnector::OnContainerHostConnectionClosed() {
   container_host_ = nullptr;
 }
@@ -38,9 +46,9 @@ void ControllerServiceWorkerConnector::OnContainerHostConnectionClosed() {
 ControllerServiceWorkerConnector::~ControllerServiceWorkerConnector() = default;
 
 void ControllerServiceWorkerConnector::OnControllerConnectionClosed() {
-  // TODO(kinuko): If this happens during a resource loader we should let the
-  // loader know and restart.
   controller_service_worker_.reset();
+  for (auto& observer : observer_list_)
+    observer.OnConnectionClosed();
 }
 
 }  // namespace content
