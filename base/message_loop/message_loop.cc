@@ -238,11 +238,11 @@ void MessageLoop::SetNestableTasksAllowed(bool allowed) {
     // loop that does not go through RunLoop::Run().
     pump_->ScheduleWork();
   }
-  nestable_tasks_allowed_ = allowed;
+  task_execution_allowed_ = allowed;
 }
 
 bool MessageLoop::NestableTasksAllowed() const {
-  return nestable_tasks_allowed_ || run_loop_client_->ProcessingTasksAllowed();
+  return task_execution_allowed_;
 }
 
 // TODO(gab): Migrate TaskObservers to RunLoop as part of separating concerns
@@ -277,17 +277,11 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
     : type_(type),
-#if defined(OS_WIN)
-      in_high_res_mode_(false),
-#endif
-      nestable_tasks_allowed_(true),
       pump_factory_(std::move(pump_factory)),
-      current_pending_task_(nullptr),
       incoming_task_queue_(new internal::IncomingTaskQueue(this)),
       unbound_task_runner_(
           new internal::MessageLoopTaskRunner(incoming_task_queue_)),
-      task_runner_(unbound_task_runner_),
-      thread_id_(kInvalidThreadId) {
+      task_runner_(unbound_task_runner_) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
   DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
 }
@@ -339,9 +333,17 @@ void MessageLoop::ClearTaskRunnerForTesting() {
   thread_task_runner_handle_.reset();
 }
 
-void MessageLoop::Run() {
+void MessageLoop::Run(bool application_tasks_allowed) {
   DCHECK_EQ(this, current());
-  pump_->Run(this);
+  if (application_tasks_allowed && !task_execution_allowed_) {
+    // Allow nested task execution as explicitly requested.
+    DCHECK(run_loop_client_->IsNested());
+    task_execution_allowed_ = true;
+    pump_->Run(this);
+    task_execution_allowed_ = false;
+  } else {
+    pump_->Run(this);
+  }
 }
 
 void MessageLoop::Quit() {
@@ -379,11 +381,11 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 }
 
 void MessageLoop::RunTask(PendingTask* pending_task) {
-  DCHECK(NestableTasksAllowed());
+  DCHECK(task_execution_allowed_);
   current_pending_task_ = pending_task;
 
   // Execute the task and assume the worst: It is probably not reentrant.
-  nestable_tasks_allowed_ = false;
+  task_execution_allowed_ = false;
 
   TRACE_TASK_EXECUTION("MessageLoop::RunTask", *pending_task);
 
@@ -393,7 +395,7 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
   for (auto& observer : task_observers_)
     observer.DidProcessTask(*pending_task);
 
-  nestable_tasks_allowed_ = true;
+  task_execution_allowed_ = true;
 
   current_pending_task_ = nullptr;
 }
@@ -427,10 +429,8 @@ void MessageLoop::ScheduleWork() {
 }
 
 bool MessageLoop::DoWork() {
-  if (!NestableTasksAllowed()) {
-    // Task can't be executed right now.
+  if (!task_execution_allowed_)
     return false;
-  }
 
   // Execute oldest task.
   while (incoming_task_queue_->triage_tasks().HasTasks()) {
@@ -457,7 +457,7 @@ bool MessageLoop::DoWork() {
 }
 
 bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
-  if (!NestableTasksAllowed() ||
+  if (!task_execution_allowed_ ||
       !incoming_task_queue_->delayed_tasks().HasTasks()) {
     recent_time_ = *next_delayed_work_time = TimeTicks();
     return false;

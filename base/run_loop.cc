@@ -59,14 +59,6 @@ bool RunLoop::Delegate::Client::IsNested() const {
   return outer_->active_run_loops_.size() > 1;
 }
 
-bool RunLoop::Delegate::Client::ProcessingTasksAllowed() const {
-  DCHECK_CALLED_ON_VALID_THREAD(outer_->bound_thread_checker_);
-  DCHECK(outer_->bound_);
-  DCHECK(!outer_->active_run_loops_.empty());
-  return outer_->active_run_loops_.size() == 1U ||
-         outer_->active_run_loops_.top()->type_ == Type::kNestableTasksAllowed;
-}
-
 RunLoop::Delegate::Client::Client(Delegate* outer) : outer_(outer) {}
 
 // static
@@ -115,7 +107,11 @@ void RunLoop::Run() {
   // multiple sequences is still disallowed).
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
-  delegate_->Run();
+  DCHECK_EQ(this, delegate_->active_run_loops_.top());
+  const bool application_tasks_allowed =
+      delegate_->active_run_loops_.size() == 1U ||
+      type_ == Type::kNestableTasksAllowed;
+  delegate_->Run(application_tasks_allowed);
 
   // Rebind this RunLoop to the current thread after Run().
   DETACH_FROM_SEQUENCE(sequence_checker_);
