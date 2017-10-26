@@ -277,7 +277,8 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
   """
   tag = 'gpu_rasterization'
   page_set = page_sets.Top25SmoothPageSet
-  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE,
+                         story_module.expectations.ALL_CHROMEOS]
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
