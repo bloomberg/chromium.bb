@@ -8,22 +8,23 @@
 #error "This file requires ARC support."
 #endif
 
-const double kDefaultMaxSecondsBetweenConsecutiveLaunches = 30.0;
-
-namespace {
-static double gMaxSecondsBetweenConsecutiveExternalAppLaunches =
-    kDefaultMaxSecondsBetweenConsecutiveLaunches;
-}  // namespace
+const double kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches = 30.0;
 
 @implementation ExternalAppLaunchingState {
   // Timestamp of the last app launch request.
   NSDate* _lastAppLaunchTime;
 }
+static double _maxSecondsBetweenConsecutiveLaunches =
+    kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches;
 @synthesize consecutiveLaunchesCount = _consecutiveLaunchesCount;
 @synthesize appLaunchingBlocked = _appLaunchingBlocked;
 
++ (double)maxSecondsBetweenConsecutiveLaunches {
+  return _maxSecondsBetweenConsecutiveLaunches;
+}
+
 + (void)setMaxSecondsBetweenConsecutiveLaunches:(double)seconds {
-  gMaxSecondsBetweenConsecutiveExternalAppLaunches = seconds;
+  _maxSecondsBetweenConsecutiveLaunches = seconds;
 }
 
 - (void)updateWithLaunchRequest {
@@ -31,7 +32,7 @@ static double gMaxSecondsBetweenConsecutiveExternalAppLaunches =
     return;
   if (!_lastAppLaunchTime ||
       -_lastAppLaunchTime.timeIntervalSinceNow >
-          gMaxSecondsBetweenConsecutiveExternalAppLaunches) {
+          [[self class] maxSecondsBetweenConsecutiveLaunches]) {
     _consecutiveLaunchesCount = 1;
   } else {
     _consecutiveLaunchesCount++;

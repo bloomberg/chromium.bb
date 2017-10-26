@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "url/gurl.h"
+class GURL;
 
 typedef NS_ENUM(NSInteger, ExternalAppLaunchPolicy) {
   // Allow the application to launch.
