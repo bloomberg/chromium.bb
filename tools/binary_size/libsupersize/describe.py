@@ -497,9 +497,11 @@ def DescribeSizeInfoCoverage(size_info):
     aliased_symbols = in_section.Filter(lambda s: s.aliases)
     if len(aliased_symbols):
       uniques = sum(1 for s in aliased_symbols.IterUniqueSymbols())
+      saved = sum(s.size_without_padding * (s.num_aliases - 1)
+                  for s in aliased_symbols.IterUniqueSymbols())
       yield ('* Contains {} aliases, mapped to {} unique addresses '
-             '({} bytes)').format(
-                 len(aliased_symbols), uniques, aliased_symbols.size)
+             '({} bytes saved)').format(
+                 len(aliased_symbols), uniques, saved)
     else:
       yield '* Contains 0 aliases'
 

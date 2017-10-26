@@ -43,13 +43,13 @@ Other section sizes:
 Section .text: has 100.0% of 35900712 bytes accounted for from 19 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 48 bytes (0.0%)
 * 3 placeholders (symbols that start with **) account for 35830760 bytes (99.8%)
-* Contains 6 aliases, mapped to 2 unique addresses (60 bytes)
+* Contains 6 aliases, mapped to 2 unique addresses (52 bytes saved)
 * 0 symbols have shared ownership
 Section .rodata: has 100.0% of 5927652 bytes accounted for from 12 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 675996 bytes (11.4%)
 * 4 placeholders (symbols that start with **) account for 5251503 bytes (88.6%)
 * Contains 3 string literals. Total size=21, padding=0
-* Contains 2 aliases, mapped to 1 unique addresses (5 bytes)
+* Contains 2 aliases, mapped to 1 unique addresses (5 bytes saved)
 * 0 symbols have shared ownership
 Section .data.rel.ro: has 100.0% of 1065224 bytes accounted for from 4 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
