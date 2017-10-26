@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.util.Log;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.CachedMetrics;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -31,6 +33,8 @@ public class SysUtils {
     private static final String TAG = "SysUtils";
 
     private static Boolean sLowEndDevice;
+    private static CachedMetrics.BooleanHistogramSample sLowEndMatches =
+            new CachedMetrics.BooleanHistogramSample("Android.SysUtilsLowEndMatches");
 
     private SysUtils() { }
 
@@ -137,6 +141,7 @@ public class SysUtils {
         return hasCamera;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private static boolean detectLowEndDevice() {
         assert CommandLine.isInitialized();
         if (CommandLine.getInstance().hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)) {
@@ -147,12 +152,26 @@ public class SysUtils {
         }
 
         int ramSizeKB = amountOfPhysicalMemoryKB();
-        if (ramSizeKB <= 0) return false;
-
-        if (BuildInfo.isAtLeastO()) {
-            return ramSizeKB / 1024 <= ANDROID_O_LOW_MEMORY_DEVICE_THRESHOLD_MB;
+        boolean isLowEnd = true;
+        if (ramSizeKB <= 0) {
+            isLowEnd = false;
+        } else if (BuildInfo.isAtLeastO()) {
+            isLowEnd = ramSizeKB / 1024 <= ANDROID_O_LOW_MEMORY_DEVICE_THRESHOLD_MB;
+        } else {
+            isLowEnd = ramSizeKB / 1024 <= ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;
         }
-        return ramSizeKB / 1024 <= ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;
+
+        // For evaluation purposes check whether our computation agrees with Android API value.
+        Context appContext = ContextUtils.getApplicationContext();
+        boolean isLowRam = false;
+        if (appContext != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            isLowRam = ((ActivityManager) ContextUtils.getApplicationContext().getSystemService(
+                                Context.ACTIVITY_SERVICE))
+                               .isLowRamDevice();
+        }
+        sLowEndMatches.record(isLowEnd == isLowRam);
+
+        return isLowEnd;
     }
 
     /**
