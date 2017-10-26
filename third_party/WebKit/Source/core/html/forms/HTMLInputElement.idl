@@ -105,7 +105,6 @@ enum SelectionMode { "select", "start", "end", "preserve" };
 
     // HTML Media Capture
     // https://w3c.github.io/html-media-capture/#the-capture-attribute
-    // Using DOMString as enum cannot be reflected. https://github.com/w3c/html-media-capture/issues/12
     [Measure, RuntimeEnabled=MediaCapture, Reflect] attribute DOMString capture;
 
     // Non-standard APIs
