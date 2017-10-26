@@ -17,9 +17,17 @@
 <dom-module id="settings-startup-urls-page">
   <template>
     <style include="settings-shared action-link iron-flex">
+      .list-frame {
+        @apply(--settings-list-frame-padding);
+      }
+
+      .list-frame > div {
+        border-top: var(--cr-separator-line);
+      }
+
       #outer {
         @apply(--settings-list-frame-padding);
-        max-height: 395px;  /** Enough height to show six entries. */
+        max-height: 355px;  /** Enough height to show six entries. */
       }
 
       #container settings-startup-url-entry {
@@ -40,6 +48,8 @@
           </template>
         </iron-list>
       </div>
+    </div>
+    <div class="list-frame">
       <template is="dom-if" if="[[shouldAllowUrlsEdit_(
           prefs.session.startup_urls.enforcement)]]" restamp>
         <div class="list-item" id="addPage">
