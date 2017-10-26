@@ -186,6 +186,19 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
+void TestLayerTreeFrameSink::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  client_->DidPresentCompositorFrame(presentation_token, time, refresh, flags);
+}
+
+void TestLayerTreeFrameSink::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  client_->DidDiscardCompositorFrame(presentation_token);
+}
+
 void TestLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   external_begin_frame_source_.OnBeginFrame(args);
 }

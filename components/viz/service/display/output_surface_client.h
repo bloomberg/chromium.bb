@@ -29,6 +29,10 @@ class VIZ_SERVICE_EXPORT OutputSurfaceClient {
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) = 0;
 
+  // A notification for updating VSync parameters.
+  virtual void DidUpdateVSyncParameters(base::TimeTicks timebase,
+                                        base::TimeDelta interval) {}
+
  protected:
   virtual ~OutputSurfaceClient() {}
 };

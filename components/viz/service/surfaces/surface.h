@@ -72,6 +72,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
  public:
   using AggregatedDamageCallback =
       base::RepeatingCallback<void(const LocalSurfaceId&, const gfx::Rect&)>;
+  using PresentedCallback =
+      base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>;
 
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
@@ -122,10 +124,13 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // there is visible damage.
   // |aggregated_damage_callback| is called when |surface| or one of its
   // descendents is determined to be damaged at aggregation time.
+  // |presented_callback| is called when the |frame| has been turned into light
+  // the first time on display, or the |frame| will never be displayed.
   bool QueueFrame(CompositorFrame frame,
                   uint64_t frame_index,
                   base::OnceClosure draw_callback,
-                  const AggregatedDamageCallback& aggregated_damage_callback);
+                  const AggregatedDamageCallback& aggregated_damage_callback,
+                  PresentedCallback presented_callback);
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
@@ -159,6 +164,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   }
 
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
+  bool TakePresentedCallback(PresentedCallback* callback);
   void RunDrawCallback();
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect);
 
@@ -208,7 +214,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     FrameData(CompositorFrame&& frame,
               uint64_t frame_index,
               base::OnceClosure draw_callback,
-              const AggregatedDamageCallback& aggregated_damage_callback);
+              const AggregatedDamageCallback& aggregated_damage_callback,
+              PresentedCallback presented_callback);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
@@ -216,6 +223,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     uint64_t frame_index;
     base::OnceClosure draw_callback;
     AggregatedDamageCallback aggregated_damage_callback;
+    PresentedCallback presented_callback;
   };
 
   // Rejects CompositorFrames submitted to surfaces referenced from this

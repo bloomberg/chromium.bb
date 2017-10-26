@@ -497,6 +497,15 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   ReclaimResources(resources);
 }
 
+void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {}
+
+void SynchronousLayerTreeFrameSink::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {}
+
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args) {}
 

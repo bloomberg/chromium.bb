@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_vsync_begin_frame_source.h"
@@ -84,6 +83,8 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   void SetNeedsVSync(bool needs_vsync) override;
 
  protected:
+  void OnVSyncParametersUpdated(base::TimeTicks timebase,
+                                base::TimeDelta interval);
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
   viz::OutputSurfaceClient* client_ = nullptr;
@@ -93,7 +94,6 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   // True if the draw rectangle has been set at all since the last resize.
   bool has_set_draw_rectangle_since_last_resize_ = false;
   gfx::Size size_;
-  base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);

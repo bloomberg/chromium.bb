@@ -116,6 +116,11 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // the embedder wants to do something after a particular frame is processed.
   uint32_t frame_token = 0;
 
+  // Once the display compositor presents a frame containing a non-zero
+  // presentation token, a presentation feedback will be provided to
+  // CompositorFrameSinkClient.
+  uint32_t presentation_token = 0;
+
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);
   CompositorFrameMetadata operator=(const CompositorFrameMetadata&) = delete;

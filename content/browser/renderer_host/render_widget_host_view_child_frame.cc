@@ -503,6 +503,17 @@ void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
     renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
+void RenderWidgetHostViewChildFrame::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  NOTIMPLEMENTED();
+}
+void RenderWidgetHostViewChildFrame::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  NOTIMPLEMENTED();
+}
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();

@@ -212,6 +212,13 @@ void SurfacesInstance::DidReceiveCompositorFrameAck(
   ReclaimResources(resources);
 }
 
+void SurfacesInstance::DidPresentCompositorFrame(uint32_t presentation_token,
+                                                 base::TimeTicks time,
+                                                 base::TimeDelta refresh,
+                                                 uint32_t flags) {}
+
+void SurfacesInstance::DidDiscardCompositorFrame(uint32_t presentation_token) {}
+
 void SurfacesInstance::OnBeginFrame(const viz::BeginFrameArgs& args) {}
 
 void SurfacesInstance::ReclaimResources(

@@ -112,6 +112,23 @@ void LayerTreeFrameSinkLocal::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
+void LayerTreeFrameSinkLocal::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  DCHECK(thread_checker_);
+  DCHECK(thread_checker_->CalledOnValidThread());
+  client_->DidPresentCompositorFrame(presentation_token, time, refresh, flags);
+}
+
+void LayerTreeFrameSinkLocal::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  DCHECK(thread_checker_);
+  DCHECK(thread_checker_->CalledOnValidThread());
+  client_->DidDiscardCompositorFrame(presentation_token);
+}
+
 void LayerTreeFrameSinkLocal::OnBeginFrame(const viz::BeginFrameArgs& args) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());

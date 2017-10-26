@@ -129,6 +129,22 @@ void LayerTreeFrameSinkHolder::DidReceiveCompositorFrameAck() {
     surface_tree_host_->DidReceiveCompositorFrameAck();
 }
 
+void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  if (surface_tree_host_)
+    surface_tree_host_->DidPresentCompositorFrame(presentation_token, time,
+                                                  refresh, flags);
+}
+
+void LayerTreeFrameSinkHolder::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  if (surface_tree_host_)
+    surface_tree_host_->DidDiscardCompositorFrame(presentation_token);
+}
+
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   for (auto& callback : release_callbacks_)
     callback.second.Run(gpu::SyncToken(), true /* lost */);

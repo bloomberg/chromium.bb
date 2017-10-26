@@ -98,10 +98,6 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
 SurfaceTreeHost::~SurfaceTreeHost() {
   aura::Env::GetInstance()->context_factory()->RemoveObserver(this);
   SetRootSurface(nullptr);
-  if (host_window_->layer()->GetCompositor()) {
-    host_window_->layer()->GetCompositor()->vsync_manager()->RemoveObserver(
-        this);
-  }
   LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
       std::move(layer_tree_frame_sink_holder_));
 }
@@ -129,18 +125,14 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
       active_frame_callbacks_.pop_front();
     }
 
-    swapping_presentation_callbacks_.splice(
-        swapping_presentation_callbacks_.end(), presentation_callbacks_);
-    swapped_presentation_callbacks_.splice(
-        swapped_presentation_callbacks_.end(),
-        swapping_presentation_callbacks_);
-    // Call all presentation callbacks with a null presentation time to indicate
-    // that they have been cancelled.
-    while (!swapped_presentation_callbacks_.empty()) {
-      swapped_presentation_callbacks_.front().Run(base::TimeTicks(),
-                                                  base::TimeDelta());
-      swapped_presentation_callbacks_.pop_front();
+    DCHECK(presentation_callbacks_.empty());
+    for (auto entry : active_presentation_callbacks_) {
+      while (!entry.second.empty()) {
+        entry.second.front().Run(base::TimeTicks(), base::TimeDelta(), 0);
+        entry.second.pop_front();
+      }
     }
+    active_presentation_callbacks_.clear();
   }
 
   if (root_surface) {
@@ -171,9 +163,23 @@ gfx::NativeCursor SurfaceTreeHost::GetCursor(const gfx::Point& point) const {
 void SurfaceTreeHost::DidReceiveCompositorFrameAck() {
   active_frame_callbacks_.splice(active_frame_callbacks_.end(),
                                  frame_callbacks_);
-  swapping_presentation_callbacks_.splice(
-      swapping_presentation_callbacks_.end(), presentation_callbacks_);
   UpdateNeedsBeginFrame();
+}
+
+void SurfaceTreeHost::DidPresentCompositorFrame(uint32_t presentation_token,
+                                                base::TimeTicks time,
+                                                base::TimeDelta refresh,
+                                                uint32_t flags) {
+  auto it = active_presentation_callbacks_.find(presentation_token);
+  DCHECK(it != active_presentation_callbacks_.end());
+  for (auto callback : it->second)
+    callback.Run(time, refresh, flags);
+  active_presentation_callbacks_.erase(it);
+}
+
+void SurfaceTreeHost::DidDiscardCompositorFrame(uint32_t presentation_token) {
+  DidPresentCompositorFrame(presentation_token, base::TimeTicks(),
+                            base::TimeDelta(), 0);
 }
 
 void SurfaceTreeHost::SetBeginFrameSource(
@@ -204,6 +210,7 @@ void SurfaceTreeHost::UpdateNeedsBeginFrame() {
 // SurfaceDelegate overrides:
 
 void SurfaceTreeHost::OnSurfaceCommit() {
+  DCHECK(presentation_callbacks_.empty());
   gfx::Rect bounds = root_surface_->CommitSurfaceHierarchy(
       &frame_callbacks_, &presentation_callbacks_);
 
@@ -218,25 +225,6 @@ bool SurfaceTreeHost::IsSurfaceSynchronized() const {
   // To host a surface tree, the root surface has to be desynchronized.
   DCHECK(root_surface_);
   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// aura::WindowObserver overrides:
-
-void SurfaceTreeHost::OnWindowAddedToRootWindow(aura::Window* window) {
-  DCHECK_EQ(window, host_window());
-  window->layer()->GetCompositor()->vsync_manager()->AddObserver(this);
-}
-
-void SurfaceTreeHost::OnWindowRemovingFromRootWindow(aura::Window* window,
-                                                     aura::Window* new_root) {
-  DCHECK_EQ(window, host_window());
-  window->layer()->GetCompositor()->vsync_manager()->RemoveObserver(this);
-}
-
-void SurfaceTreeHost::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(window, host_window());
-  window->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -265,26 +253,6 @@ bool SurfaceTreeHost::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ui::CompositorVSyncManager::Observer overrides:
-
-void SurfaceTreeHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                              base::TimeDelta interval) {
-  // Use current time if platform doesn't provide an accurate timebase.
-  if (timebase.is_null())
-    timebase = base::TimeTicks::Now();
-  while (!swapped_presentation_callbacks_.empty()) {
-    swapped_presentation_callbacks_.front().Run(timebase, interval);
-    swapped_presentation_callbacks_.pop_front();
-  }
-  // VSync parameters updates are generated at the start of a new swap. Move
-  // the swapping presentation callbacks to swapped callbacks so they fire
-  // at the next VSync parameters update as that will contain the presentation
-  // time for the previous frame.
-  swapped_presentation_callbacks_.splice(swapped_presentation_callbacks_.end(),
-                                         swapping_presentation_callbacks_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ui::ContextFactoryObserver overrides:
 
 void SurfaceTreeHost::OnLostResources() {
@@ -309,6 +277,15 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
     current_begin_frame_ack_.has_damage = true;
   }
   frame.metadata.begin_frame_ack = current_begin_frame_ack_;
+  if (!presentation_callbacks_.empty()) {
+    // If overflow happens, we increase it again.
+    if (!++presentation_token_)
+      ++presentation_token_;
+    frame.metadata.presentation_token = presentation_token_;
+    DCHECK_EQ(active_presentation_callbacks_.count(presentation_token_), 0u);
+    active_presentation_callbacks_[presentation_token_] =
+        std::move(presentation_callbacks_);
+  }
   frame.render_pass_list.push_back(viz::RenderPass::Create());
   const std::unique_ptr<viz::RenderPass>& render_pass =
       frame.render_pass_list.back();

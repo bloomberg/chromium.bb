@@ -551,6 +551,18 @@ void DelegatedFrameHost::DidReceiveCompositorFrameAck(
   renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
+void DelegatedFrameHost::DidPresentCompositorFrame(uint32_t presentation_token,
+                                                   base::TimeTicks time,
+                                                   base::TimeDelta refresh,
+                                                   uint32_t flags) {
+  NOTIMPLEMENTED();
+}
+
+void DelegatedFrameHost::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  NOTIMPLEMENTED();
+}
+
 void DelegatedFrameHost::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   renderer_compositor_frame_sink_->ReclaimResources(resources);

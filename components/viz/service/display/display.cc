@@ -31,6 +31,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/vulkan/features.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -61,6 +62,17 @@ Display::Display(SharedBitmapManager* bitmap_manager,
 }
 
 Display::~Display() {
+  for (auto& callbacks : previous_presented_callbacks_) {
+    for (auto& callback : callbacks)
+      std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
+  }
+
+  for (auto& callback : active_presented_callbacks_)
+    std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
+
+  for (auto& callback : presented_callbacks_)
+    std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
+
   // Only do this if Initialize() happened.
   if (client_) {
     if (auto* context = output_surface_->context_provider())
@@ -261,11 +273,17 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
-  // Run callbacks early to allow pipelining.
+  DLOG_IF(WARNING, !presented_callbacks_.empty())
+      << "DidReceiveSwapBuffersAck() is not called for the last SwapBuffers!";
+  // Run callbacks early to allow pipelining and collect presented callbacks.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
     Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-    if (surface)
+    if (surface) {
+      Surface::PresentedCallback callback;
+      if (surface->TakePresentedCallback(&callback))
+        presented_callbacks_.push_back(std::move(callback));
       surface->RunDrawCallback();
+    }
   }
 
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
@@ -379,6 +397,16 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck() {
+  // TODO(penghuang): Remove it when we can get accurate presentation time from
+  // GPU for every SwapBuffers. https://crbug.com/776877
+  if (!active_presented_callbacks_.empty() ||
+      !previous_presented_callbacks_.empty()) {
+    DLOG(WARNING) << "VSync for last SwapBuffers is not received!";
+    previous_presented_callbacks_.push_back(
+        std::move(active_presented_callbacks_));
+  }
+  active_presented_callbacks_ = std::move(presented_callbacks_);
+
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
@@ -389,6 +417,28 @@ void Display::DidReceiveTextureInUseResponses(
     const gpu::TextureInUseResponses& responses) {
   if (renderer_)
     renderer_->DidReceiveTextureInUseResponses(responses);
+}
+
+void Display::DidUpdateVSyncParameters(base::TimeTicks timebase,
+                                       base::TimeDelta interval) {
+  // TODO(penghuang): Remove it when we can get accurate presentation time from
+  // GPU for every SwapBuffers. https://crbug.com/776877
+  base::TimeTicks previous_timebase =
+      timebase - interval * previous_presented_callbacks_.size();
+  for (auto& callbacks : previous_presented_callbacks_) {
+    for (auto& callback : callbacks)
+      std::move(callback).Run(previous_timebase, interval, 0);
+    previous_timebase += interval;
+  }
+  previous_presented_callbacks_.clear();
+
+  for (auto& callback : active_presented_callbacks_) {
+    std::move(callback).Run(timebase, interval,
+                            mojom::kPresentationFlagVSync |
+                                mojom::kPresentationFlagHWClock |
+                                mojom::kPresentationFlagHWCompletion);
+  }
+  active_presented_callbacks_.clear();
 }
 
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {

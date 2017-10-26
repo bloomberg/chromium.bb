@@ -186,6 +186,15 @@ void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
+void DelegatedFrameHostAndroid::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {}
+
+void DelegatedFrameHostAndroid::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {}
+
 void DelegatedFrameHostAndroid::OnBeginFrame(const viz::BeginFrameArgs& args) {
   begin_frame_source_.OnBeginFrame(args);
 }

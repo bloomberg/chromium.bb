@@ -101,6 +101,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void DidReceiveSwapBuffersAck() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
+  void DidUpdateVSyncParameters(base::TimeTicks timebase,
+                                base::TimeDelta interval) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
@@ -144,6 +146,13 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<DirectRenderer> renderer_;
   SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
+
+  using PresentedCallbacks = std::vector<Surface::PresentedCallback>;
+  PresentedCallbacks presented_callbacks_;
+  PresentedCallbacks active_presented_callbacks_;
+  // TODO(penghuang): Remove it when we can get accurate presentation time from
+  // GPU for every SwapBuffers. https://crbug.com/776877
+  std::vector<PresentedCallbacks> previous_presented_callbacks_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Display);

@@ -86,6 +86,11 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
   // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
+  void DidPresentCompositorFrame(uint32_t presentation_token,
+                                 base::TimeTicks time,
+                                 base::TimeDelta refresh,
+                                 uint32_t flags) override;
+  void DidDiscardCompositorFrame(uint32_t presentation_token) override;
   void OnBeginFrame(const BeginFrameArgs& begin_frame_args) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(

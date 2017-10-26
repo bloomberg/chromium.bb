@@ -14,6 +14,15 @@ void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck(
   InsertResources(resources);
 }
 
+void FakeCompositorFrameSinkClient::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {}
+
+void FakeCompositorFrameSinkClient::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {}
+
 void FakeCompositorFrameSinkClient::OnBeginFrame(const BeginFrameArgs& args) {}
 
 void FakeCompositorFrameSinkClient::ReclaimResources(

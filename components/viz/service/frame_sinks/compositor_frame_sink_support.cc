@@ -191,6 +191,10 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
           TransferableResource::ReturnResources(frame.resource_list);
       ReturnResources(resources);
       DidReceiveCompositorFrameAck();
+      if (frame.metadata.presentation_token) {
+        DidPresentCompositorFrame(frame.metadata.presentation_token,
+                                  base::TimeTicks(), base::TimeDelta(), 0);
+      }
       return true;
     }
 
@@ -199,13 +203,16 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }
-
   bool result = current_surface->QueueFrame(
       std::move(frame), frame_index,
       base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                      weak_factory_.GetWeakPtr()),
-      aggregated_damage_callback_);
-
+      aggregated_damage_callback_,
+      frame.metadata.presentation_token
+          ? base::BindOnce(
+                &CompositorFrameSinkSupport::DidPresentCompositorFrame,
+                weak_factory_.GetWeakPtr(), frame.metadata.presentation_token)
+          : Surface::PresentedCallback());
   if (!result) {
     EvictCurrentSurface();
     return false;
@@ -281,6 +288,22 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 
   client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
   surface_returned_resources_.clear();
+}
+
+void CompositorFrameSinkSupport::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  DCHECK(presentation_token);
+  if (client_) {
+    if (time != base::TimeTicks()) {
+      client_->DidPresentCompositorFrame(presentation_token, time, refresh,
+                                         flags);
+    } else {
+      client_->DidDiscardCompositorFrame(presentation_token);
+    }
+  }
 }
 
 CompositorFrameSinkSupport::CompositorFrameSinkSupport(
