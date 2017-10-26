@@ -292,6 +292,24 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="BrowserActions.ServiceClient.PackageName"
+    type="UMA_RAPPOR_TYPE">
+  <owner>ltian@chromium.org</owner>
+  <summary>
+    The package name for a client that requests for the Browser Actions context
+    menu.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="BrowserActions.ServiceClient.PackageNameThirdParty"
+    type="UMA_RAPPOR_TYPE">
+  <owner>ltian@chromium.org</owner>
+  <summary>
+    The package name for a client that requests for the Browser Actions context
+    menu, excluding Google Search App.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Cast.Sender.MediaFrameUrl" type="ETLD_PLUS_ONE">
   <owner>avayvod@chromium.org</owner>
   <owner>aberent@chromium.org</owner>
