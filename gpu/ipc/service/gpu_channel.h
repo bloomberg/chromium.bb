@@ -40,12 +40,10 @@ class WaitableEvent;
 
 namespace gpu {
 
-class PreemptionFlag;
 class Scheduler;
 class SyncPointManager;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
-class GpuChannelMessageQueue;
 
 class GPU_EXPORT FilteredSender : public IPC::Sender {
  public:
@@ -84,8 +82,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
              Scheduler* scheduler,
              SyncPointManager* sync_point_manager,
              scoped_refptr<gl::GLShareGroup> share_group,
-             scoped_refptr<PreemptionFlag> preempting_flag,
-             scoped_refptr<PreemptionFlag> preempted_flag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
              int32_t client_id,
@@ -114,10 +110,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
     return task_runner_;
-  }
-
-  const scoped_refptr<PreemptionFlag>& preempted_flag() const {
-    return preempted_flag_;
   }
 
   base::ProcessId GetClientPID() const;
@@ -175,9 +167,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   void HandleMessage(const IPC::Message& msg);
 
-  // Handle messages enqueued in |message_queue_|.
-  void HandleMessageOnQueue();
-
   // Some messages such as WaitForGetOffsetInRange and WaitForTokenInRange are
   // processed as soon as possible because the client is blocked until they
   // are completed.
@@ -208,8 +197,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   base::ProcessId peer_pid_ = base::kNullProcessId;
 
-  scoped_refptr<GpuChannelMessageQueue> message_queue_;
-
   // The message filter on the io thread.
   scoped_refptr<GpuChannelMessageFilter> filter_;
 
@@ -234,14 +221,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   // Used to implement message routing functionality to CommandBuffer objects
   IPC::MessageRouter router_;
-
-  // Whether the processing of IPCs on this channel is stalled and we should
-  // preempt other GpuChannels.
-  scoped_refptr<PreemptionFlag> preempting_flag_;
-
-  // If non-NULL, all stubs on this channel should stop processing GL
-  // commands (via their CommandExecutor) when preempted_flag_->IsSet()
-  scoped_refptr<PreemptionFlag> preempted_flag_;
 
   // The id of the client who is on the other side of the channel.
   const int32_t client_id_;

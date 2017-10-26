@@ -17,8 +17,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 GPU_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
 
-GPU_EXPORT extern const base::Feature kGpuScheduler;
-
 GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
 }  // namespace features

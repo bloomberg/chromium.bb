@@ -17,8 +17,6 @@ enum VpxDecodeVendors {
 struct GpuPreferences {
   bool single_process;
   bool in_process_gpu;
-  bool ui_prioritize_in_gpu_process;
-  bool enable_gpu_scheduler;
   bool disable_accelerated_video_decode;
   bool gpu_startup_dialog;
   bool disable_gpu_watchdog;

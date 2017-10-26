@@ -823,8 +823,6 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
     gpu::GpuPreferences* gpu_preferences) const {
   DCHECK(gpu_preferences);
 
-  if (base::FeatureList::IsEnabled(features::kGpuScheduler))
-    gpu_preferences->enable_gpu_scheduler = true;
 
   gpu_preferences->gpu_program_cache_size =
       gpu::ShaderDiskCache::CacheSizeBytes();
