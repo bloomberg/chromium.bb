@@ -266,6 +266,13 @@ void av1_fwd_txfm2d_64x64_c(const int16_t *input, int32_t *output, int stride,
   int32_t txfm_buf[64 * 64];
   TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_64x64_cfg(tx_type);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
+
+  // Zero out top-right 32x32 area.
+  for (int row = 0; row < 32; ++row) {
+    memset(output + row * 64 + 32, 0, 32 * sizeof(*output));
+  }
+  // Zero out the bottom 64x32 area.
+  memset(output + 32 * 64, 0, 32 * 64 * sizeof(*output));
 }
 
 void av1_fwd_txfm2d_32x64_c(const int16_t *input, int32_t *output, int stride,
@@ -273,6 +280,9 @@ void av1_fwd_txfm2d_32x64_c(const int16_t *input, int32_t *output, int stride,
   int32_t txfm_buf[32 * 64];
   TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_32x64_cfg(tx_type);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
+
+  // Zero out the bottom 32x32 area.
+  memset(output + 32 * 32, 0, 32 * 32 * sizeof(*output));
 }
 
 void av1_fwd_txfm2d_64x32_c(const int16_t *input, int32_t *output, int stride,
@@ -280,6 +290,11 @@ void av1_fwd_txfm2d_64x32_c(const int16_t *input, int32_t *output, int stride,
   int32_t txfm_buf[64 * 32];
   TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_64x32_cfg(tx_type);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
+
+  // Zero out right 32x32 area.
+  for (int row = 0; row < 32; ++row) {
+    memset(output + row * 64 + 32, 0, 32 * sizeof(*output));
+  }
 }
 #endif  // CONFIG_TX64X64
 
