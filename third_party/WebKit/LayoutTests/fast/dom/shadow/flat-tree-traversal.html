@@ -90,34 +90,11 @@ testFlatTree(
               createDOM('div', {'id': 'h'}),
               createDOM('div', {'id': 'i'})));
 
-debug('Test for Multiple ShadowRoots.');
-testFlatTree(
-    createDOM('div', {'id': 'a'},
-              createShadowRoot(createDOM('div', {'id': 'b'}),
-                               createDOM('content'),
-                               createDOM('div', {'id': 'c'})),
-              createShadowRoot(createDOM('div', {'id': 'd'}),
-                               createDOM('shadow', {}),
-                               createDOM('div', {'id': 'e'})),
-              createDOM('div', {'id': 'f'})));
-
 debug('Test for inactive insertion points.');
 testFlatTree(
     createDOM('div', {'id': 'a'},
               createDOM('content', {'id': 'b'},
                         createDOM('content', {'id': 'c'}))));
-
-debug('Test for an orphaned shadow subtree.');
-testFlatTree(
-    createDOM('div', {'id': 'a'},
-              createShadowRoot(
-                  createDOM('div', {'id': 'b'},
-                            createDOM('div', {'id': 'c'}))),
-              createShadowRoot(
-                  createDOM('div', {'id': 'd'}))));
-
-debug('Test for traversal, starting with a node in an orphaned shadow subtree.');
-showFlatTree(getNodeInComposedTree('a/b'));
 
 debug('Test for a content element which does not select any nodes nor have fallback elements.');
 testFlatTree(
@@ -212,16 +189,6 @@ testFlatTree(
               createDOM('div', {'id': 'child-1', 'class': 'foo'}),
               createDOM('div', {'id': 'not-selected', 'class': 'foo'}),
               createDOM('div', {'id': 'child-2', 'class': 'foo'})));
-
-debug('Test for a shadow insertion point where nothing is distributed.');
-testFlatTree(
-    createDOM('div', {'id': 'a'},
-              createShadowRoot(),
-              createShadowRoot(
-                  createDOM('div', {'id': 'b'}),
-                  createDOM('shadow', {'id': 'shadow'},
-                            createDOM('div', {'id': 'should-not-be-used'})),
-                  createDOM('div', {'id': 'c'}))));
 </script>
 </body>
 </html>

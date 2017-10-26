@@ -208,20 +208,6 @@ TEST_F(TextIteratorTest, NotEnteringShadowTree) {
   EXPECT_EQ("[Hello, ][shadow][ iterator.]", Iterate<FlatTree>());
 }
 
-TEST_F(TextIteratorTest, NotEnteringShadowTreeWithMultipleShadowTrees) {
-  static const char* body_content =
-      "<div>Hello, <span id='host'>text</span> iterator.</div>";
-  static const char* shadow_content1 = "<span>first shadow</span>";
-  static const char* shadow_content2 = "<span>second shadow</span>";
-  SetBodyContent(body_content);
-  CreateShadowRootForElementWithIDAndSetInnerHTML(GetDocument(), "host",
-                                                  shadow_content1);
-  CreateShadowRootForElementWithIDAndSetInnerHTML(GetDocument(), "host",
-                                                  shadow_content2);
-  EXPECT_EQ("[Hello, ][ iterator.]", Iterate<DOMTree>());
-  EXPECT_EQ("[Hello, ][second shadow][ iterator.]", Iterate<FlatTree>());
-}
-
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithNestedShadowTrees) {
   static const char* body_content =
       "<div>Hello, <span id='host-in-document'>text</span> iterator.</div>";
@@ -263,24 +249,6 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithOption) {
   EXPECT_EQ("[Hello, ][shadow][ iterator.]",
             Iterate<DOMTree>(EntersOpenShadowRootsBehavior()));
   EXPECT_EQ("[Hello, ][shadow][ iterator.]",
-            Iterate<FlatTree>(EntersOpenShadowRootsBehavior()));
-}
-
-TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption) {
-  static const char* body_content =
-      "<div>Hello, <span id='host'>text</span> iterator.</div>";
-  static const char* shadow_content1 = "<span>first shadow</span>";
-  static const char* shadow_content2 = "<span>second shadow</span>";
-  SetBodyContent(body_content);
-  CreateShadowRootForElementWithIDAndSetInnerHTML(GetDocument(), "host",
-                                                  shadow_content1);
-  CreateShadowRootForElementWithIDAndSetInnerHTML(GetDocument(), "host",
-                                                  shadow_content2);
-  // The first isn't emitted because a layoutObject for the first is not
-  // created.
-  EXPECT_EQ("[Hello, ][second shadow][ iterator.]",
-            Iterate<DOMTree>(EntersOpenShadowRootsBehavior()));
-  EXPECT_EQ("[Hello, ][second shadow][ iterator.]",
             Iterate<FlatTree>(EntersOpenShadowRootsBehavior()));
 }
 

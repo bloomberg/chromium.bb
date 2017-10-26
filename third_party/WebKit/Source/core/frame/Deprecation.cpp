@@ -474,12 +474,6 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "https://www.chromestatus.com/feature/6451284559265792 for more "
           "details.");
 
-    case WebFeature::kElementCreateShadowRootMultiple:
-      return willBeRemoved(
-          "Calling Element.createShadowRoot() for an element "
-          "which already hosts a shadow root",
-          M63, "4668884095336448");
-
     case WebFeature::kCSSDeepCombinator:
       return "/deep/ combinator is no longer supported in CSS dynamic profile."
              "It is now effectively no-op, acting as if it were a descendant "

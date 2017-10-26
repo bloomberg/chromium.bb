@@ -128,28 +128,4 @@ shouldBeEqualToString('selectionInHost4.anchorNode.nodeValue', 'BEFORE');
 shouldBe('selectionInHost4.anchorOffset', '0');
 shouldBeEqualToString('selectionInHost4.focusNode.nodeValue', 'BEFORE');
 shouldBe('selectionInHost4.focusOffset', '6');
-
-debug('\nSelect all from selecting node in youngest shadow DOM tree => select descendants of immediate child of shadow root containing start position');
-var host5 = document.getElementById('host5');
-installShadowTree(host5);
-host5.createShadowRoot().innerHTML = '<i>BEFORE</i><b><shadow></shadow></b><i>AFTER</i>';
-var selectionInHost5 = host5.shadowRoot.getSelection();
-selection.collapse(host5.shadowRoot.firstChild.firstChild, 1);
-selection.extend(host5.shadowRoot.firstChild.firstChild, 4);
-document.execCommand('selectAll');
-shouldBeEqualToString('selectionInHost5.anchorNode.nodeValue', 'BEFORE');
-shouldBe('selectionInHost5.anchorOffset', '0');
-shouldBeEqualToString('selectionInHost5.focusNode.nodeValue', 'BEFORE');
-shouldBe('selectionInHost5.focusOffset', '6');
-
-debug('\nSelect all from selecting node in oldest shadow DOM tree => select descendants of immediate child of shadow root containing start position');
-selection.collapse(host5.shadowRoot.olderShadowRoot.firstChild.firstChild, 1);
-selection.extend(host5.shadowRoot.olderShadowRoot.firstChild.firstChild, 4);
-document.execCommand('selectAll');
-selectionInHost5 = host5.shadowRoot.olderShadowRoot.getSelection();
-console.log(selectionInHost5);
-shouldBeEqualToString('selectionInHost5.anchorNode.nodeValue', 'BEFORE');
-shouldBe('selectionInHost5.anchorOffset', '0');
-shouldBeEqualToString('selectionInHost5.focusNode.nodeValue', 'BEFORE');
-shouldBe('selectionInHost5.focusOffset', '6');
 </script>

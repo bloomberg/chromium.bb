@@ -80,14 +80,6 @@ ShadowRoot* ShadowRoot::OlderShadowRoot() const {
   return nullptr;
 }
 
-ShadowRoot* ShadowRoot::olderShadowRootForBindings() const {
-  ShadowRoot* older = OlderShadowRoot();
-  while (older && !older->IsOpenOrV0())
-    older = older->OlderShadowRoot();
-  DCHECK(!older || older->IsOpenOrV0());
-  return older;
-}
-
 void ShadowRoot::SetYoungerShadowRoot(ShadowRoot& root) {
   DCHECK_EQ(GetType(), ShadowRootType::V0);
   EnsureShadowRootRareDataV0().SetYoungerShadowRoot(root);

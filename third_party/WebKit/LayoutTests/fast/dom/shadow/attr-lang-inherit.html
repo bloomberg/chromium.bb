@@ -13,10 +13,7 @@
     <div lang="ja">
         <div id="normal"></div>
         <div id="distributed"><div>Distributed</div></div>
-        <div id="multiple"><div>Distributed to the youngest</div></div>
         <div id="multilevel"><div>Multi-level Distributed</div></div>
-        <div id="older"></div>
-        <div id="redistributed"><div>Re-distributed</div></div>
     </div>
 </div>
 <script>
@@ -37,32 +34,11 @@ testLangInShadow("lang of the distributed content traverses the composed tree",
     [[host.shadowRoot.querySelector("div"), fr],
     [host.shadowRoot.host.firstChild, ja]]);
 
-host = document.getElementById("multiple");
-createShadowRootWithInnerHtml(host, style + "<content></content>");
-createShadowRootWithInnerHtml(host, style + "<div lang=fr><div>French</div><content></content></div>");
-testLangInShadow("lang of the distributed content traverses the composed tree (multiple shadow roots)",
-    [[host.shadowRoot.querySelector("div"), fr],
-    [host.shadowRoot.host.firstChild, ja]]);
-
 host = document.getElementById("multilevel");
 var host2ndLevel = createShadowRootWithInnerHtml(host, "<div><content></content></div>").firstChild;
 createShadowRootWithInnerHtml(host2ndLevel, style + "<div lang=fr><div>French</div><content></content></div>");
 testLangInShadow("lang of the distributed content traverses the composed tree (multiple levels)",
     [[host2ndLevel.shadowRoot.querySelector("div"), fr],
-    [host.firstChild, ja]]);
-
-host = document.getElementById("older");
-createShadowRootWithInnerHtml(host, style + "<div>olderShadowRoot</div>");
-createShadowRootWithInnerHtml(host, style + "<div lang=fr><div>French</div><shadow></shadow></div>");
-testLangInShadow("lang of the older shadow root traverses the composed tree",
-    [[host.shadowRoot.querySelector("div"), fr],
-    [host.shadowRoot.olderShadowRoot.querySelector("div"), ja]]);
-
-host = document.getElementById("redistributed");
-createShadowRootWithInnerHtml(host, style + "<div lang=fr><div>French</div><content></content></div>");
-createShadowRootWithInnerHtml(host, style + "<shadow></shadow>");
-testLangInShadow("lang of the re-distributed content traverses the composed tree",
-    [[host.shadowRoot.olderShadowRoot.querySelector("div"), fr],
     [host.firstChild, ja]]);
 
 function testLangInShadow(description, elementAndExpectedList) {

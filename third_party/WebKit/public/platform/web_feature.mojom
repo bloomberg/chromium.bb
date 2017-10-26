@@ -508,7 +508,6 @@ enum WebFeature {
   // The above items are available in M44 branch.
 
   kV8SVGSVGElement_GetElementById_Method = 778,
-  kElementCreateShadowRootMultiple = 779,
   kV8MessageChannel_Constructor = 780,
   kV8MessagePort_PostMessage_Method = 781,
   kV8MessagePort_Start_Method = 782,

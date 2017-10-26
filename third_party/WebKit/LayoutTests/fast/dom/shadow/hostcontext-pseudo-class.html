@@ -195,40 +195,6 @@ backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':host-context matches based on a flat tree when having multiple shadow roots.');
-
-sandbox.appendChild(
-    createDOM('div', {'id': 'parentOfHost'},
-        createShadowRoot(
-            createDOM('span', {'id': 'spanA'},
-                document.createTextNode('no content, no shadow'))),
-        createShadowRoot(
-            createDOM('span', {'id': 'spanB'},
-                createDOM('content', {}))),
-        createShadowRoot(
-            createDOM('span', {'id': 'spanC'},
-                createDOM('shadow', {}))),
-        createDOM('div', {'id': 'host'},
-            createShadowRoot(
-                createDOM('style', {},
-                    document.createTextNode(':host-context(span#spanA) > #targetA { background-color: red; }')),
-                createDOM('style', {},
-                    document.createTextNode(':host-context(span#spanB) > #targetB { background-color: green; }')),
-                createDOM('style', {},
-                    document.createTextNode(':host-context(span#spanC) > #targetC { background-color: green; }')),
-                createDOM('div', {'id': 'targetA'},
-                    document.createTextNode('Hello')),
-                createDOM('div', {'id': 'targetB'},
-                    document.createTextNode('Hello')),
-                createDOM('div', {'id': 'targetC'},
-                    document.createTextNode('Hello'))))));
-
-backgroundColorShouldBe('host/targetA', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host/targetB', 'rgb(0, 128, 0)');
-backgroundColorShouldBe('host/targetC', 'rgb(0, 128, 0)');
-
-cleanUp();
-
 debug(':host-context is updated when its matched ancestor changes className or id.');
 
 sandbox.appendChild(

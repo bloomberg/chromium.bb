@@ -81,17 +81,6 @@ function test() {
   }
 
   function distributedNodeChangedAfterSecondAdding() {
-    waitForModifiedNodesUpdate(
-        'After adding youngest shadow root', distributedNodeChangedAfterAddingYoungestShadowRoot);
-    TestRunner.evaluateInPage('initYoungestShadowRoot()');
-  }
-
-  function distributedNodeChangedAfterAddingYoungestShadowRoot() {
-    waitForModifiedNodesUpdate('After adding inner shadow root node', distributedNodeChangedAfterAddingInnerShadowRoot);
-    TestRunner.evaluateInPage('initInnerShadowRoot()');
-  }
-
-  function distributedNodeChangedAfterAddingInnerShadowRoot() {
     TestRunner.completeTest();
   }
 

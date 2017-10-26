@@ -468,7 +468,6 @@ TEST_F(VisibleUnitsTest, endOfSentence) {
       "<p><i id=three>333</i> <content select=#two></content> <content "
       "select=#one></content> <i id=four>4444</i></p>";
   SetBodyContent(body_content);
-  SetShadowContent(shadow_content, "host");
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
   Node* one = GetDocument().getElementById("one")->firstChild();

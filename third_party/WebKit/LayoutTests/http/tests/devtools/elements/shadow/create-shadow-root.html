@@ -24,10 +24,6 @@ function test() {
       testShadowRoot('container', 'createShadowRoot(\'shadow-1\')', next);
     },
 
-    function testCreateSecondShadowRoot(next) {
-      testShadowRoot('container', 'createShadowRoot(\'shadow-2\')', next);
-    },
-
     function testCreateOpenShadowRoot(next) {
       testShadowRoot('containerOpen', 'createShadowRootV1(\'containerOpen\', \'shadow-3\', \'open\')', next);
     },

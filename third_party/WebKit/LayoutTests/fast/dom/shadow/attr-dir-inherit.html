@@ -18,15 +18,6 @@
         </template>
     </div>
     <div>
-        <div id="dir-rtl-final" data-dir-expected="rtl">dir=rtl in shadow trees apply to distributed content</div>
-        <template>
-            <content></content>
-        </template>
-        <template>
-            <div dir="rtl"><content></content></div>
-        </template>
-    </div>
-    <div>
         <div id="dir-rtl-redistributed-multilevel" data-dir-expected="rtl">dir=rtl in shadow trees apply to distributed content</div>
         <template>
             <div>
@@ -35,23 +26,6 @@
                     <div dir="rtl"><content></content></div>
                 </template>
             </div>
-        </template>
-    </div>
-    <div id="dir-rtl-older">
-        <template>
-            <div id="target" data-dir-expected="rtl">Distributed from older shadow roots</div>
-        </template>
-        <template>
-            <div dir="rtl"><shadow></shadow></div>
-        </template>
-    </div>
-    <div>
-        <div id="dir-rtl-redistributed" data-dir-expected="rtl">Re-distributed</div>
-        <template>
-            <content></content>
-        </template>
-        <template>
-            <div dir="rtl"><shadow></shadow></div>
         </template>
     </div>
 
@@ -75,26 +49,6 @@
     <div id="dir-auto-distributed-hebrew" dir="auto" data-dir-expected="rtl">
         <span>English text</span>
         <span id="h">מקור השם עברית</span>
-        <template>
-            <content select="#h"></content>
-        </template>
-    </div>
-    <div id="dir-auto-final-english" dir="auto" data-dir-expected="ltr">
-        <span>מקור השם עברית</span>
-        <span id="e">English text</span>
-        <template>
-            <content select="#e"></content>
-        </template>
-        <template>
-            <content select="#e"></content>
-        </template>
-    </div>
-    <div id="dir-auto-final-hebrew" dir="auto" data-dir-expected="rtl">
-        <span>English text</span>
-        <span id="h">מקור השם עברית</span>
-        <template>
-            <content select="#h"></content>
-        </template>
         <template>
             <content select="#h"></content>
         </template>
@@ -123,44 +77,6 @@
             </div>
         </template>
     </div>
-    <div id="dir-auto-older-english" dir="auto" data-dir-expected="ltr">
-        <span>מקור השם עברית</span>
-        <template>
-            <span>English text</span>
-        </template>
-        <template>
-            <shadow></shadow>
-        </template>
-    </div>
-    <div id="dir-auto-older-hebrew" dir="auto" data-dir-expected="rtl">
-        <span>English text</span>
-        <template>
-            <span>מקור השם עברית</span>
-        </template>
-        <template>
-            <shadow></shadow>
-        </template>
-    </div>
-    <div id="dir-auto-redistributed-english" dir="auto" data-dir-expected="ltr">
-        <span>מקור השם עברית</span>
-        <span id="e">English text</span>
-        <template>
-            <div><content select="#e"></content></div>
-        </template>
-        <template>
-            <shadow></shadow>
-        </template>
-    </div>
-    <div id="dir-auto-redistributed-hebrew" dir="auto" data-dir-expected="rtl">
-        <span>English text</span>
-        <span id="h">מקור השם עברית</span>
-        <template>
-            <div><content select="#h"></content></div>
-        </template>
-        <template>
-            <shadow></shadow>
-        </template>
-    </div>
 </div>
 <script>
 convertTemplatesToShadowRootsWithin(container);
@@ -176,20 +92,8 @@ test(function () {
 }, "dir=rtl applies to the distributed content");
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-final"));
-}, "dir=rtl applies to the distributed content with multiple shadow roots");
-
-test(function () {
     assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-redistributed-multilevel"));
 }, "dir=rtl applies to the distributed content (multiple levels)");
-
-test(function () {
-    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-older/target"));
-}, "dir=rtl applies to the content in older shadow roots");
-
-test(function () {
-    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-redistributed"));
-}, "dir=rtl applies to the re-distributed content through older shadow roots");
 
 // Test dir="auto" inherits in shadow trees
 // dir="auto" calculates the directionality by the first character
@@ -206,24 +110,9 @@ test(function () {
 }, "dir=auto the first character in the distributed content");
 
 test(function () {
-    assert_direction("English text", getNodeInComposedTree("dir-auto-final-english"));
-    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-final-hebrew"));
-}, "dir=auto the first character in the distributed content with multiple shadow roots");
-
-test(function () {
     assert_direction("English text", getNodeInComposedTree("dir-auto-multilevel-english"));
     assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-multilevel-hebrew"));
 }, "dir=auto the first character in the distributed content with multiple levels of shadow roots");
-
-test(function () {
-    assert_direction("English text", getNodeInComposedTree("dir-auto-older-english"));
-    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-older-hebrew"));
-}, "dir=auto the first character in the distributed content from older shadow roots");
-
-test(function () {
-    assert_direction("English text", getNodeInComposedTree("dir-auto-redistributed-english"));
-    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-redistributed-hebrew"));
-}, "dir=auto the first character in the re-distributed content through older shadow roots");
 
 function assert_direction(description, elementToTest) {
     elementToTest.style.webkitBorderStart = "5px solid green";

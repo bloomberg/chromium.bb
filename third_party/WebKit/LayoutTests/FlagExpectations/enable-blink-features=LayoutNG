@@ -6636,7 +6636,6 @@ crbug.com/591099 http/tests/devtools/elements/shadow/elements-panel-shadow-selec
 crbug.com/591099 http/tests/devtools/elements/shadow/inspect-deep-shadow-element.html [ Crash Failure ]
 crbug.com/591099 http/tests/devtools/elements/shadow/reveal-shadow-dom-node.html [ Crash ]
 crbug.com/591099 http/tests/devtools/elements/shadow/shadow-distribution.html [ Crash Pass Timeout ]
-crbug.com/591099 http/tests/devtools/elements/shadow/shadow-host-display-modes.html [ Crash Pass Timeout ]
 crbug.com/591099 http/tests/devtools/elements/shadow/shadow-root.html [ Crash ]
 crbug.com/591099 http/tests/devtools/elements/shadow/update-shadowdom.html [ Crash ]
 crbug.com/591099 http/tests/devtools/elements/styles-1/add-new-rule-inline-style-csp.html [ Crash ]

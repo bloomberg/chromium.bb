@@ -40,9 +40,6 @@ host.appendChild(spanInHost);
 var olderShadowRoot = host.createShadowRoot();
 var spans1 = createShadowDOM(olderShadowRoot, 'OLDER');
 
-var youngerShadowRoot = host.createShadowRoot();
-var spans2 = createShadowDOM(youngerShadowRoot, 'YOUNGER');
-
 var container = document.getElementById('container');
 container.appendChild(spanInContainer1);
 container.appendChild(host);
@@ -50,7 +47,6 @@ container.appendChild(spanInContainer2);
 
 var allSpans = new Array(spanInContainer1, spanInContainer2, spanInHost);
 allSpans = allSpans.concat(spans1);
-allSpans = allSpans.concat(spans2);
 
 // Do Layout
 container.offsetLeft;

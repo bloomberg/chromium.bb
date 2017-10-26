@@ -23,10 +23,6 @@ function setup()
    container.appendChild(D('div', {'id': 'host2'}, S(D('div', {'id': 'host2b'}, S(D('a', {'id': 'target2', 'title': label2}, document.createTextNode("Hello2")))))));
    cases.push({ target: getNodeInComposedTree('host2/host2b/target2'), expected: label2 });
 
-   label3 = 'Case 3: Multiple Shadow';
-   container.appendChild(D('div', {'id': 'host3'}, S(D('div', {'id': 'scope3a'})), S(D('a', {'id': 'scope3b', 'title': label3 }, document.createTextNode("Hello3")))));
-   cases.push({ target: getNodeInComposedTree('host3//scope3b'), expected: label3 });
-
    return cases;
 }
 
