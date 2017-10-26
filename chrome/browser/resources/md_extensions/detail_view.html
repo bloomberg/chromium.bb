@@ -12,6 +12,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -120,6 +121,11 @@
 
       .actionable {
         cursor: pointer;
+      }
+
+      #allow-incognito iron-icon {
+        -webkit-margin-start: 20px;
+        @apply --cr-icon-height-width;
       }
 
       .inspectable-view {
@@ -299,7 +305,10 @@
               <extensions-toggle-row id="allow-incognito"
                   checked="[[data.incognitoAccess.isActive]]"
                   on-change="onAllowIncognitoChange_">
-                <span>$i18n{itemAllowIncognito}</span>
+                <span>
+                  $i18n{itemAllowIncognito}
+                  <iron-icon icon="cr:error-outline"></iron-icon>
+                </span>
               </extensions-toggle-row>
             </template>
             <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
