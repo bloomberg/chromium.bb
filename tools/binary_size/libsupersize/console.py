@@ -92,7 +92,7 @@ class _Session(object):
       for i, size_info in enumerate(size_infos):
         self._variables['size_info%d' % (i + 1)] = size_info
 
-  def _ReadStringLiterals(self, thing=None, elf_path=None):
+  def _ReadStringLiterals(self, thing=None, all_rodata=False, elf_path=None):
     """Returns a list of (symbol, string value) for all string literal symbols.
 
     E.g.:
@@ -101,6 +101,8 @@ class _Session(object):
     Args:
       thing: Can be a Symbol, iterable of symbols, or SizeInfo.
            Defaults to the current SizeInfo.
+      all_rodata: Assume every symbol within .rodata that ends in a \0 is a
+           string literal.
       elf_path: Path to the executable containing the symbol. Required only
           when auto-detection fails.
     """
@@ -122,11 +124,20 @@ class _Session(object):
     address, offset, _ = nm.LookupElfRodataInfo(elf_path, tool_prefix)
     adjust = offset - address
     ret = []
-    with open(elf_path) as f:
+    with open(elf_path, 'rb') as f:
       for symbol in thing:
-        if symbol.IsStringLiteral():
-          f.seek(symbol.address + adjust)
-          data = f.read(symbol.size_without_padding)
+        if symbol.section != 'r' or (
+            not all_rodata and not symbol.IsStringLiteral()):
+          continue
+        f.seek(symbol.address + adjust)
+        data = f.read(symbol.size_without_padding)
+        # As of Oct 2017, there are ~90 symbols name .L.str(.##). These appear
+        # in the linker map file explicitly, and there doesn't seem to be a
+        # pattern as to which variables lose their kConstant name (the more
+        # common case), or which string literals don't get moved to
+        # ** merge strings (less common).
+        if symbol.IsStringLiteral() or (
+            all_rodata and data and data[-1] == '\0'):
           ret.append((symbol, data))
     return ret
 
