@@ -160,6 +160,8 @@ component("ash") {
     "focus_cycler.cc",
     "focus_cycler.h",
     "frame/caption_buttons/caption_button_types.h",
+    "frame/caption_buttons/frame_back_button.cc",
+    "frame/caption_buttons/frame_back_button.h",
     "frame/caption_buttons/frame_caption_button.cc",
     "frame/caption_buttons/frame_caption_button.h",
     "frame/caption_buttons/frame_caption_button_container_view.cc",

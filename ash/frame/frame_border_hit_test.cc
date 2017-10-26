@@ -16,7 +16,8 @@ namespace ash {
 
 int FrameBorderNonClientHitTest(
     views::NonClientFrameView* view,
-    FrameCaptionButtonContainerView* caption_button_container,
+    const views::View* back_button,
+    const FrameCaptionButtonContainerView* caption_button_container,
     const gfx::Point& point_in_widget) {
   gfx::Rect expanded_bounds = view->bounds();
   int outside_bounds = kResizeOutsideBoundsSize;
@@ -60,6 +61,13 @@ int FrameBorderNonClientHitTest(
       return caption_button_component;
   }
 
+  if (back_button) {
+    gfx::Point point_in_back_button(point_in_widget);
+    views::View::ConvertPointFromWidget(back_button, &point_in_back_button);
+    // Using HTMENU as a placeholder to pass through the event to button.
+    if (back_button->GetLocalBounds().Contains(point_in_back_button))
+      return HTMENU;
+  }
   // Caption is a safe default.
   return HTCAPTION;
 }

@@ -5,6 +5,7 @@
 #include "ash/frame/default_header_painter.h"
 
 #include "ash/ash_layout_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter_util.h"
 #include "ash/resources/grit/ash_resources.h"
@@ -82,6 +83,7 @@ DefaultHeaderPainter::DefaultHeaderPainter(mojom::WindowStyle window_style)
     : window_style_(window_style),
       frame_(nullptr),
       view_(nullptr),
+      back_button_(nullptr),
       left_header_view_(nullptr),
       active_frame_color_(kDefaultFrameColor),
       inactive_frame_color_(kDefaultFrameColor),
@@ -96,7 +98,8 @@ DefaultHeaderPainter::~DefaultHeaderPainter() {}
 void DefaultHeaderPainter::Init(
     views::Widget* frame,
     views::View* header_view,
-    FrameCaptionButtonContainerView* caption_button_container) {
+    FrameCaptionButtonContainerView* caption_button_container,
+    FrameCaptionButton* back_button) {
   DCHECK(frame);
   DCHECK(header_view);
   DCHECK(caption_button_container);
@@ -106,6 +109,7 @@ void DefaultHeaderPainter::Init(
   caption_button_container_->SetButtonSize(
       GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
   UpdateAllButtonImages();
+  UpdateBackButton(back_button);
 }
 
 int DefaultHeaderPainter::GetMinimumHeaderWidth() const {
@@ -179,6 +183,15 @@ void DefaultHeaderPainter::LayoutHeader() {
       caption_button_container_size.width(),
       caption_button_container_size.height());
 
+  int origin = 0;
+  if (back_button_) {
+    back_button_->set_use_light_images(ShouldUseLightImages());
+    gfx::Size size = back_button_->GetPreferredSize();
+    back_button_->SetBounds(0, 0, size.width(),
+                            caption_button_container_size.height());
+    origin = back_button_->bounds().right();
+  }
+
   if (left_header_view_) {
     // Vertically center the left header view with respect to the caption button
     // container.
@@ -186,8 +199,9 @@ void DefaultHeaderPainter::LayoutHeader() {
     gfx::Size size = left_header_view_->GetPreferredSize();
     int icon_offset_y =
         caption_button_container_->height() / 2 - size.height() / 2;
-    left_header_view_->SetBounds(HeaderPainterUtil::GetLeftViewXInset(),
-                                 icon_offset_y, size.width(), size.height());
+    left_header_view_->SetBounds(
+        HeaderPainterUtil::GetLeftViewXInset() + origin, icon_offset_y,
+        size.width(), size.height());
   }
 
   // The header/content separator line overlays the caption buttons.
@@ -210,6 +224,12 @@ void DefaultHeaderPainter::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
 }
 
+void DefaultHeaderPainter::SetPaintAsActive(bool paint_as_active) {
+  caption_button_container_->SetPaintAsActive(paint_as_active);
+  if (back_button_)
+    back_button_->set_paint_as_active(paint_as_active);
+}
+
 void DefaultHeaderPainter::SetFrameColors(SkColor active_frame_color,
                                           SkColor inactive_frame_color) {
   active_frame_color_ = active_frame_color;
@@ -225,8 +245,17 @@ SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
   return inactive_frame_color_;
 }
 
+bool DefaultHeaderPainter::ShouldUseLightImages() {
+  return color_utils::IsDark(mode_ == MODE_INACTIVE ? inactive_frame_color_
+                                                    : active_frame_color_);
+}
+
 void DefaultHeaderPainter::UpdateLeftHeaderView(views::View* left_header_view) {
   left_header_view_ = left_header_view;
+}
+
+void DefaultHeaderPainter::UpdateBackButton(FrameCaptionButton* button) {
+  back_button_ = button;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -288,11 +317,6 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
   canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), flags);
 }
 
-bool DefaultHeaderPainter::ShouldUseLightImages() {
-  return color_utils::IsDark(mode_ == MODE_INACTIVE ? inactive_frame_color_
-                                                    : active_frame_color_);
-}
-
 void DefaultHeaderPainter::UpdateAllButtonImages() {
   caption_button_container_->SetUseLightImages(ShouldUseLightImages());
   caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
@@ -323,8 +347,9 @@ gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {
 }
 
 gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {
-  return HeaderPainterUtil::GetTitleBounds(
-      left_header_view_, caption_button_container_, GetTitleFontList());
+  views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
+  return HeaderPainterUtil::GetTitleBounds(left_view, caption_button_container_,
+                                           GetTitleFontList());
 }
 
 bool DefaultHeaderPainter::UsesCustomFrameColors() const {

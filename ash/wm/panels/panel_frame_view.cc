@@ -55,7 +55,7 @@ void PanelFrameView::InitHeaderPainter() {
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
   AddChildView(caption_button_container_);
 
-  header_painter_->Init(frame_, this, caption_button_container_);
+  header_painter_->Init(frame_, this, caption_button_container_, nullptr);
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();
@@ -132,7 +132,8 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!header_painter_)
     return HTNOWHERE;
-  return FrameBorderNonClientHitTest(this, caption_button_container_, point);
+  return FrameBorderNonClientHitTest(this, nullptr, caption_button_container_,
+                                     point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {

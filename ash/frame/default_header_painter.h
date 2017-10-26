@@ -26,6 +26,7 @@ class Widget;
 }
 
 namespace ash {
+class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 
 // Helper class for painting the default window header.
@@ -39,7 +40,8 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // DefaultHeaderPainter does not take ownership of any of the parameters.
   void Init(views::Widget* frame,
             views::View* header_view,
-            FrameCaptionButtonContainerView* caption_button_container);
+            FrameCaptionButtonContainerView* caption_button_container,
+            FrameCaptionButton* back_button);
 
   // HeaderPainter overrides:
   int GetMinimumHeaderWidth() const override;
@@ -49,9 +51,14 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   int GetHeaderHeightForPainting() const override;
   void SetHeaderHeightForPainting(int height) override;
   void SchedulePaintForTitle() override;
+  void SetPaintAsActive(bool paint_as_active) override;
 
-  // Sets the left header view for the header. Passing NULL removes the view.
+  // Sets the left header view for the header. Passing |nullptr| removes the
+  // view.
   void UpdateLeftHeaderView(views::View* left_header_view);
+
+  // Sets the back button for the header. Passing |nullptr| removes the view.
+  void UpdateBackButton(FrameCaptionButton* button);
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
@@ -59,7 +66,12 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   SkColor GetActiveFrameColor() const;
   SkColor GetInactiveFrameColor() const;
 
+  // Whether light caption images should be used. This is the case when the
+  // background of the frame is dark.
+  bool ShouldUseLightImages();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, BackButtonAlignment);
   FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, TitleIconAlignment);
   FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, LightIcons);
 
@@ -75,10 +87,6 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
 
   // Paints the header/content separator.
   void PaintHeaderContentSeparator(gfx::Canvas* canvas);
-
-  // Whether light caption images should be used. This is the case when the
-  // background of the frame is dark.
-  bool ShouldUseLightImages();
 
   // Update all the images in the caption buttons.
   void UpdateAllButtonImages();
@@ -100,7 +108,8 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   const mojom::WindowStyle window_style_;
   views::Widget* frame_;
   views::View* view_;
-  views::View* left_header_view_;  // May be NULL.
+  FrameCaptionButton* back_button_;  // May be nullptr.
+  views::View* left_header_view_;    // May be nullptr.
   SkColor active_frame_color_;
   SkColor inactive_frame_color_;
   FrameCaptionButtonContainerView* caption_button_container_;

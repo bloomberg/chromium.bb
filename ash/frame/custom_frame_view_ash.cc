@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/frame/header_view.h"
@@ -341,6 +342,10 @@ void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                             header_view_->GetInactiveFrameColor());
 }
 
+void CustomFrameViewAsh::SetBackButtonState(FrameBackButtonState state) {
+  header_view_->SetBackButtonState(state);
+}
+
 void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
   overlay_view_->SetHeaderHeight(height);
 }
@@ -366,8 +371,9 @@ gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return FrameBorderNonClientHitTest(
-      this, header_view_->caption_button_container(), point);
+  return FrameBorderNonClientHitTest(this, header_view_->back_button(),
+                                     header_view_->caption_button_container(),
+                                     point);
 }
 
 void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,
@@ -459,6 +465,12 @@ void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
   }
 }
 
+void CustomFrameViewAsh::SetVisible(bool visible) {
+  views::View::SetVisible(visible);
+  // We need to re-layout so that client view will occupy entire window.
+  InvalidateLayout();
+}
+
 const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
   return header_view_->avatar_icon();
 }
@@ -481,7 +493,9 @@ CustomFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
 }
 
 int CustomFrameViewAsh::NonClientTopBorderHeight() const {
-  if (frame_->IsFullscreen())
+  // The frame should not occupy the window area when it's not visible
+  // or in fullscreen.
+  if (frame_->IsFullscreen() || !visible())
     return 0;
 
   const bool should_hide_titlebar_in_tablet_mode =
