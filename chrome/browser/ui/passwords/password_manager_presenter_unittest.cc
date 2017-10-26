@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
+#include "chrome/browser/ui/passwords/password_ui_view_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -37,40 +38,6 @@ struct SortEntry {
 };
 
 }  // namespace
-
-class MockPasswordUIView : public PasswordUIView {
- public:
-  explicit MockPasswordUIView(Profile* profile)
-      : profile_(profile), password_manager_presenter_(this) {
-    password_manager_presenter_.Initialize();
-  }
-  ~MockPasswordUIView() override {}
-  Profile* GetProfile() override;
-#if !defined(OS_ANDROID)
-  gfx::NativeWindow GetNativeWindow() const override;
-#endif
-  MOCK_METHOD2(ShowPassword, void(size_t, const base::string16&));
-  MOCK_METHOD1(
-      SetPasswordList,
-      void(const std::vector<std::unique_ptr<autofill::PasswordForm>>&));
-  MOCK_METHOD1(
-      SetPasswordExceptionList,
-      void(const std::vector<std::unique_ptr<autofill::PasswordForm>>&));
-  PasswordManagerPresenter* GetPasswordManagerPresenter() {
-    return &password_manager_presenter_;
-  }
-
- private:
-  Profile* profile_;
-  PasswordManagerPresenter password_manager_presenter_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordUIView);
-};
-
-#if !defined(OS_ANDROID)
-gfx::NativeWindow MockPasswordUIView::GetNativeWindow() const { return NULL; }
-#endif
-Profile* MockPasswordUIView::GetProfile() { return profile_; }
 
 class PasswordManagerPresenterTest : public testing::Test {
  protected:
