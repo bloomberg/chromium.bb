@@ -21,7 +21,7 @@
       }
     </style>
 
-    <div class="settings-box" hidden$="[[hasDevices_(devices_)]]">
+    <div class="settings-box first" hidden$="[[hasDevices_(devices_)]]">
       $i18n{noUsbDevicesFound}
     </div>
     <template is="dom-repeat" items="[[devices_]]">
