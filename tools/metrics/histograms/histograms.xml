@@ -37065,6 +37065,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     screen. This is measured from the time the last tab is closed until a Main
     intent is received. Has a minute level precision for first 10 minutes
     increasing exponentially till 30 days.
+
+    Note: this metric is broken in M63 and below and only reliable in M64+.
   </summary>
 </histogram>
 
