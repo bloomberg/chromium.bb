@@ -43,14 +43,7 @@ cr.define('extensions', function() {
    */
   class NavigationHelper {
     constructor() {
-      // Redirect if route not supported.
-      let validPathnames = ['/'];
-      if (!loadTimeData.getBoolean('isGuest')) {
-        validPathnames.push('/shortcuts', '/apps');
-      }
-      if (!validPathnames.includes(this.currentPath_)) {
-        window.history.replaceState(undefined, '', '/');
-      }
+      this.processRoute_();
 
       /** @private {number} */
       this.nextListenerId_ = 1;
@@ -66,6 +59,24 @@ cr.define('extensions', function() {
     /** @private */
     get currentPath_() {
       return location.pathname.replace(CANONICAL_PATH_REGEX, '$1$2');
+    }
+
+    /**
+     * If you're not a guest, going to /configureCommands and /shortcuts should
+     * land you on /shortcuts. These are the only two supported routes, so all
+     * other cases (guest or not) will redirect you to root path if not already
+     * on it.
+     * @private
+     */
+    processRoute_() {
+      if (!loadTimeData.getBoolean('isGuest') &&
+          (this.currentPath_ == '/configureCommands' ||
+           this.currentPath_ == '/shortcuts')) {
+        window.history.replaceState(
+            undefined /* stateObject */, '', '/shortcuts');
+      } else if (this.currentPath_ !== '/') {
+        window.history.replaceState(undefined /* stateObject */, '', '/');
+      }
     }
 
     /**
