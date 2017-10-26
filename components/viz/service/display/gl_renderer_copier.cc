@@ -49,9 +49,11 @@ base::UnguessableToken SourceOf(const CopyOutputRequest& request) {
 
 GLRendererCopier::GLRendererCopier(
     scoped_refptr<ContextProvider> context_provider,
-    TextureMailboxDeleter* texture_mailbox_deleter)
+    TextureMailboxDeleter* texture_mailbox_deleter,
+    ComputeWindowRectCallback window_rect_callback)
     : context_provider_(std::move(context_provider)),
       texture_mailbox_deleter_(texture_mailbox_deleter),
+      window_rect_callback_(std::move(window_rect_callback)),
       helper_(context_provider_->ContextGL(),
               context_provider_->ContextSupport()) {}
 
@@ -62,24 +64,27 @@ GLRendererCopier::~GLRendererCopier() {
 
 void GLRendererCopier::CopyFromTextureOrFramebuffer(
     std::unique_ptr<CopyOutputRequest> request,
-    const gfx::Rect& copy_rect,
+    const gfx::Rect& output_rect,
     GLenum internal_format,
     GLuint framebuffer_texture,
     const gfx::Size& framebuffer_texture_size,
     const gfx::ColorSpace& color_space) {
-  DCHECK(request->has_area());
-  // Assumption: The |copy_rect|, although in the framebuffer's coordinate
-  // space, should have the same size as the copy request's source area.
-  DCHECK_SIZE_EQ(request->area().size(), copy_rect.size());
-
-  // Compute the rect of the pixels in the copy output result's coordinate
-  // space that are affected by the requested copy area. If there will be zero
-  // pixels of output or the scaling ratio was not reasonable, do not proceed.
-  const gfx::Rect result_rect =
-      request->is_scaled()
-          ? copy_output::ComputeResultRect(
-                request->area(), request->scale_from(), request->scale_to())
-          : request->area();
+  // Finalize the source subrect, as the entirety of the RenderPass's output
+  // optionally clamped to the requested copy area. Then, compute the result
+  // rect, which is the selection clamped to the maximum possible result bounds.
+  // If there will be zero pixels of output or the scaling ratio was not
+  // reasonable, do not proceed.
+  gfx::Rect copy_rect = output_rect;
+  if (request->has_area())
+    copy_rect.Intersect(request->area());
+  const gfx::Rect result_bounds =
+      request->is_scaled() ? copy_output::ComputeResultRect(
+                                 gfx::Rect(copy_rect.size()),
+                                 request->scale_from(), request->scale_to())
+                           : gfx::Rect(copy_rect.size());
+  gfx::Rect result_rect = result_bounds;
+  if (request->has_result_selection())
+    result_rect.Intersect(request->result_selection());
   if (result_rect.IsEmpty())
     return;
 
@@ -97,8 +102,11 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
         CacheObjectOrDelete(request_source, CacheEntry::kResultTexture,
                             result_texture);
       } else {
-        StartReadbackFromFramebuffer(std::move(request), copy_rect, result_rect,
-                                     color_space);
+        StartReadbackFromFramebuffer(
+            std::move(request),
+            window_rect_callback_.Run(result_rect +
+                                      copy_rect.OffsetFromOrigin()),
+            result_rect, color_space);
       }
       break;
     }
@@ -138,6 +146,18 @@ GLuint GLRendererCopier::RenderResultTexture(
     GLuint framebuffer_texture,
     const gfx::Size& framebuffer_texture_size,
     const gfx::Rect& result_rect) {
+  // Compute the sampling rect. This is the region of the framebuffer, in window
+  // coordinates, which contains the pixels that can affect the result.
+  //
+  // TODO(crbug.com/775740): When executing for scaling copy requests, use the
+  // scaler's ComputeRegionOfInfluence() utility to compute a smaller sampling
+  // rect so that a smaller source copy can be made below. But first, the scaler
+  // implementation needs to be fixed to account for fractional source offsets.
+  gfx::Rect sampling_rect = window_rect_callback_.Run(
+      request.is_scaled()
+          ? framebuffer_copy_rect
+          : (result_rect + framebuffer_copy_rect.OffsetFromOrigin()));
+
   auto* const gl = context_provider_->ContextGL();
 
   // Determine the source texture: This is either the one attached to the
@@ -151,11 +171,9 @@ GLuint GLRendererCopier::RenderResultTexture(
   // glGetTexLevelParameteriv(GL_TEXTURE_WIDTH/HEIGHT)).
   GLuint source_texture;
   gfx::Size source_texture_size;
-  gfx::Rect source_copy_rect;
   if (framebuffer_texture != 0) {
     source_texture = framebuffer_texture;
     source_texture_size = framebuffer_texture_size;
-    source_copy_rect = framebuffer_copy_rect;
   } else {
     // Optimization: If the texture copy completely satsifies the request, just
     // return it as the result texture. The request must not include scaling nor
@@ -168,14 +186,13 @@ GLuint GLRendererCopier::RenderResultTexture(
             : CacheEntry::kFramebufferCopyTexture;
     source_texture = TakeCachedObjectOrCreate(SourceOf(request), purpose);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
-    gl->CopyTexImage2D(GL_TEXTURE_2D, 0, internal_format,
-                       framebuffer_copy_rect.x(), framebuffer_copy_rect.y(),
-                       framebuffer_copy_rect.width(),
-                       framebuffer_copy_rect.height(), 0);
+    gl->CopyTexImage2D(GL_TEXTURE_2D, 0, internal_format, sampling_rect.x(),
+                       sampling_rect.y(), sampling_rect.width(),
+                       sampling_rect.height(), 0);
     if (purpose == CacheEntry::kResultTexture)
       return source_texture;
-    source_texture_size = framebuffer_copy_rect.size();
-    source_copy_rect = gfx::Rect(framebuffer_copy_rect.size());
+    source_texture_size = sampling_rect.size();
+    sampling_rect.set_origin(gfx::Point());
   }
 
   // Determine the result texture: If the copy request provided a valid one, use
@@ -200,21 +217,19 @@ GLuint GLRendererCopier::RenderResultTexture(
 
   // Populate the result texture with a scaled/exact copy.
   if (request.is_scaled()) {
-    const gfx::Rect scaled_copy_rect = copy_output::ComputeResultRect(
-        source_copy_rect, request.scale_from(), request.scale_to());
-    DCHECK_SIZE_EQ(scaled_copy_rect.size(), result_rect.size());
     std::unique_ptr<GLHelper::ScalerInterface> scaler =
         TakeCachedScalerOrCreate(request);
-    scaler->Scale(source_texture, source_texture_size, gfx::Vector2dF(),
-                  result_texture, scaled_copy_rect);
+    scaler->Scale(source_texture, source_texture_size,
+                  sampling_rect.OffsetFromOrigin(), result_texture,
+                  result_rect);
     CacheScalerOrDelete(SourceOf(request), std::move(scaler));
   } else {
-    DCHECK_SIZE_EQ(source_copy_rect.size(), result_rect.size());
+    DCHECK_SIZE_EQ(sampling_rect.size(), result_rect.size());
     gl->CopySubTextureCHROMIUM(
         source_texture, 0 /* source_level */, GL_TEXTURE_2D, result_texture,
-        0 /* dest_level */, 0 /* xoffset */, 0 /* yoffset */,
-        source_copy_rect.x(), source_copy_rect.y(), source_copy_rect.width(),
-        source_copy_rect.height(), false, false, false);
+        0 /* dest_level */, 0 /* xoffset */, 0 /* yoffset */, sampling_rect.x(),
+        sampling_rect.y(), sampling_rect.width(), sampling_rect.height(), false,
+        false, false);
   }
 
   // If |source_texture| was a copy, maybe cache it for future requests.
@@ -504,7 +519,7 @@ GLRendererCopier::TakeCachedScalerOrCreate(
                                               ? GLHelper::SCALER_QUALITY_GOOD
                                               : GLHelper::SCALER_QUALITY_BEST;
   return helper_.CreateScaler(quality, for_request.scale_from(),
-                              for_request.scale_to(), false, false, false);
+                              for_request.scale_to(), true, false, false);
 }
 
 void GLRendererCopier::CacheScalerOrDelete(
