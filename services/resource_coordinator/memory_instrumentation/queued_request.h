@@ -67,8 +67,7 @@ struct QueuedRequest {
   }
 
   bool should_return_summaries() const {
-    return args.level_of_detail ==
-           base::trace_event::MemoryDumpLevelOfDetail::SUMMARY_ONLY;
+    return args.dump_type == base::trace_event::MemoryDumpType::SUMMARY_ONLY;
   }
 
   const base::trace_event::MemoryDumpRequestArgs args;

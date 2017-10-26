@@ -765,8 +765,8 @@ TEST_F(MemoryDumpManagerTest, SummaryOnlyWhitelisting) {
 
   EXPECT_CALL(backgroundMdp, OnMemoryDump(_, _)).Times(0);
   EXPECT_CALL(summaryMdp, OnMemoryDump(_, _)).Times(1);
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                        MemoryDumpLevelOfDetail::SUMMARY_ONLY));
+  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
+                                        MemoryDumpLevelOfDetail::BACKGROUND));
   DisableTracing();
 }
 
