@@ -345,13 +345,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Sets the number of active streams on the connection for congestion control.
   void SetNumOpenStreams(size_t num_streams);
 
-  // Send the data in |data| to the peer in as few packets as possible.
-  // Returns the number of bytes consumed from data, and a boolean indicating if
-  // the fin bit was consumed.  This does not indicate the data has been sent on
-  // the wire: it may have been turned into a packet and queued if the socket
-  // was unexpectedly blocked.
+  // Send the data of length |write_length| to the peer in as few packets as
+  // possible. Returns the number of bytes consumed from data, and a boolean
+  // indicating if the fin bit was consumed.  This does not indicate the data
+  // has been sent on the wire: it may have been turned into a packet and queued
+  // if the socket was unexpectedly blocked.
   virtual QuicConsumedData SendStreamData(QuicStreamId id,
-                                          QuicIOVector iov,
+                                          size_t write_length,
                                           QuicStreamOffset offset,
                                           StreamSendingState state);
 

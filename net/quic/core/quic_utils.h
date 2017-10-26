@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "net/base/int128.h"
+#include "net/base/iovec.h"
 #include "net/quic/core/quic_error_codes.h"
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -60,12 +60,13 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
       const QuicSocketAddress& old_address,
       const QuicSocketAddress& new_address);
 
-  // Copies |length| bytes from iov starting at offset |iov_offset| into buffer.
-  // |iov| must be at least iov_offset+length total length and buffer must be
-  // at least |length| long.
-  static void CopyToBuffer(QuicIOVector iov,
+  // Copies |buffer_length| bytes from iov starting at offset |iov_offset| into
+  // buffer. |iov| must be at least iov_offset+length total length and buffer
+  // must be at least |length| long.
+  static void CopyToBuffer(const struct iovec* iov,
+                           int iov_count,
                            size_t iov_offset,
-                           size_t length,
+                           size_t buffer_length,
                            char* buffer);
 
  private:

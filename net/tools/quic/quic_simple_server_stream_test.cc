@@ -107,7 +107,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
-                                QuicIOVector data,
+                                size_t write_length,
                                 QuicStreamOffset offset,
                                 StreamSendingState state));
   MOCK_METHOD4(OnStreamHeaderList,

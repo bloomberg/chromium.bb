@@ -6,7 +6,6 @@
 #define NET_QUIC_TEST_TOOLS_QUIC_PACKET_CREATOR_PEER_H_
 
 #include "base/macros.h"
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_packets.h"
 
 namespace net {
@@ -31,7 +30,7 @@ class QuicPacketCreatorPeer {
                                QuicPacketHeader* header);
   static void CreateStreamFrame(QuicPacketCreator* creator,
                                 QuicStreamId id,
-                                QuicIOVector iov,
+                                size_t write_length,
                                 size_t iov_offset,
                                 QuicStreamOffset offset,
                                 bool fin,

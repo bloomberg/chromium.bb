@@ -62,7 +62,7 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
-                                QuicIOVector data,
+                                size_t write_length,
                                 QuicStreamOffset offset,
                                 StreamSendingState fin));
   MOCK_METHOD3(SendRstStream,
@@ -111,11 +111,11 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
 
   using QuicSession::ActivateStream;
 
-  // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
-  // has been consumed.
+  // Returns a QuicConsumedData that indicates all of |write_length| (and |fin|
+  // if set) has been consumed.
   static QuicConsumedData ConsumeAllData(
       QuicStreamId id,
-      const QuicIOVector& data,
+      size_t write_length,
       QuicStreamOffset offset,
       bool fin,
       QuicAckListenerInterface* ack_listener);

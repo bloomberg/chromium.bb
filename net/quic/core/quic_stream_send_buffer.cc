@@ -30,7 +30,8 @@ QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator)
 
 QuicStreamSendBuffer::~QuicStreamSendBuffer() {}
 
-void QuicStreamSendBuffer::SaveStreamData(QuicIOVector iov,
+void QuicStreamSendBuffer::SaveStreamData(const struct iovec* iov,
+                                          int iov_count,
                                           size_t iov_offset,
                                           QuicByteCount data_length) {
   DCHECK_LT(0u, data_length);
@@ -40,7 +41,7 @@ void QuicStreamSendBuffer::SaveStreamData(QuicIOVector iov,
   while (data_length > 0) {
     size_t slice_len = std::min(data_length, max_data_slice_size);
     QuicMemSlice slice(allocator_, slice_len);
-    QuicUtils::CopyToBuffer(iov, iov_offset, slice_len,
+    QuicUtils::CopyToBuffer(iov, iov_count, iov_offset, slice_len,
                             const_cast<char*>(slice.data()));
     SaveMemSlice(std::move(slice));
     data_length -= slice_len;

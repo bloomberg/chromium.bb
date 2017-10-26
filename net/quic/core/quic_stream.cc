@@ -213,9 +213,8 @@ void QuicStream::WriteOrBufferData(
   // all data to be consumed.
   if (data.length() > 0) {
     struct iovec iov(MakeIovec(data));
-    QuicIOVector quic_iov(&iov, 1, data.length());
     QuicStreamOffset offset = send_buffer_.stream_offset();
-    send_buffer_.SaveStreamData(quic_iov, 0, data.length());
+    send_buffer_.SaveStreamData(&iov, 1, 0, data.length());
     OnDataBuffered(offset, data.length(), ack_listener);
   }
   if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
@@ -282,11 +281,10 @@ QuicConsumedData QuicStream::WritevData(const struct iovec* iov,
   bool had_buffered_data = HasBufferedData();
   if (CanWriteNewData()) {
     // Save all data if buffered data size is below low water mark.
-    QuicIOVector quic_iovec(iov, iov_count, write_length);
     consumed_data.bytes_consumed = write_length;
     if (consumed_data.bytes_consumed > 0) {
       QuicStreamOffset offset = send_buffer_.stream_offset();
-      send_buffer_.SaveStreamData(quic_iovec, 0, write_length);
+      send_buffer_.SaveStreamData(iov, iov_count, 0, write_length);
       OnDataBuffered(offset, write_length, nullptr);
     }
   }
@@ -342,14 +340,14 @@ QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
   return consumed_data;
 }
 
-QuicConsumedData QuicStream::WritevDataInner(QuicIOVector iov,
+QuicConsumedData QuicStream::WritevDataInner(size_t write_length,
                                              QuicStreamOffset offset,
                                              bool fin) {
   StreamSendingState state = fin ? FIN : NO_FIN;
   if (fin && add_random_padding_after_fin_) {
     state = FIN_AND_PADDING;
   }
-  return session()->WritevData(this, id(), iov, offset, state);
+  return session()->WritevData(this, id(), write_length, offset, state);
 }
 
 void QuicStream::CloseReadSide() {
@@ -564,9 +562,8 @@ void QuicStream::WriteBufferedData() {
                   << write_length << " due to flow control";
   }
 
-  QuicConsumedData consumed_data = WritevDataInner(
-      QuicIOVector(/*iov=*/nullptr, /*iov_count=*/0, write_length),
-      stream_bytes_written_, fin);
+  QuicConsumedData consumed_data =
+      WritevDataInner(write_length, stream_bytes_written_, fin);
 
   stream_bytes_written_ += consumed_data.bytes_consumed;
   stream_bytes_outstanding_ += consumed_data.bytes_consumed;

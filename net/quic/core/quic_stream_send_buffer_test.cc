@@ -32,7 +32,6 @@ class QuicStreamSendBufferTest : public QuicTest {
     struct iovec iov[2];
     iov[0] = MakeIovec(QuicStringPiece(data1));
     iov[1] = MakeIovec(QuicStringPiece(data2));
-    QuicIOVector quic_iov(iov, 2, 3840);
 
     QuicMemSlice slice1(&allocator_, 1024);
     memset(const_cast<char*>(slice1.data()), 'c', 1024);
@@ -41,7 +40,7 @@ class QuicStreamSendBufferTest : public QuicTest {
 
     // Save all data.
     SetQuicFlag(&FLAGS_quic_send_buffer_max_data_slice_size, 1024);
-    send_buffer_.SaveStreamData(quic_iov, 0, 2048);
+    send_buffer_.SaveStreamData(iov, 2, 0, 2048);
     send_buffer_.SaveMemSlice(std::move(slice1));
     EXPECT_TRUE(slice1.empty());
     send_buffer_.SaveMemSlice(std::move(slice2));

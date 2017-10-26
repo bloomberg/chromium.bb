@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_CORE_QUIC_STREAM_FRAME_DATA_PRODUCER_H_
 #define NET_QUIC_CORE_QUIC_STREAM_FRAME_DATA_PRODUCER_H_
 
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_types.h"
 
 namespace net {

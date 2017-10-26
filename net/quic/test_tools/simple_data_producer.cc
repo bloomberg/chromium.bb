@@ -14,7 +14,8 @@ SimpleDataProducer::SimpleDataProducer() {}
 SimpleDataProducer::~SimpleDataProducer() {}
 
 void SimpleDataProducer::SaveStreamData(QuicStreamId id,
-                                        QuicIOVector iov,
+                                        const struct iovec* iov,
+                                        int iov_count,
                                         size_t iov_offset,
                                         QuicStreamOffset offset,
                                         QuicByteCount data_length) {
@@ -24,7 +25,7 @@ void SimpleDataProducer::SaveStreamData(QuicStreamId id,
   if (!QuicContainsKey(send_buffer_map_, id)) {
     send_buffer_map_[id].reset(new QuicStreamSendBuffer(&allocator_));
   }
-  send_buffer_map_[id]->SaveStreamData(iov, iov_offset, data_length);
+  send_buffer_map_[id]->SaveStreamData(iov, iov_count, iov_offset, data_length);
 }
 
 bool SimpleDataProducer::WriteStreamData(QuicStreamId id,

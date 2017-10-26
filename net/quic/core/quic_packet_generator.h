@@ -94,7 +94,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // added after stream frames. If current constructed packet cannot
   // accommodate, the padding will overflow to the next packet(s).
   QuicConsumedData ConsumeData(QuicStreamId id,
-                               QuicIOVector iov,
+                               size_t write_length,
                                QuicStreamOffset offset,
                                StreamSendingState state);
 
@@ -104,7 +104,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // In case we access this method from ConsumeData, total_bytes_consumed
   // keeps track of how many bytes have already been consumed.
   QuicConsumedData ConsumeDataFastPath(QuicStreamId id,
-                                       const QuicIOVector& iov,
+                                       size_t write_length,
                                        QuicStreamOffset offset,
                                        bool fin,
                                        size_t total_bytes_consumed);

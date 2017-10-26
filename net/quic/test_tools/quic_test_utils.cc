@@ -388,10 +388,10 @@ const QuicCryptoStream* MockQuicSession::GetCryptoStream() const {
 // static
 QuicConsumedData MockQuicSession::ConsumeAllData(QuicStream* /*stream*/,
                                                  QuicStreamId /*id*/,
-                                                 const QuicIOVector& data,
+                                                 size_t write_length,
                                                  QuicStreamOffset /*offset*/,
                                                  StreamSendingState state) {
-  return QuicConsumedData(data.total_length, state != NO_FIN);
+  return QuicConsumedData(write_length, state != NO_FIN);
 }
 
 MockQuicCryptoStream::MockQuicCryptoStream(QuicSession* session)

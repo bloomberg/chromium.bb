@@ -52,7 +52,7 @@ void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
 }
 
 QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
-                                                  QuicIOVector iov,
+                                                  size_t write_length,
                                                   QuicStreamOffset offset,
                                                   StreamSendingState state) {
   bool has_handshake = (id == kCryptoStreamId);
@@ -72,7 +72,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     packet_creator_.Flush();
   }
 
-  if (!fin && (iov.total_length == 0)) {
+  if (!fin && (write_length == 0)) {
     QUIC_BUG << "Attempt to consume empty data without FIN.";
     return QuicConsumedData(0, false);
   }
@@ -80,13 +80,13 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   // the slow path loop.
   bool run_fast_path = !has_handshake && state != FIN_AND_PADDING &&
                        !HasQueuedFrames() &&
-                       iov.total_length - total_bytes_consumed > kMaxPacketSize;
+                       write_length - total_bytes_consumed > kMaxPacketSize;
 
   while (!run_fast_path && delegate_->ShouldGeneratePacket(
                                HAS_RETRANSMITTABLE_DATA,
                                has_handshake ? IS_HANDSHAKE : NOT_HANDSHAKE)) {
     QuicFrame frame;
-    if (!packet_creator_.ConsumeData(id, iov, total_bytes_consumed,
+    if (!packet_creator_.ConsumeData(id, write_length, total_bytes_consumed,
                                      offset + total_bytes_consumed, fin,
                                      has_handshake, &frame)) {
       // The creator is always flushed if there's not enough room for a new
@@ -98,18 +98,18 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     // A stream frame is created and added.
     size_t bytes_consumed = frame.stream_frame->data_length;
     total_bytes_consumed += bytes_consumed;
-    fin_consumed = fin && total_bytes_consumed == iov.total_length;
+    fin_consumed = fin && total_bytes_consumed == write_length;
     if (fin_consumed && state == FIN_AND_PADDING) {
       AddRandomPadding();
     }
-    DCHECK(total_bytes_consumed == iov.total_length ||
+    DCHECK(total_bytes_consumed == write_length ||
            (bytes_consumed > 0 && packet_creator_.HasPendingFrames()));
 
     if (!InBatchMode()) {
       packet_creator_.Flush();
     }
 
-    if (total_bytes_consumed == iov.total_length) {
+    if (total_bytes_consumed == write_length) {
       // We're done writing the data. Exit the loop.
       // We don't make this a precondition because we could have 0 bytes of data
       // if we're simply writing a fin.
@@ -120,11 +120,11 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
 
     run_fast_path = !has_handshake && state != FIN_AND_PADDING &&
                     !HasQueuedFrames() &&
-                    iov.total_length - total_bytes_consumed > kMaxPacketSize;
+                    write_length - total_bytes_consumed > kMaxPacketSize;
   }
 
   if (run_fast_path) {
-    return ConsumeDataFastPath(id, iov, offset, state != NO_FIN,
+    return ConsumeDataFastPath(id, write_length, offset, state != NO_FIN,
                                total_bytes_consumed);
   }
 
@@ -139,25 +139,25 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
 
 QuicConsumedData QuicPacketGenerator::ConsumeDataFastPath(
     QuicStreamId id,
-    const QuicIOVector& iov,
+    size_t write_length,
     QuicStreamOffset offset,
     bool fin,
     size_t total_bytes_consumed) {
   DCHECK_NE(id, kCryptoStreamId);
 
-  while (total_bytes_consumed < iov.total_length &&
+  while (total_bytes_consumed < write_length &&
          delegate_->ShouldGeneratePacket(HAS_RETRANSMITTABLE_DATA,
                                          NOT_HANDSHAKE)) {
     // Serialize and encrypt the packet.
     size_t bytes_consumed = 0;
-    packet_creator_.CreateAndSerializeStreamFrame(id, iov, total_bytes_consumed,
-                                                  offset + total_bytes_consumed,
-                                                  fin, &bytes_consumed);
+    packet_creator_.CreateAndSerializeStreamFrame(
+        id, write_length, total_bytes_consumed, offset + total_bytes_consumed,
+        fin, &bytes_consumed);
     total_bytes_consumed += bytes_consumed;
   }
 
   return QuicConsumedData(total_bytes_consumed,
-                          fin && (total_bytes_consumed == iov.total_length));
+                          fin && (total_bytes_consumed == write_length));
 }
 
 void QuicPacketGenerator::GenerateMtuDiscoveryPacket(QuicByteCount target_mtu) {

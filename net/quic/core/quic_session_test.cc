@@ -193,13 +193,14 @@ class TestSession : public QuicSpdySession {
 
   QuicConsumedData WritevData(QuicStream* stream,
                               QuicStreamId id,
-                              QuicIOVector data,
+                              size_t write_length,
                               QuicStreamOffset offset,
                               StreamSendingState state) override {
     bool fin = state != NO_FIN;
-    QuicConsumedData consumed(data.total_length, fin);
+    QuicConsumedData consumed(write_length, fin);
     if (!writev_consumes_all_data_) {
-      consumed = QuicSession::WritevData(stream, id, data, offset, state);
+      consumed =
+          QuicSession::WritevData(stream, id, write_length, offset, state);
     }
     if (fin && consumed.fin_consumed) {
       stream->set_fin_sent(true);
@@ -218,20 +219,15 @@ class TestSession : public QuicSpdySession {
     if (stream->id() != kCryptoStreamId) {
       this->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
-    QuicStreamPeer::SendBuffer(stream).SaveStreamData(
-        MakeIOVector("not empty", &iov), 0, 9);
-    QuicConsumedData consumed = WritevData(
-        stream, stream->id(), MakeIOVector("not empty", &iov), 0, FIN);
+    MakeIOVector("not empty", &iov);
+    QuicStreamPeer::SendBuffer(stream).SaveStreamData(&iov, 1, 0, 9);
+    QuicConsumedData consumed = WritevData(stream, stream->id(), 9, 0, FIN);
     return consumed;
   }
 
   QuicConsumedData SendLargeFakeData(QuicStream* stream, int bytes) {
     DCHECK(writev_consumes_all_data_);
-    struct iovec iov;
-    iov.iov_base = nullptr;  // should not be read.
-    iov.iov_len = static_cast<size_t>(bytes);
-    return WritevData(stream, stream->id(), QuicIOVector(&iov, 1, bytes), 0,
-                      FIN);
+    return WritevData(stream, stream->id(), bytes, 0, FIN);
   }
 
   using QuicSession::PostProcessAfterData;

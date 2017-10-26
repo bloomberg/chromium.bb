@@ -186,53 +186,14 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
     return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, n);
   }
 
-  QuicConsumedData SaveIov(const QuicIOVector& data) {
-    const iovec* iov = data.iov;
-    int count = data.iov_count;
-    int consumed = 0;
-    if (iov != nullptr) {
-      for (int i = 0; i < count; ++i) {
-        saved_data_.append(static_cast<char*>(iov[i].iov_base), iov[i].iov_len);
-        consumed += iov[i].iov_len;
-      }
-    } else {
-      consumed = data.total_length;
-      char* buf = new char[consumed];
-      QuicDataWriter writer(consumed, buf, NETWORK_BYTE_ORDER);
-      headers_stream_->WriteStreamData(headers_stream_->stream_bytes_written(),
-                                       consumed, &writer);
-      saved_data_.append(buf, consumed);
-      delete[] buf;
-    }
-    return QuicConsumedData(consumed, false);
-  }
-
-  QuicConsumedData SaveIovShort(const QuicIOVector& data) {
-    const iovec* iov = data.iov;
-    int consumed = 1;
-    if (iov != nullptr) {
-      saved_data_.append(static_cast<char*>(iov[0].iov_base), consumed);
-    } else {
-      char* buf = new char[consumed];
-      QuicDataWriter writer(consumed, buf, NETWORK_BYTE_ORDER);
-      headers_stream_->WriteStreamData(headers_stream_->stream_bytes_written(),
-                                       consumed, &writer);
-      saved_data_.append(buf, consumed);
-      delete[] buf;
-    }
-    return QuicConsumedData(consumed, false);
-  }
-
-  QuicConsumedData SaveIovAndNotifyAckListener(
-      const QuicIOVector& data,
-      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_listener) {
-    QuicConsumedData result = SaveIov(data);
-    if (ack_listener) {
-      ack_listener->OnPacketAcked(result.bytes_consumed,
-                                  QuicTime::Delta::Zero());
-    }
-    return result;
+  QuicConsumedData SaveIov(size_t write_length) {
+    char* buf = new char[write_length];
+    QuicDataWriter writer(write_length, buf, NETWORK_BYTE_ORDER);
+    headers_stream_->WriteStreamData(headers_stream_->stream_bytes_written(),
+                                     write_length, &writer);
+    saved_data_.append(buf, write_length);
+    delete[] buf;
+    return QuicConsumedData(write_length, false);
   }
 
   void SavePayload(const char* data, size_t len) {

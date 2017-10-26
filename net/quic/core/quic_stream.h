@@ -25,7 +25,6 @@
 #include "base/macros.h"
 #include "net/base/iovec.h"
 #include "net/quic/core/quic_flow_controller.h"
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream_send_buffer.h"
 #include "net/quic/core/quic_stream_sequencer.h"
@@ -222,7 +221,7 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
 
   // Allows override of the session level writev, for the force HOL
   // blocking experiment.
-  virtual QuicConsumedData WritevDataInner(QuicIOVector iov,
+  virtual QuicConsumedData WritevDataInner(size_t write_length,
                                            QuicStreamOffset offset,
                                            bool fin);
 
