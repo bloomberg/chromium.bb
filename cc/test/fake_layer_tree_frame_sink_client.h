@@ -17,6 +17,11 @@ class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
 
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
   void DidReceiveCompositorFrameAck() override;
+  void DidPresentCompositorFrame(uint32_t presentation_token,
+                                 base::TimeTicks time,
+                                 base::TimeDelta refresh,
+                                 uint32_t flags) override {}
+  void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override {}
   void DidLoseLayerTreeFrameSink() override;

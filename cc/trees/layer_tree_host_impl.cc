@@ -1583,6 +1583,13 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAckOnImplThread();
 }
 
+void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t presentation_token,
+                                                  base::TimeTicks time,
+                                                  base::TimeDelta refresh,
+                                                  uint32_t flags) {}
+void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t presentation_token) {
+}
+
 void LayerTreeHostImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   // TODO(piman): We may need to do some validation on this ack before

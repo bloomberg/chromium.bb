@@ -83,6 +83,7 @@
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
@@ -3603,7 +3604,8 @@ void bind_viewporter(wl_client* client,
 
 void HandleSurfacePresentationCallback(wl_resource* resource,
                                        base::TimeTicks presentation_time,
-                                       base::TimeDelta refresh) {
+                                       base::TimeDelta refresh,
+                                       uint32_t flags) {
   if (presentation_time.is_null()) {
     wp_presentation_feedback_send_discarded(resource);
   } else {
@@ -3611,13 +3613,23 @@ void HandleSurfacePresentationCallback(wl_resource* resource,
     int64_t seconds = presentation_time_us / base::Time::kMicrosecondsPerSecond;
     int64_t microseconds =
         presentation_time_us % base::Time::kMicrosecondsPerSecond;
+    static_assert(viz::mojom::kPresentationFlagVSync ==
+                      WP_PRESENTATION_FEEDBACK_KIND_VSYNC,
+                  "viz::mojom::kPresentationFlagVSync don't match!");
+    static_assert(viz::mojom::kPresentationFlagHWClock ==
+                      WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK,
+                  "viz::mojom::kPresentationFlagHWClock don't match!");
+    static_assert(viz::mojom::kPresentationFlagHWCompletion ==
+                      WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION,
+                  "viz::mojom::kPresentationFlagHWCompletion don't match!");
+    static_assert(viz::mojom::kPresentationFlagZeroCopy ==
+                      WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY,
+                  "viz::mojom::kPresentationFlagZeroCopy don't match!");
     wp_presentation_feedback_send_presented(
         resource, seconds >> 32, seconds & 0xffffffff,
         microseconds * base::Time::kNanosecondsPerMicrosecond,
         refresh.InMicroseconds() * base::Time::kNanosecondsPerMicrosecond, 0, 0,
-        WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
-            WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK |
-            WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION);
+        flags);
   }
   wl_client_flush(wl_resource_get_client(resource));
 }
@@ -3635,8 +3647,8 @@ void presentation_feedback(wl_client* client,
                          wl_resource_get_version(resource), id);
 
   // base::Unretained is safe as the resource owns the callback.
-  auto cancelable_callback = std::make_unique<
-      base::CancelableCallback<void(base::TimeTicks, base::TimeDelta)>>(
+  auto cancelable_callback = std::make_unique<base::CancelableCallback<void(
+      base::TimeTicks, base::TimeDelta, uint32_t)>>(
       base::Bind(&HandleSurfacePresentationCallback,
                  base::Unretained(presentation_feedback_resource)));
 

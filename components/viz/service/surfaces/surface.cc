@@ -101,7 +101,8 @@ bool Surface::QueueFrame(
     CompositorFrame frame,
     uint64_t frame_index,
     base::OnceClosure callback,
-    const AggregatedDamageCallback& aggregated_damage_callback) {
+    const AggregatedDamageCallback& aggregated_damage_callback,
+    PresentedCallback presented_callback) {
   late_activation_dependencies_.clear();
 
   if (frame.size_in_pixels() != surface_info_.size_in_pixels() ||
@@ -116,6 +117,9 @@ bool Surface::QueueFrame(
         TransferableResource::ReturnResources(frame.resource_list);
     surface_client_->ReturnResources(resources);
     std::move(callback).Run();
+    if (presented_callback)
+      std::move(presented_callback)
+          .Run(base::TimeTicks(), base::TimeDelta(), 0);
     return true;
   }
 
@@ -137,12 +141,12 @@ bool Surface::QueueFrame(
   if (activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(FrameData(std::move(frame), frame_index, std::move(callback),
-                            aggregated_damage_callback));
+                            aggregated_damage_callback,
+                            std::move(presented_callback)));
   } else {
     pending_frame_data_ =
         FrameData(std::move(frame), frame_index, std::move(callback),
-                  aggregated_damage_callback);
-
+                  aggregated_damage_callback, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
     // Ask the surface manager to inform |this| when its dependencies are
@@ -208,11 +212,13 @@ Surface::FrameData::FrameData(
     CompositorFrame&& frame,
     uint64_t frame_index,
     base::OnceClosure draw_callback,
-    const AggregatedDamageCallback& aggregated_damage_callback)
+    const AggregatedDamageCallback& aggregated_damage_callback,
+    PresentedCallback presented_callback)
     : frame(std::move(frame)),
       frame_index(frame_index),
       draw_callback(std::move(draw_callback)),
-      aggregated_damage_callback(aggregated_damage_callback) {}
+      aggregated_damage_callback(aggregated_damage_callback),
+      presented_callback(std::move(presented_callback)) {}
 
 Surface::FrameData::FrameData(FrameData&& other) = default;
 
@@ -338,6 +344,14 @@ void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
   if (!active_frame_data_)
     return;
   TakeLatencyInfoFromFrame(&active_frame_data_->frame, latency_info);
+}
+
+bool Surface::TakePresentedCallback(PresentedCallback* callback) {
+  if (active_frame_data_ && active_frame_data_->presented_callback) {
+    *callback = std::move(active_frame_data_->presented_callback);
+    return true;
+  }
+  return false;
 }
 
 void Surface::RunDrawCallback() {

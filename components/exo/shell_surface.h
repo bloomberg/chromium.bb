@@ -17,6 +17,7 @@
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/wm_helper.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/display/display_observer.h"
@@ -56,6 +57,7 @@ class ShellSurface : public SurfaceTreeHost,
                      public views::View,
                      public display::DisplayObserver,
                      public ash::wm::WindowStateObserver,
+                     public aura::WindowObserver,
                      public WMHelper::ActivationObserver,
                      public WMHelper::DisplayConfigurationObserver,
                      public ui::CompositorLockClient {
@@ -257,9 +259,6 @@ class ShellSurface : public SurfaceTreeHost,
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
-  void OnWindowAddedToRootWindow(aura::Window* window) override;
-  void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                      aura::Window* new_root) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // Overridden from WMHelper::ActivationObserver:

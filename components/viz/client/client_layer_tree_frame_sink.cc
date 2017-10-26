@@ -172,6 +172,21 @@ void ClientLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
+void ClientLayerTreeFrameSink::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  client_->DidPresentCompositorFrame(presentation_token, time, refresh, flags);
+}
+
+void ClientLayerTreeFrameSink::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  client_->DidDiscardCompositorFrame(presentation_token);
+}
+
 void ClientLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   if (!needs_begin_frames_) {
     // We had a race with SetNeedsBeginFrame(false) and still need to let the

@@ -28,8 +28,7 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
         overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
                                      update_vsync_parameters_callback,
-                                     std::move(overlay_candidate_validator)),
-      weak_ptr_factory_(this) {
+                                     std::move(overlay_candidate_validator)) {
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;
@@ -39,6 +38,10 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
 }
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {
+  // Reset GetCommandBufferProxy() callbacks to avoid calling those callbacks
+  // from dtor of the base class.
+  GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
+      gpu::CommandBufferProxyImpl::SwapBuffersCompletionCallback());
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback());
 }
@@ -75,11 +78,14 @@ void GpuBrowserCompositorOutputSurface::BindToClient(
   DCHECK(!client_);
   client_ = client;
 
+  // CommandBufferProxy() will always call below callbacks directly (no
+  // PostTask), so it is safe to use base::Unretained(this).
   GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
       base::Bind(&GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
-      update_vsync_parameters_callback_);
+      base::Bind(&GpuBrowserCompositorOutputSurface::OnVSyncParametersUpdated,
+                 base::Unretained(this)));
 }
 
 void GpuBrowserCompositorOutputSurface::EnsureBackbuffer() {}
@@ -172,6 +178,14 @@ void GpuBrowserCompositorOutputSurface::SetDrawRectangle(
   has_set_draw_rectangle_since_last_resize_ = true;
   context_provider()->ContextGL()->SetDrawRectangleCHROMIUM(
       rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+void GpuBrowserCompositorOutputSurface::OnVSyncParametersUpdated(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  DCHECK(client_);
+  client_->DidUpdateVSyncParameters(timebase, interval);
+  update_vsync_parameters_callback_.Run(timebase, interval);
 }
 
 gpu::CommandBufferProxyImpl*

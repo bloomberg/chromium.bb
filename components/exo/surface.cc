@@ -214,7 +214,7 @@ Surface::~Surface() {
   // Call all presentation callbacks with a null presentation time to indicate
   // that they have been cancelled.
   for (const auto& presentation_callback : pending_presentation_callbacks_)
-    presentation_callback.Run(base::TimeTicks(), base::TimeDelta());
+    presentation_callback.Run(base::TimeTicks(), base::TimeDelta(), 0);
 
   WMHelper::GetInstance()->ResetDragDropDelegate(window_.get());
 }

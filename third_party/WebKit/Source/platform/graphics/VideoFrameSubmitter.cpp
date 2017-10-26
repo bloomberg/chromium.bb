@@ -124,4 +124,12 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
     const WTF::Vector<viz::ReturnedResource>& resources) {}
 
+void VideoFrameSubmitter::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    ::mojo::common::mojom::blink::TimeTicksPtr time,
+    WTF::TimeDelta refresh,
+    uint32_t flags) {}
+
+void VideoFrameSubmitter::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {}
 }  // namespace blink

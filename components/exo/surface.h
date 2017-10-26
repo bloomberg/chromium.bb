@@ -90,7 +90,8 @@ class Surface final : public ui::PropertyHandler {
   // throttling redrawing operations, and driving animations.
   using PresentationCallback =
       base::Callback<void(base::TimeTicks presentation_time,
-                          base::TimeDelta refresh)>;
+                          base::TimeDelta refresh,
+                          uint32_t flags)>;
   void RequestPresentationCallback(const PresentationCallback& callback);
 
   // This sets the region of the surface that contains opaque content.

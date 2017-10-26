@@ -68,6 +68,7 @@ source_set("wayland") {
     "//base",
     "//components/exo",
     "//device/gamepad",
+    "//services/viz/public/interfaces",
     "//skia",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:alpha_compositing_protocol",
