@@ -131,9 +131,8 @@ void DeviceStatusListener::OnNetworkChanged(
                  base::Bind(&DeviceStatusListener::NotifyNetworkChange,
                             base::Unretained(this), new_network_status));
   } else {
-    status_.network_status = new_network_status;
     timer_.Stop();
-    NotifyStatusChange();
+    NotifyNetworkChange(new_network_status);
   }
 }
 
