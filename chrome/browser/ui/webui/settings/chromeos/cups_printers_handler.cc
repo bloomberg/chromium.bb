@@ -181,7 +181,9 @@ std::string PrinterAddress(const std::string& host, int port) {
   return host;
 }
 
-// Returns a JSON representation of |printer| as a CupsPrinterInfo.
+// Returns a JSON representation of |printer| as a CupsPrinterInfo. Note it's
+// possible that this function returns a nullptr if the printer url is not in
+// the right format.
 std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
   std::unique_ptr<base::DictionaryValue> printer_info =
       CreateEmptyPrinterInfo();
@@ -361,7 +363,11 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
 
   auto printers_list = base::MakeUnique<base::ListValue>();
   for (const Printer& printer : printers) {
-    printers_list->Append(GetPrinterInfo(printer));
+    // TODO(skau): Theoretically |printer_info| should not be a nullptr as we
+    // should not allow adding an invalid configured printer to PrinterManager.
+    auto printer_info = GetPrinterInfo(printer);
+    if (printer_info)
+      printers_list->Append(std::move(printer_info));
   }
 
   auto response = base::MakeUnique<base::DictionaryValue>();
@@ -809,10 +815,14 @@ void CupsPrintersHandler::OnPrintersChanged(
   std::unique_ptr<base::ListValue> printers_list =
       base::MakeUnique<base::ListValue>();
   for (const Printer& printer : automatic_printers_) {
-    printers_list->Append(GetPrinterInfo(printer));
+    auto printer_info = GetPrinterInfo(printer);
+    if (printer_info)
+      printers_list->Append(std::move(printer_info));
   }
   for (const Printer& printer : discovered_printers_) {
-    printers_list->Append(GetPrinterInfo(printer));
+    auto printer_info = GetPrinterInfo(printer);
+    if (printer_info)
+      printers_list->Append(std::move(printer_info));
   }
 
   FireWebUIListener("on-printer-discovered", *printers_list);
@@ -827,9 +837,11 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   CHECK(args->GetString(0, &printer_id));
 
   std::unique_ptr<Printer> printer = printers_manager_->GetPrinter(printer_id);
-  if (printer == nullptr) {
+  PrinterUri uri;
+  if (printer == nullptr || !ParseUri(printer->uri(), &uri)) {
     // Printer disappeared, so we don't have information about it anymore and
-    // can't really do much.  Fail the add.
+    // can't really do much.  Or the printer uri was not parsed successfully.
+    // Fail the add.
     FireWebUIListener("on-add-cups-printer", base::Value(false),
                       base::Value(printer_id));
     return;
