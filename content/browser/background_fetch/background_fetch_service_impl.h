@@ -48,7 +48,11 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   void UpdateUI(const std::string& unique_id,
                 const std::string& title,
                 UpdateUICallback callback) override;
-  void Abort(const std::string& unique_id, AbortCallback callback) override;
+  void Abort(int64_t service_worker_registration_id,
+             const url::Origin& origin,
+             const std::string& developer_id,
+             const std::string& unique_id,
+             AbortCallback callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const url::Origin& origin,
                        const std::string& developer_id,

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
@@ -21,6 +22,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/common/content_switches.h"
@@ -36,8 +38,7 @@
 //   content/browser/service_worker/service_worker_database.cc for details.
 // - Integer values are serialized as a string by base::Int*ToString().
 //
-// key: "bgfetch_registration_developer_id_to_unique_id_"
-//          + <std::string 'developer_id'>
+// key: "bgfetch_active_registration_unique_id_" + <std::string 'developer_id'>
 // value: <std::string 'unique_id'>
 //
 // key: "bgfetch_registration_" + <std::string 'unique_id'>
@@ -60,39 +61,38 @@ namespace {
 // Warning: registration |developer_id|s may contain kSeparator characters.
 const char kSeparator[] = "_";
 
-const char kRegistrationDeveloperIdToUniqueIdKeyPrefix[] =
-    "bgfetch_registration_developer_id_to_unique_id_";
+const char kActiveRegistrationUniqueIdKeyPrefix[] =
+    "bgfetch_active_registration_unique_id_";
 const char kRegistrationKeyPrefix[] = "bgfetch_registration_";
 const char kRequestKeyPrefix[] = "bgfetch_request_";
 const char kPendingRequestKeyPrefix[] = "bgfetch_pending_request_";
 
-std::string RegistrationDeveloperIdToUniqueIdKey(
-    const std::string& developer_id) {
+std::string ActiveRegistrationUniqueIdKey(const std::string& developer_id) {
   // Allows looking up the active registration's |unique_id| by |developer_id|.
-  return kRegistrationDeveloperIdToUniqueIdKeyPrefix + developer_id;
+  // Registrations are active from creation up until completed/failed/aborted.
+  // These database entries correspond to the active background fetches map:
+  // https://wicg.github.io/background-fetch/#service-worker-registration-active-background-fetches
+  return kActiveRegistrationUniqueIdKeyPrefix + developer_id;
 }
 
-std::string RegistrationKey(
-    const BackgroundFetchRegistrationId& registration_id) {
+std::string RegistrationKey(const std::string& unique_id) {
   // Allows looking up a registration by |unique_id|.
-  return kRegistrationKeyPrefix + registration_id.unique_id();
+  return kRegistrationKeyPrefix + unique_id;
 }
 
-std::string RequestKeyPrefix(
-    const BackgroundFetchRegistrationId& registration_id) {
+std::string RequestKeyPrefix(const std::string& unique_id) {
   // Allows looking up all requests within a registration.
-  return kRequestKeyPrefix + registration_id.unique_id() + kSeparator;
+  return kRequestKeyPrefix + unique_id + kSeparator;
 }
 
-std::string RequestKey(const BackgroundFetchRegistrationId& registration_id,
-                       int request_index) {
+std::string RequestKey(const std::string& unique_id, int request_index) {
   // Allows looking up a request by registration id and index within that.
-  return RequestKeyPrefix(registration_id) + base::IntToString(request_index);
+  return RequestKeyPrefix(unique_id) + base::IntToString(request_index);
 }
 
 std::string PendingRequestKeyPrefix(
     int64_t registration_creation_microseconds_since_unix_epoch,
-    const BackgroundFetchRegistrationId& registration_id) {
+    const std::string& unique_id) {
   // These keys are ordered by the registration's creation time rather than by
   // its |unique_id|, so that the highest priority pending requests in FIFO
   // order can be looked up by fetching the lexicographically smallest keys.
@@ -108,20 +108,21 @@ std::string PendingRequestKeyPrefix(
   return kPendingRequestKeyPrefix +
          base::Int64ToString(
              registration_creation_microseconds_since_unix_epoch) +
-         kSeparator + registration_id.unique_id() + kSeparator;
+         kSeparator + unique_id + kSeparator;
 }
 
 std::string PendingRequestKey(
     int64_t registration_creation_microseconds_since_unix_epoch,
-    const BackgroundFetchRegistrationId& registration_id,
+    const std::string& unique_id,
     int request_index) {
   // In addition to the ordering from PendingRequestKeyPrefix, the requests
   // within each registration should be prioritized according to their index.
   return PendingRequestKeyPrefix(
-             registration_creation_microseconds_since_unix_epoch,
-             registration_id) +
+             registration_creation_microseconds_since_unix_epoch, unique_id) +
          base::IntToString(request_index);
 }
+
+void IgnoreError(blink::mojom::BackgroundFetchError) {}
 
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
@@ -161,6 +162,27 @@ DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status) {
   return DatabaseStatus::kFailed;
 }
 
+#if DCHECK_IS_ON()
+// Checks that the |ActiveRegistrationUniqueIdKey| either does not exist, or is
+// associated with a different |unique_id| than the given one which should have
+// been already marked for deletion.
+void DCheckRegistrationNotActive(const std::string& unique_id,
+                                 const std::vector<std::string>& data,
+                                 ServiceWorkerStatusCode status) {
+  switch (ToDatabaseStatus(status)) {
+    case DatabaseStatus::kOk:
+      DCHECK_EQ(1u, data.size());
+      DCHECK_NE(unique_id, data[0])
+          << "Must call MarkRegistrationForDeletion before DeleteRegistration";
+      return;
+    case DatabaseStatus::kFailed:
+      return;  // TODO(johnme): Consider logging failure to UMA.
+    case DatabaseStatus::kNotFound:
+      return;
+  }
+}
+#endif  // DCHECK_IS_ON()
+
 // Returns whether the response contained in the Background Fetch |request| is
 // considered OK. See https://fetch.spec.whatwg.org/#ok-status aka a successful
 // 2xx status per https://tools.ietf.org/html/rfc7231#section-6.3.
@@ -191,7 +213,9 @@ class BackgroundFetchDataManager::DatabaseTask {
 
  protected:
   explicit DatabaseTask(BackgroundFetchDataManager* data_manager)
-      : data_manager_(data_manager) {}
+      : data_manager_(data_manager) {
+    DCHECK(data_manager_);
+  }
 
   // The task should begin reading/writing when this is called.
   virtual void Start() = 0;
@@ -211,10 +235,25 @@ class BackgroundFetchDataManager::DatabaseTask {
       data_manager_->database_tasks_.front()->Run();
   }
 
+  Controller* GetController(const std::string& unique_id) {
+    auto iter = data_manager_->controllers_.find(unique_id);
+    return iter == data_manager_->controllers_.end() ? nullptr : iter->second;
+  }
+
+  void AddDatabaseTask(std::unique_ptr<DatabaseTask> task) {
+    data_manager_->AddDatabaseTask(std::move(task));
+  }
+
   ServiceWorkerContextWrapper* service_worker_context() {
     DCHECK(data_manager_->service_worker_context_);
     return data_manager_->service_worker_context_.get();
   }
+
+  std::set<std::string>& ref_counted_unique_ids() {
+    return data_manager_->ref_counted_unique_ids_;
+  }
+
+  BackgroundFetchDataManager* data_manager() { return data_manager_; }
 
  private:
   BackgroundFetchDataManager* data_manager_;  // Owns this.
@@ -244,7 +283,7 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
   void Start() override {
     service_worker_context()->GetRegistrationUserData(
         registration_id_.service_worker_registration_id(),
-        {RegistrationDeveloperIdToUniqueIdKey(registration_id_.developer_id())},
+        {ActiveRegistrationUniqueIdKey(registration_id_.developer_id())},
         base::Bind(&CreateRegistrationTask::DidGetUniqueId,
                    weak_factory_.GetWeakPtr()));
   }
@@ -284,6 +323,8 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
     // First serialize per-registration (as opposed to per-request) data.
     // TODO(crbug.com/757760): Serialize BackgroundFetchOptions as part of this.
     proto::BackgroundFetchRegistration registration_proto;
+    registration_proto.set_unique_id(registration_id_.unique_id());
+    registration_proto.set_developer_id(registration_id_.developer_id());
     registration_proto.set_creation_microseconds_since_unix_epoch(
         registration_creation_microseconds_since_unix_epoch);
     std::string serialized_registration_proto;
@@ -296,19 +337,19 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
       return;
     }
     entries.emplace_back(
-        RegistrationDeveloperIdToUniqueIdKey(registration_id_.developer_id()),
+        ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
         registration_id_.unique_id());
-    entries.emplace_back(RegistrationKey(registration_id_),
+    entries.emplace_back(RegistrationKey(registration_id_.unique_id()),
                          std::move(serialized_registration_proto));
 
     // Signed integers are used for request indexes to avoid unsigned gotchas.
     for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {
       // TODO(crbug.com/757760): Serialize actual values for these entries.
-      entries.emplace_back(RequestKey(registration_id_, i),
+      entries.emplace_back(RequestKey(registration_id_.unique_id(), i),
                            "TODO: Serialize FetchAPIRequest as value");
       entries.emplace_back(
           PendingRequestKey(registration_creation_microseconds_since_unix_epoch,
-                            registration_id_, i),
+                            registration_id_.unique_id(), i),
           std::string());
     }
 
@@ -358,52 +399,168 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
   DISALLOW_COPY_AND_ASSIGN(CreateRegistrationTask);
 };
 
+class MarkRegistrationForDeletionTask
+    : public BackgroundFetchDataManager::DatabaseTask {
+ public:
+  MarkRegistrationForDeletionTask(
+      BackgroundFetchDataManager* data_manager,
+      const BackgroundFetchRegistrationId& registration_id,
+      bool aborted,
+      BackgroundFetchDataManager::HandleBackgroundFetchErrorCallback callback)
+      : DatabaseTask(data_manager),
+        registration_id_(registration_id),
+        aborted_(aborted),
+        callback_(std::move(callback)),
+        weak_factory_(this) {}
+
+  ~MarkRegistrationForDeletionTask() override = default;
+
+  void Start() override {
+    // Look up if there is already an active |unique_id| entry for this
+    // |developer_id|.
+    service_worker_context()->GetRegistrationUserData(
+        registration_id_.service_worker_registration_id(),
+        {ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
+         RegistrationKey(registration_id_.unique_id())},
+        base::Bind(&MarkRegistrationForDeletionTask::DidGetActiveUniqueId,
+                   weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void DidGetActiveUniqueId(const std::vector<std::string>& data,
+                            ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kOk:
+        break;
+      case DatabaseStatus::kNotFound:
+        std::move(callback_).Run(
+            blink::mojom::BackgroundFetchError::INVALID_ID);
+        Finished();  // Destroys |this|.
+        return;
+      case DatabaseStatus::kFailed:
+        std::move(callback_).Run(
+            blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        Finished();  // Destroys |this|.
+        return;
+    }
+
+    DCHECK_EQ(2u, data.size());
+
+    // If the |unique_id| does not match, then the registration identified by
+    // |registration_id_.unique_id()| was already deactivated.
+    if (data[0] != registration_id_.unique_id()) {
+      std::move(callback_).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
+      Finished();  // Destroys |this|.
+      return;
+    }
+
+    proto::BackgroundFetchRegistration registration_proto;
+    if (registration_proto.ParseFromString(data[1]) &&
+        registration_proto.has_creation_microseconds_since_unix_epoch()) {
+      // Mark registration as no longer active. Also deletes pending request
+      // keys, since those are globally sorted and requests within deactivated
+      // registrations are no longer eligible to be started. Pending request
+      // keys are not required by GetRegistration.
+      service_worker_context()->ClearRegistrationUserDataByKeyPrefixes(
+          registration_id_.service_worker_registration_id(),
+          {ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
+           PendingRequestKeyPrefix(
+               registration_proto.creation_microseconds_since_unix_epoch(),
+               registration_id_.unique_id())},
+          base::Bind(&MarkRegistrationForDeletionTask::DidDeactivate,
+                     weak_factory_.GetWeakPtr()));
+    } else {
+      NOTREACHED() << "Database is corrupt";  // TODO(johnme): Nuke it.
+    }
+  }
+
+  void DidDeactivate(ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kOk:
+      case DatabaseStatus::kNotFound:
+        break;
+      case DatabaseStatus::kFailed:
+        std::move(callback_).Run(
+            blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        Finished();  // Destroys |this|.
+        return;
+    }
+
+    // If CleanupTask runs after this, it shouldn't clean up the
+    // |unique_id| as there may still be JavaScript references to it.
+    ref_counted_unique_ids().emplace(registration_id_.unique_id());
+
+    if (aborted_) {
+      auto* controller = GetController(registration_id_.unique_id());
+      if (controller)
+        controller->Abort();
+    }
+
+    std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE);
+    Finished();  // Destroys |this|.
+  }
+
+  BackgroundFetchRegistrationId registration_id_;
+  bool aborted_;
+  BackgroundFetchDataManager::HandleBackgroundFetchErrorCallback callback_;
+
+  base::WeakPtrFactory<MarkRegistrationForDeletionTask>
+      weak_factory_;  // Keep as last.
+
+  DISALLOW_COPY_AND_ASSIGN(MarkRegistrationForDeletionTask);
+};
+
 class DeleteRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
  public:
   DeleteRegistrationTask(
       BackgroundFetchDataManager* data_manager,
-      const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchDataManager::DeleteRegistrationCallback callback)
+      int64_t service_worker_registration_id,
+      const std::string& unique_id,
+      BackgroundFetchDataManager::HandleBackgroundFetchErrorCallback callback)
       : DatabaseTask(data_manager),
-        registration_id_(registration_id),
+        service_worker_registration_id_(service_worker_registration_id),
+        unique_id_(unique_id),
         callback_(std::move(callback)),
         weak_factory_(this) {}
 
   ~DeleteRegistrationTask() override = default;
 
   void Start() override {
-    // Get the registration creation time so we can delete any pending requests.
+#if DCHECK_IS_ON()
+    // Get the registration |developer_id| to check it was deactivated.
     service_worker_context()->GetRegistrationUserData(
-        registration_id_.service_worker_registration_id(),
-        {RegistrationKey(registration_id_)},
+        service_worker_registration_id_, {RegistrationKey(unique_id_)},
         base::Bind(&DeleteRegistrationTask::DidGetRegistration,
                    weak_factory_.GetWeakPtr()));
+#else
+    DidGetRegistration({}, SERVICE_WORKER_OK);
+#endif  // DCHECK_IS_ON()
   }
 
  private:
   void DidGetRegistration(const std::vector<std::string>& data,
                           ServiceWorkerStatusCode status) {
-    // TODO(crbug.com/757760): In future removing the
-    // RegistrationDeveloperIdToUniqueIdKey and RegistrationKey will happen
-    // separately, since registration data must persist for as long as
-    // JavaScript retains a reference to it, even once completed/failed/aborted.
-    std::vector<std::string> prefixes_to_clear = {
-        RegistrationDeveloperIdToUniqueIdKey(registration_id_.developer_id()),
-        RegistrationKey(registration_id_), RequestKeyPrefix(registration_id_)};
-
-    if (status == SERVICE_WORKER_OK) {
+#if DCHECK_IS_ON()
+    if (ToDatabaseStatus(status) == DatabaseStatus::kOk) {
       DCHECK_EQ(1u, data.size());
       proto::BackgroundFetchRegistration registration_proto;
       if (registration_proto.ParseFromString(data[0]) &&
-          registration_proto.has_creation_microseconds_since_unix_epoch()) {
-        prefixes_to_clear.emplace_back(PendingRequestKeyPrefix(
-            registration_proto.creation_microseconds_since_unix_epoch(),
-            registration_id_));
+          registration_proto.has_developer_id()) {
+        service_worker_context()->GetRegistrationUserData(
+            service_worker_registration_id_,
+            {ActiveRegistrationUniqueIdKey(registration_proto.developer_id())},
+            base::Bind(&DCheckRegistrationNotActive, unique_id_));
+      } else {
+        NOTREACHED() << "Database is corrupt";  // TODO(johnme): Nuke it.
       }
+    } else {
+      // TODO(johnme): Log failure to UMA.
     }
+#endif  // DCHECK_IS_ON()
 
     service_worker_context()->ClearRegistrationUserDataByKeyPrefixes(
-        registration_id_.service_worker_registration_id(), prefixes_to_clear,
+        service_worker_registration_id_,
+        {RegistrationKey(unique_id_), RequestKeyPrefix(unique_id_)},
         base::Bind(&DeleteRegistrationTask::DidDeleteRegistration,
                    weak_factory_.GetWeakPtr()));
   }
@@ -423,12 +580,92 @@ class DeleteRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
     }
   }
 
-  BackgroundFetchRegistrationId registration_id_;
-  BackgroundFetchDataManager::DeleteRegistrationCallback callback_;
+  int64_t service_worker_registration_id_;
+  std::string unique_id_;
+  BackgroundFetchDataManager::HandleBackgroundFetchErrorCallback callback_;
 
   base::WeakPtrFactory<DeleteRegistrationTask> weak_factory_;  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(DeleteRegistrationTask);
+};
+
+// Deletes inactive registrations marked for deletion.
+// TODO(johnme): Log failed deletions to UMA.
+class CleanupTask : public BackgroundFetchDataManager::DatabaseTask {
+ public:
+  CleanupTask(BackgroundFetchDataManager* data_manager)
+      : DatabaseTask(data_manager), weak_factory_(this) {}
+
+  ~CleanupTask() override = default;
+
+  void Start() override {
+    service_worker_context()->GetUserDataForAllRegistrationsByKeyPrefix(
+        kRegistrationKeyPrefix, base::Bind(&CleanupTask::DidGetRegistrations,
+                                           weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void DidGetRegistrations(
+      const std::vector<std::pair<int64_t, std::string>>& registration_data,
+      ServiceWorkerStatusCode status) {
+    if (ToDatabaseStatus(status) != DatabaseStatus::kOk ||
+        registration_data.empty()) {
+      Finished();  // Destroys |this|.
+      return;
+    }
+
+    service_worker_context()->GetUserDataForAllRegistrationsByKeyPrefix(
+        kActiveRegistrationUniqueIdKeyPrefix,
+        base::Bind(&CleanupTask::DidGetActiveUniqueIds,
+                   weak_factory_.GetWeakPtr(), registration_data));
+  }
+
+ private:
+  void DidGetActiveUniqueIds(
+      const std::vector<std::pair<int64_t, std::string>>& registration_data,
+      const std::vector<std::pair<int64_t, std::string>>& active_unique_id_data,
+      ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kOk:
+      case DatabaseStatus::kNotFound:
+        break;
+      case DatabaseStatus::kFailed:
+        Finished();  // Destroys |this|.
+        return;
+    }
+
+    std::vector<std::string> active_unique_id_vector;
+    active_unique_id_vector.reserve(active_unique_id_data.size());
+    for (const auto& entry : active_unique_id_data)
+      active_unique_id_vector.push_back(entry.second);
+    base::flat_set<std::string> active_unique_ids(
+        std::move(active_unique_id_vector));
+
+    for (const auto& entry : registration_data) {
+      int64_t service_worker_registration_id = entry.first;
+      proto::BackgroundFetchRegistration registration_proto;
+      if (registration_proto.ParseFromString(entry.second)) {
+        if (registration_proto.has_unique_id()) {
+          const std::string& unique_id = registration_proto.unique_id();
+          if (!active_unique_ids.count(unique_id) &&
+              !ref_counted_unique_ids().count(unique_id)) {
+            // This |unique_id| can be safely cleaned up. Re-use
+            // DeleteRegistrationTask for the actual deletion logic.
+            AddDatabaseTask(std::make_unique<DeleteRegistrationTask>(
+                data_manager(), service_worker_registration_id, unique_id,
+                base::BindOnce(&IgnoreError)));
+          }
+        }
+      }
+    }
+
+    Finished();  // Destroys |this|.
+    return;
+  }
+
+  base::WeakPtrFactory<CleanupTask> weak_factory_;  // Keep as last.
+
+  DISALLOW_COPY_AND_ASSIGN(CleanupTask);
 };
 
 }  // namespace
@@ -438,9 +675,10 @@ class DeleteRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
 // will be adhered to in the future.
 class BackgroundFetchDataManager::RegistrationData {
  public:
-  RegistrationData(const std::vector<ServiceWorkerFetchRequest>& requests,
+  RegistrationData(const BackgroundFetchRegistrationId& registration_id,
+                   const std::vector<ServiceWorkerFetchRequest>& requests,
                    const BackgroundFetchOptions& options)
-      : options_(options) {
+      : registration_id_(registration_id), options_(options) {
     int request_index = 0;
 
     // Convert the given |requests| to BackgroundFetchRequestInfo objects.
@@ -513,6 +751,10 @@ class BackgroundFetchDataManager::RegistrationData {
 
   void SetTitle(const std::string& title) { options_.title = title; }
 
+  const BackgroundFetchRegistrationId& registration_id() const {
+    return registration_id_;
+  }
+
   const BackgroundFetchOptions& options() const { return options_; }
 
   uint64_t GetDownloaded(Controller* controller) {
@@ -521,6 +763,7 @@ class BackgroundFetchDataManager::RegistrationData {
   }
 
  private:
+  BackgroundFetchRegistrationId registration_id_;
   BackgroundFetchOptions options_;
   uint64_t complete_requests_downloaded_bytes_ = 0;
 
@@ -550,6 +793,20 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
   blob_storage_context_ =
       base::WrapRefCounted(ChromeBlobStorageContext::GetFor(browser_context));
   DCHECK(blob_storage_context_);
+
+  BrowserThread::PostAfterStartupTask(
+      FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      // Normally weak pointers must be obtained on the IO thread, but it's ok
+      // here as the factory cannot be destroyed before the constructor ends.
+      base::Bind(&BackgroundFetchDataManager::Cleanup,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BackgroundFetchDataManager::Cleanup() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(std::make_unique<CleanupTask>(this));
+  }
 }
 
 BackgroundFetchDataManager::~BackgroundFetchDataManager() {
@@ -589,7 +846,7 @@ void BackgroundFetchDataManager::CreateRegistration(
       std::make_tuple(registration_id.service_worker_registration_id(),
                       registration_id.origin(), registration_id.developer_id());
 
-  if (active_unique_ids_.count(developer_id_tuple)) {
+  if (active_registration_unique_ids_.count(developer_id_tuple)) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID,
         base::nullopt);
@@ -598,12 +855,13 @@ void BackgroundFetchDataManager::CreateRegistration(
 
   // Mark |unique_id| as the currently active registration for
   // |developer_id_tuple|.
-  active_unique_ids_.emplace(std::move(developer_id_tuple),
-                             registration_id.unique_id());
+  active_registration_unique_ids_.emplace(std::move(developer_id_tuple),
+                                          registration_id.unique_id());
 
   // Create the |RegistrationData|, and store it for easy access.
-  registrations_.emplace(registration_id.unique_id(),
-                         std::make_unique<RegistrationData>(requests, options));
+  registrations_.emplace(
+      registration_id.unique_id(),
+      std::make_unique<RegistrationData>(registration_id, requests, options));
 
   // Re-use GetRegistration to compile the BackgroundFetchRegistration object.
   // WARNING: GetRegistration doesn't use the |unique_id| when looking up the
@@ -625,8 +883,8 @@ void BackgroundFetchDataManager::GetRegistration(
   auto developer_id_tuple =
       std::make_tuple(service_worker_registration_id, origin, developer_id);
 
-  auto iter = active_unique_ids_.find(developer_id_tuple);
-  if (iter == active_unique_ids_.end()) {
+  auto iter = active_registration_unique_ids_.find(developer_id_tuple);
+  if (iter == active_registration_unique_ids_.end()) {
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID,
                             base::nullopt /* registration */);
     return;
@@ -670,11 +928,24 @@ void BackgroundFetchDataManager::UpdateRegistrationUI(
     return;
   }
 
+  const BackgroundFetchRegistrationId& registration_id =
+      registrations_iter->second->registration_id();
+
+  auto controllers_iter = controllers_.find(unique_id);
+
+  // The registration must a) still be active, or b) have completed/failed (not
+  // aborted) with the waitUntil promise from that event not yet resolved. The
+  // latter case can be detected because the JobController will be kept alive
+  // until the waitUntil promise is resolved.
+  if (!IsActive(registration_id) && controllers_iter == controllers_.end()) {
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
+    return;
+  }
+
   // Update stored registration.
   registrations_iter->second->SetTitle(title);
 
   // Update any active JobController that cached this data for notifications.
-  auto controllers_iter = controllers_.find(unique_id);
   if (controllers_iter != controllers_.end())
     controllers_iter->second->UpdateUI(title);
 
@@ -686,10 +957,16 @@ void BackgroundFetchDataManager::PopNextRequest(
     NextRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = registrations_.find(registration_id.unique_id());
-  DCHECK(iter != registrations_.end());
+  if (!IsActive(registration_id)) {
+    // Stop giving out requests as registration aborted (or otherwise finished).
+    std::move(callback).Run(nullptr /* request */);
+    return;
+  }
 
-  RegistrationData* registration_data = iter->second.get();
+  auto registration_iter = registrations_.find(registration_id.unique_id());
+  DCHECK(registration_iter != registrations_.end());
+
+  RegistrationData* registration_data = registration_iter->second.get();
 
   scoped_refptr<BackgroundFetchRequestInfo> next_request;
   if (registration_data->HasPendingRequests())
@@ -803,34 +1080,66 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
                           std::move(settled_fetches), std::move(blob_handles));
 }
 
-void BackgroundFetchDataManager::DeleteRegistration(
+void BackgroundFetchDataManager::MarkRegistrationForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    DeleteRegistrationCallback callback) {
+    bool aborted,
+    HandleBackgroundFetchErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
-    AddDatabaseTask(std::make_unique<DeleteRegistrationTask>(
-        this, registration_id, std::move(callback)));
-    return;
-  }
-
-  // TODO(crbug.com/757760): In future removing entries from
-  // active_unique_ids_ and from registrations_ will happen separately,
-  // since entries in registrations_ must persist for as long as JavaScript
-  // retains a reference to them, even once completed/failed/aborted.
-
-  if (!registrations_.erase(registration_id.unique_id())) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
+    AddDatabaseTask(std::make_unique<MarkRegistrationForDeletionTask>(
+        this, registration_id, aborted, std::move(callback)));
     return;
   }
 
   auto developer_id_tuple =
       std::make_tuple(registration_id.service_worker_registration_id(),
                       registration_id.origin(), registration_id.developer_id());
-  active_unique_ids_.erase(developer_id_tuple);
+
+  auto active_unique_id_iter =
+      active_registration_unique_ids_.find(developer_id_tuple);
+
+  // The |unique_id| must also match, as a website can create multiple
+  // registrations with the same |developer_id_tuple| (even though only one can
+  // be active at once).
+  if (active_unique_id_iter == active_registration_unique_ids_.end() ||
+      active_unique_id_iter->second != registration_id.unique_id()) {
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
+    return;
+  }
+
+  active_registration_unique_ids_.erase(active_unique_id_iter);
+
+  if (aborted) {
+    // Terminate any active JobController's downloads.
+    auto controller_iter = controllers_.find(registration_id.unique_id());
+    if (controller_iter != controllers_.end())
+      controller_iter->second->Abort();
+  }
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
+}
+
+void BackgroundFetchDataManager::DeleteRegistration(
+    const BackgroundFetchRegistrationId& registration_id,
+    HandleBackgroundFetchErrorCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(std::make_unique<DeleteRegistrationTask>(
+        this, registration_id.service_worker_registration_id(),
+        registration_id.unique_id(), std::move(callback)));
+    return;
+  }
+
+  DCHECK(!IsActive(registration_id))
+      << "MarkRegistrationForDeletion must already have been called";
+
+  std::move(callback).Run(registrations_.erase(registration_id.unique_id())
+                              ? blink::mojom::BackgroundFetchError::NONE
+                              : blink::mojom::BackgroundFetchError::INVALID_ID);
 }
 
 void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
@@ -839,13 +1148,29 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<std::string> developer_ids;
-  for (const auto& entry : active_unique_ids_) {
+  for (const auto& entry : active_registration_unique_ids_) {
     if (service_worker_registration_id == std::get<0>(entry.first))
       developer_ids.emplace_back(std::get<2>(entry.first));
   }
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
                           developer_ids);
+}
+
+bool BackgroundFetchDataManager::IsActive(
+    const BackgroundFetchRegistrationId& registration_id) {
+  auto developer_id_tuple =
+      std::make_tuple(registration_id.service_worker_registration_id(),
+                      registration_id.origin(), registration_id.developer_id());
+
+  auto active_unique_id_iter =
+      active_registration_unique_ids_.find(developer_id_tuple);
+
+  // The |unique_id| must also match, as a website can create multiple
+  // registrations with the same |developer_id_tuple| (even though only one can
+  // be active at once).
+  return active_unique_id_iter != active_registration_unique_ids_.end() &&
+         active_unique_id_iter->second == registration_id.unique_id();
 }
 
 void BackgroundFetchDataManager::AddDatabaseTask(

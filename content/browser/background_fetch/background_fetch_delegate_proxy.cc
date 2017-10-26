@@ -227,16 +227,18 @@ void BackgroundFetchDelegateProxy::StartRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(job_controller);
 
-  std::string guid(base::GenerateGUID());
+  std::string download_guid(base::GenerateGUID());
 
-  controller_map_[guid] = std::make_pair(request, job_controller);
+  controller_map_[download_guid] = std::make_pair(request, job_controller);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&Core::StartRequest, ui_core_ptr_,
-                                         job_unique_id, guid, origin, request));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&Core::StartRequest, ui_core_ptr_, job_unique_id,
+                     download_guid, origin, request));
 }
 
-void BackgroundFetchDelegateProxy::UpdateUI(const std::string& title) {
+void BackgroundFetchDelegateProxy::UpdateUI(const std::string& job_unique_id,
+                                            const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(delphick): Update the user interface with |title|.

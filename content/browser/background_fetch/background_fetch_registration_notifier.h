@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -31,14 +32,16 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
 
   // Notifies any registered observers for the registration identified by the
   // |unique_id| of the progress. This will cause JavaScript events to fire.
+  // Successful fetches must also call Notify with the final state.
   void Notify(const std::string& unique_id,
               uint64_t download_total,
               uint64_t downloaded);
 
-  // Removes the observers for the registration identified by the |unique_id|.
-  // When the background fetch was successful, the Notify() function should have
-  // been called beforehand to inform developers of the final state.
-  void RemoveObservers(const std::string& unique_id);
+  // Runs |callback| when the last observer for |unique_id| is removed, or
+  // immediately if there are already no observers. Callback will never be run
+  // if the browser is shutdown before the last observer is removed.
+  void AddGarbageCollectionCallback(const std::string& unique_id,
+                                    base::OnceClosure callback);
 
   base::WeakPtr<BackgroundFetchRegistrationNotifier> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -51,10 +54,14 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
       const std::string& unique_id,
       blink::mojom::BackgroundFetchRegistrationObserver* observer);
 
-  // Storage of observers keyed by the unique id of a registration.
+  // Storage of observers keyed by the |unique_id| of a registration.
   std::multimap<std::string,
                 blink::mojom::BackgroundFetchRegistrationObserverPtr>
       observers_;
+
+  // Map from registration |unique_id| to callback to run when last observer is
+  // removed.
+  std::map<std::string, base::OnceClosure> garbage_collection_callbacks_;
 
   base::WeakPtrFactory<BackgroundFetchRegistrationNotifier> weak_factory_;
 

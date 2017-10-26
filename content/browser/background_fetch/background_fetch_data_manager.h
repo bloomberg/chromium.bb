@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -42,8 +43,6 @@ class ServiceWorkerContextWrapper;
 // Storage schema is documented in the .cc file.
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
-  using DeleteRegistrationCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
   using MarkedCompleteCallback =
@@ -53,6 +52,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
                               bool /* background_fetch_succeeded */,
                               std::vector<BackgroundFetchSettledFetch>,
                               std::vector<std::unique_ptr<BlobHandle>>)>;
+  // Note that this also handles non-error cases where the NONE is NONE.
+  using HandleBackgroundFetchErrorCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
 
   class DatabaseTask;
 
@@ -65,6 +67,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
 
     // Should return the sum of the bytes downloaded by in progress requests.
     virtual uint64_t GetInProgressDownloadedBytes() = 0;
+
+    // Called once MarkRegistrationForDeletion has been persisted to the
+    // database, because the registration was aborted by the user or website.
+    virtual void Abort() = 0;
   };
 
   BackgroundFetchDataManager(
@@ -126,10 +132,27 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const BackgroundFetchRegistrationId& registration_id,
       SettledFetchesCallback callback);
 
-  // Deletes the registration identified by |registration_id|. Will invoke the
-  // |callback| when the registration has been deleted from storage.
+  // Marks that the backgroundfetched/backgroundfetchfail/backgroundfetchabort
+  // event is being dispatched. It's not possible to call DeleteRegistration at
+  // this point as JavaScript may hold a reference to a
+  // BackgroundFetchRegistration object and we need to keep the corresponding
+  // data around until the last such reference is released (or until shutdown).
+  // We can't just move the Background Fetch registration's data to RAM as it
+  // might consume too much memory. So instead this step disassociates the
+  // |developer_id| from the |unique_id|, so that existing JS objects with a
+  // reference to |unique_id| can still access the data, but it can no longer be
+  // reached using GetIds or GetRegistration.
+  void MarkRegistrationForDeletion(
+      const BackgroundFetchRegistrationId& registration_id,
+      bool aborted,
+      HandleBackgroundFetchErrorCallback callback);
+
+  // Deletes the registration identified by |registration_id|. Should only be
+  // called once the refcount of JavaScript BackgroundFetchRegistration objects
+  // referring to this registration drops to zero. Will invoke the |callback|
+  // when the registration has been deleted from storage.
   void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id,
-                          DeleteRegistrationCallback callback);
+                          HandleBackgroundFetchErrorCallback callback);
 
   // List all Background Fetch registration |developer_id|s for a Service
   // Worker.
@@ -138,9 +161,15 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
   friend class BackgroundFetchDataManagerTest;
 
   class RegistrationData;
+
+  // Returns true if not aborted/completed/failed.
+  bool IsActive(const BackgroundFetchRegistrationId& registration_id);
+
+  void Cleanup();
 
   void AddDatabaseTask(std::unique_ptr<DatabaseTask> task);
 
@@ -154,7 +183,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // completed/failed/aborted, so there will never be more than one entry for a
   // given key).
   std::map<std::tuple<int64_t, url::Origin, std::string>, std::string>
-      active_unique_ids_;
+      active_registration_unique_ids_;
 
   // Map from the |unique_id|s of known (but possibly inactive) background fetch
   // registrations to their associated data.
@@ -167,6 +196,12 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Pending database operations, serialized to ensure consistency.
   // Invariant: the frontmost task, if any, has already been started.
   base::queue<std::unique_ptr<DatabaseTask>> database_tasks_;
+
+  // The |unique_id|s of registrations that have been deactivated since the
+  // browser was last started. They will be automatically deleted when the
+  // refcount of JavaScript objects that refers to them goes to zero, unless
+  // the browser is shutdown first.
+  std::set<std::string> ref_counted_unique_ids_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 

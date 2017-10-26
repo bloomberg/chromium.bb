@@ -10,7 +10,13 @@ package content.proto;
 
 // Stores per-registration (as opposed to per-request) data.
 //
-// Next tag: 2
+// Next tag: 4
 message BackgroundFetchRegistration {
-  optional int64 creation_microseconds_since_unix_epoch = 1;
+  // See definition of |unique_id| in BackgroundFetchRegistrationId.
+  optional string unique_id = 1;
+
+  // See definition of |developer_id| in BackgroundFetchRegistrationId.
+  optional bytes developer_id = 2;
+
+  optional int64 creation_microseconds_since_unix_epoch = 3;
 }

@@ -23,6 +23,7 @@
 namespace content {
 namespace {
 
+const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kExampleDeveloperId[] = "my-background-fetch";
 const char kAlternativeDeveloperId[] = "my-alternative-fetch";
 
@@ -86,12 +87,15 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   }
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::Abort().
-  void Abort(const std::string& unique_id,
+  void Abort(int64_t service_worker_registration_id,
+             const std::string& developer_id,
+             const std::string& unique_id,
              blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
-    service_->Abort(unique_id,
+    service_->Abort(service_worker_registration_id, origin(), developer_id,
+                    unique_id,
                     base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
                                    base::Unretained(this),
                                    run_loop.QuitClosure(), out_error));
@@ -591,7 +595,8 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
   blink::mojom::BackgroundFetchError abort_error;
 
   // Immediately abort the registration. This also is expected to succeed.
-  Abort(registration_id.unique_id(), &abort_error);
+  Abort(service_worker_registration_id, kExampleDeveloperId,
+        registration_id.unique_id(), &abort_error);
   ASSERT_EQ(abort_error, blink::mojom::BackgroundFetchError::NONE);
   // Wait for the response of the Mojo IPC to dispatch
   // BackgroundFetchAbortEvent.
@@ -606,13 +611,25 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
   ASSERT_EQ(second_error, blink::mojom::BackgroundFetchError::INVALID_ID);
 }
 
+TEST_F(BackgroundFetchServiceTest, AbortInvalidDeveloperIdArgument) {
+  // This test verifies that the Abort() function will kill the renderer and
+  // return INVALID_ARGUMENT when an invalid |developer_id| is sent over the
+  // Mojo channel.
+
+  blink::mojom::BackgroundFetchError error;
+  Abort(42 /* service_worker_registration_id */, "" /* developer_id */,
+        kExampleUniqueId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
+}
+
 TEST_F(BackgroundFetchServiceTest, AbortInvalidUniqueIdArgument) {
   // This test verifies that the Abort() function will kill the renderer and
   // return INVALID_ARGUMENT when an invalid |unique_id| is sent over the Mojo
   // channel.
 
   blink::mojom::BackgroundFetchError error;
-  Abort("not a GUID" /* unique_id */, &error);
+  Abort(42 /* service_worker_registration_id */, kExampleDeveloperId,
+        "not a GUID" /* unique_id */, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
 }
 
@@ -621,7 +638,8 @@ TEST_F(BackgroundFetchServiceTest, AbortUnknownUniqueId) {
   // |unique_id| that does not correspond to an active fetch kindly tells us so.
 
   blink::mojom::BackgroundFetchError error;
-  Abort("7e57ab1e-c0de-a150-ca75-1e75f005ba11" /* unique_id */, &error);
+  Abort(42 /* service_worker_registration_id */, kExampleDeveloperId,
+        kExampleUniqueId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 }
 
@@ -667,7 +685,8 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
   {
     blink::mojom::BackgroundFetchError error;
 
-    Abort(registration_id.unique_id(), &error);
+    Abort(service_worker_registration_id, kExampleDeveloperId,
+          registration_id.unique_id(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
@@ -708,7 +727,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // Immediately abort the registration so it is no longer active (everything
   // that follows should behave the same if the registration had completed
   // instead of being aborted).
-  Abort(aborted_registration_id.unique_id(), &error);
+  Abort(service_worker_registration_id, kExampleDeveloperId,
+        aborted_registration_id.unique_id(), &error);
   ASSERT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
   // Wait for response of the Mojo IPC to dispatch BackgroundFetchAbortEvent.
   base::RunLoop().RunUntilIdle();
@@ -757,7 +777,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
 
   // Aborting the previously aborted registration should fail with INVALID_ID
   // since it is no longer active.
-  Abort(aborted_registration_id.unique_id(), &error);
+  Abort(service_worker_registration_id, kExampleDeveloperId,
+        aborted_registration_id.unique_id(), &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::INVALID_ID, error);
   // Wait for response of the Mojo IPC to dispatch BackgroundFetchAbortEvent.
   // (MockBackgroundFetchDelegate won't complete/fail second_registration in the
@@ -771,7 +792,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   EXPECT_EQ(second_registration.unique_id, gotten_registration.unique_id);
 
   // Aborting the second registration should succeed.
-  Abort(second_registration_id.unique_id(), &error);
+  Abort(service_worker_registration_id, kExampleDeveloperId,
+        second_registration_id.unique_id(), &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
   // Wait for response of the Mojo IPC to dispatch BackgroundFetchAbortEvent.
   // (MockBackgroundFetchDelegate won't complete/fail second_registration in the
