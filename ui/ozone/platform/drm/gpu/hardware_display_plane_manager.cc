@@ -90,15 +90,20 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   uint32_t num_planes = plane_resources->count_planes;
   std::set<uint32_t> plane_ids;
   for (uint32_t i = 0; i < num_planes; ++i) {
+    // TODO(hoegsberg) crbug.com/763760: We've rolled back the
+    // downstream, incompatible drmModeGetPlane2 ioctl for now while
+    // we update libdrm to the upstream per-plane IN_FORMATS property
+    // API. This drops support for compressed and tiled framebuffers
+    // in the interim, but once the buildroots and SDKs have pulled in
+    // the new libdrm we'll add it back by reading the property.
     ScopedDrmPlanePtr drm_plane(
-        drmModeGetPlane2(drm->get_fd(), plane_resources->planes[i]));
+        drmModeGetPlane(drm->get_fd(), plane_resources->planes[i]));
     if (!drm_plane) {
       PLOG(ERROR) << "Failed to get plane " << i;
       return false;
     }
 
     uint32_t formats_size = drm_plane->count_formats;
-    uint32_t format_modifiers_size = drm_plane->count_format_modifiers;
     plane_ids.insert(drm_plane->plane_id);
     std::unique_ptr<HardwareDisplayPlane> plane(
         CreatePlane(drm_plane->plane_id, drm_plane->possible_crtcs));
@@ -107,15 +112,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     for (uint32_t j = 0; j < formats_size; j++)
       supported_formats[j] = drm_plane->formats[j];
 
-    std::vector<drm_format_modifier> supported_format_modifiers(
-        format_modifiers_size);
-    for (uint32_t j = 0; j < format_modifiers_size; j++)
-      supported_format_modifiers[j] = drm_plane->format_modifiers[j];
-    std::sort(supported_format_modifiers.begin(),
-              supported_format_modifiers.end(),
-              [](drm_format_modifier l, drm_format_modifier r) {
-                return l.modifier < r.modifier;
-              });
+    std::vector<drm_format_modifier> supported_format_modifiers;
 
     if (plane->Initialize(drm, supported_formats, supported_format_modifiers,
                           false, false)) {
