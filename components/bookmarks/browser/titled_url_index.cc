@@ -195,7 +195,7 @@ bool TitledUrlIndex::GetResultsMatchingTerm(
       (*matches) = i->second;
       return true;
     }
-    *matches = base::STLSetIntersection<TitledUrlNodeSet>(i->second, *matches);
+    base::EraseIf(*matches, base::IsNotIn<TitledUrlNodeSet>(i->second));
   } else {
     // Loop through index adding all entries that start with term to
     // |prefix_matches|.
@@ -214,8 +214,7 @@ bool TitledUrlIndex::GetResultsMatchingTerm(
       ++i;
     }
     if (!first_term) {
-      *matches =
-          base::STLSetIntersection<TitledUrlNodeSet>(*prefix_matches, *matches);
+      base::EraseIf(*matches, base::IsNotIn<TitledUrlNodeSet>(*prefix_matches));
     }
   }
   return !matches->empty();
