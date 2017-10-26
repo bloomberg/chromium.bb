@@ -72,7 +72,6 @@ fuzzer_test("pdf_codec_jbig2_fuzzer") {
   deps = [
     "//third_party/pdfium/testing/libfuzzer:pdf_codec_jbig2_fuzzer",
   ]
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("pdf_hint_table_fuzzer") {
