@@ -106,6 +106,7 @@ class ASH_EXPORT NotifierSettingsView
   void OnMenuClosed();
 
   views::ImageButton* title_arrow_;
+  views::ImageView* quiet_mode_icon_;
   views::ToggleButton* quiet_mode_toggle_;
   views::View* header_view_;
   views::Label* top_label_;
