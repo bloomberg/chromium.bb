@@ -68,7 +68,8 @@ class DiscardableImageMapTest : public testing::Test {
     for (DrawImage& image : image_map.images_rtree_.Search(rect)) {
       auto image_id = image.paint_image().stable_id();
       position_draw_images.push_back(PositionScaleDrawImage(
-          image.paint_image(), image_map.GetRegionForImage(image_id).bounds(),
+          image.paint_image(),
+          ImageRectsToRegion(image_map.GetRectsForImage(image_id)).bounds(),
           image.scale()));
     }
 
@@ -265,7 +266,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   // Image not present in the list.
   {
     PaintImage image = CreateDiscardablePaintImage(gfx::Size(500, 500));
-    EXPECT_TRUE(image_map.GetRegionForImage(image.stable_id()).IsEmpty());
+    EXPECT_EQ(image_map.GetRectsForImage(image.stable_id())->size(), 0u);
   }
 }
 
@@ -915,7 +916,8 @@ TEST_F(DiscardableImageMapTest, TracksImageRegions) {
     expected_region.Union(rect);
   }
 
-  EXPECT_EQ(image_map.GetRegionForImage(image.stable_id()), expected_region);
+  EXPECT_EQ(ImageRectsToRegion(image_map.GetRectsForImage(image.stable_id())),
+            expected_region);
 }
 
 class DiscardableImageMapColorSpaceTest

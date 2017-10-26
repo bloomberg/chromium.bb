@@ -24,7 +24,6 @@ class CC_BASE_EXPORT InvalidationRegion {
   void Swap(Region* region);
   void Clear();
   void Union(const gfx::Rect& rect);
-  void Union(const Region& region);
   bool IsEmpty() const { return pending_rects_.empty() && region_.IsEmpty(); }
 
  private:

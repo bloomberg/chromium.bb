@@ -46,6 +46,13 @@ bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
   return !memcmp(pixels_a.get(), pixels_b.get(), pixel_size);
 }
 
+Region ImageRectsToRegion(const DiscardableImageMap::Rects& rects) {
+  Region region;
+  for (const auto& r : rects.container())
+    region.Union(r);
+  return region;
+}
+
 sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size) {
   return sk_make_sp<FakePaintImageGenerator>(
       SkImageInfo::MakeN32Premul(size.width(), size.height()));
