@@ -55,21 +55,33 @@ def calculate_functions_to_declare(property_):
         and isinstance(property_['api_class'], types.BooleanType)
 
 
-class StyleBuilderWriter(css_properties.CSSProperties):
+class StyleBuilderWriter(json5_generator.Writer):
     filters = {
         'lower_first': lower_first,
     }
 
     def __init__(self, json5_file_paths):
-        super(StyleBuilderWriter, self).__init__(json5_file_paths)
+        super(StyleBuilderWriter, self).__init__([])
         self._outputs = {
-            ('StyleBuilderFunctions.h'): self.generate_style_builder_functions_h,
-            ('StyleBuilderFunctions.cpp'): self.generate_style_builder_functions_cpp,
-            ('StyleBuilder.cpp'): self.generate_style_builder,
+            'StyleBuilderFunctions.h': self.generate_style_builder_functions_h,
+            'StyleBuilderFunctions.cpp':
+                self.generate_style_builder_functions_cpp,
+            'StyleBuilder.cpp': self.generate_style_builder,
         }
 
+        self._json5_properties = css_properties.CSSProperties(json5_file_paths)
+        self._input_files = json5_file_paths
+        self._properties = self._json5_properties.properties
         for property_ in self._properties.values():
             calculate_functions_to_declare(property_)
+
+    @property
+    def properties(self):
+        return self._json5_properties.properties
+
+    @property
+    def default_parameters(self):
+        return self._json5_properties.default_parameters
 
     @template_expander.use_jinja('templates/StyleBuilderFunctions.h.tmpl',
                                  filters=filters)
@@ -87,7 +99,8 @@ class StyleBuilderWriter(css_properties.CSSProperties):
             'properties': self._properties,
         }
 
-    @template_expander.use_jinja('templates/StyleBuilder.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja(
+        'templates/StyleBuilder.cpp.tmpl', filters=filters)
     def generate_style_builder(self):
         return {
             'input_files': self._input_files,
