@@ -261,6 +261,11 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 const base::Feature kUseR16Texture{"use-r16-texture",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Unified Autoplay policy by overriding the platform's default
+// autoplay policy.
+const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use SurfaceLayer instead of VideoLayer.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -346,6 +351,9 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.
   if (command_line.HasSwitch(switches::kAutoplayPolicy))
     return command_line.GetSwitchValueASCII(switches::kAutoplayPolicy);
+
+  if (base::FeatureList::IsEnabled(media::kUnifiedAutoplay))
+    return switches::autoplay::kDocumentUserActivationRequiredPolicy;
 
 // The default value is platform dependent.
 #if defined(OS_ANDROID)
