@@ -256,7 +256,7 @@ void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, scrollbar,
-                           DisplayItem::kScrollbarTrackBackground, rect);
+                           DisplayItem::kScrollbarTrackBackground);
 
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
@@ -281,10 +281,7 @@ void ScrollbarThemeMac::PaintThumb(GraphicsContext& context,
 
   // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb
   // size case.
-  IntRect dirty_rect = IntRect(rect);
-  dirty_rect.Inflate(1);
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
-                           dirty_rect);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
 
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());

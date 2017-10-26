@@ -96,7 +96,7 @@ static void PaintInternal(Page& page,
     } else {
       DrawingRecorder recorder(
           paint_context, builder,
-          DisplayItem::kPageWidgetDelegateBackgroundFallback, dirty_rect);
+          DisplayItem::kPageWidgetDelegateBackgroundFallback);
       paint_context.FillRect(dirty_rect, Color::kWhite);
     }
   }

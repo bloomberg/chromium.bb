@@ -59,8 +59,7 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
                                             object, properties);
     }
 
-    DrawMaskForLayoutObject(context, object, object.ObjectBoundingBox(),
-                            visual_rect);
+    DrawMaskForLayoutObject(context, object, object.ObjectBoundingBox());
   }
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
@@ -70,8 +69,7 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
 void SVGMaskPainter::DrawMaskForLayoutObject(
     GraphicsContext& context,
     const LayoutObject& layout_object,
-    const FloatRect& target_bounding_box,
-    const FloatRect& target_visual_rect) {
+    const FloatRect& target_bounding_box) {
   AffineTransform content_transformation;
   sk_sp<const PaintRecord> record = mask_.CreatePaintRecord(
       content_transformation, target_bounding_box, context);
@@ -80,8 +78,7 @@ void SVGMaskPainter::DrawMaskForLayoutObject(
                                                   DisplayItem::kSVGMask))
     return;
 
-  DrawingRecorder recorder(context, layout_object, DisplayItem::kSVGMask,
-                           target_visual_rect);
+  DrawingRecorder recorder(context, layout_object, DisplayItem::kSVGMask);
   context.Save();
   context.ConcatCTM(content_transformation);
   context.DrawRecord(std::move(record));

@@ -42,14 +42,12 @@ class PaintControllerTestBase : public ::testing::Test {
     return paint_controller_->GetSubsequenceMarkers(client);
   }
 
-  template <typename Rect>
   static void DrawNothing(GraphicsContext& context,
                           const DisplayItemClient& client,
-                          DisplayItem::Type type,
-                          const Rect& bounds) {
+                          DisplayItem::Type type) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
       return;
-    DrawingRecorder recorder(context, client, type, bounds);
+    DrawingRecorder recorder(context, client, type);
   }
 
   template <typename Rect>
@@ -59,7 +57,7 @@ class PaintControllerTestBase : public ::testing::Test {
                        const Rect& bounds) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
       return;
-    DrawingRecorder recorder(context, client, type, bounds);
+    DrawingRecorder recorder(context, client, type);
     context.DrawRect(RoundedIntRect(FloatRect(bounds)));
   }
 

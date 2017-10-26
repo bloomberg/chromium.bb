@@ -695,15 +695,13 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
 void PaintController::AppendDebugDrawingAfterCommit(
     const DisplayItemClient& display_item_client,
     sk_sp<const PaintRecord> record,
-    const FloatRect& record_bounds,
     const PropertyTreeState* property_tree_state) {
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(new_display_item_list_.IsEmpty());
   auto& display_item_list = current_paint_artifact_.GetDisplayItemList();
   auto& display_item =
       display_item_list.AllocateAndConstruct<DrawingDisplayItem>(
-          display_item_client, DisplayItem::kDebugDrawing, std::move(record),
-          record_bounds);
+          display_item_client, DisplayItem::kDebugDrawing, std::move(record));
   display_item.SetSkippedCache();
 
   if (property_tree_state) {
@@ -1013,21 +1011,19 @@ void PaintController::ShowUnderInvalidationError(
 
 #ifndef NDEBUG
   const PaintRecord* new_record = nullptr;
-  SkRect new_bounds;
+  LayoutRect new_bounds;
   if (new_item.IsDrawing()) {
     new_record =
         static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecord().get();
-    new_bounds =
-        static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecordBounds();
+    new_bounds = static_cast<const DrawingDisplayItem&>(new_item).VisualRect();
   }
   const PaintRecord* old_record = nullptr;
-  SkRect old_bounds;
+  LayoutRect old_bounds;
   if (old_item->IsDrawing()) {
     old_record = static_cast<const DrawingDisplayItem*>(old_item)
                      ->GetPaintRecord()
                      .get();
-    old_bounds =
-        static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecordBounds();
+    old_bounds = static_cast<const DrawingDisplayItem&>(new_item).VisualRect();
   }
   LOG(INFO) << "new record:\n"
             << (new_record ? RecordAsDebugString(*new_record).Utf8().data()

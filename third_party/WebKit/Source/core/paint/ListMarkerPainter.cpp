@@ -61,12 +61,11 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   LayoutRect overflow_rect(layout_list_marker_.VisualOverflowRect());
   overflow_rect.MoveBy(box_origin);
 
-  IntRect pixel_snapped_overflow_rect = PixelSnappedIntRect(overflow_rect);
   if (!local_paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
 
   DrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
-                           local_paint_info.phase, pixel_snapped_overflow_rect);
+                           local_paint_info.phase);
 
   LayoutRect box(box_origin, layout_list_marker_.Size());
 

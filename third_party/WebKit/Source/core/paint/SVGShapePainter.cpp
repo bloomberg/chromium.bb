@@ -63,9 +63,9 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
         !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_context.GetPaintInfo().context, layout_svg_shape_,
             paint_context.GetPaintInfo().phase)) {
-      DrawingRecorder recorder(
-          paint_context.GetPaintInfo().context, layout_svg_shape_,
-          paint_context.GetPaintInfo().phase, bounding_box);
+      DrawingRecorder recorder(paint_context.GetPaintInfo().context,
+                               layout_svg_shape_,
+                               paint_context.GetPaintInfo().phase);
       const SVGComputedStyle& svg_style = layout_svg_shape_.Style()->SvgStyle();
 
       bool should_anti_alias = svg_style.ShapeRendering() != SR_CRISPEDGES &&

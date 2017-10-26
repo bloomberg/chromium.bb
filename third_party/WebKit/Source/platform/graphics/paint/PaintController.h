@@ -183,7 +183,6 @@ class PLATFORM_EXPORT PaintController {
 
   void AppendDebugDrawingAfterCommit(const DisplayItemClient&,
                                      sk_sp<const PaintRecord>,
-                                     const FloatRect& record_bounds,
                                      const PropertyTreeState*);
 
   void ShowDebugData() const;

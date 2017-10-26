@@ -94,7 +94,7 @@ void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
     contents_rect.MoveBy(adjustment.AdjustedPaintOffset());
     IntRect snapped_rect = PixelSnappedIntRect(contents_rect);
     DrawingRecorder recorder(local_paint_info.context, *this,
-                             local_paint_info.phase, snapped_rect);
+                             local_paint_info.phase);
     LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(
         *this, local_paint_info, snapped_rect);
   }

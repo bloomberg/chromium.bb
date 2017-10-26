@@ -344,7 +344,7 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
 
   {
     DrawingRecorder recorder(builder.Context(), builder,
-                             DisplayItem::Type::kSVGImage, spaced_tile);
+                             DisplayItem::Type::kSVGImage);
     // When generating an expanded tile, make sure we don't draw into the
     // spacing area.
     if (tile != spaced_tile)

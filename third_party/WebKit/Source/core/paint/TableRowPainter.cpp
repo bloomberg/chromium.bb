@@ -87,11 +87,8 @@ void TableRowPainter::PaintBoxDecorationBackground(
                                     paint_offset);
   const auto& local_paint_info = adjustment.GetPaintInfo();
   auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
-  LayoutRect bounds =
-      BoxPainter(layout_table_row_)
-          .BoundsForDrawingRecorder(local_paint_info, adjusted_paint_offset);
   DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
-                           DisplayItem::kBoxDecorationBackground, bounds);
+                           DisplayItem::kBoxDecorationBackground);
   LayoutRect paint_rect(adjusted_paint_offset, layout_table_row_.Size());
 
   if (has_box_shadow) {
@@ -145,12 +142,8 @@ void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
             DisplayItem::kTableCollapsedBorders))
       return;
 
-    LayoutRect bounds =
-        BoxPainter(layout_table_row_)
-            .BoundsForDrawingRecorder(
-                paint_info, paint_offset + layout_table_row_.Location());
     recorder.emplace(paint_info.context, layout_table_row_,
-                     DisplayItem::kTableCollapsedBorders, bounds);
+                     DisplayItem::kTableCollapsedBorders);
   }
   // Otherwise TablePainter should have created the drawing recorder.
 

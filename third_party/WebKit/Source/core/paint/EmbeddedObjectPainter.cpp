@@ -49,8 +49,7 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
 
   LayoutRect content_rect(layout_embedded_object_.ContentBoxRect());
   content_rect.MoveBy(paint_offset);
-  DrawingRecorder recorder(context, layout_embedded_object_, paint_info.phase,
-                           content_rect);
+  DrawingRecorder recorder(context, layout_embedded_object_, paint_info.phase);
   GraphicsContextStateSaver state_saver(context);
   context.Clip(PixelSnappedIntRect(content_rect));
 

@@ -81,8 +81,7 @@ void TablePainter::PaintMask(const PaintInfo& paint_info,
   LayoutRect rect(paint_offset, layout_table_.Size());
   layout_table_.SubtractCaptionRect(rect);
 
-  DrawingRecorder recorder(paint_info.context, layout_table_, paint_info.phase,
-                           rect);
+  DrawingRecorder recorder(paint_info.context, layout_table_, paint_info.phase);
   BoxPainter(layout_table_).PaintMaskImages(paint_info, rect);
 }
 
@@ -95,8 +94,7 @@ void TablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
             DisplayItem::kTableCollapsedBorders))
       return;
     recorder.emplace(paint_info.context, layout_table_,
-                     DisplayItem::kTableCollapsedBorders,
-                     LayoutRect(paint_offset, layout_table_.Size()));
+                     DisplayItem::kTableCollapsedBorders);
   }
   // Otherwise each rows will create its own recorder.
 

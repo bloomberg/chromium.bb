@@ -303,7 +303,7 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
     if (auto record = tracking.UnderInvalidationRecord()) {
       // Add the under-invalidation overlay onto the painted result.
       GetPaintController().AppendDebugDrawingAfterCommit(
-          *this, std::move(record), InterestRect(),
+          *this, std::move(record),
           layer_state_ ? &layer_state_->state : nullptr);
       // Ensure the compositor will raster the under-invalidation overlay.
       layer_->Layer()->Invalidate();

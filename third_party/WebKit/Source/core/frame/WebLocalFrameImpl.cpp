@@ -398,7 +398,7 @@ class ChromePrintContext : public PrintContext {
 
       DrawingRecorder line_boundary_recorder(
           builder.Context(), builder,
-          DisplayItem::kPrintedContentDestinationLocations, page_rect);
+          DisplayItem::kPrintedContentDestinationLocations);
       OutputLinkedDestinations(builder.Context(), page_rect);
     }
     context.DrawRecord(builder.EndRecording());
@@ -472,13 +472,12 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   float SpoolPage(GraphicsContext& context,
                   int page_number,
                   const IntRect& bounds) override {
-    IntRect page_rect = page_rects_[page_number];
     PaintRecordBuilder builder(bounds, &context.Canvas()->getMetaData());
     // The local scope is so that the cache skipper is destroyed before
     // we call endRecording().
     {
       DisplayItemCacheSkipper skipper(builder.Context());
-      plugin_->PrintPage(page_number, builder.Context(), page_rect);
+      plugin_->PrintPage(page_number, builder.Context());
     }
     context.DrawRecord(builder.EndRecording());
 

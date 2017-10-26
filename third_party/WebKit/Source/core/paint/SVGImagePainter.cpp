@@ -45,9 +45,9 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
         !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_context.GetPaintInfo().context, layout_svg_image_,
             paint_context.GetPaintInfo().phase)) {
-      DrawingRecorder recorder(
-          paint_context.GetPaintInfo().context, layout_svg_image_,
-          paint_context.GetPaintInfo().phase, bounding_box);
+      DrawingRecorder recorder(paint_context.GetPaintInfo().context,
+                               layout_svg_image_,
+                               paint_context.GetPaintInfo().phase);
       PaintForeground(paint_context.GetPaintInfo());
     }
   }

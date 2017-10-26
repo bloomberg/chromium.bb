@@ -60,8 +60,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
       const NGPaintFragment&,
       const PaintInfo&);
-  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
-                                      const LayoutPoint& adjusted_paint_offset);
   bool IntersectsPaintRect(const PaintInfo&, const LayoutPoint&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);

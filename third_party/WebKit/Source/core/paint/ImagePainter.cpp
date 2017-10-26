@@ -71,15 +71,15 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
           paint_info.context, layout_image_, DisplayItem::kImageAreaFocusRing))
     return;
 
-  LayoutRect focus_rect = layout_image_.ContentBoxRect();
-  focus_rect.MoveBy(adjusted_paint_offset);
   DrawingRecorder recorder(paint_info.context, layout_image_,
-                           DisplayItem::kImageAreaFocusRing, focus_rect);
+                           DisplayItem::kImageAreaFocusRing);
 
   // FIXME: Clip path instead of context when Skia pathops is ready.
   // https://crbug.com/251206
 
   paint_info.context.Save();
+  LayoutRect focus_rect = layout_image_.ContentBoxRect();
+  focus_rect.MoveBy(adjusted_paint_offset);
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
       path, area_element_style.GetOutlineStrokeWidthForFocusRing(),
@@ -122,8 +122,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
   if (!has_image) {
     // Draw an outline rect where the image should be.
     IntRect paint_rect = PixelSnappedIntRect(content_rect);
-    DrawingRecorder recorder(context, layout_image_, paint_info.phase,
-                             paint_rect);
+    DrawingRecorder recorder(context, layout_image_, paint_info.phase);
     context.SetStrokeStyle(kSolidStroke);
     context.SetStrokeColor(Color::kLightGray);
     context.SetFillColor(Color::kTransparent);
@@ -134,8 +133,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
   LayoutRect paint_rect = layout_image_.ReplacedContentRect();
   paint_rect.MoveBy(paint_offset);
 
-  DrawingRecorder recorder(context, layout_image_, paint_info.phase,
-                           content_rect);
+  DrawingRecorder recorder(context, layout_image_, paint_info.phase);
   PaintIntoRect(context, paint_rect, content_rect);
 }
 

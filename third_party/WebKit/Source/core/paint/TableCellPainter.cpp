@@ -95,12 +95,9 @@ void TableCellPainter::PaintBoxDecorationBackground(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  LayoutRect visual_overflow_rect = layout_table_cell_.VisualOverflowRect();
-  visual_overflow_rect.MoveBy(paint_offset);
   // TODO(chrishtr): the pixel-snapping here is likely incorrect.
   DrawingRecorder recorder(paint_info.context, layout_table_cell_,
-                           DisplayItem::kBoxDecorationBackground,
-                           PixelSnappedIntRect(visual_overflow_rect));
+                           DisplayItem::kBoxDecorationBackground);
 
   LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
 
@@ -147,9 +144,9 @@ void TableCellPainter::PaintMask(const PaintInfo& paint_info,
           paint_info.context, layout_table_cell_, paint_info.phase))
     return;
 
-  LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
   DrawingRecorder recorder(paint_info.context, layout_table_cell_,
-                           paint_info.phase, paint_rect);
+                           paint_info.phase);
+  LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
   BoxPainter(layout_table_cell_).PaintMaskImages(paint_info, paint_rect);
 }
 

@@ -157,17 +157,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
             paint_info.context, inline_text_box_,
             DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
       return;
-    LayoutRect paint_rect(logical_visual_overflow);
-    inline_text_box_.LogicalRectToPhysicalRect(paint_rect);
-    if (paint_info.phase != PaintPhase::kSelection &&
-        (have_selection || PaintsMarkerHighlights(InlineLayoutObject())))
-      paint_rect.Unite(inline_text_box_.LocalSelectionRect(
-          inline_text_box_.Start(),
-          inline_text_box_.Start() + inline_text_box_.Len()));
-    paint_rect.MoveBy(adjusted_paint_offset);
     recorder.emplace(paint_info.context, inline_text_box_,
-                     DisplayItem::PaintPhaseToDrawingType(paint_info.phase),
-                     FloatRect(paint_rect));
+                     DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
   }
 
   GraphicsContext& context = paint_info.context;

@@ -154,8 +154,7 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
-                           rect);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
 
   IntRect thumb_rect = rect;
   if (scrollbar.Orientation() == kHorizontalScrollbar) {

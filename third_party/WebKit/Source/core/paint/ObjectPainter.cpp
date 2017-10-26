@@ -100,7 +100,7 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
     return;
 
   DrawingRecorder recorder(paint_info.context, layout_object_,
-                           DisplayItem::kPrintedContentPDFURLRect, rect);
+                           DisplayItem::kPrintedContentPDFURLRect);
   if (url.HasFragmentIdentifier() &&
       EqualIgnoringFragmentIdentifier(url,
                                       layout_object_.GetDocument().BaseURL())) {

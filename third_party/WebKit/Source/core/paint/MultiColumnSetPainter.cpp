@@ -47,10 +47,8 @@ void MultiColumnSetPainter::PaintColumnRules(const PaintInfo& paint_info,
                                                   DisplayItem::kColumnRules))
     return;
 
-  LayoutRect paint_rect = layout_multi_column_set_.VisualOverflowRect();
-  paint_rect.MoveBy(paint_offset);
   DrawingRecorder recorder(paint_info.context, layout_multi_column_set_,
-                           DisplayItem::kColumnRules, paint_rect);
+                           DisplayItem::kColumnRules);
 
   const ComputedStyle& block_style =
       layout_multi_column_set_.MultiColumnBlockFlow()->StyleRef();

@@ -39,8 +39,7 @@ void DrawEmptyClip(GraphicsContext& context,
 
 void DrawRectInClip(GraphicsContext& context,
                     LayoutView& layout_view,
-                    PaintPhase phase,
-                    const LayoutRect& bound) {
+                    PaintPhase phase) {
   IntRect rect(1, 1, 9, 9);
   ClipRect clip_rect((LayoutRect(rect)));
   LayerClipRecorder layer_clip_recorder(
@@ -50,7 +49,7 @@ void DrawRectInClip(GraphicsContext& context,
       layout_view.Compositor()->RootLayer()->GetLayoutObject());
   if (!DrawingRecorder::UseCachedDrawingIfPossible(context, layout_view,
                                                    phase)) {
-    DrawingRecorder recorder(context, layout_view, phase, bound);
+    DrawingRecorder recorder(context, layout_view, phase);
     context.DrawRect(rect);
   }
 }
@@ -58,10 +57,9 @@ void DrawRectInClip(GraphicsContext& context,
 TEST_F(LayerClipRecorderTest, Single) {
   RootPaintController().InvalidateAll();
   GraphicsContext context(RootPaintController());
-  LayoutRect bound = GetLayoutView().ViewRect();
   EXPECT_EQ((size_t)0, RootPaintController().GetDisplayItemList().size());
 
-  DrawRectInClip(context, GetLayoutView(), PaintPhase::kForeground, bound);
+  DrawRectInClip(context, GetLayoutView(), PaintPhase::kForeground);
   RootPaintController().CommitNewDisplayItems();
   EXPECT_EQ((size_t)3, RootPaintController().GetDisplayItemList().size());
   EXPECT_TRUE(DisplayItem::IsClipType(

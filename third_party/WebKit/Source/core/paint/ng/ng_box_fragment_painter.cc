@@ -179,8 +179,7 @@ void NGBoxFragmentPainter::PaintInlineObject(const PaintInfo& paint_info,
       return;
     DrawingRecorder recorder(
         paint_info.context, box_fragment_,
-        DisplayItem::PaintPhaseToDrawingType(paint_info.phase),
-        PixelSnappedIntRect(overflow_rect));
+        DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
     PaintMask(paint_info, paint_offset);
     return;
   }
@@ -245,10 +244,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(
-      paint_info.context, display_item_client,
-      DisplayItem::kBoxDecorationBackground,
-      FloatRect(BoundsForDrawingRecorder(paint_info, paint_offset)));
+  DrawingRecorder recorder(paint_info.context, display_item_client,
+                           DisplayItem::kBoxDecorationBackground);
   BoxDecorationData box_decoration_data(box_fragment_.PhysicalFragment());
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
@@ -381,12 +378,9 @@ void NGBoxFragmentPainter::PaintInlineBlock(const PaintInfo& paint_info,
 void NGBoxFragmentPainter::PaintText(const NGPaintFragment& text_fragment,
                                      const PaintInfo& paint_info,
                                      const LayoutPoint& paint_offset) {
-  LayoutRect overflow_rect(box_fragment_.VisualOverflowRect());
-  overflow_rect.MoveBy(paint_offset);
   DrawingRecorder recorder(
       paint_info.context, text_fragment,
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase),
-      PixelSnappedIntRect(overflow_rect));
+      DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
 
   const Document& document = box_fragment_.GetLayoutObject()->GetDocument();
   NGTextFragmentPainter text_painter(text_fragment);
@@ -404,15 +398,6 @@ bool NGBoxFragmentPainter::
 void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(const PaintInfo&,
                                                          const LayoutPoint&) {
   // TODO(layout-dev): Implement once we have support for scrolling.
-}
-
-LayoutRect NGBoxFragmentPainter::BoundsForDrawingRecorder(
-    const PaintInfo& paint_info,
-    const LayoutPoint& adjusted_paint_offset) {
-  // TODO(layout-dev): This should be layout overflow, not visual.
-  LayoutRect bounds = box_fragment_.VisualOverflowRect();
-  bounds.MoveBy(adjusted_paint_offset);
-  return bounds;
 }
 
 bool NGBoxFragmentPainter::IntersectsPaintRect(

@@ -60,8 +60,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
 
   // TODO(trchen): Video rect could overflow the content rect due to object-fit.
   // Should apply a clip here like EmbeddedObjectPainter does.
-  DrawingRecorder recorder(context, layout_video_, paint_info.phase,
-                           content_rect);
+  DrawingRecorder recorder(context, layout_video_, paint_info.phase);
 
   if (displaying_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise

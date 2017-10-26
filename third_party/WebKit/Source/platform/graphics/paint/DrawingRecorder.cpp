@@ -20,13 +20,11 @@ DisableListModificationCheck::DisableListModificationCheck()
 
 DrawingRecorder::DrawingRecorder(GraphicsContext& context,
                                  const DisplayItemClient& display_item_client,
-                                 DisplayItem::Type display_item_type,
-                                 const IntRect& bounds)
+                                 DisplayItem::Type display_item_type)
     : context_(context),
       client_(display_item_client),
       type_(display_item_type),
-      known_to_be_opaque_(false),
-      bounds_(bounds)
+      known_to_be_opaque_(false)
 #if DCHECK_IS_ON()
       ,
       initial_display_item_list_size_(
@@ -47,25 +45,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
   context.SetInDrawingRecorder(true);
 #endif
 
-  context.BeginRecording(bounds);
-
-#if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::SlimmingPaintStrictCullRectClippingEnabled()) {
-    // Skia depends on the cull rect containing all of the display item
-    // commands. When strict cull rect clipping is enabled, make this explicit.
-    // This allows us to identify potential incorrect cull rects that might
-    // otherwise be masked due to Skia internal optimizations.
-    context.Save();
-    // Expand the verification clip by one pixel to account for Skia's
-    // SkCanvas::getClipBounds() expansion, used in testing cull rects.
-    // TODO(schenney) This is not the best place to do this. Ideally, we would
-    // expand by one pixel in device (pixel) space, but to do that we would need
-    // to add the verification mode to Skia.
-    IntRect clip_rect = bounds;
-    clip_rect.Inflate(1);
-    context.ClipRect(clip_rect, kNotAntiAliased, SkClipOp::kIntersect);
-  }
-#endif
+  context.BeginRecording(FloatRect());
 }
 
 DrawingRecorder::~DrawingRecorder() {
@@ -95,7 +75,7 @@ DrawingRecorder::~DrawingRecorder() {
 #endif
 
   context_.GetPaintController().CreateAndAppend<DrawingDisplayItem>(
-      client_, type_, picture, bounds_, known_to_be_opaque_);
+      client_, type_, picture, known_to_be_opaque_);
 }
 
 }  // namespace blink

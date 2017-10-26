@@ -90,9 +90,9 @@ class PrintContextTest : public RenderingTest {
     GetDocument().View()->PaintContents(context, kGlobalPaintPrinting,
                                         page_rect);
     {
-      DrawingRecorder recorder(context, *GetDocument().GetLayoutView(),
-                               DisplayItem::kPrintedContentDestinationLocations,
-                               page_rect);
+      DrawingRecorder recorder(
+          context, *GetDocument().GetLayoutView(),
+          DisplayItem::kPrintedContentDestinationLocations);
       GetPrintContext().OutputLinkedDestinations(context, page_rect);
     }
     builder.EndRecording()->Playback(&canvas);
