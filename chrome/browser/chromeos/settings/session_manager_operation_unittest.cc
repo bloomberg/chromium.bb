@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -48,8 +49,8 @@ class ObservableFakeSessionManagerClient : public FakeSessionManagerClient {
   }
 
   // SessionManagerClient override:
-  void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override {
-    FakeSessionManagerClient::RetrieveDevicePolicy(callback);
+  void RetrieveDevicePolicy(RetrievePolicyCallback callback) override {
+    FakeSessionManagerClient::RetrieveDevicePolicy(std::move(callback));
 
     // Run the task just after the |callback| is invoked.
     if (!on_retrieve_device_policy_called_.is_null()) {

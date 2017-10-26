@@ -72,8 +72,8 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
 
   // Called back from SessionManagerClient for policy load operations.
   void OnPolicyRetrieved(
-      const std::string& policy_blob,
-      chromeos::SessionManagerClient::RetrievePolicyResponseType response);
+      chromeos::SessionManagerClient::RetrievePolicyResponseType response,
+      const std::string& policy_blob);
 
   // Starts validation of the loaded |policy| before installing it.
   void ValidateRetrievedPolicy(

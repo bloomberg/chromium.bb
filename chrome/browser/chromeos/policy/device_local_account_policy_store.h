@@ -58,8 +58,8 @@ class DeviceLocalAccountPolicyStore : public UserCloudPolicyStoreBase {
   // success and triggers policy validation.
   void ValidateLoadedPolicyBlob(
       bool validate_in_background,
-      const std::string& policy_blob,
-      chromeos::SessionManagerClient::RetrievePolicyResponseType response_type);
+      chromeos::SessionManagerClient::RetrievePolicyResponseType response_type,
+      const std::string& policy_blob);
 
   // Updates state after validation and notifies observers.
   void UpdatePolicy(const std::string& signature_validation_public_key,

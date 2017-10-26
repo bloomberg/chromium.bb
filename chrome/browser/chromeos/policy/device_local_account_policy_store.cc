@@ -63,8 +63,8 @@ void DeviceLocalAccountPolicyStore::LoadImmediately() {
   RetrievePolicyResponseType response =
       session_manager_client_->BlockingRetrieveDeviceLocalAccountPolicy(
           account_id_, &policy_blob);
-  ValidateLoadedPolicyBlob(false /*validate_in_background*/, policy_blob,
-                           response);
+  ValidateLoadedPolicyBlob(false /*validate_in_background*/, response,
+                           policy_blob);
 }
 
 void DeviceLocalAccountPolicyStore::Store(
@@ -79,8 +79,8 @@ void DeviceLocalAccountPolicyStore::Store(
 
 void DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob(
     bool validate_in_background,
-    const std::string& policy_blob,
-    RetrievePolicyResponseType response_type) {
+    RetrievePolicyResponseType response_type,
+    const std::string& policy_blob) {
   if (response_type != RetrievePolicyResponseType::SUCCESS ||
       policy_blob.empty()) {
     status_ = CloudPolicyStore::STATUS_LOAD_ERROR;

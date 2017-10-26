@@ -138,10 +138,11 @@ void FakeSessionManagerClient::RetrieveActiveSessions(
 }
 
 void FakeSessionManagerClient::RetrieveDevicePolicy(
-    const RetrievePolicyCallback& callback) {
+    RetrievePolicyCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, device_policy_,
-                            RetrievePolicyResponseType::SUCCESS));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), RetrievePolicyResponseType::SUCCESS,
+                     device_policy_));
 }
 
 RetrievePolicyResponseType
@@ -153,10 +154,11 @@ FakeSessionManagerClient::BlockingRetrieveDevicePolicy(
 
 void FakeSessionManagerClient::RetrievePolicyForUser(
     const cryptohome::Identification& cryptohome_id,
-    const RetrievePolicyCallback& callback) {
+    RetrievePolicyCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, user_policies_[cryptohome_id],
-                            RetrievePolicyResponseType::SUCCESS));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), RetrievePolicyResponseType::SUCCESS,
+                     user_policies_[cryptohome_id]));
 }
 
 RetrievePolicyResponseType
@@ -169,22 +171,25 @@ FakeSessionManagerClient::BlockingRetrievePolicyForUser(
 
 void FakeSessionManagerClient::RetrievePolicyForUserWithoutSession(
     const cryptohome::Identification& cryptohome_id,
-    const RetrievePolicyCallback& callback) {
+    RetrievePolicyCallback callback) {
   auto iter = user_policies_without_session_.find(cryptohome_id);
-  auto task = iter == user_policies_.end()
-                  ? base::BindOnce(callback, std::string(),
-                                   RetrievePolicyResponseType::OTHER_ERROR)
-                  : base::BindOnce(callback, iter->second,
-                                   RetrievePolicyResponseType::SUCCESS);
+  auto task =
+      iter == user_policies_.end()
+          ? base::BindOnce(std::move(callback),
+                           RetrievePolicyResponseType::OTHER_ERROR,
+                           std::string())
+          : base::BindOnce(std::move(callback),
+                           RetrievePolicyResponseType::SUCCESS, iter->second);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
 }
 
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
     const std::string& account_id,
-    const RetrievePolicyCallback& callback) {
+    RetrievePolicyCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, device_local_account_policy_[account_id],
-                            RetrievePolicyResponseType::SUCCESS));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), RetrievePolicyResponseType::SUCCESS,
+                     device_local_account_policy_[account_id]));
 }
 
 RetrievePolicyResponseType
