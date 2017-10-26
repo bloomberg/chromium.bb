@@ -26,6 +26,10 @@ h1 {
   color: rgb(92, 97, 102);
 }
 
+.info-container h4 button.show-all-properties {
+  margin: 10px;
+}
+
 .toggle-status {
   background-image: url(../../../../ui/webui/resources/images/cancel_red.svg);
   background-repeat: no-repeat;

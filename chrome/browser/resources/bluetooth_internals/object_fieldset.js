@@ -26,6 +26,14 @@ cr.define('object_fieldset', function() {
   ObjectFieldSet.prototype = {
     __proto__: HTMLFieldSetElement.prototype,
 
+    set showAll(showAll) {
+      this.showAll_ = showAll;
+    },
+
+    get showAll() {
+      return this.showAll_;
+    },
+
     /**
      * Decorates the element as an ObjectFieldset.
      */
@@ -36,6 +44,7 @@ cr.define('object_fieldset', function() {
       this.value = null;
       /** @private {?Object<string, string>} */
       this.nameMap_ = null;
+      this.showAll_ = true;
     },
 
     /**
@@ -63,8 +72,11 @@ cr.define('object_fieldset', function() {
       this.innerHTML = '';
 
       Object.keys(this.value).forEach(function(propName) {
-        var name = this.nameMap_[propName] || propName;
         var value = this.value[propName];
+        if (value === false && !this.showAll_)
+          return;
+
+        var name = this.nameMap_[propName] || propName;
         var newField = document.createElement('div');
         newField.classList.add('status');
 
