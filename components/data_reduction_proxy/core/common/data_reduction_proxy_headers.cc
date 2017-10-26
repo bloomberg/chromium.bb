@@ -520,4 +520,14 @@ void GetDataReductionProxyHeaderWithFingerprintRemoved(
   }
 }
 
+int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers) {
+  std::string ofcl_str;
+  int64_t ofcl;
+  if (GetDataReductionProxyActionValue(headers, "ofcl", &ofcl_str) &&
+      base::StringToInt64(ofcl_str, &ofcl) && ofcl >= 0) {
+    return ofcl;
+  }
+  return -1;
+}
+
 }  // namespace data_reduction_proxy
