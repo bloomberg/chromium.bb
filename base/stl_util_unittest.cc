@@ -419,6 +419,15 @@ TEST(Erase, UnorderedMultiset) {
   RunEraseIfTest<std::unordered_multiset<std::pair<int, int>, HashByFirst>>();
 }
 
+TEST(Erase, IsNotIn) {
+  // Should keep both '2' but only one '4', like std::set_intersection.
+  std::vector<int> lhs = {0, 2, 2, 4, 4, 4, 6, 8, 10};
+  std::vector<int> rhs = {1, 2, 2, 4, 5, 6, 7};
+  std::vector<int> expected = {2, 2, 4, 6};
+  EraseIf(lhs, IsNotIn<std::vector<int>>(rhs));
+  EXPECT_EQ(expected, lhs);
+}
+
 TEST(ContainsValue, OrdinaryArrays) {
   const char allowed_chars[] = {'a', 'b', 'c', 'd'};
   EXPECT_TRUE(ContainsValue(allowed_chars, 'a'));
