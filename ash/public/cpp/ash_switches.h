@@ -58,6 +58,7 @@ ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonAccelCount[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonScreenAccel[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonKeyboardAccel[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonLidAngleChange[];
+ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();

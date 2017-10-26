@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -14,10 +15,12 @@
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_test_base.h"
+#include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -1016,6 +1019,43 @@ TEST_F(LockStateControllerTest, CancelClamshellDisplayOffAfterLock) {
   EXPECT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   UnlockScreen();
+}
+
+// Tests the default behavior of disabling the touchscreen when the screen is
+// turned off due to user inactivity.
+TEST_F(LockStateControllerTest, DisableTouchscreenForScreenOff) {
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  // Run the event loop so PowerButtonDisplayController will get the initial
+  // backlights-forced-off state from chromeos::PowerManagerClient.
+  base::RunLoop().RunUntilIdle();
+
+  // Manually turn the screen off and check that the touchscreen is enabled.
+  power_manager_client_->SendBrightnessChanged(0, true /* user_initiated */);
+  EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
+      TouchscreenEnabledSource::GLOBAL));
+
+  // It should be disabled if the screen is turned off due to user inactivity.
+  power_manager_client_->SendBrightnessChanged(100, true /* user_initiated */);
+  power_manager_client_->SendBrightnessChanged(0, false /* user_initiated */);
+  EXPECT_FALSE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
+      TouchscreenEnabledSource::GLOBAL));
+}
+
+// Tests that the kTouchscreenUsableWhileScreenOff switch keeps the touchscreen
+// enabled when the screen is turned off due to user inactivity.
+TEST_F(LockStateControllerTest, TouchscreenUnableWhileScreenOff) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kTouchscreenUsableWhileScreenOff);
+  ResetPowerButtonController();
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  // Run the event loop so PowerButtonDisplayController will get the initial
+  // backlights-forced-off state from chromeos::PowerManagerClient.
+  base::RunLoop().RunUntilIdle();
+
+  // The touchscreen should remain enabled.
+  power_manager_client_->SendBrightnessChanged(0, false /* user_initiated */);
+  EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
+      TouchscreenEnabledSource::GLOBAL));
 }
 
 }  // namespace ash

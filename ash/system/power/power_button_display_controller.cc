@@ -6,9 +6,11 @@
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -37,6 +39,10 @@ PowerButtonDisplayController::PowerButtonDisplayController(
       this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
   Shell::Get()->PrependPreTargetHandler(this);
+
+  disable_touchscreen_while_screen_off_ =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTouchscreenUsableWhileScreenOff);
 
   GetInitialBacklightsForcedOff();
 }
@@ -87,7 +93,8 @@ void PowerButtonDisplayController::BrightnessChanged(int level,
   // Disable the touchscreen when the screen is turned off due to inactivity:
   // https://crbug.com/743291
   if ((screen_state_ == ScreenState::OFF_AUTO) !=
-      (old_state == ScreenState::OFF_AUTO))
+          (old_state == ScreenState::OFF_AUTO) &&
+      disable_touchscreen_while_screen_off_)
     UpdateTouchscreenStatus();
 }
 
@@ -142,10 +149,11 @@ void PowerButtonDisplayController::OnGotInitialBacklightsForcedOff(
 }
 
 void PowerButtonDisplayController::UpdateTouchscreenStatus() {
-  const bool enable_touchscreen =
-      !backlights_forced_off_ && (screen_state_ != ScreenState::OFF_AUTO);
+  const bool disable_touchscreen =
+      backlights_forced_off_ || (screen_state_ == ScreenState::OFF_AUTO &&
+                                 disable_touchscreen_while_screen_off_);
   Shell::Get()->touch_devices_controller()->SetTouchscreenEnabled(
-      enable_touchscreen, TouchscreenEnabledSource::GLOBAL);
+      !disable_touchscreen, TouchscreenEnabledSource::GLOBAL);
 }
 
 }  // namespace ash
