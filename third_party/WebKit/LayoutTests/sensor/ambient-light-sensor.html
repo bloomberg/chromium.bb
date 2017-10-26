@@ -18,17 +18,10 @@ function update_sensor_reading(buffer) {
   buffer[2] = kDefaultReadingValue;
 }
 
-function verify_sensor_reading(reading) {
-  return reading.illuminance == kDefaultReadingValue;
-}
-
-function verify_sensor_reading(sensor, should_be_null) {
-  if (should_be_null) {
-    return sensor.illuminance == null &&
-           sensor.timestamp == null;
-  }
-  return sensor.illuminance == kDefaultReadingValue &&
-         sensor.timestamp != null;
+function verify_sensor_reading({illuminance, timestamp}, is_null) {
+  if (is_null)
+    return illuminance === null && timestamp === null;
+  return illuminance === kDefaultReadingValue && timestamp !== null;
 }
 
 runGenericSensorTests(AmbientLightSensor, update_sensor_reading, verify_sensor_reading);
