@@ -89,7 +89,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest,
   Profile* profile = browser()->profile();
   WebContents::CreateParams create_params(profile);
   WebContents* other_web_contents = WebContents::Create(create_params);
-  browser()->tab_strip_model()->TabStripModel::AppendWebContents(
-      other_web_contents, true);
+  browser()->tab_strip_model()->AppendWebContents(other_web_contents, true);
   EXPECT_TRUE(model->ShouldRunAnimation(other_web_contents));
 }
