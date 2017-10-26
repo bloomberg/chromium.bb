@@ -150,8 +150,13 @@ const base::Feature kUIExperimentVerticalMargin{
 // with the destination of the default match when the user's input looks like a
 // query.
 const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
-    "OmniboxSpeculativeServiceWorkerStartOnQueryInput",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxSpeculativeServiceWorkerStartOnQueryInput",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if defined(OS_IOS)
 // Feature used to enable ZeroSuggestProvider on iOS.
