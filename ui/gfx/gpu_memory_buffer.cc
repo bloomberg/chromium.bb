@@ -45,6 +45,12 @@ GpuMemoryBufferHandle CloneHandleForIPC(
     }
     case gfx::IO_SURFACE_BUFFER:
       return source_handle;
+    case gfx::DXGI_SHARED_HANDLE:
+      gfx::GpuMemoryBufferHandle handle;
+      handle.type = gfx::DXGI_SHARED_HANDLE;
+      handle.id = source_handle.id;
+      handle.handle = base::SharedMemory::DuplicateHandle(source_handle.handle);
+      return handle;
   }
   return gfx::GpuMemoryBufferHandle();
 }

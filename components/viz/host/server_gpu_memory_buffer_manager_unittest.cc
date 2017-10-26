@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -200,7 +201,7 @@ class ServerGpuMemoryBufferManagerTest : public ::testing::Test {
 // Tests that allocation requests from a client that goes away before allocation
 // completes are cleaned up correctly.
 TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
-#if !defined(USE_OZONE) && !defined(OS_MACOSX)
+#if !defined(USE_OZONE) && !defined(OS_MACOSX) && !defined(OS_WIN)
   // Not all platforms support native configurations (currently only ozone and
   // mac support it). Abort the test in those platforms.
   DCHECK(gpu::GetNativeGpuMemoryBufferConfigurations().empty());
