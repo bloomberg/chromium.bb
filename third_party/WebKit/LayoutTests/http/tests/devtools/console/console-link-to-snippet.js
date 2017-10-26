@@ -37,12 +37,16 @@
     },
 
     function testConsoleErrorHighlight(next) {
-      ConsoleTestRunner.waitUntilNthMessageReceivedPromise(1)
+      ConsoleTestRunner.waitUntilNthMessageReceivedPromise(4)
         .then(() => ConsoleTestRunner.dumpConsoleMessages())
         .then(() => Console.ConsoleView.clearConsole())
         .then(() => next());
 
-      createSnippetPromise('\n  console.error(42);')
+      createSnippetPromise(`
+console.error(42);
+console.error(-0);
+console.error(false);
+console.error(null)`)
         .then(uiSourceCode => selectSourceCode(uiSourceCode))
         .then(uiSourceCode => renameSourceCodePromise('name3', uiSourceCode))
         .then(() => runSelectedSnippet());

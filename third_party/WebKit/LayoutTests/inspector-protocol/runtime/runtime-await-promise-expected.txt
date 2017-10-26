@@ -3,7 +3,6 @@ Tests that Runtime.awaitPromise works.
 Running test: testResolvedPromise
 {
     result : {
-        description : 239
         type : number
         value : 239
     }
@@ -53,7 +52,6 @@ Running test: testRejectedPromiseWithStack
     exceptionDetails : {
         columnNumber : 0
         exception : {
-            description : 239
             objectId : <number>
             type : number
             value : 239
@@ -86,7 +84,6 @@ Running test: testRejectedPromiseWithStack
         text : Uncaught (in promise)
     }
     result : {
-        description : 239
         type : number
         value : 239
     }
@@ -95,7 +92,6 @@ Running test: testRejectedPromiseWithStack
 Running test: testPendingPromise
 {
     result : {
-        description : 239
         type : number
         value : 239
     }
