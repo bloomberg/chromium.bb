@@ -17,11 +17,11 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 
 # ====== Browserside navigation from here ======
 # These tests started failing when browser-side navigation was turned on.
-crbug.com/762529 http/tests/devtools/network/network-datareceived.html [ Failure ]
-crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.html [ Failure ]
+crbug.com/762529 http/tests/devtools/network/network-datareceived.js [ Failure ]
+crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 crbug.com/760924 http/tests/devtools/network/x-frame-options-deny.html [ Failure ]
-crbug.com/762529 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.html [ Failure ]
-crbug.com/759632 virtual/mojo-loading/http/tests/devtools/network/network-datasaver-warning.html [ Failure ]
+crbug.com/762529 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.js [ Failure ]
+crbug.com/759632 virtual/mojo-loading/http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 crbug.com/760924 virtual/mojo-loading/http/tests/devtools/network/x-frame-options-deny.html [ Failure ]
 crbug.com/576261 [ Win ] virtual/mojo-loading/http/tests/devtools/resource-parameters.html [ Failure ]
 # ====== Browserside navigation until here ======
@@ -1694,8 +1694,8 @@ crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
-crbug.com/626703 http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]

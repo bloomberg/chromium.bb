@@ -1,11 +1,12 @@
-<!doctype html>
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-async function test() {
+(async function() {
+  TestRunner.addResult(`Tests conversion of Inspector's resource representation into HAR format.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   await TestRunner.NetworkAgent.setCacheDisabled(true);
 
   NetworkTestRunner.makeSimpleXHR('GET', 'resources/initiator.css', false, sendBinaryRequest);
@@ -54,16 +55,4 @@ async function test() {
     TestRunner.addResult('FAIL: can\'t find resource for ' + regexp);
     return null;
   }
-}
-</script>
-
-
-</head>
-
-<body onload="runTest()">
-<p>
-Tests conversion of Inspector's resource representation into HAR format.
-</p>
-
-</body>
-</html>
+})();

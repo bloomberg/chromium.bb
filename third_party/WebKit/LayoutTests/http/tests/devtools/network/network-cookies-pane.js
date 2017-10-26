@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests cookie pane rendering in Network panel\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   function run() {
     var panel = UI.panels.network;
     var target = panel._networkLogView;
@@ -26,11 +29,4 @@ function test() {
   }
 
   self.runtime.loadModulePromise('cookie_table').then(run);
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests cookie pane rendering in Network panel</p>
-</body>
-</html>
+})();
