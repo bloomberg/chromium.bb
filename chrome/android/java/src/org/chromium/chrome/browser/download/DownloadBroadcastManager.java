@@ -129,7 +129,7 @@ public class DownloadBroadcastManager extends Service {
         switch (action) {
             case ACTION_DOWNLOAD_PAUSE:
                 mDownloadNotificationService.notifyDownloadPaused(entry.id, entry.fileName, true,
-                        false, entry.isOffTheRecord, entry.isTransient, null, true);
+                        false, entry.isOffTheRecord, entry.isTransient, null, true, false);
                 break;
 
             case ACTION_DOWNLOAD_CANCEL:
