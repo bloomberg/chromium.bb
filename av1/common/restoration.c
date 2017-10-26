@@ -283,12 +283,15 @@ static int setup_processing_stripe_boundary(
 
   // Replace the pixels above the top of the stripe, unless this is the top of
   // the image.
+  // We expand 2 lines from rsb->stripe_boundary_above to fill 3 lines of above
+  // pixels. This is done by duplicating the topmost of the 2 lines.
   if (stripe_index > 0) {
     const int above_buf_y = 2 * (stripe_index - 1);
-    uint8_t *data8_tl = data8 + (limits->v_start - 2) * stride + data_x0_off;
+    uint8_t *data8_tl = data8 + (limits->v_start - 3) * stride + data_x0_off;
 
-    for (int i = 0; i < 2; ++i) {
-      const int buf_off = buf_x0_off + (above_buf_y + i) * buf_stride;
+    for (int i = 0; i < 3; ++i) {
+      const int src_row = AOMMAX(0, i - 1);
+      const int buf_off = buf_x0_off + (above_buf_y + src_row) * buf_stride;
       const uint8_t *src = rsb->stripe_boundary_above + (buf_off << use_highbd);
       uint8_t *dst8 = data8_tl + i * stride;
       // Save old pixels, then replace with data from boundary_above_buf
@@ -301,14 +304,17 @@ static int setup_processing_stripe_boundary(
   // not be needed if the stripe is less than stripe_height high (which might
   // happen on the bottom of a loop restoration unit), in which case
   // rows_needed_below might be negative.
+  // Similarly to above, we expand 2 lines from rb->stripe_boundary_below into
+  // 3 lines of below pixels. This time we duplicate the bottommost row.
   const int stripe_bottom = stripe_height * (1 + stripe_index) - tile_offset;
-  const int rows_needed_below = AOMMIN(limits->v_end + 2 - stripe_bottom, 2);
+  const int rows_needed_below = AOMMIN(limits->v_end + 3 - stripe_bottom, 3);
 
   const int below_buf_y = 2 * stripe_index;
   uint8_t *data8_bl = data8 + stripe_bottom * stride + data_x0_off;
 
   for (int i = 0; i < rows_needed_below; ++i) {
-    const int buf_off = buf_x0_off + (below_buf_y + i) * buf_stride;
+    const int src_row = AOMMIN(1, i);
+    const int buf_off = buf_x0_off + (below_buf_y + src_row) * buf_stride;
     const uint8_t *src = rsb->stripe_boundary_below + (buf_off << use_highbd);
     uint8_t *dst8 = data8_bl + i * stride;
     // Save old pixels, then replace with data from boundary_below_buf
@@ -336,8 +342,8 @@ static void restore_processing_stripe_boundary(
   assert(CONFIG_HIGHBITDEPTH || !use_highbd);
 
   if (stripe_index > 0) {
-    uint8_t *data8_tl = data8 + (limits->v_start - 2) * stride + data_x0_off;
-    for (int i = 0; i < 2; ++i) {
+    uint8_t *data8_tl = data8 + (limits->v_start - 3) * stride + data_x0_off;
+    for (int i = 0; i < 3; ++i) {
       uint8_t *dst8 = data8_tl + i * stride;
       // Save old pixels, then replace with data from boundary_above_buf
       memcpy(REAL_PTR(use_highbd, dst8), rlbs->tmp_save_above[i], line_size);
@@ -345,7 +351,7 @@ static void restore_processing_stripe_boundary(
   }
 
   const int stripe_bottom = stripe_height * (1 + stripe_index) - tile_offset;
-  const int rows_needed_below = AOMMIN(limits->v_end + 2 - stripe_bottom, 2);
+  const int rows_needed_below = AOMMIN(limits->v_end + 3 - stripe_bottom, 3);
 
   uint8_t *data8_bl = data8 + stripe_bottom * stride + data_x0_off;
 

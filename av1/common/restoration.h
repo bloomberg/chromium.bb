@@ -219,10 +219,10 @@ typedef struct {
   (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_EXTRA_HORZ)
 
 typedef struct {
-  // Temporary buffers to save/restore 2 lines above/below the restoration
+  // Temporary buffers to save/restore 3 lines above/below the restoration
   // stripe.
-  uint16_t tmp_save_above[2][RESTORATION_LINEBUFFER_WIDTH];
-  uint16_t tmp_save_below[2][RESTORATION_LINEBUFFER_WIDTH];
+  uint16_t tmp_save_above[3][RESTORATION_LINEBUFFER_WIDTH];
+  uint16_t tmp_save_below[3][RESTORATION_LINEBUFFER_WIDTH];
 } RestorationLineBuffers;
 
 typedef struct {
