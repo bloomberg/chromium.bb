@@ -2235,3 +2235,6 @@
 # crbug.com/778376
 -PaymentRequestCanMakePaymentQueryPMITest.QueryQuotaForDisabledPaymentAppsInIncognitoMode
 -PaymentRequestJourneyLoggerMultipleShowTest.StartNewRequestWithoutPaymentAppsFeature
+
+# crbug.com/778793
+-PreviewsBrowserTest.NoScriptPreviewsEnabled
