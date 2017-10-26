@@ -60,7 +60,6 @@ TEST(ContainerFloatingBehaviorTest, DontSaveCoordinatesUntilKeyboardMoved) {
       workspace.width() - keyboard_width - kDefaultDistanceFromScreenRight,
       workspace.height() - keyboard_height - kDefaultDistanceFromScreenBottom,
       keyboard_width, keyboard_height);
-  gfx::Rect top_left_overlap(-30, -30, keyboard_width, keyboard_height);
 
   // Adjust bounds to the arbitrary load location. Floating Behavior should use
   // the UX-chosen default location instead.
