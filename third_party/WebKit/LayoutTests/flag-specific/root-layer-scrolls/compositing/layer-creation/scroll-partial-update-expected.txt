@@ -1,4 +1,4 @@
-Caption
+scroll me
 {
   "layers": [
     {
@@ -18,10 +18,19 @@ Caption
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='caption'",
-      "bounds": [200, 100],
-      "backgroundColor": "#008000",
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='composited'",
+      "bounds": [20, 20],
+      "drawsContent": false,
       "transform": 1
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='overlay')",
+      "position": [10, 8],
+      "bounds": [400, 204]
     }
   ],
   "transforms": [
@@ -31,8 +40,9 @@ Caption
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 13, 0, 1]
-      ]
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

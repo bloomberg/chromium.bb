@@ -1,0 +1,22 @@
+TEST
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 5021],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    }
+  ]
+}
+Has non-layer viewport-constrained objects
