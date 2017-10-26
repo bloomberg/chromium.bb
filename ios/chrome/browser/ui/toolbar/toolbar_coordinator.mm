@@ -14,6 +14,40 @@
 @synthesize tabModel = _tabModel;
 @synthesize webToolbarController = _webToolbarController;
 
+- (ToolbarController*)toolbarController {
+  return self.webToolbarController;
+}
+
+- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
+  return self.webToolbarController;
+}
+
+- (id<ActivityServicePositioner>)activityServicePositioner {
+  return self.webToolbarController;
+}
+
+- (id<TabHistoryPositioner>)tabHistoryPositioner {
+  return self.webToolbarController;
+}
+
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
+  return self.webToolbarController;
+}
+
+- (id<QRScannerResultLoading>)QRScannerResultLoader {
+  return self.webToolbarController;
+}
+
+- (void)setWebToolbar:(WebToolbarController*)webToolbarController {
+  self.webToolbarController = webToolbarController;
+}
+
+- (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {
+  self.webToolbarController.delegate = delegate;
+}
+
+#pragma mark - WebToolbarController interface
+
 - (void)selectedTabChanged {
   [self.webToolbarController selectedTabChanged];
 }

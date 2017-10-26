@@ -1883,16 +1883,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _toolbarCoordinator =
       [[LegacyToolbarCoordinator alloc] initWithBaseViewController:self];
   _toolbarCoordinator.tabModel = _model;
-  _toolbarCoordinator.webToolbarController =
-      [_dependencyFactory newWebToolbarControllerWithDelegate:self
-                                                    urlLoader:self
-                                                   dispatcher:self.dispatcher];
+  [_toolbarCoordinator
+      setWebToolbar:[_dependencyFactory
+                        newWebToolbarControllerWithDelegate:self
+                                                  urlLoader:self
+                                                 dispatcher:self.dispatcher]];
   [_dispatcher startDispatchingToTarget:_toolbarCoordinator
                             forProtocol:@protocol(OmniboxFocuser)];
   [_toolbarCoordinator setTabCount:[_model count]];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(
-        _toolbarCoordinator.webToolbarController);
+        [_toolbarCoordinator voiceSearchDelegate]);
 
   if (IsIPadIdiom()) {
     self.tabStripCoordinator =
@@ -1964,24 +1965,25 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _activityServiceCoordinator.tabModel = _model;
   _activityServiceCoordinator.browserState = _browserState;
   _activityServiceCoordinator.positionProvider =
-      _toolbarCoordinator.webToolbarController;
+      [_toolbarCoordinator activityServicePositioner];
   _activityServiceCoordinator.presentationProvider = self;
 
   _qrScannerCoordinator =
       [[QRScannerLegacyCoordinator alloc] initWithBaseViewController:self];
   _qrScannerCoordinator.dispatcher = _dispatcher;
-  _qrScannerCoordinator.loadProvider = _toolbarCoordinator.webToolbarController;
+  _qrScannerCoordinator.loadProvider =
+      [_toolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
 
   _tabHistoryCoordinator =
       [[LegacyTabHistoryCoordinator alloc] initWithBaseViewController:self];
   _tabHistoryCoordinator.dispatcher = _dispatcher;
   _tabHistoryCoordinator.positionProvider =
-      _toolbarCoordinator.webToolbarController;
+      [_toolbarCoordinator tabHistoryPositioner];
   _tabHistoryCoordinator.tabModel = _model;
   _tabHistoryCoordinator.presentationProvider = self;
   _tabHistoryCoordinator.tabHistoryUIUpdater =
-      _toolbarCoordinator.webToolbarController;
+      [_toolbarCoordinator tabHistoryUIUpdater];
 
   _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
   _sadTabCoordinator.baseViewController = self;
@@ -2566,7 +2568,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [_toolbarCoordinator.webToolbarController setDelegate:nil];
+  [_toolbarCoordinator setToolbarDelegate:nil];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(nil);
   [_rateThisAppDialog setDelegate:nil];
@@ -2668,7 +2670,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       _voiceSearchController =
           provider->CreateVoiceSearchController(_browserState);
       _voiceSearchController->SetDelegate(
-          _toolbarCoordinator.webToolbarController);
+          [_toolbarCoordinator voiceSearchDelegate]);
     }
   }
 }
@@ -4749,7 +4751,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       }
     }
   } else {
-    relinquishedToolbarController = _toolbarCoordinator.webToolbarController;
+    relinquishedToolbarController = [_toolbarCoordinator toolbarController];
   }
   _isToolbarControllerRelinquished = (relinquishedToolbarController != nil);
   return relinquishedToolbarController;
