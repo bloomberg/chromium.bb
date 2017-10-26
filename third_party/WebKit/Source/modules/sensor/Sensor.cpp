@@ -12,6 +12,7 @@
 #include "core/timing/Performance.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
+#include "platform/LayoutTestSupport.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/interfaces/sensor.mojom-blink.h"
 
@@ -103,6 +104,11 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   DCHECK(performance);
   DCHECK(sensor_proxy_);
   is_null = false;
+
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
+    // In layout tests Performance.now() * 0.001 is passed to the shared buffer.
+    return sensor_proxy_->reading().timestamp() * 1000;
+  }
 
   return performance->MonotonicTimeToDOMHighResTimeStamp(
       sensor_proxy_->reading().timestamp());

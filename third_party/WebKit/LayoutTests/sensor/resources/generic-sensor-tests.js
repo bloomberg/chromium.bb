@@ -417,4 +417,38 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
       }
     });
   }, `${sensorType.name}: Test that sensor cannot be constructed within iframe.`);
+
+  sensor_test(async sensor => {
+    let sensorObject = new sensorType();
+    let timestamp = 0;
+    sensorObject.start();
+
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    await mockSensor.setUpdateSensorReadingFunction(updateReading);
+    await new Promise((resolve, reject) => {
+        let wrapper1 = new CallbackWrapper(() => {
+          assert_true(sensorObject.hasReading);
+          timestamp = sensorObject.timestamp;
+          sensorObject.stop();
+
+          assert_false(sensorObject.hasReading);
+          sensorObject.onreading = wrapper2.callback;
+          sensorObject.start();
+        }, reject);
+
+        let wrapper2 = new CallbackWrapper(() => {
+          assert_true(sensorObject.hasReading);
+          // Make sure that 'timestamp' is already initialized.
+          assert_greater_than(timestamp, 0);
+          // Check that the reading is updated.
+          assert_greater_than(sensorObject.timestamp, timestamp);
+          sensorObject.stop();
+          resolve(mockSensor);
+        }, reject);
+
+        sensorObject.onreading = wrapper1.callback;
+        sensorObject.onerror = reject;
+      });
+    return mockSensor.removeConfigurationCalled();
+  }, `${sensorType.name}: Test that fresh reading is fetched on start().`);
 }

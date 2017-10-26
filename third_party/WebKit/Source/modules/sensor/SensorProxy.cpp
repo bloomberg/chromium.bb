@@ -272,6 +272,9 @@ void SensorProxy::RemoveActiveFrequency(double frequency) {
 
   active_frequencies_.erase(it);
   UpdatePollingStatus();
+
+  if (active_frequencies_.IsEmpty())
+    reading_ = device::SensorReading();
 }
 
 void SensorProxy::AddActiveFrequency(double frequency) {
