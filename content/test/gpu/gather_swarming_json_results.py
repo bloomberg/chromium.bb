@@ -31,6 +31,7 @@ class Swarming:
   @staticmethod
   def CheckAuth():
     output = subprocess.check_output([
+      'python',
       os.path.join(SWARMING_CLIENT_DIR, 'auth.py'),
       'check',
       '--service',
@@ -45,6 +46,7 @@ class Swarming:
   @staticmethod
   def Collect(taskIDs, output_dir, verbose):
     cmd = [
+      'python',
       os.path.join(SWARMING_CLIENT_DIR, 'swarming.py'),
       'collect',
       '-S',
