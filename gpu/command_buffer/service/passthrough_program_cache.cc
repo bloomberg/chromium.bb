@@ -42,7 +42,8 @@ bool ProgramCacheControlExtensionAvailable() {
 PassthroughProgramCache::PassthroughProgramCache(
     size_t max_cache_size_bytes,
     bool disable_gpu_shader_disk_cache)
-    : disable_gpu_shader_disk_cache_(disable_gpu_shader_disk_cache) {
+    : ProgramCache(max_cache_size_bytes),
+      disable_gpu_shader_disk_cache_(disable_gpu_shader_disk_cache) {
   if (!CacheEnabled()) {
     return;
   }

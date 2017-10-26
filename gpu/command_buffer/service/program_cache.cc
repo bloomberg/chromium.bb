@@ -9,13 +9,15 @@
 #include <memory>
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "third_party/angle/src/common/version.h"
 
 namespace gpu {
 namespace gles2 {
 
-ProgramCache::ProgramCache() {}
+ProgramCache::ProgramCache(size_t max_cache_size_bytes)
+    : max_size_bytes_(max_cache_size_bytes) {}
 ProgramCache::~ProgramCache() {}
 
 void ProgramCache::Clear() {
@@ -159,6 +161,27 @@ void ProgramCache::ComputeProgramHash(
       sizeof(transform_feedback_buffer_mode));
   base::SHA1HashBytes(buffer.get(),
                       total_size, reinterpret_cast<unsigned char*>(result));
+}
+
+void ProgramCache::HandleMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // This is only called with moderate or critical pressure.
+  DCHECK_NE(memory_pressure_level,
+            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+
+  // Set a low limit on cache size for MEMORY_PRESSURE_LEVEL_MODERATE.
+  size_t limit = max_size_bytes_ / 4;
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    limit = 0;
+  }
+
+  size_t bytes_freed = Trim(limit);
+  if (bytes_freed > 0) {
+    UMA_HISTOGRAM_COUNTS_100000(
+        "GPU.ProgramCache.MemoryReleasedOnPressure",
+        static_cast<base::HistogramBase::Sample>(bytes_freed) / 1024);
+  }
 }
 
 }  // namespace gles2

@@ -76,7 +76,7 @@ MockShaderTranslator::MockShaderTranslator() {}
 
 MockShaderTranslator::~MockShaderTranslator() {}
 
-MockProgramCache::MockProgramCache() {}
+MockProgramCache::MockProgramCache() : ProgramCache(0) {}
 MockProgramCache::~MockProgramCache() {}
 
 MockMemoryTracker::MockMemoryTracker() {}

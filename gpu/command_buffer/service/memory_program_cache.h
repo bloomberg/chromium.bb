@@ -168,7 +168,6 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
   typedef base::MRUCache<std::string,
                          scoped_refptr<ProgramCacheValue> > ProgramMRUCache;
 
-  const size_t max_size_bytes_;
   const bool disable_gpu_shader_disk_cache_;
   const bool disable_program_caching_for_transform_feedback_;
   const bool compress_program_binaries_;

@@ -16,6 +16,7 @@ namespace gles2 {
 
 class NoBackendProgramCache : public ProgramCache {
  public:
+  NoBackendProgramCache() : ProgramCache(0) {}
   ProgramLoadResult LoadLinkedProgram(
       GLuint /* program */,
       Shader* /* shader_a */,

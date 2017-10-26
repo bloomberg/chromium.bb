@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/gpu_export.h"
@@ -68,8 +69,11 @@ class GPU_EXPORT ServiceDiscardableManager {
     cache_size_limit_ = cache_size_limit;
   }
 
+  void HandleMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
  private:
-  void EnforceLimits();
+  void EnforceCacheSizeLimit(size_t limit);
 
   struct GpuDiscardableEntry {
    public:

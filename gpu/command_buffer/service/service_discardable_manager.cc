@@ -89,7 +89,7 @@ void ServiceDiscardableManager::InsertLockedTexture(
   total_size_ += texture_size;
   entries_.Put({texture_id, texture_manager},
                GpuDiscardableEntry{handle, texture_size});
-  EnforceLimits();
+  EnforceCacheSizeLimit(cache_size_limit_);
 }
 
 bool ServiceDiscardableManager::UnlockTexture(
@@ -163,12 +163,33 @@ void ServiceDiscardableManager::OnTextureSizeChanged(
   found->second.size = new_size;
   total_size_ += found->second.size;
 
-  EnforceLimits();
+  EnforceCacheSizeLimit(cache_size_limit_);
 }
 
-void ServiceDiscardableManager::EnforceLimits() {
+void ServiceDiscardableManager::HandleMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  size_t limit = 0;
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      // This function is only called with moderate or critical pressure.
+      NOTREACHED();
+      return;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      // With moderate pressure, shrink to 1/4 our normal size.
+      limit = cache_size_limit_ / 4;
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      // With critical pressure, purge as much as possible.
+      limit = 0;
+      break;
+  }
+
+  EnforceCacheSizeLimit(limit);
+}
+
+void ServiceDiscardableManager::EnforceCacheSizeLimit(size_t limit) {
   for (auto it = entries_.rbegin(); it != entries_.rend();) {
-    if (total_size_ <= cache_size_limit_) {
+    if (total_size_ <= limit) {
       return;
     }
     if (!it->second.handle.Delete()) {
