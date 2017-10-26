@@ -169,8 +169,9 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
   response_head_.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
+  // base::Unretained() is safe since |url_loader_binding_| is owned by |this|.
   url_loader_binding_.set_connection_error_handler(base::BindOnce(
-      &ServiceWorkerSubresourceLoader::DeleteSoon, weak_factory_.GetWeakPtr()));
+      &ServiceWorkerSubresourceLoader::DeleteSoon, base::Unretained(this)));
   StartRequest(resource_request);
 }
 
@@ -225,7 +226,6 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     case blink::mojom::ServiceWorkerEventStatus::ABORTED:
       // We have an unexpected error: fetch event dispatch failed. Return
       // network error.
-      weak_factory_.InvalidateWeakPtrs();
       CommitCompleted(net::ERR_FAILED);
   }
 }
