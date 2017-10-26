@@ -143,7 +143,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   v8_breakpad_support::SetUp();
 #endif
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
   breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);
 #endif
 #if defined(OS_MACOSX)
@@ -258,34 +258,34 @@ void ShellMainDelegate::PreSandboxStartup() {
   // cpu_brand info.
   base::CPU cpu_info;
 #endif
+
+  // Disable platform crash handling & initialize Breakpad, if requested.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     std::string process_type =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
     crash_reporter::SetCrashReporterClient(g_shell_crash_client.Pointer());
-#if defined(OS_MACOSX)
-    base::mac::DisableOSCrashDumps();
-    breakpad::InitCrashReporter(process_type);
-    breakpad::InitCrashProcessInfo(process_type);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
-    if (process_type != switches::kZygoteProcess) {
-#if defined(OS_ANDROID)
-      if (process_type.empty())
-        breakpad::InitCrashReporter(process_type);
-      else
-        breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
-#else
-      breakpad::InitCrashReporter(process_type);
-#endif
-    }
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
     UINT new_flags =
         SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX;
     UINT existing_flags = SetErrorMode(new_flags);
     SetErrorMode(existing_flags | new_flags);
     breakpad::InitCrashReporter(process_type);
-#endif
+#elif defined(OS_MACOSX)
+    base::mac::DisableOSCrashDumps();
+    breakpad::InitCrashReporter(process_type);
+    breakpad::InitCrashProcessInfo(process_type);
+#elif defined(OS_LINUX)
+    // Reporting for sub-processes will be initialized in ZygoteForked.
+    if (process_type != switches::kZygoteProcess)
+      breakpad::InitCrashReporter(process_type);
+#elif defined(OS_ANDROID)
+    if (process_type.empty())
+      breakpad::InitCrashReporter(process_type);
+    else
+      breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+#endif  // defined(OS_ANDROID)
   }
 
   InitializeResourceBundle();
@@ -315,7 +315,7 @@ int ShellMainDelegate::RunProcess(
              : ShellBrowserMain(main_function_params, browser_runner_);
 }
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if defined(OS_LINUX)
 void ShellMainDelegate::ZygoteForked() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
@@ -325,7 +325,7 @@ void ShellMainDelegate::ZygoteForked() {
     breakpad::InitCrashReporter(process_type);
   }
 }
-#endif
+#endif  // defined(OS_LINUX)
 
 void ShellMainDelegate::InitializeResourceBundle() {
 #if defined(OS_ANDROID)

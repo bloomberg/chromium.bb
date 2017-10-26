@@ -1032,7 +1032,7 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
 #endif
   return process_type == switches::kRelauncherProcess;
 }
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_LINUX)
 void ChromeMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
 #if defined(OS_CHROMEOS)
@@ -1064,7 +1064,7 @@ void ChromeMainDelegate::ZygoteForked() {
   crash_keys::SetCrashKeysFromCommandLine(*command_line);
 }
 
-#endif  // OS_MACOSX
+#endif  // defined(OS_LINUX)
 
 content::ContentBrowserClient*
 ChromeMainDelegate::CreateContentBrowserClient() {

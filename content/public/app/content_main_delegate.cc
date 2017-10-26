@@ -41,12 +41,12 @@ bool ContentMainDelegate::DelaySandboxInitialization(
   return false;
 }
 
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_LINUX)
 
 void ContentMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<ZygoteForkDelegate>>* delegates) {}
 
-#endif
+#endif  // defined(OS_LINUX)
 
 bool ContentMainDelegate::ShouldEnableProfilerRecording() {
   return false;
