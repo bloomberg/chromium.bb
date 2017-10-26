@@ -117,7 +117,8 @@ class CopyOutputScalingPixelTest
                 quit_closure.Run();
               },
               &result, loop.QuitClosure())));
-      request->set_area(copy_rect);
+      request->set_result_selection(
+          copy_output::ComputeResultRect(copy_rect, scale_from, scale_to));
       request->SetScaleRatio(scale_from, scale_to);
       list.back()->copy_requests.push_back(std::move(request));
       renderer()->DrawFrame(&list, 1.0f, viewport_size);

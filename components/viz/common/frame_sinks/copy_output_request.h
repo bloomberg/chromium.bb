@@ -88,13 +88,23 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   bool has_source() const { return source_.has_value(); }
   const base::UnguessableToken& source() const { return *source_; }
 
-  // By default copy requests copy the entire surface (or layer's subtree
-  // output). Specifying an area requests that only a portion be copied. Note
-  // that in some cases it may be necessary to sample the pixels surrounding the
-  // area.
+  // Optionally specify the clip rect; meaning that just a portion of the entire
+  // surface (or layer's subtree output) should be scanned to produce a result.
+  // This rect is in the same space as the RenderPass output rect, pre-scaling.
+  // This is related to set_result_selection() (see below).
   void set_area(const gfx::Rect& area) { area_ = area; }
   bool has_area() const { return area_.has_value(); }
   const gfx::Rect& area() const { return *area_; }
+
+  // Optionally specify that only a portion of the result be generated. The
+  // selection rect will be clamped to the result bounds, which always starts at
+  // 0,0 and spans the post-scaling size of the copy area (see set_area()
+  // above).
+  void set_result_selection(const gfx::Rect& selection) {
+    result_selection_ = selection;
+  }
+  bool has_result_selection() const { return result_selection_.has_value(); }
+  const gfx::Rect& result_selection() const { return *result_selection_; }
 
   // Legacy support for providing textures up-front, to copy results into.
   // TODO(miu): Remove these methods after tab capture is moved to VIZ.
@@ -124,6 +134,7 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   gfx::Vector2d scale_to_;
   base::Optional<base::UnguessableToken> source_;
   base::Optional<gfx::Rect> area_;
+  base::Optional<gfx::Rect> result_selection_;
   base::Optional<TextureMailbox> texture_mailbox_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputRequest);

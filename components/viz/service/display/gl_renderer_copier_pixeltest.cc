@@ -59,8 +59,21 @@ class GLRendererCopierPixelTest
           std::tuple<GLenum, bool, CopyOutputResult::Format, bool>> {
  public:
   void SetUp() override {
+    // cc::RendererPixelTest sets up the environment/dependencies needed for
+    // these tests. However, this test uses its own GLRendererCopier instance,
+    // and not the default one owned by GLRenderer.
     cc::GLRendererPixelTest::SetUp();
+    cc::GLRendererPixelTest::renderer_.reset();
     gl_ = context_provider()->ContextGL();
+    copier_ = std::make_unique<GLRendererCopier>(
+        cc::GLRendererPixelTest::context_provider(),
+        cc::GLRendererPixelTest::texture_mailbox_deleter_.get(),
+        base::BindRepeating([](const gfx::Rect& draw_rect) {
+          gfx::Rect window_rect = draw_rect;
+          window_rect.set_y(kSourceSize.height() - window_rect.bottom());
+          return window_rect;
+        }));
+
     source_gl_format_ = std::get<0>(GetParam());
     have_source_texture_ = std::get<1>(GetParam());
     result_format_ = std::get<2>(GetParam());
@@ -75,10 +88,11 @@ class GLRendererCopierPixelTest
   void TearDown() override {
     DeleteSourceFramebuffer();
     DeleteSourceTexture();
+    copier_.reset();
     cc::GLRendererPixelTest::TearDown();
   }
 
-  GLRendererCopier* copier() { return &(renderer()->copier_); }
+  GLRendererCopier* copier() { return copier_.get(); }
 
   // Creates a packed RGBA (bytes_per_pixel=4) or RGB (bytes_per_pixel=3) bitmap
   // in OpenGL byte/row order from the given SkBitmap.
@@ -209,6 +223,7 @@ class GLRendererCopierPixelTest
 
  private:
   gpu::gles2::GLES2Interface* gl_ = nullptr;
+  std::unique_ptr<GLRendererCopier> copier_;
   GLuint source_texture_ = 0;
   GLuint source_framebuffer_ = 0;
 };
@@ -228,26 +243,19 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
               quit_closure.Run();
             },
             &result, loop.QuitClosure()));
-    request->set_area(kRequestArea);
-    if (scale_by_half_)
+    if (scale_by_half_) {
+      request->set_result_selection(
+          gfx::ScaleToEnclosingRect(gfx::Rect(kRequestArea), 0.5f));
       request->SetUniformScaleRatio(2, 1);
-
+    } else {
+      request->set_result_selection(gfx::Rect(kRequestArea));
+    }
     const GLuint source_texture = CreateSourceTexture();
     CreateAndBindSourceFramebuffer(source_texture);
-    // This is equivalent to MoveFromDrawToWindowSpace(request->area()):
-    const gfx::Rect copy_rect(kRequestArea.x(),
-                              kSourceSize.height() - kRequestArea.bottom(),
-                              kRequestArea.width(), kRequestArea.height());
-    const gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
-    if (have_source_texture_) {
-      copier()->CopyFromTextureOrFramebuffer(std::move(request), copy_rect,
-                                             source_gl_format_, source_texture,
-                                             kSourceSize, color_space);
-    } else {
-      copier()->CopyFromTextureOrFramebuffer(std::move(request), copy_rect,
-                                             source_gl_format_, 0, gfx::Size(),
-                                             color_space);
-    }
+    copier()->CopyFromTextureOrFramebuffer(
+        std::move(request), gfx::Rect(kSourceSize), source_gl_format_,
+        have_source_texture_ ? source_texture : 0, kSourceSize,
+        gfx::ColorSpace::CreateSRGB());
     loop.Run();
   }
 

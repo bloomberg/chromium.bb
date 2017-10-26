@@ -583,27 +583,27 @@ void SoftwareRenderer::CopyDrawnRenderPass(
       break;
   }
 
-  // Finalize the source rect, either as the entire RenderPass's output rect, or
-  // the client-provided area clamped to the output rect.
-  if (request->has_area()) {
-    gfx::Rect clamped_area = request->area();
-    clamped_area.Intersect(current_frame()->current_render_pass->output_rect);
-    request->set_area(clamped_area);
-  } else {
-    request->set_area(current_frame()->current_render_pass->output_rect);
-  }
+  // Finalize the source subrect, as the entirety of the RenderPass's output
+  // optionally clamped to the requested copy area. Then, compute the result
+  // rect, which is the selection clamped to the maximum possible result bounds.
+  // If there will be zero pixels of output or the scaling ratio was not
+  // reasonable, do not proceed.
+  gfx::Rect output_rect = current_frame()->current_render_pass->output_rect;
+  if (request->has_area())
+    output_rect.Intersect(request->area());
+  const gfx::Rect result_bounds =
+      request->is_scaled() ? copy_output::ComputeResultRect(
+                                 gfx::Rect(output_rect.size()),
+                                 request->scale_from(), request->scale_to())
+                           : gfx::Rect(output_rect.size());
+  gfx::Rect result_rect = result_bounds;
+  if (request->has_result_selection())
+    result_rect.Intersect(request->result_selection());
+  if (result_rect.IsEmpty())
+    return;
 
-  gfx::Rect result_rect;
   SkBitmap bitmap;
   if (request->is_scaled()) {
-    // Compute the rect of the pixels in the copy output result's coordinate
-    // space that are affected by the requested copy area. If there will be zero
-    // pixels of output or the scaling ratio was not reasonable, do not proceed.
-    result_rect = copy_output::ComputeResultRect(
-        request->area(), request->scale_from(), request->scale_to());
-    if (result_rect.IsEmpty())
-      return;
-
     // Resolve the source for the scaling input: Initialize a SkPixmap that
     // selects the current RenderPass's output rect within the current canvas
     // and provides access to its pixels.
@@ -611,19 +611,12 @@ void SoftwareRenderer::CopyDrawnRenderPass(
     if (!current_canvas_->peekPixels(&render_pass_output))
       return;
     {
-      const gfx::Rect subrect = MoveFromDrawToWindowSpace(
-          current_frame()->current_render_pass->output_rect);
+      const gfx::Rect subrect = MoveFromDrawToWindowSpace(output_rect);
       render_pass_output = SkPixmap(
           render_pass_output.info().makeWH(subrect.width(), subrect.height()),
           render_pass_output.addr(subrect.x(), subrect.y()),
           render_pass_output.rowBytes());
     }
-    const gfx::Size scaled_output_size =
-        copy_output::ComputeResultRect(
-            gfx::Rect(render_pass_output.width(), render_pass_output.height()),
-            request->scale_from(), request->scale_to())
-            .size();
-    DCHECK(gfx::Rect(scaled_output_size).Contains(result_rect));
 
     // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
     // (appropriate for thumbnailing); and, for upscaling, use the RESIZE_BEST
@@ -637,15 +630,13 @@ void SoftwareRenderer::CopyDrawnRenderPass(
         is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
                                         : ImageOperations::RESIZE_BEST;
     bitmap = ImageOperations::Resize(
-        render_pass_output, method, scaled_output_size.width(),
-        scaled_output_size.height(),
+        render_pass_output, method, result_bounds.width(),
+        result_bounds.height(),
         SkIRect{result_rect.x(), result_rect.y(), result_rect.right(),
                 result_rect.bottom()});
   } else /* if (!request->is_scaled()) */ {
-    result_rect = request->area();
-    if (result_rect.IsEmpty())
-      return;
-    const gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(result_rect);
+    const gfx::Rect window_copy_rect =
+        MoveFromDrawToWindowSpace(result_rect + output_rect.OffsetFromOrigin());
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(
         window_copy_rect.width(), window_copy_rect.height(),
         current_canvas_->imageInfo().refColorSpace()));
