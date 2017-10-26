@@ -139,7 +139,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
 
   QuicConsumedData CloseStreamOnWriteError(QuicStream* /*stream*/,
                                            QuicStreamId id,
-                                           QuicIOVector /*iov*/,
+                                           size_t /*write_length*/,
                                            QuicStreamOffset /*offset*/,
                                            StreamSendingState /*state*/) {
     session_->CloseStream(id);

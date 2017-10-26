@@ -38,31 +38,24 @@ class MockQuicSession : public QuicSession {
   // Writes outgoing data from QuicStream to a string.
   QuicConsumedData WritevData(QuicStream* stream,
                               QuicStreamId id,
-                              QuicIOVector iovector,
+                              size_t write_length,
                               QuicStreamOffset offset,
                               StreamSendingState state) override {
     if (!writable_) {
       return QuicConsumedData(0, false);
     }
 
-    size_t len = iovector.total_length;
-    if (iovector.iov == nullptr) {
-      // WritevData does not pass down a iovec, data is saved in stream before
-      // data is consumed. Retrieve data from stream.
-      char* buf = new char[len];
-      QuicDataWriter writer(len, buf, NETWORK_BYTE_ORDER);
-      QuicStream* stream = GetOrCreateStream(kStreamId);
-      DCHECK(stream);
-      if (len > 0) {
-        stream->WriteStreamData(stream->stream_bytes_written(), len, &writer);
-      }
-      write_buffer_->append(buf, len);
-      delete[] buf;
-    } else {
-      const char* data = reinterpret_cast<const char*>(iovector.iov->iov_base);
-      write_buffer_->append(data, len);
+    // WritevData does not pass down a iovec, data is saved in stream before
+    // data is consumed. Retrieve data from stream.
+    char* buf = new char[write_length];
+    QuicDataWriter writer(write_length, buf, NETWORK_BYTE_ORDER);
+    if (write_length > 0) {
+      stream->WriteStreamData(stream->stream_bytes_written(), write_length,
+                              &writer);
     }
-    return QuicConsumedData(len, state != StreamSendingState::NO_FIN);
+    write_buffer_->append(buf, write_length);
+    delete[] buf;
+    return QuicConsumedData(write_length, state != StreamSendingState::NO_FIN);
   }
 
   QuartcStream* CreateIncomingDynamicStream(QuicStreamId id) override {

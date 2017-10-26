@@ -169,10 +169,8 @@ TEST_P(QuicSpdyClientSessionTest, NoEncryptionAfterInitialEncryption) {
   EXPECT_TRUE(session_->CreateOutgoingDynamicStream() == nullptr);
   // Verify that no data may be send on existing streams.
   char data[] = "hello world";
-  struct iovec iov = {data, arraysize(data)};
-  QuicIOVector iovector(&iov, 1, iov.iov_len);
   QuicConsumedData consumed =
-      session_->WritevData(stream, stream->id(), iovector, 0, NO_FIN);
+      session_->WritevData(stream, stream->id(), arraysize(data), 0, NO_FIN);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_EQ(0u, consumed.bytes_consumed);
 }

@@ -5,8 +5,8 @@
 #ifndef NET_QUIC_CORE_QUIC_STREAM_SEND_BUFFER_H_
 #define NET_QUIC_CORE_QUIC_STREAM_SEND_BUFFER_H_
 
+#include "net/base/iovec.h"
 #include "net/quic/core/frames/quic_stream_frame.h"
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_mem_slice.h"
 
@@ -51,7 +51,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   ~QuicStreamSendBuffer();
 
   // Save |data_length| of data starts at |iov_offset| in |iov| to send buffer.
-  void SaveStreamData(QuicIOVector iov,
+  void SaveStreamData(const struct iovec* iov,
+                      int iov_count,
                       size_t iov_offset,
                       QuicByteCount data_length);
 

@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "net/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/quic/core/quic_framer.h"
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_pending_retransmission.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -83,11 +82,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Returns false and flushes all pending frames if current open packet is
   // full.
-  // If current packet is not full, converts a raw payload into a stream frame
-  // that fits into the open packet and adds it to the packet.
-  // The payload begins at |iov_offset| into the |iov|.
+  // If current packet is not full, creates a stream frame that fits into the
+  // open packet and adds it to the packet.
   bool ConsumeData(QuicStreamId id,
-                   QuicIOVector iov,
+                   size_t write_length,
                    size_t iov_offset,
                    QuicStreamOffset offset,
                    bool fin,
@@ -113,7 +111,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // |num_bytes_consumed| to the number of bytes consumed to create the
   // QuicStreamFrame.
   void CreateAndSerializeStreamFrame(QuicStreamId id,
-                                     const QuicIOVector& iov,
+                                     size_t write_length,
                                      QuicStreamOffset iov_offset,
                                      QuicStreamOffset stream_offset,
                                      bool fin,
@@ -207,13 +205,11 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   static bool ShouldRetransmit(const QuicFrame& frame);
 
-  // Converts a raw payload to a frame which fits into the current open
-  // packet.  The payload begins at |iov_offset| into the |iov|.
-  // If data is empty and fin is true, the expected behavior is to consume the
-  // fin but return 0.  If any data is consumed, it will be copied into a
-  // new buffer that |frame| will point to and own.
+  // Creates a stream frame which fits into the current open packet. If
+  // |write_length| is 0 and fin is true, the expected behavior is to consume
+  // the fin but return 0.
   void CreateStreamFrame(QuicStreamId id,
-                         QuicIOVector iov,
+                         size_t write_length,
                          size_t iov_offset,
                          QuicStreamOffset offset,
                          bool fin,
@@ -248,9 +244,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   bool IncludeNonceInPublicHeader();
 
   // Returns true if |frame| starts with CHLO.
-  bool StreamFrameStartsWithChlo(QuicIOVector iov,
-                                 size_t iov_offset,
-                                 const QuicStreamFrame& frame) const;
+  bool StreamFrameStartsWithChlo(const QuicStreamFrame& frame) const;
 
   // Does not own these delegates or the framer.
   DelegateInterface* delegate_;

@@ -523,12 +523,14 @@ class TestConnection : public QuicConnection {
     OnSerializedPacket(&serialized_packet);
   }
 
-  QuicConsumedData SendStreamData(QuicStreamId id,
-                                  QuicIOVector iov,
-                                  QuicStreamOffset offset,
-                                  StreamSendingState state) override {
-    producer_.SaveStreamData(id, iov, 0u, offset, iov.total_length);
-    return QuicConnection::SendStreamData(id, iov, offset, state);
+  QuicConsumedData SaveAndSendStreamData(QuicStreamId id,
+                                         const struct iovec* iov,
+                                         int iov_count,
+                                         size_t total_length,
+                                         QuicStreamOffset offset,
+                                         StreamSendingState state) {
+    producer_.SaveStreamData(id, iov, iov_count, 0u, offset, total_length);
+    return QuicConnection::SendStreamData(id, total_length, offset, state);
   }
 
   QuicConsumedData SendStreamDataWithString(QuicStreamId id,
@@ -539,8 +541,8 @@ class TestConnection : public QuicConnection {
       this->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
     struct iovec iov;
-    QuicIOVector data_iov(MakeIOVector(data, &iov));
-    return SendStreamData(id, data_iov, offset, state);
+    MakeIOVector(data, &iov);
+    return SaveAndSendStreamData(id, &iov, 1, data.length(), offset, state);
   }
 
   QuicConsumedData SendStreamData3() {
@@ -1969,7 +1971,7 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   iov[0].iov_len = 4;
   iov[1].iov_base = data + 4;
   iov[1].iov_len = 2;
-  connection_.SendStreamData(1, QuicIOVector(iov, 2, 6), 0, NO_FIN);
+  connection_.SaveAndSendStreamData(1, iov, 2, 6, 0, NO_FIN);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
@@ -1995,7 +1997,7 @@ TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
   iov[0].iov_len = 4;
   iov[1].iov_base = data + 4;
   iov[1].iov_len = 2;
-  connection_.SendStreamData(1, QuicIOVector(iov, 2, 6), 0, NO_FIN);
+  connection_.SaveAndSendStreamData(1, iov, 2, 6, 0, NO_FIN);
 
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
   EXPECT_TRUE(connection_.HasQueuedData());
@@ -2016,8 +2018,7 @@ TEST_P(QuicConnectionTest, SendingZeroBytes) {
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   // Send a zero byte write with a fin using writev.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  QuicIOVector empty_iov(nullptr, 0, 0);
-  connection_.SendStreamData(kHeadersStreamId, empty_iov, 0, FIN);
+  connection_.SaveAndSendStreamData(kHeadersStreamId, nullptr, 0, 0, 0, FIN);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
@@ -2048,9 +2049,8 @@ TEST_P(QuicConnectionTest, LargeSendWithPendingAck) {
   struct iovec iov;
   iov.iov_base = data_array.get();
   iov.iov_len = len;
-  QuicIOVector iovector(&iov, 1, len);
   QuicConsumedData consumed =
-      connection_.SendStreamData(kHeadersStreamId, iovector, 0, FIN);
+      connection_.SaveAndSendStreamData(kHeadersStreamId, &iov, 1, len, 0, FIN);
   EXPECT_EQ(len, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -5028,8 +5028,8 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
               OnConnectionClosed(QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
                                  _, ConnectionCloseSource::FROM_SELF));
   struct iovec iov;
-  QuicIOVector data_iov(MakeIOVector("", &iov));
-  EXPECT_QUIC_BUG(connection_.SendStreamData(3, data_iov, 0, FIN),
+  MakeIOVector("", &iov);
+  EXPECT_QUIC_BUG(connection_.SaveAndSendStreamData(3, &iov, 1, 0, 0, FIN),
                   "Cannot send stream data without encryption.");
   EXPECT_FALSE(connection_.connected());
 }

@@ -137,7 +137,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // if the socket was unexpectedly blocked.
   virtual QuicConsumedData WritevData(QuicStream* stream,
                                       QuicStreamId id,
-                                      QuicIOVector iov,
+                                      size_t write_length,
                                       QuicStreamOffset offset,
                                       StreamSendingState state);
 

@@ -5654,8 +5654,7 @@ TEST_P(QuicFramerTest, StartsWithChlo) {
   struct iovec iovec;
   iovec.iov_base = const_cast<char*>(data.data());
   iovec.iov_len = data.length();
-  QuicIOVector iov(&iovec, 1, iovec.iov_len);
-  producer.SaveStreamData(kCryptoStreamId, iov, 0, 0, data.length());
+  producer.SaveStreamData(kCryptoStreamId, &iovec, 1, 0, 0, data.length());
   for (size_t offset = 0; offset < 5; ++offset) {
     if (offset == 0 || offset == 4) {
       EXPECT_TRUE(framer_.StartsWithChlo(kCryptoStreamId, offset));

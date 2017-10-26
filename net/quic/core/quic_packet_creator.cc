@@ -115,7 +115,7 @@ void QuicPacketCreator::UpdatePacketNumberLength(
 }
 
 bool QuicPacketCreator::ConsumeData(QuicStreamId id,
-                                    QuicIOVector iov,
+                                    size_t write_length,
                                     size_t iov_offset,
                                     QuicStreamOffset offset,
                                     bool fin,
@@ -124,15 +124,15 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
   if (!HasRoomForStreamFrame(id, offset)) {
     return false;
   }
-  CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
+  CreateStreamFrame(id, write_length, iov_offset, offset, fin, frame);
   // Explicitly disallow multi-packet CHLOs.
   if (FLAGS_quic_enforce_single_packet_chlo &&
-      StreamFrameStartsWithChlo(iov, iov_offset, *frame->stream_frame) &&
-      frame->stream_frame->data_length < iov.total_length) {
+      StreamFrameStartsWithChlo(*frame->stream_frame) &&
+      frame->stream_frame->data_length < write_length) {
     const string error_details = "Client hello won't fit in a single packet.";
     QUIC_BUG << error_details << " Constructed stream frame length: "
              << frame->stream_frame->data_length
-             << " CHLO length: " << iov.total_length;
+             << " CHLO length: " << write_length;
     delegate_->OnUnrecoverableError(QUIC_CRYPTO_CHLO_TOO_LARGE, error_details,
                                     ConnectionCloseSource::FROM_SELF);
     delete frame->stream_frame;
@@ -172,7 +172,7 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
 }
 
 void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
-                                          QuicIOVector iov,
+                                          size_t write_length,
                                           size_t iov_offset,
                                           QuicStreamOffset offset,
                                           bool fin,
@@ -189,7 +189,7 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
       << QuicFramer::GetMinStreamFrameSize(framer_->transport_version(), id,
                                            offset, true);
 
-  if (iov_offset == iov.total_length) {
+  if (iov_offset == write_length) {
     QUIC_BUG_IF(!fin) << "Creating a stream frame with no data or fin.";
     // Create a new packet for the fin, if necessary.
     *frame =
@@ -197,7 +197,7 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
     return;
   }
 
-  const size_t data_size = iov.total_length - iov_offset;
+  const size_t data_size = write_length - iov_offset;
   size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
       framer_->transport_version(), id, offset,
       /* last_frame_in_packet= */ true);
@@ -292,7 +292,7 @@ void QuicPacketCreator::ClearPacket() {
 
 void QuicPacketCreator::CreateAndSerializeStreamFrame(
     QuicStreamId id,
-    const QuicIOVector& iov,
+    size_t write_length,
     QuicStreamOffset iov_offset,
     QuicStreamOffset stream_offset,
     bool fin,
@@ -310,9 +310,9 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   }
 
   // Create a Stream frame with the remaining space.
-  QUIC_BUG_IF(iov_offset == iov.total_length && !fin)
+  QUIC_BUG_IF(iov_offset == write_length && !fin)
       << "Creating a stream frame with no data or fin.";
-  const size_t remaining_data_size = iov.total_length - iov_offset;
+  const size_t remaining_data_size = write_length - iov_offset;
   const size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
       framer_->transport_version(), id, stream_offset,
       /* last_frame_in_packet= */ true);
@@ -587,8 +587,6 @@ void QuicPacketCreator::AddPendingPadding(QuicByteCount size) {
 }
 
 bool QuicPacketCreator::StreamFrameStartsWithChlo(
-    QuicIOVector iov,
-    size_t iov_offset,
     const QuicStreamFrame& frame) const {
   if (framer_->perspective() == Perspective::IS_SERVER ||
       frame.stream_id != kCryptoStreamId || frame.data_length < sizeof(kCHLO)) {

@@ -126,7 +126,7 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
 
   MOCK_METHOD4(SendStreamData,
                QuicConsumedData(QuicStreamId id,
-                                QuicIOVector iov,
+                                size_t write_length,
                                 QuicStreamOffset offset,
                                 StreamSendingState state));
 };

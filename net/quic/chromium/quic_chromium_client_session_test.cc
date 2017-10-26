@@ -1150,11 +1150,9 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   struct iovec iov[1];
   iov[0].iov_base = data;
   iov[0].iov_len = 4;
-  QuicStreamPeer::SendBuffer(stream).SaveStreamData(
-      QuicIOVector(iov, arraysize(iov), 4), 0, 4);
+  QuicStreamPeer::SendBuffer(stream).SaveStreamData(iov, 1, 0, 4);
   QuicStreamPeer::SetStreamBytesWritten(4, stream);
-  session_->WritevData(stream, stream->id(),
-                       QuicIOVector(iov, arraysize(iov), 4), 0, NO_FIN);
+  session_->WritevData(stream, stream->id(), 4, 0, NO_FIN);
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

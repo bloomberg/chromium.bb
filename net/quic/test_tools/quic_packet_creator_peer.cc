@@ -48,12 +48,12 @@ void QuicPacketCreatorPeer::FillPacketHeader(QuicPacketCreator* creator,
 // static
 void QuicPacketCreatorPeer::CreateStreamFrame(QuicPacketCreator* creator,
                                               QuicStreamId id,
-                                              QuicIOVector iov,
+                                              size_t write_length,
                                               size_t iov_offset,
                                               QuicStreamOffset offset,
                                               bool fin,
                                               QuicFrame* frame) {
-  creator->CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
+  creator->CreateStreamFrame(id, write_length, iov_offset, offset, fin, frame);
 }
 
 // static

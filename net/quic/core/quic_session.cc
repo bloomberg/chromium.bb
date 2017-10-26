@@ -309,7 +309,7 @@ void QuicSession::ProcessUdpPacket(const QuicSocketAddress& self_address,
 
 QuicConsumedData QuicSession::WritevData(QuicStream* stream,
                                          QuicStreamId id,
-                                         QuicIOVector iov,
+                                         size_t write_length,
                                          QuicStreamOffset offset,
                                          StreamSendingState state) {
   // This check is an attempt to deal with potential memory corruption
@@ -330,7 +330,8 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
     // up write blocked until OnCanWrite is next called.
     return QuicConsumedData(0, false);
   }
-  QuicConsumedData data = connection_->SendStreamData(id, iov, offset, state);
+  QuicConsumedData data =
+      connection_->SendStreamData(id, write_length, offset, state);
   write_blocked_streams_.UpdateBytesForStream(id, data.bytes_consumed);
   return data;
 }

@@ -1087,10 +1087,10 @@ void QuicConnection::SendVersionNegotiationPacket() {
 }
 
 QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
-                                                QuicIOVector iov,
+                                                size_t write_length,
                                                 QuicStreamOffset offset,
                                                 StreamSendingState state) {
-  if (state == NO_FIN && iov.total_length == 0) {
+  if (state == NO_FIN && write_length == 0) {
     QUIC_BUG << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);
   }
@@ -1102,7 +1102,7 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
   // SHLO from the server, leading to two different decrypters at the server.)
   ScopedRetransmissionScheduler alarm_delayer(this);
   ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
-  return packet_generator_.ConsumeData(id, iov, offset, state);
+  return packet_generator_.ConsumeData(id, write_length, offset, state);
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,

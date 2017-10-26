@@ -14,13 +14,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "net/base/iovec.h"
 #include "net/quic/core/congestion_control/loss_detection_interface.h"
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/quic/core/quic_framer.h"
-#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_server_session_base.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
@@ -492,7 +492,7 @@ class MockQuicSession : public QuicSession {
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
-                                QuicIOVector data,
+                                size_t write_length,
                                 QuicStreamOffset offset,
                                 StreamSendingState state));
 
@@ -511,11 +511,11 @@ class MockQuicSession : public QuicSession {
 
   using QuicSession::ActivateStream;
 
-  // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
-  // has been consumed.
+  // Returns a QuicConsumedData that indicates all of |write_length| (and |fin|
+  // if set) has been consumed.
   static QuicConsumedData ConsumeAllData(QuicStream* stream,
                                          QuicStreamId id,
-                                         const QuicIOVector& data,
+                                         size_t write_length,
                                          QuicStreamOffset offset,
                                          StreamSendingState state);
 
@@ -564,7 +564,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
-                                QuicIOVector data,
+                                size_t write_length,
                                 QuicStreamOffset offset,
                                 StreamSendingState state));
 
@@ -997,13 +997,10 @@ QuicHeaderList AsHeaderList(const T& container) {
   return l;
 }
 
-// Utility function that returns an QuicIOVector object wrapped around |str|.
-// // |str|'s data is stored in |iov|.
-inline QuicIOVector MakeIOVector(QuicStringPiece str, struct iovec* iov) {
+// Utility function that stores |str|'s data in |iov|.
+inline void MakeIOVector(QuicStringPiece str, struct iovec* iov) {
   iov->iov_base = const_cast<char*>(str.data());
   iov->iov_len = static_cast<size_t>(str.size());
-  QuicIOVector quic_iov(iov, 1, str.size());
-  return quic_iov;
 }
 
 // Utilities that will adapt stream ids when http stream pairs are

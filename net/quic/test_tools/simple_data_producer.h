@@ -24,7 +24,8 @@ class SimpleDataProducer : public QuicStreamFrameDataProducer,
   ~SimpleDataProducer() override;
 
   void SaveStreamData(QuicStreamId id,
-                      QuicIOVector iov,
+                      const struct iovec* iov,
+                      int iov_count,
                       size_t iov_offset,
                       QuicStreamOffset offset,
                       QuicByteCount data_length);

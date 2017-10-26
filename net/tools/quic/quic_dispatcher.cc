@@ -72,10 +72,11 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
                             const string& error_details,
                             ConnectionCloseSource source) override {}
 
-  void SaveStatelessRejectFrameData(QuicIOVector iov,
-                                    size_t iov_offset,
-                                    QuicByteCount data_length) {
-    send_buffer_.SaveStreamData(iov, iov_offset, data_length);
+  void SaveStatelessRejectFrameData(QuicStringPiece reject) {
+    struct iovec iovec;
+    iovec.iov_base = const_cast<char*>(reject.data());
+    iovec.iov_len = reject.length();
+    send_buffer_.SaveStreamData(&iovec, 1, 0, iovec.iov_len);
   }
 
   // QuicStreamFrameDataProducer
@@ -145,22 +146,19 @@ class StatelessConnectionTerminator {
   // message |reject|.  Adds the connection to time wait list with the
   // generated packets.
   void RejectConnection(QuicStringPiece reject) {
-    struct iovec iovec;
-    iovec.iov_base = const_cast<char*>(reject.data());
-    iovec.iov_len = reject.length();
-    QuicIOVector iov(&iovec, 1, iovec.iov_len);
     QuicStreamOffset offset = 0;
-    collector_.SaveStatelessRejectFrameData(iov, 0, reject.length());
-    while (offset < iovec.iov_len) {
+    collector_.SaveStatelessRejectFrameData(reject);
+    while (offset < reject.length()) {
       QuicFrame frame;
-      if (!creator_.ConsumeData(kCryptoStreamId, iov, offset, offset,
+      if (!creator_.ConsumeData(kCryptoStreamId, reject.length(), offset,
+                                offset,
                                 /*fin=*/false,
                                 /*needs_full_padding=*/true, &frame)) {
         QUIC_BUG << "Unable to consume data into an empty packet.";
         return;
       }
       offset += frame.stream_frame->data_length;
-      if (offset < iovec.iov_len) {
+      if (offset < reject.length()) {
         DCHECK(!creator_.HasRoomForStreamFrame(kCryptoStreamId, offset));
       }
       creator_.Flush();
