@@ -1,20 +1,22 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function A() {
-    this.testFoo = "abc";
-}
+(async function() {
+  TestRunner.addResult(`Tests RemoteObject.getProperties.\n`);
+  await TestRunner.evaluateInPagePromise(`
+      function A() {
+          this.testFoo = "abc";
+      }
 
-function B() { 
-    this.testBar = "cde";
-}
+      function B() {
+          this.testBar = "cde";
+      }
 
-B.prototype = new A();
-b = new B();
+      B.prototype = new A();
+      b = new B();
+  `);
 
-async function test() {
   var result = await TestRunner.RuntimeAgent.evaluate('window.b');
   var properties = await TestRunner.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false);
 
@@ -29,14 +31,4 @@ async function test() {
       TestRunner.addResult('property.name=="' + property.name + '" isOwn=="' + property.isOwn + '"');
   }
   TestRunner.completeTest();
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests RemoteObject.getProperties.
-</p>
-
-</body>
-</html>
+})();

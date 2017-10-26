@@ -1,8 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Unit test for release note\n`);
+
+
   Help.releaseNoteText = [
     {version: 3},
     {version: 4},
@@ -48,12 +51,4 @@ function test() {
       next();
     },
   ]);
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>
-    Unit test for release note
-</p>
-</body>
-</html>
+})();

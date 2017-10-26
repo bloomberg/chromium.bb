@@ -1,12 +1,14 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var object1 = { get foo() { return 1; }, set foo(value) { } };
-var object2 = { get foo() { return 1; } };
+(async function() {
+  TestRunner.addResult(`Tests RemoteObject.getProperties.\n`);
+  await TestRunner.evaluateInPagePromise(`
+      var object1 = { get foo() { return 1; }, set foo(value) { } };
+      var object2 = { get foo() { return 1; } };
+  `);
 
-function test() {
   var obj1, obj2;
 
   function dumpProperties(next, properties) {
@@ -56,15 +58,4 @@ function test() {
     convertPropertyValueForTest(property, 'setter');
     TestRunner.dump(property, {objectId: 'formatAsTypeName'});
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests RemoteObject.getProperties.
-</p>
-
-</body>
-</html>
+})();

@@ -1,22 +1,21 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-</head>
-<body>
-<p>
-Tests RemoteObject.eventListeners.
-</p>
-<div id="with-handlers" onclick="return 42;"></div>
-<div id="without-handlers"></div>
-<script>
-    function foo() {}
-    function boo() {}
-    window.addEventListener("scroll", foo, true);
-    document.getElementById("with-handlers").addEventListener("click", boo, true);
-    document.getElementById("with-handlers").addEventListener("mouseout", foo, false);
-    runTest();
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests RemoteObject.eventListeners.\n`);
+  await TestRunner.loadHTML(`
+          <div id="with-handlers" onclick="return 42;"></div>
+          <div id="without-handlers"></div>
+        `);
+  await TestRunner.evaluateInPagePromise(`
+          function foo() {}
+          function boo() {}
+          window.addEventListener("scroll", foo, true);
+          document.getElementById("with-handlers").addEventListener("click", boo, true);
+          document.getElementById("with-handlers").addEventListener("mouseout", foo, false);
+      `);
+
   var windowObject;
   var divWithHandlers;
   var divWithoutHandlers;
@@ -65,8 +64,4 @@ function test() {
       TestRunner.domDebuggerModel.eventListeners(divWithoutHandlers).then(dumpListeners).then(next);
     }
   ]);
-}
-
-</script>
-</body>
-</html>
+})();

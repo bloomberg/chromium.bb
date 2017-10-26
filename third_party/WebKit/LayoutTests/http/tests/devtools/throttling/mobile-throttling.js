@@ -1,15 +1,13 @@
-<html>
-<head>
-<title> Change mobile throttling setting.</title>
-<script src = "../../inspector/inspector-test.js"></script>
-<script>
-function initialize_ThrottlingTest() {
-  InspectorTest.preloadPanel("network");
-  InspectorTest.preloadPanel("timeline");
-  UI.viewManager.showView("network.config");
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that mobile, network, and CPU throttling interact with each other logically.\n`);
+  await TestRunner.showPanel("network");
+  await TestRunner.showPanel("timeline");
+  UI.viewManager.showView("network.config");
+
   var deviceModeView = new Emulation.DeviceModeView();
 
   var deviceModeThrottling = deviceModeView._toolbar._throttlingConditionsItem;
@@ -84,13 +82,4 @@ function test() {
   dumpThrottlingState();
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-    <p>
-      Tests that mobile, network, and CPU throttling interact with each other logically.
-    </p>
-</body>
-</html>
+})();

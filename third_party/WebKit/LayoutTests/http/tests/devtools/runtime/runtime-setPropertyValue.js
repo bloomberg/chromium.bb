@@ -1,32 +1,35 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var object1 = { foo: 1 };
-var object2 = { bar: 2 };
+(async function() {
+  TestRunner.addResult(`Tests WebInspector.RemoveObject.setPropertyValue implementation.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.evaluateInPagePromise(`
+      var object1 = { foo: 1 };
+      var object2 = { bar: 2 };
 
-function dumpObject(label)
-{
-    console.log("===== " + label + " =====");
-    console.log(JSON.stringify(object1, replacer));
-    console.log("");
+      function dumpObject(label)
+      {
+          console.log("===== " + label + " =====");
+          console.log(JSON.stringify(object1, replacer));
+          console.log("");
 
-    function replacer(key, value)
-    {
-        if (typeof value === "number" && !isFinite(value))
-            return String(value);
-        return value;
-    }
-}
+          function replacer(key, value)
+          {
+              if (typeof value === "number" && !isFinite(value))
+                  return String(value);
+              return value;
+          }
+      }
 
-function checkNegativeZero()
-{
-    console.log("===== Checking negative zero =====");
-    console.log("1/-0 = " + (1 / object1.foo));
-}
+      function checkNegativeZero()
+      {
+          console.log("===== Checking negative zero =====");
+          console.log("1/-0 = " + (1 / object1.foo));
+      }
+  `);
 
-function test() {
   var obj1, obj2;
   var nameFoo = SDK.RemoteObject.toCallArgument('foo');
 
@@ -93,19 +96,11 @@ function test() {
 
     function testReleaseObjectIsCalled(next) {
       // If failed, this test will time out.
-      TestRunner.addSniffer(TestRunner.RuntimeAgent, 'releaseObject', next);
+      TestRunner.addSniffer(TestRunner.RuntimeAgent, 'releaseObject', () => {
+        ConsoleTestRunner.dumpConsoleMessages();
+        next();
+      });
       obj1.setPropertyValue(nameFoo, '[1,2,3]');
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests WebInspector.RemoveObject.setPropertyValue implementation.
-</p>
-
-</body>
-</html>
+})();
