@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_SESSION_MANAGER_OPERATION_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -111,8 +112,8 @@ class SessionManagerOperation {
 
   // Validates device settings after retrieval from session_manager.
   void ValidateDeviceSettings(
-      const std::string& policy_blob,
-      SessionManagerClient::RetrievePolicyResponseType response_type);
+      SessionManagerClient::RetrievePolicyResponseType response_type,
+      const std::string& policy_blob);
 
   // Extracts status and device settings from the validator and reports them.
   void ReportValidatorStatus(policy::DeviceCloudPolicyValidator* validator);

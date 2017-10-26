@@ -94,15 +94,15 @@ class PreSigninPolicyFetcher : public CloudPolicyClient::Observer {
                                 const std::string& mount_hash);
 
   void OnCachedPolicyRetrieved(
-      const std::string& policy_blob,
-      RetrievePolicyResponseType retrieve_policy_response);
+      RetrievePolicyResponseType retrieve_policy_response,
+      const std::string& policy_blob);
 
-  void OnPolicyKeyLoaded(const std::string& policy_blob,
-                         RetrievePolicyResponseType retrieve_policy_response);
+  void OnPolicyKeyLoaded(RetrievePolicyResponseType retrieve_policy_response,
+                         const std::string& policy_blob);
 
   void OnUnmountTemporaryUserHome(
-      const std::string& policy_blob,
       RetrievePolicyResponseType retrieve_policy_response,
+      const std::string& policy_blob,
       base::Optional<bool> unmount_success);
 
   void OnCachedPolicyValidated(UserCloudPolicyValidator* validator);

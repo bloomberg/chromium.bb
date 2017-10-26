@@ -170,12 +170,12 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // to the callback. On failure, we will pass "" and the details of error type
   // in |response_type|.
   using RetrievePolicyCallback =
-      base::Callback<void(const std::string& protobuf,
-                          RetrievePolicyResponseType response_type)>;
+      base::OnceCallback<void(RetrievePolicyResponseType response_type,
+                              const std::string& protobuf)>;
 
   // Fetches the device policy blob stored by the session manager.  Upon
   // completion of the retrieve attempt, we will call the provided callback.
-  virtual void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) = 0;
+  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) = 0;
 
   // Same as RetrieveDevicePolicy() but blocks until a reply is received, and
   // populates the policy synchronously. Returns SUCCESS when successful, or
@@ -192,7 +192,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // provided callback.
   virtual void RetrievePolicyForUser(
       const cryptohome::Identification& cryptohome_id,
-      const RetrievePolicyCallback& callback) = 0;
+      RetrievePolicyCallback callback) = 0;
 
   // Same as RetrievePolicyForUser() but blocks until a reply is received, and
   // populates the policy synchronously. Returns SUCCESS when successful, or
@@ -209,13 +209,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // invoked upon completition.
   virtual void RetrievePolicyForUserWithoutSession(
       const cryptohome::Identification& cryptohome_id,
-      const RetrievePolicyCallback& callback) = 0;
+      RetrievePolicyCallback callback) = 0;
 
   // Fetches the policy blob associated with the specified device-local account
   // from session manager.  |callback| is invoked up on completion.
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
-      const RetrievePolicyCallback& callback) = 0;
+      RetrievePolicyCallback callback) = 0;
 
   // Same as RetrieveDeviceLocalAccountPolicy() but blocks until a reply is
   // received, and populates the policy synchronously. Returns SUCCESS when

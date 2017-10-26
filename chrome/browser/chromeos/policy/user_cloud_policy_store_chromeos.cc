@@ -72,8 +72,8 @@ void UserCloudPolicyStoreChromeOS::Load() {
   weak_factory_.InvalidateWeakPtrs();
   session_manager_client_->RetrievePolicyForUser(
       cryptohome::Identification(account_id_),
-      base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStoreChromeOS::LoadImmediately() {
@@ -194,8 +194,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyStored(bool success) {
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
-    const std::string& policy_blob,
-    RetrievePolicyResponseType response_type) {
+    RetrievePolicyResponseType response_type,
+    const std::string& policy_blob) {
   // Disallow the sign in when the Chrome OS user session has not started, which
   // should always happen before the profile construction. An attempt to read
   // the policy outside the session will always fail and return an empty policy

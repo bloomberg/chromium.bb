@@ -100,8 +100,8 @@ void PreSigninPolicyFetcher::OnMountTemporaryUserHome(
 }
 
 void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
-    const std::string& policy_blob,
-    RetrievePolicyResponseType retrieve_policy_response) {
+    RetrievePolicyResponseType retrieve_policy_response,
+    const std::string& policy_blob) {
   // We only need the cached policy key if there was policy and if the device is
   // not joined to Active Directory (policy blobs from Active Directory servers
   // are not signed).
@@ -112,26 +112,26 @@ void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
         cryptohome_client_, task_runner_, account_id_, policy_key_dir);
     cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::Bind(
         &PreSigninPolicyFetcher::OnPolicyKeyLoaded,
-        weak_ptr_factory_.GetWeakPtr(), policy_blob, retrieve_policy_response));
+        weak_ptr_factory_.GetWeakPtr(), retrieve_policy_response, policy_blob));
   } else {
     // Skip and pretend we've loaded policy key. We won't need it anyway,
     // because there is no policy to validate or because it's not signed (Active
     // Directory).
-    OnPolicyKeyLoaded(policy_blob, retrieve_policy_response);
+    OnPolicyKeyLoaded(retrieve_policy_response, policy_blob);
   }
 }
 
 void PreSigninPolicyFetcher::OnPolicyKeyLoaded(
-    const std::string& policy_blob,
-    RetrievePolicyResponseType retrieve_policy_response) {
+    RetrievePolicyResponseType retrieve_policy_response,
+    const std::string& policy_blob) {
   cryptohome_client_->Unmount(base::BindOnce(
       &PreSigninPolicyFetcher::OnUnmountTemporaryUserHome,
-      weak_ptr_factory_.GetWeakPtr(), policy_blob, retrieve_policy_response));
+      weak_ptr_factory_.GetWeakPtr(), retrieve_policy_response, policy_blob));
 }
 
 void PreSigninPolicyFetcher::OnUnmountTemporaryUserHome(
-    const std::string& policy_blob,
     RetrievePolicyResponseType retrieve_policy_response,
+    const std::string& policy_blob,
     base::Optional<bool> unmount_success) {
   if (!unmount_success.has_value() || !unmount_success.value()) {
     // The temporary userhome mount could not be unmounted. Log an error and

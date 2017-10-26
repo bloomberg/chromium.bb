@@ -136,20 +136,20 @@ void SessionManagerOperation::StorePublicKey(const base::Closure& callback,
 
 void SessionManagerOperation::RetrieveDeviceSettings() {
   session_manager_client()->RetrieveDevicePolicy(
-      base::Bind(&SessionManagerOperation::ValidateDeviceSettings,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SessionManagerOperation::ValidateDeviceSettings,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SessionManagerOperation::BlockingRetrieveDeviceSettings() {
   std::string policy_blob;
   RetrievePolicyResponseType response =
       session_manager_client()->BlockingRetrieveDevicePolicy(&policy_blob);
-  ValidateDeviceSettings(policy_blob, response);
+  ValidateDeviceSettings(response, policy_blob);
 }
 
 void SessionManagerOperation::ValidateDeviceSettings(
-    const std::string& policy_blob,
-    RetrievePolicyResponseType response_type) {
+    RetrievePolicyResponseType response_type,
+    const std::string& policy_blob) {
   if (policy_blob.empty()) {
     ReportResult(DeviceSettingsService::STORE_NO_POLICY);
     return;
