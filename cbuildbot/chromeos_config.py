@@ -3502,11 +3502,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'falco-release': {
-          'useflags': append_useflags(['afdo_chrome_exp1']),
+          'useflags': append_useflags(['afdo_chrome_exp1', 'afdo_use']),
       },
 
       'peppy-release': {
-          'useflags': append_useflags(['afdo_chrome_exp2']),
+          'useflags': append_useflags(['afdo_chrome_exp2', 'afdo_use']),
       },
 
       'lumpy-chrome-pfq': {
