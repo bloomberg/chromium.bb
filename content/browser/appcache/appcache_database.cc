@@ -177,9 +177,6 @@ bool CreateIndex(sql::Connection* db, const IndexInfo& info) {
 }
 
 std::string GetActiveExperimentFlags() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableExecutableHandlers))
-    return std::string("executableHandlersEnabled");
   return std::string();
 }
 
@@ -762,19 +759,10 @@ bool AppCacheDatabase::InsertNamespace(
       "  (cache_id, origin, type, namespace_url, target_url, is_pattern)"
       "  VALUES (?, ?, ?, ?, ?, ?)";
 
-  // Note: quick and dirty storage for the 'executable' bit w/o changing
-  // schemas, we use the high bit of 'type' field.
-  int type_with_executable_bit = record->namespace_.type;
-  if (record->namespace_.is_executable) {
-    type_with_executable_bit |= 0x8000000;
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        kEnableExecutableHandlers));
-  }
-
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->origin.spec());
-  statement.BindInt(2, type_with_executable_bit);
+  statement.BindInt(2, record->namespace_.type);
   statement.BindString(3, record->namespace_.namespace_url.spec());
   statement.BindString(4, record->namespace_.target_url.spec());
   statement.BindBool(5, record->namespace_.is_pattern);
@@ -1035,20 +1023,14 @@ void AppCacheDatabase::ReadNamespaceRecord(
     const sql::Statement* statement, NamespaceRecord* record) {
   record->cache_id = statement->ColumnInt64(0);
   record->origin = GURL(statement->ColumnString(1));
-  int type_with_executable_bit = statement->ColumnInt(2);
+  record->namespace_.type =
+      static_cast<AppCacheNamespaceType>(statement->ColumnInt(2));
   record->namespace_.namespace_url = GURL(statement->ColumnString(3));
   record->namespace_.target_url = GURL(statement->ColumnString(4));
   record->namespace_.is_pattern = statement->ColumnBool(5);
-
-  // Note: quick and dirty storage for the 'executable' bit w/o changing
-  // schemas, we use the high bit of 'type' field.
-  record->namespace_.type = static_cast<AppCacheNamespaceType>
-      (type_with_executable_bit & 0x7ffffff);
-  record->namespace_.is_executable =
-      (type_with_executable_bit & 0x80000000) != 0;
-  DCHECK(!record->namespace_.is_executable ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableExecutableHandlers));
+  DCHECK(record->namespace_.type == APPCACHE_FALLBACK_NAMESPACE ||
+         record->namespace_.type == APPCACHE_INTERCEPT_NAMESPACE);
+  // The APPCACHE_NETWORK_NAMESPACE are stored as OnlineWhiteListRecords.
 }
 
 void AppCacheDatabase::ReadOnlineWhiteListRecord(

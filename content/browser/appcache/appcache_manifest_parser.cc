@@ -272,16 +272,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         ++line_p;
 
       // Look for a type value we understand, otherwise skip the line.
-      InterceptVerb verb = UNKNOWN_VERB;
       std::wstring type(type_start, line_p - type_start);
-      if (type == L"return") {
-        verb = RETURN;
-      } else if (type == L"execute" &&
-                 base::CommandLine::ForCurrentProcess()->HasSwitch(
-                    kEnableExecutableHandlers)) {
-        verb = EXECUTE;
-      }
-      if (verb == UNKNOWN_VERB)
+      if (type != L"return")
         continue;
 
       // Skip whitespace separating type from the target_url.
@@ -309,9 +301,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         continue;
 
       bool is_pattern = HasPatternMatchingAnnotation(line_p, line_end);
-      manifest.intercept_namespaces.push_back(
-          AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE, namespace_url,
-                    target_url, is_pattern, verb == EXECUTE));
+      manifest.intercept_namespaces.push_back(AppCacheNamespace(
+          APPCACHE_INTERCEPT_NAMESPACE, namespace_url, target_url, is_pattern));
     } else if (mode == FALLBACK) {
       const wchar_t* line_p = line.c_str();
       const wchar_t* line_end = line_p + line.length();

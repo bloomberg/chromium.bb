@@ -17,8 +17,6 @@ namespace content {
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
 
-const char kEnableExecutableHandlers[] = "enable-appcache-executable-handlers";
-
 const base::FilePath::CharType kAppCacheDatabaseName[] =
     FILE_PATH_LITERAL("Index");
 
@@ -75,30 +73,16 @@ AppCacheErrorDetails::AppCacheErrorDetails(
 AppCacheErrorDetails::~AppCacheErrorDetails() {}
 
 AppCacheNamespace::AppCacheNamespace()
-    : type(APPCACHE_FALLBACK_NAMESPACE),
-      is_pattern(false),
-      is_executable(false) {
-}
+    : type(APPCACHE_FALLBACK_NAMESPACE), is_pattern(false) {}
 
-AppCacheNamespace::AppCacheNamespace(
-    AppCacheNamespaceType type, const GURL& url, const GURL& target,
-    bool is_pattern)
+AppCacheNamespace::AppCacheNamespace(AppCacheNamespaceType type,
+                                     const GURL& url,
+                                     const GURL& target,
+                                     bool is_pattern)
     : type(type),
       namespace_url(url),
       target_url(target),
-      is_pattern(is_pattern),
-      is_executable(false) {
-}
-
-AppCacheNamespace::AppCacheNamespace(
-    AppCacheNamespaceType type, const GURL& url, const GURL& target,
-    bool is_pattern, bool is_executable)
-    : type(type),
-      namespace_url(url),
-      target_url(target),
-      is_pattern(is_pattern),
-      is_executable(is_executable) {
-}
+      is_pattern(is_pattern) {}
 
 AppCacheNamespace::~AppCacheNamespace() {
 }

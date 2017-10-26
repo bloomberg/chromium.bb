@@ -19,7 +19,6 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_entry.h"
-#include "content/browser/appcache/appcache_executable_handler.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
@@ -403,7 +402,6 @@ AppCacheServiceImpl::AppCacheServiceImpl(
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
       quota_client_(nullptr),
-      handler_factory_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(nullptr),
       force_keep_session_state_(false),
