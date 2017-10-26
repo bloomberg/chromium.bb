@@ -474,14 +474,6 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Notifies the metrics handler to record an action.
-     * @param {string} action The action to record.
-     */
-    recordAction(action) {
-      chrome.send('metricsHandler:recordAction', [action]);
-    }
-
-    /**
      * Notifies the metrics handler to record a histogram value.
      * @param {string} histogram The name of the histogram to record
      * @param {number} bucket The bucket to record
