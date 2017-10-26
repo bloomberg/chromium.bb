@@ -428,7 +428,7 @@ void MixerOutputStreamAlsa::DefineAlsaParameters() {
     alsa_avail_min_ = alsa_period_size_;
   }
 
-  int fixed_sample_rate_ = GetSwitchValueNonNegativeInt(
+  fixed_sample_rate_ = GetSwitchValueNonNegativeInt(
       switches::kAlsaFixedOutputSampleRate, kInvalidSampleRate);
   if (fixed_sample_rate_ != kInvalidSampleRate) {
     LOG(INFO) << "Setting fixed sample rate to " << fixed_sample_rate_;
