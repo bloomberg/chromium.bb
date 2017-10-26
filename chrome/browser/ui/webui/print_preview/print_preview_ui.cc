@@ -37,6 +37,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/print_preview_resources.h"
+#include "chrome/grit/print_preview_resources_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
@@ -166,7 +168,13 @@ bool HandleRequestCallback(
 content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
-  source->SetDefaultResource(IDR_NEW_PRINT_PREVIEW_HTML);
+  source->SetJsonPath("strings.js");
+
+  for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
+    source->AddResourcePath(kPrintPreviewResources[i].name,
+                            kPrintPreviewResources[i].value);
+  }
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
   return source;
 }
 
