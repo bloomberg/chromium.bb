@@ -8,6 +8,7 @@
 #include <wrl/client.h>
 
 #include "base/strings/string_util.h"
+#include "base/win/com_init_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
@@ -21,12 +22,21 @@ const std::vector<uint8_t> KTestBufferData = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 }
 
 TEST(CoreWinrtUtilTest, PreloadFunctions) {
-  ScopedCOMInitializer com_initializer(ScopedCOMInitializer::kMTA);
-
   if (GetVersion() < VERSION_WIN8)
     EXPECT_FALSE(ResolveCoreWinRTDelayload());
   else
     EXPECT_TRUE(ResolveCoreWinRTDelayload());
+}
+
+TEST(CoreWinrtUtilTest, RoInitializeAndUninitialize) {
+  if (GetVersion() < VERSION_WIN8)
+    return;
+
+  ASSERT_TRUE(ResolveCoreWinRTDelayload());
+  ASSERT_HRESULT_SUCCEEDED(base::win::RoInitialize(RO_INIT_MULTITHREADED));
+  AssertComApartmentType(ComApartmentType::MTA);
+  base::win::RoUninitialize();
+  AssertComApartmentType(ComApartmentType::NONE);
 }
 
 TEST(CoreWinrtUtilTest, CreateBufferFromData) {

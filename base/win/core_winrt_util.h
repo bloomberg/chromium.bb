@@ -7,6 +7,7 @@
 
 #include <hstring.h>
 #include <inspectable.h>
+#include <roapi.h>
 #include <windef.h>
 #include <windows.storage.streams.h>
 
@@ -25,6 +26,10 @@ BASE_EXPORT bool ResolveCoreWinRTDelayload();
 
 // The following stubs are provided for when component build is enabled, in
 // order to avoid the propagation of delay-loading CoreWinRT to other modules.
+
+BASE_EXPORT HRESULT RoInitialize(RO_INIT_TYPE init_type);
+
+BASE_EXPORT void RoUninitialize();
 
 BASE_EXPORT HRESULT RoGetActivationFactory(HSTRING class_id,
                                            const IID& iid,
