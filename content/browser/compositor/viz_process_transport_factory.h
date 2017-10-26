@@ -119,9 +119,10 @@ class VizProcessTransportFactory : public ui::ContextFactory,
       base::WeakPtr<ui::Compositor> compositor_weak_ptr,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
-  // Creates a ContextProvider for a compositor. Will also create
-  // |shared_worker_context_provider_| if it doesn't exist.
-  scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProvider(
+  // Creates the necessary shared worker and compositor ContextProviders. If the
+  // ContextProviders already exist and haven't been lost then it will do
+  // nothing. Returns true if ContextProviders exist.
+  bool CreateContextProviders(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   gpu::GpuChannelEstablishFactory* const gpu_channel_establish_factory_;
@@ -135,6 +136,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   scoped_refptr<ui::ContextProviderCommandBuffer>
       shared_worker_context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> compositor_context_provider_;
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
