@@ -38,11 +38,171 @@ namespace content {
 
 namespace {
 
-class SimpleURLLoaderImpl;
+// This file contains SimpleURLLoaderImpl, several BodyHandler implementations,
+// and BodyReader.
+//
+// SimpleURLLoaderImpl implements URLLoaderClient and drives the URLLoader.
+//
+// Each SimpleURLLoaderImpl creates a BodyHandler when the request is started.
+// The BodyHandler drives the body pipe, handles body data as needed (writes it
+// to a string, file, etc), and handles passing that data to the consumer's
+// callback.
+//
+// BodyReader is a utility class that BodyHandler implementations use to drive
+// the BodyPipe. This isn't handled by the SimpleURLLoader as some BodyHandlers
+// consume data off thread, so having it as a separate class allows the data
+// pipe to be used off thread, reducing use of the main thread.
 
-// BodyHandler is an abstract class from which classes for a specific use case
-// (e.g. read response to a string, write it to a file) will derive. Those
-// clases may use BodyReader to handle reading data from the body pipe.
+class BodyHandler;
+
+class SimpleURLLoaderImpl : public SimpleURLLoader,
+                            public mojom::URLLoaderClient {
+ public:
+  SimpleURLLoaderImpl();
+  ~SimpleURLLoaderImpl() override;
+
+  // SimpleURLLoader implementation.
+  void DownloadToString(const ResourceRequest& resource_request,
+                        mojom::URLLoaderFactory* url_loader_factory,
+                        const net::NetworkTrafficAnnotationTag& annotation_tag,
+                        BodyAsStringCallback body_as_string_callback,
+                        size_t max_body_size) override;
+  void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderFactory* url_loader_factory,
+      const net::NetworkTrafficAnnotationTag& annotation_tag,
+      BodyAsStringCallback body_as_string_callback) override;
+  void DownloadToFile(
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderFactory* url_loader_factory,
+      const net::NetworkTrafficAnnotationTag& annotation_tag,
+      DownloadToFileCompleteCallback download_to_file_complete_callback,
+      const base::FilePath& file_path,
+      int64_t max_body_size) override;
+  void DownloadToTempFile(
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderFactory* url_loader_factory,
+      const net::NetworkTrafficAnnotationTag& annotation_tag,
+      DownloadToFileCompleteCallback download_to_file_complete_callback,
+      int64_t max_body_size) override;
+  void SetOnRedirectCallback(
+      const OnRedirectCallback& on_redirect_callback) override;
+  void SetAllowPartialResults(bool allow_partial_results) override;
+  void SetAllowHttpErrorResults(bool allow_http_error_results) override;
+  void SetRetryOptions(int max_retries, int retry_mode) override;
+  int NetError() const override;
+  const ResourceResponseHead* ResponseInfo() const override;
+
+  // Called by BodyHandler when the BodyHandler body handler is done. If |error|
+  // is not net::OK, some error occurred reading or consuming the body. If it is
+  // net::OK, the pipe was closed and all data received was successfully
+  // handled. This could indicate an error, concellation, or completion. To
+  // determine which case this is, the size will also be compared to the size
+  // reported in ResourceRequestCompletionStatus(), if
+  // ResourceRequestCompletionStatus indicates a success.
+  void OnBodyHandlerDone(net::Error error, int64_t received_body_size);
+
+  // Finished the request with the provided error code, after freeing Mojo
+  // resources. Closes any open pipes, so no URLLoader or BodyHandlers callbacks
+  // will be invoked after this is called.
+  void FinishWithResult(int net_error);
+
+ private:
+  // Per-request state values. This object is re-created for each retry.
+  // Separating out the values makes re-initializing them on retry simpler.
+  struct RequestState {
+    RequestState() = default;
+    ~RequestState() = default;
+
+    bool request_completed = false;
+    // The expected total size of the body, taken from
+    // ResourceRequestCompletionStatus.
+    int64_t expected_body_size = 0;
+
+    bool body_started = false;
+    bool body_completed = false;
+    // Final size of the body. Set once the body's Mojo pipe has been closed.
+    int64_t received_body_size = 0;
+
+    // Set to true when FinishWithResult() is called. Once that happens, the
+    // consumer is informed of completion, and both pipes are closed.
+    bool finished = false;
+
+    // Result of the request.
+    int net_error = net::ERR_IO_PENDING;
+
+    std::unique_ptr<ResourceResponseHead> response_info;
+  };
+
+  // Prepares internal state to start a request, and then calls StartRequest().
+  // Only used for the initial request (Not retries).
+  void Start(const ResourceRequest& resource_request,
+             mojom::URLLoaderFactory* url_loader_factory,
+             const net::NetworkTrafficAnnotationTag& annotation_tag);
+
+  // Starts a request. Used for both the initial request and retries, if any.
+  void StartRequest(const ResourceRequest* resource_request,
+                    mojom::URLLoaderFactory* url_loader_factory,
+                    const net::NetworkTrafficAnnotationTag& annotation_tag);
+
+  // Re-initializes state of |this| and |body_handler_| prior to retrying a
+  // request.
+  void Retry();
+
+  // mojom::URLLoaderClient implementation;
+  void OnReceiveResponse(const ResourceResponseHead& response_head,
+                         const base::Optional<net::SSLInfo>& ssl_info,
+                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& response_head) override;
+  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback ack_callback) override;
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override;
+  void OnComplete(const ResourceRequestCompletionStatus& status) override;
+
+  // Bound to the URLLoaderClient message pipe (|client_binding_|) via
+  // set_connection_error_handler.
+  void OnConnectionError();
+
+  // Completes the request by calling FinishWithResult() if OnComplete() was
+  // called and either no body pipe was ever received, or the body pipe was
+  // closed.
+  void MaybeComplete();
+
+  OnRedirectCallback on_redirect_callback_;
+  bool allow_partial_results_ = false;
+  bool allow_http_error_results_ = false;
+
+  // Information related to retrying.
+  int remaining_retries_ = 0;
+  int retry_mode_ = RETRY_NEVER;
+
+  // Along with BodyHandler, these contain all the information required to
+  // restart the request, if retries are enabled. There are all null when
+  // retries are not enabled.
+  content::mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
+  std::unique_ptr<ResourceRequest> resource_request_;
+  std::unique_ptr<net::NetworkTrafficAnnotationTag> annotation_tag_;
+
+  std::unique_ptr<BodyHandler> body_handler_;
+
+  mojo::Binding<mojom::URLLoaderClient> client_binding_;
+  mojom::URLLoaderPtr url_loader_;
+
+  // Per-request state. Always non-null, but re-created on redirect.
+  std::unique_ptr<RequestState> request_state_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SimpleURLLoaderImpl> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleURLLoaderImpl);
+};
 
 // Utility class to drive the pipe reading a response body. Can be created on
 // one thread and then used to read data on another. A BodyReader may only be
@@ -227,15 +387,43 @@ class SaveToStringBodyHandler : public BodyHandler,
   ~SaveToStringBodyHandler() override {}
 
   // BodyHandler implementation:
+
   void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body_data_pipe) override;
-  void NotifyConsumerOfCompletion(bool destroy_results) override;
-  void PrepareToRetry(base::OnceClosure retry_callback) override;
+      mojo::ScopedDataPipeConsumerHandle body_data_pipe) override {
+    DCHECK(!body_);
+    DCHECK(!body_reader_);
+
+    body_ = base::MakeUnique<std::string>();
+    body_reader_ = std::make_unique<BodyReader>(this, max_body_size_);
+    body_reader_->Start(std::move(body_data_pipe));
+  }
+
+  void NotifyConsumerOfCompletion(bool destroy_results) override {
+    body_reader_.reset();
+    if (destroy_results)
+      body_.reset();
+
+    std::move(body_as_string_callback_).Run(std::move(body_));
+  }
+
+  void PrepareToRetry(base::OnceClosure retry_callback) override {
+    body_.reset();
+    body_reader_.reset();
+    std::move(retry_callback).Run();
+  }
 
  private:
   // BodyReader::Delegate implementation.
-  net::Error OnDataRead(uint32_t length, const char* data) override;
-  void OnDone(net::Error error, int64_t total_bytes) override;
+
+  net::Error OnDataRead(uint32_t length, const char* data) override {
+    body_->append(data, length);
+    return net::OK;
+  }
+
+  void OnDone(net::Error error, int64_t total_bytes) override {
+    DCHECK_EQ(body_->size(), static_cast<size_t>(total_bytes));
+    simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
+  }
 
   const int64_t max_body_size_;
 
@@ -547,7 +735,10 @@ class SaveToFileBodyHandler : public BodyHandler {
 
   void OnDone(net::Error error,
               int64_t total_bytes,
-              const base::FilePath& path);
+              const base::FilePath& path) {
+    path_ = path;
+    simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
+  }
 
   // Path of the file. Set in OnDone().
   base::FilePath path_;
@@ -563,197 +754,6 @@ class SaveToFileBodyHandler : public BodyHandler {
 
   DISALLOW_COPY_AND_ASSIGN(SaveToFileBodyHandler);
 };
-
-class SimpleURLLoaderImpl : public SimpleURLLoader,
-                            public mojom::URLLoaderClient {
- public:
-  SimpleURLLoaderImpl();
-  ~SimpleURLLoaderImpl() override;
-
-  // SimpleURLLoader implementation.
-  void DownloadToString(const ResourceRequest& resource_request,
-                        mojom::URLLoaderFactory* url_loader_factory,
-                        const net::NetworkTrafficAnnotationTag& annotation_tag,
-                        BodyAsStringCallback body_as_string_callback,
-                        size_t max_body_size) override;
-  void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      const ResourceRequest& resource_request,
-      mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
-      BodyAsStringCallback body_as_string_callback) override;
-  void DownloadToFile(
-      const ResourceRequest& resource_request,
-      mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
-      DownloadToFileCompleteCallback download_to_file_complete_callback,
-      const base::FilePath& file_path,
-      int64_t max_body_size) override;
-  void DownloadToTempFile(
-      const ResourceRequest& resource_request,
-      mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
-      DownloadToFileCompleteCallback download_to_file_complete_callback,
-      int64_t max_body_size) override;
-  void SetOnRedirectCallback(
-      const OnRedirectCallback& on_redirect_callback) override;
-  void SetAllowPartialResults(bool allow_partial_results) override;
-  void SetAllowHttpErrorResults(bool allow_http_error_results) override;
-  void SetRetryOptions(int max_retries, int retry_mode) override;
-  int NetError() const override;
-  const ResourceResponseHead* ResponseInfo() const override;
-
-  // Called by BodyHandler when the BodyHandler body handler is done. If |error|
-  // is not net::OK, some error occurred reading or consuming the body. If it is
-  // net::OK, the pipe was closed and all data received was successfully
-  // handled. This could indicate an error, concellation, or completion. To
-  // determine which case this is, the size will also be compared to the size
-  // reported in ResourceRequestCompletionStatus(), if
-  // ResourceRequestCompletionStatus indicates a success.
-  void OnBodyHandlerDone(net::Error error, int64_t received_body_size);
-
-  // Finished the request with the provided error code, after freeing Mojo
-  // resources. Closes any open pipes, so no URLLoader or BodyHandlers callbacks
-  // will be invoked after this is called.
-  void FinishWithResult(int net_error);
-
- private:
-  // Per-request state values. This object is re-created for each retry.
-  // Separating out the values makes re-initializing them on retry simpler.
-  struct RequestState {
-    RequestState() = default;
-    ~RequestState() = default;
-
-    bool request_completed = false;
-    // The expected total size of the body, taken from
-    // ResourceRequestCompletionStatus.
-    int64_t expected_body_size = 0;
-
-    bool body_started = false;
-    bool body_completed = false;
-    // Final size of the body. Set once the body's Mojo pipe has been closed.
-    int64_t received_body_size = 0;
-
-    // Set to true when FinishWithResult() is called. Once that happens, the
-    // consumer is informed of completion, and both pipes are closed.
-    bool finished = false;
-
-    // Result of the request.
-    int net_error = net::ERR_IO_PENDING;
-
-    std::unique_ptr<ResourceResponseHead> response_info;
-  };
-
-  // Prepares internal state to start a request, and then calls StartRequest().
-  // Only used for the initial request (Not retries).
-  void Start(const ResourceRequest& resource_request,
-             mojom::URLLoaderFactory* url_loader_factory,
-             const net::NetworkTrafficAnnotationTag& annotation_tag);
-
-  // Starts a request. Used for both the initial request and retries, if any.
-  void StartRequest(const ResourceRequest* resource_request,
-                    mojom::URLLoaderFactory* url_loader_factory,
-                    const net::NetworkTrafficAnnotationTag& annotation_tag);
-
-  // Re-initializes state of |this| and |body_handler_| prior to retrying a
-  // request.
-  void Retry();
-
-  // mojom::URLLoaderClient implementation;
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
-                         const base::Optional<net::SSLInfo>& ssl_info,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override;
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnUploadProgress(int64_t current_position,
-                        int64_t total_size,
-                        OnUploadProgressCallback ack_callback) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const ResourceRequestCompletionStatus& status) override;
-
-  // Bound to the URLLoaderClient message pipe (|client_binding_|) via
-  // set_connection_error_handler.
-  void OnConnectionError();
-
-  // Completes the request by calling FinishWithResult() if OnComplete() was
-  // called and either no body pipe was ever received, or the body pipe was
-  // closed.
-  void MaybeComplete();
-
-  OnRedirectCallback on_redirect_callback_;
-  bool allow_partial_results_ = false;
-  bool allow_http_error_results_ = false;
-
-  // Information related to retrying.
-  int remaining_retries_ = 0;
-  int retry_mode_ = RETRY_NEVER;
-
-  // Along with BodyHandler, these contain all the information required to
-  // restart the request, if retries are enabled. There are all null when
-  // retries are not enabled.
-  content::mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
-  std::unique_ptr<ResourceRequest> resource_request_;
-  std::unique_ptr<net::NetworkTrafficAnnotationTag> annotation_tag_;
-
-  std::unique_ptr<BodyHandler> body_handler_;
-
-  mojo::Binding<mojom::URLLoaderClient> client_binding_;
-  mojom::URLLoaderPtr url_loader_;
-
-  // Per-request state. Always non-null, but re-created on redirect.
-  std::unique_ptr<RequestState> request_state_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  base::WeakPtrFactory<SimpleURLLoaderImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleURLLoaderImpl);
-};
-
-void SaveToStringBodyHandler::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body_data_pipe) {
-  DCHECK(!body_);
-  DCHECK(!body_reader_);
-
-  body_ = base::MakeUnique<std::string>();
-  body_reader_ = std::make_unique<BodyReader>(this, max_body_size_);
-  body_reader_->Start(std::move(body_data_pipe));
-}
-
-net::Error SaveToStringBodyHandler::OnDataRead(uint32_t length,
-                                               const char* data) {
-  body_->append(data, length);
-  return net::OK;
-}
-
-void SaveToStringBodyHandler::OnDone(net::Error error, int64_t total_bytes) {
-  DCHECK_EQ(body_->size(), static_cast<size_t>(total_bytes));
-  simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
-}
-
-void SaveToStringBodyHandler::NotifyConsumerOfCompletion(bool destroy_results) {
-  body_reader_.reset();
-  if (destroy_results)
-    body_.reset();
-
-  std::move(body_as_string_callback_).Run(std::move(body_));
-}
-
-void SaveToStringBodyHandler::PrepareToRetry(base::OnceClosure retry_callback) {
-  body_.reset();
-  body_reader_.reset();
-  std::move(retry_callback).Run();
-}
-
-void SaveToFileBodyHandler::OnDone(net::Error error,
-                                   int64_t total_bytes,
-                                   const base::FilePath& path) {
-  path_ = path;
-  simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
-}
 
 SimpleURLLoaderImpl::SimpleURLLoaderImpl()
     : client_binding_(this),

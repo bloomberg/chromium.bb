@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -199,6 +200,9 @@ class CONTENT_EXPORT SimpleURLLoader {
 
  protected:
   SimpleURLLoader();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SimpleURLLoader);
 };
 
 }  // namespace content
