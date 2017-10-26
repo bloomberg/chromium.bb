@@ -52,6 +52,9 @@ void GetDiscoveryNetworkInfoListImpl(
     }
 
     const struct sockaddr* addr = if_list->ifa_addr;
+    if (addr == nullptr) {
+      continue;
+    }
     if (addr->sa_family != AF_PACKET) {
       continue;
     }
