@@ -17,4 +17,8 @@ blink_modules_sources("cachestorage") {
     "InspectorCacheStorageAgent.cpp",
     "InspectorCacheStorageAgent.h",
   ]
+
+  public_deps = [
+    "//third_party/WebKit/Source/platform",
+  ]
 }

@@ -8,6 +8,7 @@
 #include "modules/fetch/Response.h"
 #include "modules/serviceworkers/ForeignFetchResponse.h"
 #include "public/platform/WebCORS.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -43,10 +44,12 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
 
   Response* response = foreign_fetch_response.response();
   const FetchResponseData* internal_response = response->GetResponse();
-  const bool is_opaque =
-      internal_response->GetType() == FetchResponseData::kOpaqueType ||
-      internal_response->GetType() == FetchResponseData::kOpaqueRedirectType;
-  if (internal_response->GetType() != FetchResponseData::kDefaultType)
+  const bool is_opaque = internal_response->GetType() ==
+                             network::mojom::FetchResponseType::kOpaque ||
+                         internal_response->GetType() ==
+                             network::mojom::FetchResponseType::kOpaqueRedirect;
+  if (internal_response->GetType() !=
+      network::mojom::FetchResponseType::kDefault)
     internal_response = internal_response->InternalResponse();
 
   if (!foreign_fetch_response.hasOrigin()) {
@@ -72,7 +75,8 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
     if (foreign_fetch_response.hasHeaders()) {
       for (const String& header : foreign_fetch_response.headers())
         headers.emplace(header.Ascii().data(), header.Ascii().length());
-      if (response->GetResponse()->GetType() == FetchResponseData::kCORSType) {
+      if (response->GetResponse()->GetType() ==
+          network::mojom::FetchResponseType::kCORS) {
         const WebHTTPHeaderSet& existing_headers =
             response->GetResponse()->CorsExposedHeaderNames();
         for (WebHTTPHeaderSet::iterator it = headers.begin();
