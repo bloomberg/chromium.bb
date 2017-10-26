@@ -220,16 +220,20 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
   // Add the whether the user had complete suggestions for all requested
   // sections to the events.
   bool user_had_complete_suggestions_for_requested_information = true;
+  bool is_showing_suggestions = false;
   for (int i = 0; i < NUMBER_OF_SECTIONS; ++i) {
     if (sections_[i].is_requested_) {
+      is_showing_suggestions = true;
       if (sections_[i].number_suggestions_shown_ == 0 ||
           !sections_[i].has_complete_suggestion_) {
         user_had_complete_suggestions_for_requested_information = false;
       }
     }
   }
-  if (user_had_complete_suggestions_for_requested_information)
+  if (is_showing_suggestions &&
+      user_had_complete_suggestions_for_requested_information) {
     events_ |= EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS;
+  }
 
   // Add whether the user had and initial form of payment to the events.
   if (sections_[SECTION_PAYMENT_METHOD].number_suggestions_shown_ > 0)

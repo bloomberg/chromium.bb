@@ -176,7 +176,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   bool is_ready_to_pay() { return is_ready_to_pay_; }
 
-  // Checks whehter getting all available instruments is finished.
+  // Checks whether getting all available instruments is finished.
   bool is_get_all_instruments_finished() {
     return get_all_instruments_finished_;
   }
