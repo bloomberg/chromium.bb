@@ -1,5 +1,5 @@
 AC_INIT([OTS],
-        [5.2.0],
+        [6.1.1],
         [https://github.com/khaledhosny/ots/issues],
         [ots],
         [https://github.com/khaledhosny/ots])
@@ -19,18 +19,31 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG([0.20])
 
-AC_ARG_ENABLE(debug,
-	      AS_HELP_STRING([--enable-debug=@<:@yes/no@:>@],
-			     [Enable extra debugging information for font
-			      sanitization @<:@default=no@:>@]),
-	      AC_DEFINE(OTS_DEBUG, 1, [Enable extra debugging information]),
-	      :)
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
-have_zlib=true
-AX_CHECK_ZLIB([], [have_zlib=false])
-if ! $have_zlib; then
-	AC_MSG_ERROR([zlib is required but not found])
+if test "$GCC" = yes; then
+	AX_CHECK_COMPILE_FLAG([-fsanitize=address], [ASAN_CFLAGS=-fsanitize=address], :)
+	AX_CHECK_COMPILE_FLAG([-fsanitize=undefined], [UBSAN_CFLAGS=-fsanitize=undefined], :)
 fi
+AC_SUBST(ASAN_CFLAGS)
+AC_SUBST(UBSAN_CFLAGS)
+AM_CONDITIONAL(HAVE_FSANITIZE, [test "x$ASAN_CFLAGS" != "x" -o "x$UBSAN_CFLAGS" != "x"])
+
+AC_ARG_ENABLE([debug],
+	AS_HELP_STRING([--enable-debug=@<:@yes/no@:>@],
+	               [Enable extra debugging information for font
+	                sanitization @<:@default=no@:>@]))
+AS_IF([test "x$enable_debug" = "xyes"], [
+	AC_DEFINE(OTS_DEBUG, 1, [Enable extra debugging information])
+])
+
+AC_ARG_ENABLE([graphite],
+	AS_HELP_STRING([--enable-graphite=@<:@yes/no@:>@],
+                       [Sanitize Graphite tables @<:@default=yes@:>@]))
+AS_IF([test "x$enable_graphite" != "xno"], [
+	AC_DEFINE(OTS_GRAPHITE, 1, [Sanitize Graphite tables])
+])
+AM_CONDITIONAL(OTS_GRAPHITE, [test "x$enable_graphite" != "xno"])
 
 have_freetype=false
 PKG_CHECK_MODULES(FREETYPE, [freetype2], [have_freetype=true], :)
@@ -58,6 +71,13 @@ fi
 AC_SUBST(CORETEXT_CFLAGS)
 AC_SUBST(CORETEXT_LIBS)
 AM_CONDITIONAL(HAVE_CORETEXT, [$have_coretext])
+
+have_win32=false
+AC_CHECK_HEADERS(windows.h, have_win32=true)
+if $have_win32; then
+	AC_DEFINE(HAVE_WIN32, 1, [Have Windows API])
+fi
+AM_CONDITIONAL(HAVE_WIN32, [$have_win32])
 
 have_systime=false
 AC_CHECK_HEADER([sys/time.h], [have_systime=true])

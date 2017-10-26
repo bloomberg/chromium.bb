@@ -9,7 +9,14 @@
 
 namespace ots {
 
-struct OpenTypeMAXP {
+class OpenTypeMAXP : public Table {
+ public:
+  explicit OpenTypeMAXP(Font *font, uint32_t tag)
+      : Table(font, tag, tag) { }
+
+  bool Parse(const uint8_t *data, size_t length);
+  bool Serialize(OTSStream *out);
+
   uint16_t num_glyphs;
   bool version_1;
 
