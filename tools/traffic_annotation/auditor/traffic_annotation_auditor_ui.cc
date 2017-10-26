@@ -63,6 +63,8 @@ const base::FilePath kDownstreamUpdater =
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("annotations_xml_downstream_caller.py"));
 
+const std::string kCodeSearchLink("https://cs.chromium.org/chromium/src/");
+
 }  // namespace
 
 // Calls |kDownstreamUpdater| script to update files that depend on
@@ -260,7 +262,8 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
 
     // Source.
     const auto source = instance.proto.source();
-    line += base::StringPrintf("\t%s:%i", source.file().c_str(), source.line());
+    line += base::StringPrintf("\t%s%s?l=%i", kCodeSearchLink.c_str(),
+                               source.file().c_str(), source.line());
 
     // Hash code.
     line += base::StringPrintf("\t%i", instance.unique_id_hash_code);
