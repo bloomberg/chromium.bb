@@ -238,13 +238,32 @@ void CreateImage(bool use_i444,
 }  // namespace
 
 // static
-std::unique_ptr<WebrtcVideoEncoderVpx> WebrtcVideoEncoderVpx::CreateForVP8() {
+std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoEncoderVpx::CreateForVP8() {
+  LOG(WARNING) << "VP8 video encoder is created.";
   return base::WrapUnique(new WebrtcVideoEncoderVpx(false));
 }
 
 // static
-std::unique_ptr<WebrtcVideoEncoderVpx> WebrtcVideoEncoderVpx::CreateForVP9() {
+std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoEncoderVpx::CreateForVP9() {
+  LOG(WARNING) << "VP9 video encoder is created.";
   return base::WrapUnique(new WebrtcVideoEncoderVpx(true));
+}
+
+// See
+// https://www.webmproject.org/about/faq/#what-are-the-limits-of-vp8-and-vp9-in-terms-of-resolution-datarate-and-framerate
+// for the limitations of VP8 / VP9 encoders.
+// static
+bool WebrtcVideoEncoderVpx::IsSupportedByVP8(
+    const WebrtcVideoEncoderSelector::Profile& profile) {
+  return profile.resolution.width() <= 16384 &&
+         profile.resolution.height() <= 16384;
+}
+
+// static
+bool WebrtcVideoEncoderVpx::IsSupportedByVP9(
+    const WebrtcVideoEncoderSelector::Profile& profile) {
+  return profile.resolution.width() <= 65536 &&
+         profile.resolution.height() <= 65536;
 }
 
 WebrtcVideoEncoderVpx::~WebrtcVideoEncoderVpx() {}

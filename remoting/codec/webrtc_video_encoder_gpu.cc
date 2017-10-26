@@ -23,6 +23,9 @@ namespace {
 // there's no reason to have this set to anything greater than one.
 const int kWebrtcVideoEncoderGpuOutputBufferCount = 1;
 
+constexpr media::VideoCodecProfile kH264Profile =
+    media::VideoCodecProfile::H264PROFILE_MAIN;
+
 void ArgbToI420(const webrtc::DesktopFrame& frame,
                 scoped_refptr<media::VideoFrame> video_frame) {
   const uint8_t* rgb_data = frame.data();
@@ -234,13 +237,40 @@ void WebrtcVideoEncoderGpu::RunAnyPendingEncode() {
 }
 
 // static
-std::unique_ptr<WebrtcVideoEncoderGpu> WebrtcVideoEncoderGpu::CreateForH264() {
+std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoEncoderGpu::CreateForH264() {
   DVLOG(3) << __func__;
 
+  LOG(WARNING) << "H264 video encoder is created.";
   // HIGH profile requires Windows 8 or upper. Considering encoding latency,
   // frame size and image quality, MAIN should be fine for us.
-  return base::WrapUnique(new WebrtcVideoEncoderGpu(
-      media::VideoCodecProfile::H264PROFILE_MAIN));
+  return base::WrapUnique(new WebrtcVideoEncoderGpu(kH264Profile));
+}
+
+// static
+bool WebrtcVideoEncoderGpu::IsSupportedByH264(
+    const WebrtcVideoEncoderSelector::Profile& profile) {
+  media::VideoEncodeAccelerator::SupportedProfiles profiles =
+      media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
+          gpu::GpuPreferences());
+  for (const auto& supported_profile : profiles) {
+    if (supported_profile.profile != kH264Profile) {
+      continue;
+    }
+
+    double supported_framerate = supported_profile.max_framerate_numerator;
+    supported_framerate /= supported_profile.max_framerate_denominator;
+    if (profile.frame_rate > supported_framerate) {
+      continue;
+    }
+
+    if (profile.resolution.GetArea() >
+        supported_profile.max_resolution.GetArea()) {
+      continue;
+    }
+
+    return true;
+  }
+  return false;
 }
 
 }  // namespace remoting

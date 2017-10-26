@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/codec/webrtc_video_encoder.h"
+#include "remoting/codec/webrtc_video_encoder_selector.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/common_types.h"
@@ -95,6 +96,8 @@ class WebrtcVideoStream : public VideoStream,
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
   Observer* observer_ = nullptr;
+
+  WebrtcVideoEncoderSelector encoder_selector_;
 
   base::ThreadChecker thread_checker_;
 

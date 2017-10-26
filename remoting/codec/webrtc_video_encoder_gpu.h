@@ -7,6 +7,7 @@
 
 #include "media/video/video_encode_accelerator.h"
 #include "remoting/codec/webrtc_video_encoder.h"
+#include "remoting/codec/webrtc_video_encoder_selector.h"
 
 namespace base {
 class SharedMemory;
@@ -34,7 +35,9 @@ namespace remoting {
 class WebrtcVideoEncoderGpu : public WebrtcVideoEncoder,
                               public media::VideoEncodeAccelerator::Client {
  public:
-  static std::unique_ptr<WebrtcVideoEncoderGpu> CreateForH264();
+  static std::unique_ptr<WebrtcVideoEncoder> CreateForH264();
+  static bool IsSupportedByH264(
+      const WebrtcVideoEncoderSelector::Profile& profile);
 
   ~WebrtcVideoEncoderGpu() override;
 
