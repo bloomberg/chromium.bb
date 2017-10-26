@@ -441,11 +441,18 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
     NOTREACHED();
   }
 
+  // On Android, Touch event feature detection is enabled by default,
+  // Otherwise default is disabled.
+  std::string touch_enabled_default_switch =
+      switches::kTouchEventFeatureDetectionDisabled;
+#if defined(OS_ANDROID)
+  touch_enabled_default_switch = switches::kTouchEventFeatureDetectionEnabled;
+#endif  // defined(OS_ANDROID)
   const std::string touch_enabled_switch =
       command_line.HasSwitch(switches::kTouchEventFeatureDetection)
           ? command_line.GetSwitchValueASCII(
                 switches::kTouchEventFeatureDetection)
-          : switches::kTouchEventFeatureDetectionAuto;
+          : touch_enabled_default_switch;
   prefs.touch_event_feature_detection_enabled =
       (touch_enabled_switch == switches::kTouchEventFeatureDetectionAuto)
           ? (ui::GetTouchScreensAvailability() ==
@@ -453,6 +460,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
           : (touch_enabled_switch.empty() ||
              touch_enabled_switch ==
                  switches::kTouchEventFeatureDetectionEnabled);
+
   std::tie(prefs.available_pointer_types, prefs.available_hover_types) =
       ui::GetAvailablePointerAndHoverTypes();
   prefs.primary_pointer_type =
