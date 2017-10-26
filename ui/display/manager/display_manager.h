@@ -30,6 +30,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/optional.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/touch_device_manager.h"
 #endif
 
 namespace gfx {
@@ -198,8 +199,12 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       float ui_scale,
       const gfx::Insets* overscan_insets,
       const gfx::Size& resolution_in_pixels,
-      float device_scale_factor,
-      std::map<uint32_t, TouchCalibrationData>* touch_calibration_data_map);
+      float device_scale_factor
+#if defined(OS_CHROMEOS)
+      ,
+      std::map<uint32_t, TouchCalibrationData>* touch_calibration_data_map
+#endif
+      );
 
   // Register stored rotation properties for the internal display.
   void RegisterDisplayRotationProperties(bool rotation_lock,
@@ -381,6 +386,12 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // it.
   const Display& GetSecondaryDisplay() const;
 
+#if defined(OS_CHROMEOS)
+  TouchDeviceManager* touch_device_manager() const {
+    return touch_device_manager_.get();
+  }
+#endif
+
  private:
   friend class test::DisplayManagerTestApi;
 
@@ -525,6 +536,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // when destroyed. BeginEndNotifier uses this to track when it should call
   // OnWillProcessDisplayChanges() and OnDidProcessDisplayChanges().
   int notify_depth_ = 0;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<TouchDeviceManager> touch_device_manager_;
+#endif
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
 

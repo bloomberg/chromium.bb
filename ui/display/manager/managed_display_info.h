@@ -21,48 +21,11 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ui {
-struct TouchscreenDevice;
-}  // namespace ui
+#if defined(OS_CHROMEOS)
+#include "ui/display/manager/chromeos/touch_device_manager.h"
+#endif
 
 namespace display {
-
-// A struct that represents all the data required for touch calibration for the
-// display.
-struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
-  // CalibrationPointPair.first -> display point
-  // CalibrationPointPair.second -> touch point
-  using CalibrationPointPair = std::pair<gfx::Point, gfx::Point>;
-  using CalibrationPointPairQuad = std::array<CalibrationPointPair, 4>;
-  TouchCalibrationData();
-  TouchCalibrationData(const CalibrationPointPairQuad& point_pairs,
-                       const gfx::Size& bounds);
-  TouchCalibrationData(const TouchCalibrationData& calibration_data);
-
-  static bool CalibrationPointPairCompare(const CalibrationPointPair& pair_1,
-                                          const CalibrationPointPair& pair_2) {
-    return pair_1.first.y() < pair_2.first.y()
-               ? true
-               : pair_1.first.x() < pair_2.first.x();
-  }
-
-  // Returns a hash that can be used as a key for storing display preferences
-  // for a display associated with a touch device.
-  static uint32_t GenerateTouchDeviceIdentifier(
-      const ui::TouchscreenDevice& device);
-
-  // Returns a touch device identifier used as a default or a fallback option.
-  static uint32_t GetFallbackTouchDeviceIdentifier();
-
-  bool operator==(TouchCalibrationData other) const;
-
-  // Calibration point pairs used during calibration. Each point pair contains a
-  // display point and the corresponding touch point.
-  CalibrationPointPairQuad point_pairs;
-
-  // Bounds of the touch display when the calibration was performed.
-  gfx::Size bounds;
-};
 
 // A class that represents the display's mode info.
 class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
@@ -290,6 +253,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // display.
   void SetManagedDisplayModes(const ManagedDisplayModeList& display_modes);
 
+#if defined(OS_CHROMEOS)
   void SetTouchCalibrationData(uint32_t touch_device_identifier,
                                const TouchCalibrationData& calibration_data);
   const TouchCalibrationData& GetTouchCalibrationData(
@@ -303,6 +267,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   bool HasTouchCalibrationData(uint32_t touch_device_identifier) const;
   void ClearTouchCalibrationData(uint32_t touch_device_identifier);
   void ClearAllTouchCalibrationData();
+#endif
 
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.
@@ -387,10 +352,12 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // Maximum cursor size.
   gfx::Size maximum_cursor_size_;
 
+#if defined(OS_CHROMEOS)
   // Information associated to touch calibration for the display. Stores a
   // mapping of each touch device, identified by its unique touch device
   // identifier, with the touch calibration data associated with the display.
   std::map<uint32_t, TouchCalibrationData> touch_calibration_data_map_;
+#endif
 
   // Colorimetry information of the Display (if IsValid()), including e.g.
   // transfer and primaries information, retrieved from its EDID.

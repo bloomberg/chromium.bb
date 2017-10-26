@@ -224,6 +224,7 @@ DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
   change_display_upon_host_resize_ = !configure_displays_;
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableUnifiedDesktop);
+  touch_device_manager_ = std::make_unique<TouchDeviceManager>();
 #endif
 }
 
@@ -506,8 +507,12 @@ void DisplayManager::RegisterDisplayProperty(
     float ui_scale,
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
-    float device_scale_factor,
-    std::map<uint32_t, TouchCalibrationData>* touch_calibration_data_map) {
+    float device_scale_factor
+#if defined(OS_CHROMEOS)
+    ,
+    std::map<uint32_t, TouchCalibrationData>* touch_calibration_data_map
+#endif
+    ) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] =
         ManagedDisplayInfo(display_id, std::string(), false);
@@ -527,12 +532,14 @@ void DisplayManager::RegisterDisplayProperty(
     display_info_[display_id].set_configured_ui_scale(ui_scale);
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
+#if defined(OS_CHROMEOS)
   if (touch_calibration_data_map) {
     display_info_[display_id].SetTouchCalibrationDataMap(
         *touch_calibration_data_map);
   } else {
     display_info_[display_id].ClearAllTouchCalibrationData();
   }
+#endif
   if (!resolution_in_pixels.IsEmpty()) {
     DCHECK(!Display::IsInternalDisplayId(display_id));
     // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
