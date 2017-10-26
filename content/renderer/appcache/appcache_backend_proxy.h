@@ -29,9 +29,6 @@ class AppCacheBackendProxy : public AppCacheBackend {
                    const GURL& document_url,
                    const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url) override;
-  void SelectCacheForWorker(int host_id,
-                            int parent_process_id,
-                            int parent_host_id) override;
   void SelectCacheForSharedWorker(int host_id, int64_t appcache_id) override;
   void MarkAsForeignEntry(int host_id,
                           const GURL& document_url,

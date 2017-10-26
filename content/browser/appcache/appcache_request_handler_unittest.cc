@@ -891,47 +891,6 @@ class AppCacheRequestHandlerTest
     TestFinished();
   }
 
-  // WorkerRequest -----------------------------
-
-  void WorkerRequest() {
-    EXPECT_TRUE(AppCacheRequestHandler::IsMainResourceType(
-        RESOURCE_TYPE_MAIN_FRAME));
-    EXPECT_TRUE(AppCacheRequestHandler::IsMainResourceType(
-        RESOURCE_TYPE_SUB_FRAME));
-    EXPECT_TRUE(AppCacheRequestHandler::IsMainResourceType(
-        RESOURCE_TYPE_SHARED_WORKER));
-    EXPECT_FALSE(AppCacheRequestHandler::IsMainResourceType(
-        RESOURCE_TYPE_WORKER));
-
-
-    const int kParentHostId = host_->host_id();
-    const int kWorkerHostId = 2;
-    const int kAbandonedWorkerHostId = 3;
-    const int kNonExsitingHostId = 700;
-
-    backend_impl_->RegisterHost(kWorkerHostId);
-    AppCacheHost* worker_host = backend_impl_->GetHost(kWorkerHostId);
-    worker_host->SelectCacheForWorker(kParentHostId, kMockProcessId);
-    EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), worker_host,
-                                        RESOURCE_TYPE_SHARED_WORKER));
-    EXPECT_TRUE(handler_.get());
-    // Verify that the handler is associated with the parent host.
-    EXPECT_EQ(host_, handler_->host_);
-
-    // Create a new worker host, but associate it with a parent host that
-    // does not exists to simulate the host having been torn down.
-    backend_impl_->UnregisterHost(kWorkerHostId);
-    backend_impl_->RegisterHost(kAbandonedWorkerHostId);
-    worker_host = backend_impl_->GetHost(kAbandonedWorkerHostId);
-    EXPECT_EQ(NULL, backend_impl_->GetHost(kNonExsitingHostId));
-    worker_host->SelectCacheForWorker(kNonExsitingHostId, kMockProcessId);
-    EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), worker_host,
-                                        RESOURCE_TYPE_SHARED_WORKER));
-    EXPECT_FALSE(handler_.get());
-
-    TestFinished();
-  }
-
   // MainResource_Blocked --------------------------------------------------
 
   void MainResource_Blocked() {
@@ -1118,10 +1077,6 @@ TEST_P(AppCacheRequestHandlerTest, UnsupportedScheme) {
 
 TEST_P(AppCacheRequestHandlerTest, CanceledRequest) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::CanceledRequest);
-}
-
-TEST_P(AppCacheRequestHandlerTest, WorkerRequest) {
-  RunTestOnIOThread(&AppCacheRequestHandlerTest::WorkerRequest);
 }
 
 TEST_P(AppCacheRequestHandlerTest, MainResource_Blocked) {

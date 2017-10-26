@@ -85,10 +85,6 @@ IPC_MESSAGE_CONTROL4(AppCacheHostMsg_SelectCache,
                      GURL /* opt_manifest_url */)
 
 // Initiates worker specific cache selection algorithm for the given host.
-IPC_MESSAGE_CONTROL3(AppCacheHostMsg_SelectCacheForWorker,
-                     int /* host_id */,
-                     int /* parent_process_id */,
-                     int /* parent_host_id */)
 IPC_MESSAGE_CONTROL2(AppCacheHostMsg_SelectCacheForSharedWorker,
                      int /* host_id */,
                      int64_t /* appcache_id */)

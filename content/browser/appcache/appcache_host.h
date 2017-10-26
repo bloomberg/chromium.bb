@@ -88,8 +88,6 @@ class CONTENT_EXPORT AppCacheHost
   bool SelectCache(const GURL& document_url,
                    const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url);
-  bool SelectCacheForWorker(int parent_process_id,
-                            int parent_host_id);
   bool SelectCacheForSharedWorker(int64_t appcache_id);
   bool MarkAsForeignEntry(const GURL& document_url,
                           int64_t cache_document_was_loaded_from);

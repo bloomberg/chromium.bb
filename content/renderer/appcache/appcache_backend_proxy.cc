@@ -33,13 +33,6 @@ void AppCacheBackendProxy::SelectCache(
                                     manifest_url));
 }
 
-void AppCacheBackendProxy::SelectCacheForWorker(
-    int host_id, int parent_process_id, int parent_host_id) {
-  sender_->Send(new AppCacheHostMsg_SelectCacheForWorker(
-                                    host_id, parent_process_id,
-                                    parent_host_id));
-}
-
 void AppCacheBackendProxy::SelectCacheForSharedWorker(int host_id,
                                                       int64_t appcache_id) {
   sender_->Send(new AppCacheHostMsg_SelectCacheForSharedWorker(
