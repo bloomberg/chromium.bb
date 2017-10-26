@@ -1018,9 +1018,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableNewRemotePlaybackPipeline(
       base::FeatureList::IsEnabled(media::kNewRemotePlaybackPipeline));
 
-  WebRuntimeFeatures::EnablePreloadDefaultIsMetadata(
-      base::FeatureList::IsEnabled(media::kPreloadDefaultIsMetadata));
-
   settings->SetPresentationReceiver(prefs.presentation_receiver);
 
   settings->SetMediaControlsEnabled(prefs.media_controls_enabled);
