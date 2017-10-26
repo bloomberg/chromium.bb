@@ -492,6 +492,7 @@ if (is_linux) {
     deps = [
       "//third_party/minizip:minizip",
     ]
+    seed_corpus = "//testing/libfuzzer/fuzzers/minizip_uncompress_corpus"
   }
 }
 
