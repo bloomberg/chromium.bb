@@ -232,14 +232,11 @@ void ManifestVerifier::OnPaymentMethodManifestParsed(
 
 void ManifestVerifier::RemoveInvalidPaymentApps() {
   // Remove apps without enabled methods.
-  std::vector<int64_t> keys_to_erase;
-  for (const auto& app : apps_) {
-    if (app.second->enabled_methods.empty())
-      keys_to_erase.emplace_back(app.first);
-  }
-
-  for (const auto& key : keys_to_erase) {
-    apps_.erase(key);
+  for (auto it = apps_.begin(); it != apps_.end();) {
+    if (it->second->enabled_methods.empty())
+      it = apps_.erase(it);
+    else
+      ++it;
   }
 }
 

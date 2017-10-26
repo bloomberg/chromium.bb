@@ -84,6 +84,8 @@ static_library("test_support") {
   sources = [
     "payments_test_util.cc",
     "payments_test_util.h",
+    "test_payment_manifest_downloader.cc",
+    "test_payment_manifest_downloader.h",
     "test_payment_request_delegate.cc",
     "test_payment_request_delegate.h",
   ]

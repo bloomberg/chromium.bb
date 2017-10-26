@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_data_service_factory.h"
-#include "components/payments/content/manifest_verifier.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
-#include "components/payments/content/utility/payment_manifest_parser.h"
+#include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,6 +28,7 @@
 
 namespace {
 
+using ::base::android::AppendJavaStringArrayToStringVector;
 using ::base::android::AttachCurrentThread;
 using ::base::android::ConvertJavaStringToUTF8;
 using ::base::android::ConvertUTF8ToJavaString;
@@ -45,45 +48,47 @@ using ::payments::mojom::PaymentMethodDataPtr;
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
 
-// Owns the payment manifest verifier and deletes it when after the manifest
-// information is saved in cache.
-class SelfDeletingManifestVerifier {
+// Owns the service worker payment app factory and deletes it after it finishes
+// using resources.
+class SelfDeletingServiceWorkerPaymentAppFactory {
  public:
-  explicit SelfDeletingManifestVerifier(content::WebContents* web_contents)
-      : verifier_(std::make_unique<payments::PaymentManifestDownloader>(
-                      content::BrowserContext::GetDefaultStoragePartition(
-                          web_contents->GetBrowserContext())
-                          ->GetURLRequestContext()),
-                  std::make_unique<payments::PaymentManifestParser>(),
-                  WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
-                      ProfileManager::GetActiveUserProfile(),
-                      ServiceAccessType::EXPLICIT_ACCESS)) {}
+  SelfDeletingServiceWorkerPaymentAppFactory() {}
 
-  // Verifies that |apps| have valid payment method names and invokes |callback|
-  // with the validated |apps|.
-  void Verify(content::PaymentAppProvider::PaymentApps&& apps,
-              payments::ManifestVerifier::VerifyCallback&& verify_callback) {
-    verifier_.Verify(
-        std::move(apps), std::move(verify_callback),
-        base::BindOnce(&SelfDeletingManifestVerifier::OnFinishedUsingResources,
-                       base::Unretained(this)));
+  void GetAllPaymentApps(
+      content::WebContents* web_contents,
+      const std::set<std::string>& payment_method_identifiers_set,
+      content::PaymentAppProvider::GetAllPaymentAppsCallback callback) {
+    impl_.GetAllPaymentApps(
+        web_contents->GetBrowserContext(),
+        std::make_unique<payments::PaymentManifestDownloader>(
+            content::BrowserContext::GetDefaultStoragePartition(
+                web_contents->GetBrowserContext())
+                ->GetURLRequestContext()),
+        WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
+            Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+            ServiceAccessType::EXPLICIT_ACCESS),
+        payment_method_identifiers_set, std::move(callback),
+        base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
+                           OnFinishedUsingResources,
+                       base::Owned(this)));
   }
 
+  // The destructor needs to be public for base::Owned(this) to delete this.
+  ~SelfDeletingServiceWorkerPaymentAppFactory() {}
+
  private:
-  ~SelfDeletingManifestVerifier() {}
+  void OnFinishedUsingResources() {
+    // No need to self-delete here, because of using base::Owned(this).
+  }
 
-  // Called after the verifier has saved the manifest information in cache.
-  void OnFinishedUsingResources() { delete this; }
+  payments::ServiceWorkerPaymentAppFactory impl_;
 
-  // Performs the actual verification.
-  payments::ManifestVerifier verifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelfDeletingManifestVerifier);
+  DISALLOW_COPY_AND_ASSIGN(SelfDeletingServiceWorkerPaymentAppFactory);
 };
 
-void OnPaymentAppsVerified(const JavaRef<jobject>& jweb_contents,
-                           const JavaRef<jobject>& jcallback,
-                           content::PaymentAppProvider::PaymentApps apps) {
+void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
+                         const JavaRef<jobject>& jcallback,
+                         content::PaymentAppProvider::PaymentApps apps) {
   JNIEnv* env = AttachCurrentThread();
 
   for (const auto& app_info : apps) {
@@ -123,15 +128,6 @@ void OnPaymentAppsVerified(const JavaRef<jobject>& jweb_contents,
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);
 }
 
-void OnGotAllPaymentApps(const ScopedJavaGlobalRef<jobject>& jweb_contents,
-                         const ScopedJavaGlobalRef<jobject>& jcallback,
-                         content::PaymentAppProvider::PaymentApps apps) {
-  (new SelfDeletingManifestVerifier(
-       content::WebContents::FromJavaWebContents(jweb_contents)))
-      ->Verify(std::move(apps), base::BindOnce(&OnPaymentAppsVerified,
-                                               jweb_contents, jcallback));
-}
-
 void OnCanMakePayment(const JavaRef<jobject>& jweb_contents,
                       const JavaRef<jobject>& jcallback,
                       bool can_make_payment) {
@@ -166,17 +162,22 @@ void OnPaymentAppAborted(const JavaRef<jobject>& jweb_contents,
 static void GetAllPaymentApps(JNIEnv* env,
                               const JavaParamRef<jclass>& jcaller,
                               const JavaParamRef<jobject>& jweb_contents,
+                              const JavaParamRef<jobjectArray>& jpmis,
                               const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
-  content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-      web_contents->GetBrowserContext(),
-      base::BindOnce(&OnGotAllPaymentApps,
-                     ScopedJavaGlobalRef<jobject>(env, jweb_contents),
-                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  std::vector<std::string> pmis;
+  AppendJavaStringArrayToStringVector(env, jpmis.obj(), &pmis);
+
+  (new SelfDeletingServiceWorkerPaymentAppFactory())
+      ->GetAllPaymentApps(
+          web_contents, std::set<std::string>(pmis.begin(), pmis.end()),
+          base::BindOnce(&OnGotAllPaymentApps,
+                         ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                         ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void CanMakePayment(JNIEnv* env,

@@ -7,56 +7,23 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/bind.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "base/run_loop.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
-#include "components/payments/core/payment_manifest_downloader.h"
+#include "components/payments/core/test_payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace payments {
 namespace {
-
-// Downloads everything from the test server.
-class TestDownloader : public PaymentMethodManifestDownloaderInterface {
- public:
-  explicit TestDownloader(
-      const scoped_refptr<net::URLRequestContextGetter>& context)
-      : impl_(context) {}
-
-  ~TestDownloader() override {}
-
-  // PaymentMethodManifestDownloaderInterface implementation.
-  void DownloadPaymentMethodManifest(
-      const GURL& url,
-      PaymentManifestDownloadCallback callback) override {
-    // The length of "https://" URL prefix.
-    static const size_t kHttpsPrefixLength = 8;
-    impl_.DownloadPaymentMethodManifest(
-        GURL(test_server_url_.spec() + url.spec().substr(kHttpsPrefixLength)),
-        std::move(callback));
-  }
-
-  void set_test_server_url(const GURL& url) { test_server_url_ = url; }
-
- private:
-  // The actual downloader.
-  PaymentManifestDownloader impl_;
-
-  // The base URL of the test server, e.g., "https://127.0.0.1:8080/".
-  GURL test_server_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDownloader);
-};
 
 // Tests for the manifest verifier.
 class ManifestVerifierBrowserTest : public InProcessBrowserTest {
@@ -77,32 +44,28 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
   // Runs the verifier on the |apps| and blocks until the verifier has finished
   // using all resources.
   void Verify(content::PaymentAppProvider::PaymentApps apps) {
+    content::BrowserContext* context = browser()
+                                           ->tab_strip_model()
+                                           ->GetActiveWebContents()
+                                           ->GetBrowserContext();
     auto downloader = std::make_unique<TestDownloader>(
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()
-                ->tab_strip_model()
-                ->GetActiveWebContents()
-                ->GetBrowserContext())
+        content::BrowserContext::GetDefaultStoragePartition(context)
             ->GetURLRequestContext());
-    downloader->set_test_server_url(https_server_->GetURL("/"));
+    downloader->AddTestServerURL("https://", https_server_->GetURL("/"));
 
     ManifestVerifier verifier(
         std::move(downloader),
         std::make_unique<payments::PaymentManifestParser>(),
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
-            ProfileManager::GetActiveUserProfile(),
+            Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS));
 
     base::RunLoop run_loop;
-    finished_using_resources_closure_ = run_loop.QuitClosure();
-
     verifier.Verify(
         std::move(apps),
         base::BindOnce(&ManifestVerifierBrowserTest::OnPaymentAppsVerified,
                        base::Unretained(this)),
-        base::BindOnce(&ManifestVerifierBrowserTest::OnFinishedUsingResources,
-                       base::Unretained(this)));
-
+        run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -131,17 +94,11 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
     verified_apps_ = std::move(apps);
   }
 
-  // Called by the verifier upon saving the manifests in cache.
-  void OnFinishedUsingResources() { finished_using_resources_closure_.Run(); }
-
   // Serves the payment method manifest files.
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
   // The apps that have been verified by the Verify() method.
   content::PaymentAppProvider::PaymentApps verified_apps_;
-
-  // Used to stop blocking the Verify() method and continue the test.
-  base::Closure finished_using_resources_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestVerifierBrowserTest);
 };
