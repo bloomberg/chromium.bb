@@ -405,6 +405,10 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
     EXPECT_EQ(successful_report_uri, sender->latest_report_uri());
   }
 
+  void SetCORSHeaderWithWhitespace() {
+    cors_headers_["Access-Control-Allow-Methods"] = "GET, POST";
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer report_server_;
@@ -616,6 +620,37 @@ TEST_F(ChromeExpectCTReporterTest, SendReport) {
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 1);
   histograms.ExpectBucketCount(kSendHistogramName, true, 1);
+}
+
+// Test that report preflight responses can contain whitespace.
+TEST_F(ChromeExpectCTReporterTest, PreflightContainsWhitespace) {
+  SetCORSHeaderWithWhitespace();
+
+  TestCertificateReportSender* sender = new TestCertificateReportSender();
+  net::TestURLRequestContext context;
+  ChromeExpectCTReporter reporter(&context);
+  reporter.report_sender_.reset(sender);
+  EXPECT_TRUE(sender->latest_report_uri().is_empty());
+  EXPECT_TRUE(sender->latest_serialized_report().empty());
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  const GURL report_uri = test_server().GetURL("/report");
+  reporter.OnExpectCTFailed(net::HostPortPair::FromURL(report_uri), report_uri,
+                            base::Time::Now(), ssl_info.cert.get(),
+                            ssl_info.unverified_cert.get(),
+                            ssl_info.signed_certificate_timestamps);
+
+  // A CORS preflight request should be sent before the actual report.
+  WaitForReportPreflight();
+  sender->WaitForReport(report_uri);
+
+  EXPECT_EQ(report_uri, sender->latest_report_uri());
+  EXPECT_FALSE(sender->latest_serialized_report().empty());
 }
 
 // Test that no report is sent when the CORS preflight returns an invalid
