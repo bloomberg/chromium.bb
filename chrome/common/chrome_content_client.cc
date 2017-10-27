@@ -622,7 +622,7 @@ void ChromeContentClient::AddContentDecryptionModules(
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   if (cdm_host_file_paths)
-    chrome::AddCdmHostFilePaths(cdm_host_file_paths);
+    AddCdmHostFilePaths(cdm_host_file_paths);
 #endif
 }
 

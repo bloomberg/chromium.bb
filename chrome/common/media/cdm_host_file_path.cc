@@ -18,8 +18,6 @@
 #include "chrome/common/chrome_constants.h"
 #endif
 
-namespace chrome {
-
 #if defined(GOOGLE_CHROME_BUILD)
 
 namespace {
@@ -120,4 +118,3 @@ void AddCdmHostFilePaths(
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-}  // namespace chrome
