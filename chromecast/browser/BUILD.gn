@@ -94,6 +94,7 @@ source_set("browser") {
     "//chromecast/graphics",
     "//chromecast/media",
     "//chromecast/media:libcast_media",
+    "//chromecast/media/base:video_plane_controller",
     "//chromecast/media/service",
     "//chromecast/net",
     "//chromecast/service",
