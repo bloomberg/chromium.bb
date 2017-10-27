@@ -856,6 +856,8 @@ class LargeObjectArena final : public BaseArena {
 
 // Mask an address down to the enclosing oilpan heap base page. All Oilpan heap
 // pages are aligned at |blinkPageBase| plus the size of a guard size.
+// This will work only for 1) a pointer pointing to a non-large object and 2) a
+// pointer pointing to the beginning of a large object.
 //
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
 // typed arenas. This is only exported to enable tests in HeapTest.cpp.
