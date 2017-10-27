@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include <algorithm>
-#include <memory>
 #include <set>
 
 #include "media/formats/mp4/box_definitions.h"
@@ -115,44 +114,31 @@ BoxReader::~BoxReader() {
 }
 
 // static
-BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
-                                      const size_t buf_size,
-                                      MediaLog* media_log,
-                                      bool* err) {
+ParseResult BoxReader::ReadTopLevelBox(const uint8_t* buf,
+                                       const size_t buf_size,
+                                       MediaLog* media_log,
+                                       std::unique_ptr<BoxReader>* out_reader) {
+  DCHECK(out_reader);
   std::unique_ptr<BoxReader> reader(
       new BoxReader(buf, buf_size, media_log, false));
-  if (!reader->ReadHeader(err))
-    return NULL;
-
-  // BoxReader::ReadHeader is expected to return false if box_size > buf_size.
-  // This may happen if a partial mp4 box is appended, or if the box header is
-  // corrupt.
-  CHECK(reader->box_size() <= static_cast<uint64_t>(buf_size));
-
-  if (!IsValidTopLevelBox(reader->type(), media_log)) {
-    *err = true;
-    return NULL;
-  }
-
-  return reader.release();
+  RCHECK_OK_PARSE_RESULT(reader->ReadHeader());
+  if (!IsValidTopLevelBox(reader->type(), media_log))
+    return ParseResult::kError;
+  *out_reader = std::move(reader);
+  return ParseResult::kOk;
 }
 
 // static
-bool BoxReader::StartTopLevelBox(const uint8_t* buf,
-                                 const size_t buf_size,
-                                 MediaLog* media_log,
-                                 FourCC* type,
-                                 size_t* box_size,
-                                 bool* err) {
-  BoxReader reader(buf, buf_size, media_log, false);
-  if (!reader.ReadHeader(err)) return false;
-  if (!IsValidTopLevelBox(reader.type(), media_log)) {
-    *err = true;
-    return false;
-  }
-  *type = reader.type();
-  *box_size = reader.box_size();
-  return true;
+ParseResult BoxReader::StartTopLevelBox(const uint8_t* buf,
+                                        const size_t buf_size,
+                                        MediaLog* media_log,
+                                        FourCC* out_type,
+                                        size_t* out_box_size) {
+  std::unique_ptr<BoxReader> reader;
+  RCHECK_OK_PARSE_RESULT(ReadTopLevelBox(buf, buf_size, media_log, &reader));
+  *out_type = reader->type();
+  *out_box_size = reader->box_size();
+  return ParseResult::kOk;
 }
 
 // static
@@ -206,16 +192,16 @@ bool BoxReader::ScanChildren() {
   DCHECK(!scanned_);
   scanned_ = true;
 
-  bool err = false;
   while (pos_ < box_size_) {
     BoxReader child(&buf_[pos_], box_size_ - pos_, media_log_, is_EOS_);
-    if (!child.ReadHeader(&err)) break;
-
+    if (child.ReadHeader() != ParseResult::kOk)
+      return false;
     children_.insert(std::pair<FourCC, BoxReader>(child.type(), child));
     pos_ += child.box_size();
   }
 
-  return !err && pos_ == box_size_;
+  DCHECK(pos_ == box_size_);
+  return true;
 }
 
 bool BoxReader::HasChild(Box* child) {
@@ -249,57 +235,50 @@ bool BoxReader::ReadFullBoxHeader() {
   return true;
 }
 
-bool BoxReader::ReadHeader(bool* err) {
+ParseResult BoxReader::ReadHeader() {
   uint64_t box_size = 0;
-  *err = false;
 
-  if (!HasBytes(8)) {
-    // If EOS is known, then this is an error. If not, additional data may be
-    // appended later, so this is a soft error.
-    *err = is_EOS_;
-    return false;
-  }
-  CHECK(Read4Into8(&box_size) && ReadFourCC(&type_));
+  if (!HasBytes(8))
+    return is_EOS_ ? ParseResult::kError : ParseResult::kNeedMoreData;
+  CHECK(Read4Into8(&box_size));
+  CHECK(ReadFourCC(&type_));
 
   if (box_size == 0) {
     if (is_EOS_) {
       // All the data bytes are expected to be provided.
-      box_size = base::checked_cast<uint64_t>(buf_size_);
+      // TODO(sandersd): The whole |is_EOS_| feature seems to exist just for
+      // this special case (and is used only for PSSH parsing). Can we get rid
+      // of it? The caller can treat kNeedMoreData as an error, and the only
+      // difference would be lack of support for |box_size == 0|.
+      box_size = base::strict_cast<uint64_t>(buf_size_);
     } else {
       MEDIA_LOG(DEBUG, media_log_)
           << "ISO BMFF boxes that run to EOS are not supported";
-      *err = true;
-      return false;
+      return ParseResult::kError;
     }
   } else if (box_size == 1) {
-    if (!HasBytes(8)) {
-      // If EOS is known, then this is an error. If not, it's a soft error.
-      *err = is_EOS_;
-      return false;
-    }
+    if (!HasBytes(8))
+      return is_EOS_ ? ParseResult::kError : ParseResult::kNeedMoreData;
     CHECK(Read8(&box_size));
   }
 
   // Implementation-specific: support for boxes larger than 2^31 has been
   // removed.
-  if (box_size < static_cast<uint64_t>(pos_) ||
+  if (box_size < base::strict_cast<uint64_t>(pos_) ||
       box_size > static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
-    *err = true;
-    return false;
+    return ParseResult::kError;
   }
 
   // Make sure the buffer contains at least the expected number of bytes.
   // Since the data may be appended in pieces, this is only an error if EOS.
-  if (box_size > base::checked_cast<size_t>(buf_size_)) {
-    *err = is_EOS_;
-    return false;
-  }
+  if (box_size > base::strict_cast<uint64_t>(buf_size_))
+    return is_EOS_ ? ParseResult::kError : ParseResult::kNeedMoreData;
 
   // Note that the pos_ head has advanced to the byte immediately after the
   // header, which is where we want it.
   box_size_ = base::checked_cast<size_t>(box_size);
   box_size_known_ = true;
-  return true;
+  return ParseResult::kOk;
 }
 
 }  // namespace mp4
