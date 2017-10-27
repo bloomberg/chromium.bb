@@ -796,12 +796,6 @@ drm_output_find_by_crtc(struct drm_backend *b, uint32_t crtc_id)
 			return output;
 	}
 
-	wl_list_for_each(output, &b->compositor->pending_output_list,
-			 base.link) {
-		if (output->crtc_id == crtc_id)
-			return output;
-	}
-
 	return NULL;
 }
 
