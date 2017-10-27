@@ -10,6 +10,10 @@
 #include "ui/display/manager/chromeos/touch_device_manager.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/display/manager/chromeos/touch_device_manager.h"
+#endif
+
 namespace display {
 namespace {
 
@@ -128,19 +132,23 @@ TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
   EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(DisplayInfoTest, TouchDevicesTest) {
   ManagedDisplayInfo info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
 
   EXPECT_EQ(0u, info.touch_device_identifiers().size());
 
-  info.AddTouchDevice(10u);
+  TouchDeviceIdentifier identifier_1(10u);
+  TouchDeviceIdentifier identifier_2(11u);
+
+  info.AddTouchDevice(identifier_1);
   EXPECT_EQ(1u, info.touch_device_identifiers().size());
-  EXPECT_TRUE(info.HasTouchDevice(10u));
-  info.AddTouchDevice(11u);
+  EXPECT_TRUE(info.HasTouchDevice(identifier_1));
+  info.AddTouchDevice(identifier_2);
   EXPECT_EQ(2u, info.touch_device_identifiers().size());
-  EXPECT_TRUE(info.HasTouchDevice(10u));
-  EXPECT_TRUE(info.HasTouchDevice(11u));
+  EXPECT_TRUE(info.HasTouchDevice(identifier_1));
+  EXPECT_TRUE(info.HasTouchDevice(identifier_2));
 
   ManagedDisplayInfo copy_info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
@@ -150,7 +158,6 @@ TEST_F(DisplayInfoTest, TouchDevicesTest) {
   EXPECT_EQ(0u, copy_info.touch_device_identifiers().size());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(DisplayInfoTest, TouchCalibrationTest) {
   ManagedDisplayInfo info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
@@ -166,25 +173,25 @@ TEST_F(DisplayInfoTest, TouchCalibrationTest) {
   gfx::Size size(200, 100);
 
   TouchCalibrationData expected_data(points, size);
-  uint32_t touch_device_identifier = 1234;
+  TouchDeviceIdentifier identifier_1(1234);
+  TouchDeviceIdentifier identifier_2(1235);
 
   // Add touch data for the display.
-  info.SetTouchCalibrationData(touch_device_identifier, expected_data);
+  info.SetTouchCalibrationData(identifier_1, expected_data);
 
   EXPECT_TRUE(info.touch_calibration_data_map().size());
-  EXPECT_EQ(expected_data,
-            info.GetTouchCalibrationData(touch_device_identifier));
+  EXPECT_EQ(expected_data, info.GetTouchCalibrationData(identifier_1));
 
-  info.SetTouchCalibrationData(touch_device_identifier + 1, expected_data);
+  info.SetTouchCalibrationData(identifier_2, expected_data);
   EXPECT_EQ(info.touch_calibration_data_map().size(), 2UL);
 
   // Clear touch calibration data for touch device associated with the given
   // touch identifier.
-  info.ClearTouchCalibrationData(touch_device_identifier);
+  info.ClearTouchCalibrationData(identifier_1);
   EXPECT_TRUE(info.touch_calibration_data_map().size());
 
   // Add another touch device calibration data.
-  info.SetTouchCalibrationData(touch_device_identifier, expected_data);
+  info.SetTouchCalibrationData(identifier_1, expected_data);
   info.ClearAllTouchCalibrationData();
 
   // There should be no touch device data associated with this display.

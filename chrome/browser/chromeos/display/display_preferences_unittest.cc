@@ -302,7 +302,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
                    .SetDisplayUIScale(id2, 1.25f));
 
   // Set touch calibration data for display |id2|.
-  constexpr uint32_t touch_device_identifier_1 = 1234;
+  uint32_t id_1 = 1234;
+  const display::TouchDeviceIdentifier touch_device_identifier_1(id_1);
   display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad_1 = {
       {std::make_pair(gfx::Point(10, 10), gfx::Point(11, 12)),
        std::make_pair(gfx::Point(190, 10), gfx::Point(195, 8)),
@@ -310,7 +311,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
        std::make_pair(gfx::Point(190, 90), gfx::Point(189, 88))}};
   gfx::Size touch_size_1(200, 150);
 
-  constexpr uint32_t touch_device_identifier_2 = 2345;
+  uint32_t id_2 = 2345;
+  const display::TouchDeviceIdentifier touch_device_identifier_2(id_2);
   display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad_2 = {
       {std::make_pair(gfx::Point(10, 10), gfx::Point(11, 12)),
        std::make_pair(gfx::Point(190, 10), gfx::Point(195, 8)),
@@ -389,8 +391,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   display::TouchCalibrationData::CalibrationPointPairQuad stored_pair_quad;
 
   EXPECT_TRUE(property->GetDictionary(kTouchCalibrationMap, &map_dictionary));
-  EXPECT_TRUE(map_dictionary->GetDictionary(
-      base::UintToString(touch_device_identifier_1), &data_dict));
+  EXPECT_TRUE(
+      map_dictionary->GetDictionary(base::UintToString(id_1), &data_dict));
   EXPECT_TRUE(data_dict->GetString(kTouchCalibrationPointPairs, &touch_str));
   EXPECT_TRUE(ParseTouchCalibrationStringForTest(touch_str, &stored_pair_quad));
 
@@ -410,8 +412,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(width, touch_size_1.width());
   EXPECT_EQ(height, touch_size_1.height());
 
-  EXPECT_TRUE(map_dictionary->GetDictionary(
-      base::UintToString(touch_device_identifier_2), &data_dict));
+  EXPECT_TRUE(
+      map_dictionary->GetDictionary(base::UintToString(id_2), &data_dict));
   EXPECT_TRUE(data_dict->GetString(kTouchCalibrationPointPairs, &touch_str));
   EXPECT_TRUE(ParseTouchCalibrationStringForTest(touch_str, &stored_pair_quad));
 

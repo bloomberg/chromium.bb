@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/touch_device_manager.h"
 #include "ui/display/manager/chromeos/touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -23,13 +24,12 @@ namespace display {
 
 namespace {
 
-ui::TouchscreenDevice FindTouchscreenByIdentifier(uint32_t identifier) {
+ui::TouchscreenDevice FindTouchscreenByIdentifier(
+    const TouchDeviceIdentifier& identifier) {
   const std::vector<ui::TouchscreenDevice>& touchscreens =
       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices();
   for (const auto& touchscreen : touchscreens) {
-    uint32_t touch_device_identifier =
-        TouchCalibrationData::GenerateTouchDeviceIdentifier(touchscreen);
-    if (touch_device_identifier == identifier)
+    if (TouchDeviceIdentifier::FromDevice(touchscreen) == identifier)
       return touchscreen;
   }
 
@@ -221,8 +221,9 @@ gfx::Transform TouchTransformController::GetTouchTransform(
   // transform as we want to use the raw native touch input data for calibration
   if (is_calibrating_)
     return ctm;
-  uint32_t touch_device_identifier =
-      TouchCalibrationData::GenerateTouchDeviceIdentifier(touchscreen);
+  TouchDeviceIdentifier touch_device_identifier =
+      TouchDeviceIdentifier::FromDevice(touchscreen);
+
   // If touch calibration data is unavailable, use naive approach.
   if (!touch_display.HasTouchCalibrationData(touch_device_identifier)) {
     return GetUncalibratedTransform(ctm, display, touch_display, touch_area,
