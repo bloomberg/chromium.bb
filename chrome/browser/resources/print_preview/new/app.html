@@ -1,8 +1,54 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="header.html">
+
 <dom-module id="print-preview-app">
   <template>
-    <p>New Print Preview UI is coming... Stay tuned</p>
+    <style>
+      :host {
+        display: flex;
+        height: 100%;
+      }
+
+      #sidebar {
+        -webkit-border-end: 1px solid #c8c8c8;
+        background-color: white;
+        min-width: 310px;
+      }
+
+      #settings {
+        background: #fbfbfb;
+        border-top: 1px solid #f3f3f3;
+        height: 100%;
+        overflow: auto;
+      }
+
+      #previewArea {
+        -webkit-border-start: 1px solid #dcdcdc;
+        align-items: center;
+        background-color: #e6e6e6;
+        display: flex;
+        flex: 1;
+        justify-content: center;
+      }
+    </style>
+    <div id="sidebar">
+      <print-preview-header></print-preview-header>
+      <div id="settings">
+        <div>Destination</div>
+        <div>Pages</div>
+        <div>Copies</div>
+        <div>Layout</div>
+        <div>Color</div>
+        <div>Paper size</div>
+        <div>Margins</div>
+        <div>Quality</div>
+        <div>Scale</div>
+        <div>Options</div>
+        <div>Advanced</div>
+      </div>
+    </div>
+    <div id="previewArea">preview area</div>
   </template>
   <script src="app.js"></script>
 </dom-module>
