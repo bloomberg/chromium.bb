@@ -80,10 +80,6 @@ class StyleBuilderWriter(json5_generator.Writer):
     def css_properties(self):
         return self._json5_properties
 
-    @property
-    def default_parameters(self):
-        return self._json5_properties.default_parameters
-
     @template_expander.use_jinja('templates/StyleBuilderFunctions.h.tmpl',
                                  filters=filters)
     def generate_style_builder_functions_h(self):

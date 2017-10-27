@@ -14,6 +14,8 @@ import bisect
 from name_utilities import (
     enum_value_name, class_member_name, method_name, class_name, join_names
 )
+
+from core.css import css_properties
 from core.style.computed_style_fields import DiffGroup, Enum, Group, Field
 
 from itertools import chain
@@ -497,11 +499,16 @@ def _evaluate_rare_inherit_group(properties, properties_ranking_file,
             property_["field_group"] = "->".join(group_tree)
 
 
-class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
+class ComputedStyleBaseWriter(json5_generator.Writer):
     def __init__(self, json5_file_paths):
+        super(ComputedStyleBaseWriter, self).__init__([])
+
+        self._input_files = json5_file_paths
+
         # Reads CSSProperties.json5, ComputedStyleFieldAliases.json5 and
         # ComputedStyleExtraFields.json5
-        super(ComputedStyleBaseWriter, self).__init__(json5_file_paths[0:3])
+        self._css_properties = css_properties.CSSProperties(
+            json5_file_paths[0:3])
 
         # We sort the enum values based on each value's position in
         # the keywords as listed in CSSProperties.json5. This will ensure that
@@ -510,11 +517,11 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         # the generated enum will have the same order and continuity as
         # CSSProperties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
-        self._properties = keyword_utils.sort_keyword_properties_by_canonical_order(
-            self.css_properties.longhands,
+        properties = keyword_utils.sort_keyword_properties_by_canonical_order(
+            self._css_properties.longhands,
             json5_file_paths[4],
             self.default_parameters)
-        self._properties += self.css_properties.extra_fields
+        self._properties = properties + self._css_properties.extra_fields
 
         self._generated_enums = _create_enums(self._properties)
 
