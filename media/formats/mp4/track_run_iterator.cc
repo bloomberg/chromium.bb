@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "media/base/demuxer_memory_limit.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
@@ -394,10 +395,8 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       }
 
       // Avoid allocating insane sample counts for invalid media.
-      // TODO(sandersd): Merge this limit with kDemuxerMemoryLimit,
-      // kSourceBuffer{Audio,Video}MemoryLimit.
       const size_t max_sample_count =
-          (150 * 1024 * 1024) / sizeof(decltype(tri.samples)::value_type);
+          kDemuxerMemoryLimit / sizeof(decltype(tri.samples)::value_type);
       RCHECK_MEDIA_LOGGED(
           base::strict_cast<size_t>(trun.sample_count) <= max_sample_count,
           media_log_, "Metadata overhead exceeds storage limit.");

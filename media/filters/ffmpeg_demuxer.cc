@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/demuxer_memory_limit.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
@@ -1852,9 +1853,6 @@ bool FFmpegDemuxer::StreamsHaveAvailableCapacity() {
 
 bool FFmpegDemuxer::IsMaxMemoryUsageReached() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // Max allowed memory usage, all streams combined.
-  const size_t kDemuxerMemoryLimit = 150 * 1024 * 1024;
 
   size_t memory_left = kDemuxerMemoryLimit;
   for (const auto& stream : streams_) {

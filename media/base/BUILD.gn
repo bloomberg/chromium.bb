@@ -126,6 +126,7 @@ source_set("base") {
     "decryptor.h",
     "demuxer.cc",
     "demuxer.h",
+    "demuxer_memory_limit.h",
     "demuxer_stream.cc",
     "demuxer_stream.h",
     "djb2.cc",
@@ -343,6 +344,12 @@ source_set("base") {
 
   if (is_win) {
     deps += [ "//media/base/win" ]
+  }
+
+  if (use_low_memory_buffer) {
+    sources += [ "demuxer_memory_limit_lowmem.cc" ]
+  } else {
+    sources += [ "demuxer_memory_limit.cc" ]
   }
 }
 
