@@ -142,13 +142,9 @@ bool IsSameCertificate(CERTCertificate* a, CERTCertificate* b) {
 }
 
 bool IsSameCertificate(CERTCertificate* a, const X509Certificate* b) {
-#if BUILDFLAG(USE_BYTE_CERTS)
   return a->derCert.len == CRYPTO_BUFFER_len(b->os_cert_handle()) &&
          memcmp(a->derCert.data, CRYPTO_BUFFER_data(b->os_cert_handle()),
                 a->derCert.len) == 0;
-#else
-  return IsSameCertificate(a, b->os_cert_handle());
-#endif
 }
 bool IsSameCertificate(const X509Certificate* a, CERTCertificate* b) {
   return IsSameCertificate(b, a);
@@ -174,13 +170,9 @@ ScopedCERTCertificate CreateCERTCertificateFromBytes(const uint8_t* data,
 
 ScopedCERTCertificate CreateCERTCertificateFromX509Certificate(
     const X509Certificate* cert) {
-#if BUILDFLAG(USE_BYTE_CERTS)
   return CreateCERTCertificateFromBytes(
       CRYPTO_BUFFER_data(cert->os_cert_handle()),
       CRYPTO_BUFFER_len(cert->os_cert_handle()));
-#else
-  return DupCERTCertificate(cert->os_cert_handle());
-#endif
 }
 
 ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
@@ -194,7 +186,6 @@ ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
     InvalidIntermediateBehavior invalid_intermediate_behavior) {
   ScopedCERTCertificateList nss_chain;
   nss_chain.reserve(1 + cert->GetIntermediateCertificates().size());
-#if BUILDFLAG(USE_BYTE_CERTS)
   ScopedCERTCertificate nss_cert =
       CreateCERTCertificateFromX509Certificate(cert);
   if (!nss_cert)
@@ -212,13 +203,6 @@ ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
     }
     nss_chain.push_back(std::move(nss_intermediate));
   }
-#else
-  nss_chain.push_back(DupCERTCertificate(cert->os_cert_handle()));
-  for (net::X509Certificate::OSCertHandle intermediate :
-       cert->GetIntermediateCertificates()) {
-    nss_chain.push_back(DupCERTCertificate(intermediate));
-  }
-#endif
   return nss_chain;
 }
 
@@ -262,7 +246,6 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
     CERTCertificate* nss_cert,
     const std::vector<CERTCertificate*>& nss_chain,
     X509Certificate::UnsafeCreateOptions options) {
-#if BUILDFLAG(USE_BYTE_CERTS)
   if (!nss_cert || !nss_cert->derCert.len)
     return nullptr;
   bssl::UniquePtr<CRYPTO_BUFFER> cert_handle(
@@ -292,10 +275,6 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
       X509Certificate::CreateFromHandleUnsafeOptions(
           cert_handle.get(), intermediates_raw, options));
   return result;
-#else
-  return X509Certificate::CreateFromHandleUnsafeOptions(nss_cert, nss_chain,
-                                                        options);
-#endif
 }
 
 scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(

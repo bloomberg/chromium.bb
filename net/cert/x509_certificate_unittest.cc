@@ -265,7 +265,6 @@ TEST(X509CertificateTest, UnescapedSpecialCharacters) {
   EXPECT_EQ(0U, subject.domain_components.size());
 }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
 TEST(X509CertificateTest, InvalidPrintableStringIsUtf8) {
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
@@ -296,7 +295,6 @@ TEST(X509CertificateTest, InvalidPrintableStringIsUtf8) {
   const CertPrincipal& subject = cert->subject();
   EXPECT_EQ("Foo@#_ Clïênt Cërt", subject.common_name);
 }
-#endif
 
 TEST(X509CertificateTest, TeletexStringIsLatin1) {
   base::FilePath certs_dir =

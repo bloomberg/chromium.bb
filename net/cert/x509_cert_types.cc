@@ -11,12 +11,9 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/parse_number.h"
-#include "net/cert/x509_certificate.h"
-
-#if BUILDFLAG(USE_BYTE_CERTS)
 #include "net/cert/internal/parse_name.h"
+#include "net/cert/x509_certificate.h"
 #include "net/der/input.h"
-#endif
 
 namespace net {
 
@@ -44,7 +41,6 @@ CertPrincipal::CertPrincipal(const std::string& name) : common_name(name) {}
 CertPrincipal::~CertPrincipal() {
 }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
 bool CertPrincipal::ParseDistinguishedName(
     const void* ber_name_data,
     size_t length,
@@ -110,7 +106,6 @@ bool CertPrincipal::ParseDistinguishedName(
   }
   return true;
 }
-#endif
 
 std::string CertPrincipal::GetDisplayName() const {
   if (!common_name.empty())

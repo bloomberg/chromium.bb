@@ -139,7 +139,6 @@ TEST(X509UtilNSSTest, CreateCERTCertificateListFromX509Certificate) {
             BytesForNSSCert(nss_certs[3].get()));
 }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
 TEST(X509UtilTest, CreateCERTCertificateListFromX509CertificateErrors) {
   scoped_refptr<X509Certificate> ok_cert(
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
@@ -181,7 +180,6 @@ TEST(X509UtilTest, CreateCERTCertificateListFromX509CertificateErrors) {
   EXPECT_EQ(BytesForX509Cert(ok_cert2.get()),
             BytesForNSSCert(nss_certs[1].get()));
 }
-#endif
 
 TEST(X509UtilNSSTest, CreateCERTCertificateListFromBytes) {
   base::FilePath cert_path =

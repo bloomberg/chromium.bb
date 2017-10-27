@@ -32,7 +32,6 @@ bool GetIssuerAndSubject(CERTCertificate* cert,
 bool GetIssuerAndSubject(X509Certificate* cert,
                          der::Input* issuer,
                          der::Input* subject) {
-#if BUILDFLAG(USE_BYTE_CERTS)
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
@@ -52,9 +51,6 @@ bool GetIssuerAndSubject(X509Certificate* cert,
   *issuer = tbs.issuer_tlv;
   *subject = tbs.subject_tlv;
   return true;
-#else
-  return GetIssuerAndSubject(cert->os_cert_handle(), issuer, subject);
-#endif
 }
 
 }  // namespace
