@@ -24,6 +24,9 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 
 @interface BookmarkTableCell ()<UITextFieldDelegate>
 
+// Icon view.
+@property(nonatomic, weak) UIImageView* iconView;
+
 // The label, that displays placeholder text when favicon is missing.
 @property(nonatomic, strong) UILabel* placeholderLabel;
 
@@ -36,6 +39,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 @end
 
 @implementation BookmarkTableCell
+@synthesize iconView = _iconView;
 @synthesize placeholderLabel = _placeholderLabel;
 @synthesize titleText = _titleText;
 @synthesize textDelegate = _textDelegate;
@@ -51,17 +55,53 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
     _titleText.textColor = [[MDCPalette greyPalette] tint900];
     _titleText.font = [MDCTypography subheadFont];
     _titleText.userInteractionEnabled = NO;
-    [self.contentView addSubview:_titleText];
 
-    self.imageView.clipsToBounds = YES;
-    [self.imageView setHidden:NO];
+    // Create icon view.
+    UIImageView* iconView = [[UIImageView alloc] init];
+    _iconView = iconView;
+    [_iconView setHidden:NO];
+    [_iconView.widthAnchor
+        constraintEqualToConstant:kBookmarkTableCellDefaultImageSize]
+        .active = YES;
+    [_iconView.heightAnchor
+        constraintEqualToConstant:kBookmarkTableCellDefaultImageSize]
+        .active = YES;
 
+    // Create placeholder label.
     _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _placeholderLabel.textAlignment = NSTextAlignmentCenter;
     _placeholderLabel.font = [MDCTypography captionFont];
-
     [_placeholderLabel setHidden:YES];
-    [self.contentView addSubview:_placeholderLabel];
+    [_placeholderLabel.widthAnchor
+        constraintEqualToConstant:kBookmarkTableCellDefaultImageSize]
+        .active = YES;
+    [_placeholderLabel.heightAnchor
+        constraintEqualToConstant:kBookmarkTableCellDefaultImageSize]
+        .active = YES;
+
+    // Create stack view.
+    UIStackView* contentStack = [[UIStackView alloc]
+        initWithArrangedSubviews:@[ _iconView, _placeholderLabel, _titleText ]];
+    [self.contentView addSubview:contentStack];
+
+    contentStack.layoutMargins = UIEdgeInsetsMake(
+        0, kBookmarkTableCellImagePadding, 0, kBookmarkTableCellImagePadding);
+    contentStack.layoutMarginsRelativeArrangement = YES;
+    contentStack.spacing = kBookmarkTableCellImagePadding;
+    contentStack.alignment = UIStackViewAlignmentCenter;
+
+    // Configure stack view layout.
+    contentStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+      [contentStack.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor],
+      [contentStack.bottomAnchor
+          constraintEqualToAnchor:self.contentView.bottomAnchor],
+      [contentStack.leadingAnchor
+          constraintEqualToAnchor:self.contentView.leadingAnchor],
+      [contentStack.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor]
+    ]];
 
     // Add separator view.
     _separatorView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -88,7 +128,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
   self.titleText.text = bookmark_utils_ios::TitleForBookmarkNode(node);
   self.titleText.accessibilityIdentifier = self.titleText.text;
 
-  self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
+  self.iconView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
   if (node->is_folder()) {
     [self setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
   } else {
@@ -97,13 +137,6 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 }
 
 - (void)startEdit {
-  // TODO(crbug.com/695749): Prevent the keyboard from overlapping the editing
-  // cell.
-  // The folder name will be submitted only when the return key is pressed.
-  // It will revert to 'New Folder' when the following happen:
-  // 1. Click on 'Done' or 'Back' of the navigation bar.
-  // 2. Click on 'New Folder' or 'Select' of the context bar.
-  // 3. Click on other folder or bookmark.
   self.titleText.userInteractionEnabled = YES;
   self.titleText.enablesReturnKeyAutomatically = YES;
   self.titleText.keyboardType = UIKeyboardTypeDefault;
@@ -136,63 +169,35 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 }
 
 - (void)setImage:(UIImage*)image {
-  [self.imageView setHidden:NO];
+  [self.iconView setHidden:NO];
   [self.placeholderLabel setHidden:YES];
 
-  [self.imageView setImage:image];
-  [self setNeedsLayout];
+  [self.iconView setImage:image];
 }
 
 - (void)setPlaceholderText:(NSString*)text
                  textColor:(UIColor*)textColor
            backgroundColor:(UIColor*)backgroundColor {
-  [self.imageView setHidden:YES];
+  [self.iconView setHidden:YES];
   [self.placeholderLabel setHidden:NO];
 
   self.placeholderLabel.backgroundColor = backgroundColor;
   self.placeholderLabel.textColor = textColor;
   self.placeholderLabel.text = text;
   [self.placeholderLabel sizeToFit];
-  [self setNeedsLayout];
 }
 
 #pragma mark - Layout
 
 - (void)prepareForReuse {
-  self.imageView.image = nil;
+  self.iconView.image = nil;
   self.placeholderLabel.hidden = YES;
-  self.imageView.hidden = NO;
+  self.iconView.hidden = NO;
   self.titleText.text = nil;
   self.titleText.accessibilityIdentifier = nil;
   self.titleText.userInteractionEnabled = NO;
   self.textDelegate = nil;
   [super prepareForReuse];
-}
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-  CGFloat titleTextStart =
-      kBookmarkTableCellDefaultImageSize + kBookmarkTableCellImagePadding * 2;
-
-  // TODO(crbug.com/695749): Investigate using constraints instead of manual
-  // layout.
-  self.imageView.contentMode = UIViewContentModeScaleAspectFill;
-  CGRect frame = CGRectMake(kBookmarkTableCellImagePadding, 0,
-                            kBookmarkTableCellDefaultImageSize,
-                            kBookmarkTableCellDefaultImageSize);
-  self.imageView.frame = frame;
-  self.imageView.center =
-      CGPointMake(self.imageView.center.x, self.contentView.center.y);
-
-  self.placeholderLabel.frame = frame;
-  self.placeholderLabel.center =
-      CGPointMake(self.placeholderLabel.center.x, self.contentView.center.y);
-
-  self.titleText.frame = CGRectMake(
-      titleTextStart, 0,
-      self.contentView.frame.size.width - titleTextStart -
-          self.accessoryView.bounds.size.width - kBookmarkTableCellImagePadding,
-      self.contentView.frame.size.height);
 }
 
 #pragma mark - UITextFieldDelegate
