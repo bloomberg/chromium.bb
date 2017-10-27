@@ -569,6 +569,7 @@ mojom("mojo_bindings") {
   sources = [
     "associated_interfaces.mojom",
     "child.mojom",
+    "child_control.mojom",
     "child_memory_coordinator.mojom",
     "devtools.mojom",
     "field_trial_recorder.mojom",

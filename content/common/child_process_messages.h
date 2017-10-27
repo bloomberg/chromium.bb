@@ -48,28 +48,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
 
 #define IPC_MESSAGE_START ChildProcessMsgStart
 
-// Messages sent from the browser to the child process.
-
-// Sent in response to ChildProcessHostMsg_ShutdownRequest to tell the child
-// process that it's safe to shutdown.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_Shutdown)
-
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-// Tell the child process to begin or end IPC message logging.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
-                     bool /* on or off */)
-#endif
-
-// Sent to child processes to tell them to enter or leave background mode.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
-                     bool /* background */)
-
-// Sent to child processes to tell them to purge and suspend.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_PurgeAndSuspend)
-
-// Sent to child processes to tell them to resume from suspended mode.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_Resume)
-
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 

@@ -1734,8 +1734,12 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
-  ChildThreadImpl::OnProcessBackgrounded(backgrounded);
+void RenderThreadImpl::SetProcessBackgrounded(bool backgrounded) {
+  // Set timer slack to maximum on main thread when in background.
+  base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
+  if (backgrounded)
+    timer_slack = base::TIMER_SLACK_MAXIMUM;
+  base::MessageLoop::current()->SetTimerSlack(timer_slack);
 
   renderer_scheduler_->SetRendererBackgrounded(backgrounded);
   if (backgrounded) {
@@ -1764,8 +1768,7 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   }
 }
 
-void RenderThreadImpl::OnProcessPurgeAndSuspend() {
-  ChildThreadImpl::OnProcessPurgeAndSuspend();
+void RenderThreadImpl::ProcessPurgeAndSuspend() {
   if (!RendererIsHidden())
     return;
 

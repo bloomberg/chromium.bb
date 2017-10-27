@@ -6,6 +6,7 @@
       "provides": {
         "browser": [
           "content::mojom::Child",
+          "content::mojom::ChildControl",
           "content::mojom::ChildHistogramFetcher",
           "content::mojom::ChildHistogramFetcherFactory",
           "IPC::mojom::ChannelBootstrap",

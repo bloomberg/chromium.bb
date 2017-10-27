@@ -30,6 +30,7 @@
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/child_control.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/media/media_stream.mojom.h"
@@ -753,6 +754,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<OffscreenCanvasProviderImpl> offscreen_canvas_provider_;
 
+  mojom::ChildControlPtr child_control_interface_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::Binding<mojom::RendererHost> renderer_host_binding_;
