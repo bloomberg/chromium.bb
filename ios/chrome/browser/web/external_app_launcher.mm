@@ -13,10 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/ui/external_app/open_mail_handler_view_controller.h"
-#import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/external_apps_launch_policy_decider.h"
-#include "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
 #import "ios/chrome/browser/web/mailto_url_rewriter.h"
 #import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
@@ -90,14 +87,10 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
 // Used to check for repeated launches and provide policy for launching apps.
 @property(nonatomic, strong) ExternalAppsLaunchPolicyDecider* policyDecider;
 
-// Shows a prompt for the user to choose which mail client app to use to
-// handle a mailto:// URL.
-- (void)promptForMailClientWithURL:(const GURL&)URL
-                       URLRewriter:(MailtoURLRewriter*)rewriter;
 // Shows a prompt in Material Design for the user to choose which mail client
 // app to use to handle a mailto:// URL.
-- (void)promptMDCStyleForMailClientWithURL:(const GURL&)URL
-                               URLRewriter:(MailtoURLRewriter*)rewriter;
+- (void)promptForMailClientWithURL:(const GURL&)URL
+                       URLRewriter:(MailtoURLRewriter*)rewriter;
 // Presents an alert controller with |prompt| and |openLabel| as button label
 // on the root view controller before launching an external app identified by
 // |URL|.
@@ -150,50 +143,6 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
 
 - (void)promptForMailClientWithURL:(const GURL&)URL
                        URLRewriter:(MailtoURLRewriter*)rewriter {
-  // No user chosen default. Prompt user now.
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_CHOOSE_DEFAULT_EMAIL_CLIENT_APP);
-  NSString* subtitle =
-      l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_APP_HOW_TO_CHANGE);
-  // TODO(crbug.com/761519): Use Action Sheet style for iPad as well.
-  UIAlertControllerStyle style = IsIPadIdiom()
-                                     ? UIAlertControllerStyleAlert
-                                     : UIAlertControllerStyleActionSheet;
-  UIAlertController* alertController =
-      [UIAlertController alertControllerWithTitle:title
-                                          message:subtitle
-                                   preferredStyle:style];
-  // There must be more than one available handlers to present a prompt to user.
-  DCHECK([[rewriter defaultHandlers] count] > 1U);
-  GURL copiedURLToOpen = URL;
-  for (MailtoHandler* handler in [rewriter defaultHandlers]) {
-    if (![handler isAvailable])
-      continue;
-    UIAlertAction* action = [UIAlertAction
-        actionWithTitle:[handler appName]
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction* _Nonnull action) {
-                  DCHECK(handler);
-                  [rewriter setDefaultHandlerID:[handler appStoreID]];
-                  LaunchMailClientApp(copiedURLToOpen, handler);
-                }];
-    [alertController addAction:action];
-  }
-
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-  [alertController addAction:cancelAction];
-
-  [[[[UIApplication sharedApplication] keyWindow] rootViewController]
-      presentViewController:alertController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)promptMDCStyleForMailClientWithURL:(const GURL&)URL
-                               URLRewriter:(MailtoURLRewriter*)rewriter {
   GURL copiedURLToOpen = URL;
   OpenMailHandlerViewController* mailHandlerChooser =
       [[OpenMailHandlerViewController alloc]
@@ -359,20 +308,13 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
     }
   }
 
-  // If feature mailto: URL rewriting is enabled, replaces |URL| with a
-  // rewritten URL if it is of mailto: scheme.
-  if (base::FeatureList::IsEnabled(kMailtoUrlRewriting) &&
-      gURL.SchemeIs(url::kMailToScheme)) {
+  // Replaces |URL| with a rewritten URL if it is of mailto: scheme.
+  if (gURL.SchemeIs(url::kMailToScheme)) {
     MailtoURLRewriter* rewriter =
-        base::FeatureList::IsEnabled(kMailtoPromptForUserChoice)
-            ? [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers]
-            : [LegacyMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
+        [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
     NSString* handlerID = [rewriter defaultHandlerID];
     if (!handlerID) {
-      if (base::FeatureList::IsEnabled(kMailtoPromptInMdcStyle))
-        [self promptMDCStyleForMailClientWithURL:gURL URLRewriter:rewriter];
-      else
-        [self promptForMailClientWithURL:gURL URLRewriter:rewriter];
+      [self promptForMailClientWithURL:gURL URLRewriter:rewriter];
       return YES;
     }
     MailtoHandler* handler = [rewriter defaultHandlerByID:handlerID];

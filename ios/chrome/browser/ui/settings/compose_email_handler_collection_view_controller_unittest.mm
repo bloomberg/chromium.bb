@@ -9,8 +9,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/web/fake_mailto_handler_helpers.h"
-#include "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
 #import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -34,9 +32,7 @@ class ComposeEmailHandlerCollectionViewControllerTest
   // CollectionViewController.
   CollectionViewController* InstantiateController() override {
     rewriter_ =
-        base::FeatureList::IsEnabled(kMailtoPromptForUserChoice)
-            ? [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers]
-            : [[LegacyMailtoURLRewriter alloc] init];
+        [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
     // Clears the state so unit tests start from a known state.
     [[NSUserDefaults standardUserDefaults]
         removeObjectForKey:[[rewriter_ class] userDefaultsKey]];
@@ -55,7 +51,6 @@ class ComposeEmailHandlerCollectionViewControllerTest
 };
 
 TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
-  bool use_mdc_style = base::FeatureList::IsEnabled(kMailtoPromptInMdcStyle);
   handlers_ = @[
     [[MailtoHandlerSystemMail alloc] init],
     [[FakeMailtoHandlerGmailInstalled alloc] init],
@@ -65,10 +60,9 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
   CheckController();
   CheckTitleWithId(IDS_IOS_COMPOSE_EMAIL_SETTING);
 
-  // Checks that there is one section with all the available MailtoHandler
-  // objects listed.
-  NSInteger expected_sections = use_mdc_style ? 2 : 1;
-  ASSERT_EQ(expected_sections, NumberOfSections());
+  // Checks that there are two sections: one with all the available
+  // MailtoHandler objects listed and a second one with the "Always Ask" toggle.
+  ASSERT_EQ(2, NumberOfSections());
   // Array returned by -defaultHandlers is sorted by the name of the Mail app
   // and may not be in the same order as |handlers_|.
   NSArray<MailtoHandler*>* handlers = [rewriter_ defaultHandlers];
@@ -80,14 +74,14 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
     // Checks that the title displayed is the name of the MailtoHandler.
     EXPECT_NSEQ([handler appName], item.text);
     EXPECT_FALSE(item.detailText);
-    // The enable/disable state of the Mail client apps depends on whether
-    // the "Always Ask" toggle is available. All rows should be disabled
-    // if user has not selected a default Mail client app.
-    BOOL is_disabled = use_mdc_style && [rewriter_ defaultHandlerID] == nil;
+    // The enable/disable state of each Mail client app depends on the state
+    // of the "Always Ask" toggle. All rows should be disabled if user has
+    // not selected a default Mail client app.
+    BOOL is_enabled = [rewriter_ defaultHandlerID] != nil;
     // Checks that text cells are displayed differently depending on the
     // availability of the handlers.
     UIColor* darkest_tint = [[MDCPalette greyPalette] tint900];
-    if (!is_disabled && [handler isAvailable]) {
+    if (is_enabled && [handler isAvailable]) {
       EXPECT_EQ(darkest_tint, item.textColor);
       EXPECT_NE(UIAccessibilityTraitNotEnabled, item.accessibilityTraits);
     } else {
@@ -95,11 +89,9 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
       EXPECT_EQ(UIAccessibilityTraitNotEnabled, item.accessibilityTraits);
     }
   }
-  if (use_mdc_style) {
     bool is_on = [rewriter_ defaultHandlerID] == nil;
     CheckSwitchCellStateAndTitleWithId(is_on, IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE,
                                        1, 0);
-  }
 }
 
 TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSelection) {
@@ -144,12 +136,8 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSelection) {
 }
 
 // Tests the state of the mailto:// handler apps and as the "Always ask"
-// switch is toggled. This test is relevant only if MDC Style is enabled
-// because the switch exists only in MDC style.
+// switch is toggled.
 TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
-  if (!base::FeatureList::IsEnabled(kMailtoPromptInMdcStyle))
-    return;
-
   handlers_ = @[
     [[MailtoHandlerSystemMail alloc] init],
     [[FakeMailtoHandlerGmailInstalled alloc] init]

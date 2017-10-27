@@ -1538,17 +1538,8 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_COMPOSE_EMAIL_SETTING" desc="Title for the view and option to select a handler for mailto: URLs. [Length: 20em]">
         Compose Email
       </message>
-      <message name="IDS_IOS_CHOOSE_EMAIL_CLIENT_APP" desc="Title for action sheet to select an email client app when user taps on an URL that has a mailto: URL scheme. [Length: 50em]">
-        Create email with:
-      </message>
-      <message name="IDS_IOS_CHOOSE_DEFAULT_EMAIL_CLIENT_APP" desc="Title for action sheet to select an email client app when user taps on an URL that has a mailto: URL scheme. [Length: 50em]">
-        Choose Default Email App
-      </message>
       <message name="IDS_IOS_CHOOSE_EMAIL_APP" desc="Title for bottom sheet to choose an email client app when user taps on an URL that has a mailto: URL scheme. [Length 40em]">
         Choose Email App
-      </message>
-      <message name="IDS_IOS_CHOOSE_EMAIL_APP_HOW_TO_CHANGE" desc="Subtitle for action sheet to choose mailto:// handler with instructions on how to change the preference in the future. [Length: 80]">
-        You can change this preference any time in Chrome settings
       </message>
       <message name="IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE" desc="Title for toggle switch to set whether to ask user which Mail client app to use every time a mailto:// URL is tapped. [Length: 50]">
         Ask me which app to use every time

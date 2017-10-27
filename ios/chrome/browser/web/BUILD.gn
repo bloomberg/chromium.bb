@@ -9,8 +9,6 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
-    "legacy_mailto_url_rewriter.h",
-    "legacy_mailto_url_rewriter.mm",
     "load_timing_tab_helper.h",
     "load_timing_tab_helper.mm",
     "mailto_handler.h",
@@ -39,7 +37,6 @@ source_set("web") {
     "tab_id_tab_helper.mm",
   ]
   deps = [
-    ":features",
     ":tab_helper_delegates",
     "//base",
     "//components/strings",
@@ -54,16 +51,6 @@ source_set("web") {
   ]
 }
 
-source_set("features") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "features.h",
-    "features.mm",
-  ]
-  deps = [
-    "//base",
-  ]
-}
 source_set("tab_helper_delegates") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -77,7 +64,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "legacy_mailto_url_rewriter_unittest.mm",
     "load_timing_tab_helper_unittest.mm",
     "mailto_handler_gmail_unittest.mm",
     "mailto_handler_inbox_unittest.mm",
@@ -159,7 +145,6 @@ source_set("web_internal") {
   ]
   deps = [
     ":chrome_bundle",
-    ":features",
     "//base",
     "//components/content_settings/core/browser",
     "//components/dom_distiller/core",
