@@ -47,6 +47,7 @@
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/ObjectPaintInvalidator.h"
+#include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/CompositingInputsUpdater.h"
@@ -942,21 +943,6 @@ bool PaintLayerCompositor::NeedsContentsCompositingLayer(
   return layer->StackingNode()->HasNegativeZOrderList();
 }
 
-static void PaintScrollbar(const Scrollbar* scrollbar,
-                           GraphicsContext& context,
-                           const IntRect& clip) {
-  // Frame scrollbars are painted in the space of the containing frame, not the
-  // local space of the scrollbar.
-  const IntPoint& paint_offset = scrollbar->FrameRect().Location();
-  IntRect transformed_clip = clip;
-  transformed_clip.MoveBy(paint_offset);
-
-  AffineTransform translation;
-  translation.Translate(-paint_offset.X(), -paint_offset.Y());
-  TransformRecorder transform_recorder(context, *scrollbar, translation);
-  scrollbar->Paint(context, CullRect(transformed_clip));
-}
-
 IntRect PaintLayerCompositor::ComputeInterestRect(
     const GraphicsLayer* graphics_layer,
     const IntRect&) const {
@@ -976,7 +962,7 @@ void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
     return;
 
   if (scrollbar) {
-    PaintScrollbar(scrollbar, context, interest_rect);
+    ScrollableAreaPainter::PaintScrollbar(*scrollbar, context, interest_rect);
   } else {
     FramePainter(*layout_view_.GetFrameView())
         .PaintScrollCorner(context, interest_rect);

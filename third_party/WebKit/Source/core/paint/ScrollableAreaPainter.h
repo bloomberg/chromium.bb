@@ -15,6 +15,7 @@ class GraphicsContext;
 class IntPoint;
 class IntRect;
 class PaintLayerScrollableArea;
+class Scrollbar;
 
 class ScrollableAreaPainter {
   STACK_ALLOCATED();
@@ -35,6 +36,9 @@ class ScrollableAreaPainter {
   void PaintScrollCorner(GraphicsContext&,
                          const IntPoint& paint_offset,
                          const CullRect&);
+  static void PaintScrollbar(const Scrollbar&,
+                             GraphicsContext&,
+                             const IntRect& clip);
 
  private:
   void DrawPlatformResizerImage(GraphicsContext&, IntRect resizer_corner_rect);

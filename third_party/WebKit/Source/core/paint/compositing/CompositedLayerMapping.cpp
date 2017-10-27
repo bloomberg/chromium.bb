@@ -3204,21 +3204,6 @@ void CompositedLayerMapping::DoPaintTask(
   }
 }
 
-static void PaintScrollbar(const Scrollbar* scrollbar,
-                           GraphicsContext& context,
-                           const IntRect& clip) {
-  if (!scrollbar)
-    return;
-
-  const IntRect& scrollbar_rect = scrollbar->FrameRect();
-  TransformRecorder transform_recorder(
-      context, *scrollbar,
-      AffineTransform::Translation(-scrollbar_rect.X(), -scrollbar_rect.Y()));
-  IntRect transformed_clip = clip;
-  transformed_clip.MoveBy(scrollbar_rect.Location());
-  scrollbar->Paint(context, CullRect(transformed_clip));
-}
-
 // TODO(eseckler): Make recording distance configurable, e.g. for use in
 // headless, where we would like to record an exact area.
 // Note however that the minimum value for this constant is the size of a
@@ -3505,14 +3490,13 @@ void CompositedLayerMapping::PaintScrollableArea(
   // frame. For painting frame ScrollableAreas, see
   // PaintLayerCompositor::paintContents.
 
-  FloatRect layer_bounds(FloatPoint(), graphics_layer->Size());
   PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
   if (graphics_layer == LayerForHorizontalScrollbar()) {
-    PaintScrollbar(scrollable_area->HorizontalScrollbar(), context,
-                   interest_rect);
+    if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar())
+      ScrollableAreaPainter::PaintScrollbar(*scrollbar, context, interest_rect);
   } else if (graphics_layer == LayerForVerticalScrollbar()) {
-    PaintScrollbar(scrollable_area->VerticalScrollbar(), context,
-                   interest_rect);
+    if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar())
+      ScrollableAreaPainter::PaintScrollbar(*scrollbar, context, interest_rect);
   } else if (graphics_layer == LayerForScrollCorner()) {
     // Note that scroll corners always paint into local space, whereas
     // scrollbars paint in the space of their containing frame.

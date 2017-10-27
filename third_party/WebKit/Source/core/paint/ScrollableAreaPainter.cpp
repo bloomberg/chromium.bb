@@ -279,6 +279,21 @@ void ScrollableAreaPainter::PaintScrollCorner(
   context.FillRect(abs_rect, Color::kWhite);
 }
 
+void ScrollableAreaPainter::PaintScrollbar(const Scrollbar& scrollbar,
+                                           GraphicsContext& context,
+                                           const IntRect& clip) {
+  // Frame scrollbars are painted in the space of the containing frame, not the
+  // local space of the scrollbar.
+  const IntRect& scrollbar_rect = scrollbar.FrameRect();
+  IntRect transformed_clip = clip;
+  transformed_clip.MoveBy(scrollbar_rect.Location());
+
+  AffineTransform translation =
+      AffineTransform::Translation(-scrollbar_rect.X(), -scrollbar_rect.Y());
+  TransformRecorder transform_recorder(context, scrollbar, translation);
+  scrollbar.Paint(context, CullRect(transformed_clip));
+}
+
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {
   return *scrollable_area_;
 }
