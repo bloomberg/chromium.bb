@@ -80,7 +80,8 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // parallel."
   // |kUnspecedLoading| is used here because this is a part of script module
   // loading.
-  TaskRunnerHelper::Get(TaskType::kUnspecedLoading, script_state)
+  ExecutionContext::From(script_state)
+      ->GetTaskRunner(TaskType::kUnspecedLoading)
       ->PostTask(
           BLINK_FROM_HERE,
           WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),

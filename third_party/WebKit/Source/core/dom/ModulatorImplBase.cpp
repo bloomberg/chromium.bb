@@ -23,8 +23,8 @@ ExecutionContext* ModulatorImplBase::GetExecutionContext() const {
 
 ModulatorImplBase::ModulatorImplBase(scoped_refptr<ScriptState> script_state)
     : script_state_(std::move(script_state)),
-      task_runner_(
-          TaskRunnerHelper::Get(TaskType::kNetworking, script_state_.get())),
+      task_runner_(ExecutionContext::From(script_state_.get())
+                       ->GetTaskRunner(TaskType::kNetworking)),
       map_(ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),

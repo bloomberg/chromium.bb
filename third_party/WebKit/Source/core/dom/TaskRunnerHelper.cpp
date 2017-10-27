@@ -32,11 +32,6 @@ scoped_refptr<WebTaskRunner> TaskRunnerHelper::Get(
   return execution_context->GetTaskRunner(type);
 }
 
-scoped_refptr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
-                                                   ScriptState* script_state) {
-  return ExecutionContext::From(script_state)->GetTaskRunner(type);
-}
-
 scoped_refptr<WebTaskRunner> TaskRunnerHelper::Get(
     TaskType type,
     WorkerOrWorkletGlobalScope* global_scope) {

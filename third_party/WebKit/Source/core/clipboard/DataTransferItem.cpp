@@ -79,7 +79,7 @@ void DataTransferItem::getAsString(ScriptState* script_state,
   callbacks_.emplace_back(callback);
   ExecutionContext* context = ExecutionContext::From(script_state);
   probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
-  TaskRunnerHelper::Get(TaskType::kUserInteraction, script_state)
+  context->GetTaskRunner(TaskType::kUserInteraction)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&DataTransferItem::RunGetAsStringTask,
                            WrapPersistent(this), WrapPersistent(context),

@@ -26,10 +26,10 @@ MediaMetadata* MediaMetadata::Create(ScriptState* script_state,
 MediaMetadata::MediaMetadata(ScriptState* script_state,
                              const MediaMetadataInit& metadata,
                              ExceptionState& exception_state)
-    : notify_session_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state),
-          this,
-          &MediaMetadata::NotifySessionTimerFired) {
+    : notify_session_timer_(ExecutionContext::From(script_state)
+                                ->GetTaskRunner(TaskType::kMiscPlatformAPI),
+                            this,
+                            &MediaMetadata::NotifySessionTimerFired) {
   title_ = metadata.title();
   artist_ = metadata.artist();
   album_ = metadata.album();

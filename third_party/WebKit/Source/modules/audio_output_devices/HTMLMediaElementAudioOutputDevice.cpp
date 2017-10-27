@@ -56,7 +56,8 @@ SetSinkIdResolver::SetSinkIdResolver(ScriptState* script_state,
     : ScriptPromiseResolver(script_state),
       element_(element),
       sink_id_(sink_id),
-      timer_(TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state),
+      timer_(ExecutionContext::From(script_state)
+                 ->GetTaskRunner(TaskType::kMiscPlatformAPI),
              this,
              &SetSinkIdResolver::TimerFired) {}
 
