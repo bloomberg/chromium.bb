@@ -92,6 +92,16 @@ public class InfoBarAppearanceTest {
         captureMiniAndRegularInfobar(infobar, messageDelegate);
     }
 
+    @Test
+    @MediumTest
+    @Feature({"InfoBars", "Catalogue"})
+    public void testOomInfoBar() throws TimeoutException, InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mTab.getInfoBarContainer().addInfoBarForTesting(new NearOomInfoBar()));
+        mListener.addInfoBarAnimationFinished("InfoBar was not added.");
+        mScreenShooter.shoot("oom_infobar");
+    }
+
     private void captureMiniAndRegularInfobar(
             InfoBar infobar, TestFramebustBlockMessageDelegate delegate)
             throws TimeoutException, InterruptedException {

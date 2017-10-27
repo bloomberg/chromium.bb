@@ -3278,6 +3278,14 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_UPDATING_CHROME" desc="String that indicates that Chrome is updating">
         Updating Chrome...
       </message>
+
+      <!-- Interventions -->
+      <message name="IDS_NEAR_OOM_INTERVENTION_MESSAGE" desc="The message stating that the browser intervened to stop the page using too much memory.">
+         This page uses too much memory, so Chrome paused it.
+      </message>
+      <message name="IDS_NEAR_OOM_INTERVENTION_DECLINE" desc="The text of the button letting the user decline the browser's intervention, so that the page can resume what it was doing.">
+         Resume
+      </message>
     </messages>
   </release>
 </grit>

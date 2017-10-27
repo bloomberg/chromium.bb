@@ -493,6 +493,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBarDelegate.java",
   "java/src/org/chromium/chrome/browser/infobar/IPHInfoBarSupport.java",
   "java/src/org/chromium/chrome/browser/infobar/FramebustBlockInfoBar.java",
+  "java/src/org/chromium/chrome/browser/infobar/NearOomInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java",
   "java/src/org/chromium/chrome/browser/infobar/PreviewsInfoBar.java",
