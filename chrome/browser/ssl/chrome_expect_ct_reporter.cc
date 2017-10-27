@@ -37,7 +37,7 @@ bool HasHeaderValues(net::URLRequest* request,
   std::string response_headers;
   request->GetResponseHeaderByName(header, &response_headers);
   const std::vector<std::string> response_values = base::SplitString(
-      response_headers, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      response_headers, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const auto& value : response_values) {
     for (const auto& allowed : allowed_values) {
       if (base::ToLowerASCII(allowed) == base::ToLowerASCII(value)) {

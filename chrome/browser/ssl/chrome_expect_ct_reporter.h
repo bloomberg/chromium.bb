@@ -67,6 +67,8 @@ class ChromeExpectCTReporter
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, EmptyReportURI);
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, SendReport);
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
+                           PreflightContainsWhitespace);
+  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
                            BadCORSPreflightResponseOrigin);
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
                            BadCORSPreflightResponseMethods);
