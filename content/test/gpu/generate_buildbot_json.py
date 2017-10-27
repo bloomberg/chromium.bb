@@ -752,16 +752,14 @@ FYI_WATERFALL = {
     'Android Release (Nexus 6P)': {
       'swarming_dimensions': [
         {
-          # There are no PCI IDs on Android.
-          # This is a hack to get the script working.
-          'gpu': '0000:0000',
-          'os': 'Android'
+          'device_type': 'angler',
+          'device_os': 'M',
+          'os': 'Android',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'android-chromium',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
+      'swarming': True,
       'os_type': 'android',
     },
     'Android Release (Nexus 9)': {
