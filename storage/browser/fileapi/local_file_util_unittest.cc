@@ -141,8 +141,8 @@ TEST_F(LocalFileUtilTest, CreateAndClose) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext());
 }
 
-// base::CreateSymbolicLink is only supported on POSIX.
-#if defined(OS_POSIX)
+// base::CreateSymbolicLink is supported on most POSIX, but not on Fuchsia.
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   // Create symlink target file.
   const char *target_name = "symlink_target";

@@ -37,6 +37,7 @@ group("all") {
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:all" ]
   }
+
   # No other targets should depend on this target, since it's just a convenience
   # target for the Chromecast internal build infrastructure.
   visibility = []
@@ -44,7 +45,7 @@ group("all") {
 }
 
 # A list of all public test() binaries. This is an organizational target that
-# cannot be depended upon or built directly. Build cast_group_test_list instead.
+# cannot be depended upon or built directly. Build cast_test_lists instead.
 cast_test_group("cast_tests") {
   filters = []
   tests = [
@@ -61,7 +62,6 @@ cast_test_group("cast_tests") {
     "//media:media_unittests",
     "//media/midi:midi_unittests",
     "//net:net_unittests",
-    "//sandbox/linux:sandbox_linux_unittests",
     "//sql:sql_unittests",
     "//storage:storage_unittests",
     "//third_party/cacheinvalidation:cacheinvalidation_unittests",
@@ -77,7 +77,10 @@ cast_test_group("cast_tests") {
   }
 
   if (is_linux) {
-    tests += [ "//chromecast/crash:cast_crash_unittests" ]
+    tests += [
+      "//chromecast/crash:cast_crash_unittests",
+      "//sandbox/linux:sandbox_linux_unittests",
+    ]
   }
 
   if (is_linux || is_fuchsia) {
@@ -89,9 +92,12 @@ cast_test_group("cast_tests") {
       ":cast_shell_browsertests",
       ":cast_shell_unittests",
       "//ipc:ipc_tests",
-      "//jingle:jingle_unittests",
       "//url:url_unittests",
     ]
+
+    if (!is_fuchsia) {
+      tests += [ "//jingle:jingle_unittests" ]
+    }
 
     cast_media_unittests_filter = {
       test_name = "cast_media_unittests"
