@@ -10,7 +10,7 @@
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [8, 8],
       "bounds": [200, 200],
-      "backgroundColor": "#D3D3D3"
+      "backgroundColor": "#008000"
     },
     {
       "name": "Scrolling Layer",
@@ -21,17 +21,16 @@
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
-      "bounds": [200, 1620],
+      "bounds": [185, 300],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
+      "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'test'",
-          "rect": [0, 610, 22, 19],
-          "reason": "selection"
+          "object": "Scrolling Contents Layer",
+          "rect": [0, 0, 185, 300],
+          "reason": "background on scrolling contents layer"
         }
-      ],
-      "transform": 1
+      ]
     },
     {
       "name": "Overflow Controls Host Layer",
@@ -57,26 +56,14 @@
       "bounds": [15, 15]
     }
   ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -450, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    }
-  ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "selection"
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
     },
     {
-      "object": "InlineTextBox 'test'",
-      "reason": "selection"
+      "object": "LayoutBlockFlow DIV id='scroller'",
+      "reason": "style change"
     }
   ]
 }

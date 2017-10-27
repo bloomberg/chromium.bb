@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [11, 47, 58, 16],
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [508, 28, 80, 20],
           "reason": "appeared"
         }
       ]
@@ -16,20 +16,20 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
+      "object": "LayoutBlockFlow (positioned) DIV id='target'",
+      "reason": "style change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "appeared"
+      "reason": "style change"
     },
     {
-      "object": "InlineTextBox 'some text'",
-      "reason": "appeared"
+      "object": "InlineTextBox 'PASS'",
+      "reason": "style change"
     }
   ]
 }
