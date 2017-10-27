@@ -5449,13 +5449,6 @@ weston_output_init(struct weston_output *output,
 
 	wl_list_init(&output->head_list);
 
-	weston_head_init(&output->head, name);
-	output->head.allocator_output = output;
-	if (!compositor->backend->create_output) {
-		weston_head_set_connection_status(&output->head, true);
-		weston_compositor_add_head(compositor, &output->head);
-	}
-
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured
 	 */
@@ -5692,8 +5685,6 @@ weston_output_release(struct weston_output *output)
 	wl_list_for_each_safe(head, tmp, &output->head_list, output_link)
 		weston_head_detach(head);
 
-	weston_head_release(&output->head);
-
 	free(output->name);
 }
 
@@ -5717,22 +5708,13 @@ weston_compositor_create_output_with_head(struct weston_compositor *compositor,
 {
 	struct weston_output *output;
 
-	if (head->allocator_output) {
-		/* XXX: compatibility path to be removed after all converted */
-		output = head->allocator_output;
-	} else {
-		assert(compositor->backend->create_output);
-		output = compositor->backend->create_output(compositor,
-							    head->name);
-	}
-
+	assert(compositor->backend->create_output);
+	output = compositor->backend->create_output(compositor, head->name);
 	if (!output)
 		return NULL;
 
 	if (weston_output_attach_head(output, head) < 0) {
-		if (!head->allocator_output)
-			output->destroy(output);
-
+		weston_output_destroy(output);
 		return NULL;
 	}
 
@@ -5754,18 +5736,6 @@ weston_compositor_create_output_with_head(struct weston_compositor *compositor,
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
-	struct weston_head *head;
-
-	/* XXX: compatibility path to be removed after all converted */
-	head = weston_output_get_first_head(output);
-	if (head->allocator_output) {
-		/* The old design: backend is responsible for destroying the
-		 * output, so just undo create_output_with_head()
-		 */
-		weston_head_detach(head);
-		return;
-	}
-
 	output->destroy(output);
 }
 

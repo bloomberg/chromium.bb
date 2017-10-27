@@ -174,8 +174,6 @@ struct weston_head {
 
 	char *name;			/**< head name, e.g. connector name */
 	bool connected;			/**< is physically connected */
-
-	struct weston_output *allocator_output;	/**< XXX: to be removed */
 };
 
 struct weston_output {
@@ -240,7 +238,6 @@ struct weston_output {
 	struct weston_mode *original_mode;
 	struct wl_list mode_list;
 
-	struct weston_head head; /**< head for unconverted backends */
 	struct wl_list head_list; /**< List of driven weston_heads */
 
 	void (*start_repaint_loop)(struct weston_output *output);
