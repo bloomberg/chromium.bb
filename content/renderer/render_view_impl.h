@@ -123,7 +123,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // send an additional IPC to finish making this view visible.
   static RenderViewImpl* Create(
       CompositorDependencies* compositor_deps,
-      const mojom::CreateViewParams& params,
+      mojom::CreateViewParamsPtr params,
       const RenderWidget::ShowCallback& show_callback);
 
   // Used by content_layouttest_support to hook into the creation of
@@ -387,7 +387,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const mojom::CreateViewParams& params);
 
-  void Initialize(const mojom::CreateViewParams& params,
+  void Initialize(mojom::CreateViewParamsPtr params,
                   const RenderWidget::ShowCallback& show_callback);
   void SetScreenMetricsEmulationParameters(
       bool enabled,

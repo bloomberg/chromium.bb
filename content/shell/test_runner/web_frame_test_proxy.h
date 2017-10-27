@@ -54,7 +54,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
 template <class Base, typename P>
 class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
  public:
-  explicit WebFrameTestProxy(P p) : Base(p) {}
+  explicit WebFrameTestProxy(P p) : Base(std::move(p)) {}
 
   virtual ~WebFrameTestProxy() {}
 

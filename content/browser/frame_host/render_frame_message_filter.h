@@ -27,6 +27,10 @@ struct FrameHostMsg_CreateChildFrame_Params;
 struct FrameHostMsg_DownloadUrl_Params;
 class GURL;
 
+namespace mojo {
+class MessagePipeHandle;
+}
+
 namespace net {
 class URLRequestContext;
 class URLRequestContextGetter;
@@ -92,6 +96,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   // Browser process defines them for the renderer process.
   void OnCreateChildFrame(const FrameHostMsg_CreateChildFrame_Params& params,
                           int* new_render_frame_id,
+                          mojo::MessagePipeHandle* new_interface_provider,
                           base::UnguessableToken* devtools_frame_token);
   void OnCookiesEnabled(int render_frame_id,
                         const GURL& url,

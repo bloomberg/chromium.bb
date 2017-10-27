@@ -62,12 +62,12 @@ class MockFrameHost : public mojom::FrameHost {
 
 // static
 RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
-    const RenderFrameImpl::CreateParams& params) {
-  return new TestRenderFrame(params);
+    RenderFrameImpl::CreateParams params) {
+  return new TestRenderFrame(std::move(params));
 }
 
-TestRenderFrame::TestRenderFrame(const RenderFrameImpl::CreateParams& params)
-    : RenderFrameImpl(params),
+TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
+    : RenderFrameImpl(std::move(params)),
       mock_frame_host_(std::make_unique<MockFrameHost>()) {}
 
 TestRenderFrame::~TestRenderFrame() {}

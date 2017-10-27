@@ -171,15 +171,17 @@ FrameTree::NodeRange FrameTree::NodesExceptSubtree(FrameTreeNode* node) {
   return NodeRange(root_, node);
 }
 
-bool FrameTree::AddFrame(FrameTreeNode* parent,
-                         int process_id,
-                         int new_routing_id,
-                         blink::WebTreeScopeType scope,
-                         const std::string& frame_name,
-                         const std::string& frame_unique_name,
-                         const base::UnguessableToken& devtools_frame_token,
-                         const FramePolicy& frame_policy,
-                         const FrameOwnerProperties& frame_owner_properties) {
+bool FrameTree::AddFrame(
+    FrameTreeNode* parent,
+    int process_id,
+    int new_routing_id,
+    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    const std::string& frame_unique_name,
+    const base::UnguessableToken& devtools_frame_token,
+    const FramePolicy& frame_policy,
+    const FrameOwnerProperties& frame_owner_properties) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 
   // A child frame always starts with an initial empty document, which means
@@ -205,6 +207,10 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
   // Add the new node to the FrameTree, creating the RenderFrameHost.
   FrameTreeNode* added_node =
       parent->AddChild(std::move(new_node), process_id, new_routing_id);
+
+  DCHECK(interface_provider_request.is_pending());
+  added_node->current_frame_host()->BindInterfaceProviderRequest(
+      std::move(interface_provider_request));
 
   // The last committed NavigationEntry may have a FrameNavigationEntry with the
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if

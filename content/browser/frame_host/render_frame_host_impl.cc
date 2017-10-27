@@ -502,10 +502,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       has_selection_(false),
       is_audible_(false),
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
-      frame_host_interface_broker_binding_(this),
       frame_host_associated_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
+      interface_provider_binding_(this),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -531,6 +531,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   }
 
   SetUpMojoIfNeeded();
+
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
   beforeunload_timeout_.reset(
@@ -1152,7 +1153,11 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
 
   DCHECK(GetProcess()->HasConnection());
 
+  service_manager::mojom::InterfaceProviderPtr interface_provider;
+  BindInterfaceProviderRequest(mojo::MakeRequest(&interface_provider));
+
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
+  params->interface_provider = std::move(interface_provider);
   params->routing_id = routing_id_;
   params->proxy_routing_id = proxy_routing_id;
   params->opener_routing_id = opener_routing_id;
@@ -1318,6 +1323,8 @@ void RenderFrameHostImpl::OnDidAddMessageToConsole(
 
 void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
+    service_manager::mojom::InterfaceProviderRequest
+        new_interface_provider_provider_request,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
@@ -1326,6 +1333,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const FrameOwnerProperties& frame_owner_properties) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
+  DCHECK(new_interface_provider_provider_request.is_pending());
 
   // The RenderFrame corresponding to this host sent an IPC message to create a
   // child, but by the time we get here, it's possible for the host to have been
@@ -1334,9 +1342,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   if (!is_active() || !IsCurrent() || !render_frame_created_)
     return;
 
-  // |new_routing_id| and |devtools_frame_token| were generated on the browser's
-  // IO thread and not taken from the renderer process.
+  // |new_routing_id|, |new_interface_provider_provider_request|, and
+  // |devtools_frame_token| were generated on the browser's IO thread and not
+  // taken from the renderer process.
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
+                        std::move(new_interface_provider_provider_request),
                         scope, frame_name, frame_unique_name,
                         devtools_frame_token, frame_policy,
                         frame_owner_properties);
@@ -1506,8 +1516,7 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   // navigating already and sent it before hearing the FrameMsg_Stop message.
   // Treat this as an implicit beforeunload ack to allow the pending navigation
   // to continue.
-  if (is_waiting_for_beforeunload_ack_ &&
-      unload_ack_is_for_navigation_ &&
+  if (is_waiting_for_beforeunload_ack_ && unload_ack_is_for_navigation_ &&
       !GetParent()) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
     OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
@@ -1845,6 +1854,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // reset.
   SetRenderFrameCreated(false);
   InvalidateMojoConnection();
+  interface_provider_binding_.Close();
 
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
@@ -2747,6 +2757,16 @@ void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
                                            *overlay_routing_token_));
 }
 
+void RenderFrameHostImpl::BindInterfaceProviderRequest(
+    service_manager::mojom::InterfaceProviderRequest
+        interface_provider_request) {
+  DCHECK(!interface_provider_binding_.is_bound());
+  DCHECK(interface_provider_request.is_pending());
+  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
+      mojom::kNavigation_FrameSpec, GetProcess()->GetID(),
+      std::move(interface_provider_request)));
+}
+
 void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
                                               WindowOpenDisposition disposition,
                                               const gfx::Rect& initial_rect,
@@ -2863,12 +2883,18 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   // The view, widget, and frame should all be routable now.
   DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_route_id);
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_route_id);
   DCHECK(rfh);
+
+  service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider;
+  rfh->BindInterfaceProviderRequest(
+      mojo::MakeRequest(&main_frame_interface_provider));
+
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       render_view_route_id, main_frame_route_id, main_frame_widget_route_id,
-      cloned_namespace->id(), rfh->GetDevToolsFrameToken());
+      std::move(main_frame_interface_provider), cloned_namespace->id(),
+      rfh->GetDevToolsFrameToken());
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
 }
@@ -3472,11 +3498,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
   BindInterface(GetProcess(), &frame_factory);
-
-  mojom::FrameHostInterfaceBrokerPtr broker_proxy;
-  frame_host_interface_broker_binding_.Bind(mojo::MakeRequest(&broker_proxy));
-  frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_),
-                             std::move(broker_proxy));
+  frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_));
 
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   frame_->GetInterfaceProvider(mojo::MakeRequest(&remote_interfaces));
@@ -3494,8 +3516,8 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   registry_.reset();
 
   frame_.reset();
-  frame_host_interface_broker_binding_.Close();
   frame_bindings_control_.reset();
+  frame_host_associated_binding_.Close();
   navigation_control_.reset();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
@@ -3804,14 +3826,6 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
 
 bool RenderFrameHostImpl::HasSelection() {
   return has_selection_;
-}
-
-void RenderFrameHostImpl::GetInterfaceProvider(
-    service_manager::mojom::InterfaceProviderRequest interfaces) {
-  interface_provider_bindings_.AddBinding(
-      this, FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
-                                            GetProcess()->GetID(),
-                                            std::move(interfaces)));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

@@ -31,6 +31,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -38,6 +39,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -61,15 +63,17 @@ namespace {
 const int kPluginsRefreshThresholdInSeconds = 3;
 #endif
 
-void CreateChildFrameOnUI(int process_id,
-                          int parent_routing_id,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          const std::string& frame_unique_name,
-                          const base::UnguessableToken& devtools_frame_token,
-                          const FramePolicy& frame_policy,
-                          const FrameOwnerProperties& frame_owner_properties,
-                          int new_routing_id) {
+void CreateChildFrameOnUI(
+    int process_id,
+    int parent_routing_id,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    const std::string& frame_unique_name,
+    const base::UnguessableToken& devtools_frame_token,
+    const FramePolicy& frame_policy,
+    const FrameOwnerProperties& frame_owner_properties,
+    int new_routing_id,
+    mojo::ScopedMessagePipeHandle interface_provider_request_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
@@ -77,8 +81,11 @@ void CreateChildFrameOnUI(int process_id,
   // processing a subframe creation message.
   if (render_frame_host) {
     render_frame_host->OnCreateChildFrame(
-        new_routing_id, scope, frame_name, frame_unique_name,
-        devtools_frame_token, frame_policy, frame_owner_properties);
+        new_routing_id,
+        service_manager::mojom::InterfaceProviderRequest(
+            std::move(interface_provider_request_handle)),
+        scope, frame_name, frame_unique_name, devtools_frame_token,
+        frame_policy, frame_owner_properties);
   }
 }
 
@@ -341,16 +348,25 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
 void RenderFrameMessageFilter::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
     int* new_routing_id,
+    mojo::MessagePipeHandle* new_interface_provider,
     base::UnguessableToken* devtools_frame_token) {
   *new_routing_id = render_widget_helper_->GetNextRoutingID();
+
+  service_manager::mojom::InterfaceProviderPtr interface_provider;
+  auto interface_provider_request(mojo::MakeRequest(&interface_provider));
+  *new_interface_provider =
+      interface_provider.PassInterface().PassHandle().release();
+
   *devtools_frame_token = base::UnguessableToken::Create();
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CreateChildFrameOnUI, render_process_id_,
                      params.parent_routing_id, params.scope, params.frame_name,
                      params.frame_unique_name, *devtools_frame_token,
                      params.frame_policy, params.frame_owner_properties,
-                     *new_routing_id));
+                     *new_routing_id,
+                     interface_provider_request.PassMessagePipe()));
 }
 
 void RenderFrameMessageFilter::OnCookiesEnabled(int render_frame_id,

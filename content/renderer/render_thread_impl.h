@@ -514,8 +514,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void RegisterPendingFrameCreate(
       const service_manager::BindSourceInfo& source_info,
       int routing_id,
-      mojom::FrameRequest frame,
-      mojom::FrameHostInterfaceBrokerPtr host);
+      mojom::FrameRequest frame);
 
   mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
@@ -781,21 +780,14 @@ class CONTENT_EXPORT RenderThreadImpl
 
   class PendingFrameCreate : public base::RefCounted<PendingFrameCreate> {
    public:
-    PendingFrameCreate(
-        const service_manager::BindSourceInfo& source_info,
-        int routing_id,
-        mojom::FrameRequest frame_request,
-        mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker);
+    PendingFrameCreate(const service_manager::BindSourceInfo& source_info,
+                       int routing_id,
+                       mojom::FrameRequest frame_request);
 
     const service_manager::BindSourceInfo& browser_info() const {
       return browser_info_;
     }
     mojom::FrameRequest TakeFrameRequest() { return std::move(frame_request_); }
-    mojom::FrameHostInterfaceBrokerPtr TakeInterfaceBroker() {
-      frame_host_interface_broker_.set_connection_error_handler(
-          base::Closure());
-      return std::move(frame_host_interface_broker_);
-    }
 
    private:
     friend class base::RefCounted<PendingFrameCreate>;
@@ -808,7 +800,6 @@ class CONTENT_EXPORT RenderThreadImpl
     service_manager::BindSourceInfo browser_info_;
     int routing_id_;
     mojom::FrameRequest frame_request_;
-    mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker_;
   };
 
   using PendingFrameCreateMap =
