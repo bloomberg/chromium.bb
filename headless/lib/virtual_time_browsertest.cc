@@ -279,4 +279,21 @@ class FrameDetatchWithPendingResourceLoadVirtualTimeTest
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     FrameDetatchWithPendingResourceLoadVirtualTimeTest);
 
+class DeferredLoadDoesntBlockVirtualTimeTest : public VirtualTimeBrowserTest {
+ public:
+  DeferredLoadDoesntBlockVirtualTimeTest() {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    SetInitialURL(embedded_test_server()->GetURL("/video.html").spec());
+  }
+
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    // The video should not block virtual time.
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DeferredLoadDoesntBlockVirtualTimeTest);
+
 }  // namespace headless
