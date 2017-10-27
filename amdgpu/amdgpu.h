@@ -1489,6 +1489,24 @@ void amdgpu_cs_chunk_fence_to_dep(struct amdgpu_cs_fence *fence,
 void amdgpu_cs_chunk_fence_info_to_data(struct amdgpu_cs_fence_info *fence_info,
 					struct drm_amdgpu_cs_chunk_data *data);
 
+/**
+ * Reserve VMID
+ * \param   context - \c [in]  GPU Context
+ * \param   flags - \c [in]  TBD
+ *
+ * \return  0 on success otherwise POSIX Error code
+*/
+int amdgpu_vm_reserve_vmid(amdgpu_context_handle context, uint32_t flags);
+
+/**
+ * Free reserved VMID
+ * \param   context - \c [in]  GPU Context
+ * \param   flags - \c [in]  TBD
+ *
+ * \return  0 on success otherwise POSIX Error code
+*/
+int amdgpu_vm_unreserve_vmid(amdgpu_context_handle context, uint32_t flags);
+
 #ifdef __cplusplus
 }
 #endif

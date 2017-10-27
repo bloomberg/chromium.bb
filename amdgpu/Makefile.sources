@@ -6,6 +6,7 @@ LIBDRM_AMDGPU_FILES := \
 	amdgpu_gpu_info.c \
 	amdgpu_internal.h \
 	amdgpu_vamgr.c \
+	amdgpu_vm.c \
 	util_hash.c \
 	util_hash.h \
 	util_hash_table.c \

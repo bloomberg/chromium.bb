@@ -64,6 +64,8 @@ amdgpu_read_mm_registers
 amdgpu_va_range_alloc
 amdgpu_va_range_free
 amdgpu_va_range_query
+amdgpu_vm_reserve_vmid
+amdgpu_vm_unreserve_vmid
 EOF
 done)
 
