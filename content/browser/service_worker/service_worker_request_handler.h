@@ -95,7 +95,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       int provider_id,
       bool skip_service_worker,
       network::mojom::FetchRequestMode request_mode,
-      FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
       ResourceType resource_type,

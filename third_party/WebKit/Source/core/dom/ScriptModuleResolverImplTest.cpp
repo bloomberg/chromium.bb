@@ -78,7 +78,7 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
   ScriptModule referrer_record = ScriptModule::Compile(
       scope.GetIsolate(), "import './target.js'; export const a = 42;",
       "referrer.js", kSharableCrossOrigin,
-      WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
@@ -92,7 +92,7 @@ ModuleScript* CreateTargetModuleScript(
     ScriptModuleState state = ScriptModuleState::kInstantiated) {
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "export const pi = 3.14;", "target.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL url("https://example.com/target.js");
   auto* module_script = ModuleScript::CreateForTest(modulator, record, url);

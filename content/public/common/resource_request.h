@@ -106,7 +106,8 @@ struct CONTENT_EXPORT ResourceRequest {
       network::mojom::FetchRequestMode::kSameOrigin;
 
   // The credentials mode passed to the ServiceWorker.
-  FetchCredentialsMode fetch_credentials_mode = FETCH_CREDENTIALS_MODE_OMIT;
+  network::mojom::FetchCredentialsMode fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kOmit;
 
   // The redirect mode used in Fetch API.
   FetchRedirectMode fetch_redirect_mode = FetchRedirectMode::FOLLOW_MODE;

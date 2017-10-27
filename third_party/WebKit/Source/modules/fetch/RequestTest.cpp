@@ -62,8 +62,8 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
       WebURLRequest::kRequestContextAudio;
   const network::mojom::FetchRequestMode kMode =
       network::mojom::FetchRequestMode::kNavigate;
-  const WebURLRequest::FetchCredentialsMode kCredentialsMode =
-      WebURLRequest::kFetchCredentialsModeInclude;
+  const network::mojom::FetchCredentialsMode kCredentialsMode =
+      network::mojom::FetchCredentialsMode::kInclude;
   const auto kCacheMode = mojom::FetchCacheMode::kValidateCache;
   const WebURLRequest::FetchRedirectMode kRedirectMode =
       WebURLRequest::kFetchRedirectModeError;

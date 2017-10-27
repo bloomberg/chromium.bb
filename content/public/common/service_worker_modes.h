@@ -13,14 +13,6 @@ static const int kInvalidServiceWorkerProviderId = -1;
 // The enum entries below are written to histograms and thus cannot be deleted
 // or reordered.
 // New entries must be added immediately before the end.
-enum FetchCredentialsMode {
-  FETCH_CREDENTIALS_MODE_OMIT,
-  FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
-  FETCH_CREDENTIALS_MODE_INCLUDE,
-  FETCH_CREDENTIALS_MODE_PASSWORD,
-  FETCH_CREDENTIALS_MODE_LAST = FETCH_CREDENTIALS_MODE_PASSWORD
-};
-
 enum class FetchRedirectMode {
   FOLLOW_MODE,
   ERROR_MODE,

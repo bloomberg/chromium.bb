@@ -53,8 +53,6 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
 
 // Helper functions to convert enums from the blink type to the content
 // type.
-FetchCredentialsMode GetFetchCredentialsModeForWebURLRequest(
-    const blink::WebURLRequest& request);
 FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
     const blink::WebURLRequest& request);
 std::string GetFetchIntegrityForWebURLRequest(

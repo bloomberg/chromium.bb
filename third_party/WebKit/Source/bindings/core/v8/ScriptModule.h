@@ -50,7 +50,7 @@ class CORE_EXPORT ScriptModule final {
                               const String& source,
                               const String& file_name,
                               AccessControlStatus,
-                              WebURLRequest::FetchCredentialsMode,
+                              network::mojom::FetchCredentialsMode,
                               const String& nonce,
                               ParserDisposition,
                               const TextPosition&,

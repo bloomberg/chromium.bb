@@ -62,8 +62,8 @@ class FetchRequestData final
   void SetReferrerPolicy(ReferrerPolicy p) { referrer_.referrer_policy = p; }
   void SetMode(network::mojom::FetchRequestMode mode) { mode_ = mode; }
   network::mojom::FetchRequestMode Mode() const { return mode_; }
-  void SetCredentials(WebURLRequest::FetchCredentialsMode);
-  WebURLRequest::FetchCredentialsMode Credentials() const {
+  void SetCredentials(network::mojom::FetchCredentialsMode);
+  network::mojom::FetchCredentialsMode Credentials() const {
     return credentials_;
   }
   void SetCacheMode(mojom::FetchCacheMode cache_mode) {
@@ -125,7 +125,7 @@ class FetchRequestData final
   // FIXME: Support m_authenticationFlag;
   // FIXME: Support m_synchronousFlag;
   network::mojom::FetchRequestMode mode_;
-  WebURLRequest::FetchCredentialsMode credentials_;
+  network::mojom::FetchCredentialsMode credentials_;
   // TODO(yiyix): |cache_mode_| is exposed but does not yet affect fetch
   // behavior. We must transfer the mode to the network layer and service
   // worker.

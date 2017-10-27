@@ -257,7 +257,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     EXPECT_TRUE(script_state);
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), source_code, "worklet.js",
-        kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit,
+        kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit,
         "" /* nonce */, kParserInserted, TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());

@@ -68,7 +68,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       const ResourceContext* resource_context,
       network::mojom::FetchRequestMode request_mode,
-      FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
       ResourceType resource_type,
@@ -300,7 +300,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   std::unique_ptr<ServiceWorkerDataPipeReader> data_pipe_reader_;
 
   network::mojom::FetchRequestMode request_mode_;
-  FetchCredentialsMode credentials_mode_;
+  network::mojom::FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
   std::string integrity_;
   const ResourceType resource_type_;

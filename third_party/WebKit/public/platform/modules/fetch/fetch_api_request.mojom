@@ -55,15 +55,6 @@ enum RequestContextFrameType {
   TOP_LEVEL,
 };
 
-// Credentials mode indicating which credentials should be included with a
-// request.
-enum FetchCredentialsMode {
-  OMIT,
-  SAME_ORIGIN,
-  INCLUDE,
-  PASSWORD,
-};
-
 // https://fetch.spec.whatwg.org/#concept-request-cache-mode
 enum FetchCacheMode {
   // "default": Fetch will inspect the HTTP cache on the way to the network. If
@@ -128,7 +119,7 @@ struct FetchAPIRequest {
   uint64 blob_size;
   Blob? blob;
   Referrer referrer;
-  FetchCredentialsMode credentials_mode;
+  network.mojom.FetchCredentialsMode credentials_mode;
   FetchCacheMode cache_mode;
   FetchRedirectMode redirect_mode;
   string? integrity;

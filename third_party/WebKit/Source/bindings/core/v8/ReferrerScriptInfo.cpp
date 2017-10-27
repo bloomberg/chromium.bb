@@ -29,8 +29,8 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
 
   v8::Local<v8::Primitive> credentials_mode_value =
       host_defined_options->Get(kCredentialsMode);
-  WebURLRequest::FetchCredentialsMode credentials_mode =
-      static_cast<WebURLRequest::FetchCredentialsMode>(
+  network::mojom::FetchCredentialsMode credentials_mode =
+      static_cast<network::mojom::FetchCredentialsMode>(
           credentials_mode_value->IntegerValue(context).ToChecked());
 
   v8::Local<v8::Primitive> nonce_value = host_defined_options->Get(kNonce);

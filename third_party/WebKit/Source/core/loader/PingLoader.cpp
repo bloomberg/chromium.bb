@@ -301,7 +301,7 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
   request.SetKeepalive(true);
   request.SetHTTPBody(std::move(report));
   request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeSameOrigin);
+      network::mojom::FetchCredentialsMode::kSameOrigin);
   request.SetRequestContext(WebURLRequest::kRequestContextCSPReport);
   request.SetFetchRedirectMode(WebURLRequest::kFetchRedirectModeError);
   FetchParameters params(request);

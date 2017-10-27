@@ -223,7 +223,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the request doesn't require special handling.
   std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       network::mojom::FetchRequestMode request_mode,
-      FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
       ResourceType resource_type,

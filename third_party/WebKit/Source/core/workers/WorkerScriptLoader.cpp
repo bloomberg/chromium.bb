@@ -93,7 +93,7 @@ void WorkerScriptLoader::LoadAsynchronously(
     const KURL& url,
     WebURLRequest::RequestContext request_context,
     network::mojom::FetchRequestMode fetch_request_mode,
-    WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
+    network::mojom::FetchCredentialsMode fetch_credentials_mode,
     WebAddressSpace creation_address_space,
     WTF::Closure response_callback,
     WTF::Closure finished_callback) {

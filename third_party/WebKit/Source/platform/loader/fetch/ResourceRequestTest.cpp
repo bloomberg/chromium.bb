@@ -37,7 +37,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kAll);
   original.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   original.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeSameOrigin);
+      network::mojom::FetchCredentialsMode::kSameOrigin);
   original.SetRequestorID(30);
   original.SetRequestorProcessID(40);
   original.SetAppCacheHostID(50);
@@ -68,7 +68,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
             original.GetServiceWorkerMode());
   EXPECT_EQ(network::mojom::FetchRequestMode::kCORS,
             original.GetFetchRequestMode());
-  EXPECT_EQ(WebURLRequest::kFetchCredentialsModeSameOrigin,
+  EXPECT_EQ(network::mojom::FetchCredentialsMode::kSameOrigin,
             original.GetFetchCredentialsMode());
   EXPECT_EQ(30, original.RequestorID());
   EXPECT_EQ(40, original.RequestorProcessID());
@@ -102,7 +102,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
             copy1.GetServiceWorkerMode());
   EXPECT_EQ(network::mojom::FetchRequestMode::kCORS,
             copy1.GetFetchRequestMode());
-  EXPECT_EQ(WebURLRequest::kFetchCredentialsModeSameOrigin,
+  EXPECT_EQ(network::mojom::FetchCredentialsMode::kSameOrigin,
             copy1.GetFetchCredentialsMode());
   EXPECT_EQ(30, copy1.RequestorID());
   EXPECT_EQ(40, copy1.RequestorProcessID());
@@ -119,7 +119,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   copy1.SetDownloadToFile(true);
   copy1.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
   copy1.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
-  copy1.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeInclude);
+  copy1.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kInclude);
 
   std::unique_ptr<CrossThreadResourceRequestData> data2(copy1.CopyData());
   ResourceRequest copy2(data2.get());
@@ -131,7 +131,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
             copy2.GetServiceWorkerMode());
   EXPECT_EQ(network::mojom::FetchRequestMode::kNoCORS,
             copy1.GetFetchRequestMode());
-  EXPECT_EQ(WebURLRequest::kFetchCredentialsModeInclude,
+  EXPECT_EQ(network::mojom::FetchCredentialsMode::kInclude,
             copy1.GetFetchCredentialsMode());
 }
 

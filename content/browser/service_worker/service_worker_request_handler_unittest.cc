@@ -76,7 +76,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestHandler::InitializeHandler(
         request, context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), kMockProviderId, skip_service_worker,
-        network::mojom::FetchRequestMode::kNoCORS, FETCH_CREDENTIALS_MODE_OMIT,
+        network::mojom::FetchRequestMode::kNoCORS,
+        network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         resource_type, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL, nullptr);

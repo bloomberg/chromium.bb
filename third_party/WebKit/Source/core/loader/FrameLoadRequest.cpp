@@ -67,7 +67,7 @@ FrameLoadRequest::FrameLoadRequest(
   resource_request_.SetFetchRequestMode(
       network::mojom::FetchRequestMode::kNavigate);
   resource_request_.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeInclude);
+      network::mojom::FetchCredentialsMode::kInclude);
   resource_request_.SetFetchRedirectMode(
       WebURLRequest::kFetchRedirectModeManual);
 

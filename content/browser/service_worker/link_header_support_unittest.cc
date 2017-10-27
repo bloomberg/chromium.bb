@@ -145,7 +145,8 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
     ServiceWorkerRequestHandler::InitializeHandler(
         request.get(), context_wrapper(), &blob_storage_context_,
         render_process_id(), provider_id, false /* skip_service_worker */,
-        network::mojom::FetchRequestMode::kNoCORS, FETCH_CREDENTIALS_MODE_OMIT,
+        network::mojom::FetchRequestMode::kNoCORS,
+        network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         resource_type, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL, nullptr);

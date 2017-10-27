@@ -578,7 +578,8 @@ class ServiceWorkerURLLoaderJobTest
     request->url = GURL("https://www.example.com/");
     request->method = "GET";
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-    request->fetch_credentials_mode = FETCH_CREDENTIALS_MODE_INCLUDE;
+    request->fetch_credentials_mode =
+        network::mojom::FetchCredentialsMode::kInclude;
     request->fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
     return request;
   }
@@ -889,7 +890,8 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
   request.url = GURL("https://www.example.com/");
   request.method = "GET";
   request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode = FETCH_CREDENTIALS_MODE_INCLUDE;
+  request.fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kInclude;
   request.fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
 
   StartLoaderCallback callback;

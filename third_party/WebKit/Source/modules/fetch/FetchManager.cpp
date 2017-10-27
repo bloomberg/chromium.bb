@@ -803,7 +803,7 @@ void FetchManager::Loader::PerformDataFetch() {
   request.SetRequestContext(request_->Context());
   request.SetUseStreamOnResponse(true);
   request.SetHTTPMethod(request_->Method());
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   request.SetFetchRedirectMode(WebURLRequest::kFetchRedirectModeError);
   // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace',
   // as 'data:' can never be external.

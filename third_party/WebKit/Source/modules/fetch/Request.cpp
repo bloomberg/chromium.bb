@@ -239,11 +239,11 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |credentials| is non-null, set |request|'s credentials mode to
   // |credentials|."
   if (init.Credentials() == "omit") {
-    request->SetCredentials(WebURLRequest::kFetchCredentialsModeOmit);
+    request->SetCredentials(network::mojom::FetchCredentialsMode::kOmit);
   } else if (init.Credentials() == "same-origin") {
-    request->SetCredentials(WebURLRequest::kFetchCredentialsModeSameOrigin);
+    request->SetCredentials(network::mojom::FetchCredentialsMode::kSameOrigin);
   } else if (init.Credentials() == "include") {
-    request->SetCredentials(WebURLRequest::kFetchCredentialsModeInclude);
+    request->SetCredentials(network::mojom::FetchCredentialsMode::kInclude);
   } else if (init.Credentials() == "password") {
     if (!init.AttachedCredential().get()) {
       exception_state.ThrowTypeError(
@@ -251,12 +251,12 @@ Request* Request::CreateRequestWithRequestOrString(
           "without a PasswordCredential.");
       return nullptr;
     }
-    request->SetCredentials(WebURLRequest::kFetchCredentialsModePassword);
+    request->SetCredentials(network::mojom::FetchCredentialsMode::kPassword);
     request->SetAttachedCredential(init.AttachedCredential());
     request->SetRedirect(WebURLRequest::kFetchRedirectModeManual);
   } else {
     if (!input_request)
-      request->SetCredentials(WebURLRequest::kFetchCredentialsModeOmit);
+      request->SetCredentials(network::mojom::FetchCredentialsMode::kOmit);
   }
 
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
@@ -353,7 +353,8 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If either |init|'s body member is present or |temporaryBody| is
   // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
   if (init.GetBody() || temporary_body ||
-      request->Credentials() == WebURLRequest::kFetchCredentialsModePassword) {
+      request->Credentials() ==
+          network::mojom::FetchCredentialsMode::kPassword) {
     if (request->Method() == HTTPNames::GET ||
         request->Method() == HTTPNames::HEAD) {
       exception_state.ThrowTypeError(
@@ -364,7 +365,8 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // TODO(mkwst): See the comment in RequestInit about serializing the attached
   // credential prior to hitting the Service Worker machinery.
-  if (request->Credentials() == WebURLRequest::kFetchCredentialsModePassword) {
+  if (request->Credentials() ==
+      network::mojom::FetchCredentialsMode::kPassword) {
     r->getHeaders()->append(HTTPNames::Content_Type, init.ContentType(),
                             exception_state);
 
@@ -643,13 +645,13 @@ String Request::credentials() const {
   // to the first matching statement, switching on request's credentials
   // mode:"
   switch (request_->Credentials()) {
-    case WebURLRequest::kFetchCredentialsModeOmit:
+    case network::mojom::FetchCredentialsMode::kOmit:
       return "omit";
-    case WebURLRequest::kFetchCredentialsModeSameOrigin:
+    case network::mojom::FetchCredentialsMode::kSameOrigin:
       return "same-origin";
-    case WebURLRequest::kFetchCredentialsModeInclude:
+    case network::mojom::FetchCredentialsMode::kInclude:
       return "include";
-    case WebURLRequest::kFetchCredentialsModePassword:
+    case network::mojom::FetchCredentialsMode::kPassword:
       return "password";
   }
   NOTREACHED();

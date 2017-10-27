@@ -152,8 +152,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
                           network::mojom::FetchRequestMode::kLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::FetchCredentialsMode,
-                          content::FETCH_CREDENTIALS_MODE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchCredentialsMode,
+                          network::mojom::FetchCredentialsMode::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRedirectMode,
                           content::FetchRedirectMode::LAST)

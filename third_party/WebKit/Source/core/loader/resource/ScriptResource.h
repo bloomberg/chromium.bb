@@ -61,7 +61,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   static ScriptResource* CreateForTest(const KURL& url,
                                        const WTF::TextEncoding& encoding) {
     ResourceRequest request(url);
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
     ResourceLoaderOptions options;
     TextResourceDecoderOptions decoder_options(
         TextResourceDecoderOptions::kPlainTextContent, encoding);

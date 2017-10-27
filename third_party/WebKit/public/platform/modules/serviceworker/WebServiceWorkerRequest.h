@@ -73,8 +73,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetIsMainResourceLoad(bool);
   bool IsMainResourceLoad() const;
 
-  void SetCredentialsMode(WebURLRequest::FetchCredentialsMode);
-  WebURLRequest::FetchCredentialsMode CredentialsMode() const;
+  void SetCredentialsMode(network::mojom::FetchCredentialsMode);
+  network::mojom::FetchCredentialsMode CredentialsMode() const;
 
   void SetIntegrity(const WebString&);
   const WebString& Integrity() const;

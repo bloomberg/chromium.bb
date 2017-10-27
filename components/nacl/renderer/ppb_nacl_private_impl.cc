@@ -336,11 +336,11 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
   if (document.GetSecurityOrigin().CanRequest(gurl)) {
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
     request.SetFetchCredentialsMode(
-        blink::WebURLRequest::kFetchCredentialsModeSameOrigin);
+        network::mojom::FetchCredentialsMode::kSameOrigin);
   } else {
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
     request.SetFetchCredentialsMode(
-        blink::WebURLRequest::kFetchCredentialsModeOmit);
+        network::mojom::FetchCredentialsMode::kOmit);
   }
 
   return request;

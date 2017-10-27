@@ -48,7 +48,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       network::mojom::FetchRequestMode request_mode,
-      FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
       ResourceType resource_type,
@@ -125,7 +125,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   const bool is_main_frame_load_;
   std::unique_ptr<ServiceWorkerURLJobWrapper> url_job_;
   network::mojom::FetchRequestMode request_mode_;
-  FetchCredentialsMode credentials_mode_;
+  network::mojom::FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
   std::string integrity_;
   RequestContextType request_context_type_;

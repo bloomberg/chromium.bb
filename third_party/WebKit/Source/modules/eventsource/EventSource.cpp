@@ -134,8 +134,8 @@ void EventSource::Connect() {
   request.SetRequestContext(WebURLRequest::kRequestContextEventSource);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   request.SetFetchCredentialsMode(
-      with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
-                        : WebURLRequest::kFetchCredentialsModeSameOrigin);
+      with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
+                        : network::mojom::FetchCredentialsMode::kSameOrigin);
   request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());

@@ -275,8 +275,8 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
       web_request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
       web_request.SetFetchCredentialsMode(
           filled_in_request_data.allow_credentials
-              ? WebURLRequest::kFetchCredentialsModeInclude
-              : WebURLRequest::kFetchCredentialsModeOmit);
+              ? network::mojom::FetchCredentialsMode::kInclude
+              : network::mojom::FetchCredentialsMode::kOmit);
     } else {
       web_request.SetFetchRequestMode(
           network::mojom::FetchRequestMode::kSameOrigin);

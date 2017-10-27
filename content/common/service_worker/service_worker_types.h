@@ -123,7 +123,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   uint64_t blob_size = 0;
   scoped_refptr<storage::BlobHandle> blob;
   Referrer referrer;
-  FetchCredentialsMode credentials_mode = FETCH_CREDENTIALS_MODE_OMIT;
+  network::mojom::FetchCredentialsMode credentials_mode =
+      network::mojom::FetchCredentialsMode::kOmit;
   blink::mojom::FetchCacheMode cache_mode =
       blink::mojom::FetchCacheMode::kDefault;
   FetchRedirectMode redirect_mode = FetchRedirectMode::FOLLOW_MODE;

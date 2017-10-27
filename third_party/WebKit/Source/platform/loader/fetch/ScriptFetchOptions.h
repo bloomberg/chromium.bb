@@ -22,11 +22,11 @@ class ScriptFetchOptions final {
   // is "omit"." [spec text]
   ScriptFetchOptions()
       : parser_state_(ParserDisposition::kNotParserInserted),
-        credentials_mode_(WebURLRequest::kFetchCredentialsModeOmit) {}
+        credentials_mode_(network::mojom::FetchCredentialsMode::kOmit) {}
 
   ScriptFetchOptions(const String& nonce,
                      ParserDisposition parser_state,
-                     WebURLRequest::FetchCredentialsMode credentials_mode)
+                     network::mojom::FetchCredentialsMode credentials_mode)
       : nonce_(nonce),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode) {}
@@ -34,7 +34,7 @@ class ScriptFetchOptions final {
 
   const String& Nonce() const { return nonce_; }
   const ParserDisposition& ParserState() const { return parser_state_; }
-  WebURLRequest::FetchCredentialsMode CredentialsMode() const {
+  network::mojom::FetchCredentialsMode CredentialsMode() const {
     return credentials_mode_;
   }
 
@@ -49,7 +49,7 @@ class ScriptFetchOptions final {
   ParserDisposition parser_state_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-credentials
-  WebURLRequest::FetchCredentialsMode credentials_mode_;
+  network::mojom::FetchCredentialsMode credentials_mode_;
 };
 
 }  // namespace blink

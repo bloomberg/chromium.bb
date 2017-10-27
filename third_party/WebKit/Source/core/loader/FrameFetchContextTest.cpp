@@ -201,7 +201,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     KURL input_url("http://example.com/");
     ResourceRequest resource_request(input_url);
     resource_request.SetFetchCredentialsMode(
-        WebURLRequest::kFetchCredentialsModeOmit);
+        network::mojom::FetchCredentialsMode::kOmit);
     ResourceLoaderOptions options;
     return fetch_context->CanRequest(
         Resource::kImage, resource_request, input_url, options,
@@ -859,7 +859,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
+      network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(resource_request);
   EXPECT_CALL(*client,
               DispatchDidLoadResourceFromMemoryCache(
@@ -880,7 +880,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest, PersistClientHints) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
+      network::mojom::FetchCredentialsMode::kOmit);
 
   ResourceResponse response;
   response.SetHTTPHeaderField("accept-ch", "dpr");
@@ -905,7 +905,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
+      network::mojom::FetchCredentialsMode::kOmit);
   ResourceResponse response;
   response.SetURL(url);
   response.SetHasMajorCertificateErrors(true);
@@ -1038,7 +1038,7 @@ TEST_F(FrameFetchContextTest,
 
 TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
   ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(request);
   ResourceResponse response;
 
@@ -1111,7 +1111,7 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 
 TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
   ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(request);
 
   dummy_page_holder = nullptr;
@@ -1222,7 +1222,7 @@ TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
 TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   KURL url(NullURL(), "https://www.example.com/");
   ResourceRequest request(url);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   ClientHintsPreferences client_hints_preferences;
   client_hints_preferences.SetShouldSendForTesting(

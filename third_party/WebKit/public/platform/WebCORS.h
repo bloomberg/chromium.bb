@@ -93,7 +93,7 @@ BLINK_PLATFORM_EXPORT AccessStatus
 CheckAccess(const WebURL,
             const int response_status_code,
             const WebHTTPHeaderMap&,
-            WebURLRequest::FetchCredentialsMode,
+            network::mojom::FetchCredentialsMode,
             const WebSecurityOrigin&);
 
 // Given a redirected-to URL, check if the location is allowed
@@ -131,7 +131,7 @@ BLINK_PLATFORM_EXPORT bool HandleRedirect(
     const WebURL,
     const int redirect_response_status_code,
     const WebHTTPHeaderMap&,
-    WebURLRequest::FetchCredentialsMode,
+    network::mojom::FetchCredentialsMode,
     ResourceLoaderOptions&,
     WebString&);
 

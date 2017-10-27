@@ -333,13 +333,13 @@ void WebURLRequest::SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
   return resource_request_->SetFetchRequestMode(mode);
 }
 
-WebURLRequest::FetchCredentialsMode WebURLRequest::GetFetchCredentialsMode()
+network::mojom::FetchCredentialsMode WebURLRequest::GetFetchCredentialsMode()
     const {
   return resource_request_->GetFetchCredentialsMode();
 }
 
 void WebURLRequest::SetFetchCredentialsMode(
-    WebURLRequest::FetchCredentialsMode mode) {
+    network::mojom::FetchCredentialsMode mode) {
   return resource_request_->SetFetchCredentialsMode(mode);
 }
 

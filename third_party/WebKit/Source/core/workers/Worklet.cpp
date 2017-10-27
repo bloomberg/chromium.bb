@@ -18,16 +18,16 @@ namespace blink {
 
 namespace {
 
-WebURLRequest::FetchCredentialsMode ParseCredentialsOption(
+network::mojom::FetchCredentialsMode ParseCredentialsOption(
     const String& credentials_option) {
   if (credentials_option == "omit")
-    return WebURLRequest::kFetchCredentialsModeOmit;
+    return network::mojom::FetchCredentialsMode::kOmit;
   if (credentials_option == "same-origin")
-    return WebURLRequest::kFetchCredentialsModeSameOrigin;
+    return network::mojom::FetchCredentialsMode::kSameOrigin;
   if (credentials_option == "include")
-    return WebURLRequest::kFetchCredentialsModeInclude;
+    return network::mojom::FetchCredentialsMode::kInclude;
   NOTREACHED();
-  return WebURLRequest::kFetchCredentialsModeOmit;
+  return network::mojom::FetchCredentialsMode::kOmit;
 }
 
 }  // namespace
@@ -112,7 +112,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
 
   // Step 6: "Let credentialOptions be the credentials member of options."
   // TODO(nhiroki): Add tests for credentialOptions (https://crbug.com/710837).
-  WebURLRequest::FetchCredentialsMode credentials_mode =
+  network::mojom::FetchCredentialsMode credentials_mode =
       ParseCredentialsOption(options.credentials());
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."

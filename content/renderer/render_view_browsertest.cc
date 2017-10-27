@@ -681,7 +681,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
   request.SetFetchCredentialsMode(
-      blink::WebURLRequest::kFetchCredentialsModeInclude);
+      network::mojom::FetchCredentialsMode::kInclude);
   request.SetFetchRedirectMode(blink::WebURLRequest::kFetchRedirectModeManual);
   request.SetFrameType(blink::WebURLRequest::kFrameTypeTopLevel);
   request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);

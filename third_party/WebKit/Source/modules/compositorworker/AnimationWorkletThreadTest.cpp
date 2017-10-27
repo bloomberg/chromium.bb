@@ -119,7 +119,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
     ScriptState::Scope scope(script_state);
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), "var counter = 0; ++counter;", "worklet.js",
-        kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit,
+        kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit,
         "" /* nonce */, kParserInserted, TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());

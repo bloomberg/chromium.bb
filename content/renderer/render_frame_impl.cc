@@ -6554,8 +6554,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   // ensure the renderer has the correct values.
   DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
             info.url_request.GetFetchRequestMode());
-  DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
-            GetFetchCredentialsModeForWebURLRequest(info.url_request));
+  DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
+            info.url_request.GetFetchCredentialsMode());
   DCHECK(GetFetchRedirectModeForWebURLRequest(info.url_request) ==
          FetchRedirectMode::MANUAL_MODE);
   DCHECK(frame_->Parent() ||

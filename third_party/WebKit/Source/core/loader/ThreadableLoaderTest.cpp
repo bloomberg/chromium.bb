@@ -296,7 +296,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     DCHECK(worker_thread_->IsCurrentThread());
 
     ResourceRequest request(request_data.get());
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
     loader_->Start(request);
     event->Signal();
   }
@@ -341,7 +342,8 @@ class ThreadableLoaderTest
     ResourceRequest request(url);
     request.SetRequestContext(WebURLRequest::kRequestContextObject);
     request.SetFetchRequestMode(fetch_request_mode);
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
     helper_->StartLoader(request);
   }
 

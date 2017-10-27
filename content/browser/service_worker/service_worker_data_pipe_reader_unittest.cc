@@ -35,7 +35,7 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
                                    nullptr,
                                    nullptr,
                                    network::mojom::FetchRequestMode::kNoCORS,
-                                   FETCH_CREDENTIALS_MODE_OMIT,
+                                   network::mojom::FetchCredentialsMode::kOmit,
                                    FetchRedirectMode::FOLLOW_MODE,
                                    std::string() /* integrity */,
                                    RESOURCE_TYPE_MAIN_FRAME,

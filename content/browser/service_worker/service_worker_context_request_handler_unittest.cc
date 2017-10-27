@@ -122,7 +122,8 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
         request, helper_->context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), provider_host_->provider_id(),
         false /* skip_service_worker */,
-        network::mojom::FetchRequestMode::kNoCORS, FETCH_CREDENTIALS_MODE_OMIT,
+        network::mojom::FetchRequestMode::kNoCORS,
+        network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
         REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
@@ -255,10 +256,10 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
       request.get(), helper_->context_wrapper(), &blob_storage_context_,
       helper_->mock_render_process_id(), provider_host_->provider_id(),
       true /* skip_service_worker */, network::mojom::FetchRequestMode::kNoCORS,
-      FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-      std::string() /* integrity */, RESOURCE_TYPE_SERVICE_WORKER,
-      REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
-      nullptr);
+      network::mojom::FetchCredentialsMode::kOmit,
+      FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
+      RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+      REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
   // Verify a ServiceWorkerRequestHandler was created.
   ServiceWorkerRequestHandler* handler =
       ServiceWorkerRequestHandler::GetHandler(request.get());

@@ -155,7 +155,7 @@ void AssociatedResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
     network::mojom::FetchRequestMode fetch_request_mode,
-    blink::WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
+    network::mojom::FetchCredentialsMode fetch_credentials_mode,
     blink::WebURLRequest::FrameType frame_type,
     const Callback& callback) {
   DCHECK(!loader_);

@@ -162,9 +162,10 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
         request_.get(), context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), provider_host()->provider_id(),
         ServiceWorkerMode::ALL, network::mojom::FetchRequestMode::kCORS,
-        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-        std::string() /* integrity */, resource_type,
-        REQUEST_CONTEXT_TYPE_FETCH, REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr,
+        network::mojom::FetchCredentialsMode::kOmit,
+        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
+        resource_type, REQUEST_CONTEXT_TYPE_FETCH,
+        REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr,
         true /* initiated_in_secure_context */);
 
     return ForeignFetchRequestHandler::GetHandler(request_.get());

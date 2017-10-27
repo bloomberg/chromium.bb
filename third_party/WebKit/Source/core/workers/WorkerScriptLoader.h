@@ -71,7 +71,7 @@ class CORE_EXPORT WorkerScriptLoader final
                           const KURL&,
                           WebURLRequest::RequestContext,
                           network::mojom::FetchRequestMode,
-                          WebURLRequest::FetchCredentialsMode,
+                          network::mojom::FetchCredentialsMode,
                           WebAddressSpace,
                           WTF::Closure response_callback,
                           WTF::Closure finished_callback);

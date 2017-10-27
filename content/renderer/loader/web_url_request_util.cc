@@ -508,20 +508,6 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_OMIT,
-                   WebURLRequest::kFetchCredentialsModeOmit);
-STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
-                   WebURLRequest::kFetchCredentialsModeSameOrigin);
-STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_INCLUDE,
-                   WebURLRequest::kFetchCredentialsModeInclude);
-STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_PASSWORD,
-                   WebURLRequest::kFetchCredentialsModePassword);
-
-FetchCredentialsMode GetFetchCredentialsModeForWebURLRequest(
-    const WebURLRequest& request) {
-  return static_cast<FetchCredentialsMode>(request.GetFetchCredentialsMode());
-}
-
 STATIC_ASSERT_ENUM(FetchRedirectMode::FOLLOW_MODE,
                    WebURLRequest::kFetchRedirectModeFollow);
 STATIC_ASSERT_ENUM(FetchRedirectMode::ERROR_MODE,

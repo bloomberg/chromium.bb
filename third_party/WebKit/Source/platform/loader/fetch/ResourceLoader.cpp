@@ -261,7 +261,7 @@ bool ResourceLoader::WillFollowRedirect(
   WebURLRequest::FrameType frame_type = initial_request.GetFrameType();
   network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
-  WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
+  network::mojom::FetchCredentialsMode fetch_credentials_mode =
       initial_request.GetFetchCredentialsMode();
 
   const ResourceLoaderOptions& options = resource_->Options();
@@ -341,13 +341,13 @@ bool ResourceLoader::WillFollowRedirect(
       fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
     bool allow_stored_credentials = false;
     switch (fetch_credentials_mode) {
-      case WebURLRequest::kFetchCredentialsModeOmit:
+      case network::mojom::FetchCredentialsMode::kOmit:
         break;
-      case WebURLRequest::kFetchCredentialsModeSameOrigin:
+      case network::mojom::FetchCredentialsMode::kSameOrigin:
         allow_stored_credentials = !options.cors_flag;
         break;
-      case WebURLRequest::kFetchCredentialsModeInclude:
-      case WebURLRequest::kFetchCredentialsModePassword:
+      case network::mojom::FetchCredentialsMode::kInclude:
+      case network::mojom::FetchCredentialsMode::kPassword:
         allow_stored_credentials = true;
         break;
     }
