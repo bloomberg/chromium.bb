@@ -39,7 +39,6 @@ class SigninManagerBase;
 namespace autofill {
 class AutofillInteractiveTest;
 class AutofillTest;
-class FormStructure;
 class PersonalDataManagerObserver;
 class PersonalDataManagerFactory;
 }  // namespace autofill
@@ -98,24 +97,9 @@ class PersonalDataManager : public KeyedService,
   // Removes |observer| as an observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManagerObserver* observer);
 
-  // Scans the given |form| for importable Autofill data. If the form includes
-  // sufficient address data for a new profile, it is immediately imported. If
-  // the form includes sufficient credit card data for a new credit card and
-  // |credit_card_enabled| is set to |true|, it is stored into
-  // |imported_credit_card| so that we can prompt the user whether to save this
-  // data. If the form contains credit card data already present in a local
-  // credit card entry *and* |should_return_local_card| is true, the data is
-  // stored into |imported_credit_card| so that we can prompt the user whether
-  // to upload it. |imported_credit_card_matches_masked_server_credit_card| is
-  // set to |true| if the |TypeAndLastFourDigits| in |imported_credit_card|
-  // matches the |TypeAndLastFourDigits| in a saved masked server card. Returns
-  // |true| if sufficient address or credit card data was found.
-  bool ImportFormData(
-      const FormStructure& form,
-      bool credit_card_enabled,
-      bool should_return_local_card,
-      std::unique_ptr<CreditCard>* imported_credit_card,
-      bool* imported_credit_card_matches_masked_server_credit_card);
+  // Notifies test observers that an address or credit card could not be
+  // imported from a form.
+  void MarkObserversInsufficientFormDataForImport();
 
   // Called to indicate |data_model| was used (to fill in a form). Updates
   // the database accordingly. Can invalidate |data_model|, particularly if
@@ -207,6 +191,8 @@ class PersonalDataManager : public KeyedService,
   virtual std::vector<AutofillProfile*> GetServerProfiles() const;
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
+  // Returns just server cards.
+  virtual std::vector<CreditCard*> GetServerCreditCards() const;
   // Returns all credit cards, server and local.
   virtual std::vector<CreditCard*> GetCreditCards() const;
 
@@ -269,10 +255,6 @@ class PersonalDataManager : public KeyedService,
 
   const std::string& app_locale() const { return app_locale_; }
 
-  // Checks suitability of |profile| for adding to the user's set of profiles.
-  static bool IsValidLearnableProfile(const AutofillProfile& profile,
-                                      const std::string& app_locale);
-
   // Merges |new_profile| into one of the |existing_profiles| if possible;
   // otherwise appends |new_profile| to the end of that list. Fills
   // |merged_profiles| with the result. Returns the |guid| of the new or updated
@@ -314,10 +296,6 @@ class PersonalDataManager : public KeyedService,
   net::URLRequestContextGetter* GetURLRequestContextGetter() const {
     return context_getter_.get();
   }
-
-  // Extract credit card from the form structure. This function allows for
-  // duplicated field types in the form.
-  CreditCard ExtractCreditCardFromForm(const FormStructure& form);
 
   // This function assumes |credit_card| contains the full PAN. Returns |true|
   // if the card number of |credit_card| is equal to any local card or any
@@ -389,6 +367,7 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
+  friend class FormDataImporterTest;
   friend class PersonalDataManagerTest;
   friend class PersonalDataManagerTestBase;
   friend class SaveImportedProfileTest;
@@ -503,36 +482,6 @@ class PersonalDataManager : public KeyedService,
 
   // Called when the value of prefs::kAutofillEnabled changes.
   void EnabledPrefChanged();
-
-  // Go through the |form| fields and attempt to extract and import valid
-  // address profiles. Returns true on extraction success of at least one
-  // profile. There are many reasons that extraction may fail (see
-  // implementation).
-  bool ImportAddressProfiles(const FormStructure& form);
-
-  // Helper method for ImportAddressProfiles which only considers the fields for
-  // a specified |section|.
-  bool ImportAddressProfileForSection(const FormStructure& form,
-                                      const std::string& section);
-
-  // Go through the |form| fields and attempt to extract a new credit card in
-  // |imported_credit_card|, or update an existing card.
-  // |should_return_local_card| will indicate whether |imported_credit_card| is
-  // filled even if an existing card was updated.
-  // |imported_credit_card_matches_masked_server_credit_card| will indicate
-  // whether |imported_credit_card| is filled even if an existing masked server
-  // card as the same |TypeAndLastFourDigits|. Success is defined as having a
-  // new card to import, or having merged with an existing card.
-  bool ImportCreditCard(
-      const FormStructure& form,
-      bool should_return_local_card,
-      std::unique_ptr<CreditCard>* imported_credit_card,
-      bool* imported_credit_card_matches_masked_server_credit_card);
-
-  // Extracts credit card from the form structure. |hasDuplicateFieldType| will
-  // be set as true if there are duplicated field types in the form.
-  CreditCard ExtractCreditCardFromForm(const FormStructure& form,
-                                       bool* hasDuplicateFieldType);
 
   // Returns credit card suggestions based on the |cards_to_suggest| and the
   // |type| and |field_contents| of the credit card field.

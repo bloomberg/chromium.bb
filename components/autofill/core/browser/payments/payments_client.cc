@@ -447,6 +447,11 @@ void PaymentsClient::Prepare() {
     StartTokenFetch(false);
 }
 
+void PaymentsClient::SetSaveDelegate(
+    PaymentsClientSaveDelegate* save_delegate) {
+  save_delegate_ = save_delegate;
+}
+
 PrefService* PaymentsClient::GetPrefService() const {
   return pref_service_;
 }

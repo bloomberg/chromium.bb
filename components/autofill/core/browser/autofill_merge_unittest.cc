@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/data_driven_test.h"
+#include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
@@ -182,6 +183,7 @@ class AutofillMergeTest : public DataDrivenTest,
   ServerFieldType StringToFieldType(const std::string& str);
 
   PersonalDataManagerMock personal_data_;
+  std::unique_ptr<FormDataImporter> form_data_importer_;
 
  private:
   std::map<std::string, ServerFieldType> string_to_field_type_map_;
@@ -202,6 +204,9 @@ AutofillMergeTest::~AutofillMergeTest() {
 
 void AutofillMergeTest::SetUp() {
   test::DisableSystemServices(nullptr);
+  form_data_importer_ = std::make_unique<FormDataImporter>(
+      /*AutofillClient=*/nullptr,
+      /*payments::PaymentsClient=*/nullptr, &personal_data_, "en");
 }
 
 void AutofillMergeTest::TearDown() {
@@ -272,7 +277,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;
       bool imported_credit_card_matches_masked_server_credit_card;
-      personal_data_.ImportFormData(
+      form_data_importer_->ImportFormData(
           form_structure,
           true,   // credit card autofill enabled
           false,  // should return local card

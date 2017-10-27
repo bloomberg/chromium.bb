@@ -117,6 +117,11 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // accepted an upload prompt.
   void Prepare();
 
+  // Sets up the |save_delegate_|. Necessary because CreditCardSaveManager
+  // requires PaymentsClient during initialization, so PaymentsClient can't
+  // start with save_delegate_ initialized.
+  void SetSaveDelegate(PaymentsClientSaveDelegate* save_delegate);
+
   PrefService* GetPrefService() const;
 
   // The user has attempted to unmask a card with the given cvc.
@@ -178,7 +183,7 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // Delegates for the results of the various requests to Payments. Both must
   // outlive |this|.
   PaymentsClientUnmaskDelegate* const unmask_delegate_;
-  PaymentsClientSaveDelegate* const save_delegate_;
+  PaymentsClientSaveDelegate* save_delegate_;
 
   // The current request.
   std::unique_ptr<PaymentsRequest> request_;
