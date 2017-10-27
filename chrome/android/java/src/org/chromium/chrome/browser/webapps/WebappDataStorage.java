@@ -66,9 +66,6 @@ public class WebappDataStorage {
     // Whether the last WebAPK update request succeeded.
     static final String KEY_DID_LAST_UPDATE_REQUEST_SUCCEED = "did_last_update_request_succeed";
 
-    // The number of times that updating a WebAPK in the background has been requested.
-    static final String KEY_UPDATE_REQUESTED = "update_requested";
-
     // Whether to check updates less frequently.
     static final String KEY_RELAX_UPDATES = "relax_updates";
 
@@ -90,7 +87,7 @@ public class WebappDataStorage {
 
     // Number of milliseconds to wait before re-requesting an updated WebAPK from the WebAPK
     // server if the previous update attempt failed.
-    public static final long RETRY_UPDATE_DURATION = TimeUnit.HOURS.toMillis(12L);
+    public static final long RETRY_UPDATE_DURATION = TimeUnit.DAYS.toMillis(1L);
 
     // The default shell Apk version of WebAPKs.
     static final int DEFAULT_SHELL_APK_VERSION = 1;
@@ -335,7 +332,6 @@ public class WebappDataStorage {
         editor.remove(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME);
         editor.remove(KEY_LAST_UPDATE_REQUEST_COMPLETE_TIME);
         editor.remove(KEY_DID_LAST_UPDATE_REQUEST_SUCCEED);
-        editor.remove(KEY_UPDATE_REQUESTED);
         editor.remove(KEY_RELAX_UPDATES);
         editor.remove(KEY_DISMISSED_DISCLOSURE);
         editor.apply();
@@ -466,27 +462,6 @@ public class WebappDataStorage {
 
     boolean hasDismissedDisclosure() {
         return mPreferences.getBoolean(KEY_DISMISSED_DISCLOSURE, false);
-    }
-
-    /**
-     * Increases the number of times that update has been requested for the WebAPK by 1.
-     */
-    void recordUpdateRequest() {
-        mPreferences.edit().putInt(KEY_UPDATE_REQUESTED, getUpdateRequests() + 1).apply();
-    }
-
-    /**
-     * Resets the number of times that update has been requested for the WebAPK.
-     */
-    void resetUpdateRequests() {
-        mPreferences.edit().remove(KEY_UPDATE_REQUESTED).apply();
-    }
-
-    /**
-     * Returns the number of times that update has been requested for this WebAPK.
-     */
-    int getUpdateRequests() {
-        return mPreferences.getInt(KEY_UPDATE_REQUESTED, 0);
     }
 
     /** Updates the shell Apk version requested in the last update. */
