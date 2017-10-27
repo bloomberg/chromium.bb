@@ -29,6 +29,8 @@ def basestring16_SummaryProvider(valobj, internal_dict):
         data = l.GetChildMemberWithName('__data_').GetPointeeData(0, length)
     error = lldb.SBError()
     bytes_to_read = 2 * length
+    if not bytes_to_read:
+        return '""'
     byte_string = data.ReadRawData(error, 0, bytes_to_read)
     if error.fail:
         return 'Summary error: %s' % error.description
