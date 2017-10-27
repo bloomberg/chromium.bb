@@ -7,6 +7,7 @@
 import optparse
 import os
 import shutil
+import stat
 import sys
 import tempfile
 
@@ -42,7 +43,12 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None,
       jar_dir = os.path.dirname(full_jar_filepath)
       if not os.path.exists(jar_dir):
         os.makedirs(jar_dir)
-      shutil.copy(filepath, full_jar_filepath)
+      # Some of our JARs are mode 0440 because they exist in the source tree as
+      # symlinks to JARs managed by CIPD. shutil.copyfile copies the contents,
+      # not the permissions, so the resulting copy is writeable despite the
+      # the source JAR not being so. (shutil.copy does copy the permissions and
+      # as such doesn't work without changing the mode after.)
+      shutil.copyfile(filepath, full_jar_filepath)
       jar_cmd.append(jar_filepath)
 
     if provider_configurations:
