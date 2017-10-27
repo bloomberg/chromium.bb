@@ -43,7 +43,6 @@
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
-#include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/user_agent.h"
@@ -170,10 +169,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"bookmark-new-generation", flag_descriptions::kBookmarkNewGenerationName,
      flag_descriptions::kBookmarkNewGenerationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kBookmarkNewGeneration)},
-    {"mailto-prompt-for-user-choice",
-     flag_descriptions::kMailtoPromptForUserChoiceName,
-     flag_descriptions::kMailtoPromptForUserChoiceDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kMailtoPromptForUserChoice)},
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,

@@ -23,8 +23,6 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/translate_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
-#include "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 #import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
@@ -109,9 +107,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [_disablePopupsSetting setObserver:self];
 
     _mailtoURLRewriter =
-        base::FeatureList::IsEnabled(kMailtoPromptForUserChoice)
-            ? [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers]
-            : [LegacyMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
+        [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
     [_mailtoURLRewriter setObserver:self];
 
     // TODO(crbug.com/764578): -loadModel should not be called from
@@ -139,11 +135,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self translateItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  // Show Compose Email setting if mailto: URL rewriting feature is enabled.
-  if (base::FeatureList::IsEnabled(kMailtoUrlRewriting)) {
-    [model addItem:[self composeEmailItem]
-        toSectionWithIdentifier:SectionIdentifierSettings];
-  }
+  [model addItem:[self composeEmailItem]
+      toSectionWithIdentifier:SectionIdentifierSettings];
 }
 
 - (CollectionViewItem*)blockPopupsItem {

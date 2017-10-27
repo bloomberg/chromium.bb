@@ -51,12 +51,6 @@ const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
 
-const char kMailtoPromptForUserChoiceName[] =
-    "Mailto Handler Prompt for User Choice";
-const char kMailtoPromptForUserChoiceDescription[] =
-    "Enable prompt for user to choose a mail client app when user taps on a "
-    "mailto:// URL link.";
-
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =

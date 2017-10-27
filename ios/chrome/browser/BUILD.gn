@@ -127,7 +127,6 @@ source_set("browser") {
     "//ios/chrome/browser/ui/history:history_base_feature",
     "//ios/chrome/browser/ui/main:feature_flags",
     "//ios/chrome/browser/ui/toolbar:toolbar_base_feature",
-    "//ios/chrome/browser/web:features",
     "//ios/chrome/common",
     "//ios/components/io_thread",
     "//ios/net",
