@@ -128,6 +128,13 @@ SkISize PaintImage::GetSupportedDecodeSize(
   return SkISize::Make(width(), height());
 }
 
+SkImageInfo PaintImage::CreateDecodeImageInfo(const SkISize& size,
+                                              SkColorType color_type) const {
+  DCHECK(GetSupportedDecodeSize(size) == size);
+  return SkImageInfo::Make(size.width(), size.height(), color_type,
+                           kPremul_SkAlphaType);
+}
+
 bool PaintImage::Decode(void* memory,
                         SkImageInfo* info,
                         sk_sp<SkColorSpace> color_space,

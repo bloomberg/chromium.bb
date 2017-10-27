@@ -654,36 +654,6 @@ TEST(SoftwareImageDecodeCacheTest, GetTaskForImageSameImage) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(SoftwareImageDecodeCacheTest, GetTaskForImageProcessUnrefCancel) {
-  TestSoftwareImageDecodeCache cache;
-  PaintImage paint_image = CreatePaintImage(100, 100);
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-
-  DrawImage draw_image(
-      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
-      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result =
-      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache.UnrefImage(draw_image);
-
-  result =
-      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::CancelTask(result.task.get());
-  TestTileTaskRunner::CompleteTask(result.task.get());
-  // This is expected to pass instead of DCHECKing since we're reducing the ref
-  // for an image which isn't locked to begin with.
-  cache.UnrefImage(draw_image);
-}
-
 TEST(SoftwareImageDecodeCacheTest, GetTaskForImageSameImageDifferentQuality) {
   TestSoftwareImageDecodeCache cache;
   PaintImage paint_image = CreatePaintImage(100, 100);
@@ -1110,6 +1080,97 @@ TEST(SoftwareImageDecodeCacheTest,
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
   cache.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest,
+     GetDecodedImageForDrawAtRasterDecodeDoesNotPreventTasks) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_EQ(50, decoded_draw_image.image()->width());
+  EXPECT_EQ(50, decoded_draw_image.image()->height());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().width());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
+  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+
+  ImageDecodeCache::TaskResult result =
+      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  DecodedDrawImage another_decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  // This should get the new decoded/locked image, not the one we're using at
+  // raster.
+  // TODO(vmpstr): We can possibly optimize this so that the decode simply moves
+  // the image to the right spot.
+  EXPECT_NE(decoded_draw_image.image()->uniqueID(),
+            another_decoded_draw_image.image()->uniqueID());
+  EXPECT_FALSE(another_decoded_draw_image.is_at_raster_decode());
+
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+  cache.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest,
+     GetDecodedImageForDrawAtRasterDecodeIsUsedForLockedCache) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_EQ(50, decoded_draw_image.image()->width());
+  EXPECT_EQ(50, decoded_draw_image.image()->height());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().width());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
+  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+
+  ImageDecodeCache::TaskResult result =
+      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  // If we finish the draw here, then we will use it for the locked decode
+  // instead of decoding again.
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  DecodedDrawImage another_decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  // This should get the decoded/locked image which we originally decoded at
+  // raster time, since it's now in the locked cache.
+  EXPECT_EQ(decoded_draw_image.image()->uniqueID(),
+            another_decoded_draw_image.image()->uniqueID());
+  EXPECT_FALSE(another_decoded_draw_image.is_at_raster_decode());
+
+  cache.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+  cache.UnrefImage(draw_image);
 }
 
 TEST(SoftwareImageDecodeCacheTest, ZeroSizedImagesAreSkipped) {
@@ -1577,18 +1638,20 @@ TEST(SoftwareImageDecodeCacheTest, RemoveUnusedImage) {
   std::vector<PaintImage::FrameKey> frame_keys;
 
   for (int i = 0; i < 10; ++i) {
-    SCOPED_TRACE(i);
     PaintImage paint_image = CreatePaintImage(100, 100);
     DrawImage draw_image(
         paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
         quality, CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
         PaintImage::kDefaultFrameIndex, DefaultColorSpace());
     frame_keys.push_back(draw_image.frame_key());
+    DecodedDrawImage decoded_draw_image =
+        cache.GetDecodedImageForDraw(draw_image);
     ImageDecodeCache::TaskResult result = cache.GetTaskForImageAndRef(
         draw_image, ImageDecodeCache::TracingInfo());
     EXPECT_TRUE(result.need_unref);
     EXPECT_TRUE(result.task);
     TestTileTaskRunner::ProcessTask(result.task.get());
+    cache.DrawWithImageFinished(draw_image, decoded_draw_image);
     cache.UnrefImage(draw_image);
   }
 
