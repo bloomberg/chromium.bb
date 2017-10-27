@@ -103,6 +103,13 @@ static CU_SuiteInfo suites[] = {
 		.pCleanupFunc = suite_deadlock_tests_clean,
 		.pTests = deadlock_tests,
 	},
+	{
+		.pName = "VM Tests",
+		.pInitFunc = suite_vm_tests_init,
+		.pCleanupFunc = suite_vm_tests_clean,
+		.pTests = vm_tests,
+	},
+
 	CU_SUITE_INFO_NULL,
 };
 
