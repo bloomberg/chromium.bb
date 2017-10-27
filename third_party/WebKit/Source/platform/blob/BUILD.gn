@@ -40,6 +40,7 @@ jumbo_source_set("blob") {
 
   public_deps = [
     "//third_party/WebKit/common:mojo_platform_bindings_blink",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }
 
