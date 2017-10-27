@@ -26,7 +26,6 @@
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -37,6 +36,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Locker.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -57,6 +57,11 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(
   // Default to stereo. This could change depending on what the media element
   // .src is set to.
   AddOutput(2);
+
+  if (Context()->GetExecutionContext()) {
+    task_runner_ = Context()->GetExecutionContext()->GetTaskRunner(
+        TaskType::kMediaElementEvent);
+  }
 
   Initialize();
 }
@@ -199,12 +204,10 @@ void MediaElementAudioSourceHandler::Process(size_t number_of_frames) {
         // media element source, and only if we have a document to print to.
         maybe_print_cors_message_ = false;
         if (Context()->GetExecutionContext()) {
-          TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
-                                Context()->GetExecutionContext())
-              ->PostTask(BLINK_FROM_HERE,
-                         CrossThreadBind(
-                             &MediaElementAudioSourceHandler::PrintCORSMessage,
-                             WrapRefCounted(this), current_src_string_));
+          task_runner_->PostTask(
+              BLINK_FROM_HERE,
+              CrossThreadBind(&MediaElementAudioSourceHandler::PrintCORSMessage,
+                              WrapRefCounted(this), current_src_string_));
         }
       }
       output_bus->Zero();

@@ -107,6 +107,8 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   // The value of mediaElement()->currentSrc().string() in the ctor and
   // onCurrentSrcChanged().  Protected by |m_processLock|.
   String current_src_string_;
+
+  scoped_refptr<WebTaskRunner> task_runner_;
 };
 
 class MediaElementAudioSourceNode final : public AudioNode,

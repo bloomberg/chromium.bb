@@ -153,6 +153,8 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 
   unsigned number_of_channels_;
   float sample_rate_;
+
+  scoped_refptr<WebTaskRunner> task_runner_;
 };
 
 class OfflineAudioDestinationNode final : public AudioDestinationNode {

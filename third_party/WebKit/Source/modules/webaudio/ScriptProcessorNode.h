@@ -103,6 +103,8 @@ class ScriptProcessorHandler final : public AudioHandler {
   // Synchronize process() with fireProcessEvent().
   mutable Mutex process_event_lock_;
 
+  scoped_refptr<WebTaskRunner> task_runner_;
+
   FRIEND_TEST_ALL_PREFIXES(ScriptProcessorNodeTest, BufferLifetime);
 };
 
