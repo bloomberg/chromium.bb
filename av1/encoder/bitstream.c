@@ -4155,7 +4155,13 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
   }
 #endif  // CONFIG_REFERENCE_BUFFER
 
-  if (!cm->error_resilient_mode) {
+#if CONFIG_EXT_TILE
+  const int might_bwd_adapt =
+      !(cm->error_resilient_mode || cm->large_scale_tile);
+#else
+  const int might_bwd_adapt = !cm->error_resilient_mode;
+#endif  // CONFIG_EXT_TILE
+  if (might_bwd_adapt) {
     aom_wb_write_bit(
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD);
   }

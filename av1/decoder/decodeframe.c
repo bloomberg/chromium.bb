@@ -3299,7 +3299,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                        " state");
   }
 
-  if (!cm->error_resilient_mode) {
+#if CONFIG_EXT_TILE
+  const int might_bwd_adapt =
+      !(cm->error_resilient_mode || cm->large_scale_tile);
+#else
+  const int might_bwd_adapt = !cm->error_resilient_mode;
+#endif  // CONFIG_EXT_TILE
+  if (might_bwd_adapt) {
     cm->refresh_frame_context = aom_rb_read_bit(rb)
                                     ? REFRESH_FRAME_CONTEXT_FORWARD
                                     : REFRESH_FRAME_CONTEXT_BACKWARD;
