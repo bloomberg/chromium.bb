@@ -672,10 +672,7 @@ void RenderViewImpl::Initialize(
 RenderViewImpl::~RenderViewImpl() {
   DCHECK(!frame_widget_);
 
-  for (BitmapMap::iterator it = disambiguation_bitmaps_.begin();
-       it != disambiguation_bitmaps_.end();
-       ++it)
-    delete it->second;
+  disambiguation_bitmaps_.clear();
 
 #if defined(OS_ANDROID)
   // The date/time picker client is both a std::unique_ptr member of this class
@@ -1038,7 +1035,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const mojom::CreateViewParams& params,
     const RenderWidget::ShowCallback& show_callback) {
   DCHECK(params.view_id != MSG_ROUTING_NONE);
-  RenderViewImpl* render_view = NULL;
+  RenderViewImpl* render_view;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(compositor_deps, params);
   else
@@ -2292,7 +2289,7 @@ bool RenderViewImpl::OpenDateTimeChooser(
 
 void RenderViewImpl::DismissDateTimeDialog() {
   DCHECK(date_time_picker_client_);
-  date_time_picker_client_.reset(NULL);
+  date_time_picker_client_.reset();
 }
 
 bool RenderViewImpl::DidTapMultipleTargets(
@@ -2328,7 +2325,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
           RenderThreadImpl::current()->shared_bitmap_manager();
       std::unique_ptr<viz::SharedBitmap> shared_bitmap =
           manager->AllocateSharedBitmap(canvas_size);
-      CHECK(!!shared_bitmap);
+      CHECK(shared_bitmap);
       {
         SkBitmap bitmap;
         SkImageInfo info = SkImageInfo::MakeN32Premul(canvas_size.width(),
@@ -2360,7 +2357,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
           GetRoutingID(), physical_window_zoom_rect, canvas_size,
           shared_bitmap->id()));
       viz::SharedBitmapId id = shared_bitmap->id();
-      disambiguation_bitmaps_[id] = shared_bitmap.release();
+      disambiguation_bitmaps_[id] = std::move(shared_bitmap);
       handled = true;
       break;
     }
@@ -2458,10 +2455,8 @@ void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
 
 void RenderViewImpl::OnReleaseDisambiguationPopupBitmap(
     const viz::SharedBitmapId& id) {
-  BitmapMap::iterator it = disambiguation_bitmaps_.find(id);
-  DCHECK(it != disambiguation_bitmaps_.end());
-  delete it->second;
-  disambiguation_bitmaps_.erase(it);
+  size_t erased_count = disambiguation_bitmaps_.erase(id);
+  DCHECK_EQ(1U, erased_count);
 }
 
 void RenderViewImpl::OnResolveTapDisambiguation(double timestamp_seconds,

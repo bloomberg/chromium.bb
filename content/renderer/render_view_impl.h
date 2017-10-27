@@ -783,8 +783,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // constructors call the AddObservers method of RenderViewImpl.
   std::unique_ptr<StatsCollectionObserver> stats_collection_observer_;
 
-  typedef std::map<viz::SharedBitmapId, viz::SharedBitmap*> BitmapMap;
-  BitmapMap disambiguation_bitmaps_;
+  std::map<viz::SharedBitmapId, std::unique_ptr<viz::SharedBitmap>>
+      disambiguation_bitmaps_;
 
   std::unique_ptr<IdleUserDetector> idle_user_detector_;
 
