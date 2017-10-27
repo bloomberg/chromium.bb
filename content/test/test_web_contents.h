@@ -63,18 +63,11 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   TestRenderFrameHost* GetPendingMainFrame() override;
   void NavigateAndCommit(const GURL& url) override;
   void TestSetIsLoading(bool value) override;
-  void ProceedWithCrossSiteNavigation() override;
   void TestDidNavigate(RenderFrameHost* render_frame_host,
                        int nav_entry_id,
                        bool did_create_new_entry,
                        const GURL& url,
                        ui::PageTransition transition) override;
-  void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
-                                   int nav_entry_id,
-                                   bool did_create_new_entry,
-                                   const GURL& url,
-                                   const Referrer& referrer,
-                                   ui::PageTransition transition) override;
   void TestDidNavigateWithSequenceNumber(RenderFrameHost* render_frame_host,
                                          int nav_entry_id,
                                          bool did_create_new_entry,
