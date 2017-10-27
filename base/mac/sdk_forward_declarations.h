@@ -100,6 +100,7 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 @property(readonly, copy) NSString* activityType;
 @property(copy) NSDictionary* userInfo;
 @property(copy) NSURL* webpageURL;
+@property(copy) NSString* title;
 - (instancetype)initWithActivityType:(NSString*)activityType;
 - (void)becomeCurrent;
 - (void)invalidate;
