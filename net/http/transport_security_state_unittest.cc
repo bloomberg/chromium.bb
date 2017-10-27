@@ -2522,6 +2522,45 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTDeduping) {
   EXPECT_EQ(1u, reporter.num_failures());
 }
 
+// Tests that the Expect-CT reporter is not notified for CT-compliant
+// connections.
+TEST_F(TransportSecurityStateTest, DynamicExpectCTCompliantConnection) {
+  const char kHeader[] = "max-age=123,report-uri=\"http://foo.test\"";
+  SSLInfo ssl;
+  ssl.is_issued_by_known_root = true;
+  ssl.ct_compliance_details_available = true;
+  ssl.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(cert1);
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert2);
+
+  SignedCertificateTimestampAndStatusList sct_list;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  TransportSecurityState state;
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl);
+
+  // No report should be sent when the header was processed over a connection
+  // that complied with CT policy.
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("example.test", 443), true, HashValueVector(),
+                cert1.get(), cert2.get(), sct_list,
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+  EXPECT_EQ(0u, reporter.num_failures());
+}
+
 // Tests that the Expect-CT reporter is not notified when the Expect-CT header
 // is received repeatedly over non-compliant connections.
 TEST_F(TransportSecurityStateTest, DynamicExpectCTHeaderProcessingDeduping) {
