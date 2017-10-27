@@ -645,12 +645,15 @@ void Resource::DidAddClient(ResourceClient* c) {
 static bool TypeNeedsSynchronousCacheHit(Resource::Type type) {
   // Some resources types default to return data synchronously. For most of
   // these, it's because there are layout tests that expect data to return
-  // synchronously in case of cache hit.
+  // synchronously in case of cache hit. In the case of fonts, there was a
+  // performance regression.
   // FIXME: Get to the point where we don't need to special-case sync/async
   // behavior for different resource types.
   if (type == Resource::kCSSStyleSheet)
     return true;
   if (type == Resource::kScript)
+    return true;
+  if (type == Resource::kFont)
     return true;
   return false;
 }
