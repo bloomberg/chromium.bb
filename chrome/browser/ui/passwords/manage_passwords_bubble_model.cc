@@ -224,15 +224,11 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
   }
 
   // Record UKM statistics on dismissal reason.
-  if (model->delegate_ && model->delegate_->GetPasswordFormMetricsRecorder()) {
-    if (model->state() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-      model->delegate_->GetPasswordFormMetricsRecorder()
-          ->RecordUIDismissalReason(dismissal_reason_);
-    } else {
-      model->delegate_->GetPasswordFormMetricsRecorder()
-          ->RecordUIDismissalReason(
-              ToNearestUIDismissalReason(update_password_submission_event_));
-    }
+  if (model->metrics_recorder_) {
+    model->metrics_recorder_->RecordUIDismissalReason(
+        model->state() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
+            ? dismissal_reason_
+            : ToNearestUIDismissalReason(update_password_submission_event_));
   }
 }
 
@@ -273,7 +269,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     base::WeakPtr<PasswordsModelDelegate> delegate,
     DisplayReason display_reason)
     : password_overridden_(false),
-      delegate_(std::move(delegate)) {
+      delegate_(std::move(delegate)),
+      metrics_recorder_(delegate_->GetPasswordFormMetricsRecorder()) {
   origin_ = delegate_->GetOrigin();
   state_ = delegate_->GetState();
   password_manager::InteractionsStats interaction_stats;
@@ -376,8 +373,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     }
   }
 
-  if (delegate_ && delegate_->GetPasswordFormMetricsRecorder()) {
-    delegate_->GetPasswordFormMetricsRecorder()->RecordPasswordBubbleShown(
+  if (metrics_recorder_) {
+    metrics_recorder_->RecordPasswordBubbleShown(
         delegate_->GetCredentialSource(), display_disposition);
   }
   metrics_util::LogUIDisplayDisposition(display_disposition);
