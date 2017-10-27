@@ -85,10 +85,8 @@ void XMLParserScriptRunner::ProcessScriptElement(
 
   if (script_loader->ReadyToBeParserExecuted()) {
     // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
-    script_loader->ExecuteScriptBlock(
-        ClassicPendingScript::CreateInline(script_element_base,
-                                           script_start_position),
-        document.Url());
+    script_loader->ExecuteScriptBlock(script_loader->TakePendingScript(),
+                                      document.Url());
   } else if (script_loader->WillBeParserExecuted()) {
     // 1st/2nd Clauses, Step 23 of
     // https://html.spec.whatwg.org/#prepare-a-script

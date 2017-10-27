@@ -351,6 +351,13 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (GetScriptType() == ScriptType::kModule)
     UseCounter::Count(*context_document, WebFeature::kPrepareModuleScript);
 
+  DCHECK(!prepared_pending_script_);
+
+  // Reset line numbering for nested writes.
+  TextPosition position = element_document.IsInDocumentWrite()
+                              ? TextPosition()
+                              : script_start_position;
+
   // 21. "If the element has a src content attribute, run these substeps:"
   if (element_->HasSourceAttribute()) {
     // 21.1. Let src be the value of the element's src attribute.
@@ -440,8 +447,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       ScriptFetchOptions options(nonce_, parser_state, credentials_mode);
       FetchModuleScriptTree(url, modulator, options);
     }
-    DCHECK(prepared_pending_script_);
-
     // "When the chosen algorithm asynchronously completes, set
     //  the script's script to the result. At that time, the script is ready."
     // When the script is ready, PendingScriptClient::pendingScriptFinished()
@@ -469,7 +474,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     switch (GetScriptType()) {
       // - "classic":
       case ScriptType::kClassic:
-        // TODO(hiroshige): Clarify how Step 22.2 is implemented for "classic".
+        // 1. Let script be the result of creating a classic script using source
+        // text, settings object, base URL, and options.
+        //
+        // TODO(hiroshige): Implement base URL and options.
+        prepared_pending_script_ =
+            ClassicPendingScript::CreateInline(element_, position);
+
+        // 2. Set the script's script to script.
+        // 3. The script is ready.
+        // Implemented by ClassicPendingScript.
+
         break;
 
       // - "module":
@@ -478,9 +493,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         //     base URL."
         KURL base_url = element_document.BaseURL();
 
-        TextPosition position = element_document.IsInDocumentWrite()
-                                    ? TextPosition()
-                                    : script_start_position;
         // 2. "Let script be the result of creating a module script using
         //     source text, settings, base URL, cryptographic nonce,
         //     parser state, and module script credentials mode."
@@ -509,6 +521,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       }
     }
   }
+
+  DCHECK(prepared_pending_script_);
 
   // 23. "Then, follow the first of the following options that describes the
   //      situation:"
@@ -652,17 +666,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // Note: this block is also duplicated in
   // HTMLParserScriptRunner::processScriptElementInternal().
   // TODO(hiroshige): Merge the duplicated code.
-
-  // Reset line numbering for nested writes.
-  TextPosition position = element_document.IsInDocumentWrite()
-                              ? TextPosition()
-                              : script_start_position;
   KURL script_url = (!element_document.IsInDocumentWrite() && parser_inserted_)
                         ? element_document.Url()
                         : KURL();
-
-  ExecuteScriptBlock(ClassicPendingScript::CreateInline(element_, position),
-                     script_url);
+  ExecuteScriptBlock(TakePendingScript(), script_url);
   return true;
 }
 
