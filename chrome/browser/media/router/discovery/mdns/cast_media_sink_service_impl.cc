@@ -472,7 +472,8 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
              << cast_channel::ChannelErrorToString(error_state);
 
     OnChannelOpenFailed(ip_endpoint);
-    CastAnalytics::RecordCastChannelConnectResult(false);
+    CastAnalytics::RecordCastChannelConnectResult(
+        MediaRouterChannelConnectResults::FAILURE);
     return;
   }
 
@@ -496,7 +497,8 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(socket);
 
-  CastAnalytics::RecordCastChannelConnectResult(true);
+  CastAnalytics::RecordCastChannelConnectResult(
+      MediaRouterChannelConnectResults::SUCCESS);
   media_router::CastSinkExtraData extra_data = cast_sink.cast_data();
   // Manually set device capabilities for sinks discovered via DIAL as DIAL
   // discovery does not provide capability info.
