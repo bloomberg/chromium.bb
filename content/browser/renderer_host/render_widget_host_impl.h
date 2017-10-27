@@ -175,6 +175,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostViewBase* GetView() const override;
   bool IsLoading() const override;
   void RestartHangMonitorTimeoutIfNecessary() override;
+  bool IsCurrentlyUnresponsive() const override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
   void WasResized() override;
   void AddKeyPressEventCallback(const KeyPressEventCallback& callback) override;

@@ -199,6 +199,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // warning too soon.
   virtual void RestartHangMonitorTimeoutIfNecessary() = 0;
 
+  // Returns true if the renderer is considered unresponsive.
+  virtual bool IsCurrentlyUnresponsive() const = 0;
+
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
 
   // Called to notify the RenderWidget that it has been resized.

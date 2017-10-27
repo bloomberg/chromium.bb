@@ -9,6 +9,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -342,6 +343,13 @@ base::string16 HungRendererDialogView::GetDialogButtonLabel(
 }
 
 bool HungRendererDialogView::Cancel() {
+  auto* render_view_host = hung_pages_table_model_->GetRenderViewHost();
+  bool currently_unresponsive =
+      render_view_host &&
+      render_view_host->GetWidget()->IsCurrentlyUnresponsive();
+  UMA_HISTOGRAM_BOOLEAN("Stability.RendererUnresponsiveBeforeTermination",
+                        currently_unresponsive);
+
   content::RenderProcessHost* rph =
       hung_pages_table_model_->GetRenderProcessHost();
   if (rph) {
