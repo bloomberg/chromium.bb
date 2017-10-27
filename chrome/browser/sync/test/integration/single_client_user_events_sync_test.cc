@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/sessions_helper.cc"
+#include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
