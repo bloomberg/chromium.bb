@@ -208,7 +208,33 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".imgpart"),     FILE_PATH_LITERAL(".ndif"),
     FILE_PATH_LITERAL(".smi"),         FILE_PATH_LITERAL(".sparsebundle"),
     FILE_PATH_LITERAL(".sparseimage"), FILE_PATH_LITERAL(".toast"),
-    FILE_PATH_LITERAL(".udif"),
+    FILE_PATH_LITERAL(".udif"),        FILE_PATH_LITERAL(".run"),        // 262
+    FILE_PATH_LITERAL(".mpkg"),        FILE_PATH_LITERAL(".as"),         // 264
+    FILE_PATH_LITERAL(".cpgz"),        FILE_PATH_LITERAL(".pax"),        // 266
+    FILE_PATH_LITERAL(".xip"),         FILE_PATH_LITERAL(".docx"),       // 268
+    FILE_PATH_LITERAL(".docm"),        FILE_PATH_LITERAL(".dott"),       // 270
+    FILE_PATH_LITERAL(".dotm"),        FILE_PATH_LITERAL(".docb"),       // 272
+    FILE_PATH_LITERAL(".xlsx"),        FILE_PATH_LITERAL(".xlsm"),       // 274
+    FILE_PATH_LITERAL(".xltx"),        FILE_PATH_LITERAL(".xltm"),       // 276
+    FILE_PATH_LITERAL(".pptx"),        FILE_PATH_LITERAL(".pptm"),       // 278
+    FILE_PATH_LITERAL(".potx"),        FILE_PATH_LITERAL(".ppam"),       // 280
+    FILE_PATH_LITERAL(".ppsx"),        FILE_PATH_LITERAL(".sldx"),       // 282
+    FILE_PATH_LITERAL(".sldm"),        FILE_PATH_LITERAL(".htm"),        // 284
+    FILE_PATH_LITERAL(".html"),        FILE_PATH_LITERAL(".xht"),        // 286
+    FILE_PATH_LITERAL(".xhtm"),        FILE_PATH_LITERAL(".xhtml"),      // 288
+    FILE_PATH_LITERAL(".vdx"),         FILE_PATH_LITERAL(".vsx"),        // 290
+    FILE_PATH_LITERAL(".vtx"),         FILE_PATH_LITERAL(".vsdx"),       // 292
+    FILE_PATH_LITERAL(".vssx"),        FILE_PATH_LITERAL(".vstx"),       // 294
+    FILE_PATH_LITERAL(".vsdm"),        FILE_PATH_LITERAL(".vssm"),       // 296
+    FILE_PATH_LITERAL(".vstm"),        FILE_PATH_LITERAL(".btapp"),      // 298
+    FILE_PATH_LITERAL(".btbtskin"),    FILE_PATH_LITERAL(".btinstall"),  // 300
+    FILE_PATH_LITERAL(".btkey"),       FILE_PATH_LITERAL(".btsearch"),   // 302
+    FILE_PATH_LITERAL(".dhtml"),       FILE_PATH_LITERAL(".dhtm"),       // 304
+    FILE_PATH_LITERAL(".dht"),         FILE_PATH_LITERAL(".shtml"),      // 306
+    FILE_PATH_LITERAL(".shtm"),        FILE_PATH_LITERAL(".sht"),        // 308
+    // NOTE! When you add a type here, please add the UMA value as a comment.
+    // These must all match DownloadItem.DangerousFileType in enums.xml.
+    // From 263 onward, they should also match SBClientDownloadExtensions.
 };
 
 // The maximum size in KB for the file size metric, file size larger than this

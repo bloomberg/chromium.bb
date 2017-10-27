@@ -9436,7 +9436,52 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="260" label="toast"/>
   <int value="261" label="udif"/>
   <int value="262" label="run"/>
-  <int value="263" label="ad"/>
+  <int value="263" label="mpkg"/>
+  <int value="264" label="as"/>
+  <int value="265" label="cpgz"/>
+  <int value="266" label="pax"/>
+  <int value="267" label="xip"/>
+  <int value="268" label="docx"/>
+  <int value="269" label="docm"/>
+  <int value="270" label="dott"/>
+  <int value="271" label="dotm"/>
+  <int value="272" label="docb"/>
+  <int value="273" label="xlsx"/>
+  <int value="274" label="xlsm"/>
+  <int value="275" label="xltx"/>
+  <int value="276" label="xltm"/>
+  <int value="277" label="pptx"/>
+  <int value="278" label="pptm"/>
+  <int value="279" label="potx"/>
+  <int value="280" label="ppam"/>
+  <int value="281" label="ppsx"/>
+  <int value="282" label="sldx"/>
+  <int value="283" label="sldm"/>
+  <int value="284" label="htm"/>
+  <int value="285" label="html"/>
+  <int value="286" label="xht"/>
+  <int value="287" label="xhtm"/>
+  <int value="288" label="xhtml"/>
+  <int value="289" label="vdx"/>
+  <int value="290" label="vsx"/>
+  <int value="291" label="vtx"/>
+  <int value="292" label="vsdx"/>
+  <int value="293" label="vssx"/>
+  <int value="294" label="vstx"/>
+  <int value="295" label="vsdm"/>
+  <int value="296" label="vssm"/>
+  <int value="297" label="vstm"/>
+  <int value="298" label="btapp"/>
+  <int value="299" label="btbtskin"/>
+  <int value="300" label="btinstall"/>
+  <int value="301" label="btkey"/>
+  <int value="302" label="btsearch"/>
+  <int value="303" label="dhtml"/>
+  <int value="304" label="dhtm"/>
+  <int value="305" label="dht"/>
+  <int value="306" label="shtml"/>
+  <int value="307" label="shtm"/>
+  <int value="308" label="sht"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -35275,6 +35320,26 @@ from previous Chrome versions.
   <int value="286" label="XHT"/>
   <int value="287" label="XHTM"/>
   <int value="288" label="XHTML"/>
+  <int value="289" label="VDX"/>
+  <int value="290" label="VSX"/>
+  <int value="291" label="VTX"/>
+  <int value="292" label="VSDX"/>
+  <int value="293" label="VSSX"/>
+  <int value="294" label="VSTX"/>
+  <int value="295" label="VSDM"/>
+  <int value="296" label="VSSM"/>
+  <int value="297" label="VSTM"/>
+  <int value="298" label="BTAPP"/>
+  <int value="299" label="BTBTSKIN"/>
+  <int value="300" label="BTINSTALL"/>
+  <int value="301" label="BTKEY"/>
+  <int value="302" label="BTSEARCH"/>
+  <int value="303" label="DHTML"/>
+  <int value="304" label="DHTM"/>
+  <int value="305" label="DHT"/>
+  <int value="306" label="SHTML"/>
+  <int value="307" label="SHTM"/>
+  <int value="308" label="SHT"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">

@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 13
+version_id: 14
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -786,6 +786,41 @@ file_types {
   uma_value: 23
   ping_setting: FULL_PING
 }
+file_types {
+  # Opened by uTorrent and Transmission (can be a renamed .torrent)
+  # Added crbug.com/767502
+  extension: "btapp"
+  uma_value: 298
+  ping_setting: FULL_PING
+}
+file_types {
+  # Opened by uTorrent and Transmission (can be a renamed .torrent)
+  # Added crbug.com/767502
+  extension: "btbtskin"
+  uma_value: 299
+  ping_setting: FULL_PING
+}
+file_types {
+  # Opened by uTorrent and Transmission (can be a renamed .torrent)
+  # Added crbug.com/767502
+  extension: "btinstall"
+  uma_value: 300
+  ping_setting: FULL_PING
+}
+file_types {
+  # Opened by uTorrent and Transmission (can be a renamed .torrent)
+  # Added crbug.com/767502
+  extension: "btkey"
+  uma_value: 301
+  ping_setting: FULL_PING
+}
+file_types {
+  # Opened by uTorrent and Transmission (can be a renamed .torrent)
+  # Added crbug.com/767502
+  extension: "btsearch"
+  uma_value: 302
+  ping_setting: FULL_PING
+}
 
 ##
 ## Windows-specific files
@@ -1529,7 +1564,7 @@ file_types {
   }
 }
 
-# Other Windows files
+# Other Windows files (some cross-platform too)
 file_types {
   extension: "ad"
   uma_value: 262
@@ -1695,6 +1730,30 @@ file_types {
   }
 }
 file_types {
+  # HTML-like file. This extension can be abused by UwS campaigns to evade
+  # referrer attribution via a two-level download scheme. crbug.com/719784
+  # Added in https://crbug.com/762702
+  extension: "dhtml"
+  uma_value: 303
+  ping_setting: FULL_PING
+}
+file_types {
+  # HTML-like file. This extension can be abused by UwS campaigns to evade
+  # referrer attribution via a two-level download scheme. crbug.com/719784
+  # Added in https://crbug.com/762702
+  extension: "dhtm"
+  uma_value: 304
+  ping_setting: FULL_PING
+}
+file_types {
+  # HTML-like file. This extension can be abused by UwS campaigns to evade
+  # referrer attribution via a two-level download scheme. crbug.com/719784
+  # Added in https://crbug.com/762702
+  extension: "dht"
+  uma_value: 305
+  ping_setting: FULL_PING
+}
+file_types {
   # Windows executable. It can gain control of an executable launched from the
   # same directory, so it can do bad things without ever being clicked on.
   extension: "dll"
@@ -1814,10 +1873,6 @@ file_types {
   extension: "htm"
   uma_value: 284
   ping_setting: FULL_PING
-  platform_settings {
-    danger_level: NOT_DANGEROUS
-    auto_open_hint: ALLOW_AUTO_OPEN
-  }
 }
 file_types {
   # HTML file. This extension is abused by UwS campaigns to evade referrer
@@ -1825,10 +1880,6 @@ file_types {
   extension: "html"
   uma_value: 285
   ping_setting: FULL_PING
-  platform_settings {
-    danger_level: NOT_DANGEROUS
-    auto_open_hint: ALLOW_AUTO_OPEN
-  }
 }
 file_types {
   # Hypertext Template File. See https://support.microsoft.com/kb/181689.
@@ -2131,6 +2182,30 @@ file_types {
   }
 }
 file_types {
+  # HTML-like file. This extension can be abused by UwS campaigns to evade
+  # referrer attribution via a two-level download scheme. crbug.com/719784
+  # Added in https://crbug.com/762702
+  extension: "shtml"
+  uma_value: 306
+  ping_setting: FULL_PING
+}
+file_types {
+  # HTML-like file. This extension can be abused by UwS campaigns to evade
+  # referrer attribution via a two-level download scheme. crbug.com/719784
+  # Added in https://crbug.com/762702
+  extension: "shtm"
+  uma_value: 307
+  ping_setting: FULL_PING
+}
+file_types {
+  # HTML-like file. This extension can be abused by UwS campaigns to evade
+  # referrer attribution via a two-level download scheme. crbug.com/719784
+  # Added in https://crbug.com/762702
+  extension: "sht"
+  uma_value: 308
+  ping_setting: FULL_PING
+}
+file_types {
   # System executable. Windows tries hard to prevent you from opening these
   # types of files.
   extension: "sys"
@@ -2154,6 +2229,112 @@ file_types {
   }
 }
 file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vdx"
+  uma_value: 289
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vsx"
+  uma_value: 290
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vtx"
+  uma_value: 291
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vsdx"
+  uma_value: 292
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+  # TODO(nparker): Unpack these as ZIP files. https://crbug.com/628796
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vssx"
+  uma_value: 293
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+  # TODO(nparker): Unpack these as ZIP files. https://crbug.com/628796
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vstx"
+  uma_value: 294
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+  # TODO(nparker): Unpack these as ZIP files. https://crbug.com/628796
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vsdm"
+  uma_value: 295
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+  # TODO(nparker): Unpack these as ZIP files. https://crbug.com/628796
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vssm"
+  uma_value: 296
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+  # TODO(nparker): Unpack these as ZIP files. https://crbug.com/628796
+}
+file_types {
+  # A Visio file type. Added in https://crbug.com/771469
+  extension: "vstm"
+  uma_value: 297
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+  # TODO(nparker): Unpack these as ZIP files. https://crbug.com/628796
+}
+file_types {
+  # An older Visio file type. See https://crbug.com/771469
   extension: "vsd"
   uma_value: 118
   ping_setting: FULL_PING
@@ -2175,6 +2356,7 @@ file_types {
   }
 }
 file_types {
+  # An older Visio file type. See https://crbug.com/771469
   extension: "vss"
   uma_value: 120
   ping_setting: FULL_PING
@@ -2185,6 +2367,7 @@ file_types {
   }
 }
 file_types {
+  # An older Visio file type. See https://crbug.com/771469
   extension: "vst"
   uma_value: 121
   ping_setting: FULL_PING
@@ -2221,30 +2404,18 @@ file_types {
   extension: "xht"
   uma_value: 286
   ping_setting: FULL_PING
-  platform_settings {
-    danger_level: NOT_DANGEROUS
-    auto_open_hint: ALLOW_AUTO_OPEN
-  }
 }
 file_types {
   # Similar to "html".  Added for https://crbug.com/762702
   extension: "xhtm"
   uma_value: 287
   ping_setting: FULL_PING
-  platform_settings {
-    danger_level: NOT_DANGEROUS
-    auto_open_hint: ALLOW_AUTO_OPEN
-  }
 }
 file_types {
   # Similar to "html".  Added for https://crbug.com/762702
   extension: "xhtml"
   uma_value: 288
   ping_setting: FULL_PING
-  platform_settings {
-    danger_level: NOT_DANGEROUS
-    auto_open_hint: ALLOW_AUTO_OPEN
-  }
 }
 file_types {
   # Microsoft Exchange Public Folder Shortcut
