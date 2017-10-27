@@ -9,6 +9,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
+#include "platform/wtf/StackUtil.h"
+#include "platform/wtf/WTF.h"
 
 namespace blink {
 
@@ -33,17 +35,32 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
     AutoReset<unsigned> saved_counter_;
   };
 
-  static bool IsScriptForbidden() { return GetMutableCounter() > 0; }
+  static bool IsScriptForbidden() {
+    if (LIKELY(!WTF::MayNotBeMainThread()))
+      return g_main_thread_counter_ > 0;
+    return GetMutableCounter() > 0;
+  }
 
   // DO NOT USE THESE FUNCTIONS FROM OUTSIDE OF THIS CLASS.
-  static void Enter() { ++GetMutableCounter(); }
+  static void Enter() {
+    if (LIKELY(!WTF::MayNotBeMainThread())) {
+      ++g_main_thread_counter_;
+    } else {
+      ++GetMutableCounter();
+    }
+  }
   static void Exit() {
     DCHECK(IsScriptForbidden());
-    --GetMutableCounter();
+    if (LIKELY(!WTF::MayNotBeMainThread())) {
+      --g_main_thread_counter_;
+    } else {
+      --GetMutableCounter();
+    }
   }
 
  private:
   static unsigned& GetMutableCounter();
+  static unsigned g_main_thread_counter_;
 };
 
 }  // namespace blink
