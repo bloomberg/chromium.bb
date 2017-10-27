@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CSSMathValue subclass tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#complex-numeric">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../resources/testhelper.js"></script>
+<script>
+'use strict';
+
+const gMathValueSubclasses = [
+  { subclass: CSSMathSum, operator: 'sum' },
+  { subclass: CSSMathProduct, operator: 'product' },
+  { subclass: CSSMathMin, operator: 'min' },
+  { subclass: CSSMathMax, operator: 'max' },
+];
+
+for (const {subclass, operator} of gMathValueSubclasses) {
+  test(() => {
+    assert_throws(new SyntaxError(), () => new subclass());
+  }, 'Constructing a ' + subclass.name + ' with no arguments throws a SyntaxError');
+
+  test(() => {
+    const result = new subclass(CSS.number(0));
+    assert_equals(result.operator, operator);
+  }, subclass.name + ' can be constructed from a single number CSSUnitValue');
+
+  test(() => {
+    const result = new subclass(CSS.number(1), CSS.number(2), CSS.number(3), CSS.number(4), CSS.number(5));
+    assert_equals(result.operator, operator);
+  }, subclass.name + ' can be constructed from more than one number CSSUnitValue');
+
+  test(() => {
+    let result = new subclass(CSS.number(1), CSS.number(2));
+    assert_throws(new TypeError(), () => result.operator = 'foo');
+  }, subclass.name + '.operator is readonly');
+}
+
+</script>

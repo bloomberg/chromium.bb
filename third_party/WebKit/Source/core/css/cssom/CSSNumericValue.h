@@ -5,6 +5,7 @@
 #ifndef CSSNumericValue_h
 #define CSSNumericValue_h
 
+#include "bindings/core/v8/double_or_css_numeric_value.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
@@ -15,6 +16,8 @@ namespace blink {
 
 class CSSUnitValue;
 class ExceptionState;
+
+using CSSNumberish = DoubleOrCSSNumericValue;
 
 class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   WTF_MAKE_NONCOPYABLE(CSSNumericValue);
