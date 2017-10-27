@@ -121,7 +121,8 @@ TEST_F(GlobalErrorBubbleViewTest, Basic) {
       .WillOnce(Return(image));
   view_->GetWindowIcon();
 
-  EXPECT_TRUE(view_->ShouldShowWindowIcon());
+  EXPECT_EQ(ChromeLayoutProvider::Get()->ShouldShowWindowIcon(),
+            view_->ShouldShowWindowIcon());
 
   EXPECT_CALL(*mock_global_error_with_standard_bubble_,
               BubbleViewDidClose(nullptr));
