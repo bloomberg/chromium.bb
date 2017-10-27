@@ -131,6 +131,8 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
  public:                                                                  \
   GC_PLUGIN_IGNORE("crbug.com/456823")                                    \
   NO_SANITIZE_UNRELATED_CAST void* operator new(size_t size) {            \
+    CHECK_GE(kLargeObjectSizeThreshold, size)                             \
+        << "GarbageCollectedMixin may not be a large object";             \
     void* object =                                                        \
         TYPE::AllocateObject(size, IsEagerlyFinalizedType<TYPE>::value);  \
     ThreadState* state =                                                  \

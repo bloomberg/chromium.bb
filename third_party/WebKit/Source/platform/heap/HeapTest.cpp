@@ -1602,6 +1602,17 @@ TEST(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
   PreciselyCollectGarbage();
 }
 
+class LargeMixin : public GarbageCollected<LargeMixin>, public Mixin {
+  USING_GARBAGE_COLLECTED_MIXIN(LargeMixin);
+
+ private:
+  char data[65536];
+};
+
+TEST(HeapDeathTest, LargeGarbageCollectedMixin) {
+  EXPECT_DEATH(new LargeMixin(), "");
+}
+
 TEST(HeapTest, Transition) {
   {
     RefCountedAndGarbageCollected::destructor_calls_ = 0;
