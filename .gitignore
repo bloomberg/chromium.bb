@@ -32,7 +32,6 @@
 !Android.mk
 .*.sw?
 .DS_Store
-.cipd
 .classpath
 .cproject
 .gdb_history
