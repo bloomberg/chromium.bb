@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_SEARCH_SUGGESTION_PARSER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_SEARCH_SUGGESTION_PARSER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

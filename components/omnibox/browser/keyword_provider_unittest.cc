@@ -5,6 +5,8 @@
 #include "components/omnibox/browser/keyword_provider.h"
 
 #include <stddef.h>
+
+#include <map>
 #include <utility>
 
 #include "base/command_line.h"

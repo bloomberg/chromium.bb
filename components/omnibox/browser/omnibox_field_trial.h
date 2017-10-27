@@ -10,6 +10,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -57,7 +58,7 @@ extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 #if defined(OS_IOS)
 extern const base::Feature kZeroSuggestProviderIOS;
 #endif
-}
+}  // namespace omnibox
 
 // The set of parameters customizing the HUP scoring.
 struct HUPScoringParams {

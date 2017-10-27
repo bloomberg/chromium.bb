@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -268,7 +270,7 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
                 url_formatter::FormatUrl(GURL(url), format_types,
                                          net::UnescapeRule::SPACES, nullptr,
                                          nullptr, nullptr));
-    };
+    }
   };
 
   FormatUrlTestData normal_cases[] = {

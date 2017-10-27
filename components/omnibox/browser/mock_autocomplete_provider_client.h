@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 #define COMPONENTS_OMNIBOX_BROWSER_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -96,4 +98,4 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);
 };
 
-#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_

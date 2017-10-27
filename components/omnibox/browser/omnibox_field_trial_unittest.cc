@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"

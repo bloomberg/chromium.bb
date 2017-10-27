@@ -4,6 +4,10 @@
 
 #include "components/omnibox/browser/physical_web_provider.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -36,7 +40,7 @@ static const size_t kMaxTitleLengthInOverflow = 15;
 
 // The maximum number of Physical Web URLs to retrieve from the index.
 static const size_t kPhysicalWebIndexMaxMatches = 50;
-}
+}  // namespace
 
 // static
 const size_t PhysicalWebProvider::kPhysicalWebMaxMatches = 1;

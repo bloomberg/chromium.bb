@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/autocomplete_input.h"
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

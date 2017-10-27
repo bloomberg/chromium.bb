@@ -4,7 +4,9 @@
 
 #include "components/omnibox/browser/omnibox_field_trial.h"
 
+#include <algorithm>
 #include <cmath>
+#include <functional>
 #include <string>
 
 #include "base/command_line.h"

@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/suggestion_answer.h"
 
+#include <algorithm>
+
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"

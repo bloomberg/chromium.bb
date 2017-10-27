@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_TEST_SCHEME_CLASSIFIER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_TEST_SCHEME_CLASSIFIER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 

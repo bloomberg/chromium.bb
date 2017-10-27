@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/titled_url_match_utils.h"
 
+#include <vector>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/titled_url_node.h"

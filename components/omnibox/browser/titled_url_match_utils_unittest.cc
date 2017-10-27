@@ -24,7 +24,7 @@ namespace {
 // A simple AutocompleteProvider that does nothing.
 class MockAutocompleteProvider : public AutocompleteProvider {
  public:
-  MockAutocompleteProvider(Type type) : AutocompleteProvider(type) {}
+  explicit MockAutocompleteProvider(Type type) : AutocompleteProvider(type) {}
 
   void Start(const AutocompleteInput& input, bool minimal_changes) override {}
 

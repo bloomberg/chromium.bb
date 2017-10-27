@@ -5,7 +5,9 @@
 #include "components/omnibox/browser/search_suggestion_parser.h"
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/i18n/icu_string_conversions.h"
