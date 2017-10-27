@@ -1,0 +1,39 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module network.mojom;
+
+// Error conditions of the CORS access control check.
+enum CORSAccessError {
+  kInvalidResponse,
+  kAllowOriginMismatch,
+  kSubOriginMismatch,
+  kWildcardOriginNotAllowed,
+  kMissingAllowOriginHeader,
+  kMultipleAllowOriginValues,
+  kInvalidAllowOriginValue,
+  kDisallowCredentialsNotSetToTrue,
+
+  kLast = kDisallowCredentialsNotSetToTrue,
+};
+
+// Error conditions of CORS preflight.
+enum CORSPreflightError {
+  kInvalidStatus,
+  // "Access-Control-Allow-External:"
+  // ( https://wicg.github.io/cors-rfc1918/#headers ) specific error
+  // conditions:
+  kMissingAllowExternal,
+  kInvalidAllowExternal,
+
+  kLast = kInvalidAllowExternal,
+};
+
+// Error conditions of CORS redirect target URL checks.
+enum CORSRedirectError {
+  kDisallowedScheme,
+  kContainsCredentials,
+
+  kLast = kContainsCredentials,
+};

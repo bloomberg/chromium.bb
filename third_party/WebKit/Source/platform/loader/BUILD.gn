@@ -95,6 +95,7 @@ jumbo_source_set("loader") {
   ]
 
   public_deps = [
+    "//services/network/public/interfaces",
     "//third_party/WebKit/Source/platform/blob:blob",
     "//third_party/WebKit/Source/platform/network:network",
     "//third_party/WebKit/public:mojo_bindings_blink",
