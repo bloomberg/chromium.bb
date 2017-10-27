@@ -29,6 +29,7 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/dictionary_sequence_or_dictionary.h",
   "$bindings_core_v8_output_dir/double_or_auto_keyword.cc",
   "$bindings_core_v8_output_dir/double_or_auto_keyword.h",
+  "$bindings_core_v8_output_dir/double_or_css_numeric_value.cc",
   "$bindings_core_v8_output_dir/double_or_double_sequence.cc",
   "$bindings_core_v8_output_dir/double_or_double_sequence.h",
   "$bindings_core_v8_output_dir/double_or_internal_enum.cc",

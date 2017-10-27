@@ -638,6 +638,22 @@ interface CSSKeywordValue : CSSStyleValue
     getter value
     method constructor
     setter value
+interface CSSMathMax : CSSMathValue
+    attribute @@toStringTag
+    method constructor
+interface CSSMathMin : CSSMathValue
+    attribute @@toStringTag
+    method constructor
+interface CSSMathProduct : CSSMathValue
+    attribute @@toStringTag
+    method constructor
+interface CSSMathSum : CSSMathValue
+    attribute @@toStringTag
+    method constructor
+interface CSSMathValue : CSSNumericValue
+    attribute @@toStringTag
+    getter operator
+    method constructor
 interface CSSMatrixComponent : CSSTransformComponent
     attribute @@toStringTag
     getter matrix

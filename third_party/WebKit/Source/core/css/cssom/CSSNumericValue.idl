@@ -4,6 +4,8 @@
 
 // CSSNumericValue is the base class for numeric and length typed CSS Values.
 // https://drafts.css-houdini.org/css-typed-om/#numeric-objects
+typedef (double or CSSNumericValue) CSSNumberish;
+
 [
   Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM)
 ] interface CSSNumericValue : CSSStyleValue {
