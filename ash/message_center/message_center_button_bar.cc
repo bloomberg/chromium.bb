@@ -40,43 +40,12 @@ using message_center::NotifierSettingsProvider;
 namespace ash {
 
 namespace {
-// TODO(tetsui): Remove when back arrow is removed.
-constexpr int kButtonSize = 40;
 
 constexpr SkColor kTextColor = SkColorSetARGB(0xFF, 0x0, 0x0, 0x0);
 constexpr SkColor kButtonSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 constexpr int kTextFontSize = 14;
 constexpr int kSeparatorHeight = 24;
 constexpr gfx::Insets kSeparatorPadding(12, 0, 12, 0);
-
-// TODO(tetsui): Remove when back arrow is removed.
-views::ToggleImageButton* CreateNotificationCenterButton(
-    views::ButtonListener* listener,
-    int normal_id,
-    int hover_id,
-    int pressed_id,
-    int text_id) {
-  auto* button = new views::ToggleImageButton(listener);
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  button->SetImage(views::Button::STATE_NORMAL,
-                   *resource_bundle.GetImageSkiaNamed(normal_id));
-  button->SetImage(views::Button::STATE_HOVERED,
-                   *resource_bundle.GetImageSkiaNamed(hover_id));
-  button->SetImage(views::Button::STATE_PRESSED,
-                   *resource_bundle.GetImageSkiaNamed(pressed_id));
-  button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                            views::ImageButton::ALIGN_MIDDLE);
-  if (text_id)
-    button->SetTooltipText(resource_bundle.GetLocalizedString(text_id));
-
-  button->SetFocusForPlatform();
-
-  button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      message_center::kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
-
-  button->SetPreferredSize(gfx::Size(kButtonSize, kButtonSize));
-  return button;
-}
 
 void SetDefaultButtonStyle(views::Button* button) {
   button->SetFocusForPlatform();
@@ -108,7 +77,6 @@ MessageCenterButtonBar::MessageCenterButtonBar(
     const base::string16& title)
     : message_center_view_(message_center_view),
       message_center_(message_center),
-      title_arrow_(nullptr),
       notification_label_(nullptr),
       button_container_(nullptr),
       close_all_button_(nullptr),
@@ -117,14 +85,6 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   SetPaintToLayer();
   SetBackground(
       views::CreateSolidBackground(message_center_style::kBackgroundColor));
-
-  title_arrow_ = CreateNotificationCenterButton(
-      this, IDR_NOTIFICATION_ARROW, IDR_NOTIFICATION_ARROW_HOVER,
-      IDR_NOTIFICATION_ARROW_PRESSED, 0);
-
-  // Keyboardists can use the gear button to switch modes.
-  title_arrow_->SetFocusBehavior(FocusBehavior::NEVER);
-  AddChildView(title_arrow_);
 
   notification_label_ = new views::Label(title);
   notification_label_->SetAutoColorReadabilityEnabled(false);
@@ -175,6 +135,17 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   button_container_->AddChildView(quiet_mode_button_);
   button_container_->AddChildView(CreateVerticalSeparator());
 
+  collapse_button_ = new views::ImageButton(this);
+  collapse_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
+                            message_center_style::kActionIconSize,
+                            message_center_style::kActiveButtonColor));
+  collapse_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_COLLAPSE_BUTTON_TOOLTIP));
+  SetDefaultButtonStyle(collapse_button_);
+  AddChildView(collapse_button_);
+
   settings_button_ = new views::ImageButton(this);
   settings_button_->SetImage(
       views::Button::STATE_NORMAL,
@@ -196,16 +167,8 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
   // The view will be simple enough for BoxLayout after back arrow removal.
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   views::ColumnSet* column = layout->AddColumnSet(0);
-  constexpr int kFooterLeftMargin = 4;
+  constexpr int kFooterLeftMargin = 18;
   column->AddPaddingColumn(0, kFooterLeftMargin);
-  if (title_arrow_->visible()) {
-    // Column for the left-arrow used to back out of settings.
-    column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                      0.0f, views::GridLayout::FIXED, kButtonSize, 0);
-  } else {
-    constexpr int kLeftPaddingWidthForNonArrows = 12;
-    column->AddPaddingColumn(0.0f, kLeftPaddingWidthForNonArrows);
-  }
 
   // Column for the label "Notifications".
   column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0f,
@@ -220,11 +183,12 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
 
   constexpr int kFooterTopMargin = 4;
   layout->AddPaddingRow(0, kFooterTopMargin);
-  layout->StartRow(0, 0, kButtonSize);
-  if (title_arrow_->visible())
-    layout->AddView(title_arrow_);
+  layout->StartRow(0, 0, message_center_style::kActionIconSize);
   layout->AddView(notification_label_);
-  layout->AddView(button_container_);
+  if (button_container_->visible())
+    layout->AddView(button_container_);
+  else if (collapse_button_->visible())
+    layout->AddView(collapse_button_);
   constexpr int kFooterBottomMargin = 4;
   layout->AddPaddingRow(0, kFooterBottomMargin);
 }
@@ -255,8 +219,8 @@ views::Button* MessageCenterButtonBar::GetSettingsButtonForTest() const {
 }
 
 void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
-  if (title_arrow_)
-    title_arrow_->SetVisible(visible);
+  collapse_button_->SetVisible(visible);
+  button_container_->SetVisible(!visible);
   ViewVisibilityChanged();
   Layout();
 }
@@ -288,9 +252,10 @@ void MessageCenterButtonBar::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender == close_all_button_) {
     message_center_view()->ClearAllClosableNotifications();
-  } else if (sender == settings_button_ || sender == title_arrow_) {
-    MessageCenterView* center_view = message_center_view();
-    center_view->SetSettingsVisible(!center_view->settings_visible());
+  } else if (sender == settings_button_) {
+    message_center_view()->SetSettingsVisible(true);
+  } else if (sender == collapse_button_) {
+    message_center_view()->SetSettingsVisible(false);
   } else if (sender == quiet_mode_button_) {
     if (message_center()->IsQuietMode())
       message_center()->SetQuietMode(false);
