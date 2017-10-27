@@ -20,14 +20,14 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/resource_request.h"
+#include "content/public/common/simple_url_loader.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using content::BrowserThread;
@@ -37,8 +37,7 @@ using content::BrowserThread;
 // in Drive API:
 //   https://developers.google.com/drive/v2/reference/apps#resource
 // Each icon url represents a single image associated with a certain size.
-class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
-                                       public ImageDecoder::ImageRequest {
+class DriveAppConverter::IconFetcher : public ImageDecoder::ImageRequest {
  public:
   IconFetcher(DriveAppConverter* converter,
               const GURL& icon_url,
@@ -72,32 +71,33 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
             policy_exception_justification:
               "Not implemented, considered not useful."
           })");
-    fetcher_ = net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this,
-                                       traffic_annotation);
-    fetcher_->SetRequestContext(converter_->profile_->GetRequestContext());
-    fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-    fetcher_->Start();
+    simple_loader_ = content::SimpleURLLoader::Create();
+    content::ResourceRequest resource_request = content::ResourceRequest();
+    resource_request.url = icon_url_;
+    resource_request.load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+    content::mojom::URLLoaderFactory* loader_factory =
+        content::BrowserContext::GetDefaultStoragePartition(
+            converter_->profile_)
+            ->GetURLLoaderFactoryForBrowserProcess();
+    simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        resource_request, loader_factory, traffic_annotation,
+        base::BindOnce(&DriveAppConverter::IconFetcher::OnCompleteCallback,
+                       base::Unretained(this)));
   }
 
   const GURL& icon_url() const { return icon_url_; }
   const SkBitmap& icon() const { return icon_; }
 
  private:
-  // net::URLFetcherDelegate overrides:
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    CHECK_EQ(fetcher_.get(), source);
-    std::unique_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
-
-    if (!fetcher->GetStatus().is_success() ||
-        fetcher->GetResponseCode() != net::HTTP_OK) {
+  void OnCompleteCallback(std::unique_ptr<std::string> response_body) {
+    if (!response_body) {
       converter_->OnIconFetchComplete(this);
       return;
     }
 
-    std::string unsafe_icon_data;
-    fetcher->GetResponseAsString(&unsafe_icon_data);
-
-    ImageDecoder::Start(this, unsafe_icon_data);
+    // Call start to begin decoding.  The ImageDecoder will call OnImageDecoded
+    // with the data when it is done.
+    ImageDecoder::Start(this, *response_body);
   }
 
   // ImageDecoder::ImageRequest overrides:
@@ -113,7 +113,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   const GURL icon_url_;
   const int expected_size_;
 
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader_;
   SkBitmap icon_;
 
   DISALLOW_COPY_AND_ASSIGN(IconFetcher);
