@@ -105,6 +105,8 @@
 -PreviewsStateResourceDispatcherHostBrowserTest.ShouldEnableLoFiModeReloadDisableLoFi
 -RenderFrameHostImplBrowserTest.AbortedRendererInitiatedNavigationDoNotCancelPendingXHR
 -RenderFrameHostImplBrowserTest.StreamHandleReleasedOnRendererCrash
+-RenderThreadImplBrowserTest.NonResourceDispatchIPCTasksDontGoThroughScheduler
+-RenderThreadImplBrowserTest.ResourceDispatchIPCTasksGoThroughScheduler
 -RenderViewBrowserTest.ConfirmCacheInformationPlumbed
 -RequestDataResourceDispatcherHostBrowserTest.Basic
 -RequestDataResourceDispatcherHostBrowserTest.BasicCrossSite
@@ -136,10 +138,14 @@
 -WebContentsImplBrowserTest.GetSizeForNewRenderView
 -WebContentsImplBrowserTest.LoadingStateChangedForSameDocumentNavigation
 -WebContentsImplBrowserTest.UserAgentOverride
+-WorkerFetchTest.SharedWorkerHttpAuth/0
 -WorkerFetchTest.SharedWorkerHttpAuth/1
 -WorkerFetchTest.SharedWorkerTlsClientAuthImportScripts/1
+-WorkerFetchTest.WorkerHttpAuth/0
 -WorkerFetchTest.WorkerHttpAuth/1
+-WorkerFetchTest.WorkerTlsClientAuthFetch/0
 -WorkerFetchTest.WorkerTlsClientAuthFetch/1
+-WorkerFetchTest.WorkerTlsClientAuthImportScripts/0
 -WorkerFetchTest.WorkerTlsClientAuthImportScripts/1
 
 # content/network/url_loader_impl.cc should handle failure in
