@@ -14,6 +14,7 @@
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
 #include "ios/chrome/browser/favicon/large_icon_cache.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"
 
@@ -54,14 +55,16 @@
   GURL blockURL(URL);
   void (^faviconBlock)(const favicon_base::LargeIconResult&) =
       ^(const favicon_base::LargeIconResult& result) {
-        FaviconAttributes* attributes = nil;
+        FaviconAttributesWithPayload* attributes = nil;
         if (result.bitmap.is_valid()) {
           scoped_refptr<base::RefCountedMemory> data =
               result.bitmap.bitmap_data.get();
           UIImage* favicon =
               [UIImage imageWithData:[NSData dataWithBytes:data->front()
                                                     length:data->size()]];
-          attributes = [FaviconAttributes attributesWithImage:favicon];
+          attributes =
+              [FaviconAttributesWithPayload attributesWithImage:favicon];
+          attributes.iconType = result.bitmap.icon_type;
         } else if (result.fallback_icon_style) {
           UIColor* backgroundColor = skia::UIColorFromSkColor(
               result.fallback_icon_style->background_color);
@@ -69,7 +72,7 @@
               skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
           NSString* monogram =
               base::SysUTF16ToNSString(favicon::GetFallbackIconText(blockURL));
-          attributes = [FaviconAttributes
+          attributes = [FaviconAttributesWithPayload
               attributesWithMonogram:monogram
                            textColor:textColor
                      backgroundColor:backgroundColor

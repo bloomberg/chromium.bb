@@ -6,6 +6,8 @@ source_set("favicon") {
   sources = [
     "favicon_attributes_provider.h",
     "favicon_attributes_provider.mm",
+    "favicon_attributes_with_payload.h",
+    "favicon_attributes_with_payload.mm",
   ]
   deps = [
     ":favicon_ui",
@@ -20,6 +22,7 @@ source_set("favicon") {
 
 source_set("favicon_ui") {
   sources = [
+    "favicon_attributes+private.h",
     "favicon_attributes.h",
     "favicon_attributes.mm",
     "favicon_view.h",

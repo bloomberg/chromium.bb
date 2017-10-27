@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #include "ui/gfx/image/image.h"
 
@@ -156,8 +157,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     if (!strongSelf || !strongItem || image.IsEmpty())
       return;
 
-    strongItem.attributes =
-        [FaviconAttributes attributesWithImage:[image.ToUIImage() copy]];
+    strongItem.attributes = [FaviconAttributesWithPayload
+        attributesWithImage:[image.ToUIImage() copy]];
     [strongSelf.dataSink itemHasChanged:strongItem];
   };
 
