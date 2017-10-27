@@ -151,6 +151,9 @@ class AvSettings {
     // specification (CEC Table 30 in the HDMI 1.4a specification).
     virtual void OnKeyPressed(int key_code) = 0;
 
+    // This should be invoked when a key is released.
+    virtual void OnKeyReleased(int key_code) = 0;
+
    protected:
     ~Delegate() override {}
   };
