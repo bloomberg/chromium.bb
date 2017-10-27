@@ -77,6 +77,10 @@ namespace history {
 const base::Feature kAvoidStrippingRefFromFaviconPageUrls{
     "AvoidStrippingRefFromFaviconPageUrls", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(crbug.com/759631): Clean this up after impact is measured via Finch.
+const base::Feature kPropagateFaviconsAcrossClientRedirects{
+    "PropagateFaviconsAcrossClientRedirects", base::FEATURE_ENABLED_BY_DEFAULT};
+
 namespace {
 
 void RunUnlessCanceled(
@@ -545,7 +549,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
           db_->UpdateVisitRow(visit_row);
         }
 
-        extended_redirect_chain = GetCachedRecentRedirects(request.referrer);
+        if (base::FeatureList::IsEnabled(
+                kPropagateFaviconsAcrossClientRedirects)) {
+          extended_redirect_chain = GetCachedRecentRedirects(request.referrer);
+        }
       }
     }
 
