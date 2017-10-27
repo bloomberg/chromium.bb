@@ -43,6 +43,12 @@ public class TrackerImpl implements Tracker {
     }
 
     @Override
+    public boolean wouldTriggerHelpUI(String feature) {
+        assert mNativePtr != 0;
+        return nativeWouldTriggerHelpUI(mNativePtr, feature);
+    }
+
+    @Override
     @TriggerState
     public int getTriggerState(String feature) {
         assert mNativePtr != 0;
@@ -80,6 +86,7 @@ public class TrackerImpl implements Tracker {
 
     private native void nativeNotifyEvent(long nativeTrackerImplAndroid, String event);
     private native boolean nativeShouldTriggerHelpUI(long nativeTrackerImplAndroid, String feature);
+    private native boolean nativeWouldTriggerHelpUI(long nativeTrackerImplAndroid, String feature);
     @TriggerState
     private native int nativeGetTriggerState(long nativeTrackerImplAndroid, String feature);
     private native void nativeDismissed(long nativeTrackerImplAndroid, String feature);

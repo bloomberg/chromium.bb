@@ -219,6 +219,20 @@ interpretation of the states:
 *   `NOT_READY`: `Tracker` not fully initialized yet, so it is unable to
     inspect the state.
 
+#### Inspecting whether IPH would have been triggered for a feature
+
+Another way to check the internal state of the `Tracker` is to invoke
+`feature_engagement::Tracker::WouldTriggerHelpUI` which is basically the same as
+invoking `feature_engagement::Tracker::ShouldTriggerHelpUI`, but being allowed
+to ignore the state. It is still required to invoke
+`feature_engagement::Tracker::ShouldTriggerHelpUI` if in-product help should be
+shown.
+
+> **WARNING: It is not guaranteed that invoking `ShouldTriggerHelpUI(...)`
+> after this would yield the same result.** The state might change
+> in-between the calls because time has passed, other events might have been
+> triggered, and other state might have changed.
+
 ### Configuring UMA
 
 To enable UMA tracking, you need to make the following changes to the metrics

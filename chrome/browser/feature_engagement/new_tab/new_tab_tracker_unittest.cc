@@ -22,6 +22,7 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/feature_engagement/test/mock_tracker.h"
 #include "components/feature_engagement/test/test_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/variations_params_manager.h"
@@ -36,18 +37,6 @@ namespace {
 const char kGroupName[] = "Enabled";
 const char kNewTabTrialName[] = "NewTabTrial";
 const char kTestProfileName[] = "test-profile";
-
-class MockTracker : public Tracker {
- public:
-  MockTracker() = default;
-  MOCK_METHOD1(NotifyEvent, void(const std::string& event));
-  MOCK_METHOD1(ShouldTriggerHelpUI, bool(const base::Feature& feature));
-  MOCK_METHOD1(GetTriggerState,
-               Tracker::TriggerState(const base::Feature& feature));
-  MOCK_METHOD1(Dismissed, void(const base::Feature& feature));
-  MOCK_METHOD0(IsInitialized, bool());
-  MOCK_METHOD1(AddOnInitializedCallback, void(OnInitializedCallback callback));
-};
 
 class FakeNewTabTracker : public NewTabTracker {
  public:
@@ -84,7 +73,7 @@ class NewTabTrackerEventTest : public testing::Test {
     testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
-    mock_tracker_ = base::MakeUnique<testing::StrictMock<MockTracker>>();
+    mock_tracker_ = base::MakeUnique<testing::StrictMock<test::MockTracker>>();
     new_tab_tracker_ = base::MakeUnique<FakeNewTabTracker>(
         mock_tracker_.get(),
         testing_profile_manager_->CreateTestingProfile(kTestProfileName));
@@ -98,7 +87,7 @@ class NewTabTrackerEventTest : public testing::Test {
 
  protected:
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
-  std::unique_ptr<MockTracker> mock_tracker_;
+  std::unique_ptr<test::MockTracker> mock_tracker_;
   std::unique_ptr<FakeNewTabTracker> new_tab_tracker_;
 
  private:

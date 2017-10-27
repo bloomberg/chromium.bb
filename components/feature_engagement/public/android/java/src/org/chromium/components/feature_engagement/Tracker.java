@@ -23,12 +23,31 @@ public interface Tracker {
     /**
      * This function must be called whenever the triggering condition for a specific feature
      * happens. Returns true iff the display of the in-product help must happen.
-     * If {@code true} is returned, the caller *must* call {@link #dismissed()} when display
+     * If {@code true} is returned, the caller *must* call {@link #dismissed(String)} when display
      * of feature enlightenment ends.
+     *
      * @return whether feature enlightenment should be displayed.
      */
     @CheckResult
     boolean shouldTriggerHelpUI(String feature);
+
+    /**
+     * Invoking this is basically the same as being allowed to invoke {@link
+     * #shouldTriggerHelpUI(String)} without requiring to show the in-product help. This function
+     * may be called to inspect if the current state would allow the given {@code feature} to pass
+     * all its conditions and display the feature enlightenment.
+     *
+     * NOTE: It is still required to invoke ShouldTriggerHelpUI(...) if feature enlightenment should
+     * be shown.
+     *
+     * NOTE: It is not guaranteed that invoking {@link #shouldTriggerHelpUI(String)} after this
+     * would yield the same result. The state might change in-between the calls because time has
+     * passed, other events might have been triggered, and other state might have changed.
+     *
+     * @return whether feature enlightenment would be displayed if {@link
+     * #shouldTriggerHelpUI(String)} had been invoked instead.
+     */
+    boolean wouldTriggerHelpUI(String feature);
 
     /**
      * This function can be called to query if a particular |feature| meets its particular

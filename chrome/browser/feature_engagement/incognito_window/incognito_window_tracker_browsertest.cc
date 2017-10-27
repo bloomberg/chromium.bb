@@ -17,6 +17,7 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/feature_engagement/test/mock_tracker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -32,24 +33,9 @@ MATCHER_P(IsFeature, feature, "") {
   return arg.name == feature.name;
 }
 
-// Mock the backend for displaying in-product help.
-class MockTracker : public Tracker {
- public:
-  MockTracker() = default;
-  MOCK_METHOD1(NotifyEvent, void(const std::string& event));
-  MOCK_METHOD1(GetTriggerState, TriggerState(const base::Feature& feature));
-  MOCK_METHOD1(ShouldTriggerHelpUI, bool(const base::Feature& feature));
-  MOCK_METHOD1(Dismissed, void(const base::Feature& feature));
-  MOCK_METHOD0(IsInitialized, bool());
-  MOCK_METHOD1(AddOnInitializedCallback, void(OnInitializedCallback callback));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTracker);
-};
-
 std::unique_ptr<KeyedService> BuildTestTrackerFactory(
     content::BrowserContext* context) {
-  return std::make_unique<testing::StrictMock<MockTracker>>();
+  return std::make_unique<testing::StrictMock<test::MockTracker>>();
 }
 
 // Set up a test profile for the incognito window In-Product Help (IPH)
@@ -66,7 +52,7 @@ class IncognitoWindowTrackerBrowserTest : public InProcessBrowserTest {
     // Ensure all initialization is finished.
     base::RunLoop().RunUntilIdle();
 
-    feature_engagement_tracker_ = static_cast<MockTracker*>(
+    feature_engagement_tracker_ = static_cast<test::MockTracker*>(
         TrackerFactory::GetForBrowserContext(browser()->profile()));
 
     EXPECT_CALL(*feature_engagement_tracker_, IsInitialized())
@@ -78,7 +64,7 @@ class IncognitoWindowTrackerBrowserTest : public InProcessBrowserTest {
 
  protected:
   // Owned by the Profile.
-  MockTracker* feature_engagement_tracker_ = nullptr;
+  test::MockTracker* feature_engagement_tracker_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IncognitoWindowTrackerBrowserTest);

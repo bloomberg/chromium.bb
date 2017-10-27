@@ -64,10 +64,25 @@ class Tracker : public KeyedService {
   // This function must be called whenever the triggering condition for a
   // specific feature happens. Returns true iff the display of the in-product
   // help must happen.
-  // If |true| is returned, the caller *must* call Dismissed() when display
+  // If |true| is returned, the caller *must* call Dismissed(...) when display
   // of feature enlightenment ends.
   virtual bool ShouldTriggerHelpUI(const base::Feature& feature)
       WARN_UNUSED_RESULT = 0;
+
+  // Invoking this is basically the same as being allowed to invoke
+  // ShouldTriggerHelpUI(...) without requiring to show the in-product help.
+  // This function may be called to inspect if the current state would allow the
+  // given |feature| to pass all its conditions and display the feature
+  // enlightenment.
+  //
+  // NOTE: It is still required to invoke ShouldTriggerHelpUI(...) if feature
+  // enlightenment should be shown.
+  //
+  // NOTE: It is not guaranteed that invoking ShouldTriggerHelpUI(...)
+  // after this would yield the same result. The state might change
+  // in-between the calls because time has passed, other events might have been
+  // triggered, and other state might have changed.
+  virtual bool WouldTriggerHelpUI(const base::Feature& feature) const = 0;
 
   // This function can be called to query if a particular |feature| meets its
   // particular precondition for triggering within the bounds of the current
@@ -78,7 +93,7 @@ class Tracker : public KeyedService {
   // This function can typically be used to ensure that expensive operations
   // for tracking other state related to in-product help do not happen if
   // in-product help has already been displayed for the given |feature|.
-  virtual TriggerState GetTriggerState(const base::Feature& feature) = 0;
+  virtual TriggerState GetTriggerState(const base::Feature& feature) const = 0;
 
   // Must be called after display of feature enlightenment finishes for a
   // particular |feature|.
@@ -90,7 +105,7 @@ class Tracker : public KeyedService {
   // state will never change from initialized to uninitialized.
   // Callers can invoke AddOnInitializedCallback(...) to be notified when the
   // result of the initialization is ready.
-  virtual bool IsInitialized() = 0;
+  virtual bool IsInitialized() const = 0;
 
   // For features that trigger on startup, they can register a callback to
   // ensure that they are informed when the tracker has finished the
