@@ -52,9 +52,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // Indicates that a drag operation has left the bounds of a given |guest|.
   void DragLeftGuest(BrowserPluginGuest* guest);
 
-  // Called when the screen info has changed.
-  void ScreenInfoChanged();
-
   // Closes modal dialogs in all of the guests.
   void CancelGuestDialogs();
 
@@ -91,9 +88,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void ClearGuestDragStateIfApplicable();
 
   static bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
-
-  // Notifies a guest that the embedder's screen info has changed.
-  static bool NotifyScreenInfoChanged(WebContents* guest_web_contents);
 
   // Closes modal dialogs in |guest_web_contents|.
   static bool CancelDialogs(WebContents* guest_web_contents);
