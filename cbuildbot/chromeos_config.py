@@ -727,6 +727,8 @@ _termina_boards = frozenset([
 
 _nofactory_boards = _lakitu_boards | _termina_boards | frozenset([
     'smaug',
+    'x30evb',
+    'lassen',
 ])
 
 _toolchains_from_source = frozenset([

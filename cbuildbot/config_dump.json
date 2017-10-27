@@ -15658,6 +15658,9 @@
         "boards": [
             "lassen"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "sync_chrome": false
     },
     "lassen-full": {
@@ -15666,6 +15669,14 @@
             "lassen"
         ],
         "chrome_sdk": false,
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
@@ -15678,6 +15689,9 @@
         "boards": [
             "lassen"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "sync_chrome": false
     },
     "lassen-paladin": {
@@ -15686,6 +15700,9 @@
             "lassen"
         ],
         "chrome_sdk": false,
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "important": false,
         "sync_chrome": false,
         "vm_tests": [],
@@ -15696,6 +15713,9 @@
         "boards": [
             "lassen"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "sync_chrome": false,
         "vm_tests": []
     },
@@ -15707,6 +15727,14 @@
         ],
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -15716,6 +15744,9 @@
         "boards": [
             "lassen"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "sync_chrome": false
     },
     "leon-chrome-pfq": {
@@ -30769,6 +30800,9 @@
         "boards": [
             "x30evb"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -30779,12 +30813,23 @@
         "_template": "compile_only_pre_cq",
         "boards": [
             "x30evb"
-        ]
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
     },
     "x30evb-full": {
         "_template": "full",
         "boards": [
             "x30evb"
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
         ],
         "prebuilts": "public",
         "useflags": [
@@ -30796,13 +30841,19 @@
         "_template": "no_vmtest_pre_cq",
         "boards": [
             "x30evb"
-        ]
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
     },
     "x30evb-paladin": {
         "_template": "paladin",
         "boards": [
             "x30evb"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "important": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -30812,6 +30863,9 @@
         "boards": [
             "x30evb"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "vm_tests": []
     },
     "x30evb-release": {
@@ -30821,6 +30875,14 @@
             "x30evb"
         ],
         "chrome_sdk_build_chrome": false,
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -30829,6 +30891,9 @@
         "boards": [
             "x30evb"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -30838,7 +30903,10 @@
         "_template": "unittest_stress",
         "boards": [
             "x30evb"
-        ]
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
     },
     "x32-generic-chromium-pfq": {
         "_template": "chromium_pfq",
