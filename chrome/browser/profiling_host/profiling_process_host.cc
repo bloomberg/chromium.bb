@@ -148,7 +148,7 @@ void UploadTraceToCrashServer(std::string file_contents,
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
 
-  uploader->DoUpload(file_contents, content::TraceUploader::UNCOMPRESSED_UPLOAD,
+  uploader->DoUpload(file_contents, content::TraceUploader::COMPRESSED_UPLOAD,
                      std::move(metadata),
                      content::TraceUploader::UploadProgressCallback(),
                      base::Bind(&OnTraceUploadComplete, base::Owned(uploader)));
