@@ -180,4 +180,11 @@ bool DeviceState::IsSimAbsent() const {
   return technology_family_ != shill::kTechnologyFamilyCdma && !sim_present_;
 }
 
+bool DeviceState::IsSimLocked() const {
+  if (technology_family_ == shill::kTechnologyFamilyCdma || !sim_present_)
+    return false;
+  return sim_lock_type_ == shill::kSIMLockPin ||
+         sim_lock_type_ == shill::kSIMLockPuk;
+}
+
 }  // namespace chromeos

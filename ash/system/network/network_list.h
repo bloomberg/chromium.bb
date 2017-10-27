@@ -111,15 +111,13 @@ class NetworkListView : public NetworkStateListDetailedView,
 
   // Creates a cellular/tether/Wi-Fi header row |view| and adds it to
   // |scroll_content()| if necessary and reorders the |scroll_content()| placing
-  // the |view| at |child_index|. If |subtitle_message_id| is not 0, a subtitle
-  // will be rendered beneath the title. Returns the index where the next child
-  // should be inserted, i.e., the index directly after the last inserted child.
+  // the |view| at |child_index|. Returns the index where the next child should
+  // be inserted, i.e., the index directly after the last inserted child.
   int UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
                              bool enabled,
                              int child_index,
                              SectionHeaderRowView** view,
-                             views::Separator** separator_view,
-                             int subtitle_message_id = 0);
+                             views::Separator** separator_view);
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;

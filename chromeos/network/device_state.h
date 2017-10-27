@@ -72,8 +72,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   // Returns the IP Address for |type| if it exists or an empty string.
   std::string GetIpAddressByType(const std::string& type) const;
 
-  // Returns true if the technology family is GSM and sim_present_ is false.
+  // The following return false if the technology does not require a SIM.
   bool IsSimAbsent() const;
+  bool IsSimLocked() const;
 
  private:
   // Common Device Properties
