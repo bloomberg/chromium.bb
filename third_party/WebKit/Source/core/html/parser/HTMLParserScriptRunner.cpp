@@ -27,21 +27,15 @@
 
 #include <inttypes.h>
 #include <memory>
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/ClassicPendingScript.h"
-#include "core/dom/ClassicScript.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/Element.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLParserScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/loader/resource/ScriptResource.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/bindings/Microtask.h"
@@ -533,8 +527,7 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         //  Document of the parser that created the element.
         //  (There can only be one such script per Document at a time.)"
         CHECK(!parser_blocking_script_);
-        parser_blocking_script_ =
-            ClassicPendingScript::CreateInline(element, script_start_position);
+        parser_blocking_script_ = script_loader->TakePendingScript();
       } else {
         // 6th Clause of Step 23.
         // "Immediately execute the script block,
@@ -544,9 +537,8 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         if (parser_blocking_script_)
           parser_blocking_script_->Dispose();
         parser_blocking_script_ = nullptr;
-        DoExecuteScript(
-            ClassicPendingScript::CreateInline(element, script_start_position),
-            DocumentURLForScriptExecution(document_));
+        DoExecuteScript(script_loader->TakePendingScript(),
+                        DocumentURLForScriptExecution(document_));
       }
     } else {
       // 2nd Clause of Step 23.
