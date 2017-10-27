@@ -452,8 +452,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   if (IsBrowserSideNavigationEnabled()) {
     // TODO(mkwst): The initiator origin here is incorrect.
     BeginNavigationParams begin_params(
-        std::string(), net::LOAD_NORMAL, has_user_gesture, false,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        std::string(), net::LOAD_NORMAL, false, REQUEST_CONTEXT_TYPE_HYPERLINK,
         blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
         url::Origin());
@@ -462,6 +461,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     common_params.referrer = Referrer(GURL(), blink::kWebReferrerPolicyDefault);
     common_params.transition = ui::PAGE_TRANSITION_LINK;
     common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+    common_params.has_user_gesture = has_user_gesture;
     OnBeginNavigation(common_params, begin_params);
   }
 }

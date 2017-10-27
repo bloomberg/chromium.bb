@@ -71,7 +71,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          const scoped_refptr<ResourceRequestBody>& post_data,
                          base::Optional<SourceLocation> source_location,
                          CSPDisposition should_check_main_world_csp,
-                         bool started_from_context_menu);
+                         bool started_from_context_menu,
+                         bool has_user_gesture);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -150,6 +151,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // Whether or not this navigation was started from a context menu.
   bool started_from_context_menu;
+
+  // True if the request was user initiated.
+  bool has_user_gesture;
 };
 
 // Provided by the renderer ----------------------------------------------------
@@ -168,7 +172,6 @@ struct CONTENT_EXPORT BeginNavigationParams {
   BeginNavigationParams(
       std::string headers,
       int load_flags,
-      bool has_user_gesture,
       bool skip_service_worker,
       RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
@@ -182,9 +185,6 @@ struct CONTENT_EXPORT BeginNavigationParams {
 
   // net::URLRequest load flags (net::LOAD_NORMAL) by default).
   int load_flags;
-
-  // True if the request was user initiated.
-  bool has_user_gesture;
 
   // True if the ServiceWorker should be skipped.
   bool skip_service_worker;
@@ -276,8 +276,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int current_history_list_offset,
                           int current_history_list_length,
                           bool is_view_source,
-                          bool should_clear_history_list,
-                          bool has_user_gesture);
+                          bool should_clear_history_list);
   RequestNavigationParams(const RequestNavigationParams& other);
   ~RequestNavigationParams();
 
@@ -381,9 +380,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // PlzNavigate
   // The AppCache host id to be used to identify this navigation.
   int appcache_host_id;
-
-  // True if the navigation originated due to a user gesture.
-  bool has_user_gesture;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

@@ -839,8 +839,8 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
 bool NavigationSimulator::SimulateRendererInitiatedStart() {
   if (IsBrowserSideNavigationEnabled()) {
     BeginNavigationParams begin_params(
-        std::string(), net::LOAD_NORMAL, has_user_gesture_,
-        false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
+        std::string(), net::LOAD_NORMAL, false /* skip_service_worker */,
+        REQUEST_CONTEXT_TYPE_HYPERLINK,
         blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
         url::Origin());
@@ -852,6 +852,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
         PageTransitionCoreTypeIs(transition_, ui::PAGE_TRANSITION_RELOAD)
             ? FrameMsg_Navigate_Type::RELOAD
             : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+    common_params.has_user_gesture = has_user_gesture_;
     render_frame_host_->OnMessageReceived(FrameHostMsg_BeginNavigation(
         render_frame_host_->GetRoutingID(), common_params, begin_params));
     NavigationRequest* request =

@@ -1073,8 +1073,7 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
       // Make a navigation request.
       TestNavigationURLLoaderDelegate delegate;
       BeginNavigationParams begin_params(
-          std::string(), net::LOAD_NORMAL, false, false,
-          REQUEST_CONTEXT_TYPE_LOCATION,
+          std::string(), net::LOAD_NORMAL, false, REQUEST_CONTEXT_TYPE_LOCATION,
           blink::WebMixedContentContextType::kBlockable,
           false,  // is_form_submission
           url::Origin::Create(url));
