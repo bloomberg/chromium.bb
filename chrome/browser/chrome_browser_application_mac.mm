@@ -16,7 +16,6 @@
 #import "chrome/browser/mac/exception_processor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#import "components/crash/core/common/assertion_handler.h"
 #import "components/crash/core/common/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
@@ -49,7 +48,6 @@ void CancelTerminate() {
   // the most recent 10,000 of them on the treadmill.
   ObjcEvilDoers::ZombieEnable(true, 10000);
 
-  crash_reporter::InstallNSAssertionHandlerOnCurrentThread();
   chrome::InstallObjcExceptionPreprocessor();
 }
 

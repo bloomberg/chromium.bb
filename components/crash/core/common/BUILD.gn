@@ -8,7 +8,7 @@ group("common") {
   ]
 
   if (is_mac || is_ios) {
-    public_deps += [ ":crash_objc" ]
+    public_deps += [ ":zombies" ]
   }
 }
 
@@ -26,13 +26,11 @@ static_library("crash_keys") {
 }
 
 if (is_mac || is_ios) {
-  component("crash_objc") {
+  component("zombies") {
     visibility = [ ":common" ]
 
     sources = [
-      "assertion_handler.h",
-      "assertion_handler.mm",
-      "crash_export.h",
+      "crash_keys.h",
       "objc_zombie.h",
       "objc_zombie.mm",
     ]
@@ -61,9 +59,6 @@ source_set("unit_tests") {
   ]
 
   if (is_mac || is_ios) {
-    sources += [
-      "assertion_handler_unittest.mm",
-      "objc_zombie_unittest.mm",
-    ]
+    sources += [ "objc_zombie_unittest.mm" ]
   }
 }
