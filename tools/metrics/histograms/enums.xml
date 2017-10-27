@@ -16776,6 +16776,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2200" label="BatteryStatusCrossOrigin"/>
   <int value="2201" label="BatteryStatusSameOriginABA"/>
   <int value="2202" label="WebAudioValueSetterIsSetValue"/>
+  <int value="2203" label="HasIDClassTagAttribute"/>
+  <int value="2204" label="HasBeforeOrAfterPseudoElement"/>
 </enum>
 
 <enum name="FeedbackSource">

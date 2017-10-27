@@ -290,7 +290,6 @@ bool IsSimpleSelectorValidAfterPseudoElement(
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
     CSSParserTokenRange& range) {
   std::unique_ptr<CSSParserSelector> compound_selector;
-
   AtomicString namespace_prefix;
   AtomicString element_name;
   CSSSelector::PseudoType compound_pseudo_element = CSSSelector::kPseudoUnknown;
@@ -334,6 +333,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
     }
     if (namespace_uri == DefaultNamespace())
       namespace_prefix = g_null_atom;
+    context_->Count(WebFeature::kHasIDClassTagAttribute);
     return CSSParserSelector::Create(
         QualifiedName(namespace_prefix, element_name, namespace_uri));
   }
@@ -419,6 +419,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeId(
   selector->SetMatch(CSSSelector::kId);
   AtomicString value = range.Consume().Value().ToAtomicString();
   selector->SetValue(value, IsQuirksModeBehavior(context_->MatchMode()));
+  context_->Count(WebFeature::kHasIDClassTagAttribute);
   return selector;
 }
 
@@ -433,6 +434,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeClass(
   selector->SetMatch(CSSSelector::kClass);
   AtomicString value = range.Consume().Value().ToAtomicString();
   selector->SetValue(value, IsQuirksModeBehavior(context_->MatchMode()));
+  context_->Count(WebFeature::kHasIDClassTagAttribute);
   return selector;
 }
 
@@ -467,6 +469,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
   if (block.AtEnd()) {
     selector->SetAttribute(qualified_name, CSSSelector::kCaseSensitive);
     selector->SetMatch(CSSSelector::kAttributeSet);
+    context_->Count(WebFeature::kHasIDClassTagAttribute);
     return selector;
   }
 
@@ -481,6 +484,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
 
   if (!block.AtEnd())
     return nullptr;
+  context_->Count(WebFeature::kHasIDClassTagAttribute);
   return selector;
 }
 
@@ -506,6 +510,12 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   AtomicString value = token.Value().ToAtomicString().LowerASCII();
   bool has_arguments = token.GetType() == kFunctionToken;
   selector->UpdatePseudoType(value, *context_, has_arguments, context_->Mode());
+
+  if (selector->Match() == CSSSelector::kPseudoElement &&
+      (selector->GetPseudoType() == CSSSelector::kPseudoBefore ||
+       selector->GetPseudoType() == CSSSelector::kPseudoAfter)) {
+    context_->Count(WebFeature::kHasBeforeOrAfterPseudoElement);
+  }
 
   if (selector->Match() == CSSSelector::kPseudoElement &&
       disallow_pseudo_elements_)
