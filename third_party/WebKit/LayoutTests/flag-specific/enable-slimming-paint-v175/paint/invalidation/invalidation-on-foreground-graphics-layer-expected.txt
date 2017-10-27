@@ -7,9 +7,10 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='scroller'",
+      "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
       "bounds": [200, 200],
+      "contentsOpaque": true,
       "backgroundColor": "#D3D3D3"
     },
     {
@@ -21,17 +22,27 @@
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
-      "bounds": [200, 1620],
+      "bounds": [300, 300],
+      "backgroundColor": "#D3D3D3"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV",
+      "position": [8, 8],
+      "bounds": [200, 200],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
+      "backgroundColor": "#ADD8E6"
+    },
+    {
+      "name": "LayoutBlockFlow DIV (foreground) Layer",
+      "position": [8, 8],
+      "bounds": [300, 300],
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'test'",
-          "rect": [0, 610, 22, 19],
-          "reason": "selection"
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [100, 100, 200, 200],
+          "reason": "style change"
         }
-      ],
-      "transform": 1
+      ]
     },
     {
       "name": "Overflow Controls Host Layer",
@@ -57,26 +68,10 @@
       "bounds": [15, 15]
     }
   ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -450, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    }
-  ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'test'",
-      "reason": "selection"
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "style change"
     }
   ]
 }

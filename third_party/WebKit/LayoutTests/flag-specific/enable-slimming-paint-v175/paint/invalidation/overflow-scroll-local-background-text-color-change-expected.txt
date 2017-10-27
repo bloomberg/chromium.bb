@@ -10,7 +10,7 @@
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [8, 8],
       "bounds": [200, 200],
-      "backgroundColor": "#D3D3D3"
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "Scrolling Layer",
@@ -21,14 +21,14 @@
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
-      "bounds": [200, 1620],
+      "bounds": [185, 552],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
+      "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'test'",
-          "rect": [0, 610, 22, 19],
-          "reason": "selection"
+          "object": "Scrolling Contents Layer",
+          "rect": [0, 0, 185, 552],
+          "reason": "background on scrolling contents layer"
         }
       ],
       "transform": 1
@@ -43,13 +43,32 @@
       "name": "Horizontal Scrollbar Layer",
       "position": [8, 193],
       "bounds": [185, 15],
-      "drawsContent": false
+      "drawsContent": false,
+      "paintInvalidations": [
+        {
+          "object": "Horizontal Scrollbar Layer",
+          "rect": [0, 0, 185, 15],
+          "reason": "full"
+        }
+      ]
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [193, 8],
       "bounds": [15, 185],
-      "drawsContent": false
+      "drawsContent": false,
+      "paintInvalidations": [
+        {
+          "object": "Vertical Scrollbar Layer",
+          "rect": [0, 0, 15, 185],
+          "reason": "full"
+        },
+        {
+          "object": "Vertical Scrollbar Layer",
+          "rect": [0, 0, 15, 185],
+          "reason": "full"
+        }
+      ]
     },
     {
       "name": "Scroll Corner Layer",
@@ -64,19 +83,19 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -450, 0, 1]
+        [0, -367, 0, 1]
       ],
       "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "selection"
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
     },
     {
-      "object": "InlineTextBox 'test'",
-      "reason": "selection"
+      "object": "LayoutBlockFlow DIV id='scroller'",
+      "reason": "style change"
     }
   ]
 }
