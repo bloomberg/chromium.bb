@@ -41,9 +41,6 @@ struct CC_DEBUG_EXPORT RenderingStats {
   RenderingStats(const RenderingStats& other);
   ~RenderingStats();
 
-  // Note: when adding new members, please remember to update Add in
-  // rendering_stats.cc.
-
   int64_t frame_count;
   int64_t visible_content_area;
   int64_t approximated_visible_content_area;
@@ -59,7 +56,6 @@ struct CC_DEBUG_EXPORT RenderingStats {
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData()
       const;
-  void Add(const RenderingStats& other);
 };
 
 }  // namespace cc

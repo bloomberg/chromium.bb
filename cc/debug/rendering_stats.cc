@@ -80,24 +80,4 @@ RenderingStats::AsTraceableData() const {
   return std::move(record_data);
 }
 
-void RenderingStats::Add(const RenderingStats& other) {
-  frame_count += other.frame_count;
-  visible_content_area += other.visible_content_area;
-  approximated_visible_content_area += other.approximated_visible_content_area;
-  checkerboarded_visible_content_area +=
-      other.checkerboarded_visible_content_area;
-  checkerboarded_no_recording_content_area +=
-      other.checkerboarded_no_recording_content_area;
-  checkerboarded_needs_raster_content_area +=
-      other.checkerboarded_needs_raster_content_area;
-
-  draw_duration.Add(other.draw_duration);
-  draw_duration_estimate.Add(other.draw_duration_estimate);
-  begin_main_frame_to_commit_duration.Add(
-      other.begin_main_frame_to_commit_duration);
-  commit_to_activate_duration.Add(other.commit_to_activate_duration);
-  commit_to_activate_duration_estimate.Add(
-      other.commit_to_activate_duration_estimate);
-}
-
 }  // namespace cc

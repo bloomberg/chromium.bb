@@ -1846,8 +1846,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   active_tree_->set_has_ever_been_drawn(true);
   devtools_instrumentation::DidDrawFrame(id_);
   benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
-      rendering_stats_instrumentation_->impl_thread_rendering_stats());
-  rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
+      rendering_stats_instrumentation_->TakeImplThreadRenderingStats());
   return true;
 }
 
