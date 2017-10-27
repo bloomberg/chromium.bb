@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/formats/mp4/box_reader.h"
 
 class NullMediaLog : public media::MediaLog {
@@ -23,10 +24,12 @@ class NullMediaLog : public media::MediaLog {
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  bool err;
   NullMediaLog media_log;
-  std::unique_ptr<media::mp4::BoxReader> reader(
-      media::mp4::BoxReader::ReadTopLevelBox(data, static_cast<int>(size),
-                                             &media_log, &err));
-  return !err && reader && reader->ScanChildren() ? 0 : 0;
+  std::unique_ptr<media::mp4::BoxReader> reader;
+  if (media::mp4::BoxReader::ReadTopLevelBox(data, size, &media_log, &reader) ==
+      media::mp4::ParseResult::kOk) {
+    CHECK(reader);
+    ignore_result(reader->ScanChildren());
+  }
+  return 0;
 }

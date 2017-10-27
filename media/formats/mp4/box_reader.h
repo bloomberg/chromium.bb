@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -17,6 +18,7 @@
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 #include "media/formats/mp4/fourccs.h"
+#include "media/formats/mp4/parse_result.h"
 #include "media/formats/mp4/rcheck.h"
 
 namespace media {
@@ -93,29 +95,26 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   BoxReader(const BoxReader& other);
   ~BoxReader();
 
-  // Create a BoxReader from a buffer. Note that this function may return NULL
-  // if an intact, complete box was not available in the buffer. If |*err| is
-  // set, there was a stream-level error when creating the box; otherwise, NULL
-  // values are only expected when insufficient data is available.
+  // Create a BoxReader from a buffer. If the result is kOk, then |out_reader|
+  // will be set, otherwise |out_reader| will be unchanged.
   //
   // |buf| is retained but not owned, and must outlive the BoxReader instance.
-  static BoxReader* ReadTopLevelBox(const uint8_t* buf,
-                                    const size_t buf_size,
-                                    MediaLog* media_log,
-                                    bool* err);
+  static ParseResult ReadTopLevelBox(const uint8_t* buf,
+                                     const size_t buf_size,
+                                     MediaLog* media_log,
+                                     std::unique_ptr<BoxReader>* out_reader)
+      WARN_UNUSED_RESULT;
 
-  // Read the box header from the current buffer. This function returns true if
-  // there is enough data to read the header and the header is sane; that is, it
-  // does not check to ensure the entire box is in the buffer before returning
-  // true. The semantics of |*err| are the same as above.
+  // Read the box header from the current buffer, and return its type and size.
+  // This function returns kNeedMoreData if the box is incomplete, even if the
+  // box header is complete.
   //
   // |buf| is not retained.
-  static bool StartTopLevelBox(const uint8_t* buf,
-                               const size_t buf_size,
-                               MediaLog* media_log,
-                               FourCC* type,
-                               size_t* box_size,
-                               bool* err) WARN_UNUSED_RESULT;
+  static ParseResult StartTopLevelBox(const uint8_t* buf,
+                                      const size_t buf_size,
+                                      MediaLog* media_log,
+                                      FourCC* out_type,
+                                      size_t* out_box_size) WARN_UNUSED_RESULT;
 
   // Create a BoxReader from a buffer. |buf| must be the complete buffer, as
   // errors are returned when sufficient data is not available. |buf| can start
@@ -193,14 +192,8 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
             MediaLog* media_log,
             bool is_EOS);
 
-  // Must be called immediately after init. If the return is false, this
-  // indicates that the box header and its contents were not available in the
-  // stream or were nonsensical, and that the box must not be used further. In
-  // this case, if |*err| is false, the problem was simply a lack of data, and
-  // should only be an error condition if some higher-level component knows that
-  // no more data is coming (i.e. EOS or end of containing box). If |*err| is
-  // true, the error is unrecoverable and the stream should be aborted.
-  bool ReadHeader(bool* err);
+  // Must be called immediately after init.
+  ParseResult ReadHeader() WARN_UNUSED_RESULT;
 
   // Read all children, optionally checking FourCC. Returns true if all
   // children are successfully parsed and, if |check_box_type|, have the
@@ -275,11 +268,10 @@ bool BoxReader::ReadAllChildrenInternal(std::vector<T>* children,
   // Must know our box size before attempting to parse child boxes.
   RCHECK(box_size_known_);
 
-  bool err = false;
   while (pos_ < box_size_) {
     BoxReader child_reader(&buf_[pos_], box_size_ - pos_, media_log_, is_EOS_);
 
-    if (!child_reader.ReadHeader(&err))
+    if (child_reader.ReadHeader() != ParseResult::kOk)
       return false;
 
     T child;
@@ -289,7 +281,7 @@ bool BoxReader::ReadAllChildrenInternal(std::vector<T>* children,
     pos_ += child_reader.box_size();
   }
 
-  return !err;
+  return true;
 }
 
 }  // namespace mp4
