@@ -30,6 +30,10 @@ QuicByteCount QuicMemSliceSpanImpl::SaveMemSlicesInSendBuffer(
     QuicStreamSendBuffer* send_buffer) {
   size_t saved_length = 0;
   for (size_t i = 0; i < num_buffers_; ++i) {
+    if (lengths_[i] == 0) {
+      // Skip empty buffer.
+      continue;
+    }
     saved_length += lengths_[i];
     send_buffer->SaveMemSlice(
         QuicMemSlice(QuicMemSliceImpl(buffers_[i], lengths_[i])));
