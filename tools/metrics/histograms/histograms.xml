@@ -7987,6 +7987,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Maximal amount of memory allocated by decoder.</summary>
 </histogram>
 
+<histogram name="BrowserActions.SelectedOption" enum="BrowserActionsMenuOption">
+  <owner>ltian@chromium.org</owner>
+  <summary>
+    The option that the user selected from a Browser Actions context menu.
+  </summary>
+</histogram>
+
 <histogram name="BrowserDialogs.ExternalProtocol.HandleState"
     enum="HandleStateType">
   <owner>ramyasharma@chromium.org</owner>

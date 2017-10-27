@@ -4058,6 +4058,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="36" label="UNREACHABLE_6"/>
 </enum>
 
+<enum name="BrowserActionsMenuOption">
+  <int value="0" label="Open in new Chrome tab"/>
+  <int value="1" label="Open in incognito tab"/>
+  <int value="2" label="Download page"/>
+  <int value="3" label="Copy link"/>
+  <int value="4" label="Share link"/>
+  <int value="5" label="App provided items"/>
+</enum>
+
 <enum name="BubbleType">
   <int value="0" label="Unknown Bubble"/>
   <int value="1" label="Mock Bubble"/>
