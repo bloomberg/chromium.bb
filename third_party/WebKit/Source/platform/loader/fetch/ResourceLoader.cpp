@@ -166,6 +166,17 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
 void ResourceLoader::SetDefersLoading(bool defers) {
   DCHECK(loader_);
   loader_->SetDefersLoading(defers);
+
+  // Inform the scheduler if the resource load is deferred / undeferred. Note
+  // duplicate calls don't matter.
+  WebFrameScheduler* scheduler = fetcher_->Context().GetFrameScheduler();
+  if (scheduler) {
+    if (defers) {
+      scheduler->DidStopLoading(resource_->Identifier());
+    } else {
+      scheduler->DidStartLoading(resource_->Identifier());
+    }
+  }
 }
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
