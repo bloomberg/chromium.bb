@@ -123,8 +123,7 @@ void NotificationResourcesLoader::DidFinishRequest() {
   pending_request_count_--;
   if (!pending_request_count_) {
     Stop();
-    auto cb = std::move(completion_callback_);
-    cb(this);
+    std::move(completion_callback_).Run(this);
     // The |this| pointer may have been deleted now.
   }
 }

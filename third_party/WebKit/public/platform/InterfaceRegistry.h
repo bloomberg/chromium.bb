@@ -27,7 +27,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
 
   template <typename Interface>
   void AddInterface(
-      WTF::Function<void(mojo::InterfaceRequest<Interface>)> factory) {
+      WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)> factory) {
     AddInterface(Interface::Name_,
                  ConvertToBaseCallback(WTF::Bind(
                      &InterfaceRegistry::ForwardToInterfaceFactory<Interface>,
@@ -37,9 +37,10 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
  private:
   template <typename Interface>
   static void ForwardToInterfaceFactory(
-      const WTF::Function<void(mojo::InterfaceRequest<Interface>)>& factory,
+      const WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)>&
+          factory,
       mojo::ScopedMessagePipeHandle handle) {
-    factory(mojo::InterfaceRequest<Interface>(std::move(handle)));
+    factory.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }
 #endif  // INSIDE_BLINK
 };

@@ -117,10 +117,10 @@ void LocalFileSystem::RequestFileSystemAccessInternal(ExecutionContext* context,
                                                       WTF::Closure denied) {
   if (!context->IsDocument()) {
     if (!Client().RequestFileSystemAccessSync(context)) {
-      denied();
+      std::move(denied).Run();
       return;
     }
-    allowed();
+    std::move(allowed).Run();
     return;
   }
   Client().RequestFileSystemAccessAsync(

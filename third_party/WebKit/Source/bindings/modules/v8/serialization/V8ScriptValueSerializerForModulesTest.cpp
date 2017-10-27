@@ -253,15 +253,15 @@ template <typename T>
 class WebCryptoResultAdapter : public ScriptFunction {
  private:
   WebCryptoResultAdapter(ScriptState* script_state,
-                         WTF::Function<void(T)> function)
+                         WTF::RepeatingFunction<void(T)> function)
       : ScriptFunction(script_state), function_(std::move(function)) {}
 
   ScriptValue Call(ScriptValue value) final {
-    function_(ConvertCryptoResult<T>(value));
+    function_.Run(ConvertCryptoResult<T>(value));
     return ScriptValue::From(GetScriptState(), ToV8UndefinedGenerator());
   }
 
-  WTF::Function<void(T)> function_;
+  WTF::RepeatingFunction<void(T)> function_;
   template <typename U>
   friend WebCryptoResult ToWebCryptoResult(ScriptState*,
                                            WTF::Function<void(U)>);

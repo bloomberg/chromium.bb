@@ -237,9 +237,9 @@ void InspectorResourceContentLoader::CheckDone() {
     return;
   HashMap<int, Callbacks> callbacks;
   callbacks.swap(callbacks_);
-  for (const auto& key_value : callbacks) {
-    for (const auto& callback : key_value.value)
-      callback();
+  for (auto& key_value : callbacks) {
+    for (auto& callback : key_value.value)
+      std::move(callback).Run();
   }
 }
 

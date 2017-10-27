@@ -66,7 +66,7 @@ void InspectorTaskRunner::RunAllTasksDontWait() {
     Task task = TakeNextTask(kDontWaitForTask);
     if (!task)
       return;
-    task();
+    std::move(task).Run();
   }
 }
 

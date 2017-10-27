@@ -164,7 +164,7 @@ void NotificationImageLoader::DidFinishLoading(
       // The |ImageFrame*| is owned by the decoder.
       ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);
       if (image_frame) {
-        image_callback_(image_frame->Bitmap());
+        std::move(image_callback_).Run(image_frame->Bitmap());
         return;
       }
     }
@@ -190,7 +190,7 @@ void NotificationImageLoader::RunCallbackWithEmptyBitmap() {
   if (stopped_)
     return;
 
-  image_callback_(SkBitmap());
+  std::move(image_callback_).Run(SkBitmap());
 }
 
 }  // namespace blink

@@ -1736,12 +1736,13 @@ bool InspectorDOMAgent::IsWhitespace(Node* node) {
 }
 
 // static
-void InspectorDOMAgent::CollectNodes(Node* node,
-                                     int depth,
-                                     bool pierce,
-                                     const Function<bool(Node*)>& filter,
-                                     HeapVector<Member<Node>>* result) {
-  if (filter && filter(node))
+void InspectorDOMAgent::CollectNodes(
+    Node* node,
+    int depth,
+    bool pierce,
+    const WTF::RepeatingFunction<bool(Node*)>& filter,
+    HeapVector<Member<Node>>* result) {
+  if (filter && filter.Run(node))
     result->push_back(node);
   if (--depth <= 0)
     return;

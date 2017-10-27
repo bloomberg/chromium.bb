@@ -62,7 +62,8 @@ static bool TestLayoutObjectState(LayoutObject* object,
   return true;
 }
 
-using IsTypeOf = Function<bool(const LayoutObject& layout_object)>;
+using IsTypeOf =
+    WTF::RepeatingFunction<bool(const LayoutObject& layout_object)>;
 using IsTypeOfSimple = bool(const LayoutObject& layout_object);
 #define USING_LAYOUTOBJECT_FUNC(member_func)            \
   bool member_func(const LayoutObject& layout_object) { \
@@ -111,7 +112,7 @@ static bool TestLayoutObject(LayoutObject* object,
   if (!TestLayoutObjectState(object, state, invalidate))
     return false;
 
-  if (!predicate(*object))
+  if (!predicate.Run(*object))
     return false;
   return true;
 }

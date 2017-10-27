@@ -420,7 +420,7 @@ RTCPeerConnection::EventWrapper::EventWrapper(Event* event,
 
 bool RTCPeerConnection::EventWrapper::Setup() {
   if (setup_function_) {
-    return setup_function_();
+    return std::move(setup_function_).Run();
   }
   return true;
 }

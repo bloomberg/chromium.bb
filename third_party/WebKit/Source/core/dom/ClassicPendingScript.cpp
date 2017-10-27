@@ -294,7 +294,7 @@ void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
       // start streaming by work done within the callback. (crbug.com/754360)
       WTF::Closure done = std::move(streamer_done_);
       if (done)
-        done();
+        std::move(done).Run();
       is_currently_streaming_ = false;
     }
   }

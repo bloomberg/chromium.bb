@@ -351,7 +351,7 @@ template <typename FunctionType, typename... Ps>
 void BackgroundHTMLParser::RunOnMainThread(FunctionType function,
                                            Ps&&... parameters) {
   if (IsMainThread()) {
-    WTF::Bind(std::move(function), std::forward<Ps>(parameters)...)();
+    WTF::Bind(std::move(function), std::forward<Ps>(parameters)...).Run();
   } else {
     loading_task_runner_->PostTask(
         BLINK_FROM_HERE,

@@ -119,7 +119,7 @@ void MediaControlsWindowEventListener::handleEvent(
 
   if (!is_active_)
     return;
-  callback_();
+  callback_.Run();
 }
 
 void MediaControlsWindowEventListener::Trace(blink::Visitor* visitor) {

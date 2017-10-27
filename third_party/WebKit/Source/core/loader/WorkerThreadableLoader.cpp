@@ -263,13 +263,13 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
     return;
   }
 
-  for (const auto& task : event_with_tasks->Take()) {
+  for (auto& task : event_with_tasks->Take()) {
     // Store the program counter where the task is posted from, and alias
     // it to ensure it is stored in the crash dump.
     const void* program_counter = task.location_.program_counter();
     WTF::debug::Alias(&program_counter);
 
-    task.task_();
+    std::move(task.task_).Run();
   }
 }
 

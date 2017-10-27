@@ -38,7 +38,7 @@ class AvailabilityCallbackWrapper final
  private:
   // Only one of these callbacks must be set.
   TraceWrapperMember<V8RemotePlaybackAvailabilityCallback> bindings_cb_;
-  WTF::Closure internal_cb_;
+  WTF::RepeatingClosure internal_cb_;
 };
 
 }  // namespace blink

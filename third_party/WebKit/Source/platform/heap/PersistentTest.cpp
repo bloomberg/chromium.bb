@@ -28,16 +28,16 @@ class Receiver : public GarbageCollected<Receiver> {
 TEST(PersistentTest, BindCancellation) {
   Receiver* receiver = new Receiver;
   int counter = 0;
-  WTF::Closure function =
+  WTF::RepeatingClosure function =
       WTF::Bind(&Receiver::Increment, WrapWeakPersistent(receiver),
                 WTF::Unretained(&counter));
 
-  function();
+  function.Run();
   EXPECT_EQ(1, counter);
 
   receiver = nullptr;
   PreciselyCollectGarbage();
-  function();
+  function.Run();
   EXPECT_EQ(1, counter);
 }
 
@@ -48,12 +48,12 @@ TEST(PersistentTest, CrossThreadBindCancellation) {
       &Receiver::Increment, WrapCrossThreadWeakPersistent(receiver),
       WTF::CrossThreadUnretained(&counter));
 
-  function();
+  function.Run();
   EXPECT_EQ(1, counter);
 
   receiver = nullptr;
   PreciselyCollectGarbage();
-  function();
+  function.Run();
   EXPECT_EQ(1, counter);
 }
 

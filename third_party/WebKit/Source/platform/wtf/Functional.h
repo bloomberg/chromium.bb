@@ -245,13 +245,6 @@ class Function<R(Args...), threadAffinity> {
     return *this;
   }
 
-  // TODO(tzik): Remove operator() once we finished to update all call sites
-  // to use Run() instead.
-  R operator()(Args... args) const {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return callback_.Run(std::forward<Args>(args)...);
-  }
-
   R Run(Args... args) const & {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return callback_.Run(std::forward<Args>(args)...);
@@ -303,8 +296,14 @@ Bind(FunctionType function, BoundParameters&&... bound_parameters) {
       function, std::forward<BoundParameters>(bound_parameters)...);
 }
 
-typedef Function<void(), kSameThreadAffinity> Closure;
-typedef Function<void(), kCrossThreadAffinity> CrossThreadClosure;
+// TODO(tzik): Replace WTF::Function with base::OnceCallback, and
+// WTF::RepeatingFunction with base::RepeatingCallback.
+template <typename T>
+using RepeatingFunction = Function<T>;
+using RepeatingClosure = Function<void()>;
+
+using Closure = Function<void(), kSameThreadAffinity>;
+using CrossThreadClosure = Function<void(), kCrossThreadAffinity>;
 
 }  // namespace WTF
 

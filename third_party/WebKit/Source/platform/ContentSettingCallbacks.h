@@ -22,8 +22,8 @@ class PLATFORM_EXPORT ContentSettingCallbacks {
                                                          WTF::Closure denied);
   virtual ~ContentSettingCallbacks() {}
 
-  void OnAllowed() { allowed_(); }
-  void OnDenied() { denied_(); }
+  void OnAllowed() { std::move(allowed_).Run(); }
+  void OnDenied() { std::move(denied_).Run(); }
 
  private:
   ContentSettingCallbacks(WTF::Closure allowed, WTF::Closure denied);

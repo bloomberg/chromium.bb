@@ -20,7 +20,7 @@ void AvailabilityCallbackWrapper::Run(RemotePlayback* remote_playback,
                                       bool new_availability) {
   if (internal_cb_) {
     DCHECK(!bindings_cb_);
-    internal_cb_();
+    internal_cb_.Run();
     return;
   }
 

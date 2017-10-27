@@ -44,7 +44,7 @@ class IntersectionObserverDelegateImpl final
 
   void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
                IntersectionObserver&) override {
-    callback_(entries);
+    callback_.Run(entries);
   }
 
   ExecutionContext* GetExecutionContext() const override { return context_; }
