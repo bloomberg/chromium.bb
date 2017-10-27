@@ -16,11 +16,8 @@
 
 namespace web {
 
-namespace {
-// Translates an iOS error to a net error using |net_error_code| as an
-// out-parameter.  Returns true if a valid translation was found.
 bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
-                                 NSInteger* net_error_code) {
+                                 int* net_error_code) {
   DCHECK(net_error_code);
   bool translation_success = true;
   switch (ios_error_code) {
@@ -146,14 +143,13 @@ bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
   }
   return translation_success;
 }
-}  // namespace
 
 NSError* NetErrorFromError(NSError* error) {
   DCHECK(error);
   NSError* underlying_error =
       base::ios::GetFinalUnderlyingErrorFromError(error);
 
-  NSInteger net_error_code = net::ERR_FAILED;
+  int net_error_code = net::ERR_FAILED;
   if ([underlying_error.domain isEqualToString:NSURLErrorDomain] ||
       [underlying_error.domain
           isEqualToString:static_cast<NSString*>(kCFErrorDomainCFNetwork)]) {
@@ -164,13 +160,14 @@ NSError* NetErrorFromError(NSError* error) {
   return NetErrorFromError(error, net_error_code);
 }
 
-NSError* NetErrorFromError(NSError* error, NSInteger net_error_code) {
+NSError* NetErrorFromError(NSError* error, int net_error_code) {
   DCHECK(error);
   NSString* net_error_domain =
       [NSString stringWithUTF8String:net::kErrorDomain];
-  NSError* net_error = [NSError errorWithDomain:net_error_domain
-                                           code:net_error_code
-                                       userInfo:nil];
+  NSError* net_error =
+      [NSError errorWithDomain:net_error_domain
+                          code:static_cast<NSInteger>(net_error_code)
+                      userInfo:nil];
   return base::ios::ErrorWithAppendedUnderlyingError(error, net_error);
 }
 

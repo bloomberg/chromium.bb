@@ -17,6 +17,8 @@
 #error "This file requires ARC support."
 #endif
 
+namespace web {
+
 // Test fixture for error translation testing.
 typedef PlatformTest ErrorTranslationUtilTest;
 
@@ -27,10 +29,20 @@ NSString* GetNetErrorDomain() {
 }
 }  // namespcae
 
+// Tests translation of CFNetwork error code to net error code.
+TEST_F(ErrorTranslationUtilTest, ErrorCodeTranslation) {
+  int net_error_code = 0;
+  EXPECT_TRUE(GetNetErrorFromIOSErrorCode(kCFURLErrorUnknown, &net_error_code));
+  EXPECT_EQ(net::ERR_FAILED, net_error_code);
+
+  EXPECT_FALSE(GetNetErrorFromIOSErrorCode(kCFSOCKSErrorUnknownClientVersion,
+                                           &net_error_code));
+}
+
 // Tests translation of an error with empty domain and no underlying error.
 TEST_F(ErrorTranslationUtilTest, MalformedError) {
   NSError* error = [[NSError alloc] initWithDomain:@"" code:0 userInfo:nil];
-  NSError* net_error = web::NetErrorFromError(error);
+  NSError* net_error = NetErrorFromError(error);
 
   // Top level error should be the same as the original error.
   EXPECT_TRUE(net_error);
@@ -51,7 +63,7 @@ TEST_F(ErrorTranslationUtilTest, UnknownCFNetworkError) {
       initWithDomain:base::mac::CFToNSCast(kCFErrorDomainCFNetwork)
                 code:kCFURLErrorUnknown
             userInfo:nil];
-  NSError* net_error = web::NetErrorFromError(error);
+  NSError* net_error = NetErrorFromError(error);
 
   // Top level error should be the same as the original error.
   EXPECT_TRUE(net_error);
@@ -79,7 +91,7 @@ TEST_F(ErrorTranslationUtilTest, CanNotFindHostError) {
                              userInfo:@{
                                NSUnderlyingErrorKey : underlying_error,
                              }];
-  NSError* net_error = web::NetErrorFromError(error);
+  NSError* net_error = NetErrorFromError(error);
 
   // Top level error should be the same as the original error.
   EXPECT_TRUE(net_error);
@@ -114,7 +126,7 @@ TEST_F(ErrorTranslationUtilTest, CertError) {
                              userInfo:@{
                                NSUnderlyingErrorKey : underlying_error,
                              }];
-  NSError* net_error = web::NetErrorFromError(error, net::ERR_CONNECTION_RESET);
+  NSError* net_error = NetErrorFromError(error, net::ERR_CONNECTION_RESET);
 
   // Top level error should be the same as the original error.
   EXPECT_TRUE(net_error);
@@ -134,3 +146,5 @@ TEST_F(ErrorTranslationUtilTest, CertError) {
   EXPECT_NSEQ(GetNetErrorDomain(), [final_net_underlying_error domain]);
   EXPECT_EQ(net::ERR_CONNECTION_RESET, [final_net_underlying_error code]);
 }
+
+}  // namespace web

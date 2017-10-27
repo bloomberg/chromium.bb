@@ -9,14 +9,18 @@
 
 namespace web {
 
-// Translates an iOS-specific error into its net error equivalent and returns
-// a copy of |error| with the translation as its final underlying error.  The
+// Translates an CFNetwork error code to a net error code using |net_error_code|
+// as an out-parameter.  Returns true if a valid translation was found.
+bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code, int* net_error_code);
+
+// Translates an iOS-specific error into its net error equivalent and returns a
+// copy of |error| with the translation as its final underlying error.  The
 // underlying net error will have an error code of net::ERR_FAILED if no
 // specific translation of the iOS error is found.
 NSError* NetErrorFromError(NSError* error);
 
 // Same as above but uses |net_error_code| for underlying error.
-NSError* NetErrorFromError(NSError* error, NSInteger net_error_code);
+NSError* NetErrorFromError(NSError* error, int net_error_code);
 
 }  // namespace web
 
