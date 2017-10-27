@@ -18,7 +18,7 @@ ModuleScriptLoader* ModuleScriptLoaderRegistry::Fetch(
     Modulator* modulator,
     ModuleScriptLoaderClient* client) {
   ModuleScriptLoader* loader =
-      ModuleScriptLoader::Create(modulator, this, client);
+      ModuleScriptLoader::Create(modulator, request.Options(), this, client);
   DCHECK(loader->IsInitialState());
   active_loaders_.insert(loader);
   loader->Fetch(request, level);

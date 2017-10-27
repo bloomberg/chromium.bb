@@ -23,9 +23,13 @@
 namespace blink {
 
 ModuleScriptLoader::ModuleScriptLoader(Modulator* modulator,
+                                       const ScriptFetchOptions& options,
                                        ModuleScriptLoaderRegistry* registry,
                                        ModuleScriptLoaderClient* client)
-    : modulator_(modulator), registry_(registry), client_(client) {
+    : modulator_(modulator),
+      options_(options),
+      registry_(registry),
+      client_(client) {
   DCHECK(modulator);
   DCHECK(registry);
   DCHECK(client);
@@ -77,9 +81,6 @@ void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
 void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
                                ModuleGraphLevel level) {
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
-
-  // Save "options" for its use in Step 8-.
-  options_ = module_request.Options();
 
   // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
   AdvanceState(State::kFetching);

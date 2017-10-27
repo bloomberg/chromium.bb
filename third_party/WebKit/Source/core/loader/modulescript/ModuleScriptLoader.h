@@ -45,9 +45,10 @@ class CORE_EXPORT ModuleScriptLoader final
 
  public:
   static ModuleScriptLoader* Create(Modulator* modulator,
+                                    const ScriptFetchOptions& options,
                                     ModuleScriptLoaderRegistry* registry,
                                     ModuleScriptLoaderClient* client) {
-    return new ModuleScriptLoader(modulator, registry, client);
+    return new ModuleScriptLoader(modulator, options, registry, client);
   }
 
   ~ModuleScriptLoader();
@@ -67,6 +68,7 @@ class CORE_EXPORT ModuleScriptLoader final
 
  private:
   ModuleScriptLoader(Modulator*,
+                     const ScriptFetchOptions&,
                      ModuleScriptLoaderRegistry*,
                      ModuleScriptLoaderClient*);
 
@@ -77,7 +79,7 @@ class CORE_EXPORT ModuleScriptLoader final
 
   Member<Modulator> modulator_;
   State state_ = State::kInitial;
-  ScriptFetchOptions options_;
+  const ScriptFetchOptions options_;
   Member<ModuleScript> module_script_;
   Member<ModuleScriptLoaderRegistry> registry_;
   Member<ModuleScriptLoaderClient> client_;
