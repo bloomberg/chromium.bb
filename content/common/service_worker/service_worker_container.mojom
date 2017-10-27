@@ -64,6 +64,11 @@ interface ServiceWorkerContainerHost {
   // reported to the controllees, but the browser process is responsible for
   // properly handling the failure and recording the reasons.
   GetControllerServiceWorker(ControllerServiceWorker& controller);
+
+  // S13nServiceWorker:
+  // Clones the Mojo end point to the ServiceWorker container host. This is
+  // used to communicate with the host from dedicated and shared workers.
+  CloneForWorker(ServiceWorkerContainerHost& container_host_for_worker);
 };
 
 // mojom::ServiceWorkerContainer is a renderer-side interface.
