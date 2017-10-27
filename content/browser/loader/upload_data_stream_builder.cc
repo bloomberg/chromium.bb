@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "content/public/common/resource_request_body.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -99,15 +98,6 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         element_readers.push_back(std::make_unique<FileElementReader>(
             body, file_task_runner, element));
         break;
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
-        // If |body| contains any filesystem URLs, the caller should have
-        // supplied a FileSystemContext.
-        DCHECK(file_system_context);
-        element_readers.push_back(
-            std::make_unique<content::UploadFileSystemFileElementReader>(
-                file_system_context, element.filesystem_url(), element.offset(),
-                element.length(), element.expected_modification_time()));
-        break;
       case ResourceRequestBody::Element::TYPE_BLOB: {
         DCHECK_EQ(std::numeric_limits<uint64_t>::max(), element.length());
         DCHECK_EQ(0ul, element.offset());
@@ -118,6 +108,9 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
                 std::move(handle), file_system_context));
         break;
       }
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+        CHECK(false) << "Should never be reached";
+        break;
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
       case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_DATA_PIPE:

@@ -904,8 +904,6 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
       File* file = ToFile(body);
       if (!file->GetPath().IsEmpty())
         http_body->AppendFile(file->GetPath());
-      else if (!file->FileSystemURL().IsEmpty())
-        http_body->AppendFileSystemURL(file->FileSystemURL());
       else
         NOTREACHED();
     } else {

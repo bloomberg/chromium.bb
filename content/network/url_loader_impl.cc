@@ -233,10 +233,10 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
             body, file_task_runner, element));
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
-        NOTIMPLEMENTED();
+        CHECK(false) << "Should never be reached";
         break;
       case ResourceRequestBody::Element::TYPE_BLOB: {
-        NOTREACHED();
+        CHECK(false) << "Network service always uses DATA_PIPE for blobs.";
         break;
       }
       case ResourceRequestBody::Element::TYPE_DATA_PIPE: {
