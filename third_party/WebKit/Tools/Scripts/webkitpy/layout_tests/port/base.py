@@ -202,7 +202,8 @@ class Port(object):
             fingerprint = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
             flags += [
                 '--run-layout-test',
-                '--ignore-certificate-errors-spki-list=' + fingerprint]
+                '--ignore-certificate-errors-spki-list=' + fingerprint,
+                '--user-data-dir']
         return flags
 
     def supports_per_test_timeout(self):

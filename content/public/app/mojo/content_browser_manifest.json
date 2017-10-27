@@ -27,6 +27,7 @@
           "blink::mojom::NotificationService",
           "blink::mojom::OffscreenCanvasProvider",
           "blink::mojom::PermissionService",
+          "blink::mojom::ReportingServiceProxy",
           "blink::mojom::WebSocket",
           "content::mojom::FieldTrialRecorder",
           "content::mojom::FileUtilitiesHost",
