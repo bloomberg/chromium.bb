@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class LayoutBox;
 class NGOffsetMapping;
 
 // Data which is required for inline nodes.
@@ -45,10 +44,6 @@ struct CORE_EXPORT NGInlineNodeData {
 
   // The DOM to text content offset mapping of this inline node.
   std::unique_ptr<NGOffsetMapping> offset_mapping_;
-
-  // next_sibling_ is only valid after NGInlineNode::PrepareLayout is called.
-  // Calling NGInlineNode::NextSibling will trigger this.
-  LayoutBox* next_sibling_;
 
   unsigned is_bidi_enabled_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
