@@ -14,6 +14,8 @@ blink_modules_sources("gamepad") {
     "GamepadDispatcher.h",
     "GamepadEvent.cpp",
     "GamepadEvent.h",
+    "GamepadHapticActuator.cpp",
+    "GamepadHapticActuator.h",
     "GamepadList.cpp",
     "GamepadList.h",
     "GamepadPose.cpp",

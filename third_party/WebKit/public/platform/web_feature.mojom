@@ -1736,6 +1736,8 @@ enum WebFeature {
   kHasBeforeOrAfterPseudoElement = 2204,
   kShapeOutsideMaybeAffectedInlineSize = 2205,
   kShapeOutsideMaybeAffectedInlinePosition = 2206,
+  kGamepadVibrationActuator = 2207,
+
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in

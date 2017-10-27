@@ -28,6 +28,7 @@
 
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "modules/gamepad/GamepadButton.h"
+#include "modules/gamepad/GamepadHapticActuator.h"
 #include "modules/gamepad/GamepadPose.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -68,6 +69,11 @@ class Gamepad final : public ScriptWrappable {
   void SetButtons(unsigned count, const device::GamepadButton* data);
   bool isButtonDataDirty() const { return is_button_data_dirty_; }
 
+  GamepadHapticActuator* vibrationActuator() const {
+    return vibration_actuator_;
+  }
+  void SetVibrationActuator(const device::GamepadHapticActuator&);
+
   GamepadPose* pose() const { return pose_; }
   void SetPose(const device::GamepadPose&);
 
@@ -89,6 +95,7 @@ class Gamepad final : public ScriptWrappable {
   String mapping_;
   DoubleVector axes_;
   GamepadButtonVector buttons_;
+  Member<GamepadHapticActuator> vibration_actuator_;
   Member<GamepadPose> pose_;
   String hand_;
   unsigned display_id_;

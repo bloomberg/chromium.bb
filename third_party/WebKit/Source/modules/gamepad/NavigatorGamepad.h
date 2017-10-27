@@ -70,6 +70,7 @@ class MODULES_EXPORT NavigatorGamepad final
   bool StartUpdatingIfAttached();
   void SampleAndCheckConnectedGamepads();
   bool CheckConnectedGamepads(GamepadList*, GamepadList*);
+  void CheckConnectedGamepad(Gamepad*, Gamepad*, bool*, bool*);
 
   // PageVisibilityObserver
   void PageVisibilityChanged() override;

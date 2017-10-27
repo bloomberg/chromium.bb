@@ -29,6 +29,16 @@ struct WebKitGamepadButton {
   double value;
 };
 
+enum WebKitGamepadHapticActuatorType {
+  WEBKIT_GAMEPAD_HAPTIC_ACTUATOR_TYPE_VIBRATION = 0,
+  WEBKIT_GAMEPAD_HAPTIC_ACTUATOR_TYPE_DUAL_RUMBLE = 1
+};
+
+struct WebKitGamepadHapticActuator {
+  bool notNull;
+  WebKitGamepadHapticActuatorType type;
+};
+
 struct WebKitGamepadVector {
   bool notNull;
   float x, y, z;
@@ -60,7 +70,8 @@ enum WebKitGamepadHand {
 };
 
 // This must match the definition of blink::Gamepad. The GamepadHost unit test
-// has some compile asserts to validate this.
+// has some compile asserts to validate this. Some members are unused but must
+// be present to ensure the struct layout is the same.
 struct WebKitGamepad {
   static const size_t kIdLengthCap = 128;
   static const size_t kMappingLengthCap = 16;
@@ -89,11 +100,16 @@ struct WebKitGamepad {
   // Normalized values representing buttons, in the range [0..1].
   WebKitGamepadButton buttons[kButtonsLengthCap];
 
+  // Gamepad Extensions member, unused by ppapi.
+  WebKitGamepadHapticActuator vibrationActuator;
+
   // Mapping type (for example "standard")
   base::char16 mapping[kMappingLengthCap];
 
+  // Gamepad Extensions member, unused by ppapi.
   WebKitGamepadPose pose;
 
+  // Gamepad Extensions member, unused by ppapi.
   WebKitGamepadHand hand;
 
   // ID of the VRDisplay this gamepad is associated with, if any.
