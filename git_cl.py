@@ -2902,6 +2902,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     title = options.title
     automatic_title = False
 
+    # Extract bug number from branch name.
+    bug = options.bug
+    match = re.match(r'(?:bug|fix)[_-]?(\d+)', self.GetBranch())
+    if not bug and match:
+      bug = match.group(1)
+
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
       if self.GetIssue():
@@ -2952,7 +2958,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           confirm_or_exit(action='edit')
           if not options.force:
             change_desc = ChangeDescription(message)
-            change_desc.prompt(bug=options.bug)
+            change_desc.prompt(bug=bug)
             message = change_desc.description
             if not message:
               DieWithError("Description is empty. Aborting...")
@@ -2971,7 +2977,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         change_desc = ChangeDescription(message)
 
         if not options.force:
-          change_desc.prompt(bug=options.bug)
+          change_desc.prompt(bug=bug)
         # On first upload, patchset title is always this string, while
         # --title flag gets converted to first line of message.
         title = 'Initial upload'
@@ -4868,6 +4874,10 @@ def CMDupload(parser, args):
   To unset run:
     git config --unset branch.branch_name.skip-deps-uploads
   Can also set the above globally by using the --global flag.
+
+  If the name of the checked out branch starts with "bug-" or "fix-" followed by
+  a bug number, this bug number is automatically populated in the CL
+  description.
   """
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
