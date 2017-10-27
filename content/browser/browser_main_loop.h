@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 
 #if defined(USE_AURA)
 namespace aura {
@@ -79,6 +81,7 @@ class ClientNativePixmapFactory;
 #endif
 
 namespace viz {
+class CompositingModeReporterImpl;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 }
@@ -192,6 +195,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   // SurfaceManager is being moved out of process.
   viz::FrameSinkManagerImpl* GetFrameSinkManager() const;
 #endif
+
+  // Fulfills a mojo pointer to the singleton CompositingModeReporter.
+  void GetCompositingModeReporter(
+      viz::mojom::CompositingModeReporterRequest request);
 
   void StopStartupTracingTimer();
 
@@ -364,6 +371,18 @@ class CONTENT_EXPORT BrowserMainLoop {
   // http://crbug.com/657959.
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl_;
 #endif
+
+  // Mojo pointers looking for CompositingModeReporter are fulfilled and bound
+  // into here. If the CompositingModeReporter is in-process then they point to
+  // a CompositingModeReporterImpl directly. Otherwise they may point to a
+  // ForwardingCompositingModeReporterImpl that redirects to the viz process.
+  mojo::BindingSet<viz::mojom::CompositingModeReporter>
+      compositing_mode_reporter_bindings_;
+  // Reports on the compositing mode in the system for clients to submit
+  // resources of the right type. This is null if the display compositor
+  // is not in this process.
+  std::unique_ptr<viz::CompositingModeReporterImpl>
+      compositing_mode_reporter_impl_;
 
   // DO NOT add members here. Add them to the right categories above.
 

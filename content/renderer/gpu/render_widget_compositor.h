@@ -234,7 +234,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool CompositeIsSynchronous() const;
   void SynchronouslyComposite();
 
-  bool attempt_software_fallback_ = false;
   RenderWidgetCompositorDelegate* const delegate_;
   CompositorDependencies* const compositor_deps_;
   const bool threaded_;

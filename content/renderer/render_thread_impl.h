@@ -53,6 +53,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebMemoryStatistics.h"
@@ -180,6 +181,7 @@ class CONTENT_EXPORT RenderThreadImpl
       public ChildMemoryCoordinatorDelegate,
       public base::MemoryCoordinatorClient,
       public mojom::Renderer,
+      public viz::mojom::CompositingModeWatcher,
       public CompositorDependencies {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -265,6 +267,14 @@ class CONTENT_EXPORT RenderThreadImpl
   // blink::scheduler::RendererScheduler::RAILModeObserver implementation.
   void OnRAILModeChanged(v8::RAILMode rail_mode) override;
 
+  // viz::mojom::CompositingModeWatcher implementation.
+  void CompositingModeFallbackToSoftware() override;
+
+  // Whether gpu compositing is being used or is disabled for software
+  // compositing. Clients of the compositor should give resources that match
+  // the appropriate mode.
+  bool IsGpuCompositingDisabled() { return is_gpu_compositing_disabled_; }
+
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
@@ -276,7 +286,6 @@ class CONTENT_EXPORT RenderThreadImpl
   using LayerTreeFrameSinkCallback =
       base::Callback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
   void RequestNewLayerTreeFrameSink(
-      bool use_software,
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
@@ -707,6 +716,11 @@ class CONTENT_EXPORT RenderThreadImpl
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer idle_timer_;
 
+  // Sticky once true, indicates that compositing is done without Gpu, so
+  // resources given to the compositor or to the viz service should be
+  // software-based.
+  bool is_gpu_compositing_disabled_ = false;
+
   // The channel from the renderer process to the GPU process.
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
@@ -824,6 +838,13 @@ class CONTENT_EXPORT RenderThreadImpl
   int32_t client_id_;
 
   mojom::FrameSinkProviderPtr frame_sink_provider_;
+
+  // A mojo connection to the CompositingModeReporter service.
+  viz::mojom::CompositingModeReporterPtr compositing_mode_reporter_;
+  // The class is a CompositingModeWatcher, which is bound to mojo through
+  // this memeber.
+  mojo::Binding<viz::mojom::CompositingModeWatcher>
+      compositing_mode_watcher_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

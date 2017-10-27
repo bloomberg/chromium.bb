@@ -147,7 +147,8 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
       std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);
 
   // Forces the host to immediately release all references to the
-  // LayerTreeFrameSink, if any. Can be safely called any time.
+  // LayerTreeFrameSink, if any. Can be safely called any time, but the
+  // compositor should not be visible.
   std::unique_ptr<LayerTreeFrameSink> ReleaseLayerTreeFrameSink();
 
   // Frame Scheduling (main and compositor frames) requests -------
