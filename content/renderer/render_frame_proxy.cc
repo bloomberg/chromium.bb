@@ -500,7 +500,7 @@ void RenderFrameProxy::WasResized() {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
-    float device_scale_factor = render_widget_->GetOriginalDeviceScaleFactor();
+    float device_scale_factor = screen_info().device_scale_factor;
     viz::SurfaceInfo surface_info(
         viz::SurfaceId(frame_sink_id_, local_surface_id_), device_scale_factor,
         gfx::ScaleToCeiledSize(frame_rect().size(), device_scale_factor));
@@ -512,22 +512,15 @@ void RenderFrameProxy::WasResized() {
       sent_resize_params_->frame_rect != pending_resize_params_.frame_rect;
   bool resize_params_changed = synchronized_params_changed || rect_changed;
 
-  gfx::Rect rect = frame_rect();
-
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_)
-    mus_embedded_frame_->SetWindowBounds(local_surface_id_, rect);
+    mus_embedded_frame_->SetWindowBounds(local_surface_id_, frame_rect());
 #endif
-
-  if (IsUseZoomForDSFEnabled()) {
-    rect = gfx::ScaleToEnclosingRect(
-        rect, 1.f / render_widget_->GetOriginalDeviceScaleFactor());
-  }
 
   if (resize_params_changed) {
     // Let the browser know about the updated view rect.
-    Send(new FrameHostMsg_UpdateResizeParams(routing_id_, rect, screen_info(),
-                                             local_surface_id_));
+    Send(new FrameHostMsg_UpdateResizeParams(routing_id_, frame_rect(),
+                                             screen_info(), local_surface_id_));
     sent_resize_params_ = pending_resize_params_;
   }
 }
