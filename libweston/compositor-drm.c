@@ -3596,14 +3596,6 @@ drm_output_find_special_plane(struct drm_backend *b, struct drm_output *output,
 		/* On some platforms, primary/cursor planes can roam
 		 * between different CRTCs, so make sure we don't claim the
 		 * same plane for two outputs. */
-		wl_list_for_each(tmp, &b->compositor->pending_output_list,
-				 base.link) {
-			if (tmp->cursor_plane == plane ||
-			    tmp->scanout_plane == plane) {
-				found_elsewhere = true;
-				break;
-			}
-		}
 		wl_list_for_each(tmp, &b->compositor->output_list,
 				 base.link) {
 			if (tmp->cursor_plane == plane ||
