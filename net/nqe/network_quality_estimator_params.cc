@@ -426,7 +426,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
       hanging_request_duration_http_rtt_multiplier_(GetValueForVariationParam(
           params_,
           "hanging_request_duration_http_rtt_multiplier",
-          -1)),
+          5)),
       hanging_request_min_duration_(base::TimeDelta::FromMilliseconds(
           GetValueForVariationParam(params_,
                                     "hanging_request_min_duration_msec",
