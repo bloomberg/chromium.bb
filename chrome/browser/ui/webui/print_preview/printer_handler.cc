@@ -52,12 +52,11 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForPrivetPrinters(
 }
 #endif
 
-void PrinterHandler::GetDefaultPrinter(const DefaultPrinterCallback& cb) {
+void PrinterHandler::GetDefaultPrinter(DefaultPrinterCallback cb) {
   NOTREACHED();
 }
 
-void PrinterHandler::StartGrantPrinterAccess(
-    const std::string& printer_id,
-    const GetPrinterInfoCallback& callback) {
+void PrinterHandler::StartGrantPrinterAccess(const std::string& printer_id,
+                                             GetPrinterInfoCallback callback) {
   NOTREACHED();
 }

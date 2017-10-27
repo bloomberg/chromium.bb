@@ -33,15 +33,15 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
                    net::URLRequestContextGetter* request_context);
     ~ResolutionImpl() override;
 
-    void Start(const ResultCallback& callback) override;
+    void Start(ResultCallback callback) override;
 
     void Start(const net::HostPortPair& address,
-               const ResultCallback& callback) override;
+               ResultCallback callback) override;
 
     const std::string& GetName() override;
 
    private:
-    void ResolveComplete(const ResultCallback& callback,
+    void ResolveComplete(ResultCallback callback,
                          const net::IPEndPoint& endpoint);
     std::string name_;
     scoped_refptr<net::URLRequestContextGetter> request_context_;

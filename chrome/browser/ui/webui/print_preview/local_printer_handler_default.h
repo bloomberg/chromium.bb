@@ -22,11 +22,11 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
 
   // PrinterHandler implementation.
   void Reset() override;
-  void GetDefaultPrinter(const DefaultPrinterCallback& cb) override;
+  void GetDefaultPrinter(DefaultPrinterCallback cb) override;
   void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
-                        const GetPrintersDoneCallback& done_callback) override;
+                        GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
-                          const GetCapabilityCallback& callback) override;
+                          GetCapabilityCallback callback) override;
   // Required by PrinterHandler interface but should never be called.
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
@@ -34,7 +34,7 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedBytes>& print_data,
-                  const PrintCallback& callback) override;
+                  PrintCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalPrinterHandlerDefault);

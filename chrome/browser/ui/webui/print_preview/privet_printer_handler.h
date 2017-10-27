@@ -39,9 +39,9 @@ class PrivetPrinterHandler
   // PrinterHandler implementation:
   void Reset() override;
   void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
-                        const GetPrintersDoneCallback& done_callback) override;
+                        GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
-                          const GetCapabilityCallback& calback) override;
+                          GetCapabilityCallback calback) override;
   // TODO(tbarzic): It might make sense to have the strings in a single struct.
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
@@ -49,7 +49,7 @@ class PrivetPrinterHandler
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedBytes>& print_data,
-                  const PrintCallback& callback) override;
+                  PrintCallback callback) override;
 
   // PrivetLocalPrinterLister::Delegate implementation.
   void LocalPrinterChanged(
@@ -72,12 +72,12 @@ class PrivetPrinterHandler
           client);
   void StopLister();
   void CapabilitiesUpdateClient(
-      const GetCapabilityCallback& callback,
+      GetCapabilityCallback callback,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
-  void OnGotCapabilities(const GetCapabilityCallback& callback,
+  void OnGotCapabilities(GetCapabilityCallback callback,
                          const base::DictionaryValue* capabilities);
   void PrintUpdateClient(
-      const PrintCallback& callback,
+      PrintCallback callback,
       const base::string16& job_title,
       const scoped_refptr<base::RefCountedBytes>& print_data,
       const std::string& print_ticket,
@@ -90,10 +90,9 @@ class PrivetPrinterHandler
                   const std::string& print_ticket,
                   const std::string& capabilities,
                   const gfx::Size& page_size);
-  bool CreateHTTP(
+  void CreateHTTP(
       const std::string& name,
-      const cloud_print::PrivetHTTPAsynchronousFactory::ResultCallback&
-          callback);
+      cloud_print::PrivetHTTPAsynchronousFactory::ResultCallback callback);
 
   Profile* profile_;
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
