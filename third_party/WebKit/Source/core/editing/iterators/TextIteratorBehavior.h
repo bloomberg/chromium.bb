@@ -21,29 +21,41 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool operator==(const TextIteratorBehavior& other) const;
   bool operator!=(const TextIteratorBehavior& other) const;
 
-  bool CollapseTrailingSpace() const { return collapse_trailing_space_; }
+  bool CollapseTrailingSpace() const {
+    return values_.bits.collapse_trailing_space;
+  }
   bool DoesNotBreakAtReplacedElement() const {
-    return does_not_break_at_replaced_element_;
+    return values_.bits.does_not_break_at_replaced_element;
   }
   bool EmitsCharactersBetweenAllVisiblePositions() const {
-    return emits_characters_between_all_visible_positions_;
+    return values_.bits.emits_characters_between_all_visible_positions;
   }
-  bool EmitsImageAltText() const { return emits_image_alt_text_; }
-  bool EmitsSpaceForNbsp() const { return emits_space_for_nbsp_; }
+  bool EmitsImageAltText() const { return values_.bits.emits_image_alt_text; }
+  bool EmitsSpaceForNbsp() const { return values_.bits.emits_space_for_nbsp; }
   bool EmitsObjectReplacementCharacter() const {
-    return emits_object_replacement_character_;
+    return values_.bits.emits_object_replacement_character;
   }
-  bool EmitsOriginalText() const { return emits_original_text_; }
-  bool EntersOpenShadowRoots() const { return enters_open_shadow_roots_; }
-  bool EntersTextControls() const { return enters_text_controls_; }
-  bool ExcludeAutofilledValue() const { return exclude_autofilled_value_; }
-  bool ForInnerText() const { return for_inner_text_; }
-  bool ForSelectionToString() const { return for_selection_to_string_; }
-  bool ForWindowFind() const { return for_window_find_; }
-  bool IgnoresStyleVisibility() const { return ignores_style_visibility_; }
-  bool StopsOnFormControls() const { return stops_on_form_controls_; }
+  bool EmitsOriginalText() const { return values_.bits.emits_original_text; }
+  bool EntersOpenShadowRoots() const {
+    return values_.bits.enters_open_shadow_roots;
+  }
+  bool EntersTextControls() const { return values_.bits.enters_text_controls; }
+  bool ExcludeAutofilledValue() const {
+    return values_.bits.exclude_autofilled_value;
+  }
+  bool ForInnerText() const { return values_.bits.for_inner_text; }
+  bool ForSelectionToString() const {
+    return values_.bits.for_selection_to_string;
+  }
+  bool ForWindowFind() const { return values_.bits.for_window_find; }
+  bool IgnoresStyleVisibility() const {
+    return values_.bits.ignores_style_visibility;
+  }
+  bool StopsOnFormControls() const {
+    return values_.bits.stops_on_form_controls;
+  }
   bool DoesNotEmitSpaceBeyondRangeEnd() const {
-    return does_not_emit_space_beyond_range_end_;
+    return values_.bits.does_not_emit_space_beyond_range_end;
   }
 
   static TextIteratorBehavior EmitsObjectReplacementCharacterBehavior();
@@ -53,22 +65,27 @@ class CORE_EXPORT TextIteratorBehavior final {
   static TextIteratorBehavior NoTrailingSpaceRangeLengthBehavior();
 
  private:
-  bool collapse_trailing_space_ : 1;
-  bool does_not_break_at_replaced_element_ : 1;
-  bool emits_characters_between_all_visible_positions_ : 1;
-  bool emits_image_alt_text_ : 1;
-  bool emits_space_for_nbsp_ : 1;
-  bool emits_object_replacement_character_ : 1;
-  bool emits_original_text_ : 1;
-  bool enters_open_shadow_roots_ : 1;
-  bool enters_text_controls_ : 1;
-  bool exclude_autofilled_value_ : 1;
-  bool for_inner_text_ : 1;
-  bool for_selection_to_string_ : 1;
-  bool for_window_find_ : 1;
-  bool ignores_style_visibility_ : 1;
-  bool stops_on_form_controls_ : 1;
-  bool does_not_emit_space_beyond_range_end_ : 1;
+  union {
+    unsigned all;
+    struct {
+      bool collapse_trailing_space : 1;
+      bool does_not_break_at_replaced_element : 1;
+      bool emits_characters_between_all_visible_positions : 1;
+      bool emits_image_alt_text : 1;
+      bool emits_space_for_nbsp : 1;
+      bool emits_object_replacement_character : 1;
+      bool emits_original_text : 1;
+      bool enters_open_shadow_roots : 1;
+      bool enters_text_controls : 1;
+      bool exclude_autofilled_value : 1;
+      bool for_inner_text : 1;
+      bool for_selection_to_string : 1;
+      bool for_window_find : 1;
+      bool ignores_style_visibility : 1;
+      bool stops_on_form_controls : 1;
+      bool does_not_emit_space_beyond_range_end : 1;
+    } bits;
+  } values_;
 };
 
 class CORE_EXPORT TextIteratorBehavior::Builder final {

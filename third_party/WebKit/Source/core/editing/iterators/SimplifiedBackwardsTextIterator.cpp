@@ -85,11 +85,6 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       stops_on_form_controls_(behavior.StopsOnFormControls()),
       should_stop_(false),
       emits_original_text_(false) {
-  DCHECK(
-      behavior == TextIteratorBehavior() ||
-      behavior ==
-          TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
-
   Node* start_node = range.StartPosition().AnchorNode();
   if (!start_node)
     return;
