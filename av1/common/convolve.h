@@ -64,9 +64,15 @@ static INLINE void av1_convolve_filter_params_fixup_1212(
 }
 #endif
 
-static INLINE void av1_get_convolve_filter_params(
-    InterpFilters interp_filters, int avoid_1212, InterpFilterParams *params_x,
-    InterpFilterParams *params_y) {
+static INLINE void av1_get_convolve_filter_params(InterpFilters interp_filters,
+                                                  int avoid_1212,
+                                                  InterpFilterParams *params_x,
+                                                  InterpFilterParams *params_y
+#if CONFIG_SHORT_FILTER
+                                                  ,
+                                                  int w, int h
+#endif
+                                                  ) {
 #if CONFIG_DUAL_FILTER
   InterpFilter filter_x = av1_extract_interp_filter(interp_filters, 1);
   InterpFilter filter_y = av1_extract_interp_filter(interp_filters, 0);
@@ -74,9 +80,13 @@ static INLINE void av1_get_convolve_filter_params(
   InterpFilter filter_x = av1_extract_interp_filter(interp_filters, 0);
   InterpFilter filter_y = av1_extract_interp_filter(interp_filters, 0);
 #endif
-
+#if CONFIG_SHORT_FILTER
+  *params_x = av1_get_interp_filter_params_with_block_size(filter_x, w);
+  *params_y = av1_get_interp_filter_params_with_block_size(filter_y, h);
+#else
   *params_x = av1_get_interp_filter_params(filter_x);
   *params_y = av1_get_interp_filter_params(filter_y);
+#endif
 
   if (avoid_1212) {
 #if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER

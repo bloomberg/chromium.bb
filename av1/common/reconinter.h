@@ -86,8 +86,14 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
       assert(conv_params->round == CONVOLVE_OPT_ROUND);
 
       InterpFilterParams filter_params_x, filter_params_y;
+#if CONFIG_SHORT_FILTER
+      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+                                     &filter_params_y, w, h);
+#else
       av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
                                      &filter_params_y);
+
+#endif
 
       if (w <= 2 || h <= 2) {
         av1_convolve_c(src, src_stride, dst, dst_stride, w, h, interp_filters,
@@ -154,8 +160,13 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 #endif  // CONFIG_CONVOLVE_ROUND
     } else {
       InterpFilterParams filter_params_x, filter_params_y;
+#if CONFIG_SHORT_FILTER
+      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+                                     &filter_params_y, w, h);
+#else
       av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
                                      &filter_params_y);
+#endif
 
       if (filter_params_x.taps == SUBPEL_TAPS &&
           filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2) {
