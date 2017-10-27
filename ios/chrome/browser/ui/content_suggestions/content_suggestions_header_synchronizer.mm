@@ -160,8 +160,7 @@ initWithCollectionController:
   if (self.shouldAnimateHeader) {
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
-                       screenWidth:self.collectionView.frame.size.width
-                    safeAreaInsets:SafeAreaInsetsForView(self.collectionView)];
+                             width:0];
   }
 }
 
@@ -169,8 +168,7 @@ initWithCollectionController:
   if (self.shouldAnimateHeader && !IsIPadIdiom()) {
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
-                       screenWidth:width
-                    safeAreaInsets:SafeAreaInsetsForView(self.collectionView)];
+                             width:width];
   } else {
     [self.headerController updateFakeOmniboxForWidth:width];
   }

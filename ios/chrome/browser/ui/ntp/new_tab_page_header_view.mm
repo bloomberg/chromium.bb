@@ -145,11 +145,10 @@
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
             subviewConstraints:(NSArray*)constraints
+                 logoIsShowing:(BOOL)logoIsShowing
                      forOffset:(CGFloat)offset
-                   screenWidth:(CGFloat)screenWidth
-                safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  CGFloat contentWidth =
-      MAX(0, screenWidth - safeAreaInsets.left - safeAreaInsets.right);
+                         width:(CGFloat)width {
+  CGFloat screenWidth = width > 0 ? width : self.bounds.size.width;
   // The scroll offset at which point searchField's frame should stop growing.
   CGFloat maxScaleOffset =
       self.frame.size.height - ntp_header::kMinHeaderHeight;
@@ -162,11 +161,11 @@
     percent = MIN(1, MAX(0, animatingOffset / ntp_header::kAnimationDistance));
   }
 
-  if (screenWidth == 0 || contentWidth == 0)
+  if (screenWidth == 0)
     return;
 
   CGFloat searchFieldNormalWidth =
-      content_suggestions::searchFieldWidth(contentWidth);
+      content_suggestions::searchFieldWidth(screenWidth);
 
   // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.
@@ -186,8 +185,7 @@
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff =
-      percent * (ntp_header::kMaxHorizontalMarginDiff + safeAreaInsets.left);
+  CGFloat constantDiff = percent * ntp_header::kMaxHorizontalMarginDiff;
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
       constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;

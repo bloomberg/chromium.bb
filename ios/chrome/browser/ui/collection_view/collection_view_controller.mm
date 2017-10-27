@@ -38,6 +38,13 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    if (@available(iOS 11, *)) {
+      self.collectionView.contentInsetAdjustmentBehavior =
+          UIScrollViewContentInsetAdjustmentNever;
+    }
+  }
+
   // Configure the app bar, if there is one.
   if (self.appBar) {
     // Configure the app bar style.
