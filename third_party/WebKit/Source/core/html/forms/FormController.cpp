@@ -406,13 +406,14 @@ void DocumentState::Trace(blink::Visitor* visitor) {
 }
 
 void DocumentState::AddControl(HTMLFormControlElementWithState* control) {
-  DCHECK(!form_controls_.Contains(control));
-  form_controls_.insert(control);
+  auto result = form_controls_.insert(control);
+  DCHECK(result.is_new_entry);
 }
 
 void DocumentState::RemoveControl(HTMLFormControlElementWithState* control) {
-  CHECK(form_controls_.Contains(control));
-  form_controls_.erase(control);
+  auto it = form_controls_.find(control);
+  CHECK(it != form_controls_.end());
+  form_controls_.erase(it);
 }
 
 static String FormStateSignature() {
