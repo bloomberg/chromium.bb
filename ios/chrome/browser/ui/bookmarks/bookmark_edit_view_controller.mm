@@ -223,7 +223,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   BookmarksElevatedToolbar* buttonBar = [[BookmarksElevatedToolbar alloc] init];
   MDCButton* deleteButton = [[MDCFlatButton alloc] init];
-  [deleteButton setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE)
+  [deleteButton setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_DELETE)
                 forState:UIControlStateNormal];
   [deleteButton addTarget:self
                    action:@selector(deleteBookmark)
