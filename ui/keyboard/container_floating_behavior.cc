@@ -182,11 +182,13 @@ void ContainerFloatingBehavior::HandlePointerEvent(
   if (keyboard_bounds.height() <= 0)
     return;
 
-  if (isMouseButtonPressed && IsDragHandle(kb_offset, keyboard_bounds.size())) {
-    if (drag_descriptor_ == nullptr) {
+  if (isMouseButtonPressed &&
+      (drag_descriptor_ || IsDragHandle(kb_offset, keyboard_bounds.size()))) {
+    if (!drag_descriptor_) {
       // If there is no active drag, start a new one.
       drag_descriptor_.reset(
           new DragDescriptor(keyboard_bounds.origin(), kb_offset));
+      container->SetCapture();
     } else {
       // If there is an active drag, use it to determine the new location of the
       // keyboard.
@@ -207,12 +209,13 @@ void ContainerFloatingBehavior::HandlePointerEvent(
 
     // re-query the container for the new bounds
     SavePosition(container->bounds().origin());
-  } else if (drag_descriptor_ != nullptr) {
+  } else if (drag_descriptor_) {
     // drag has ended
     drag_descriptor_ = nullptr;
 
     // save the current bounds.
     SavePosition(keyboard_bounds.origin());
+    container->ReleaseCapture();
   }
 }
 
