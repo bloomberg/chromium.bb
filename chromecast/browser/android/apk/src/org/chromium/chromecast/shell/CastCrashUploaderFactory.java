@@ -14,11 +14,12 @@ import java.util.concurrent.ScheduledExecutorService;
 public final class CastCrashUploaderFactory {
     private static ScheduledExecutorService sExecutorService = null;
 
-    public static CastCrashUploader createCastCrashUploader(
-            String crashDumpPath, String uuid, boolean uploadCrashToStaging) {
+    public static CastCrashUploader createCastCrashUploader(String crashDumpPath, String uuid,
+            String applicationFeedback, boolean uploadCrashToStaging) {
         if (sExecutorService == null) {
             sExecutorService = Executors.newScheduledThreadPool(1);
         }
-        return new CastCrashUploader(sExecutorService, crashDumpPath, uuid, uploadCrashToStaging);
+        return new CastCrashUploader(
+                sExecutorService, crashDumpPath, uuid, applicationFeedback, uploadCrashToStaging);
     }
 }
