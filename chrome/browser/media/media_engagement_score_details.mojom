@@ -21,6 +21,18 @@ struct MediaEngagementScoreDetails {
   bool is_high;
 };
 
+struct MediaEngagementConfig {
+  // Origins with a number of visits less than this number will receive
+  // a score of zero.
+  int32 score_min_visits;
+
+  // The upper and lower threshold of whether the total score is considered
+  // to be high.
+  double high_score_lower_threshold;
+  double high_score_upper_threshold;
+};
+
 interface MediaEngagementScoreDetailsProvider {
   GetMediaEngagementScoreDetails() => (array<MediaEngagementScoreDetails> info);
+  GetMediaEngagementConfig() => (MediaEngagementConfig config);
 };
