@@ -771,6 +771,16 @@ void TestWebGraphicsContext3D::SetMaxSamples(int max_samples) {
   test_capabilities_.max_samples = max_samples;
 }
 
+size_t TestWebGraphicsContext3D::NumFramebuffers() const {
+  base::AutoLock lock_for_framebuffer_access(namespace_->lock);
+  return framebuffer_set_.size();
+}
+
+size_t TestWebGraphicsContext3D::NumRenderbuffers() const {
+  base::AutoLock lock_for_renderbuffer_access(namespace_->lock);
+  return namespace_->renderbuffer_set.size();
+}
+
 TestWebGraphicsContext3D::TextureTargets::TextureTargets() {
   // Initialize default bindings.
   bound_textures_[GL_TEXTURE_2D] = 0;
