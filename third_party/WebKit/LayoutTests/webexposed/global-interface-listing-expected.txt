@@ -2044,6 +2044,7 @@ interface Gamepad
     getter mapping
     getter pose
     getter timestamp
+    getter vibrationActuator
     method constructor
 interface GamepadButton
     attribute @@toStringTag
@@ -2055,6 +2056,12 @@ interface GamepadEvent : Event
     attribute @@toStringTag
     getter gamepad
     method constructor
+interface GamepadHapticActuator
+    attribute @@toStringTag
+    getter type
+    method constructor
+    method playEffect
+    method reset
 interface GamepadPose
     attribute @@toStringTag
     getter angularAcceleration

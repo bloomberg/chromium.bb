@@ -39,6 +39,11 @@ interface Gamepad {
     [CachedAttribute=isAxisDataDirty, MeasureAs=GamepadAxes] readonly attribute FrozenArray<double> axes;
     [CachedAttribute=isButtonDataDirty, MeasureAs=GamepadButtons] readonly attribute FrozenArray<GamepadButton> buttons;
 
+    // Gamepad vibration is proposed as an extension to the Gamepad API.
+    // https://docs.google.com/document/d/1jPKzVRNzzU4dUsvLpSXm1VXPQZ8FP-0lKMT-R_p-s6g
+    // TODO(mattreynolds): Replace this with a link to w3c.github.io/gamepad
+    [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadVibrationActuator] readonly attribute GamepadHapticActuator? vibrationActuator;
+
     [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadPose] readonly attribute GamepadPose? pose;
     [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadHand] readonly attribute GamepadHand hand;
 
