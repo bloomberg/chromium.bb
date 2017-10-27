@@ -7,6 +7,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -35,9 +36,19 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual void InitializeShowAnimationStartingState(
       aura::Window* container) = 0;
 
+  // Used by the layout manager to intercept any bounds setting request to
+  // adjust the request to different bounds, if necessary. This method gets
+  // called at any time during the keyboard's life cycle.
   virtual const gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds) = 0;
+
+  // Used to set the bounds to the default location. This is generally called
+  // during initialization, but may also be have identical behavior to
+  // AdjustSetBoundsRequest in the case of constant layouts such as the fixed
+  // full-width keyboard.
+  virtual void SetCanonicalBounds(aura::Window* container,
+                                  const gfx::Rect& display_bounds) = 0;
 
   // A ContainerBehavior can choose to not allow overscroll to be used. It is
   // important to note that the word "Allowed" is used because whether or not
@@ -52,6 +63,8 @@ class KEYBOARD_EXPORT ContainerBehavior {
 
   virtual void HandlePointerEvent(bool isMouseButtonPressed,
                                   const gfx::Vector2d& kb_offset) = 0;
+
+  virtual ContainerType GetType() const = 0;
 };
 
 }  // namespace keyboard

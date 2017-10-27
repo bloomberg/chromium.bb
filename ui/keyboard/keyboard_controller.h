@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/keyboard/container_behavior.h"
+#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_event_filter.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
@@ -156,6 +157,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Moves an already loaded keyboard.
   void MoveKeyboard(const gfx::Rect new_bounds);
 
+  // Sets the active container type. If the keyboard is currently shown, this
+  // will trigger a hide animation and a subsequent show animation. Otherwise
+  // the ContainerBehavior change is synchronous.
+  void SetContainerType(const ContainerType type);
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -200,6 +206,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Called when show and hide animation finished successfully. If the animation
   // is aborted, it won't be called.
   void ShowAnimationFinished();
+  void HideAnimationFinished();
 
   void NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
 
@@ -220,6 +227,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Reports error histogram in case lingering in an intermediate state.
   void ReportLingeringState();
+
+  void SetContainerBehaviorInternal(const ContainerType type);
 
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_;
@@ -246,6 +255,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   gfx::Rect current_keyboard_bounds_;
 
   KeyboardControllerState state_;
+
+  ContainerType enqueued_container_type_;
 
   static KeyboardController* instance_;
 
