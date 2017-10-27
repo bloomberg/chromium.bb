@@ -2287,6 +2287,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.StateTransition.AnimationSmoothness" units="%">
+  <owner>vadimt@chromium.org</owner>
+  <summary>
+    Relative smoothness of animations of peeking launcher state transitions.
+    100% represents ideally smooth 60 frames per second. 50% represents only 30
+    frames per second is achieved during the animations. 0% should not happen.
+    This metric is recorded exactly once when the user switches states of the
+    launcher.
+  </summary>
+</histogram>
+
 <histogram name="Arc.AndroidBootTime" units="ms">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
