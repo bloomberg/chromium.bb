@@ -551,21 +551,16 @@ bool ThemePainterMac::PaintSearchField(const Node* node,
   return false;
 }
 
-bool ThemePainterMac::PaintSearchFieldCancelButton(const LayoutObject& o,
-                                                   const PaintInfo& paint_info,
-                                                   const IntRect& r) {
-  if (!o.GetNode())
-    return false;
-  Element* input = o.GetNode()->OwnerShadowHost();
-  if (!input)
-    input = ToElement(o.GetNode());
-
-  if (!input->GetLayoutObject()->IsBox())
+bool ThemePainterMac::PaintSearchFieldCancelButton(
+    const LayoutObject& cancel_button,
+    const PaintInfo& paint_info,
+    const IntRect& r) {
+  if (!cancel_button.GetNode())
     return false;
 
   GraphicsContextStateSaver state_saver(paint_info.context);
 
-  float zoom_level = o.StyleRef().EffectiveZoom();
+  float zoom_level = cancel_button.StyleRef().EffectiveZoom();
   FloatRect unzoomed_rect(r);
   if (zoom_level != 1.0f) {
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
@@ -577,7 +572,7 @@ bool ThemePainterMac::PaintSearchFieldCancelButton(const LayoutObject& o,
 
   Color fill_color(200, 200, 200);
 
-  if (LayoutTheme::IsPressed(o.GetNode())) {
+  if (LayoutTheme::IsPressed(cancel_button.GetNode())) {
     Color tint_color(0, 0, 0, 32);
     fill_color = fill_color.Blend(tint_color);
   }
