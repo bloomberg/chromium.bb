@@ -19,7 +19,6 @@
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/net_features.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <Security/x509defs.h>
@@ -37,7 +36,6 @@ struct NET_EXPORT CertPrincipal {
   explicit CertPrincipal(const std::string& name);
   ~CertPrincipal();
 
-#if BUILDFLAG(USE_BYTE_CERTS)
   // Configures handling of PrintableString values in the DistinguishedName. Do
   // not use non-default handling without consulting //net owners. With
   // kAsUTF8Hack, PrintableStrings are interpreted as UTF-8 strings.
@@ -50,7 +48,6 @@ struct NET_EXPORT CertPrincipal {
       size_t length,
       PrintableStringHandling printable_string_handling =
           PrintableStringHandling::kDefault);
-#endif
 
   // Returns a name that can be used to represent the issuer.  It tries in this
   // order: CN, O and OU and returns the first non-empty one found.

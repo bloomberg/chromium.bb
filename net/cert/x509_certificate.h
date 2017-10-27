@@ -18,14 +18,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_cert_types.h"
-#include "net/net_features.h"
-
-#if BUILDFLAG(USE_BYTE_CERTS)
 #include "third_party/boringssl/src/include/openssl/base.h"
-#elif defined(USE_NSS_CERTS)
-// Forward declaration; real one in <cert.h>
-struct CERTCertificateStr;
-#endif
 
 namespace base {
 class Pickle;
@@ -48,16 +41,9 @@ class NET_EXPORT X509Certificate
   // An OSCertHandle is a handle to a certificate object in the underlying
   // crypto library. We assume that OSCertHandle is a pointer type on all
   // platforms and that NULL represents an invalid OSCertHandle.
-#if BUILDFLAG(USE_BYTE_CERTS)
   // TODO(mattm): Remove OSCertHandle type and clean up the interfaces once all
   // platforms use the CRYPTO_BUFFER version.
   typedef CRYPTO_BUFFER* OSCertHandle;
-#elif defined(USE_NSS_CERTS)
-  typedef struct CERTCertificateStr* OSCertHandle;
-#else
-  // TODO(ericroman): not implemented
-  typedef void* OSCertHandle;
-#endif
 
   typedef std::vector<OSCertHandle> OSCertHandles;
 

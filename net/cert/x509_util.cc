@@ -400,24 +400,11 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
     return nullptr;
   }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
   std::vector<CRYPTO_BUFFER*> intermediate_chain;
   for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(buffers); ++i)
     intermediate_chain.push_back(sk_CRYPTO_BUFFER_value(buffers, i));
   return X509Certificate::CreateFromHandle(sk_CRYPTO_BUFFER_value(buffers, 0),
                                            intermediate_chain);
-#else
-  // Convert the certificate chains to a platform certificate handle.
-  std::vector<base::StringPiece> der_chain;
-  der_chain.reserve(sk_CRYPTO_BUFFER_num(buffers));
-  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(buffers); ++i) {
-    const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(buffers, i);
-    der_chain.push_back(base::StringPiece(
-        reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
-        CRYPTO_BUFFER_len(cert)));
-  }
-  return X509Certificate::CreateFromDERCertChain(der_chain);
-#endif
 }
 
 ParseCertificateOptions DefaultParseCertificateOptions() {

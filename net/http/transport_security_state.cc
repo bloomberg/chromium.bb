@@ -30,6 +30,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_util.h"
 #include "net/http/http_security_headers.h"
+#include "net/net_features.h"
 #include "net/ssl/ssl_info.h"
 
 #if !defined(OS_NACL)

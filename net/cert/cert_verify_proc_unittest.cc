@@ -474,7 +474,6 @@ TEST_P(CertVerifyProcInternalTest, DISABLED_PaypalNullCertParsing) {
   // TODO(crbug.com/649017): What expectations to use for the other verifiers?
 }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
 // Tests the case where the target certificate is accepted by
 // X509CertificateBytes, but has errors that should cause verification to fail.
 TEST_P(CertVerifyProcInternalTest, InvalidTarget) {
@@ -536,7 +535,6 @@ TEST_P(CertVerifyProcInternalTest, UnnecessaryInvalidIntermediate) {
   EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0u, verify_result.cert_status);
 }
-#endif  // BUILDFLAG(USE_BYTE_CERTS)
 
 // A regression test for http://crbug.com/31497.
 TEST_P(CertVerifyProcInternalTest, IntermediateCARequireExplicitPolicy) {
