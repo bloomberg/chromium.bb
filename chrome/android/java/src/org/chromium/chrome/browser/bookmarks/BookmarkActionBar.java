@@ -129,6 +129,16 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         getMenu().findItem(R.id.edit_menu_id).setVisible(false);
     }
 
+    @Override
+    protected void showNormalView() {
+        super.showNormalView();
+
+        if (mDelegate == null) {
+            getMenu().findItem(R.id.search_menu_id).setVisible(false);
+            getMenu().findItem(R.id.edit_menu_id).setVisible(false);
+        }
+    }
+
     // BookmarkUIObserver implementations.
 
     @Override
