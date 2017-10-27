@@ -95,6 +95,10 @@ class PasswordFormManager : public FormFetcher::Consumer {
     IGNORE_OTHER_POSSIBLE_USERNAMES
   };
 
+  // The upper limit on how many times Chrome will try to autofill the same
+  // form.
+  static constexpr int kMaxTimesAutofill = 5;
+
   // Chooses between the current and new password value which one to save. This
   // is whichever is non-empty, with the preference being given to the new one.
   static base::string16 PasswordToSave(const autofill::PasswordForm& form);
@@ -597,6 +601,12 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Tracks if a form with same origin as |observed_form_| found in blacklisted
   // forms.
   bool blacklisted_origin_found_ = false;
+
+  // If Chrome has already autofilled a few times, it is probable that autofill
+  // is triggered by programmatic changes in the page. We set a maximum number
+  // of times that Chrome will autofill to avoid being stuck in an infinite
+  // loop.
+  int autofills_left_ = kMaxTimesAutofill;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
