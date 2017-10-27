@@ -3456,6 +3456,8 @@
   "Fuchsia x64": {
     "additional_compile_targets": [
       "base_unittests",
+      "content_browsertests",
+      "content_shell",
       "content_unittests",
       "gl_unittests",
       "headless_shell",
