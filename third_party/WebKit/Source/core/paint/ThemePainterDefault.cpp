@@ -442,8 +442,9 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   if (!cancel_button_object.GetNode())
     return false;
   Node* input = cancel_button_object.GetNode()->OwnerShadowHost();
-  const LayoutObject& base_layout_object =
-      input ? *input->GetLayoutObject() : cancel_button_object;
+  const LayoutObject& base_layout_object = input && input->GetLayoutObject()
+                                               ? *input->GetLayoutObject()
+                                               : cancel_button_object;
   if (!base_layout_object.IsBox())
     return false;
   const LayoutBox& input_layout_box = ToLayoutBox(base_layout_object);
