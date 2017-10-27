@@ -1238,6 +1238,9 @@ using ios::material::TimingFunction;
   } else {
     [self focusOmnibox];
     [_omniBox insertTextWhileEditing:result];
+    // The call to |setText| shouldn't be needed, but without it the "Go" button
+    // of the keyboard is disabled.
+    [_omniBox setText:result];
     // Notify the accessibility system to start reading the new contents of the
     // Omnibox.
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
