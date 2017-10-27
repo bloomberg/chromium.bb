@@ -22,8 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#ifndef OS_MACOSX
-
 namespace {
 
 int kRenderProcessId = 1;
@@ -476,5 +474,3 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
 }
 
 }  // namespace data_use_measurement
-
-#endif  // OS_MACOSX
