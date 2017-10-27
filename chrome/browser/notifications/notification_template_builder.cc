@@ -21,6 +21,7 @@ const char kActionsElement[] = "actions";
 const char kActivationType[] = "activationType";
 const char kArguments[] = "arguments";
 const char kAttribution[] = "attribution";
+const char kAudioElement[] = "audio";
 const char kBindingElement[] = "binding";
 const char kBindingElementTemplateAttribute[] = "template";
 const char kButtonIndex[] = "buttonIndex=";
@@ -31,7 +32,9 @@ const char kInputId[] = "id";
 const char kInputType[] = "type";
 const char kPlaceholderContent[] = "placeHolderContent";
 const char kPlacement[] = "placement";
+const char kSilent[] = "silent";
 const char kText[] = "text";
+const char kTrue[] = "true";
 const char kUserResponse[] = "userResponse";
 const char kTextElement[] = "text";
 const char kToastElement[] = "toast";
@@ -74,6 +77,9 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   builder->EndVisualElement();
 
   builder->AddActions(notification.buttons());
+
+  if (notification.silent())
+    builder->WriteAudioSilentElement();
 
   builder->EndToastElement();
 
@@ -185,6 +191,12 @@ void NotificationTemplateBuilder::StartActionsElement() {
 }
 
 void NotificationTemplateBuilder::EndActionsElement() {
+  xml_writer_->EndElement();
+}
+
+void NotificationTemplateBuilder::WriteAudioSilentElement() {
+  xml_writer_->StartElement(kAudioElement);
+  xml_writer_->AddAttribute(kSilent, kTrue);
   xml_writer_->EndElement();
 }
 
