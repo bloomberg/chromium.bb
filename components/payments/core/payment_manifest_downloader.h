@@ -29,7 +29,7 @@ namespace payments {
 //  - HTTP response code is not 200. (204 is also allowed for HEAD request.)
 //  - HTTP GET on the manifest URL returns empty content.
 //
-// In the case of a payment method manifest download, can also be called when:
+// In the case of a payment method manifest download, can also fail when:
 //  - HTTP response headers are absent.
 //  - HTTP response headers do not contain Link headers.
 //  - Link header does not contain rel="payment-method-manifest".
@@ -104,9 +104,6 @@ class PaymentManifestDownloader
   void DownloadWebAppManifest(const GURL& url,
                               PaymentManifestDownloadCallback callback);
 
-  // Allows HTTP URLs. Should be used only for testing.
-  void AllowHttpForTest();
-
  private:
   // Information about an ongoing download request.
   struct Download {
@@ -127,7 +124,6 @@ class PaymentManifestDownloader
   bool IsValidManifestUrl(const GURL& url);
 
   scoped_refptr<net::URLRequestContextGetter> context_;
-  bool allow_http_for_test_;
 
   // Downloads are identified by net::URLFetcher pointers, because that's the
   // only unique piece of information that OnURLFetchComplete() receives. Can't

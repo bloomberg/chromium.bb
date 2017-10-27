@@ -29,9 +29,9 @@ import java.util.Set;
 /**
  * Finds installed native Android payment apps and verifies their signatures according to the
  * payment method manifests. The manifests are located based on the payment method name, which is a
- * URI that starts with "https://". The W3C-published non-URI payment method names are exceptions:
- * these are common payment method names that do not have a manifest and can be used by any payment
- * app.
+ * URI that starts with "https://" (localhosts can be "http://", however). The W3C-published non-URI
+ * payment method names are exceptions: these are common payment method names that do not have a
+ * manifest and can be used by any payment app.
  */
 public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private static final String TAG = "PaymentAppFinder";
