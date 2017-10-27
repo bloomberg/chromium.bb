@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_GPU_GPU_MAIN_H_
-#define SERVICES_UI_GPU_GPU_MAIN_H_
+#ifndef COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_
+#define COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_
 
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread.h"
@@ -11,23 +11,20 @@
 #include "gpu/ipc/service/gpu_init.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/viz_main.mojom.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;
 class SyncPointManager;
-}
+}  // namespace gpu
 
 namespace viz {
 class DisplayProvider;
 class FrameSinkManagerImpl;
 class GpuServiceImpl;
-}
 
-namespace ui {
-
-class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
+class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
  public:
   struct LogMessage {
     int severity;
@@ -41,7 +38,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
     virtual ~Delegate() = default;
 
     virtual void OnInitializationFailed() = 0;
-    virtual void OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) = 0;
+    virtual void OnGpuServiceConnection(GpuServiceImpl* gpu_service) = 0;
   };
 
   struct ExternalDependencies {
@@ -61,15 +58,15 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
     DISALLOW_COPY_AND_ASSIGN(ExternalDependencies);
   };
 
-  GpuMain(Delegate* delegate,
-          ExternalDependencies dependencies,
-          std::unique_ptr<gpu::GpuInit> gpu_init = nullptr);
-  ~GpuMain() override;
+  VizMainImpl(Delegate* delegate,
+              ExternalDependencies dependencies,
+              std::unique_ptr<gpu::GpuInit> gpu_init = nullptr);
+  ~VizMainImpl() override;
 
   void SetLogMessagesForHost(LogMessages messages);
 
-  void Bind(mojom::GpuMainRequest request);
-  void BindAssociated(mojom::GpuMainAssociatedRequest request);
+  void Bind(mojom::VizMainRequest request);
+  void BindAssociated(mojom::VizMainAssociatedRequest request);
 
   // Calling this from the gpu or compositor thread can lead to crash/deadlock.
   // So this must be called from a different thread.
@@ -77,26 +74,25 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   // this cleaner.
   void TearDown();
 
-  // mojom::GpuMain implementation:
-  void CreateGpuService(viz::mojom::GpuServiceRequest request,
-                        viz::mojom::GpuHostPtr gpu_host,
+  // mojom::VizMain implementation:
+  void CreateGpuService(mojom::GpuServiceRequest request,
+                        mojom::GpuHostPtr gpu_host,
                         mojo::ScopedSharedBufferHandle activity_flags) override;
-  void CreateFrameSinkManager(
-      viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtr client) override;
+  void CreateFrameSinkManager(mojom::FrameSinkManagerRequest request,
+                              mojom::FrameSinkManagerClientPtr client) override;
 
-  viz::GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
-  const viz::GpuServiceImpl* gpu_service() const { return gpu_service_.get(); }
+  GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
+  const GpuServiceImpl* gpu_service() const { return gpu_service_.get(); }
 
  private:
   void CreateFrameSinkManagerInternal(
-      viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtrInfo client_info);
+      mojom::FrameSinkManagerRequest request,
+      mojom::FrameSinkManagerClientPtrInfo client_info);
   void CreateFrameSinkManagerOnCompositorThread(
-      viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtrInfo client_info);
+      mojom::FrameSinkManagerRequest request,
+      mojom::FrameSinkManagerClientPtrInfo client_info);
 
-  void CloseGpuMainBindingOnGpuThread(base::WaitableEvent* wait);
+  void CloseVizMainBindingOnGpuThread(base::WaitableEvent* wait);
   void TearDownOnCompositorThread(base::WaitableEvent* wait);
   void TearDownOnGpuThread(base::WaitableEvent* wait);
 
@@ -116,20 +112,19 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   LogMessages log_messages_;
 
   std::unique_ptr<gpu::GpuInit> gpu_init_;
-  std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
+  std::unique_ptr<GpuServiceImpl> gpu_service_;
 
   // The InCommandCommandBuffer::Service used by the frame sink manager.
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
 
   // If the gpu service is not yet ready then we stash pending MessagePipes in
   // these member variables.
-  viz::mojom::FrameSinkManagerRequest pending_frame_sink_manager_request_;
-  viz::mojom::FrameSinkManagerClientPtrInfo
-      pending_frame_sink_manager_client_info_;
+  mojom::FrameSinkManagerRequest pending_frame_sink_manager_request_;
+  mojom::FrameSinkManagerClientPtrInfo pending_frame_sink_manager_client_info_;
 
   // Provides mojo interfaces for creating and managing FrameSinks.
-  std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
-  std::unique_ptr<viz::DisplayProvider> display_provider_;
+  std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
+  std::unique_ptr<DisplayProvider> display_provider_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
@@ -140,12 +135,12 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
-  mojo::Binding<mojom::GpuMain> binding_;
-  mojo::AssociatedBinding<mojom::GpuMain> associated_binding_;
+  mojo::Binding<mojom::VizMain> binding_;
+  mojo::AssociatedBinding<mojom::VizMain> associated_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuMain);
+  DISALLOW_COPY_AND_ASSIGN(VizMainImpl);
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  // SERVICES_UI_GPU_GPU_MAIN_H_
+#endif  // COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_

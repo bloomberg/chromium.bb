@@ -4,8 +4,8 @@
 
 #include "services/viz/service.h"
 
-#include "services/ui/gpu/gpu_main.h"
-#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
+#include "components/viz/service/main/viz_main_impl.h"
+#include "services/viz/privileged/interfaces/viz_main.mojom.h"
 
 namespace viz {
 
@@ -15,12 +15,12 @@ Service::~Service() = default;
 
 void Service::OnStart() {
   base::PlatformThread::SetName("VizMain");
-  registry_.AddInterface<ui::mojom::GpuMain>(
-      base::Bind(&Service::BindGpuMainRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::VizMain>(
+      base::Bind(&Service::BindVizMainRequest, base::Unretained(this)));
 
-  ui::GpuMain::ExternalDependencies deps;
+  VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor = true;
-  gpu_main_ = std::make_unique<ui::GpuMain>(nullptr, std::move(deps));
+  viz_main_ = std::make_unique<VizMainImpl>(nullptr, std::move(deps));
 }
 
 void Service::OnBindInterface(const service_manager::BindSourceInfo& info,
@@ -29,8 +29,8 @@ void Service::OnBindInterface(const service_manager::BindSourceInfo& info,
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void Service::BindGpuMainRequest(ui::mojom::GpuMainRequest request) {
-  gpu_main_->Bind(std::move(request));
+void Service::BindVizMainRequest(mojom::VizMainRequest request) {
+  viz_main_->Bind(std::move(request));
 }
 
 }  // namespace viz

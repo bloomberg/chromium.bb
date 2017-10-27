@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "components/viz/service/main/viz_main_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -34,8 +35,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
-#include "services/ui/gpu/gpu_main.h"
-#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
+#include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -45,10 +45,11 @@ class GpuServiceFactory;
 // these per process. It does process initialization and shutdown. It forwards
 // IPC messages to gpu::GpuChannelManager, which is responsible for issuing
 // rendering commands to the GPU.
-class GpuChildThread : public ChildThreadImpl, public ui::GpuMain::Delegate {
+class GpuChildThread : public ChildThreadImpl,
+                       public viz::VizMainImpl::Delegate {
  public:
   GpuChildThread(std::unique_ptr<gpu::GpuInit> gpu_init,
-                 ui::GpuMain::LogMessages deferred_messages);
+                 viz::VizMainImpl::LogMessages deferred_messages);
 
   GpuChildThread(const InProcessChildThreadParams& params,
                  std::unique_ptr<gpu::GpuInit> gpu_init);
@@ -61,7 +62,7 @@ class GpuChildThread : public ChildThreadImpl, public ui::GpuMain::Delegate {
   GpuChildThread(const ChildThreadImpl::Options& options,
                  std::unique_ptr<gpu::GpuInit> gpu_init);
 
-  void CreateGpuMainService(ui::mojom::GpuMainAssociatedRequest request);
+  void CreateVizMainService(viz::mojom::VizMainAssociatedRequest request);
 
   bool in_process_gpu() const;
 
@@ -73,7 +74,7 @@ class GpuChildThread : public ChildThreadImpl, public ui::GpuMain::Delegate {
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
-  // ui::GpuMain::Delegate:
+  // viz::VizMainImpl::Delegate:
   void OnInitializationFailed() override;
   void OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) override;
 
@@ -88,7 +89,7 @@ class GpuChildThread : public ChildThreadImpl, public ui::GpuMain::Delegate {
       media::AndroidOverlayConfig);
 #endif
 
-  ui::GpuMain gpu_main_;
+  viz::VizMainImpl viz_main_;
 
   // ServiceFactory for service_manager::Service hosting.
   std::unique_ptr<GpuServiceFactory> service_factory_;

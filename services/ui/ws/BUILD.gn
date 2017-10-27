@@ -125,12 +125,12 @@ static_library("lib") {
   ]
 
   deps = [
+    "//components/viz/service/main",  # TODO(sad): Temporary until GPU process split.
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
-    "//services/ui/gpu",  # TODO(sad): Temporary until GPU process split.
-    "//services/ui/gpu/interfaces",
+    "//services/viz/privileged/interfaces",
   ]
 
   public_deps = [
@@ -287,6 +287,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//cc:cc",
     "//cc:test_support",
+    "//components/viz/service/main",
     "//components/viz/test:test_support",
     "//gpu/ipc/client",
     "//mojo/public/cpp/bindings:bindings",
@@ -295,7 +296,6 @@ source_set("tests") {
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
     "//services/ui/common:task_runner_test_base",
-    "//services/ui/gpu:gpu",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//testing/gtest",

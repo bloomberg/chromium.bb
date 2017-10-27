@@ -150,7 +150,7 @@ viz_component("service") {
     "//media",
     "//media/gpu/ipc/service",
     "//media/mojo/services",
-    "//services/ui/gpu/interfaces",
+    "//services/viz/privileged/interfaces",
     "//skia",
     "//ui/display/types",
   ]

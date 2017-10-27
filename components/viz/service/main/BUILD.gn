@@ -7,12 +7,12 @@ import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
-source_set("gpu") {
-  output_name = "mus_gpu"
+source_set("main") {
+  output_name = "viz_main_impl"
 
   sources = [
-    "gpu_main.cc",
-    "gpu_main.h",
+    "viz_main_impl.cc",
+    "viz_main_impl.h",
   ]
 
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]
@@ -27,8 +27,7 @@ source_set("gpu") {
     "//ipc",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ui/gpu/interfaces",
-    "//services/ui/public/interfaces",
+    "//services/viz/privileged/interfaces",
     "//ui/gfx:memory_buffer",
     "//ui/gl/init",
   ]

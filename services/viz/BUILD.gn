@@ -27,10 +27,10 @@ source_set("lib") {
     "//base",
     "//cc",
     "//components/viz/service",
+    "//components/viz/service/main",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
-    "//services/ui/gpu",
-    "//services/ui/gpu/interfaces",
+    "//services/viz/privileged/interfaces",
   ]
 }
 

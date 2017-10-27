@@ -12,7 +12,7 @@
     "service_manager:connector": {
       "provides": {
         "viz_host": [
-          "ui::mojom::GpuMain"
+          "viz::mojom::VizMain"
         ]
       },
       "requires": {

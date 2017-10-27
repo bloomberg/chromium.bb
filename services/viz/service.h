@@ -7,13 +7,11 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
-
-namespace ui {
-class GpuMain;
-}
+#include "services/viz/privileged/interfaces/viz_main.mojom.h"
 
 namespace viz {
+
+class VizMainImpl;
 
 class Service : public service_manager::Service {
  public:
@@ -21,7 +19,7 @@ class Service : public service_manager::Service {
   ~Service() override;
 
  private:
-  void BindGpuMainRequest(ui::mojom::GpuMainRequest request);
+  void BindVizMainRequest(mojom::VizMainRequest request);
 
   // service_manager::Service:
   void OnStart() override;
@@ -31,7 +29,7 @@ class Service : public service_manager::Service {
 
   service_manager::BinderRegistry registry_;
 
-  std::unique_ptr<ui::GpuMain> gpu_main_;
+  std::unique_ptr<VizMainImpl> viz_main_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

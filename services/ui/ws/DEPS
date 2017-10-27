@@ -5,19 +5,17 @@ include_rules = [
   "+gpu/config",
   "+gpu/ipc/client",
   "+gpu/ipc/common",
-  "+services/ui/gpu/interfaces",
-  "-services/ui/surfaces",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
 ]
 
 specific_include_rules = {
+  # TODO(crbug.com/620927): This can be removed after ozone-mojo.
   "gpu_host.h": [
-    "+services/ui/gpu/gpu_main.h",
+    "+components/viz/service/main/viz_main_impl.h",
   ],
   "gpu_host_unittest.cc": [
     "+components/viz/service/gl/gpu_service_impl.h",
-    "+services/ui/gpu"
   ],
   "test_gpu_host.h": [
     "+components/viz/test",

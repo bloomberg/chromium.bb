@@ -8,13 +8,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "components/viz/service/main/viz_main_impl.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "services/ui/gpu/gpu_main.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
@@ -69,7 +69,7 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   void OnBadMessageFromGpu();
 
   // TODO(crbug.com/611505): this goes away after the gpu proces split in mus.
-  void InitializeGpuMain(mojom::GpuMainRequest request);
+  void InitializeVizMain(viz::mojom::VizMainRequest request);
 
   // GpuHost:
   void Add(mojom::GpuRequest request) override;
@@ -107,14 +107,14 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   gpu::GpuFeatureInfo gpu_feature_info_;
   std::unique_ptr<viz::ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
-  mojom::GpuMainPtr gpu_main_;
+  viz::mojom::VizMainPtr viz_main_;
 
   // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
   base::Thread gpu_thread_;
-  std::unique_ptr<GpuMain> gpu_main_impl_;
-  // This is used to make sure that the |gpu_main_impl_| has been set up
+  std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
+  // This is used to make sure that the |viz_main_impl_| has been set up
   // correctly, before we start tearing it down.
-  base::WaitableEvent gpu_main_wait_;
+  base::WaitableEvent viz_main_wait_;
 
   mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 

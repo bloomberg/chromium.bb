@@ -71,14 +71,14 @@ target(link_target_type, "gpu_sources") {
     # TODO(jrummell): As //media/gpu/ipc/service is a source_set in a
     # component build, determine if it should not be included here.
     # http://crbug.com/702833.
+    "//components/viz/service/main",
     "//media/gpu/ipc/service",
     "//media/mojo/clients:clients",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/interfaces",
-    "//services/ui/gpu",
-    "//services/ui/gpu/interfaces",
+    "//services/viz/privileged/interfaces",
     "//skia",
     "//third_party/angle:angle_gpu_info_util",
     "//ui/gfx/ipc",
