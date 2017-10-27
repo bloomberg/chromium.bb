@@ -37,7 +37,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TagCollection.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/Event.h"
 #include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingTriState.h"
@@ -653,7 +652,7 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
   Settings* settings = frame.GetSettings();
   bool default_value =
       (settings && settings->GetJavaScriptCanAccessClipboard()) ||
-      UserGestureIndicator::ProcessingUserGesture();
+      Frame::HasTransientUserActivation(&frame);
   return frame.GetEditor().Client().CanCopyCut(&frame, default_value);
 }
 

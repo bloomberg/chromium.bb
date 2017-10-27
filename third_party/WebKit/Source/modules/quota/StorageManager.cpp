@@ -10,7 +10,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "modules/quota/StorageEstimate.h"
 #include "platform/StorageQuotaCallbacks.h"
@@ -84,10 +85,12 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
         "In its current state, the global scope can't request permissions."));
     return promise;
   }
+
+  Document* doc = ToDocumentOrNull(execution_context);
   permission_service->RequestPermission(
       CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
       ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGesture(),
+      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
       ConvertToBaseCallback(
           WTF::Bind(&StorageManager::PermissionRequestComplete,
                     WrapPersistent(this), WrapPersistent(resolver))));

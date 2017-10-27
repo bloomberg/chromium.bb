@@ -28,7 +28,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/page/ChromeClient.h"
@@ -60,7 +59,8 @@ void ChooserOnlyTemporalInputTypeView::Trace(blink::Visitor* visitor) {
 
 void ChooserOnlyTemporalInputTypeView::HandleDOMActivateEvent(Event*) {
   if (GetElement().IsDisabledOrReadOnly() || !GetElement().GetLayoutObject() ||
-      !UserGestureIndicator::ProcessingUserGesture() ||
+      !Frame::HasTransientUserActivation(
+          GetElement().GetDocument().GetFrame()) ||
       GetElement().OpenShadowRoot())
     return;
 

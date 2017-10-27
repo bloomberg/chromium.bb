@@ -4,7 +4,8 @@
 
 #include "core/loader/ScheduledNavigation.h"
 
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace blink {
 
@@ -18,7 +19,8 @@ ScheduledNavigation::ScheduledNavigation(Reason reason,
       origin_document_(origin_document),
       replaces_current_item_(replaces_current_item),
       is_location_change_(is_location_change) {
-  if (UserGestureIndicator::ProcessingUserGesture())
+  if (Frame::HasTransientUserActivation(
+          origin_document ? origin_document->GetFrame() : nullptr))
     user_gesture_token_ = UserGestureIndicator::CurrentToken();
 }
 

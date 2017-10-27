@@ -29,7 +29,6 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/PerformanceMonitor.h"
@@ -89,7 +88,8 @@ PositionError* CreatePositionError(
 }
 
 static void ReportGeolocationViolation(ExecutionContext* context) {
-  if (!UserGestureIndicator::ProcessingUserGesture()) {
+  Document* doc = ToDocumentOrNull(context);
+  if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request geolocation information in response to a user gesture.",
@@ -479,7 +479,7 @@ void Geolocation::UpdateGeolocationConnection() {
       mojo::MakeRequest(&geolocation_service_));
   geolocation_service_->CreateGeolocation(
       mojo::MakeRequest(&geolocation_),
-      UserGestureIndicator::ProcessingUserGesture());
+      Frame::HasTransientUserActivation(GetFrame()));
 
   geolocation_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
       &Geolocation::OnGeolocationConnectionError, WrapWeakPersistent(this))));

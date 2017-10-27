@@ -1272,7 +1272,7 @@ void AXObjectCacheImpl::RequestAOMEventListenerPermission() {
       CreatePermissionDescriptor(
           mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
       document_->GetExecutionContext()->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGesture(),
+      Frame::HasTransientUserActivation(document_->GetFrame()),
       ConvertToBaseCallback(WTF::Bind(
           &AXObjectCacheImpl::OnPermissionStatusChange, WrapPersistent(this))));
 }

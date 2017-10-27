@@ -6,7 +6,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ElementVisibilityObserver.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -197,7 +196,7 @@ bool AutoplayPolicy::RequestAutoplayByAttribute() {
 }
 
 Nullable<ExceptionCode> AutoplayPolicy::RequestPlay() {
-  if (!UserGestureIndicator::ProcessingUserGesture()) {
+  if (!Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
     autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kMethod);
     if (IsGestureNeededForPlayback()) {
       autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
@@ -253,7 +252,7 @@ bool AutoplayPolicy::IsLockedPendingUserGesture() const {
 
 void AutoplayPolicy::TryUnlockingUserGesture() {
   if (IsLockedPendingUserGesture() &&
-      UserGestureIndicator::ProcessingUserGesture()) {
+      Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
     UnlockUserGesture();
   }
 }

@@ -42,7 +42,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
@@ -831,7 +830,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
 
   FrameLoadRequest request(passed_request);
   request.GetResourceRequest().SetHasUserGesture(
-      UserGestureIndicator::ProcessingUserGesture());
+      Frame::HasTransientUserActivation(frame_));
 
   if (!PrepareRequestForThisFrame(request))
     return;

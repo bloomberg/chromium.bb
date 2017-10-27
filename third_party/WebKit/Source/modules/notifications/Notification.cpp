@@ -401,9 +401,10 @@ ScriptPromise Notification::requestPermission(
     ScriptState* script_state,
     NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
+  Document* doc = ToDocumentOrNull(context);
 
   probe::breakableLocation(context, "Notification.requestPermission");
-  if (!UserGestureIndicator::ProcessingUserGesture()) {
+  if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request notification permission in response to a user gesture.",

@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/UseCounter.h"
 #include "modules/app_banner/BeforeInstallPromptEventInit.h"
 
@@ -80,12 +79,13 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
                              "The prompt() method may only be called once."));
   }
 
-  UseCounter::Count(ExecutionContext::From(script_state),
-                    WebFeature::kBeforeInstallPromptEventPrompt);
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context, WebFeature::kBeforeInstallPromptEventPrompt);
 
+  Document* doc = ToDocumentOrNull(context);
   prompt_called_ = true;
   banner_service_->DisplayAppBanner(
-      UserGestureIndicator::ProcessingUserGesture());
+      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr));
   return ScriptPromise::CastUndefined(script_state);
 }
 

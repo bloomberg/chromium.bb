@@ -1553,7 +1553,7 @@ DOMWindow* LocalDOMWindow::open(const String& url_string,
     UseCounter::Count(*active_document, WebFeature::kDOMWindowOpenFeatures);
   probe::windowOpen(first_frame->GetDocument(), url_string, frame_name,
                     window_features_string,
-                    UserGestureIndicator::ProcessingUserGesture());
+                    Frame::HasTransientUserActivation(first_frame));
 
   // Get the target frame for the special cases of _top and _parent.
   // In those cases, we schedule a location change right now and return early.

@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Settings.h"
 #include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElement.h"
@@ -735,7 +734,8 @@ bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
       return true;
     case AutoplayPolicy::Type::kUserGestureRequired:
     case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-      return UserGestureIndicator::ProcessingUserGesture();
+      return Frame::HasTransientUserActivation(
+          GetDocument() ? GetDocument()->GetFrame() : nullptr);
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
       return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
   }

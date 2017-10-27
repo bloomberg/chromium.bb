@@ -25,7 +25,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/Event.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
@@ -147,7 +146,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!UserGestureIndicator::ProcessingUserGesture())
+  if (!Frame::HasTransientUserActivation(GetElement().GetDocument().GetFrame()))
     return;
 
   if (ChromeClient* chrome_client = this->GetChromeClient()) {

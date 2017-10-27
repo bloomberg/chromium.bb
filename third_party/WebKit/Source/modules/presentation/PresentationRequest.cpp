@@ -11,7 +11,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -137,12 +136,14 @@ void PresentationRequest::RecordStartOriginTypeAccess(
 ScriptPromise PresentationRequest::start(ScriptState* script_state) {
   ExecutionContext* execution_context = GetExecutionContext();
   Settings* context_settings = GetSettings(execution_context);
+  Document* doc = ToDocumentOrNull(execution_context);
+
   bool is_user_gesture_required =
       !context_settings ||
       context_settings->GetPresentationRequiresUserGesture();
 
   if (is_user_gesture_required &&
-      !UserGestureIndicator::ProcessingUserGesture())
+      !Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr))
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

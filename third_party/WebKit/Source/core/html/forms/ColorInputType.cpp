@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/CSSPropertyNames.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrameView.h"
@@ -149,7 +148,7 @@ void ColorInputType::HandleDOMActivateEvent(Event* event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!UserGestureIndicator::ProcessingUserGesture())
+  if (!Frame::HasTransientUserActivation(GetElement().GetDocument().GetFrame()))
     return;
 
   ChromeClient* chrome_client = this->GetChromeClient();

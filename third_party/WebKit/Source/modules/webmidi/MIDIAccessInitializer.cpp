@@ -10,7 +10,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/permissions/PermissionUtils.h"
@@ -41,10 +40,12 @@ ScriptPromise MIDIAccessInitializer::Start() {
 
   ConnectToPermissionService(GetExecutionContext(),
                              mojo::MakeRequest(&permission_service_));
+
+  Document* doc = ToDocumentOrNull(GetExecutionContext());
   permission_service_->RequestPermission(
       CreateMidiPermissionDescriptor(options_.hasSysex() && options_.sysex()),
       GetExecutionContext()->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGesture(),
+      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
       ConvertToBaseCallback(WTF::Bind(
           &MIDIAccessInitializer::OnPermissionsUpdated, WrapPersistent(this))));
 

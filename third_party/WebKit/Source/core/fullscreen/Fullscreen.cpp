@@ -33,7 +33,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
@@ -93,7 +92,7 @@ bool AllowedToRequestFullscreen(Document& document) {
   // true:
 
   //  The algorithm is triggered by a user activation.
-  if (UserGestureIndicator::ProcessingUserGesture())
+  if (Frame::HasTransientUserActivation(document.GetFrame()))
     return true;
 
   //  The algorithm is triggered by a user generated orientation change.

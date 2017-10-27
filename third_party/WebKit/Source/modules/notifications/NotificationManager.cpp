@@ -5,7 +5,8 @@
 #include "modules/notifications/NotificationManager.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationPermissionCallback.h"
 #include "modules/permissions/PermissionUtils.h"
@@ -79,10 +80,11 @@ ScriptPromise NotificationManager::RequestPermission(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  Document* doc = ToDocumentOrNull(context);
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
       context->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGesture(),
+      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
       ConvertToBaseCallback(
           WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
                     WrapPersistent(this), WrapPersistent(resolver),
