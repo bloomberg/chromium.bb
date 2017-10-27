@@ -9,6 +9,7 @@ import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
+import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/icc_profile.mojom";
 
@@ -22,8 +23,16 @@ struct CreateViewParams {
   // The ID of the view to be created.
   int32 view_id = IPC.mojom.kRoutingIdNone;
 
-  // The ID of the main frame hosted in the view.
+  // The ID of the main frame hosted in the view, or None if creating a view to
+  // host a main frame proxy.
   int32 main_frame_routing_id = IPC.mojom.kRoutingIdNone;
+
+  // The InterfaceProvider through which the main RenderFrame can access
+  // services exposed by its RenderFrameHost.
+  //
+  // This is null precisely when |main_frame_routing_id| is MSG_ROUTING_NONE,
+  // that is, when creating a RenderView for a remote main frame.
+  service_manager.mojom.InterfaceProvider? main_frame_interface_provider;
 
   // The ID of the widget for the main frame.
   int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
@@ -113,6 +122,10 @@ struct CreateFrameParams {
   // MSG_ROUTING_NONE, the frame will be created as the leftmost child of its
   // parent frame, in front of any other children.
   int32 previous_sibling_routing_id;
+
+  // The InterfaceProvider through which the RenderFrame can access services
+  // exposed by its RenderFrameHost.
+  service_manager.mojom.InterfaceProvider interface_provider;
 
   // When the new frame has a parent, |replication_state| holds the new frame's
   // properties replicated from the process rendering the parent frame, such as

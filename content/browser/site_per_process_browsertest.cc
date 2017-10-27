@@ -7592,6 +7592,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
     params->routing_id = frame_routing_id;
+    mojo::MakeRequest(&params->interface_provider);
     params->proxy_routing_id = proxy_routing_id;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id =
@@ -7659,6 +7660,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   {
     mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
     params->routing_id = frame_routing_id;
+    mojo::MakeRequest(&params->interface_provider);
     params->proxy_routing_id = IPC::mojom::kRoutingIdNone;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id = parent_routing_id;

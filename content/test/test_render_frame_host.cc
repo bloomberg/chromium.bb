@@ -122,10 +122,10 @@ void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   std::string frame_unique_name = base::GenerateGUID();
-  OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
-                     blink::WebTreeScopeType::kDocument, frame_name,
-                     frame_unique_name, base::UnguessableToken::Create(),
-                     FramePolicy(), FrameOwnerProperties());
+  OnCreateChildFrame(
+      GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
+      blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name,
+      base::UnguessableToken::Create(), FramePolicy(), FrameOwnerProperties());
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }
@@ -565,6 +565,13 @@ mojom::FrameNavigationControl* TestRenderFrameHost::GetNavigationControl() {
 mojom::FrameNavigationControl*
 TestRenderFrameHost::GetInternalNavigationControl() {
   return RenderFrameHostImpl::GetNavigationControl();
+}
+
+// static
+service_manager::mojom::InterfaceProviderRequest
+TestRenderFrameHost::CreateStubInterfaceProviderRequest() {
+  ::service_manager::mojom::InterfaceProviderPtr dead_interface_provider_proxy;
+  return mojo::MakeRequest(&dead_interface_provider_proxy);
 }
 
 }  // namespace content

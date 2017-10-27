@@ -101,7 +101,7 @@ using WebWidgetTestProxyType =
                                     bool>;
 using WebFrameTestProxyType =
     test_runner::WebFrameTestProxy<RenderFrameImpl,
-                                   const RenderFrameImpl::CreateParams&>;
+                                   RenderFrameImpl::CreateParams>;
 
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
@@ -135,9 +135,9 @@ void RenderWidgetInitialized(RenderWidget* render_widget) {
   }
 }
 
-RenderFrameImpl* CreateWebFrameTestProxy(
-    const RenderFrameImpl::CreateParams& params) {
-  WebFrameTestProxyType* render_frame_proxy = new WebFrameTestProxyType(params);
+RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
+  WebFrameTestProxyType* render_frame_proxy =
+      new WebFrameTestProxyType(std::move(params));
   if (g_frame_test_proxy_callback == 0)
     return render_frame_proxy;
   g_frame_test_proxy_callback.Get().Run(render_frame_proxy, render_frame_proxy);

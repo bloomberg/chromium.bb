@@ -875,13 +875,16 @@ TEST_F(RenderViewImplScaleFactorTest, UpdateDSFAfterSwapIn) {
   // Do the remote-to-local transition for the proxy, which is to create a
   // provisional local frame.
   int routing_id = kProxyRoutingId + 1;
+  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
+  mojo::MakeRequest(&stub_interface_provider);
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = view()->GetRoutingID();
   widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
-      routing_id, kProxyRoutingId, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      MSG_ROUTING_NONE, base::UnguessableToken::Create(), replication_state,
-      nullptr, widget_params, FrameOwnerProperties());
+      routing_id, std::move(stub_interface_provider), kProxyRoutingId,
+      MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+      base::UnguessableToken::Create(), replication_state, nullptr,
+      widget_params, FrameOwnerProperties());
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);
@@ -923,13 +926,16 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   // Do the first step of a remote-to-local transition for the child proxy,
   // which is to create a provisional local frame.
   int routing_id = kProxyRoutingId + 1;
+  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
+  mojo::MakeRequest(&stub_interface_provider);
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = MSG_ROUTING_NONE;
   widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
-      routing_id, kProxyRoutingId, MSG_ROUTING_NONE, frame()->GetRoutingID(),
-      MSG_ROUTING_NONE, base::UnguessableToken::Create(), replication_state,
-      nullptr, widget_params, FrameOwnerProperties());
+      routing_id, std::move(stub_interface_provider), kProxyRoutingId,
+      MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
+      base::UnguessableToken::Create(), replication_state, nullptr,
+      widget_params, FrameOwnerProperties());
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));
