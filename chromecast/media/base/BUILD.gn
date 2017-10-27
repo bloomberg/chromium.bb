@@ -38,8 +38,6 @@ source_set("base") {
     "supported_codec_profile_levels_memo.h",
     "video_mode_switcher.cc",
     "video_mode_switcher.h",
-    "video_plane_controller.cc",
-    "video_plane_controller.h",
   ]
 
   if (!is_android) {
@@ -92,5 +90,21 @@ source_set("media_codec_support") {
   deps = [
     "//base",
     "//media",
+  ]
+}
+
+source_set("video_plane_controller") {
+  sources = [
+    "video_plane_controller.cc",
+    "video_plane_controller.h",
+  ]
+
+  public_deps = [
+    "//chromecast/public",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media:libcast_media",
   ]
 }
