@@ -141,7 +141,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // The RenderWidgetHostView for the frame. Initially NULL.
   RenderWidgetHostViewChildFrame* view_;
 
-  gfx::Rect child_frame_rect_;
+  gfx::Rect frame_rect_;
+  gfx::Rect frame_rect_in_dip_;
   bool is_inert_ = false;
 
   // Visibility state of the corresponding frame owner element in parent process
