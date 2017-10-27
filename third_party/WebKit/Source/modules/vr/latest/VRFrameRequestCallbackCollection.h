@@ -12,6 +12,8 @@ namespace blink {
 
 class ExecutionContext;
 class V8VRFrameRequestCallback;
+class VRPresentationFrame;
+class VRSession;
 
 class VRFrameRequestCallbackCollection final : public TraceWrapperBase {
   DISALLOW_NEW();
@@ -22,7 +24,7 @@ class VRFrameRequestCallbackCollection final : public TraceWrapperBase {
   using CallbackId = int;
   CallbackId RegisterCallback(V8VRFrameRequestCallback*);
   void CancelCallback(CallbackId);
-  void ExecuteCallbacks();
+  void ExecuteCallbacks(VRSession*, VRPresentationFrame*);
 
   bool IsEmpty() const { return !callbacks_.size(); }
 
