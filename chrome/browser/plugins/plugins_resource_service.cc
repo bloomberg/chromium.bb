@@ -52,7 +52,7 @@ const int kStartResourceFetchDelayMs = 60 * 1000;
 const int kCacheUpdateDelayMs = 24 * 60 * 60 * 1000;
 
 const char kPluginsServerUrl[] =
-    "https://www.gstatic.com/chrome/config/plugins_2/";
+    "https://www.gstatic.com/chrome/config/plugins_3/";
 
 GURL GetPluginsServerURL() {
   std::string filename;
