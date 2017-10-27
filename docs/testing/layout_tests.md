@@ -498,7 +498,7 @@ doesn't support rebaselining flag-specific expectations.
 
 ```bash
 cd src/third_party/WebKit
-Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --copy-baselines --reset-results foo/bar/test.html
+Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
 ```
 
 New baselines will be created in the flag-specific baselines directory, e.g.
