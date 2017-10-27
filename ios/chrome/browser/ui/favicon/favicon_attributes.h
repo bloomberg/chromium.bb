@@ -33,6 +33,7 @@
                          defaultBackgroundColor:(BOOL)defaultBackgroundColor;
 
 - (nullable instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_ATTRIBUTES_H_

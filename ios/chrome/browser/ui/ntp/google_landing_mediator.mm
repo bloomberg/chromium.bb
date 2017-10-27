@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
@@ -296,7 +296,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       const favicon_base::LargeIconResult& result) {
     // TODO(crbug.com/773627): Use FaviconAttributesProvider just like many
     // other mediators.
-    FaviconAttributes* attributes = nil;
+    FaviconAttributesWithPayload* attributes = nil;
 
     if (result.bitmap.is_valid()) {
       scoped_refptr<base::RefCountedMemory> data =
@@ -304,7 +304,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       UIImage* favicon = [UIImage
           imageWithData:[NSData dataWithBytes:data->front() length:data->size()]
                   scale:[UIScreen mainScreen].scale];
-      attributes = [FaviconAttributes attributesWithImage:favicon];
+      attributes = [FaviconAttributesWithPayload attributesWithImage:favicon];
+      attributes.iconType = result.bitmap.icon_type;
       if (callback) {
         callback(attributes);
       }
@@ -317,10 +318,11 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
           result.fallback_icon_style->is_default_background_color;
       NSString* monogram =
           base::SysUTF16ToNSString(favicon::GetFallbackIconText(localURL));
-      attributes = [FaviconAttributes attributesWithMonogram:monogram
-                                                   textColor:textColor
-                                             backgroundColor:backgroundColor
-                                      defaultBackgroundColor:isDefaultColor];
+      attributes =
+          [FaviconAttributesWithPayload attributesWithMonogram:monogram
+                                                     textColor:textColor
+                                               backgroundColor:backgroundColor
+                                        defaultBackgroundColor:isDefaultColor];
       if (callback) {
         callback(attributes);
       }
