@@ -10,7 +10,6 @@
 
 namespace chromeos {
 
-// ImageLoaderClient override:
 void FakeImageLoaderClient::RegisterComponent(
     const std::string& name,
     const std::string& version,
@@ -18,11 +17,18 @@ void FakeImageLoaderClient::RegisterComponent(
     DBusMethodCallback<bool> callback) {
   std::move(callback).Run(base::nullopt);
 }
+
 void FakeImageLoaderClient::LoadComponent(
     const std::string& name,
     DBusMethodCallback<std::string> callback) {
   std::move(callback).Run(base::nullopt);
 }
+
+void FakeImageLoaderClient::RemoveComponent(const std::string& name,
+                                            DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(base::nullopt);
+}
+
 void FakeImageLoaderClient::RequestComponentVersion(
     const std::string& name,
     DBusMethodCallback<std::string> callback) {

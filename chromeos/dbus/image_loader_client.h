@@ -38,6 +38,10 @@ class CHROMEOS_EXPORT ImageLoaderClient : public DBusClient {
       const std::string& name,
       DBusMethodCallback<std::string> callback) = 0;
 
+  // Removes a component and returns true (if call is successful).
+  virtual void RemoveComponent(const std::string& name,
+                               DBusMethodCallback<bool> callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static ImageLoaderClient* Create();
