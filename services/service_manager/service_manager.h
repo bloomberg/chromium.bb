@@ -41,20 +41,6 @@ Identity CreateServiceManagerIdentity();
 
 class ServiceManager {
  public:
-  // API for testing.
-  class TestAPI {
-   public:
-    explicit TestAPI(ServiceManager* service_manager);
-    ~TestAPI();
-
-    // Returns true if there is a Instance for this name.
-    bool HasRunningInstanceForName(const std::string& name) const;
-   private:
-    ServiceManager* service_manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestAPI);
-  };
-
   // |service_process_launcher_factory| is an instance of an object capable of
   // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
   // execution.
@@ -100,7 +86,16 @@ class ServiceManager {
 
  private:
   class Instance;
+  class IdentityToInstanceMap;
   class ServiceImpl;
+
+  // Used in CreateInstance to specify how an instance should be shared between
+  // various identities.
+  enum class InstanceType {
+    kRegular,   // Unique for each user and each instance name.
+    kAllUsers,  // Same instance for all users. Unique for each instance name.
+    kSingleton  // Same instance for all users and all instance names.
+  };
 
   void InitCatalog(mojom::ServicePtr catalog);
 
@@ -115,7 +110,8 @@ class ServiceManager {
   void OnInstanceStopped(const Identity& identity);
 
   // Returns a running instance matching |identity|. This might be an instance
-  // running as a different user if one is available that services all users.
+  // running as a different user or with a different instance name if one is
+  // available that services all users or is a singleton.
   Instance* GetExistingInstance(const Identity& identity) const;
 
   // Erases any identities mapping to |instance|. Following this call it is
@@ -127,13 +123,14 @@ class ServiceManager {
 
   void NotifyServicePIDReceived(const Identity& identity, base::ProcessId pid);
 
-  // Attempt to complete the connection requested by |params| by connecting to
+  // Attempts to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,
   // and this function returns true.
   bool ConnectToExistingInstance(std::unique_ptr<ConnectParams>* params);
 
   Instance* CreateInstance(const Identity& source,
                            const Identity& target,
+                           InstanceType instance_type,
                            const InterfaceProviderSpecMap& specs);
 
   // Called from the instance implementing mojom::ServiceManager.
@@ -156,17 +153,13 @@ class ServiceManager {
 
   catalog::Catalog catalog_;
 
-  // Maps service identities to reachable instances. Note that the Instance*
-  // values here are NOT owned by this map.
-  std::map<Identity, Instance*> identity_to_instance_;
+  // Maps service identities to reachable instances. Note that the Instance
+  // values stored in that map are NOT owned by this map.
+  std::unique_ptr<IdentityToInstanceMap> identity_to_instance_;
 
   // Always points to the ServiceManager's own Instance. Note that this
   // Instance still has an entry in |instances_|.
   Instance* service_manager_instance_;
-
-  // Tracks the names of instances that are allowed to field connection requests
-  // from all users.
-  std::set<std::string> singletons_;
 
   std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;

@@ -93,7 +93,7 @@ constexpr char kOtherInitialKey[] = "other_initial_key";
 
 class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
  public:
-  PrefServiceFactoryTest() : ServiceTest("prefs_unittests", false) {}
+  PrefServiceFactoryTest() : ServiceTest("prefs_unittests") {}
 
  protected:
   void SetUp() override {

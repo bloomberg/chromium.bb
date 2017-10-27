@@ -29,6 +29,13 @@ Identity::Identity(const Identity& other) = default;
 
 Identity::~Identity() {}
 
+Identity& Identity::operator=(const Identity& other) {
+  name_ = other.name_;
+  user_id_ = other.user_id_;
+  instance_ = other.instance_;
+  return *this;
+}
+
 bool Identity::operator<(const Identity& other) const {
   if (name_ != other.name_)
     return name_ < other.name_;

@@ -61,7 +61,6 @@ class ServiceTest : public testing::Test {
   // InitTestName(). The test executable must provide a manifest in the
   // appropriate location that specifies this name also.
   ServiceTest(const std::string& test_name,
-              bool init_edk = false,
               base::test::ScopedTaskEnvironment::MainThreadType type =
                   base::test::ScopedTaskEnvironment::MainThreadType::UI);
   ~ServiceTest() override;
@@ -70,7 +69,7 @@ class ServiceTest : public testing::Test {
   // See constructor. Can only be called once.
   void InitTestName(const std::string& test_name);
 
-  Connector* connector() { return connector_; }
+  Connector* connector() const { return connector_; }
 
   // Instance information received from the Service Manager during OnStart().
   const std::string& test_name() const { return initialize_name_; }
@@ -101,7 +100,6 @@ class ServiceTest : public testing::Test {
 
   // See constructor.
   std::string test_name_;
-  bool init_edk_;
   std::unique_ptr<base::Thread> ipc_thread_;
   std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
 

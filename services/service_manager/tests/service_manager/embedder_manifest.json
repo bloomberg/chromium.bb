@@ -10,6 +10,7 @@
         ]
       },
       "requires": {
+        "service_manager": [ "service_manager:singleton" ],
         "service_manager_unittest_target": [ ]
       }
     }

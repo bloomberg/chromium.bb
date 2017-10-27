@@ -122,7 +122,6 @@ class NetworkServiceTestWithService
  public:
   NetworkServiceTestWithService()
       : ServiceTest("content_unittests",
-                    false,
                     base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
   ~NetworkServiceTestWithService() override {}
 
@@ -379,7 +378,6 @@ class NetworkServiceNetworkChangeTest
  public:
   NetworkServiceNetworkChangeTest()
       : ServiceTest("content_unittests",
-                    false,
                     base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
   ~NetworkServiceNetworkChangeTest() override {}
 

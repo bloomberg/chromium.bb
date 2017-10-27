@@ -933,8 +933,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 class LocalStorageContextMojoTestWithService
     : public service_manager::test::ServiceTest {
  public:
-  LocalStorageContextMojoTestWithService()
-      : ServiceTest("content_unittests", false) {}
+  LocalStorageContextMojoTestWithService() : ServiceTest("content_unittests") {}
   ~LocalStorageContextMojoTestWithService() override {}
 
  protected:

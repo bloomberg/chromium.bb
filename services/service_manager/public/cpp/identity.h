@@ -29,6 +29,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
   Identity(const Identity& other);
   ~Identity();
 
+  Identity& operator=(const Identity& other);
   bool operator<(const Identity& other) const;
   bool operator==(const Identity& other) const;
   bool IsValid() const;
