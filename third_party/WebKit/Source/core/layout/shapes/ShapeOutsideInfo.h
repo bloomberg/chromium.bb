@@ -143,6 +143,8 @@ class ShapeOutsideInfo final {
     return GetInfoMap().at(&key);
   }
 
+  static bool IsEmpty() { return GetInfoMap().IsEmpty(); }
+
   void MarkShapeAsDirty() { shape_.reset(); }
   bool IsShapeDirty() { return !shape_.get(); }
   LayoutSize ShapeSize() const { return reference_box_logical_size_; }

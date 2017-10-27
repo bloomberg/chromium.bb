@@ -16788,6 +16788,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2202" label="WebAudioValueSetterIsSetValue"/>
   <int value="2203" label="HasIDClassTagAttribute"/>
   <int value="2204" label="HasBeforeOrAfterPseudoElement"/>
+  <int value="2205" label="ShapeOutsideMaybeAffectedInlineSize"/>
+  <int value="2206" label="ShapeOutsideMaybeAffectedInlinePosition"/>
 </enum>
 
 <enum name="FeedbackSource">

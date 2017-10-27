@@ -654,6 +654,18 @@ void LayoutBlockFlow::DetermineLogicalLeftPositionForChild(LayoutBox& child) {
         StartOffsetForLine(LogicalTopForChild(child), kDoNotIndentText,
                            LogicalHeightForChild(child));
 
+    // This section of code is just for a use counter. It counts if something
+    // that avoids floats may have been affected by a float with shape-outside.
+    if (!ShapeOutsideInfo::IsEmpty()) {
+      LayoutUnit alternate_position_to_avoid_floats =
+          StartOffsetForAvoidingFloats(LogicalTopForChild(child),
+                                       LogicalHeightForChild(child));
+      if (alternate_position_to_avoid_floats != position_to_avoid_floats) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kShapeOutsideMaybeAffectedInlinePosition);
+      }
+    }
+
     // If the child has an offset from the content edge to avoid floats then use
     // that, otherwise let any negative margin pull it back over the content
     // edge or any positive margin push it out.
@@ -4151,6 +4163,30 @@ LayoutUnit LayoutBlockFlow::LogicalRightFloatOffsetForLine(
   if (floating_objects_ && floating_objects_->HasRightObjects())
     return floating_objects_->LogicalRightOffset(fixed_offset, logical_top,
                                                  logical_height);
+
+  return fixed_offset;
+}
+
+LayoutUnit LayoutBlockFlow::LogicalLeftFloatOffsetForAvoidingFloats(
+    LayoutUnit logical_top,
+    LayoutUnit fixed_offset,
+    LayoutUnit logical_height) const {
+  if (floating_objects_ && floating_objects_->HasLeftObjects()) {
+    return floating_objects_->LogicalLeftOffsetForAvoidingFloats(
+        fixed_offset, logical_top, logical_height);
+  }
+
+  return fixed_offset;
+}
+
+LayoutUnit LayoutBlockFlow::LogicalRightFloatOffsetForAvoidingFloats(
+    LayoutUnit logical_top,
+    LayoutUnit fixed_offset,
+    LayoutUnit logical_height) const {
+  if (floating_objects_ && floating_objects_->HasRightObjects()) {
+    return floating_objects_->LogicalRightOffsetForAvoidingFloats(
+        fixed_offset, logical_top, logical_height);
+  }
 
   return fixed_offset;
 }
