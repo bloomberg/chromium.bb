@@ -81,12 +81,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     _hasPhysicalKeyboard = NO;
     _settings =
         [[RemotingPreferences instance] settingsForHost:client.hostInfo.hostId];
-    _surfaceSizeAnimationLink = [CADisplayLink
-        displayLinkWithTarget:self
-                     selector:@selector(animateHostSurfaceSize:)];
-    _surfaceSizeAnimationLink.paused = YES;
-    [_surfaceSizeAnimationLink addToRunLoop:NSRunLoop.currentRunLoop
-                                    forMode:NSDefaultRunLoopMode];
 
     BOOL fabIsRight =
         [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
@@ -231,6 +225,13 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
          selector:@selector(keyboardWillHide:)
              name:UIKeyboardWillHideNotification
            object:nil];
+
+  _surfaceSizeAnimationLink =
+      [CADisplayLink displayLinkWithTarget:self
+                                  selector:@selector(animateHostSurfaceSize:)];
+  _surfaceSizeAnimationLink.paused = YES;
+  [_surfaceSizeAnimationLink addToRunLoop:NSRunLoop.currentRunLoop
+                                  forMode:NSDefaultRunLoopMode];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -240,6 +241,9 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                                       forHost:_client.hostInfo.hostId];
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+  _surfaceSizeAnimationLink.paused = YES;
+  [_surfaceSizeAnimationLink invalidate];
 }
 
 - (void)viewDidLayoutSubviews {
