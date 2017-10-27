@@ -11,10 +11,9 @@ import android.os.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.AppHooks;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 /**
@@ -39,46 +38,6 @@ public class PartnerBookmarksReader {
 
     /** The context (used to get a ContentResolver) */
     protected Context mContext;
-
-    // TODO(aruslan): Move it out to a separate class that defines
-    // a partner bookmarks provider contract, see http://b/6399404
-    /** Object defining a partner bookmark. For this package only. */
-    static class Bookmark {
-        // To be provided by the bookmark extractors.
-        /** Local id of the read bookmark */
-        long mId;
-        /** Read id of the parent node */
-        long mParentId;
-        /** True if it's folder */
-        boolean mIsFolder;
-        /** URL of the bookmark. Required for non-folders. */
-        String mUrl;
-        /** Title of the bookmark. */
-        String mTitle;
-        /** .PNG Favicon of the bookmark. Optional. Not used for folders. */
-        byte[] mFavicon;
-        /** .PNG TouchIcon of the bookmark. Optional. Not used for folders. */
-        byte[] mTouchicon;
-
-        // For auxiliary use while reading.
-        /** Native id of the C++-processed bookmark */
-        long mNativeId = INVALID_BOOKMARK_ID;
-        /** The parent node if any */
-        Bookmark mParent;
-        /** Children nodes for the perfect garbage collection disaster */
-        ArrayList<Bookmark> mEntries = new ArrayList<Bookmark>();
-    }
-
-    /** Closable iterator for available bookmarks. */
-    protected interface BookmarkIterator extends Iterator<Bookmark> {
-        public void close();
-    }
-
-    /** Returns an iterator to the available bookmarks. Called by async task. */
-    protected BookmarkIterator getAvailableBookmarks() {
-        return PartnerBookmarksProviderIterator.createIfAvailable(
-                mContext.getContentResolver());
-    }
 
     /**
      * Creates the instance of the reader.
@@ -140,7 +99,8 @@ public class PartnerBookmarksReader {
 
         @Override
         protected Void doInBackground(Void... params) {
-            BookmarkIterator bookmarkIterator = getAvailableBookmarks();
+            PartnerBookmark.BookmarkIterator bookmarkIterator =
+                    AppHooks.get().getPartnerBookmarkIterator();
             RecordHistogram.recordBooleanHistogram(
                     "PartnerBookmark.Null", bookmarkIterator == null);
             if (bookmarkIterator == null) {
@@ -149,14 +109,14 @@ public class PartnerBookmarksReader {
             }
 
             // Get a snapshot of the bookmarks.
-            LinkedHashMap<Long, Bookmark> idMap = new LinkedHashMap<Long, Bookmark>();
+            LinkedHashMap<Long, PartnerBookmark> idMap = new LinkedHashMap<Long, PartnerBookmark>();
             HashSet<String> urlSet = new HashSet<String>();
 
-            Bookmark rootBookmarksFolder = createRootBookmarksFolderBookmark();
+            PartnerBookmark rootBookmarksFolder = createRootBookmarksFolderBookmark();
             idMap.put(ROOT_FOLDER_ID, rootBookmarksFolder);
 
             while (bookmarkIterator.hasNext()) {
-                Bookmark bookmark = bookmarkIterator.next();
+                PartnerBookmark bookmark = bookmarkIterator.next();
                 if (bookmark == null) continue;
 
                 // Check for duplicate ids.
@@ -201,9 +161,7 @@ public class PartnerBookmarksReader {
                 return null;
             }
 
-            readBookmarkHierarchy(
-                    rootBookmarksFolder,
-                    new HashSet<PartnerBookmarksReader.Bookmark>());
+            readBookmarkHierarchy(rootBookmarksFolder, new HashSet<PartnerBookmark>());
 
             return null;
         }
@@ -215,8 +173,8 @@ public class PartnerBookmarksReader {
             }
         }
 
-        private void recreateFolderHierarchy(LinkedHashMap<Long, Bookmark> idMap) {
-            for (Bookmark bookmark : idMap.values()) {
+        private void recreateFolderHierarchy(LinkedHashMap<Long, PartnerBookmark> idMap) {
+            for (PartnerBookmark bookmark : idMap.values()) {
                 if (bookmark.mId == ROOT_FOLDER_ID) continue;
 
                 // Look for invalid parent ids and self-cycles.
@@ -231,8 +189,8 @@ public class PartnerBookmarksReader {
             }
         }
 
-        private Bookmark createRootBookmarksFolderBookmark() {
-            Bookmark root = new Bookmark();
+        private PartnerBookmark createRootBookmarksFolderBookmark() {
+            PartnerBookmark root = new PartnerBookmark();
             root.mId = ROOT_FOLDER_ID;
             root.mTitle = "[IMPLIED_ROOT]";
             root.mNativeId = INVALID_BOOKMARK_ID;
@@ -242,7 +200,7 @@ public class PartnerBookmarksReader {
         }
 
         private void readBookmarkHierarchy(
-                Bookmark bookmark, HashSet<Bookmark> processedNodes) {
+                PartnerBookmark bookmark, HashSet<PartnerBookmark> processedNodes) {
             // Avoid cycles in the hierarchy that could lead to infinite loops.
             if (processedNodes.contains(bookmark)) return;
             processedNodes.add(bookmark);
@@ -266,7 +224,7 @@ public class PartnerBookmarksReader {
             }
 
             if (bookmark.mIsFolder) {
-                for (Bookmark entry : bookmark.mEntries) {
+                for (PartnerBookmark entry : bookmark.mEntries) {
                     if (entry.mParent != bookmark) {
                         Log.w(TAG, "Hierarchy error in bookmark '"
                                 + bookmark.mTitle + "'. Skipping.");
