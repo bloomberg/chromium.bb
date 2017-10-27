@@ -19,6 +19,7 @@ namespace content {
 namespace {
 
 const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
+const char kExampleUniqueId2[] = "17467386-60b4-4c5b-b66c-aabf793fd39b";
 
 class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
  public:
@@ -47,12 +48,12 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
         std::vector<GURL>({url}),
         base::MakeRefCounted<net::HttpResponseHeaders>("200 OK"));
 
-    client()->OnDownloadStarted(guid, std::move(response));
+    client()->OnDownloadStarted(job_unique_id, guid, std::move(response));
     if (complete_downloads_) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
-                         base::Unretained(this), guid));
+                         base::Unretained(this), job_unique_id, guid));
     }
   }
   void Abort(const std::string& job_unique_id) override {
@@ -64,16 +65,17 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   }
 
  private:
-  void CompleteDownload(const std::string& guid) {
+  void CompleteDownload(const std::string& job_unique_id,
+                        const std::string& guid) {
     if (!client())
       return;
 
     if (aborted_jobs_.count(download_guid_to_job_id_map_[guid]))
       return;
 
-    client()->OnDownloadComplete(
-        guid, std::make_unique<BackgroundFetchResult>(base::Time::Now(),
-                                                      base::FilePath(), 10u));
+    client()->OnDownloadComplete(job_unique_id, guid,
+                                 std::make_unique<BackgroundFetchResult>(
+                                     base::Time::Now(), base::FilePath(), 10u));
   }
 
   std::set<std::string> aborted_jobs_;
@@ -132,9 +134,11 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
 
-  delegate_proxy_.StartRequest(kExampleUniqueId,
-                               controller.weak_ptr_factory_.GetWeakPtr(),
-                               url::Origin(), request);
+  delegate_proxy_.CreateDownloadJob(kExampleUniqueId, "Job 1", url::Origin(),
+                                    controller.weak_ptr_factory_.GetWeakPtr(),
+                                    0, 1, {});
+
+  delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(controller.request_started_);
@@ -151,9 +155,11 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   EXPECT_FALSE(controller.request_completed_);
 
   delegate_.set_complete_downloads(false);
-  delegate_proxy_.StartRequest(kExampleUniqueId,
-                               controller.weak_ptr_factory_.GetWeakPtr(),
-                               url::Origin(), request);
+  delegate_proxy_.CreateDownloadJob(kExampleUniqueId, "Job 1", url::Origin(),
+                                    controller.weak_ptr_factory_.GetWeakPtr(),
+                                    0, 1, {});
+
+  delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(controller.request_started_);
@@ -175,18 +181,22 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   EXPECT_FALSE(controller2.request_started_);
   EXPECT_FALSE(controller2.request_completed_);
 
-  delegate_proxy_.StartRequest("jobid1",
-                               controller.weak_ptr_factory_.GetWeakPtr(),
-                               url::Origin(), request);
-  delegate_proxy_.StartRequest("jobid2",
-                               controller2.weak_ptr_factory_.GetWeakPtr(),
-                               url::Origin(), request2);
-  delegate_proxy_.Abort("jobid1");
+  delegate_proxy_.CreateDownloadJob(kExampleUniqueId, "Job 1", url::Origin(),
+                                    controller.weak_ptr_factory_.GetWeakPtr(),
+                                    0, 1, {});
+
+  delegate_proxy_.CreateDownloadJob(kExampleUniqueId2, "Job 2", url::Origin(),
+                                    controller2.weak_ptr_factory_.GetWeakPtr(),
+                                    0, 1, {});
+
+  delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
+  delegate_proxy_.StartRequest(kExampleUniqueId2, url::Origin(), request2);
+  delegate_proxy_.Abort(kExampleUniqueId);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(controller.request_started_);
+  EXPECT_FALSE(controller.request_started_) << "Aborted job started";
   EXPECT_FALSE(controller.request_completed_) << "Aborted job completed";
-  EXPECT_TRUE(controller2.request_started_);
+  EXPECT_TRUE(controller2.request_started_) << "Normal job did not start";
   EXPECT_TRUE(controller2.request_completed_) << "Normal job did not complete";
 }
 

@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
@@ -762,6 +763,11 @@ class BackgroundFetchDataManager::RegistrationData {
            (controller ? controller->GetInProgressDownloadedBytes() : 0);
   }
 
+  int GetTotalNumberOfRequests() const {
+    return pending_requests_.size() + active_requests_.size() +
+           completed_requests_.size();
+  }
+
  private:
   BackgroundFetchRegistrationId registration_id_;
   BackgroundFetchOptions options_;
@@ -1155,6 +1161,12 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
                           developer_ids);
+}
+
+int BackgroundFetchDataManager::GetNumberOfRequestsForRegistration(
+    const BackgroundFetchRegistrationId& registration_id) {
+  return registrations_[registration_id.unique_id()]
+      ->GetTotalNumberOfRequests();
 }
 
 bool BackgroundFetchDataManager::IsActive(

@@ -93,20 +93,22 @@ void MockBackgroundFetchDelegate::DownloadUrl(
   PostAbortCheckingTask(
       job_unique_id,
       base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadStarted,
-                     client(), guid, std::move(response)));
+                     client(), job_unique_id, guid, std::move(response)));
 
   if (test_response->data.size()) {
     // Report progress at 50% complete.
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
-                       client(), guid, test_response->data.size() / 2));
+                       client(), job_unique_id, guid,
+                       test_response->data.size() / 2));
 
     // Report progress at 100% complete.
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
-                       client(), guid, test_response->data.size()));
+                       client(), job_unique_id, guid,
+                       test_response->data.size()));
   }
 
   if (test_response->succeeded_) {
@@ -127,14 +129,14 @@ void MockBackgroundFetchDelegate::DownloadUrl(
         job_unique_id,
         base::BindOnce(
             &BackgroundFetchDelegate::Client::OnDownloadComplete, client(),
-            guid,
+            job_unique_id, guid,
             std::make_unique<BackgroundFetchResult>(
                 base::Time::Now(), response_path, test_response->data.size())));
   } else {
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadComplete,
-                       client(), guid,
+                       client(), job_unique_id, guid,
                        std::make_unique<BackgroundFetchResult>(
                            base::Time::Now(),
                            BackgroundFetchResult::FailureReason::UNKNOWN)));

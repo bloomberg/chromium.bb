@@ -95,7 +95,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
   // Creates a new BackgroundFetchJobController instance.
   std::unique_ptr<BackgroundFetchJobController> CreateJobController(
-      const BackgroundFetchRegistrationId& registration_id) {
+      const BackgroundFetchRegistrationId& registration_id,
+      int total_downloads = 1) {
     delegate_ = browser_context()->GetBackgroundFetchDelegate();
     DCHECK(delegate_);
     delegate_proxy_ = std::make_unique<BackgroundFetchDelegateProxy>(delegate_);
@@ -106,7 +107,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     return std::make_unique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
-        registration, &data_manager_,
+        registration, 0, total_downloads, std::vector<std::string>(),
+        &data_manager_,
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
             base::Unretained(this)),

@@ -69,6 +69,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   void CreateDownloadJob(const std::string& job_unique_id,
                          const std::string& title,
                          const url::Origin& origin,
+                         base::WeakPtr<Controller> controller,
                          int completed_parts,
                          int total_parts,
                          const std::vector<std::string>& current_guids);
@@ -77,7 +78,6 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Should only be called from the Controller (on the IO
   // thread).
   void StartRequest(const std::string& job_unique_id,
-                    base::WeakPtr<Controller> job_controller,
                     const url::Origin& origin,
                     scoped_refptr<BackgroundFetchRequestInfo> request);
 
@@ -93,28 +93,48 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
  private:
   class Core;
 
+  // Called when the job identified by |job_unique|id| was cancelled by the
+  // delegate. Should only be called on the IO thread.
+  void OnJobCancelled(const std::string& job_unique_id);
+
   // Called when the download identified by |guid| has succeeded/failed/aborted.
   // Should only be called on the IO thread.
-  void OnDownloadComplete(const std::string& guid,
+  void OnDownloadComplete(const std::string& job_unique_id,
+                          const std::string& guid,
                           std::unique_ptr<BackgroundFetchResult> result);
 
   // Called when progress has been made for the download identified by |guid|.
   // Should only be called on the IO thread.
-  void OnDownloadUpdated(const std::string& guid, uint64_t bytes_downloaded);
+  void OnDownloadUpdated(const std::string& job_unique_id,
+                         const std::string& guid,
+                         uint64_t bytes_downloaded);
 
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).
-  void DidStartRequest(const std::string& guid,
+  void DidStartRequest(const std::string& job_unique_id,
+                       const std::string& guid,
                        std::unique_ptr<BackgroundFetchResponse> response);
 
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;
 
-  // Map from DownloadService GUIDs to the RequestInfo and the JobController
-  // that started the download.
-  std::map<std::string,
-           std::pair<scoped_refptr<BackgroundFetchRequestInfo>,
-                     base::WeakPtr<Controller>>>
-      controller_map_;
+  struct JobDetails {
+    explicit JobDetails(base::WeakPtr<Controller> controller);
+    JobDetails(JobDetails&& details);
+    ~JobDetails();
+
+    base::WeakPtr<Controller> controller;
+
+    // Map from DownloadService GUIDs to their corresponding request.
+    base::flat_map<std::string, scoped_refptr<BackgroundFetchRequestInfo>>
+        current_request_map;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(JobDetails);
+  };
+
+  // Map from unique job ids to a JobDetails containing the outstanding download
+  // GUIDs and the controller that started the download.
+  std::map<std::string, JobDetails> job_details_map_;
 
   base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_;
 
