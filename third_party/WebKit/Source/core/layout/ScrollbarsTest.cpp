@@ -94,7 +94,46 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
   }
 };
 
+class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
+ public:
+  void TearDown() override {
+    // The SimTest destructor calls runPendingTasks. This is a problem because
+    // if there are any repeating tasks, advancing virtual time will cause the
+    // runloop to busy loop. Disabling virtual time here fixes that.
+    WebView().Scheduler()->DisableVirtualTimeForTesting();
+  }
+
+  void TimeAdvance() {
+    WebView().Scheduler()->SetVirtualTimePolicy(
+        WebViewScheduler::VirtualTimePolicy::ADVANCE);
+  }
+
+  void StopVirtualTimeAndExitRunLoop() {
+    WebView().Scheduler()->SetVirtualTimePolicy(
+        WebViewScheduler::VirtualTimePolicy::PAUSE);
+    testing::ExitRunLoop();
+  }
+
+  // Some task queues may have repeating v8 tasks that run forever so we impose
+  // a hard (virtual) time limit.
+  void RunTasksForPeriod(double delay_ms) {
+    TimeAdvance();
+    Platform::Current()
+        ->CurrentThread()
+        ->Scheduler()
+        ->LoadingTaskRunner()
+        ->PostDelayedTask(
+            BLINK_FROM_HERE,
+            WTF::Bind(
+                &ScrollbarsTestWithVirtualTimer::StopVirtualTimeAndExitRunLoop,
+                WTF::Unretained(this)),
+            TimeDelta::FromMillisecondsD(delay_ms));
+    testing::EnterRunLoop();
+  }
+};
+
 INSTANTIATE_TEST_CASE_P(All, ScrollbarsTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, ScrollbarsTestWithVirtualTimer, ::testing::Bool());
 
 TEST_P(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
@@ -925,29 +964,25 @@ TEST_P(ScrollbarsTest,
   Compositor().BeginFrame();
 }
 
-static void DisableCompositing(WebSettings* settings) {
-  settings->SetAcceleratedCompositingEnabled(false);
-  settings->SetPreferCompositingToLCDTextEnabled(false);
-}
-
-#if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define DISABLE_ON_TSAN_AND_ASAN(test_name) DISABLED_##test_name
+// http://crbug.com/633321, Disable since VirtualTime not work for Android.
+#if defined(OS_ANDROID)
+#define DISABLE_ON_ANDROID(test_name) DISABLED_##test_name
 #else
-#define DISABLE_ON_TSAN_AND_ASAN(test_name) test_name
-#endif  // defined(THREAD_SANITIZER)
+#define DISABLE_ON_ANDROID(test_name) test_name
+#endif
 
 // Make sure overlay scrollbars on non-composited scrollers fade out and set
 // the hidden bit as needed.
-// TODO(crbug.com/776684): Fix and re-enable on TSAN and ASAN.
-TEST_P(ScrollbarsTest,
-       DISABLE_ON_TSAN_AND_ASAN(TestNonCompositedOverlayScrollbarsFade)) {
-  FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &DisableCompositing);
-
-  constexpr double kMockOverlayFadeOutDelayMs = 5.0;
-  constexpr TimeDelta kMockOverlayFadeOutDelay =
-      TimeDelta::FromMillisecondsD(kMockOverlayFadeOutDelayMs);
+// To avoid TSAN/ASAN race issue, this test use Virtual Time and give scrollbar
+// a huge fadeout delay.
+TEST_P(ScrollbarsTestWithVirtualTimer,
+       DISABLE_ON_ANDROID(TestNonCompositedOverlayScrollbarsFade)) {
+  // Will crash if move EnableVirtualTime before test body.
+  WebView().Scheduler()->EnableVirtualTime();
+  TimeAdvance();
+  constexpr double kMockOverlayFadeOutDelayInSeconds = 5.0;
+  constexpr double kMockOverlayFadeOutDelayMS =
+      kMockOverlayFadeOutDelayInSeconds * 1000;
 
   ScrollbarTheme& theme = GetScrollbarTheme();
   // This test relies on mock overlay scrollbars.
@@ -956,64 +991,67 @@ TEST_P(ScrollbarsTest,
   ScrollbarThemeOverlayMock& mock_overlay_theme =
       (ScrollbarThemeOverlayMock&)theme;
   mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(
-      kMockOverlayFadeOutDelayMs / 1000.0);
+      kMockOverlayFadeOutDelayInSeconds);
 
-  web_view_impl->ResizeWithBrowserControls(WebSize(640, 480), 0, 0, false);
-
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  #space {"
-                                   "    width: 1000px;"
-                                   "    height: 1000px;"
-                                   "  }"
-                                   "  #container {"
-                                   "    width: 200px;"
-                                   "    height: 200px;"
-                                   "    overflow: scroll;"
-                                   "  }"
-                                   "  div { height:1000px; width: 200px; }"
-                                   "</style>"
-                                   "<div id='container'>"
-                                   "  <div id='space'></div>"
-                                   "</div>",
-                                   base_url);
-  web_view_impl->UpdateAllLifecyclePhases();
-
+  WebView().Resize(WebSize(640, 480));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  #space {"
+      "    width: 1000px;"
+      "    height: 1000px;"
+      "  }"
+      "  #container {"
+      "    width: 200px;"
+      "    height: 200px;"
+      "    overflow: scroll;"
+      "    /* Ensure the scroller is non-composited. */"
+      "    border: border: 2px solid;"
+      "    border-radius: 25px;"
+      "  }"
+      "  div { height:1000px; width: 200px; }"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='space'></div>"
+      "</div>");
+  Compositor().BeginFrame();
   // This test is specifically checking the behavior when overlay scrollbars
   // are enabled.
   DCHECK(GetScrollbarTheme().UsesOverlayScrollbars());
 
-  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
-  Document* document =
-      ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
-  Element* container = document->getElementById("container");
+  Document& document = GetDocument();
+  Element* container = document.getElementById("container");
   ScrollableArea* scrollable_area =
       ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
 
+  DCHECK(!scrollable_area->UsesCompositedScrolling());
+
   EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
-  testing::RunDelayedTasks(kMockOverlayFadeOutDelay);
+  RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
   EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
 
   scrollable_area->SetScrollOffset(ScrollOffset(10, 10), kProgrammaticScroll,
                                    kScrollBehaviorInstant);
 
   EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
-  testing::RunDelayedTasks(kMockOverlayFadeOutDelay);
+  RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
   EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
 
-  frame->ExecuteScript(WebScriptSource(
+  MainFrame().ExecuteScript(WebScriptSource(
       "document.getElementById('space').style.height = '500px';"));
-  frame->View()->UpdateAllLifecyclePhases();
+  Compositor().BeginFrame();
+
   EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
 
-  frame->ExecuteScript(WebScriptSource(
+  MainFrame().ExecuteScript(WebScriptSource(
       "document.getElementById('container').style.height = '300px';"));
-  frame->View()->UpdateAllLifecyclePhases();
+  Compositor().BeginFrame();
 
   EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
-  testing::RunDelayedTasks(kMockOverlayFadeOutDelay);
+  RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
   EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
 
   // Non-composited scrollbars don't fade out while mouse is over.
@@ -1022,10 +1060,10 @@ TEST_P(ScrollbarsTest,
                                    kScrollBehaviorInstant);
   EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
   scrollable_area->MouseEnteredScrollbar(*scrollable_area->VerticalScrollbar());
-  testing::RunDelayedTasks(kMockOverlayFadeOutDelay);
+  RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
   EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
   scrollable_area->MouseExitedScrollbar(*scrollable_area->VerticalScrollbar());
-  testing::RunDelayedTasks(kMockOverlayFadeOutDelay);
+  RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
   EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
 
   mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(0.0);
