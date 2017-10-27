@@ -79,11 +79,11 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
   void ExpectApp(int64_t id,
                  const std::string& expected_scope,
                  const std::set<std::string>& expected_methods) {
-    ASSERT_NE(verified_apps().end(), verified_apps().find(id));
-    EXPECT_EQ(GURL(expected_scope), verified_apps().find(id)->second->scope);
-    std::set<std::string> actual_methods(
-        verified_apps().find(id)->second->enabled_methods.begin(),
-        verified_apps().find(id)->second->enabled_methods.end());
+    const auto& it = verified_apps().find(id);
+    ASSERT_NE(verified_apps().end(), it);
+    EXPECT_EQ(GURL(expected_scope), it->second->scope);
+    std::set<std::string> actual_methods(it->second->enabled_methods.begin(),
+                                         it->second->enabled_methods.end());
     EXPECT_EQ(expected_methods, actual_methods);
   }
 
@@ -505,6 +505,47 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, PaymentMethodName404) {
     Verify(std::move(apps));
 
     EXPECT_TRUE(verified_apps().empty());
+  }
+}
+
+// All known payment method names are valid.
+IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
+                       AllKnownPaymentMethodNames) {
+  {
+    content::PaymentAppProvider::PaymentApps apps;
+    apps[0] = std::make_unique<content::StoredPaymentApp>();
+    apps[0]->scope = GURL("https://bobpay.com/webpay");
+    apps[0]->enabled_methods.push_back("basic-card");
+    apps[0]->enabled_methods.push_back("interledger");
+    apps[0]->enabled_methods.push_back("payee-credit-transfer");
+    apps[0]->enabled_methods.push_back("payer-credit-transfer");
+    apps[0]->enabled_methods.push_back("not-supported");
+
+    Verify(std::move(apps));
+
+    EXPECT_EQ(1U, verified_apps().size());
+    ExpectApp(0, "https://bobpay.com/webpay",
+              {"basic-card", "interledger", "payee-credit-transfer",
+               "payer-credit-transfer"});
+  }
+
+  // Repeat verifications should have identical results.
+  {
+    content::PaymentAppProvider::PaymentApps apps;
+    apps[0] = std::make_unique<content::StoredPaymentApp>();
+    apps[0]->scope = GURL("https://bobpay.com/webpay");
+    apps[0]->enabled_methods.push_back("basic-card");
+    apps[0]->enabled_methods.push_back("interledger");
+    apps[0]->enabled_methods.push_back("payee-credit-transfer");
+    apps[0]->enabled_methods.push_back("payer-credit-transfer");
+    apps[0]->enabled_methods.push_back("not-supported");
+
+    Verify(std::move(apps));
+
+    EXPECT_EQ(1U, verified_apps().size());
+    ExpectApp(0, "https://bobpay.com/webpay",
+              {"basic-card", "interledger", "payee-credit-transfer",
+               "payer-credit-transfer"});
   }
 }
 

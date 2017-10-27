@@ -87,10 +87,13 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
     std::vector<std::string> verified_method_names;
     for (const auto& method : app.second->enabled_methods) {
       // For non-URL payment method names, only names published by W3C should be
-      // supported.
+      // supported. Keep this in sync with AndroidPaymentAppFinder.java.
       // https://w3c.github.io/payment-method-basic-card/
       // https://w3c.github.io/webpayments/proposals/interledger-payment-method.html
-      if (method == "basic-card" || method == "interledger") {
+      // https://w3c.github.io/webpayments-methods-credit-transfer-direct-debit/
+      if (method == "basic-card" || method == "interledger" ||
+          method == "payee-credit-transfer" ||
+          method == "payer-credit-transfer") {
         verified_method_names.emplace_back(method);
         continue;
       }

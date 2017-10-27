@@ -148,12 +148,16 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             PaymentAppCreatedCallback callback) {
         mWebContents = webContents;
 
-        // For non-URI payment method names, only names published by W3C should be supported.
+        // For non-URI payment method names, only names published by W3C should be supported. Keep
+        // this in sync with manifest_verifier.cc.
         Set<String> supportedNonUriPaymentMethods = new HashSet<>();
-        // https://w3c.github.io/webpayments-methods-card/
+        // https://w3c.github.io/payment-method-basic-card/
         supportedNonUriPaymentMethods.add("basic-card");
         // https://w3c.github.io/webpayments/proposals/interledger-payment-method.html
         supportedNonUriPaymentMethods.add("interledger");
+        // https://w3c.github.io/webpayments-methods-credit-transfer-direct-debit/
+        supportedNonUriPaymentMethods.add("payee-credit-transfer");
+        supportedNonUriPaymentMethods.add("payer-credit-transfer");
 
         mNonUriPaymentMethods = new HashSet<>();
         mUriPaymentMethods = new HashSet<>();
