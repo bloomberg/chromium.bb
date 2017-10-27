@@ -1136,6 +1136,8 @@ source_set("browser") {
     "notifications/platform_notification_context_impl.h",
     "notifications/type_converters.cc",
     "notifications/type_converters.h",
+    "origin_manifest/origin_manifest_parser.cc",
+    "origin_manifest/origin_manifest_parser.h",
     "payments/payment_app_context_impl.cc",
     "payments/payment_app_context_impl.h",
     "payments/payment_app_database.cc",
