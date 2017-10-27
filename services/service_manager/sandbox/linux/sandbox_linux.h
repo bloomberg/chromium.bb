@@ -29,9 +29,13 @@ template <typename T>
 struct DefaultSingletonTraits;
 class Thread;
 }  // namespace base
+
 namespace sandbox {
+namespace syscall_broker {
+class BrokerProcess;
+}  // namespace syscall_broker
 class SetuidSandboxClient;
-}
+}  // namespace sandbox
 
 namespace service_manager {
 
@@ -145,6 +149,21 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   };
 #endif
 
+  // A BrokerProcess is a helper that is started before the sandbox is engaged
+  // and will serve requests to access files over an IPC channel. The client of
+  // this runs from a SIGSYS handler triggered by the seccomp-bpf sandbox.
+  // This should never be destroyed, as after the sandbox is started it is
+  // vital to the process.
+  sandbox::syscall_broker::BrokerProcess* broker_process() const {
+    return broker_process_;
+  }
+
+  void set_broker_process(
+      std::unique_ptr<sandbox::syscall_broker::BrokerProcess> broker_process) {
+    DCHECK(!broker_process_);
+    broker_process_ = broker_process.release();
+  }
+
  private:
   friend struct base::DefaultSingletonTraits<SandboxLinux>;
 
@@ -157,19 +176,24 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
                              SandboxSeccompBPF::PreSandboxHook hook,
                              const SandboxSeccompBPF::Options& options);
   void StopThreadImpl(base::Thread* thread);
+
   // We must have been pre_initialized_ before using these.
   bool seccomp_bpf_supported() const;
   bool seccomp_bpf_with_tsync_supported() const;
+
   // Returns true if it can be determined that the current process has open
   // directories that are not managed by the SandboxLinux class. This would
   // be a vulnerability as it would allow to bypass the setuid sandbox.
   bool HasOpenDirectories() const;
+
   // The last part of the initialization is to make sure any temporary "hole"
   // in the sandbox is closed. For now, this consists of closing proc_fd_.
   void SealSandbox();
+
   // GetStatus() makes promises as to how the sandbox will behave. This
   // checks that no promises have been broken.
   void CheckForBrokenPromises(service_manager::SandboxType sandbox_type);
+
   // Stop |thread| and make sure it does not appear in /proc/self/tasks/
   // anymore.
   void StopThreadAndEnsureNotCounted(base::Thread* thread) const;
@@ -178,6 +202,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // allow for sandbox bypasses. It needs to be closed before we consider
   // ourselves sandboxed.
   int proc_fd_;
+
   bool seccomp_bpf_started_;
   // The value returned by GetStatus(). Gets computed once and then cached.
   int sandbox_status_flags_;
@@ -191,6 +216,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
 #if defined(ANY_OF_AMTLU_SANITIZER)
   std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
 #endif
+  sandbox::syscall_broker::BrokerProcess* broker_process_;  // Leaked as global.
 
   DISALLOW_COPY_AND_ASSIGN(SandboxLinux);
 };

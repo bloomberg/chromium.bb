@@ -26,6 +26,7 @@
 #include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 using sandbox::bpf_dsl::Policy;
 using sandbox::syscall_broker::BrokerFilePermission;
@@ -259,7 +260,7 @@ bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
   DCHECK(!chromeos_arm_gpu);
 
   // Create a new broker process with no extra files in whitelist.
-  static_cast<service_manager::GpuProcessPolicy*>(policy)->set_broker_process(
+  service_manager::SandboxLinux::GetInstance()->set_broker_process(
       InitGpuBrokerProcess(
           []() -> std::unique_ptr<Policy> {
             return std::make_unique<service_manager::GpuBrokerProcessPolicy>();
@@ -305,7 +306,7 @@ bool CrosArmGpuPreSandboxHook(
   // Add ARM-specific files to whitelist in the broker.
   std::vector<BrokerFilePermission> permissions;
   AddArmGpuWhitelist(&permissions);
-  static_cast<service_manager::GpuProcessPolicy*>(policy)->set_broker_process(
+  service_manager::SandboxLinux::GetInstance()->set_broker_process(
       InitGpuBrokerProcess(
           []() -> std::unique_ptr<Policy> {
             return std::make_unique<
@@ -335,7 +336,7 @@ bool CrosAmdGpuPreSandboxHook(
   std::vector<BrokerFilePermission> permissions;
   AddAmdGpuWhitelist(&permissions);
 
-  static_cast<service_manager::GpuProcessPolicy*>(policy)->set_broker_process(
+  service_manager::SandboxLinux::GetInstance()->set_broker_process(
       InitGpuBrokerProcess(
           []() -> std::unique_ptr<Policy> {
             return std::make_unique<

@@ -111,12 +111,13 @@ SandboxLinux::SandboxLinux()
       seccomp_bpf_with_tsync_supported_(false),
       yama_is_enforcing_(false),
       initialize_sandbox_ran_(false),
-      setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()) {
-  if (setuid_sandbox_client_ == NULL) {
+      setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()),
+      broker_process_(nullptr) {
+  if (!setuid_sandbox_client_) {
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
   }
 #if defined(ANY_OF_AMTLU_SANITIZER)
-  sanitizer_args_ = base::WrapUnique(new __sanitizer_sandbox_arguments);
+  sanitizer_args_ = std::make_unique<__sanitizer_sandbox_arguments>();
   *sanitizer_args_ = {0};
 #endif
 }

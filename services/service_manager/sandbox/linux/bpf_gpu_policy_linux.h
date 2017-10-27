@@ -24,24 +24,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT GpuProcessPolicy
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
-  sandbox::syscall_broker::BrokerProcess* broker_process() const {
-    return broker_process_;
-  }
-
-  void set_broker_process(
-      std::unique_ptr<sandbox::syscall_broker::BrokerProcess> broker_process) {
-    DCHECK(!broker_process_);
-    broker_process_ = broker_process.release();
-  }
-
  private:
-  // A BrokerProcess is a helper that is started before the sandbox is engaged
-  // and will serve requests to access files over an IPC channel. The client of
-  // this runs from a SIGSYS handler triggered by the seccomp-bpf sandbox.
-  // This should never be destroyed, as after the sandbox is started it is
-  // vital to the process.
-  sandbox::syscall_broker::BrokerProcess* broker_process_;  // Leaked as global.
-
   DISALLOW_COPY_AND_ASSIGN(GpuProcessPolicy);
 };
 
