@@ -536,6 +536,8 @@ class TestExpectationLine(object):
             return ['Skip']
         if set(expectations) == set(['Pass', 'Slow']):
             return ['Slow']
+        if set(expectations) == set(['WontFix', 'Skip']):
+            return ['WontFix']
         return expectations
 
     @classmethod
