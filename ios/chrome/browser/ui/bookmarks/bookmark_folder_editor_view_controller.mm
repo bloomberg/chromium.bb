@@ -25,7 +25,9 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Buttons/src/MDCFlatButton.h"
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
@@ -466,47 +468,21 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 - (void)addToolbar {
   // Add bottom toolbar with Delete button.
   BookmarksElevatedToolbar* buttonBar = [[BookmarksElevatedToolbar alloc] init];
-  UIBarButtonItem* deleteItem = [[UIBarButtonItem alloc]
-      initWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE)
-              style:UIBarButtonItemStylePlain
-             target:self
-             action:@selector(deleteFolder)];
-  deleteItem.accessibilityIdentifier = @"Delete Folder";
-  [deleteItem setTitleTextAttributes:@{
-    NSForegroundColorAttributeName : [UIColor blackColor]
-  }
-                            forState:UIControlStateNormal];
-  [buttonBar.layer addSublayer:[[MDCShadowLayer alloc] init]];
-  buttonBar.shadowElevation = MDCShadowElevationSearchBarResting;
-  buttonBar.items = @[ deleteItem ];
+  MDCButton* deleteButton = [[MDCFlatButton alloc] init];
+  [deleteButton setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE)
+                forState:UIControlStateNormal];
+  [deleteButton addTarget:self
+                   action:@selector(deleteFolder)
+         forControlEvents:UIControlEventTouchUpInside];
+  deleteButton.accessibilityIdentifier = @"Delete Folder";
+
+  [buttonBar setButton:deleteButton];
   [self.view addSubview:buttonBar];
 
   // Constraint |buttonBar| to be in bottom.
   buttonBar.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addConstraints:
-                 [NSLayoutConstraint
-                     constraintsWithVisualFormat:@"H:|[buttonBar]|"
-                                         options:0
-                                         metrics:nil
-                                           views:NSDictionaryOfVariableBindings(
-                                                     buttonBar)]];
-  [self.view addConstraint:[NSLayoutConstraint
-                               constraintWithItem:buttonBar
-                                        attribute:NSLayoutAttributeBottom
-                                        relatedBy:NSLayoutRelationEqual
-                                           toItem:self.view
-                                        attribute:NSLayoutAttributeBottom
-                                       multiplier:1.0
-                                         constant:0.0]];
-  [self.view
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:buttonBar
-                                 attribute:NSLayoutAttributeHeight
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:nil
-                                 attribute:NSLayoutAttributeNotAnAttribute
-                                multiplier:1.0
-                                  constant:48.0]];
+  ApplyVisualConstraints(@[ @"H:|[buttonBar]|", @"V:[buttonBar]|" ],
+                         NSDictionaryOfVariableBindings(buttonBar));
   self.toolbar = buttonBar;
 }
 

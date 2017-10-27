@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_elevated_toolbar.h"
 
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/third_party/material_components_ios/src/components/Buttons/src/MDCButton.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 
@@ -11,8 +13,51 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kButtonHeight = 48;
+}
+
+@interface BookmarksElevatedToolbar ()
+
+@property(nonatomic, readonly) MDCShadowLayer* shadowLayer;
+@property(nonatomic, strong) MDCButton* currentButton;
+
+@end
+
 @implementation BookmarksElevatedToolbar
+
+@synthesize currentButton = _currentButton;
 @synthesize shadowLayer = _shadowLayer;
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    [self.layer addSublayer:[[MDCShadowLayer alloc] init]];
+    self.shadowElevation = MDCShadowElevationSearchBarResting;
+    self.backgroundColor = [UIColor whiteColor];
+  }
+  return self;
+}
+
+- (void)setButton:(MDCButton*)button {
+  [self.currentButton removeFromSuperview];
+  self.currentButton = button;
+  if (!button)
+    return;
+
+  [self addSubview:button];
+  button.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UILayoutGuide* safeAreaLayoutGuide = SafeAreaLayoutGuideForView(self);
+  [NSLayoutConstraint activateConstraints:@[
+    [button.leadingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor],
+    [button.topAnchor constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor],
+    [button.bottomAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor],
+    [button.heightAnchor constraintEqualToConstant:kButtonHeight],
+  ]];
+}
 
 #pragma mark - Properties
 

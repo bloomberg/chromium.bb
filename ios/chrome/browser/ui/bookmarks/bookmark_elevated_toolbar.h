@@ -5,17 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_ELEVATED_TOOLBAR_H_
 #define IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_ELEVATED_TOOLBAR_H_
 
-#import <CoreGraphics/CoreGraphics.h>
+#import <UIKit/UIKit.h>
 
-#import "ios/third_party/material_components_ios/src/components/ButtonBar/src/MaterialButtonBar.h"
+@class MDCButton;
 
-@class MDCShadowLayer;
+// A class containing one button that has a Material shadow.
+@interface BookmarksElevatedToolbar : UIView
 
-// A subclass of MDCButtonBar that has a Material shadow.
-@interface BookmarksElevatedToolbar : MDCButtonBar
-
-@property(nonatomic, readonly) MDCShadowLayer* shadowLayer;
 @property(nonatomic, assign) CGFloat shadowElevation;
+
+- (void)setButton:(MDCButton*)button;
 
 @end
 
