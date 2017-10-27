@@ -34,7 +34,8 @@ from chromite.lib import timeout_util
 PRE_CQ = validation_pool.PRE_CQ
 
 
-class UnitTestStage(generic_stages.BoardSpecificBuilderStage):
+class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
+                    generic_stages.ArchivingStageMixin):
   """Run unit tests."""
 
   option_name = 'tests'
@@ -58,6 +59,10 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage):
                             self._current_board,
                             blacklist=self._run.config.unittest_blacklist,
                             extra_env=extra_env)
+    # Package UnitTest binaries.
+    tarball = commands.BuildUnitTestTarball(
+        self._build_root, self._current_board, self.archive_path)
+    self.UploadArtifact(tarball, archive=False)
 
     if os.path.exists(os.path.join(self.GetImageDirSymlink(),
                                    'au-generator.zip')):

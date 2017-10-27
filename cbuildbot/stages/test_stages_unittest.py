@@ -14,6 +14,7 @@ import os
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib.const import waterfall
 from chromite.lib import constants
@@ -21,38 +22,52 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import fake_cidb
+from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
 # pylint: disable=too-many-ancestors
 
-class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
+class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
+                        cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the UnitTest stage."""
 
   BOT_ID = 'amd64-generic-full'
+  RELEASE_TAG = 'ToT.0.0'
 
   def setUp(self):
     self.rununittests_mock = self.PatchObject(commands, 'RunUnitTests')
+    self.buildunittests_mock = self.PatchObject(
+        commands, 'BuildUnitTestTarball', return_value='unit_tests.tar')
+    self.uploadartifact_mock = self.PatchObject(
+        generic_stages.ArchivingStageMixin, 'UploadArtifact')
     self.testauzip_mock = self.PatchObject(commands, 'TestAuZip')
-
     self.image_dir = os.path.join(
         self.build_root, 'src/build/images/amd64-generic/latest-cbuildbot')
 
     self._Prepare()
 
   def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
     return test_stages.UnitTestStage(self._run, self._current_board)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
+    makedirs_mock = self.PatchObject(osutils, 'SafeMakedirs')
 
     self.RunStage()
+    makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
     exists_mock.assert_called_once_with(
         os.path.join(self.image_dir, 'au-generator.zip'))
     self.rununittests_mock.assert_called_once_with(
         self.build_root, self._current_board, blacklist=[], extra_env=mock.ANY)
+    self.buildunittests_mock.assert_called_once_with(
+        self.build_root, self._current_board,
+        self._run.GetArchive().archive_path)
+    self.uploadartifact_mock.assert_called_once_with(
+        'unit_tests.tar', archive=False)
     self.testauzip_mock.assert_called_once_with(self.build_root, self.image_dir)
 
 

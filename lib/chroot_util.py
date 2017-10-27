@@ -168,7 +168,7 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
   env = extra_env.copy() if extra_env else {}
   env.update({
       'FEATURES': 'test',
-      'PKGDIR': os.path.join(sysroot, 'test-packages'),
+      'PKGDIR': os.path.join(sysroot, constants.UNITTEST_PKG_PATH),
   })
 
   command = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),

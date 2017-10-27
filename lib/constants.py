@@ -63,6 +63,7 @@ SDK_TOOLCHAINS_OUTPUT = 'tmp/toolchain-pkgs'
 SDK_OVERLAYS_OUTPUT = 'tmp/sdk-overlays'
 
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
+UNITTEST_PKG_PATH = 'test-packages'
 
 # Path to the lsb-release file on the device.
 LSB_RELEASE_PATH = '/etc/lsb-release'
