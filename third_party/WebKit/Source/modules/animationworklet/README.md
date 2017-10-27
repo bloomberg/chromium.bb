@@ -8,6 +8,6 @@ for the set of web-exposed API that implements.
 ## Testing
 
 Layout tests that cover web-exposed API for Animation Worklet are tested in [`LayoutTests/virtual/th
-readed/fast/compositorworker/`](../../../LayoutTests/virtual/threaded/fast/compositorworker/).
+readed/fast/animationworklet/`](../../../LayoutTests/virtual/threaded/fast/animationworklet/).
 
-There are unit tests covering animation worklet and global scope in [`modules/compositorworker`](.).
+There are unit tests covering animation worklet and global scope in [`modules/animationworklet`](.).

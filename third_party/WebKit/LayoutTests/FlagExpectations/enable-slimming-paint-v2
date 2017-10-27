@@ -1450,8 +1450,8 @@ crbug.com/702353 transitions/transition-end-event-destroy-iframe.html [ Timeout 
 crbug.com/702353 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
 crbug.com/702365 virtual/threaded/animations/composited-filter-webkit-filter.html [ Failure ]
 crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
-crbug.com/778875 virtual/threaded/fast/compositorworker/animation-worklet-visual-update.html [ Failure Crash ]
-crbug.com/778875 virtual/threaded/fast/compositorworker/animation-worklet-animator-animate.html [ Failure ]
+crbug.com/778875 virtual/threaded/fast/animationworklet/animation-worklet-visual-update.html [ Failure Crash ]
+crbug.com/778875 virtual/threaded/fast/animationworklet/animation-worklet-animator-animate.html [ Failure ]
 
 # Eight of the frames in the test below paint no content. In SPv2 we will never
 # composite animations that paint nothing. For now we mark this test as failing,

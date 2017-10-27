@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorkletMessagingProxy.h"
+#include "modules/animationworklet/AnimationWorkletMessagingProxy.h"
 
 #include "core/workers/ThreadedWorkletObjectProxy.h"
 #include "core/workers/WorkerClients.h"
-#include "modules/compositorworker/AnimationWorkletThread.h"
+#include "modules/animationworklet/AnimationWorkletThread.h"
 
 namespace blink {
 

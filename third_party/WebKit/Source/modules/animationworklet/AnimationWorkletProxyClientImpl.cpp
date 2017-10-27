@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorkletProxyClientImpl.h"
+#include "modules/animationworklet/AnimationWorkletProxyClientImpl.h"
 
 #include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/Document.h"

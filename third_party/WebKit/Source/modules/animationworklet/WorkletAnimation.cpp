@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/WorkletAnimation.h"
+#include "modules/animationworklet/WorkletAnimation.h"
 
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"

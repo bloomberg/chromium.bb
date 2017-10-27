@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorkletThread.h"
+#include "modules/animationworklet/AnimationWorkletThread.h"
 
 #include <memory>
 #include "bindings/core/v8/ScriptModule.h"

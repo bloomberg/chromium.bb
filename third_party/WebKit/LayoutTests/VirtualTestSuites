@@ -28,7 +28,7 @@
   },
   {
     "prefix": "threaded",
-    "base": "fast/compositorworker",
+    "base": "fast/animationworklet",
     "args": ["--enable-threaded-compositing"]
   },
   {

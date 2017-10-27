@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorkletGlobalScope.h"
+#include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 
 #include "platform/weborigin/SecurityOrigin.h"
 
