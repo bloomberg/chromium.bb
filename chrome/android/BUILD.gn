@@ -741,6 +741,10 @@ shared_library("libchrome") {
     ldflags = [ "-Wl,--long-plt" ]
   }
 
+  if (chromium_linker_supported && use_lld) {
+    configs += [ "//build/config/android:lld_pack_relocations" ]
+  }
+
   public_configs = extra_chrome_shared_library_configs
   deps += extra_chrome_shared_library_deps
 }
@@ -910,6 +914,9 @@ if (!android_64bit_target_cpu ||
 
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
+    if (use_lld) {
+      configs += [ "//build/config/android:lld_pack_relocations" ]
+    }
     if (is_android && use_order_profiling) {
       deps += [ "//tools/cygprofile" ]
     }
@@ -943,6 +950,9 @@ shared_library("chrome_sync_shell") {
     # See https://crbug.com/704305 for details.
     libs =
         [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+  }
+  if (use_lld) {
+    configs += [ "//build/config/android:lld_pack_relocations" ]
   }
 }
 

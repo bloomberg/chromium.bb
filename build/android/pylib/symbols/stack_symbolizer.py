@@ -32,9 +32,9 @@ class Symbolizer(object):
   """A helper class to symbolize stack."""
 
   def __init__(self, apk_under_test=None,
-               enable_relocation_packing=None):
+               non_native_packed_relocations=None):
     self._apk_under_test = apk_under_test
-    self._enable_relocation_packing = enable_relocation_packing
+    self._non_native_packed_relocations = non_native_packed_relocations
     self._libs_dir = None
     self._apk_libs = []
     self._has_unzipped = False
@@ -57,7 +57,7 @@ class Symbolizer(object):
   def UnzipAPKIfNecessary(self):
     """Unzip apk if packed relocation is enabled."""
     if (self._has_unzipped
-        or not self._enable_relocation_packing
+        or not self._non_native_packed_relocations
         or not self._apk_under_test):
       return
     self._libs_dir = tempfile.mkdtemp()
@@ -89,7 +89,7 @@ class Symbolizer(object):
 
     cmd = [_STACK_TOOL, '--arch', arch, '--output-directory',
            constants.GetOutDirectory(), '--more-info']
-    if self._enable_relocation_packing and self._apk_libs:
+    if self._non_native_packed_relocations and self._apk_libs:
       for apk_lib in self._apk_libs:
         cmd.extend(['--packed-lib', apk_lib])
     env = dict(os.environ)

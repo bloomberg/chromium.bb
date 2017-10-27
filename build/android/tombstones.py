@@ -199,8 +199,7 @@ def ClearAllTombstones(device):
 
 
 def ResolveTombstones(device, resolve_all_tombstones, include_stack_symbols,
-                      wipe_tombstones, jobs=4,
-                      apk_under_test=None, enable_relocation_packing=None,
+                      wipe_tombstones, jobs=4, apk_under_test=None,
                       tombstone_symbolizer=None):
   """Resolve tombstones in the device.
 
@@ -220,9 +219,7 @@ def ResolveTombstones(device, resolve_all_tombstones, include_stack_symbols,
                                                     include_stack_symbols,
                                                     wipe_tombstones),
                             (tombstone_symbolizer
-                             or stack_symbolizer.Symbolizer(
-                                apk_under_test,
-                                enable_relocation_packing)))
+                             or stack_symbolizer.Symbolizer(apk_under_test)))
 
 
 def main():

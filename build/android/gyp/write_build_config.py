@@ -307,8 +307,10 @@ def main(argv):
   parser.add_option('--secondary-abi-shared-libraries-runtime-deps',
                     help='Path to file containing runtime deps for secondary '
                          'abi shared libraries.')
-  parser.add_option('--enable-relocation-packing',
-                    help='Whether relocation packing is enabled.')
+  parser.add_option('--non-native-packed-relocations',
+                    action='store_true', default=False,
+                    help='Whether relocation packing was applied using the '
+                         'Android relocation_packer tool.')
 
   # apk options
   parser.add_option('--apk-path', help='Path to the target\'s apk output.')
@@ -476,7 +478,8 @@ def main(argv):
       deps_info['incremental_apk_path'] = options.incremental_apk_path
       deps_info['incremental_install_json_path'] = (
           options.incremental_install_json_path)
-      deps_info['enable_relocation_packing'] = options.enable_relocation_packing
+      deps_info['non_native_packed_relocations'] = str(
+          options.non_native_packed_relocations)
 
   requires_javac_classpath = options.type in (
       'java_binary', 'java_library', 'android_apk', 'dist_jar')
