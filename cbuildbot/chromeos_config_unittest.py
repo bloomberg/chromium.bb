@@ -47,7 +47,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
   """Tests related to config_dump.json & chromeos_config.py"""
 
   def testDump(self):
-    """Make sure the json & config are kept in sync"""
+    """Ensure generated files are up to date."""
+    # config_dump.json
     new_dump = self.site_config.SaveConfigToString()
     old_dump = osutils.ReadFile(constants.CHROMEOS_CONFIG_FILE).rstrip()
 
@@ -59,8 +60,7 @@ class ConfigDumpTest(ChromeosConfigTestBase):
                   'defined configs. Run '
                   'cbuildbot/chromeos_config_unittest --update')
 
-  def testWaterfallLayout(self):
-    """Make sure that watefall_layout_dump.txt is kept current."""
+    # watefall_layout_dump.txt
     with self.OutputCapturer() as output:
       cros_show_waterfall_layout.main(['--format', 'text'])
 
