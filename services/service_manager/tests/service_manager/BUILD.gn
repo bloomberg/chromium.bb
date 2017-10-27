@@ -72,12 +72,26 @@ service_manifest("target_manifest") {
 service_manifest("embedder_manifest") {
   name = "service_manager_unittest_embedder"
   source = "embedder_manifest.json"
-  packaged_services = [ ":singleton_manifest" ]
+  packaged_services = [
+    ":all_users_manifest",
+    ":regular_manifest",
+    ":singleton_manifest",
+  ]
+}
+
+service_manifest("all_users_manifest") {
+  name = "service_manager_unittest_all_users"
+  source = "all_users_manifest.json"
 }
 
 service_manifest("singleton_manifest") {
   name = "service_manager_unittest_singleton"
   source = "singleton_manifest.json"
+}
+
+service_manifest("regular_manifest") {
+  name = "service_manager_unittest_regular"
+  source = "regular_manifest.json"
 }
 
 service("service_manager_unittest_embedder") {

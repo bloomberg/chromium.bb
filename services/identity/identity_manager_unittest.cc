@@ -87,7 +87,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 class IdentityManagerTest : public service_manager::test::ServiceTest {
  public:
   IdentityManagerTest()
-      : ServiceTest("identity_unittests", false),
+      : ServiceTest("identity_unittests"),
         signin_client_(&pref_service_),
 #if defined(OS_CHROMEOS)
         signin_manager_(&signin_client_, &account_tracker_) {

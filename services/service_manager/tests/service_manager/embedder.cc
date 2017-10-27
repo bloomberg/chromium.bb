@@ -20,10 +20,10 @@
 
 namespace {
 
-class Singleton : public service_manager::Service {
+class RegularService : public service_manager::Service {
  public:
-  explicit Singleton() {}
-  ~Singleton() override {}
+  RegularService() = default;
+  ~RegularService() override = default;
 
  private:
   // service_manager::Service:
@@ -31,7 +31,35 @@ class Singleton : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {}
 
-  DISALLOW_COPY_AND_ASSIGN(Singleton);
+  DISALLOW_COPY_AND_ASSIGN(RegularService);
+};
+
+class AllUsersService : public service_manager::Service {
+ public:
+  AllUsersService() = default;
+  ~AllUsersService() override = default;
+
+ private:
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(AllUsersService);
+};
+
+class SingletonService : public service_manager::Service {
+ public:
+  explicit SingletonService() = default;
+  ~SingletonService() override = default;
+
+ private:
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(SingletonService);
 };
 
 class Embedder : public service_manager::Service,
@@ -63,9 +91,17 @@ class Embedder : public service_manager::Service,
   // mojom::ServiceFactory:
   void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override {
-    if (name == "service_manager_unittest_singleton") {
+    if (name == "service_manager_unittest_all_users") {
       context_.reset(new service_manager::ServiceContext(
-          base::MakeUnique<Singleton>(), std::move(request)));
+          base::MakeUnique<AllUsersService>(), std::move(request)));
+    } else if (name == "service_manager_unittest_singleton") {
+      context_.reset(new service_manager::ServiceContext(
+          base::MakeUnique<SingletonService>(), std::move(request)));
+    } else if (name == "service_manager_unittest_regular") {
+      context_.reset(new service_manager::ServiceContext(
+          base::MakeUnique<RegularService>(), std::move(request)));
+    } else {
+      LOG(ERROR) << "Failed to create unknow service " << name;
     }
   }
 

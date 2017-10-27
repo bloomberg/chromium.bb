@@ -32,14 +32,11 @@ void ServiceTestClient::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-ServiceTest::ServiceTest() : ServiceTest(std::string(), true) {}
+ServiceTest::ServiceTest() : ServiceTest(std::string()) {}
 
 ServiceTest::ServiceTest(const std::string& test_name,
-                         bool init_edk,
                          base::test::ScopedTaskEnvironment::MainThreadType type)
-    : scoped_task_environment_(type),
-      test_name_(test_name),
-      init_edk_(init_edk) {}
+    : scoped_task_environment_(type), test_name_(test_name) {}
 
 ServiceTest::~ServiceTest() {}
 
@@ -62,8 +59,6 @@ void ServiceTest::OnStartCalled(Connector* connector,
 }
 
 void ServiceTest::SetUp() {
-  DCHECK(!init_edk_);
-
   background_service_manager_ =
       base::MakeUnique<service_manager::BackgroundServiceManager>(nullptr,
                                                                   nullptr);
