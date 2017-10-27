@@ -6,7 +6,8 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 #include "modules/vr/latest/VR.h"
 #include "modules/vr/latest/VRFrameProvider.h"
@@ -109,7 +110,8 @@ ScriptPromise VRDevice::requestSession(
           DOMException::Create(kInvalidStateError, kActiveExclusiveSession));
     }
 
-    if (!UserGestureIndicator::ProcessingUserGesture()) {
+    Document* doc = ToDocumentOrNull(ExecutionContext::From(script_state));
+    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kInvalidStateError, kRequestNotInUserGesture));

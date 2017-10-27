@@ -26,8 +26,10 @@
 
 #include "core/frame/DOMTimer.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/frame/Frame.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -46,8 +48,12 @@ static const double kOneMillisecond = 0.001;
 // the smallest possible interval timer.
 static const double kMinimumInterval = 0.004;
 
-static inline bool ShouldForwardUserGesture(int interval, int nesting_level) {
-  return UserGestureIndicator::ProcessingUserGestureThreadSafe() &&
+static inline bool ShouldForwardUserGesture(int interval,
+                                            int nesting_level,
+                                            Document* doc) {
+  Frame* frame = doc ? doc->GetFrame() : nullptr;
+  return Frame::HasTransientUserActivation(frame,
+                                           true /* checkIfMainThread */) &&
          interval <= kMaxIntervalForUserGestureForwarding &&
          nesting_level ==
              1;  // Gestures should not be forwarded to nested timers.
@@ -82,7 +88,8 @@ DOMTimer::DOMTimer(ExecutionContext* context,
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {
   DCHECK_GT(timeout_id, 0);
-  if (ShouldForwardUserGesture(interval, nesting_level_)) {
+  if (ShouldForwardUserGesture(interval, nesting_level_,
+                               ToDocumentOrNull(context))) {
     // Thread safe because shouldForwardUserGesture will only return true if
     // execution is on the the main thread.
     user_gesture_token_ = UserGestureIndicator::CurrentToken();

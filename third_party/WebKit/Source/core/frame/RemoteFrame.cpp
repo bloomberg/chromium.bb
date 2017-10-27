@@ -7,7 +7,6 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/RemoteSecurityContext.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteDOMWindow.h"
 #include "core/frame/RemoteFrameClient.h"
@@ -70,7 +69,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request) {
   FrameLoader::SetReferrerForFrameRequest(frame_request);
 
   frame_request.GetResourceRequest().SetHasUserGesture(
-      UserGestureIndicator::ProcessingUserGesture());
+      Frame::HasTransientUserActivation(this));
   Client()->Navigate(frame_request.GetResourceRequest(),
                      frame_request.ReplacesCurrentItem());
 }

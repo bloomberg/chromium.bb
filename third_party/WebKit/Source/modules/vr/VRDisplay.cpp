@@ -10,6 +10,7 @@
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
@@ -321,22 +322,23 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   }
 
   bool first_present = !is_presenting_;
+  Document* doc = GetDocument();
 
   // Initiating VR presentation is only allowed in response to a user gesture.
   // If the VRDisplay is already presenting, however, repeated calls are
   // allowed outside a user gesture so that the presented content may be
   // updated.
-  if (first_present && !UserGestureIndicator::ProcessingUserGesture()) {
-    DOMException* exception = DOMException::Create(
-        kInvalidStateError, "API can only be initiated by a user gesture.");
-    resolver->Reject(exception);
-    ReportPresentationResult(PresentationResult::kNotInitiatedByUserGesture);
-    return promise;
-  }
+  if (first_present) {
+    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+      DOMException* exception = DOMException::Create(
+          kInvalidStateError, "API can only be initiated by a user gesture.");
+      resolver->Reject(exception);
+      ReportPresentationResult(PresentationResult::kNotInitiatedByUserGesture);
+      return promise;
+    }
 
-  // When we are requesting to start presentation with a user action or the
-  // display has activated, record the user action.
-  if (first_present && UserGestureIndicator::ProcessingUserGesture()) {
+    // When we are requesting to start presentation with a user action or the
+    // display has activated, record the user action.
     Platform::Current()->RecordAction(
         UserMetricsAction("VR.WebVR.requestPresent"));
   }

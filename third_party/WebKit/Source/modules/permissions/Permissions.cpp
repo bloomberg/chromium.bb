@@ -16,7 +16,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/origin_trials/origin_trials.h"
 #include "modules/permissions/PermissionDescriptor.h"
@@ -174,9 +174,11 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   if (exception_state.HadException())
     return exception_state.Reject(script_state);
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = GetService(ExecutionContext::From(script_state));
+  PermissionService* service = GetService(context);
   if (!service)
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
@@ -187,10 +189,11 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
+  Document* doc = ToDocumentOrNull(context);
+  Frame* frame = doc ? doc->GetFrame() : nullptr;
   service->RequestPermission(
-      std::move(descriptor),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGestureThreadSafe(),
+      std::move(descriptor), context->GetSecurityOrigin(),
+      Frame::HasTransientUserActivation(frame, true /* checkIfMainThread */),
       ConvertToBaseCallback(WTF::Bind(
           &Permissions::TaskComplete, WrapPersistent(this),
           WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
@@ -261,9 +264,11 @@ ScriptPromise Permissions::requestAll(
     caller_index_to_internal_index[i] = internal_index;
   }
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = GetService(ExecutionContext::From(script_state));
+  PermissionService* service = GetService(context);
   if (!service)
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
@@ -278,10 +283,11 @@ ScriptPromise Permissions::requestAll(
   for (const auto& descriptor : internal_permissions)
     internal_permissions_copy.push_back(descriptor->Clone());
 
+  Document* doc = ToDocumentOrNull(context);
+  Frame* frame = doc ? doc->GetFrame() : nullptr;
   service->RequestPermissions(
-      std::move(internal_permissions),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGestureThreadSafe(),
+      std::move(internal_permissions), context->GetSecurityOrigin(),
+      Frame::HasTransientUserActivation(frame, true /* checkIfMainThread */),
       ConvertToBaseCallback(
           WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
                     WrapPersistent(resolver),

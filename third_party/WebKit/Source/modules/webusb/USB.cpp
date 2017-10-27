@@ -9,7 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
 #include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webusb/USBConnectionEvent.h"
@@ -130,7 +130,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
                                         WrapWeakPersistent(this))));
   }
 
-  if (!UserGestureIndicator::ConsumeUserGesture()) {
+  if (!Frame::ConsumeTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

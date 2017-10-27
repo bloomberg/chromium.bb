@@ -12,7 +12,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushPermissionStatusCallbacks.h"
@@ -72,20 +73,21 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
   // permission so that later calls in different contexts can succeed.
   if (ExecutionContext::From(script_state)->IsDocument()) {
     Document* document = ToDocument(ExecutionContext::From(script_state));
-    if (!document->domWindow() || !document->GetFrame())
+    LocalFrame* frame = document->GetFrame();
+    if (!document->domWindow() || !frame)
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kInvalidStateError,
                                "Document is detached from window."));
-    PushController::ClientFrom(document->GetFrame())
-        .Subscribe(registration_->WebRegistration(), web_options,
-                   UserGestureIndicator::ProcessingUserGestureThreadSafe(),
-                   std::make_unique<PushSubscriptionCallbacks>(resolver,
-                                                               registration_));
+    PushController::ClientFrom(frame).Subscribe(
+        registration_->WebRegistration(), web_options,
+        Frame::HasTransientUserActivation(frame, true /* checkIfMainThread */),
+        std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     PushProvider()->Subscribe(
         registration_->WebRegistration(), web_options,
-        UserGestureIndicator::ProcessingUserGestureThreadSafe(),
+        Frame::HasTransientUserActivation(nullptr,
+                                          true /* checkIfMainThread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   }
 
