@@ -18,98 +18,98 @@ TextIteratorBehavior TextIteratorBehavior::Builder::Build() {
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetCollapseTrailingSpace(bool value) {
-  behavior_.collapse_trailing_space_ = value;
+  behavior_.values_.bits.collapse_trailing_space = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetDoesNotBreakAtReplacedElement(bool value) {
-  behavior_.does_not_break_at_replaced_element_ = value;
+  behavior_.values_.bits.does_not_break_at_replaced_element = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEmitsCharactersBetweenAllVisiblePositions(
     bool value) {
-  behavior_.emits_characters_between_all_visible_positions_ = value;
+  behavior_.values_.bits.emits_characters_between_all_visible_positions = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEmitsImageAltText(bool value) {
-  behavior_.emits_image_alt_text_ = value;
+  behavior_.values_.bits.emits_image_alt_text = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEmitsSpaceForNbsp(bool value) {
-  behavior_.emits_space_for_nbsp_ = value;
+  behavior_.values_.bits.emits_space_for_nbsp = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEmitsObjectReplacementCharacter(bool value) {
-  behavior_.emits_object_replacement_character_ = value;
+  behavior_.values_.bits.emits_object_replacement_character = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEmitsOriginalText(bool value) {
-  behavior_.emits_original_text_ = value;
+  behavior_.values_.bits.emits_original_text = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEntersOpenShadowRoots(bool value) {
-  behavior_.enters_open_shadow_roots_ = value;
+  behavior_.values_.bits.enters_open_shadow_roots = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEntersTextControls(bool value) {
-  behavior_.enters_text_controls_ = value;
+  behavior_.values_.bits.enters_text_controls = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetExcludeAutofilledValue(bool value) {
-  behavior_.exclude_autofilled_value_ = value;
+  behavior_.values_.bits.exclude_autofilled_value = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder& TextIteratorBehavior::Builder::SetForInnerText(
     bool value) {
-  behavior_.for_inner_text_ = value;
+  behavior_.values_.bits.for_inner_text = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetForSelectionToString(bool value) {
-  behavior_.for_selection_to_string_ = value;
+  behavior_.values_.bits.for_selection_to_string = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder& TextIteratorBehavior::Builder::SetForWindowFind(
     bool value) {
-  behavior_.for_window_find_ = value;
+  behavior_.values_.bits.for_window_find = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetIgnoresStyleVisibility(bool value) {
-  behavior_.ignores_style_visibility_ = value;
+  behavior_.values_.bits.ignores_style_visibility = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetStopsOnFormControls(bool value) {
-  behavior_.stops_on_form_controls_ = value;
+  behavior_.values_.bits.stops_on_form_controls = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetDoesNotEmitSpaceBeyondRangeEnd(bool value) {
-  behavior_.does_not_emit_space_beyond_range_end_ = value;
+  behavior_.values_.bits.does_not_emit_space_beyond_range_end = value;
   return *this;
 }
 
@@ -117,47 +117,14 @@ TextIteratorBehavior::Builder::SetDoesNotEmitSpaceBeyondRangeEnd(bool value) {
 TextIteratorBehavior::TextIteratorBehavior(const TextIteratorBehavior& other) =
     default;
 
-TextIteratorBehavior::TextIteratorBehavior()
-    : collapse_trailing_space_(false),
-      does_not_break_at_replaced_element_(false),
-      emits_characters_between_all_visible_positions_(false),
-      emits_image_alt_text_(false),
-      emits_space_for_nbsp_(false),
-      emits_object_replacement_character_(false),
-      emits_original_text_(false),
-      enters_open_shadow_roots_(false),
-      enters_text_controls_(false),
-      exclude_autofilled_value_(false),
-      for_inner_text_(false),
-      for_selection_to_string_(false),
-      for_window_find_(false),
-      ignores_style_visibility_(false),
-      stops_on_form_controls_(false),
-      does_not_emit_space_beyond_range_end_(false) {}
+TextIteratorBehavior::TextIteratorBehavior() {
+  values_.all = 0;
+}
 
 TextIteratorBehavior::~TextIteratorBehavior() = default;
 
 bool TextIteratorBehavior::operator==(const TextIteratorBehavior& other) const {
-  return collapse_trailing_space_ == other.collapse_trailing_space_ ||
-         does_not_break_at_replaced_element_ ==
-             other.does_not_break_at_replaced_element_ ||
-         emits_characters_between_all_visible_positions_ ==
-             other.emits_characters_between_all_visible_positions_ ||
-         emits_image_alt_text_ == other.emits_image_alt_text_ ||
-         emits_space_for_nbsp_ == other.emits_space_for_nbsp_ ||
-         emits_object_replacement_character_ ==
-             other.emits_object_replacement_character_ ||
-         emits_original_text_ == other.emits_original_text_ ||
-         enters_open_shadow_roots_ == other.enters_open_shadow_roots_ ||
-         enters_text_controls_ == other.enters_text_controls_ ||
-         exclude_autofilled_value_ == other.exclude_autofilled_value_ ||
-         for_inner_text_ == other.for_inner_text_ ||
-         for_selection_to_string_ == other.for_selection_to_string_ ||
-         for_window_find_ == other.for_window_find_ ||
-         ignores_style_visibility_ == other.ignores_style_visibility_ ||
-         stops_on_form_controls_ == other.stops_on_form_controls_ ||
-         does_not_emit_space_beyond_range_end_ ==
-             other.does_not_emit_space_beyond_range_end_;
+  return values_.all == other.values_.all;
 }
 
 bool TextIteratorBehavior::operator!=(const TextIteratorBehavior& other) const {

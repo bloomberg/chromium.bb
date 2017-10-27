@@ -44,6 +44,10 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:
+  // Note: Usage of |behavior| should be limited, e.g.
+  //  - EmitsObjectReplacementCharacter
+  //  - StopsOnFormControls
+  // Please ask editing-dev if you want to use other behaviors.
   SimplifiedBackwardsTextIteratorAlgorithm(
       const EphemeralRangeTemplate<Strategy>&,
       const TextIteratorBehavior& = TextIteratorBehavior());

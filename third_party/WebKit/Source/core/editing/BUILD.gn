@@ -361,6 +361,7 @@ jumbo_source_set("unit_tests") {
     "iterators/ForwardsTextBufferTest.cpp",
     "iterators/SearchBufferTest.cpp",
     "iterators/SimplifiedBackwardsTextIteratorTest.cpp",
+    "iterators/TextIteratorBehaviorTest.cpp",
     "iterators/TextIteratorTest.cpp",
     "iterators/TextSearcherICUTest.cpp",
     "markers/ActiveSuggestionMarkerListImplTest.cpp",
