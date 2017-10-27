@@ -1312,10 +1312,7 @@ Securely access your computer from your iOS device. It's fast, simple and free.
       <message desc="Message displayed before sharing computer in 'It2Me' mode when the email of the remote user attempting to connect is known." name="IDS_SHARE_CONFIRM_DIALOG_MESSAGE_WITH_USERNAME" >
         Would you like to allow <ph name="CLIENT_USERNAME">{0}<ex>client@email.com</ex></ph> to see and control your computer?
       </message>
-      <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" >
-        Share
-      </message>
-      <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." meaning="Accept share request." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM_TEMP" >
+      <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." meaning="Accept share request." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" >
         Share
       </message>
       <message desc="Label for the button to decline sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" >
