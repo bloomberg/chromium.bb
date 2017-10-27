@@ -1260,7 +1260,6 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             'text-image-checksum_fail-txt')
         details, log_stream, _ = logging_run(
             ['--additional-driver-flag=--flag',
-             '--copy-baselines',
              '--reset-results',
              'failures/unexpected/text-image-checksum.html'],
             tests_included=True, host=host)
@@ -1319,7 +1318,6 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 
         details, log_stream, _ = logging_run(
             ['--additional-driver-flag=--flag',
-             '--copy-baselines',
              '--reset-results',
              'failures/unexpected/text-image-checksum.html'],
             tests_included=True, host=host)

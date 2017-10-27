@@ -231,6 +231,7 @@ def parse_args(args):
                 action='store_true',
                 default=False,
                 help=('Reset baselines to the generated results in their existing location. '
+                      'If --additional-driver-flag is specific, reset the flag-specific baselines. '
                       'If --copy-baselines is specified, the copied baselines will be reset.')),
             optparse.make_option(
                 '--results-directory',

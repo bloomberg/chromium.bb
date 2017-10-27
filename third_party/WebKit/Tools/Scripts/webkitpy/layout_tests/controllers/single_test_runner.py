@@ -197,12 +197,11 @@ class SingleTestRunner(object):
         port = self._port
         fs = self._filesystem
 
-        if self._options.copy_baselines:
-            flag_specific_dir = port.baseline_flag_specific_dir()
-            if flag_specific_dir:
-                output_dir = fs.join(flag_specific_dir, fs.dirname(self._test_name))
-            else:
-                output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
+        flag_specific_dir = port.baseline_flag_specific_dir()
+        if flag_specific_dir:
+            output_dir = fs.join(flag_specific_dir, fs.dirname(self._test_name))
+        elif self._options.copy_baselines:
+            output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
         else:
             output_dir = fs.dirname(port.expected_filename(self._test_name, extension))
 
