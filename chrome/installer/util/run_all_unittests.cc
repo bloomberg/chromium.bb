@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
   chrome::RegisterPathProvider();
 
   base::win::ScopedCOMInitializer com_initializer;
-  if (!com_initializer.succeeded())
+  if (!com_initializer.Succeeded())
     return -1;
 
   install_static::ScopedInstallDetails scoped_install_details;

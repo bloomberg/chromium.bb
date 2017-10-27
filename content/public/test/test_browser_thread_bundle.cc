@@ -95,7 +95,7 @@ void TestBrowserThreadBundle::Init() {
   // this thread as we don't call Start() for the UI TestBrowserThread; it's
   // already started!
   com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>();
-  CHECK(com_initializer_->succeeded());
+  CHECK(com_initializer_->Succeeded());
 #endif
 
   // Create the ScopedTaskEnvironment if it doesn't already exist. A

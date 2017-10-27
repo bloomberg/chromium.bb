@@ -16,7 +16,7 @@ class ScopedWindowsThreadEnvironment {
   ScopedWindowsThreadEnvironment() {}
   virtual ~ScopedWindowsThreadEnvironment() {}
 
-  virtual bool succeeded() const = 0;
+  virtual bool Succeeded() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowsThreadEnvironment);

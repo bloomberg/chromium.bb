@@ -19,11 +19,11 @@ ScopedCOMInitializer::ScopedCOMInitializer(SelectMTA mta) {
 
 ScopedCOMInitializer::~ScopedCOMInitializer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (succeeded())
+  if (Succeeded())
     CoUninitialize();
 }
 
-bool ScopedCOMInitializer::succeeded() const {
+bool ScopedCOMInitializer::Succeeded() const {
   return SUCCEEDED(hr_);
 }
 
