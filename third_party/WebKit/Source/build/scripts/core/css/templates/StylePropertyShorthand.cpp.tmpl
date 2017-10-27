@@ -29,7 +29,7 @@
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
-{% for property_id, property in properties.items() %}
+{% for property in properties %}
 
 const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand() {
   static constexpr CSSPropertyID {{property.lower_camel_name}}Properties[] = {
@@ -38,7 +38,10 @@ const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand() {
     {% endfor %}
   };
 
-  static constexpr StylePropertyShorthand {{property.lower_camel_name}}Longhands ({{property_id}}, {{property.lower_camel_name}}Properties, WTF_ARRAY_LENGTH({{property.lower_camel_name}}Properties));
+  static constexpr StylePropertyShorthand {{property.lower_camel_name}}Longhands(
+    {{property.property_id}},
+    {{property.lower_camel_name}}Properties,
+    WTF_ARRAY_LENGTH({{property.lower_camel_name}}Properties));
   return {{property.lower_camel_name}}Longhands;
 }
 {% endfor %}
@@ -63,8 +66,8 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
       !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
     return offsetShorthandWithoutPositionAnchor();
   switch (propertyID) {
-    {% for property_id, property in properties.items() %}
-    case {{property_id}}:
+    {% for property in properties %}
+    case {{property.property_id}}:
       return {{property.lower_camel_name}}Shorthand();
     {% endfor %}
     default: {

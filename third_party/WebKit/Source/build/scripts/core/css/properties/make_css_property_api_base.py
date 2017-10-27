@@ -30,25 +30,19 @@ class CSSPropertyAPIWriter(json5_generator.Writer):
 
         self._css_properties = css_properties.CSSProperties(json5_file_paths)
 
-        # A list of (enum_value, property_id, api_class_name) tuples.
+        # A list of (enum_value, property_id, api_classname) tuples.
         self._api_classes_by_property_id = []
         # Just a set of class names.
         self._shorthand_api_classes = set()
         self._longhand_api_classes = set()
-        for property_ in self._css_properties.properties.values():
-            api_class = self.get_classname(property_)
-            if api_class is None:
-                # Use the baseclass if no class was specified.
-                api_class = "CSSPropertyAPI"
-            self._api_classes_by_property_id.append(
-                ApiClassData(
-                    enum_value=property_['enum_value'],
-                    property_id=property_['property_id'],
-                    classname=api_class))
-            if property_['longhands']:
-                self._shorthand_api_classes.add(api_class)
-            else:
-                self._longhand_api_classes.add(api_class)
+        for property_ in self._css_properties.longhands:
+            api_class = self.get_class(property_, 'CSSPropertyAPI')
+            self._api_classes_by_property_id.append(api_class)
+            self._longhand_api_classes.add(api_class.classname)
+        for property_ in self._css_properties.shorthands:
+            api_class = self.get_class(property_, 'CSSShorthandPropertyAPI')
+            self._api_classes_by_property_id.append(api_class)
+            self._shorthand_api_classes.add(api_class.classname)
 
         # Manually add CSSPropertyVariable and CSSPropertyAtApply.
         self._api_classes_by_property_id.append(
@@ -67,34 +61,36 @@ class CSSPropertyAPIWriter(json5_generator.Writer):
         # Sort by enum value.
         self._api_classes_by_property_id.sort(key=lambda t: t.enum_value)
 
-    def properties(self):
-        return self._css_properties.properties
-
-    def get_classname(self, property_):
+    def get_class(self, property_, prefix=''):
         """Gets the classname for a given property.
 
         If the property has api_class set to True, returns an automatically
         generated class name. If it is set to a string, returns that. If it is
-        set to None, returns None.
+        set to None, returns the CSSPropertyAPI base class.
 
         Args:
             property_: A single property from CSSProperties.properties()
         Returns:
             The name to use for the API, or None.
         """
+        assert property_['api_class'] is True or \
+            property_['api_class'] is None or \
+            isinstance(property_['api_class'], str), \
+            "api_class value for {} should be None, True or a string".format(
+                property_['name'])
+        classname = property_['api_class']
         if property_['api_class'] is None:
-            return
+            classname = 'CSSPropertyAPI'
         if property_['api_class'] is True:
-            if property_['longhands']:
-                api_prefix = 'CSSShorthandPropertyAPI'
-            else:
-                api_prefix = 'CSSPropertyAPI'
-            return api_prefix + property_['upper_camel_name']
-        # This property has a specified class name.
-        assert isinstance(property_['api_class'], str), \
-            ("api_class value for " + property_['api_class'] +
-             " should be None, True or a string")
-        return property_['api_class']
+            classname = prefix + property_['upper_camel_name']
+        return ApiClassData(
+            enum_value=property_['enum_value'],
+            property_id=property_['property_id'],
+            classname=classname)
+
+    @property
+    def css_properties(self):
+        return self._css_properties
 
     @template_expander.use_jinja(
         'core/css/properties/templates/CSSPropertyAPI.h.tmpl')

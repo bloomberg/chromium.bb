@@ -103,7 +103,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
             'CSSValueIDMappingsGenerated.h': self.generate_css_value_mappings,
         }
         self.css_values_dictionary_file = json5_file_paths[2]
-        css_properties = [value for value in self.properties.values() if not value['longhands']]
+        css_properties = self.css_properties.longhands
         # We sort the enum values based on each value's position in
         # the keywords as listed in CSSProperties.json5. This will ensure that if there is a continuous
         # segment in CSSProperties.json5 matching the segment in this enum then
@@ -124,7 +124,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
         ).name_dictionaries
         name_to_position_dictionary = dict(zip([x['name'] for x in css_values_dictionary], range(len(css_values_dictionary))))
 
-        for property_ in self._properties.values():
+        for property_ in self.css_properties.properties_including_aliases:
             include_paths.update(property_['include_paths'])
             if property_['field_template'] == 'multi_keyword':
                 mappings[property_['type_name']] = {

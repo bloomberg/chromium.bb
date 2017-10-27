@@ -3931,6 +3931,7 @@
     {
       name: "-webkit-logical-width",
       api_class: "CSSPropertyAPIInlineSizeOrLogicalWidth",
+      api_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
         shorthand_for_physical_side: "CSSProperty",
@@ -3939,6 +3940,7 @@
     {
       name: "-webkit-logical-height",
       api_class: "CSSPropertyAPIBlockSizeOrLogicalHeight",
+      api_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
         shorthand_for_physical_side: "CSSProperty",
@@ -3947,6 +3949,7 @@
     {
       name: "-webkit-min-logical-width",
       api_class: "CSSPropertyAPIMinInlineSizeOrMinLogicalWidth",
+      api_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
         shorthand_for_physical_side: "CSSPropertyMin",
@@ -3955,6 +3958,7 @@
     {
       name: "-webkit-min-logical-height",
       api_class: "CSSPropertyAPIMinBlockSizeOrMinLogicalHeight",
+      api_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
         shorthand_for_physical_side: "CSSPropertyMin",

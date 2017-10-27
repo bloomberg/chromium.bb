@@ -27,8 +27,8 @@ bool CSSOMKeywords::ValidKeywordForProperty(CSSPropertyID id,
   }
 
   switch (id) {
-  {% for property_id, property in properties.items() if property.keywordIDs %}
-  case {{property_id}}: {
+  {% for property in properties if property.keywordIDs %}
+  case {{property.property_id}}: {
     switch (valueID) {
     {% for keywordValueID in property.keywordIDs %}
     case {{keywordValueID}}:
