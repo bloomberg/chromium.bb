@@ -88,6 +88,7 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_request_completion_status.h"
@@ -2583,8 +2584,15 @@ ResourceDispatcherHostImpl::HttpAuthRelationTypeOf(
 
   if (net::registry_controlled_domains::SameDomainOrHost(
           first_party, request_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    // If the first party is secure but the subresource is not, this is
+    // mixed-content. Do not allow the image.
+    if (!allow_cross_origin_auth_prompt() && IsOriginSecure(first_party) &&
+        !IsOriginSecure(request_url)) {
+      return HTTP_AUTH_RELATION_BLOCKED_CROSS;
+    }
     return HTTP_AUTH_RELATION_SAME_DOMAIN;
+  }
 
   if (allow_cross_origin_auth_prompt())
     return HTTP_AUTH_RELATION_ALLOWED_CROSS;
