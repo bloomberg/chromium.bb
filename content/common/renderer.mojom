@@ -208,4 +208,12 @@ interface Renderer {
   // Tells the renderer to empty its plugin list cache, optional reloading
   // pages containing plugins.
   PurgePluginListCache(bool reload_pages);
+
+
+  // Tells the renderer process to enter or leave background mode.
+  // TODO(crbug:676224) Make this conditional on IPC_MESSAGE_LOG_ENABLED.
+  SetProcessBackgrounded(bool background);
+
+  // Tells the renderer process to purge and suspend.
+  ProcessPurgeAndSuspend();
 };

@@ -6,10 +6,11 @@
       "provides": {
         "browser": [
           "content::mojom::Child",
-          "printing::mojom::PDFToPWGRasterConverter",
+          "content::mojom::ChildControl",
           "content::mojom::ChildHistogramFetcher",
           "content::mojom::ChildHistogramFetcherFactory",
           "IPC::mojom::ChannelBootstrap",
+          "printing::mojom::PDFToPWGRasterConverter",
           "service_manager::mojom::ServiceFactory"
         ],
         "service_manager:service_factory": [

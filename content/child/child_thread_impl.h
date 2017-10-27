@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/child_control.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
@@ -58,7 +59,8 @@ class CONTENT_EXPORT ChildThreadImpl
       virtual public ChildThread,
       private base::FieldTrialList::Observer,
       public mojom::RouteProvider,
-      public mojom::AssociatedInterfaceProvider {
+      public mojom::AssociatedInterfaceProvider,
+      public mojom::ChildControl {
  public:
   struct CONTENT_EXPORT Options;
 
@@ -147,11 +149,12 @@ class CONTENT_EXPORT ChildThreadImpl
   // |false| on ChildThreadImpl construction.
   void StartServiceManagerConnection();
 
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
-  virtual void OnProcessBackgrounded(bool backgrounded);
-  virtual void OnProcessPurgeAndSuspend();
-  virtual void OnProcessResume();
+  // mojom::ChildControl
+  void ProcessShutdown() override;
+  void SetIPCLoggingEnabled(bool enable) override;
+  void OnChildControlRequest(mojom::ChildControlRequest);
 
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
   void OnAssociatedInterfaceRequest(
@@ -186,10 +189,6 @@ class CONTENT_EXPORT ChildThreadImpl
   void ConnectChannel(mojo::edk::IncomingBrokerClientInvitation* invitation);
 
   // IPC message handlers.
-  void OnShutdown();
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-  void OnSetIPCLoggingEnabled(bool enable);
-#endif
 
   void EnsureConnected();
 
@@ -206,6 +205,7 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
+  mojo::BindingSet<mojom::ChildControl> child_control_bindings_;
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
   mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;

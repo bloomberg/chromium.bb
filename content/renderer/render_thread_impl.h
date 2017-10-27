@@ -552,8 +552,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // ChildThread
   bool OnControlMessageReceived(const IPC::Message& msg) override;
-  void OnProcessBackgrounded(bool backgrounded) override;
-  void OnProcessPurgeAndSuspend() override;
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
 
@@ -603,6 +601,8 @@ class CONTENT_EXPORT RenderThreadImpl
                              const std::string& highlight_text_color,
                              const std::string& highlight_color) override;
   void PurgePluginListCache(bool reload_pages) override;
+  void SetProcessBackgrounded(bool backgrounded) override;
+  void ProcessPurgeAndSuspend() override;
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);

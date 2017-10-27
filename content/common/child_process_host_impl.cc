@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -84,6 +85,7 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
 #endif
+  content::BindInterface(this, &child_control_);
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
@@ -113,7 +115,7 @@ void ChildProcessHostImpl::BindInterface(
 }
 
 void ChildProcessHostImpl::ForceShutdown() {
-  Send(new ChildProcessMsg_Shutdown());
+  child_control_->ProcessShutdown();
 }
 
 void ChildProcessHostImpl::CreateChannelMojo() {
@@ -139,7 +141,7 @@ bool ChildProcessHostImpl::InitChannel() {
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   bool enabled = IPC::Logging::GetInstance()->Enabled();
-  Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
+  child_control_->SetIPCLoggingEnabled(enabled);
 #endif
 
   opening_channel_ = true;
@@ -260,7 +262,7 @@ void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
 
 void ChildProcessHostImpl::OnShutdownRequest() {
   if (delegate_->CanShutdown())
-    Send(new ChildProcessMsg_Shutdown());
+    child_control_->ProcessShutdown();
 }
 
 }  // namespace content
