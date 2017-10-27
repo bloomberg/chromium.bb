@@ -91,7 +91,7 @@ class ExpandButton : public views::ImageView {
 
 ExpandButton::ExpandButton() {
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 2, 2, 2));
+      kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
@@ -99,7 +99,9 @@ ExpandButton::~ExpandButton() = default;
 
 void ExpandButton::OnPaint(gfx::Canvas* canvas) {
   views::ImageView::OnPaint(canvas);
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
+  if (HasFocus())
+    views::Painter::PaintPainterAt(canvas, focus_painter_.get(),
+                                   GetContentsBounds());
 }
 
 void ExpandButton::OnFocus() {

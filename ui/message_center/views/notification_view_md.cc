@@ -458,6 +458,7 @@ void NotificationViewMD::Layout() {
   // we should show expand button or not depends on the current view layout.
   // (e.g. Show expand button when |message_view_| exceeds one line.)
   header_row_->SetExpandButtonEnabled(IsExpandable());
+  header_row_->Layout();
 }
 
 void NotificationViewMD::OnFocus() {

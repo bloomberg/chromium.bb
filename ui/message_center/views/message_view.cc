@@ -79,7 +79,7 @@ MessageView::MessageView(MessageCenterController* controller,
   AddChildView(background_view_);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
+      kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
 
   UpdateWithNotification(notification);
 }
