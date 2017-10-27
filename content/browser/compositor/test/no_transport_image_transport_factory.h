@@ -36,6 +36,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   ~NoTransportImageTransportFactory() override;
 
   // ImageTransportFactory implementation.
+  bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   viz::GLHelper* GetGLHelper() override;

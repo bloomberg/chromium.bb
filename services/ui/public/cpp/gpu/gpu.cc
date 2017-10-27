@@ -141,7 +141,7 @@ scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   if (!gpu_->EstablishGpuChannel(&client_id, &channel_handle, &gpu_info,
                                  &gpu_feature_info)) {
-    DLOG(WARNING) << "Encountered error while establishing gpu channel.";
+    LOG(FATAL) << "Encountered error while establishing gpu channel.";
     return nullptr;
   }
   OnEstablishedGpuChannel(client_id, std::move(channel_handle), gpu_info,
