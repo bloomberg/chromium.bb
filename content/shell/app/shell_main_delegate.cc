@@ -263,7 +263,7 @@ void ShellMainDelegate::PreSandboxStartup() {
 #endif
 
 // Disable platform crash handling & initialize Breakpad, if requested.
-// TODO(753619): Implement crash reporter integration for Fuchsia.
+// TODO(crbug.com/753619): Implement crash reporter integration for Fuchsia.
 #if !defined(OS_FUCHSIA)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {

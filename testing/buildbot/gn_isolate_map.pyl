@@ -380,6 +380,10 @@
     "label": "//content/public/android:content_junit_tests",
     "type": "junit_test",
   },
+  "content_shell": {
+    "label": "//content/shell:content_shell",
+    "type": "raw",
+  },
   "content_shell_crash_test": {
     "label": "//content/shell:content_shell_crash_test",
     "type": "script",
