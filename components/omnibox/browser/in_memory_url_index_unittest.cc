@@ -7,7 +7,9 @@
 
 #include <algorithm>
 #include <fstream>
+#include <memory>
 #include <numeric>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/files/file_path.h"

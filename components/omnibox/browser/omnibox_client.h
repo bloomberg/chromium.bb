@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
 
+#include <memory>
+
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
@@ -136,7 +138,7 @@ class OmniboxClient {
   // Called when the text may have changed in the edit.
   virtual void OnTextChanged(const AutocompleteMatch& current_match,
                              bool user_input_in_progress,
-                             base::string16& user_text,
+                             const base::string16& user_text,
                              const AutocompleteResult& result,
                              bool is_popup_open,
                              bool has_focus) {}

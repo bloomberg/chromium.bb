@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/contextual_suggestions_service.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -27,7 +29,7 @@ namespace {
 const char kDefaultExperimentalServerAddress[] =
     "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
 
-void AddVariationHeaders(std::unique_ptr<net::URLFetcher>& fetcher) {
+void AddVariationHeaders(const std::unique_ptr<net::URLFetcher>& fetcher) {
   net::HttpRequestHeaders headers;
   // Add Chrome experiment state to the request headers.
   // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does

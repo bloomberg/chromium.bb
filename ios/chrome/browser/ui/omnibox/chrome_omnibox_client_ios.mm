@@ -216,7 +216,7 @@ gfx::Image ChromeOmniboxClientIOS::GetFavicon() const {
 void ChromeOmniboxClientIOS::OnTextChanged(
     const AutocompleteMatch& current_match,
     bool user_input_in_progress,
-    base::string16& user_text,
+    const base::string16& user_text,
     const AutocompleteResult& result,
     bool is_popup_open,
     bool has_focus) {}

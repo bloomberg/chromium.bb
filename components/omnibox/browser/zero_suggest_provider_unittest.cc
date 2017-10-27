@@ -4,6 +4,9 @@
 
 #include "components/omnibox/browser/zero_suggest_provider.h"
 
+#include <map>
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"

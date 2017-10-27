@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "net/url_request/url_request.h"

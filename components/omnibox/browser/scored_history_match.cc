@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -655,7 +656,7 @@ float ScoredHistoryMatch::GetDocumentSpecificityScore(
       matches_to_specificity->begin(), matches_to_specificity->end(),
       std::pair<size_t, double>{num_matching_pages, -1});
   return (it != matches_to_specificity->end()) ? it->second : 1.0;
-};
+}
 
 // static
 float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,

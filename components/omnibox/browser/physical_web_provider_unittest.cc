@@ -4,8 +4,10 @@
 
 #include "components/omnibox/browser/physical_web_provider.h"
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"

@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_OMNIBOX_BROWSER_FAKE_AUTOCOMPLETE_PROVIDER_CLIENT_H_
+#define COMPONENTS_OMNIBOX_BROWSER_FAKE_AUTOCOMPLETE_PROVIDER_CLIENT_H_
+
 #include <memory>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -44,3 +48,5 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
 
   DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
+
+#endif  // COMPONENTS_OMNIBOX_BROWSER_FAKE_AUTOCOMPLETE_PROVIDER_CLIENT_H_

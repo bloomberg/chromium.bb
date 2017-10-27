@@ -33,8 +33,8 @@ struct AutocompleteMatchType {
                                 // query that doesn't fall into one of the more
                                 // specific suggestion categories below.
     SEARCH_SUGGEST_ENTITY = 9,  // A suggested search for an entity.
-    SEARCH_SUGGEST_TAIL   = 10, // A suggested search to complete the
-                                // tail of the query.
+    SEARCH_SUGGEST_TAIL   = 10,        // A suggested search to complete the
+                                       // tail of the query.
     SEARCH_SUGGEST_PERSONALIZED = 11,  // A personalized suggested search.
     SEARCH_SUGGEST_PROFILE      = 12,  // A personalized suggested search for a
                                        // Google+ profile.

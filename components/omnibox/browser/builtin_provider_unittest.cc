@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <string>
+
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -341,7 +344,7 @@ TEST_F(BuiltinProviderTest, Inlining) {
     // Typing along "about://media" should not yield an inline autocompletion
     // until the completion is unique.  We don't bother checking every single
     // character before the first "m" is typed.
-    {kAbout.substr(0,2),                  base::string16()},
+    {kAbout.substr(0, 2),                 base::string16()},
     {kAbout,                              base::string16()},
     {kAbout + kSep,                       base::string16()},
     {kAbout + kSep + kHostM.substr(0, 1), base::string16()},
@@ -350,7 +353,7 @@ TEST_F(BuiltinProviderTest, Inlining) {
     {kAbout + kSep + kHostM.substr(0, 4), kHostM.substr(4)},
 
     // Ditto with "chrome://media".
-    {kEmbedder.substr(0,2),                  base::string16()},
+    {kEmbedder.substr(0, 2),                 base::string16()},
     {kEmbedder,                              base::string16()},
     {kEmbedder + kSep,                       base::string16()},
     {kEmbedder + kSep + kHostM.substr(0, 1), base::string16()},

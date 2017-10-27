@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/omnibox_client.h"
 
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "ui/gfx/image/image.h"
 

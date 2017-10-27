@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
+
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"

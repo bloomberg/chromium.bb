@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/logging.h"

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"

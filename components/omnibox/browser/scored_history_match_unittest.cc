@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"

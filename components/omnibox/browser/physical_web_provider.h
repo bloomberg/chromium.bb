@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_OMNIBOX_BROWSER_SHORTCUTS_PROVIDER_TEST_UTIL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_SHORTCUTS_PROVIDER_TEST_UTIL_H_
+
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -63,3 +67,5 @@ void RunShortcutsProviderTest(
     const std::vector<ExpectedURLAndAllowedToBeDefault>& expected_urls,
     std::string expected_top_result,
     base::string16 top_result_inline_autocompletion);
+
+#endif  // COMPONENTS_OMNIBOX_BROWSER_SHORTCUTS_PROVIDER_TEST_UTIL_H_

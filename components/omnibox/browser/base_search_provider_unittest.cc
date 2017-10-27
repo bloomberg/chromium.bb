@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/base_search_provider.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/macros.h"
