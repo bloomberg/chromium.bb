@@ -80,19 +80,6 @@ class BASE_EXPORT Location {
   const void* program_counter_ = nullptr;
 };
 
-// A "snapshotted" representation of the Location class that can safely be
-// passed across process boundaries.
-struct BASE_EXPORT LocationSnapshot {
-  // The default constructor is exposed to support the IPC serialization macros.
-  LocationSnapshot();
-  explicit LocationSnapshot(const Location& location);
-  ~LocationSnapshot();
-
-  std::string file_name;
-  std::string function_name;
-  int line_number = -1;
-};
-
 BASE_EXPORT const void* GetProgramCounter();
 
 // The macros defined here will expand to the current function.

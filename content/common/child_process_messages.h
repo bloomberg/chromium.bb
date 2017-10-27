@@ -32,12 +32,6 @@
 #include "base/threading/platform_thread.h"
 #endif
 
-IPC_STRUCT_TRAITS_BEGIN(base::LocationSnapshot)
-  IPC_STRUCT_TRAITS_MEMBER(file_name)
-  IPC_STRUCT_TRAITS_MEMBER(function_name)
-  IPC_STRUCT_TRAITS_MEMBER(line_number)
-IPC_STRUCT_TRAITS_END()
-
 #if defined(OS_LINUX)
 IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
                           base::ThreadPriority::REALTIME_AUDIO)
