@@ -4,12 +4,12 @@
 
 /**
  * @fileoverview
- * 'settings-internet-config' is a Settings wrapper for network-config.
+ * 'internet-config-dialog' is a Settings dialog wrapper for network-config.
  */
 Polymer({
-  is: 'settings-internet-config',
+  is: 'internet-config-dialog',
 
-  behaviors: [settings.RouteObserverBehavior, I18nBehavior],
+  behaviors: [I18nBehavior],
 
   properties: {
     /**
@@ -39,7 +39,19 @@ Polymer({
      * empty when configuring a new network.
      * @private
      */
-    guid_: String,
+    guid: String,
+
+    /**
+     * The type of network to be configured.
+     * @private {!chrome.networkingPrivate.NetworkType}
+     */
+    type: String,
+
+    /**
+     * The name of network (for display while the network details are fetched).
+     * @private
+     */
+    name: String,
 
     /** @private */
     enableConnect_: Boolean,
@@ -56,46 +68,26 @@ Polymer({
     networkProperties_: Object,
   },
 
-  /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
-   * @protected
-   */
-  currentRouteChanged: function(route) {
-    if (route != settings.routes.NETWORK_CONFIG)
-      return;
-
-    var queryParams = settings.getQueryParameters();
-    this.guid_ = queryParams.get('guid') || '';
+  open: function() {
+    var dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
+    if (!dialog.open)
+      dialog.showModal();
 
     // Set networkProperties for new configurations and for existing
     // configurations until the current properties are loaded.
-    var name = queryParams.get('name') || '';
-    var typeParam = queryParams.get('type');
-    var type = (typeParam && CrOnc.getValidType(typeParam)) || CrOnc.Type.WI_FI;
-    assert(type && type != CrOnc.Type.ALL);
+    assert(this.type && this.type != CrOnc.Type.ALL);
     this.networkProperties_ = {
-      GUID: this.guid_,
-      Name: name,
-      Type: type,
+      GUID: this.guid,
+      Name: this.name,
+      Type: this.type,
     };
-
-    // First focus this page (which will focus a button), then init the config
-    // element which will focus an enabled element if any.
-    this.focus();
     this.$.networkConfig.init();
   },
 
-  focus() {
-    var e = this.$$('paper-button:not([disabled])');
-    assert(e);  // The 'cancel' button should never be disabled.
-    e.focus();
-  },
-
-  /** @private */
-  close_: function() {
-    if (settings.getCurrentRoute() == settings.routes.NETWORK_CONFIG)
-      settings.navigateToPreviousRoute();
+  close: function() {
+    var dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
+    if (dialog.open)
+      dialog.close();
   },
 
   /**
@@ -113,7 +105,7 @@ Polymer({
    */
   isConfigured_: function() {
     var source = this.networkProperties_.Source;
-    return !!this.guid_ && !!source && source != CrOnc.Source.NONE;
+    return !!this.guid && !!source && source != CrOnc.Source.NONE;
   },
 
   /**
@@ -134,7 +126,7 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    this.close_();
+    this.close();
   },
 
   /** @private */

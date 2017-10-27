@@ -233,13 +233,13 @@ Polymer({
    * @private
    */
   showConfig_: function(type, guid, name) {
-    var params = new URLSearchParams;
-    params.append('type', type);
-    if (guid)
-      params.append('guid', guid);
-    if (name)
-      params.append('name', name);
-    settings.navigateTo(settings.routes.NETWORK_CONFIG, params);
+    var configDialog =
+        /** @type {!InternetConfigDialogElement} */ (this.$.configDialog);
+    configDialog.type =
+        /** @type {chrome.networkingPrivate.NetworkType} */ (type);
+    configDialog.guid = guid || '';
+    configDialog.name = name || '';
+    configDialog.open();
   },
 
   /**

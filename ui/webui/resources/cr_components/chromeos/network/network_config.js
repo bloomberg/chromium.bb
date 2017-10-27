@@ -8,11 +8,9 @@
  * and existing networks.
  */
 
-(function() {
-'use strict';
-
 /**
  * Combinaiton of CrOnc.VPNType + AuthenticationType for IPsec.
+ * Note: closure does not always recognize this if inside function() {}.
  * @enum {string}
  */
 var VPNConfigType = {
@@ -20,6 +18,9 @@ var VPNConfigType = {
   L2TP_IPSEC_CERT: 'L2TP_IPsec_Cert',
   OPEN_VPN: 'OpenVPN',
 };
+
+(function() {
+'use strict';
 
 /** @const */ var DEFAULT_HASH = 'default';
 /** @const */ var DO_NOT_CHECK_HASH = 'do-not-check';

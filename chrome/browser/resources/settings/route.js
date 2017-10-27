@@ -46,7 +46,6 @@
  *   MANAGE_PASSWORDS: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
  *   MULTIDEVICE: (undefined|!settings.Route),
- *   NETWORK_CONFIG: (undefined|!settings.Route),
  *   NETWORK_DETAIL: (undefined|!settings.Route),
  *   ON_STARTUP: (undefined|!settings.Route),
  *   PASSWORDS: (undefined|!settings.Route),
@@ -217,7 +216,6 @@ cr.define('settings', function() {
     // <if expr="chromeos">
     r.INTERNET = r.BASIC.createSection('/internet', 'internet');
     r.INTERNET_NETWORKS = r.INTERNET.createChild('/networks');
-    r.NETWORK_CONFIG = r.INTERNET.createChild('/networkConfig');
     r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
     r.KNOWN_NETWORKS = r.INTERNET.createChild('/knownNetworks');
     r.BLUETOOTH = r.BASIC.createSection('/bluetooth', 'bluetooth');

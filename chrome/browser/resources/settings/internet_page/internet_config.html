@@ -3,45 +3,54 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_config.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="internet_shared_css.html">
 
-<dom-module id="settings-internet-config">
+<dom-module id="internet-config-dialog">
   <template>
     <style include="internet-shared iron-flex">
     </style>
 
-    <!-- Title section: Icon + name. -->
-    <div class="settings-box first">
-      <div class="start layout horizontal center">
-        <cr-network-icon network-state="[[networkProperties_]]" is-list-item>
-        </cr-network-icon>
-        <div class="title">[[getTitle_(networkProperties_.*)]]</div>
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+      <div slot="title">$i18n{internetConfigTitle}</div>
+
+      <div slot="body">
+        <!-- Icon + name. -->
+        <div class="settings-box first">
+          <div class="start layout horizontal center">
+            <cr-network-icon network-state="[[networkProperties_]]"
+                is-list-item>
+            </cr-network-icon>
+            <div class="title">[[getTitle_(networkProperties_.*)]]</div>
+          </div>
+        </div>
+        <div class="settings-box">
+          <network-config id="networkConfig" class="flex"
+              networking-private="[[networkingPrivate]]"
+              network-properties="{{networkProperties_}}"
+              enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
+              share-allow-enable="[[shareAllowEnable_]]"
+              share-default="[[shareDefault_]]"
+              on-close="close_">
+          </network-config>
+        </div>
       </div>
-      <div id="buttonDiv">
-        <paper-button class="secondary-button" on-tap="onCancelTap_">
+
+      <div slot="button-container">
+        <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
         <paper-button class="primary-button" on-tap="onSaveOrConnectTap_"
             disabled="[[!getSaveOrConnectEnabled_(
-                guid_, networkProperties_, enableSave_, enableConnect_)]]">
-          [[getSaveOrConnectLabel_(guid_, networkProperties_)]]
+                guid, networkProperties_, enableSave_, enableConnect_)]]">
+          [[getSaveOrConnectLabel_(guid, networkProperties_)]]
         </paper-button>
       </div>
-    </div>
 
-    <div class="settings-box">
-      <network-config id="networkConfig" class="flex"
-          networking-private="[[networkingPrivate]]"
-          network-properties="{{networkProperties_}}"
-          enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
-          share-allow-enable="[[shareAllowEnable_]]"
-          share-default="[[shareDefault_]]"
-          on-close="close_">
-      </network-config>
-    </div>
+    </dialog>
   </template>
   <script src="internet_config.js"></script>
 </dom-module>
