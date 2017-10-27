@@ -26,8 +26,7 @@ class RecorderTest : public testing::Test {
   void CreateRecorder(mojom::RecorderRequest request,
                       mojom::TraceDataType data_type,
                       const base::Closure& callback) {
-    recorder_.reset(new Recorder(std::move(request), data_type, callback,
-                                 base::ThreadTaskRunnerHandle::Get()));
+    recorder_.reset(new Recorder(std::move(request), data_type, callback));
   }
 
   void CreateRecorder(mojom::TraceDataType data_type,

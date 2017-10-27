@@ -33,7 +33,7 @@ AgentRegistry::AgentEntry::AgentEntry(size_t id,
       is_tracing_(false) {
   DCHECK(!label.empty());
   agent_.set_connection_error_handler(base::BindRepeating(
-      &AgentRegistry::AgentEntry::OnConnectionError, base::Unretained(this)));
+      &AgentRegistry::AgentEntry::OnConnectionError, AsWeakPtr()));
 }
 
 AgentRegistry::AgentEntry::~AgentEntry() = default;
