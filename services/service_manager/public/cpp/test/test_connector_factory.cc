@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
 namespace service_manager {
@@ -15,8 +16,14 @@ namespace {
 
 class TestConnectorImpl : public mojom::Connector {
  public:
-  TestConnectorImpl(TestConnectorFactory* factory, Service* service)
-      : factory_(factory), service_(service) {}
+  TestConnectorImpl(TestConnectorFactory* factory,
+                    std::unique_ptr<Service> service)
+      : service_context_(std::move(service), mojo::MakeRequest(&service_ptr_)),
+        factory_(factory) {
+    service_ptr_->OnStart(factory_->source_identity(),
+                          base::BindOnce(&TestConnectorImpl::OnStartCallback,
+                                         base::Unretained(this)));
+  }
 
   ~TestConnectorImpl() override = default;
 
@@ -24,9 +31,10 @@ class TestConnectorImpl : public mojom::Connector {
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
-    service_->OnBindInterface(
+    service_ptr_->OnBindInterface(
         BindSourceInfo(factory_->source_identity(), CapabilitySet()),
-        interface_name, std::move(interface_pipe));
+        interface_name, std::move(interface_pipe),
+        base::Bind(&base::DoNothing));
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
 
@@ -60,8 +68,14 @@ class TestConnectorImpl : public mojom::Connector {
   }
 
  private:
+  void OnStartCallback(
+      service_manager::mojom::ConnectorRequest request,
+      service_manager::mojom::ServiceControlAssociatedRequest control_request) {
+  }
+
+  mojom::ServicePtr service_ptr_;
+  service_manager::ServiceContext service_context_;
   TestConnectorFactory* const factory_;
-  Service* const service_;
   mojo::BindingSet<mojom::Connector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectorImpl);
@@ -69,9 +83,9 @@ class TestConnectorImpl : public mojom::Connector {
 
 }  // namespace
 
-TestConnectorFactory::TestConnectorFactory(Service* service)
+TestConnectorFactory::TestConnectorFactory(std::unique_ptr<Service> service)
     : source_identity_("TestConnectorFactory"),
-      impl_(base::MakeUnique<TestConnectorImpl>(this, service)) {}
+      impl_(std::make_unique<TestConnectorImpl>(this, std::move(service))) {}
 
 TestConnectorFactory::~TestConnectorFactory() = default;
 

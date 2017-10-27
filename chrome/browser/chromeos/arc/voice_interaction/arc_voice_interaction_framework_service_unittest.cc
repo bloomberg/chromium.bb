@@ -34,14 +34,8 @@ namespace {
 class TestHighlighterController : public ash::mojom::HighlighterController,
                                   public service_manager::Service {
  public:
-  TestHighlighterController()
-      : binding_(this),
-        connector_factory_(this),
-        connector_(connector_factory_.CreateConnector()) {}
-
+  TestHighlighterController() : binding_(this) {}
   ~TestHighlighterController() override = default;
-
-  service_manager::Connector* connector() { return connector_.get(); }
 
   void CallHandleSelection(const gfx::Rect& rect) {
     client_->HandleSelection(rect);
@@ -90,8 +84,6 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
   }
 
   mojo::Binding<ash::mojom::HighlighterController> binding_;
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
   ash::mojom::HighlighterControllerClientPtr client_;
   bool is_enabled_ = false;
 
@@ -119,11 +111,18 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
     arc_session_manager_ = std::make_unique<ArcSessionManager>(
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     arc_bridge_service_ = std::make_unique<ArcBridgeService>();
-    highlighter_controller_ = std::make_unique<TestHighlighterController>();
+
+    auto highlighter_controller_ptr =
+        std::make_unique<TestHighlighterController>();
+    highlighter_controller_ = highlighter_controller_ptr.get();
+    connector_factory_ =
+        std::make_unique<service_manager::TestConnectorFactory>(
+            std::move(highlighter_controller_ptr));
+    connector_ = connector_factory_->CreateConnector();
     framework_service_ = std::make_unique<ArcVoiceInteractionFrameworkService>(
         profile_.get(), arc_bridge_service_.get());
     framework_service_->GetHighlighterClientForTesting()
-        ->SetConnectorForTesting(highlighter_controller_->connector());
+        ->SetConnectorForTesting(connector_.get());
     framework_instance_ =
         std::make_unique<FakeVoiceInteractionFrameworkInstance>();
     arc_bridge_service_->voice_interaction_framework()->SetInstance(
@@ -146,18 +145,20 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
   }
 
  protected:
-  ArcBridgeService* arc_bridge_service() { return arc_bridge_service_.get(); }
+  ArcBridgeService* arc_bridge_service() const {
+    return arc_bridge_service_.get();
+  }
 
-  ArcVoiceInteractionFrameworkService* framework_service() {
+  ArcVoiceInteractionFrameworkService* framework_service() const {
     return framework_service_.get();
   }
 
-  FakeVoiceInteractionFrameworkInstance* framework_instance() {
+  FakeVoiceInteractionFrameworkInstance* framework_instance() const {
     return framework_instance_.get();
   }
 
-  TestHighlighterController* highlighter_controller() {
-    return highlighter_controller_.get();
+  TestHighlighterController* highlighter_controller() const {
+    return highlighter_controller_;
   }
 
   void FlushHighlighterControllerMojo() {
@@ -170,7 +171,10 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  std::unique_ptr<TestHighlighterController> highlighter_controller_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  // |highlighter_controller_| is valid until |connector_factory_| is deleted.
+  TestHighlighterController* highlighter_controller_;
   std::unique_ptr<ArcVoiceInteractionFrameworkService> framework_service_;
   std::unique_ptr<FakeVoiceInteractionFrameworkInstance> framework_instance_;
 

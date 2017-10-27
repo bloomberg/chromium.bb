@@ -149,14 +149,9 @@ class TestObserver : public NoteTakingHelper::Observer {
 class TestNoteTakingController : public ash::mojom::NoteTakingController,
                                  public service_manager::Service {
  public:
-  TestNoteTakingController()
-      : binding_(this),
-        connector_factory_(this),
-        connector_(connector_factory_.CreateConnector()) {}
+  TestNoteTakingController() : binding_(this) {}
 
   ~TestNoteTakingController() override = default;
-
-  service_manager::Connector* connector() const { return connector_.get(); }
 
   void CallCreateNote() {
     client_->CreateNote();
@@ -190,8 +185,6 @@ class TestNoteTakingController : public ash::mojom::NoteTakingController,
   }
 
   mojo::Binding<ash::mojom::NoteTakingController> binding_;
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
   ash::mojom::NoteTakingControllerClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNoteTakingController);
@@ -252,7 +245,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
   static NoteTakingHelper* helper() { return NoteTakingHelper::Get(); }
 
   TestNoteTakingController* test_note_taking_controller() {
-    return test_note_taking_controller_.get();
+    return test_note_taking_controller_;
   }
 
   NoteTakingControllerClient* note_taking_client() {
@@ -302,9 +295,15 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     NoteTakingHelper::Get()->set_launch_chrome_app_callback_for_test(base::Bind(
         &NoteTakingHelperTest::LaunchChromeApp, base::Unretained(this)));
 
-    test_note_taking_controller_ = std::make_unique<TestNoteTakingController>();
-    note_taking_client()->SetConnectorForTesting(
-        test_note_taking_controller_->connector());
+    auto test_note_taking_controller_ptr =
+        std::make_unique<TestNoteTakingController>();
+    test_note_taking_controller_ = test_note_taking_controller_ptr.get();
+    connector_factory_ =
+        std::make_unique<service_manager::TestConnectorFactory>(
+            std::move(test_note_taking_controller_ptr));
+    connector_ = connector_factory_->CreateConnector();
+
+    note_taking_client()->SetConnectorForTesting(connector_.get());
   }
 
   // Creates an extension.
@@ -512,7 +511,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
   FakeSessionManagerClient* session_manager_client_ = nullptr;  // Not owned.
   ArcAppTest arc_test_;
-  std::unique_ptr<TestNoteTakingController> test_note_taking_controller_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  // |test_note_taking_controller_| is owned by |connector_factory_|.
+  TestNoteTakingController* test_note_taking_controller_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelperTest);
 };

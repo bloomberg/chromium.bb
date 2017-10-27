@@ -28,20 +28,13 @@ namespace {
 #if defined(USE_OZONE)
 class OzoneDrmTestService : public service_manager::Service {
  public:
-  OzoneDrmTestService() : factory_(this) {}
+  OzoneDrmTestService() = default;
   ~OzoneDrmTestService() override = default;
 
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>*
   registry() {
     return &registry_;
-  }
-
-  service_manager::Connector* connector() {
-    if (!connector_) {
-      connector_ = factory_.CreateConnector();
-    }
-    return connector_.get();
   }
 
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
@@ -56,7 +49,6 @@ class OzoneDrmTestService : public service_manager::Service {
       const service_manager::BindSourceInfo&>
       registry_;
 
-  service_manager::TestConnectorFactory factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(OzoneDrmTestService);
@@ -83,7 +75,14 @@ class GlTestSuite : public base::TestSuite {
             base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
 #if defined(USE_OZONE)
-    service_ = std::make_unique<OzoneDrmTestService>();
+    auto service_ptr = std::make_unique<OzoneDrmTestService>();
+    // |service| is valid as long as |connector_factory_| is valid.
+    OzoneDrmTestService* service = service_ptr.get();
+
+    connector_factory_ =
+        std::make_unique<service_manager::TestConnectorFactory>(
+            std::move(service_ptr));
+    connector_ = connector_factory_->CreateConnector();
 
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread. Note that this mode
@@ -91,12 +90,12 @@ class GlTestSuite : public base::TestSuite {
     // and GPU components.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    params.connector = service_->connector();
+    params.connector = connector_.get();
 
     // This initialization must be done after ScopedTaskEnvironment has
     // initialized the UI thread.
     ui::OzonePlatform::InitializeForUI(params);
-    ui::OzonePlatform::GetInstance()->AddInterfaces(service_->registry());
+    ui::OzonePlatform::GetInstance()->AddInterfaces(service->registry());
 #endif
   }
 
@@ -108,7 +107,8 @@ class GlTestSuite : public base::TestSuite {
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
 #if defined(USE_OZONE)
-  std::unique_ptr<OzoneDrmTestService> service_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(GlTestSuite);
