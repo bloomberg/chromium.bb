@@ -5,14 +5,16 @@
 {{base.decl_initial_method(field)}}
 {{base.decl_getter_method(field)}}
 {{base.decl_setter_method(field)}}
+{% if 'setter' not in field.computed_style_custom_functions %}
 void {{field.setter_method_name}}({{field.type_name}}&& v) {
-{% if field.group.parent %}
+  {% if field.group.parent %}
   if (!({{getter_expression(field)}} == v))
     {{setter_expression(field)}} = std::move(v);
-{% else %}
+  {% else %}
   {{field.name}} = std::move(v);
-{% endif %}
+  {% endif %}
 }
+{% endif %}
 {{base.decl_resetter_method(field)}}
 {% endmacro %}
 
