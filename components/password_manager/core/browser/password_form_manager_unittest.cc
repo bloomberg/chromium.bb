@@ -2594,6 +2594,20 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_MoreProcessFrameMoreFill) {
   form_manager()->ProcessFrame(client()->mock_driver()->AsWeakPtr());
 }
 
+// Test that Chrome stops autofilling if triggered too many times.
+TEST_F(PasswordFormManagerTest, ProcessFrame_MaxTimes) {
+  constexpr int kMaxAutofills = PasswordFormManager::kMaxTimesAutofill;
+  constexpr int kExtraProcessRequests = 3;
+  // Expect one call for each ProcessFrame() and one for SetNonFederated().
+  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
+      .Times(kMaxAutofills + 1);
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  // Process more times to exceed the limit.
+  for (int i = 0; i < kMaxAutofills + kExtraProcessRequests; i++) {
+    form_manager()->ProcessFrame(client()->mock_driver()->AsWeakPtr());
+  }
+}
+
 // Test that when ProcessFrame is called on a driver added after receiving
 // matches, such driver is still told to call FillPasswordForm.
 TEST_F(PasswordFormManagerTest, ProcessFrame_TwoDrivers) {
