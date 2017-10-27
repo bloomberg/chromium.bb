@@ -1736,6 +1736,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "animation/CompositorFloatAnimationCurveTest.cpp",
     "animation/TimingFunctionTest.cpp",
     "audio/PushPullFIFOTest.cpp",
+    "audio/VectorMathTest.cpp",
     "bindings/RuntimeCallStatsTest.cpp",
     "exported/FilePathConversionTest.cpp",
     "exported/WebCORSPreflightResultCacheTest.cpp",
