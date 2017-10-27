@@ -401,6 +401,9 @@ class TestWebGraphicsContext3D {
 
   UpdateType last_update_type() { return last_update_type_; }
 
+  size_t NumFramebuffers() const;
+  size_t NumRenderbuffers() const;
+
  protected:
   struct TextureTargets {
     TextureTargets();

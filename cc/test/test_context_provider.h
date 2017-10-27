@@ -68,6 +68,7 @@ class TestContextProvider : public viz::ContextProvider {
   // InitializeOnCurrentThread on the context returned from this method.
   TestWebGraphicsContext3D* UnboundTestContext3d();
 
+  TestGLES2Interface* TestContextGL() { return context_gl_.get(); }
   TestContextSupport* support() { return support_.get(); }
 
  protected:
