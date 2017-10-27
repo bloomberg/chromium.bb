@@ -3218,21 +3218,16 @@ TEST_F(SchedulerTest, NoLayerTreeFrameSinkCreationWhileCommitPending) {
   EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
 }
 
-TEST_F(SchedulerTest, ImplSideInvalidationsInDeadline) {
+TEST_F(SchedulerTest, ImplSideInvalidationInsideImplFrame) {
   SetUpScheduler(EXTERNAL_BFS);
 
-  // Request an impl-side invalidation and trigger the deadline. Ensure that the
-  // invalidation runs inside the deadline.
+  // Request an impl-side invalidation. Ensure that it runs before the deadline.
   bool needs_first_draw_on_activation = true;
   scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   client_->Reset();
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTIONS("WillBeginImplFrame");
-
-  // Deadline.
-  client_->Reset();
-  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTIONS("ScheduledActionPerformImplSideInvalidation");
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionPerformImplSideInvalidation");
 }
 
 TEST_F(SchedulerTest, ImplSideInvalidationsMergedWithCommit) {
