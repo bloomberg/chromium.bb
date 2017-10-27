@@ -62,7 +62,6 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
@@ -943,8 +942,7 @@ bool PaintLayerCompositor::NeedsContentsCompositingLayer(
   return layer->StackingNode()->HasNegativeZOrderList();
 }
 
-static void PaintScrollbar(const GraphicsLayer* graphics_layer,
-                           const Scrollbar* scrollbar,
+static void PaintScrollbar(const Scrollbar* scrollbar,
                            GraphicsContext& context,
                            const IntRect& clip) {
   // Frame scrollbars are painted in the space of the containing frame, not the
@@ -977,26 +975,12 @@ void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
   if (!scrollbar && graphics_layer != LayerForScrollCorner())
     return;
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, *graphics_layer, DisplayItem::kScrollbarCompositedScrollbar))
-    return;
-
-  FloatRect layer_bounds(FloatPoint(), graphics_layer->Size());
-  PaintRecordBuilder builder(layer_bounds, nullptr, &context);
-
   if (scrollbar) {
-    PaintScrollbar(graphics_layer, scrollbar, builder.Context(), interest_rect);
+    PaintScrollbar(scrollbar, context, interest_rect);
   } else {
     FramePainter(*layout_view_.GetFrameView())
-        .PaintScrollCorner(builder.Context(), interest_rect);
+        .PaintScrollCorner(context, interest_rect);
   }
-
-  // Replay the painted scrollbar content with the GraphicsLayer backing as the
-  // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
-  // the correct visualRect (i.e., the bounds of the involved GraphicsLayer).
-  DrawingRecorder recorder(context, *graphics_layer,
-                           DisplayItem::kScrollbarCompositedScrollbar);
-  context.Canvas()->drawPicture(builder.EndRecording());
 }
 
 Scrollbar* PaintLayerCompositor::GraphicsLayerToScrollbar(

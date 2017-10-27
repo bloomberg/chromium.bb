@@ -19,6 +19,7 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
@@ -233,16 +234,16 @@ void FramePainter::PaintScrollbars(GraphicsContext& context,
 
 void FramePainter::PaintScrollCorner(GraphicsContext& context,
                                      const IntRect& corner_rect) {
-  if (GetFrameView().ScrollCorner()) {
+  if (const auto* scroll_corner = GetFrameView().ScrollCorner()) {
     bool needs_background = GetFrameView().GetFrame().IsMainFrame();
-    if (needs_background && !DrawingRecorder::UseCachedDrawingIfPossible(
-                                context, *GetFrameView().ScrollCorner(),
-                                DisplayItem::kScrollbarBackground)) {
-      DrawingRecorder recorder(context, *GetFrameView().ScrollCorner(),
+    if (needs_background &&
+        !DrawingRecorder::UseCachedDrawingIfPossible(
+            context, *scroll_corner, DisplayItem::kScrollbarBackground)) {
+      DrawingRecorder recorder(context, *scroll_corner,
                                DisplayItem::kScrollbarBackground);
       context.FillRect(corner_rect, GetFrameView().BaseBackgroundColor());
     }
-    ScrollbarPainter::PaintIntoRect(*GetFrameView().ScrollCorner(), context,
+    ScrollbarPainter::PaintIntoRect(*scroll_corner, context,
                                     corner_rect.Location(),
                                     LayoutRect(corner_rect));
     return;
@@ -258,8 +259,12 @@ void FramePainter::PaintScrollCorner(GraphicsContext& context,
     NOTREACHED();
   }
 
-  theme->PaintScrollCorner(context, *GetFrameView().GetLayoutView(),
-                           corner_rect);
+  const DisplayItemClient* client;
+  if (auto* graphics_layer = GetFrameView().LayerForScrollCorner())
+    client = graphics_layer;
+  else
+    client = GetFrameView().GetLayoutView();
+  theme->PaintScrollCorner(context, *client, corner_rect);
 }
 
 void FramePainter::PaintScrollbar(GraphicsContext& context,

@@ -10,6 +10,7 @@
 namespace blink {
 
 class CullRect;
+class DisplayItemClient;
 class GraphicsContext;
 class IntPoint;
 class IntRect;
@@ -31,13 +32,16 @@ class ScrollableAreaPainter {
                              const IntPoint& paint_offset,
                              const CullRect&,
                              bool painting_overlay_controls);
-  void PaintScrollCorner(GraphicsContext&, const IntPoint&, const CullRect&);
+  void PaintScrollCorner(GraphicsContext&,
+                         const IntPoint& paint_offset,
+                         const CullRect&);
 
  private:
   void DrawPlatformResizerImage(GraphicsContext&, IntRect resizer_corner_rect);
   bool OverflowControlsIntersectRect(const CullRect&) const;
 
   PaintLayerScrollableArea& GetScrollableArea() const;
+  const DisplayItemClient& DisplayItemClientForCorner() const;
 
   Member<PaintLayerScrollableArea> scrollable_area_;
 };
