@@ -1176,6 +1176,9 @@ Subsequent notifications, windows and dialogs may be split between desktops.
       <message name="IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP" desc="The tooltip text for visiting the appropriate settings page in the footer of the message center.">
         Settings
       </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_COLLAPSE_BUTTON_TOOLTIP" desc="The tooltip text for closing notifier settings.">
+        Close settings
+      </message>
       <message name="IDS_ASH_MESSAGE_CENTER_SETTINGS_TITLE" desc="The title for the message center's list of checkboxes that allows a user to enable/disable notifications from various sources.">
         Settings
       </message>
