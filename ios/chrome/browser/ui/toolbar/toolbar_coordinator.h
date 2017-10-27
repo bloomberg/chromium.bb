@@ -49,6 +49,9 @@
 // Sets the delegate for the toolbar.
 - (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate;
 
+// Sets the height of the toolbar to be the .
+- (void)adjustToolbarHeight;
+
 // TabModel callbacks.
 - (void)selectedTabChanged;
 - (void)setTabCount:(NSInteger)tabCount;

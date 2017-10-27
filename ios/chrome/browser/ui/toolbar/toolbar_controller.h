@@ -71,6 +71,10 @@ class ReadingListModel;
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// Height and Y offset to account for the status bar. Overridden by subclasses
+// if the toolbar shouldn't extend through the status bar.
+- (CGFloat)statusBarOffset;
+
 // Called when the application has entered the background.
 - (void)applicationDidEnterBackground:(NSNotification*)notify;
 
@@ -135,11 +139,10 @@ class ReadingListModel;
 // attention.
 - (void)triggerToolsMenuButtonAnimation;
 
+// TODO(crbug.com/778236): Remove this declaration once it is a
+// UIViewController.
 // Update the view's layout to take into account the new safe area insets.
-- (void)safeAreaInsetsDidChange;
-
-// Returns the preferred toolbar height in the current orientation.
-- (CGFloat)preferredToolbarHeightWhenAlignedToTopOfScreen;
+- (void)viewSafeAreaInsetsDidChange;
 
 @end
 

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,6 +45,13 @@
 
 - (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {
   self.webToolbarController.delegate = delegate;
+}
+
+- (void)adjustToolbarHeight {
+  self.webToolbarController.heightConstraint.constant =
+      ToolbarHeightWithTopOfScreenOffset(
+          [self.webToolbarController statusBarOffset]);
+  self.webToolbarController.heightConstraint.active = YES;
 }
 
 #pragma mark - WebToolbarController interface
