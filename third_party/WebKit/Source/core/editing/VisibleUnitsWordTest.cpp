@@ -20,6 +20,15 @@ class VisibleUnitsWordTest : public EditingTestBase {
                 StartOfWord(CreateVisiblePosition(position)).DeepEquivalent())
             .Build());
   }
+
+  std::string DoEndOfWord(const std::string& selection_text) {
+    const Position position = SetSelectionTextToBody(selection_text).Base();
+    return GetSelectionTextFromBody(
+        SelectionInDOMTree::Builder()
+            .Collapse(
+                EndOfWord(CreateVisiblePosition(position)).DeepEquivalent())
+            .Build());
+  }
 };
 
 TEST_F(VisibleUnitsWordTest, StartOfWordBasic) {
@@ -61,6 +70,34 @@ TEST_F(VisibleUnitsWordTest, StartOfWordFirstLetter) {
   EXPECT_EQ("<p> (1) abc |def</p>", DoStartOfWord("<p> (1) abc de|f</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>", DoStartOfWord("<p> (1) abc def|</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>", DoStartOfWord("<p> (1) abc def</p>|"));
+}
+
+TEST_F(VisibleUnitsWordTest, StartOfWordTextSecurity) {
+  // Note: |StartOfWord()| considers security characters as a sequence "x".
+  InsertStyleElement("s {-webkit-text-security:disc;}");
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("|abc<s>foo bar</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc|<s>foo bar</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>|foo bar</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>f|oo bar</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>foo| bar</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>foo |bar</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>foo bar|</s>baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>foo bar</s>|baz"));
+  EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>foo bar</s>b|az"));
+}
+
+TEST_F(VisibleUnitsWordTest, EndOfWordTextSecurity) {
+  // Note: |EndOfWord()| considers security characters as a sequence "x".
+  InsertStyleElement("s {-webkit-text-security:disc;}");
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("|abc<s>foo bar</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc|<s>foo bar</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>|foo bar</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>f|oo bar</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>foo| bar</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>foo |bar</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>foo bar|</s>baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>foo bar</s>|baz"));
+  EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("abc<s>foo bar</s>b|az"));
 }
 
 }  // namespace blink

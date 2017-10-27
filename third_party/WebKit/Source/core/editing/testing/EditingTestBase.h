@@ -55,6 +55,11 @@ class EditingTestBase : public PageTestBase {
   // |SelectionInDOMTree|.
   std::string GetSelectionTextFromBody(const SelectionInDOMTree&) const;
 
+  // Returns selection text for child nodes of BODY with specified
+  // |SelectionInFlatTree|.
+  std::string GetSelectionTextInFlatTreeFromBody(
+      const SelectionInFlatTree&) const;
+
   void SetBodyContent(const std::string&);
   ShadowRoot* SetShadowContent(const char* shadow_content,
                                const char* shadow_host_id);

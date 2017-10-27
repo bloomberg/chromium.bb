@@ -71,6 +71,12 @@ std::string EditingTestBase::GetSelectionTextFromBody(
   return SelectionSample::GetSelectionText(*GetDocument().body(), selection);
 }
 
+std::string EditingTestBase::GetSelectionTextInFlatTreeFromBody(
+    const SelectionInFlatTree& selection) const {
+  return SelectionSample::GetSelectionTextInFlatTree(*GetDocument().body(),
+                                                     selection);
+}
+
 ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
     TreeScope& scope,
     const char* host_element_id,
