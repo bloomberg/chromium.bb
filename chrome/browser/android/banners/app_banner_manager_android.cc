@@ -235,9 +235,9 @@ void AppBannerManagerAndroid::ShowBannerUi() {
             primary_icon_, badge_icon_, can_install_webapk_)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
-      ReportStatus(contents, SHOWING_WEB_APP_BANNER);
+      ReportStatus(SHOWING_WEB_APP_BANNER);
     } else {
-      ReportStatus(contents, FAILED_TO_CREATE_BANNER);
+      ReportStatus(FAILED_TO_CREATE_BANNER);
     }
   } else {
     if (AppBannerInfoBarDelegateAndroid::Create(
@@ -245,9 +245,9 @@ void AppBannerManagerAndroid::ShowBannerUi() {
             native_app_package_, referrer_)) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
-      ReportStatus(contents, SHOWING_NATIVE_APP_BANNER);
+      ReportStatus(SHOWING_NATIVE_APP_BANNER);
     } else {
-      ReportStatus(contents, FAILED_TO_CREATE_BANNER);
+      ReportStatus(FAILED_TO_CREATE_BANNER);
     }
   }
 }
