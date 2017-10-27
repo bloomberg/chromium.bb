@@ -183,6 +183,9 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
 
 int64_t CalculateOCLFromOFCL(const net::URLRequest& request) {
   const net::HttpResponseHeaders* response_headers = request.response_headers();
+  if (!response_headers)
+    return request.received_response_content_length();
+
   int64_t original_content_length = GetDataReductionProxyOFCL(response_headers);
 
   if (response_headers->response_code() == net::HTTP_PARTIAL_CONTENT) {
