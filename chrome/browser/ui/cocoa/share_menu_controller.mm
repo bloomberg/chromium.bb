@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,6 +44,9 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
   NSWindow* windowForShare_;  // weak
   NSRect rectForShare_;
   base::scoped_nsobject<NSImage> snapshotForShare_;
+  // The Reminders share extension reads title/URL from the currently active
+  // activity.
+  base::scoped_nsobject<NSUserActivity> activity_ API_AVAILABLE(macos(10.10));
 }
 
 + (BOOL)shouldShowMoreItem {
@@ -142,6 +146,10 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
   windowForShare_ = nil;
   rectForShare_ = NSZeroRect;
   snapshotForShare_.reset();
+  if (@available(macOS 10.10, *)) {
+    [activity_ invalidate];
+    activity_.reset();
+  }
 }
 
 // Performs the share action using the sharing service represented by |sender|.
@@ -169,6 +177,13 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
     itemsToShare = @[ url, title ];
   } else {
     itemsToShare = @[ url ];
+  }
+  if (@available(macOS 10.10, *)) {
+    activity_.reset([[NSUserActivity alloc]
+        initWithActivityType:NSUserActivityTypeBrowsingWeb]);
+    [activity_ setWebpageURL:url];
+    [activity_ setTitle:title];
+    [activity_ becomeCurrent];
   }
   [service performWithItems:itemsToShare];
 }
