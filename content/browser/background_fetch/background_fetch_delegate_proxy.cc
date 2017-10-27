@@ -126,12 +126,16 @@ class BackgroundFetchDelegateProxy::Core
   }
 
   // BackgroundFetchDelegate::Client implementation:
-  void OnDownloadUpdated(const std::string& guid,
+  void OnJobCancelled(const std::string& job_unique_id) override;
+  void OnDownloadUpdated(const std::string& job_unique_id,
+                         const std::string& guid,
                          uint64_t bytes_downloaded) override;
   void OnDownloadComplete(
+      const std::string& job_unique_id,
       const std::string& guid,
       std::unique_ptr<BackgroundFetchResult> result) override;
   void OnDownloadStarted(
+      const std::string& job_unique_id,
       const std::string& guid,
       std::unique_ptr<content::BackgroundFetchResponse> response) override;
   void OnDelegateShutdown() override;
@@ -149,27 +153,39 @@ class BackgroundFetchDelegateProxy::Core
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
+void BackgroundFetchDelegateProxy::Core::OnJobCancelled(
+    const std::string& job_unique_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BackgroundFetchDelegateProxy::OnJobCancelled, io_parent_,
+                     job_unique_id));
+}
+
 void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
+    const std::string& job_unique_id,
     const std::string& guid,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadUpdated,
-                     io_parent_, guid, bytes_downloaded));
+                     io_parent_, job_unique_id, guid, bytes_downloaded));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDownloadComplete(
+    const std::string& job_unique_id,
     const std::string& guid,
     std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadComplete,
-                     io_parent_, guid, std::move(result)));
+                     io_parent_, job_unique_id, guid, std::move(result)));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDownloadStarted(
+    const std::string& job_unique_id,
     const std::string& guid,
     std::unique_ptr<content::BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -177,12 +193,21 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadStarted(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundFetchDelegateProxy::DidStartRequest, io_parent_,
-                     guid, std::move(response)));
+                     job_unique_id, guid, std::move(response)));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDelegateShutdown() {
   delegate_ = nullptr;
 }
+
+BackgroundFetchDelegateProxy::JobDetails::JobDetails(
+    base::WeakPtr<Controller> controller)
+    : controller(controller) {}
+
+BackgroundFetchDelegateProxy::JobDetails::JobDetails(JobDetails&& details) =
+    default;
+
+BackgroundFetchDelegateProxy::JobDetails::~JobDetails() = default;
 
 BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
     BackgroundFetchDelegate* delegate)
@@ -207,10 +232,14 @@ void BackgroundFetchDelegateProxy::CreateDownloadJob(
     const std::string& job_unique_id,
     const std::string& title,
     const url::Origin& origin,
+    base::WeakPtr<Controller> controller,
     int completed_parts,
     int total_parts,
     const std::vector<std::string>& current_guids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(!job_details_map_.count(job_unique_id));
+  job_details_map_.emplace(job_unique_id, JobDetails(controller));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -221,20 +250,20 @@ void BackgroundFetchDelegateProxy::CreateDownloadJob(
 
 void BackgroundFetchDelegateProxy::StartRequest(
     const std::string& job_unique_id,
-    base::WeakPtr<Controller> job_controller,
     const url::Origin& origin,
     scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(job_controller);
 
-  std::string download_guid(base::GenerateGUID());
+  DCHECK(job_details_map_.count(job_unique_id));
+  JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
+  DCHECK(job_details.controller);
 
-  controller_map_[download_guid] = std::make_pair(request, job_controller);
+  std::string guid(base::GenerateGUID());
+  job_details.current_request_map[guid] = request;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Core::StartRequest, ui_core_ptr_, job_unique_id,
-                     download_guid, origin, request));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&Core::StartRequest, ui_core_ptr_,
+                                         job_unique_id, guid, origin, request));
 }
 
 void BackgroundFetchDelegateProxy::UpdateUI(const std::string& job_unique_id,
@@ -250,65 +279,89 @@ void BackgroundFetchDelegateProxy::Abort(const std::string& job_unique_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&Core::Abort, ui_core_ptr_, job_unique_id));
+
+  job_details_map_.erase(job_details_map_.find(job_unique_id));
+}
+
+void BackgroundFetchDelegateProxy::OnJobCancelled(
+    const std::string& job_unique_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(delphick): The controller may not exist as persistence is not yet
+  // implemented.
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
+    return;
+
+  JobDetails& job_details = job_details_iter->second;
+  if (job_details.controller)
+    job_details.controller->AbortFromUser();
 }
 
 void BackgroundFetchDelegateProxy::DidStartRequest(
+    const std::string& job_unique_id,
     const std::string& guid,
     std::unique_ptr<BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(delphick): The controller may not exist as persistence is not yet
   // implemented.
-  if (!controller_map_.count(guid))
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
     return;
 
+  JobDetails& job_details = job_details_iter->second;
+
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
-      controller_map_[guid].first;
-  base::WeakPtr<Controller> job_controller = controller_map_[guid].second;
+      job_details.current_request_map[guid];
 
   request_info->PopulateWithResponse(std::move(response));
 
-  if (job_controller)
-    job_controller->DidStartRequest(request_info, guid);
+  if (job_details.controller)
+    job_details.controller->DidStartRequest(request_info, guid);
 }
 
 void BackgroundFetchDelegateProxy::OnDownloadUpdated(
+    const std::string& job_unique_id,
     const std::string& guid,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(delphick): The controller may not exist as persistence is not yet
   // implemented.
-  if (!controller_map_.count(guid))
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
     return;
 
-  const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
-      controller_map_[guid].first;
-  base::WeakPtr<Controller> job_controller = controller_map_[guid].second;
+  JobDetails& job_details = job_details_iter->second;
 
   // TODO(peter): Should we update the |request_info| with the progress?
-  if (job_controller)
-    job_controller->DidUpdateRequest(request_info, guid, bytes_downloaded);
+  if (job_details.controller) {
+    job_details.controller->DidUpdateRequest(
+        job_details.current_request_map[guid], guid, bytes_downloaded);
+  }
 }
 
 void BackgroundFetchDelegateProxy::OnDownloadComplete(
+    const std::string& job_unique_id,
     const std::string& guid,
     std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(delphick): The controller may not exist as persistence is not yet
   // implemented.
-  if (!controller_map_.count(guid))
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
     return;
 
-  const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
-      controller_map_[guid].first;
-  base::WeakPtr<Controller> job_controller = controller_map_[guid].second;
+  JobDetails& job_details = job_details_iter->second;
 
+  const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
+      job_details.current_request_map[guid];
   request_info->SetResult(std::move(result));
 
-  if (job_controller)
-    job_controller->DidCompleteRequest(request_info, guid);
+  if (job_details.controller)
+    job_details.controller->DidCompleteRequest(request_info, guid);
 }
 
 }  // namespace content

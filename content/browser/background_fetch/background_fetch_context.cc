@@ -64,10 +64,6 @@ void BackgroundFetchContext::StartFetch(
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  delegate_proxy_.CreateDownloadJob(registration_id.unique_id(), options.title,
-                                    registration_id.origin(), 0,
-                                    requests.size(), {});
-
   data_manager_.CreateRegistration(
       registration_id, requests, options,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
@@ -106,7 +102,11 @@ void BackgroundFetchContext::CreateController(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
-      &delegate_proxy_, registration_id, options, registration, &data_manager_,
+      &delegate_proxy_, registration_id, options, registration,
+      // TODO(delphick): These values must be set up asynchronously since they
+      // will come from the database.
+      0, data_manager_.GetNumberOfRequestsForRegistration(registration_id),
+      std::vector<std::string>(), &data_manager_,
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_.get())),

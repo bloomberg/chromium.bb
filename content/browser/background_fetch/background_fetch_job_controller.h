@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -48,6 +48,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const BackgroundFetchRegistration& registration,
+      int completed_downloads,
+      int total_downloads,
+      const std::vector<std::string>& outstanding_guids,
       BackgroundFetchDataManager* data_manager,
       ProgressCallback progress_callback,
       FinishedCallback finished_callback);

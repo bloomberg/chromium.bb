@@ -41,21 +41,28 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
    public:
     virtual ~Client() {}
 
+    // Called when the entire download job has been cancelled by the delegate,
+    // e.g. because the user clicked cancel on a notification.
+    virtual void OnJobCancelled(const std::string& job_unique_id) = 0;
+
     // Called after the download has started with the initial response
     // (including headers and URL chain). Always called on the UI thread.
     virtual void OnDownloadStarted(
-        const std::string& guid,
+        const std::string& job_unique_id,
+        const std::string& download_guid,
         std::unique_ptr<content::BackgroundFetchResponse> response) = 0;
 
     // Called during the download to indicate the current progress. Always
     // called on the UI thread.
-    virtual void OnDownloadUpdated(const std::string& guid,
+    virtual void OnDownloadUpdated(const std::string& job_unique_id,
+                                   const std::string& download_guid,
                                    uint64_t bytes_downloaded) = 0;
 
     // Called after the download has completed giving the result including the
     // path to the downloaded file and its size. Always called on the UI thread.
     virtual void OnDownloadComplete(
-        const std::string& guid,
+        const std::string& job_unique_id,
+        const std::string& download_guid,
         std::unique_ptr<BackgroundFetchResult> result) = 0;
 
     // Called by the delegate when it's shutting down to signal that the
@@ -81,11 +88,11 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
       int total_parts,
       const std::vector<std::string>& current_guids) = 0;
 
-  // Creates a new download identified by |guid| in the download job identified
-  // by |job_unique_id|.
+  // Creates a new download identified by |download_guid| in the download job
+  // identified by |job_unique_id|.
   virtual void DownloadUrl(
       const std::string& job_unique_id,
-      const std::string& guid,
+      const std::string& download_guid,
       const std::string& method,
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,

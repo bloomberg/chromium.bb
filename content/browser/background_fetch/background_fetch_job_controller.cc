@@ -16,6 +16,9 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const BackgroundFetchRegistration& registration,
+    int completed_downloads,
+    int total_downloads,
+    const std::vector<std::string>& outstanding_guids,
     BackgroundFetchDataManager* data_manager,
     ProgressCallback progress_callback,
     FinishedCallback finished_callback)
@@ -29,6 +32,10 @@ BackgroundFetchJobController::BackgroundFetchJobController(
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   data_manager_->SetController(registration_id, this);
+
+  delegate_proxy_->CreateDownloadJob(
+      registration_id.unique_id(), options.title, registration_id.origin(),
+      GetWeakPtr(), completed_downloads, total_downloads, outstanding_guids);
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {
@@ -61,7 +68,6 @@ void BackgroundFetchJobController::StartRequest(
   }
 
   delegate_proxy_->StartRequest(registration_id_.unique_id(),
-                                weak_ptr_factory_.GetWeakPtr(),
                                 registration_id_.origin(), request);
 }
 
