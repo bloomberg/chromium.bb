@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,6 +26,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace chromeos {
 
@@ -58,12 +60,22 @@ base::string16 GetConnectErrorString(const std::string& error_name) {
   return base::string16();
 }
 
+// TODO(tetsui): Remove with IsNewStyleNotificationEnabled switch.
 int GetErrorNotificationIconId(const std::string& network_type) {
   if (network_type == shill::kTypeVPN)
     return IDR_AURA_UBER_TRAY_NETWORK_VPN;
   if (network_type == shill::kTypeCellular)
     return IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR;
   return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
+}
+
+const gfx::VectorIcon& GetErrorNotificationVectorIcon(
+    const std::string& network_type) {
+  if (network_type == shill::kTypeVPN)
+    return kNotificationVpnIcon;
+  if (network_type == shill::kTypeCellular)
+    return kNotificationMobileDataOffIcon;
+  return kNotificationWifiOffIcon;
 }
 
 void ShowErrorNotification(const std::string& service_path,
@@ -74,13 +86,27 @@ void ShowErrorNotification(const std::string& service_path,
                            const base::Closure& callback) {
   NET_LOG(ERROR) << "ShowErrorNotification: " << service_path << ": "
                  << base::UTF16ToUTF8(title);
-  const gfx::Image& icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          GetErrorNotificationIconId(network_type));
+  std::unique_ptr<message_center::Notification> notification;
+  if (message_center::IsNewStyleNotificationEnabled()) {
+    notification = message_center::Notification::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
+        message, gfx::Image(), base::string16() /* display_source */, GURL(),
+        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                   ash::system_notifier::kNotifierNetworkError),
+        message_center::RichNotificationData(),
+        new message_center::HandleNotificationClickedDelegate(callback),
+        GetErrorNotificationVectorIcon(network_type),
+        message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
+  } else {
+    const gfx::Image& icon =
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            GetErrorNotificationIconId(network_type));
+    notification = message_center::Notification::CreateSystemNotification(
+        notification_id, title, message, icon,
+        ash::system_notifier::kNotifierNetworkError, callback);
+  }
   message_center::MessageCenter::Get()->AddNotification(
-      message_center::Notification::CreateSystemNotification(
-          notification_id, title, message, icon,
-          ash::system_notifier::kNotifierNetworkError, callback));
+      std::move(notification));
 }
 
 bool ShouldConnectFailedNotificationBeShown(const std::string& error_name,
