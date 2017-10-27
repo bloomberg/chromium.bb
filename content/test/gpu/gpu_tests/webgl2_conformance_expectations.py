@@ -346,6 +346,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
+        ['highsierra', ('nvidia', 0xfe9)], bug=775202)
     self.Flaky(
         'conformance/extensions/webgl-compressed-texture-size-limit.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
