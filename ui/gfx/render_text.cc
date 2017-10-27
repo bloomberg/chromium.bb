@@ -836,9 +836,12 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
       x = size.width();
     }
   } else {
-    size_t grapheme_start = (caret_affinity == CURSOR_FORWARD) ?
-        caret_pos : IndexOfAdjacentGrapheme(caret_pos, CURSOR_BACKWARD);
-    Range xspan(GetGlyphBounds(grapheme_start));
+    // Find the next grapheme continuing in the current direction. This
+    // determines the substring range that should be highlighted.
+    size_t caret_end = IndexOfAdjacentGrapheme(caret_pos, caret_affinity);
+    if (caret_end < caret_pos)
+      std::swap(caret_end, caret_pos);
+    const Range xspan = GetCursorSpan(Range(caret_pos, caret_end));
     if (insert_mode) {
       x = (caret_affinity == CURSOR_BACKWARD) ? xspan.end() : xspan.start();
     } else {  // overtype mode

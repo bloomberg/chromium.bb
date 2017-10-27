@@ -181,7 +181,7 @@ SelectionModel RenderTextMac::AdjacentWordSelectionModel(
   return SelectionModel();
 }
 
-Range RenderTextMac::GetGlyphBounds(size_t index) {
+Range RenderTextMac::GetCursorSpan(const Range& text_range) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
   return Range();
 }
