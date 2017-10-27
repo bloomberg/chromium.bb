@@ -71,10 +71,59 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   return *this;
 }
 
+NGContainerFragmentBuilder&
+NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
+    NGBlockNode child,
+    const NGLogicalOffset& child_offset) {
+  DCHECK(child);
+
+  oof_positioned_candidates_.push_back(NGOutOfFlowPositionedCandidate{
+      NGOutOfFlowPositionedDescendant{
+          child, NGStaticPosition::Create(WritingMode(), Direction(),
+                                          NGPhysicalOffset())},
+      child_offset});
+
+  child.SaveStaticOffsetForLegacy(child_offset);
+  return *this;
+}
+
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddOutOfFlowDescendant(
     NGOutOfFlowPositionedDescendant descendant) {
   oof_positioned_descendants_.push_back(descendant);
   return *this;
+}
+
+void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
+    Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates) {
+  DCHECK(descendant_candidates->IsEmpty());
+
+  descendant_candidates->ReserveCapacity(oof_positioned_candidates_.size());
+
+  DCHECK_GE(inline_size_, LayoutUnit());
+  DCHECK_GE(block_size_, LayoutUnit());
+  NGPhysicalSize builder_physical_size{Size().ConvertToPhysical(WritingMode())};
+
+  for (NGOutOfFlowPositionedCandidate& candidate : oof_positioned_candidates_) {
+    NGPhysicalOffset child_offset = candidate.child_offset.ConvertToPhysical(
+        WritingMode(), Direction(), builder_physical_size, NGPhysicalSize());
+
+    NGStaticPosition builder_relative_position;
+    builder_relative_position.type = candidate.descendant.static_position.type;
+    builder_relative_position.offset =
+        child_offset + candidate.descendant.static_position.offset;
+
+    descendant_candidates->push_back(NGOutOfFlowPositionedDescendant{
+        candidate.descendant.node, builder_relative_position});
+  }
+
+  // Clear our current canidate list. This may get modified again if the
+  // current fragment is a containing block, and AddChild is called with a
+  // descendant from this list.
+  //
+  // The descendant may be a "position: absolute" which contains a "position:
+  // fixed" for example. (This fragment isn't the containing block for the
+  // fixed descendant).
+  oof_positioned_candidates_.clear();
 }
 
 }  // namespace blink
