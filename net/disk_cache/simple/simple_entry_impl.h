@@ -91,6 +91,12 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // and it will be set.
   void SetKey(const std::string& key);
 
+  // SetCreatePendingDoom() should be called before CreateEntry() if the
+  // creation should suceed optimistically but not do any I/O until
+  // NotifyDoomBeforeCreateComplete() is called.
+  void SetCreatePendingDoom();
+  void NotifyDoomBeforeCreateComplete();
+
   // From Entry:
   void Doom() override;
   void Close() override;
@@ -360,6 +366,12 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   int open_count_;
 
   bool doomed_;
+
+  enum {
+    CREATE_NORMAL,
+    CREATE_OPTIMISTIC_PENDING_DOOM,
+    CREATE_OPTIMISTIC_PENDING_DOOM_FOLLOWED_BY_DOOM,
+  } optimistic_create_pending_doom_state_;
 
   State state_;
 
