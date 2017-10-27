@@ -112,6 +112,14 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @param preference The name of the preference.
+     * @param value The value the specified preference will be set to.
+     */
+    public void setBoolean(@Pref int preference, boolean value) {
+        nativeSetBoolean(preference, value);
+    }
+
+    /**
      * Migrates (synchronously) the preferences to the most recent version.
      */
     public void migratePreferences(Context context) {
@@ -970,6 +978,7 @@ public final class PrefServiceBridge {
     }
 
     private native boolean nativeGetBoolean(int preference);
+    private native void nativeSetBoolean(int preference, boolean value);
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesUserModifiable();
     private native boolean nativeGetAcceptCookiesManagedByCustodian();

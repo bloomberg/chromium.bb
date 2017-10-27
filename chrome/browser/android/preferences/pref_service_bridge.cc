@@ -138,6 +138,14 @@ static jboolean GetBoolean(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
 }
 
+static void SetBoolean(JNIEnv* env,
+                       const JavaParamRef<jobject>& obj,
+                       const jint j_pref_index,
+                       const jboolean j_value) {
+  GetPrefService()->SetBoolean(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
+}
+
 static jboolean IsContentSettingManaged(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
                                         int content_settings_type) {

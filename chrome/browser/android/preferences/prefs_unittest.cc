@@ -26,6 +26,8 @@ TEST(PrefsTest, TestIndex) {
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
+  EXPECT_EQ(dom_distiller::prefs::kReaderForAccessibility,
+            GetPrefName(READER_FOR_ACCESSIBILITY_ENABLED));
 }
 
 }  // namespace

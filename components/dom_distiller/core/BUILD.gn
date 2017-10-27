@@ -45,6 +45,8 @@ static_library("core") {
     "feedback_reporter.h",
     "page_features.cc",
     "page_features.h",
+    "pref_names.cc",
+    "pref_names.h",
     "task_tracker.cc",
     "task_tracker.h",
     "url_constants.cc",
