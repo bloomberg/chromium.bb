@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 import json
 
 from webkitpy.common.checkout.git_mock import MockGit
@@ -16,7 +17,7 @@ from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.local_wpt_mock import MockLocalWPT
-from webkitpy.w3c.test_importer import TestImporter
+from webkitpy.w3c.test_importer import TestImporter, ROTATIONS_URL
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
@@ -313,6 +314,51 @@ class TestImporterTest(LoggingTestCase):
             'x@chromium.org, y@chromium.org:\n'
             '  external/wpt/baz\n\n',
             description)
+
+    def test_tbr_reviewer_no_response_uses_backup(self):
+        host = MockHost()
+        importer = TestImporter(host)
+        self.assertEqual('qyearsley@chromium.org', importer.tbr_reviewer())
+        self.assertLog([
+            'ERROR: Exception while fetching current sheriff: '
+            'No JSON object could be decoded\n'
+        ])
+
+    def test_tbr_reviewer(self):
+        host = MockHost()
+        today = datetime.date.fromtimestamp(host.time()).isoformat()
+        host.web.urls[ROTATIONS_URL] = json.dumps({
+            'calendar': [
+                {
+                    'date': '2017-01-01',
+                    'participants': [['other-sheriff'], ['last-sheriff']],
+                },
+                {
+                    'date': today,
+                    'participants': [['other-sheriff'], ['current-sheriff']],
+                },
+            ],
+            'rotations': ['other-rotation', 'ecosystem_infra']
+        })
+        importer = TestImporter(host)
+        self.assertEqual('current-sheriff@chromium.org', importer.tbr_reviewer())
+        self.assertLog([])
+
+    def test_tbr_reviewer_with_full_email_address(self):
+        host = MockHost()
+        today = datetime.date.fromtimestamp(host.time()).isoformat()
+        host.web.urls[ROTATIONS_URL] = json.dumps({
+            'calendar': [
+                {
+                    'date': today,
+                    'participants': [['external@example.com']],
+                },
+            ],
+            'rotations': ['ecosystem_infra']
+        })
+        importer = TestImporter(host)
+        self.assertEqual('external@example.com', importer.tbr_reviewer())
+        self.assertLog([])
 
     def test_generate_manifest_successful_run(self):
         # This test doesn't test any aspect of the real manifest script, it just
