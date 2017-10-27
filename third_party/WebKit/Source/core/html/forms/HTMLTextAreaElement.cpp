@@ -84,7 +84,7 @@ HTMLTextAreaElement* HTMLTextAreaElement::Create(Document& document) {
 }
 
 void HTMLTextAreaElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
-  root.AppendChild(TextControlInnerEditorElement::Create(GetDocument()));
+  root.AppendChild(CreateInnerEditorElement());
 }
 
 const AtomicString& HTMLTextAreaElement::FormControlType() const {

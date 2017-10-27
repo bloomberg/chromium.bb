@@ -103,10 +103,7 @@ inline TextControlInnerEditorElement::TextControlInnerEditorElement(
 
 TextControlInnerEditorElement* TextControlInnerEditorElement::Create(
     Document& document) {
-  TextControlInnerEditorElement* element =
-      new TextControlInnerEditorElement(document);
-  element->setAttribute(idAttr, ShadowElementNames::InnerEditor());
-  return element;
+  return new TextControlInnerEditorElement(document);
 }
 
 void TextControlInnerEditorElement::DefaultEventHandler(Event* event) {

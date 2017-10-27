@@ -425,10 +425,8 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectText) {
 
 TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
   SetHtmlInnerHTML("<input value='blabla'>");
-  Element* const field = ToElement(GetDocument().body()->firstChild());
-  ShadowRoot* const shadow_root = field->UserAgentShadowRoot();
-
-  Element* const text = shadow_root->getElementById("inner-editor");
+  auto* const field = ToHTMLInputElement(GetDocument().body()->firstChild());
+  Element* const text = field->InnerEditorElement();
   LayoutPoint location =
       text->GetLayoutObject()->FirstFragment().VisualRect().Center();
   HitTestResult hit =

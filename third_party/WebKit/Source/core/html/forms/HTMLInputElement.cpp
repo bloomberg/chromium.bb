@@ -400,6 +400,7 @@ void HTMLInputElement::UpdateType() {
   bool could_be_successful_submit_button = CanBeSuccessfulSubmitButton();
 
   input_type_view_->DestroyShadowSubtree();
+  DropInnerEditorElement();
   LazyReattachIfAttached();
 
   if (input_type_->SupportsRequired() != new_type->SupportsRequired() &&

@@ -13,7 +13,6 @@ Tests dump-as-markup for input and textarea forms.
 |       this.value="replaced"
 |       <shadow:root>
 |         <div>
-|           id="inner-editor"
 |           "replaced"
 |     "
 "
@@ -22,7 +21,6 @@ Tests dump-as-markup for input and textarea forms.
 |       "original"
 |       <shadow:root>
 |         <div>
-|           id="inner-editor"
 |           "replaced"
 |     "
 "

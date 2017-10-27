@@ -72,6 +72,9 @@ enum EffectiveConnectionType {
     [RaisesException] Element? elementFromPoint(Document document, double x, double y, boolean ignoreClipping, boolean allowChildFrameContent);
     [RaisesException] void clearHitTestCache(Document document);
 
+    // Allows inspection of the inner editor node.
+    [RaisesException] Element? innerEditorElement(Element container);
+
     // Animation testing.
     [RaisesException] void pauseAnimations(double pauseTime);
     bool isCompositedAnimation(Animation animation);

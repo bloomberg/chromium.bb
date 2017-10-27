@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [11, 47, 156, 16],
           "reason": "geometry"
         },
@@ -21,7 +21,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },
     {

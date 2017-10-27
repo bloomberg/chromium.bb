@@ -15,7 +15,6 @@
 |         this.value=""
 |         <shadow:root>
 |           <div>
-|             id="inner-editor"
 |       "
 "
 |       <shadow:root>

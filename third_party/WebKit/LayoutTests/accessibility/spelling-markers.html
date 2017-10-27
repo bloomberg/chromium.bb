@@ -66,7 +66,7 @@ test(() => {
 
   var input = document.getElementById('input');
   input.focus();
-  var innerEditor = internals.shadowRoot(input).getElementById('inner-editor');
+  var innerEditor = internals.innerEditorElement(input);
   assert_equals(innerEditor.childNodes.length, 1);
   var text = innerEditor.firstChild;
   var range = document.createRange();
@@ -90,7 +90,7 @@ test(() => {
     return;
 
   var textarea = document.getElementById('textarea');
-  var innerEditor = internals.shadowRoot(textarea).getElementById('inner-editor');
+  var innerEditor = internals.innerEditorElement(textarea);
   assert_equals(innerEditor.childNodes.length, 1);
   var text = innerEditor.firstChild;
   var range = document.createRange();

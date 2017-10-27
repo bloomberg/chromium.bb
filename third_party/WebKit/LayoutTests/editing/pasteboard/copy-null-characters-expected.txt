@@ -40,7 +40,6 @@ Copy paste me
 green"
 |   <shadow:root>
 |     <div>
-|       id="inner-editor"
 |       "Copy paste mebold
 
 Copy paste me

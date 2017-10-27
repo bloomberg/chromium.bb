@@ -68,8 +68,7 @@ Running: testSearchUAShadowDOM
 Searching UA shadow DOM with setting disabled:
 Nothing found
 Searching UA shadow DOM with setting enabled:
-< d i v   i d = " i n n e r - e d i t o r " > I n p u t V a l < / d i v >
-< d i v   i d = " i n n e r - e d i t o r " > < / d i v >
+< d i v   i d = " u a - s h a d o w - c o n t e n t " > < / d i v >
 
 Running: testSearchShadowHostChildren
 < d i v   i d = " s h a d o w - h o s t - c o n t e n t " > < / d i v >

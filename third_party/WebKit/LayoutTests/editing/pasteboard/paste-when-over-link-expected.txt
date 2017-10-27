@@ -6,5 +6,4 @@ focuses a textarea does not paste into the textarea.
 After middle click on link:
 |   <shadow:root>
 |     <div>
-|       id="inner-editor"
 |       "Content"

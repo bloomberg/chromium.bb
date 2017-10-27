@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [381, 11, 1, 16],
           "reason": "caret"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [378, 11, 1, 16],
           "reason": "caret"
         }

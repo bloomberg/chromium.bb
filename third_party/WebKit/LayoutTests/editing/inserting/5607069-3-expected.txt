@@ -6,7 +6,6 @@ This tests for a bug in InsertParagraph where it would split and clone a <form> 
 |     this.value=""
 |     <shadow:root>
 |       <div>
-|         id="inner-editor"
 |   "x"
 |   <br>
 |   "<#selection-caret>x"
@@ -15,4 +14,3 @@ This tests for a bug in InsertParagraph where it would split and clone a <form> 
 |     this.value=""
 |     <shadow:root>
 |       <div>
-|         id="inner-editor"

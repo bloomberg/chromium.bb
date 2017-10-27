@@ -17,7 +17,7 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [10, 75, 150, 16],
           "reason": "appeared"
         },
@@ -47,11 +47,11 @@
       "reason": "appeared"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "appeared"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },
     {

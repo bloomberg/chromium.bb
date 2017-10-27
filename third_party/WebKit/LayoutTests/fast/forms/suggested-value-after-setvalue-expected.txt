@@ -14,7 +14,6 @@ After setting suggestedValue:
 |       shadow:pseudoId="-webkit-input-suggested"
 |       "suggested value"
 |     <div>
-|       id="inner-editor"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"
@@ -32,7 +31,6 @@ After setting value:
 |   this.value="new value"
 |   <shadow:root>
 |     <div>
-|       id="inner-editor"
 |       "new value"
 | "input.value: new value"
 | "internals.suggestedValue(input): "
