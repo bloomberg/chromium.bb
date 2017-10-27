@@ -555,6 +555,7 @@ modules_dictionary_idl_files =
                     "peerconnection/RTCPeerConnectionIceEventInit.idl",
                     "peerconnection/RTCSessionDescriptionInit.idl",
                     "peerconnection/RTCTrackEventInit.idl",
+                    "permissions/ClipboardPermissionDescriptor.idl",
                     "permissions/MidiPermissionDescriptor.idl",
                     "permissions/PermissionDescriptor.idl",
                     "permissions/PushPermissionDescriptor.idl",

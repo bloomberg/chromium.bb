@@ -20,6 +20,10 @@ mojom::blink::PermissionDescriptorPtr CreatePermissionDescriptor(
 mojom::blink::PermissionDescriptorPtr CreateMidiPermissionDescriptor(
     bool sysex);
 
+mojom::blink::PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
+    mojom::blink::PermissionName,
+    bool allow_without_gesture);
+
 }  // namespace blink
 
 #endif  // PermissionUtils_h

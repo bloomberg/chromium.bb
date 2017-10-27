@@ -19,15 +19,22 @@ enum PermissionName {
   BACKGROUND_SYNC,
   SENSORS,
   ACCESSIBILITY_EVENTS,
+  CLIPBOARD_READ,
+  CLIPBOARD_WRITE,
 };
 
 struct MidiPermissionDescriptor {
   bool sysex;
 };
 
+struct ClipboardPermissionDescriptor {
+  bool allowWithoutGesture;
+};
+
 // Union of possible extensions to the base PermissionDescriptor type.
 union PermissionDescriptorExtension {
   MidiPermissionDescriptor midi;
+  ClipboardPermissionDescriptor clipboard;
 };
 
 // This struct roughly corresponds to the PermissionDescriptor dictionary as
