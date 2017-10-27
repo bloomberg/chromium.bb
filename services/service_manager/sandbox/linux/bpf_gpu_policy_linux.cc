@@ -31,6 +31,7 @@
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 #include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 
 using sandbox::arch_seccomp_data;
@@ -86,7 +87,7 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
 
 }  // namespace
 
-GpuProcessPolicy::GpuProcessPolicy() : broker_process_(NULL) {}
+GpuProcessPolicy::GpuProcessPolicy() {}
 
 GpuProcessPolicy::~GpuProcessPolicy() {}
 
@@ -115,9 +116,11 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_open:
 #endif  // !defined(__aarch64__)
     case __NR_faccessat:
-    case __NR_openat:
-      DCHECK(broker_process_);
-      return Trap(GpuSIGSYS_Handler, broker_process_);
+    case __NR_openat: {
+      auto* broker_process = SandboxLinux::GetInstance()->broker_process();
+      DCHECK(broker_process);
+      return Trap(GpuSIGSYS_Handler, broker_process);
+    }
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
       return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
