@@ -36,6 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -186,6 +187,19 @@ class AppListEventTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(AppListEventTargeter);
 };
 
+class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  StateAnimationMetricsReporter() = default;
+  ~StateAnimationMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
+};
+
 }  // namespace
 
 // An animation observer to hide the view at the end of the animation.
@@ -238,7 +252,9 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       display_observer_(this),
       animation_observer_(new HideViewAnimationObserver()),
       previous_arrow_key_traversal_enabled_(
-          views::FocusManager::arrow_key_traversal_enabled()) {
+          views::FocusManager::arrow_key_traversal_enabled()),
+      state_animation_metrics_reporter_(
+          std::make_unique<StateAnimationMetricsReporter>()) {
   CHECK(delegate);
   delegate_->GetSpeechUI()->AddObserver(this);
 
@@ -1273,8 +1289,11 @@ void AppListView::StartAnimationForState(AppListState target_state) {
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   animator->StopAnimating();
-  animator->ScheduleAnimation(
-      new ui::LayerAnimationSequence(std::move(bounds_animation_element)));
+  ui::LayerAnimationSequence* animation_sequence =
+      new ui::LayerAnimationSequence(std::move(bounds_animation_element));
+  animation_sequence->SetAnimationMetricsReporter(
+      state_animation_metrics_reporter_.get());
+  animator->ScheduleAnimation(animation_sequence);
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {

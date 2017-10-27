@@ -4,6 +4,7 @@
 
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -14,6 +15,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -28,12 +30,27 @@ inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
+class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  StateAnimationMetricsReporter() = default;
+  ~StateAnimationMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
+};
+
 }  // namespace
 
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegateFactory> factory)
     : factory_(std::move(factory)),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      state_animation_metrics_reporter_(
+          std::make_unique<StateAnimationMetricsReporter>()) {
   DCHECK(factory_);
 }
 
@@ -220,6 +237,9 @@ void AppListPresenterImpl::ScheduleAnimation() {
       target_bounds.Offset(offset);
     }
   }
+
+  animation.SetAnimationMetricsReporter(
+      state_animation_metrics_reporter_.get());
 
   animation.AddObserver(this);
   if (is_fullscreen_app_list_enabled_) {

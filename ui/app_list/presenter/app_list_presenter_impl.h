@@ -21,6 +21,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace ui {
+class AnimationMetricsReporter;
+}
+
 namespace app_list {
 class AppListView;
 class AppListViewDelegate;
@@ -147,6 +151,10 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // The app list interface pointer; used for reporting visibility changes.
   mojom::AppListPtr app_list_;
+
+  // Metric reporter for state change animations.
+  const std::unique_ptr<ui::AnimationMetricsReporter>
+      state_animation_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };
