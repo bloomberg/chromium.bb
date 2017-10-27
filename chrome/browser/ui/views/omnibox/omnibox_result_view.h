@@ -43,6 +43,7 @@ class OmniboxResultView : public views::View,
     TEXT,
     DIMMED_TEXT,
     URL,
+    INVISIBLE_TEXT,
     NUM_KINDS
   };
 

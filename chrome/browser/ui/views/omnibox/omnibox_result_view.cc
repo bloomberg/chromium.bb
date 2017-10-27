@@ -238,6 +238,8 @@ OmniboxResultView::~OmniboxResultView() {
 SkColor OmniboxResultView::GetColor(
     ResultViewState state,
     ColorKind kind) const {
+  if (kind == INVISIBLE_TEXT)
+    return SK_ColorTRANSPARENT;
   for (size_t i = 0; i < arraysize(kTranslationTable); ++i) {
     if (kTranslationTable[i].state == state &&
         kTranslationTable[i].kind == kind) {
@@ -538,6 +540,8 @@ std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
     } else if (force_dim ||
         (classifications[i].style & ACMatchClassification::DIM)) {
       color_kind = DIMMED_TEXT;
+    } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
+      color_kind = INVISIBLE_TEXT;
     }
     render_text->ApplyColor(GetColor(GetState(), color_kind), current_range);
   }

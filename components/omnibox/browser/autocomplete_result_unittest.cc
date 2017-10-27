@@ -691,7 +691,7 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
           "superman",
           "superman",
           {{0, ACMatchClassification::NONE}, {5, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::DIM}, {5, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::NONE}, {5, ACMatchClassification::MATCH}},
       },
       // Make sure it finds this tail suggestion, and prepends appropriately.
       {
@@ -699,7 +699,8 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
           "star",
           "superstar",
           {{0, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::DIM}, {5, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::INVISIBLE},
+           {5, ACMatchClassification::MATCH}},
       },
       // It should not touch this one, since prefix doesn't match.
       {
