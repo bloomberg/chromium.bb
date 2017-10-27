@@ -2349,15 +2349,11 @@
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls
 -PolicyTest.DownloadDirectory
 -PolicyTest.ExtensionInstallSources
--PolicyTest.FileURLBlacklist
 -PolicyTest.ForceGoogleSafeSearch
 -PolicyTest.FullscreenAllowedApp
 -PolicyTest.SSLErrorOverridingAllowed
 -PolicyTest.SSLErrorOverridingDisallowed
 -PolicyTest.SafeBrowsingExtendedReportingOptInAllowed
--PolicyTest.URLBlacklist
--PolicyTest.URLBlacklistAndWhitelist
--PolicyTest.URLBlacklistSubresources
 -PrerenderBrowserTest.FirstContentfulPaintHiddenNoCommit
 -PrerenderBrowserTest.FirstContentfulPaintTimingNoCommit
 -PrerenderBrowserTest.FirstContentfulPaintTimingReuse
@@ -2482,3 +2478,8 @@
 
 # crbug.com/778793
 -PreviewsBrowserTest.NoScriptPreviewsEnabled
+
+# crbug.com/756642 Need to add support for URL blacklist.
+-PolicyTest.FileURLBlacklist
+-PolicyTest.URLBlacklist
+-PolicyTest.URLBlacklistSubresources
