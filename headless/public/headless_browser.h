@@ -117,7 +117,7 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
 
   // Address at which DevTools should listen for connections. Disabled by
   // default. Mutually exclusive with devtools_socket_fd.
-  net::HostPortPair devtools_endpoint = net::HostPortPair();
+  net::HostPortPair devtools_endpoint;
 
   // The fd of an already-open socket inherited from a parent process. Disabled
   // by default. Mutually exclusive with devtools_endpoint.
@@ -144,33 +144,32 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Choose the GL implementation to use for rendering. A suitable
   // implementantion is selected by default. Setting this to an empty
   // string can be used to disable GL rendering (e.g., WebGL support).
-  std::string gl_implementation;  // Initialized in constructor.
+  std::string gl_implementation;
 
   // Names of mojo services exposed by the browser to the renderer. These
   // services will be added to the browser's service manifest.
-  std::unordered_set<std::string> mojo_service_names =
-      std::unordered_set<std::string>();
+  std::unordered_set<std::string> mojo_service_names;
 
   // Default per-context options, can be specialized on per-context basis.
 
-  std::string product_name_and_version;  // Initialized in constructor.
-  std::string accept_language = std::string();
-  std::string user_agent;  // Initialized in constructor.
+  std::string product_name_and_version;
+  std::string accept_language;
+  std::string user_agent;
 
   // The ProxyConfig to use. The system proxy settings are used by default.
   std::unique_ptr<net::ProxyConfig> proxy_config = nullptr;
 
   // Comma-separated list of rules that control how hostnames are mapped. See
   // chrome::switches::kHostRules for a description for the format.
-  std::string host_resolver_rules = std::string();
+  std::string host_resolver_rules;
 
   // Default window size. This is also used to create the window tree host and
   // as initial screen size. Defaults to 800x600.
-  gfx::Size window_size;  // Initialized in constructor.
+  gfx::Size window_size;
 
   // Path to user data directory, where browser will look for its state.
   // If empty, default directory (where the binary is located) will be used.
-  base::FilePath user_data_dir = base::FilePath();
+  base::FilePath user_data_dir;
 
   // Run a browser context in an incognito mode. Enabled by default.
   bool incognito_mode = true;
@@ -184,27 +183,28 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   //
   // WARNING: We cannot provide any guarantees about the stability of the
   // exposed WebPreferences API, so use with care.
-  base::Callback<void(WebPreferences*)> override_web_preferences_callback =
-      base::Callback<void(WebPreferences*)>();
+  base::Callback<void(WebPreferences*)> override_web_preferences_callback;
 
   // Set a callback that is invoked when a new child process is spawned or
   // forked and allows adding additional command line flags to the child
   // process's command line. Executed on the browser main thread.
   // |child_browser_context| points to the BrowserContext of the child
   // process, but will only be set if the child process is a renderer process.
+  //
+  // NOTE: This callback may be called on the UI or IO thread even after the
+  // HeadlessBrowser has been destroyed.
   using AppendCommandLineFlagsCallback =
       base::Callback<void(base::CommandLine* command_line,
                           HeadlessBrowserContext* child_browser_context,
                           const std::string& child_process_type,
                           int child_process_id)>;
-  AppendCommandLineFlagsCallback append_command_line_flags_callback =
-      AppendCommandLineFlagsCallback();
+  AppendCommandLineFlagsCallback append_command_line_flags_callback;
 
   // Minidump crash reporter settings. Crash reporting is disabled by default.
   // By default crash dumps are written to the directory containing the
   // executable.
   bool enable_crash_reporter = false;
-  base::FilePath crash_dumps_dir = base::FilePath();
+  base::FilePath crash_dumps_dir;
 
   // Reminder: when adding a new field here, do not forget to add it to
   // HeadlessBrowserContextOptions (where appropriate).
