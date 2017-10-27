@@ -3,22 +3,21 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../assert_selection.js"></script>
 <script>
-test(() => assert_selection(
+selection_test(
     [
       '<div contenteditable="true">',
-        '<span contenteditable="false">',
+        '^<span contenteditable="false">',
           '<span contenteditable="true">',
             '<span>foo</span>',
             '<ol>bar</ol>',
           '</span>',
           '<ol>bar</ol>',
         '</span>',
-        '<ol>bar</ol>',
+        '<ol>bar|</ol>',
       '</div>',
-    ].join(''),
+    ],
     selection => {
       selection.document.designMode = 'on';
-      selection.document.execCommand('selectAll');
       selection.document.execCommand('indent');
     },
     // Note: This is a crash test. The output HTML only reflects the current
@@ -34,6 +33,6 @@ test(() => assert_selection(
           '<ol>bar</ol>',
         '</span>',
       '</div>'
-    ].join('')),
-    'The test passes if it does not crash.');
+    ],
+  'The test passes if it does not rash.');
 </script>
