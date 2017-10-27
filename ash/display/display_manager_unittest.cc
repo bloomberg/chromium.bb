@@ -1137,7 +1137,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   const display::ManagedDisplayInfo display_info1 = GetDisplayInfoAt(0);
   const display::ManagedDisplayInfo display_info2 = GetDisplayInfoAt(1);
 
-  constexpr uint32_t touch_device_identifier_2 = 2345;
+  display::TouchDeviceIdentifier touch_device_identifier_2(2345);
 
   EXPECT_FALSE(display_info2.touch_calibration_data_map().size());
 
@@ -1203,7 +1203,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   EXPECT_EQ(touch_data, GetDisplayInfoAt(1).GetTouchCalibrationData(
                             touch_device_identifier_2));
 
-  uint32_t touch_device_identifier_2_2 = 2456;
+  display::TouchDeviceIdentifier touch_device_identifier_2_2(2456);
   display_manager()->SetTouchCalibrationData(
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
       touch_device_identifier_2_2);

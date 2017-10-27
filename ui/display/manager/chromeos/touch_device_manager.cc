@@ -101,6 +101,61 @@ ManagedDisplayInfo* GetInternalDisplay(DisplayInfoList* displays) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// TouchDeviceIdentifier
+
+// static
+const TouchDeviceIdentifier&
+TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier() {
+  static const TouchDeviceIdentifier kFallTouchDeviceIdentifier(
+      GenerateIdentifier(kFallbackTouchDeviceName, 0, 0));
+  return kFallTouchDeviceIdentifier;
+}
+
+// static
+uint32_t TouchDeviceIdentifier::GenerateIdentifier(std::string name,
+                                                   uint16_t vendor_id,
+                                                   uint16_t product_id) {
+  std::string hash_str = name + "-" + base::UintToString(vendor_id) + "-" +
+                         base::UintToString(product_id);
+  return base::PersistentHash(hash_str);
+}
+
+// static
+TouchDeviceIdentifier TouchDeviceIdentifier::FromDevice(
+    const ui::TouchscreenDevice& touch_device) {
+  return TouchDeviceIdentifier(GenerateIdentifier(
+      touch_device.name, touch_device.vendor_id, touch_device.product_id));
+}
+
+TouchDeviceIdentifier::TouchDeviceIdentifier(uint32_t identifier)
+    : id_(identifier) {}
+
+TouchDeviceIdentifier::TouchDeviceIdentifier(const TouchDeviceIdentifier& other)
+    : id_(other.id_) {}
+
+TouchDeviceIdentifier& TouchDeviceIdentifier::operator=(
+    TouchDeviceIdentifier other) {
+  id_ = other.id_;
+  return *this;
+}
+
+bool TouchDeviceIdentifier::operator<(const TouchDeviceIdentifier& rhs) const {
+  return id_ < rhs.id_;
+}
+
+bool TouchDeviceIdentifier::operator==(const TouchDeviceIdentifier& rhs) const {
+  return id_ == rhs.id_;
+}
+
+bool TouchDeviceIdentifier::operator!=(const TouchDeviceIdentifier& rhs) const {
+  return !(*this == rhs);
+}
+
+std::string TouchDeviceIdentifier::ToString() const {
+  return base::UintToString(id_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // TouchCalibrationData
 
 // static
@@ -110,25 +165,6 @@ bool TouchCalibrationData::CalibrationPointPairCompare(
   return pair_1.first.y() < pair_2.first.y()
              ? true
              : pair_1.first.x() < pair_2.first.x();
-}
-
-// static
-uint32_t TouchCalibrationData::GenerateTouchDeviceIdentifier(
-    const ui::TouchscreenDevice& device) {
-  std::string hash_str = device.name + "-" +
-                         base::UintToString(device.vendor_id) + "-" +
-                         base::UintToString(device.product_id);
-  return base::PersistentHash(hash_str);
-}
-
-// static
-uint32_t TouchCalibrationData::GetFallbackTouchDeviceIdentifier() {
-  ui::TouchscreenDevice device;
-  device.name = kFallbackTouchDeviceName;
-  device.vendor_id = device.product_id = 0;
-  static const uint32_t kFallbackTouchDeviceIdentifier =
-      GenerateTouchDeviceIdentifier(device);
-  return kFallbackTouchDeviceIdentifier;
 }
 
 TouchCalibrationData::TouchCalibrationData() {}
@@ -380,9 +416,12 @@ void TouchDeviceManager::AssociateAnyRemainingDevices(DisplayInfoList* displays,
 
 void TouchDeviceManager::Associate(ManagedDisplayInfo* display,
                                    const ui::TouchscreenDevice& device) {
-  uint32_t touch_device_identifier =
-      TouchCalibrationData::GenerateTouchDeviceIdentifier(device);
-  display->AddTouchDevice(touch_device_identifier);
+  display->AddTouchDevice(TouchDeviceIdentifier::FromDevice(device));
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const TouchDeviceIdentifier& identifier) {
+  return os << identifier.ToString();
 }
 
 }  // namespace display

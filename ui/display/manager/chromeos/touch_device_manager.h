@@ -21,6 +21,35 @@ namespace display {
 
 class ManagedDisplayInfo;
 
+// A unique identifier to identify |ui::TouchscreenDevices|. These identifiers
+// are persistent across system restarts.
+class DISPLAY_MANAGER_EXPORT TouchDeviceIdentifier {
+ public:
+  // Returns a touch device identifier used as a default or a fallback option.
+  static const TouchDeviceIdentifier& GetFallbackTouchDeviceIdentifier();
+
+  static TouchDeviceIdentifier FromDevice(
+      const ui::TouchscreenDevice& touch_device);
+
+  explicit TouchDeviceIdentifier(uint32_t identifier);
+  TouchDeviceIdentifier(const TouchDeviceIdentifier& other);
+  ~TouchDeviceIdentifier() = default;
+
+  TouchDeviceIdentifier& operator=(TouchDeviceIdentifier other);
+
+  bool operator<(const TouchDeviceIdentifier& other) const;
+  bool operator==(const TouchDeviceIdentifier& other) const;
+  bool operator!=(const TouchDeviceIdentifier& other) const;
+
+  std::string ToString() const;
+
+ private:
+  static uint32_t GenerateIdentifier(std::string name,
+                                     uint16_t vendor_id,
+                                     uint16_t product_id);
+  uint32_t id_;
+};
+
 // A struct that represents all the data required for touch calibration for the
 // display.
 struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
@@ -32,14 +61,6 @@ struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
 
   static bool CalibrationPointPairCompare(const CalibrationPointPair& pair_1,
                                           const CalibrationPointPair& pair_2);
-
-  // Returns a hash that can be used as a key for storing display preferences
-  // for a display associated with a touch device.
-  static uint32_t GenerateTouchDeviceIdentifier(
-      const ui::TouchscreenDevice& device);
-
-  // Returns a touch device identifier used as a default or a fallback option.
-  static uint32_t GetFallbackTouchDeviceIdentifier();
 
   TouchCalibrationData();
   TouchCalibrationData(const CalibrationPointPairQuad& point_pairs,
@@ -95,6 +116,10 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
 
   DISALLOW_COPY_AND_ASSIGN(TouchDeviceManager);
 };
+
+DISPLAY_MANAGER_EXPORT std::ostream& operator<<(
+    std::ostream& os,
+    const TouchDeviceIdentifier& identifier);
 
 }  // namespace display
 

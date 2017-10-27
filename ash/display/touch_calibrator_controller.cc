@@ -133,15 +133,15 @@ void TouchCalibratorController::CompleteCalibration(
     const CalibrationPointPairQuad& pairs,
     const gfx::Size& display_size) {
   bool did_find_touch_device = false;
-  uint32_t touch_device_identifier =
-      display::TouchCalibrationData::GetFallbackTouchDeviceIdentifier();
+  display::TouchDeviceIdentifier touch_device_identifier =
+      display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
 
   const std::vector<ui::TouchscreenDevice>& device_list =
       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices();
   for (const auto& device : device_list) {
     if (device.id == touch_device_id_) {
       touch_device_identifier =
-          display::TouchCalibrationData::GenerateTouchDeviceIdentifier(device);
+          display::TouchDeviceIdentifier::FromDevice(device);
       did_find_touch_device = true;
       break;
     }
@@ -152,13 +152,13 @@ void TouchCalibratorController::CompleteCalibration(
             << "complete touch calibration for display with id: "
             << target_display_.id() << ". Storing it as a fallback";
   } else if (touch_device_identifier ==
-             display::TouchCalibrationData::
+             display::TouchDeviceIdentifier::
                  GetFallbackTouchDeviceIdentifier()) {
     LOG(ERROR)
         << "Hash collision in generating touch device identifier for "
         << " device. Hash Generated: " << touch_device_identifier
         << " || Fallback touch device identifier: "
-        << display::TouchCalibrationData::GetFallbackTouchDeviceIdentifier();
+        << display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
   }
 
   if (opt_callback_) {

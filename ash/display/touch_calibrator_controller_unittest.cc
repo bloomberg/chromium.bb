@@ -229,8 +229,8 @@ TEST_F(TouchCalibratorControllerTest, CustomCalibration) {
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(touch_display.id());
 
-  uint32_t touch_device_identifier =
-      display::TouchCalibrationData::GenerateTouchDeviceIdentifier(touchdevice);
+  display::TouchDeviceIdentifier touch_device_identifier =
+      display::TouchDeviceIdentifier::FromDevice(touchdevice);
   EXPECT_TRUE(info.HasTouchCalibrationData(touch_device_identifier));
   EXPECT_EQ(calibration_data,
             info.GetTouchCalibrationData(touch_device_identifier));
@@ -273,7 +273,7 @@ TEST_F(TouchCalibratorControllerTest, CustomCalibrationInvalidTouchId) {
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(touch_display.id());
 
-  uint32_t random_touch_device_identifier = 123456;
+  display::TouchDeviceIdentifier random_touch_device_identifier(123456);
   EXPECT_TRUE(info.HasTouchCalibrationData(random_touch_device_identifier));
   EXPECT_EQ(calibration_data,
             info.GetTouchCalibrationData(random_touch_device_identifier));

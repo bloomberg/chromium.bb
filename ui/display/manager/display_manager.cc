@@ -510,7 +510,8 @@ void DisplayManager::RegisterDisplayProperty(
     float device_scale_factor
 #if defined(OS_CHROMEOS)
     ,
-    std::map<uint32_t, TouchCalibrationData>* touch_calibration_data_map
+    std::map<TouchDeviceIdentifier, TouchCalibrationData>*
+        touch_calibration_data_map
 #endif
     ) {
   if (display_info_.find(display_id) == display_info_.end())
@@ -1114,7 +1115,7 @@ void DisplayManager::SetTouchCalibrationData(
     int64_t display_id,
     const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
     const gfx::Size& display_bounds,
-    uint32_t touch_device_identifier) {
+    const TouchDeviceIdentifier& touch_device_identifier) {
   // If the touch device identifier is associated with a touch device for the
   // then do not perform any calibration. We do not want to modify any
   // calibration information related to the internal display.
@@ -1147,7 +1148,7 @@ void DisplayManager::SetTouchCalibrationData(
 
 void DisplayManager::ClearTouchCalibrationData(
     int64_t display_id,
-    base::Optional<uint32_t> touch_device_identifier) {
+    base::Optional<TouchDeviceIdentifier> touch_device_identifier) {
   bool update = false;
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {

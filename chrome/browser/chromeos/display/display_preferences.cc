@@ -125,7 +125,8 @@ bool ValueToTouchData(const base::DictionaryValue& value,
 
 bool ValueToTouchDataMap(
     const base::DictionaryValue& value,
-    std::map<uint32_t, display::TouchCalibrationData>* touch_calibration_map) {
+    std::map<display::TouchDeviceIdentifier, display::TouchCalibrationData>*
+        touch_calibration_map) {
   const base::DictionaryValue* map_dictionary;
 
   if (!value.GetDictionary(kTouchCalibrationMap, &map_dictionary))
@@ -141,7 +142,8 @@ bool ValueToTouchDataMap(
     display::TouchCalibrationData data;
     if (!ValueToTouchData(*data_dict, &data))
       return false;
-    touch_calibration_map->emplace(touch_device_identifier, data);
+    touch_calibration_map->emplace(
+        display::TouchDeviceIdentifier(touch_device_identifier), data);
   }
   return true;
 }
@@ -177,7 +179,8 @@ void TouchDataToValue(
 
 // Stores the entire touch calibration data map to the dictionary.
 void TouchDataMapToValue(
-    const std::map<uint32_t, display::TouchCalibrationData>& touch_data_map,
+    const std::map<display::TouchDeviceIdentifier,
+                   display::TouchCalibrationData>& touch_data_map,
     base::DictionaryValue* value) {
   std::unique_ptr<base::DictionaryValue> touch_data_map_dictionary =
       std::make_unique<base::DictionaryValue>();
@@ -187,7 +190,7 @@ void TouchDataMapToValue(
         std::make_unique<base::DictionaryValue>();
     TouchDataToValue(pair.second, touch_data_dictionary.get());
 
-    touch_data_map_dictionary->SetDictionary(base::UintToString(pair.first),
+    touch_data_map_dictionary->SetDictionary(pair.first.ToString(),
                                              std::move(touch_data_dictionary));
   }
   value->SetDictionary(kTouchCalibrationMap,
@@ -286,8 +289,9 @@ void LoadDisplayProperties() {
     if (ValueToTouchData(*dict_value, &calibration_data))
       calibration_data_to_set = &calibration_data;
 
-    std::map<uint32_t, display::TouchCalibrationData> calibration_data_map;
-    std::map<uint32_t, display::TouchCalibrationData>*
+    std::map<display::TouchDeviceIdentifier, display::TouchCalibrationData>
+        calibration_data_map;
+    std::map<display::TouchDeviceIdentifier, display::TouchCalibrationData>*
         calibration_data_map_to_set = nullptr;
     if (ValueToTouchDataMap(*dict_value, &calibration_data_map))
       calibration_data_map_to_set = &calibration_data_map;
@@ -295,8 +299,8 @@ void LoadDisplayProperties() {
     // Migrate legacy touch calibration data to updated model. Use it as a
     // fallback mechanism.
     if (calibration_data_to_set) {
-      const uint32_t fallback_identifier =
-          display::TouchCalibrationData::GetFallbackTouchDeviceIdentifier();
+      const display::TouchDeviceIdentifier& fallback_identifier =
+          display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
       // Store the legacy cailbration data in the calibration data map if we
       // have a non-null calibration data map with no previous fallback
       // calibration data stored in it.
@@ -416,8 +420,8 @@ void StoreCurrentDisplayProperties() {
                           property_value.get());
 
       // Ensure that the legacy data is still stored just in case.
-      uint32_t fallback_identifier =
-          display::TouchCalibrationData::GetFallbackTouchDeviceIdentifier();
+      const display::TouchDeviceIdentifier& fallback_identifier =
+          display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
       if (info.HasTouchCalibrationData(fallback_identifier)) {
         TouchDataToValue(info.GetTouchCalibrationData(fallback_identifier),
                          property_value.get());

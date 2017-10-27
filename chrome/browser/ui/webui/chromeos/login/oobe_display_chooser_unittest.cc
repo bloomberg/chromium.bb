@@ -79,8 +79,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
 
   // Associate touchscreen device with display
   display_info[1].AddTouchDevice(
-      display::TouchCalibrationData::GenerateTouchDeviceIdentifier(
-          touchscreen));
+      display::TouchDeviceIdentifier::FromDevice(touchscreen));
   display_manager()->OnNativeDisplaysChanged(display_info);
   base::RunLoop().RunUntilIdle();
 
@@ -115,8 +114,7 @@ TEST_F(OobeDisplayChooserTest, DontSwitchFromTouch) {
 
   // Associate touchscreen device with display
   display_info[1].AddTouchDevice(
-      display::TouchCalibrationData::GenerateTouchDeviceIdentifier(
-          touchscreen));
+      display::TouchDeviceIdentifier::FromDevice(touchscreen));
   display_manager()->OnNativeDisplaysChanged(display_info);
   base::RunLoop().RunUntilIdle();
 

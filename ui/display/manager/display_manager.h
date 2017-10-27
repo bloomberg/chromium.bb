@@ -202,7 +202,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       float device_scale_factor
 #if defined(OS_CHROMEOS)
       ,
-      std::map<uint32_t, TouchCalibrationData>* touch_calibration_data_map
+      std::map<TouchDeviceIdentifier, TouchCalibrationData>*
+          touch_calibration_data_map
 #endif
       );
 
@@ -334,10 +335,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       int64_t display_id,
       const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
       const gfx::Size& display_bounds,
-      uint32_t touch_device_identifier);
+      const TouchDeviceIdentifier& touch_device_identifier);
   void ClearTouchCalibrationData(
       int64_t display_id,
-      base::Optional<uint32_t> touch_device_identifier);
+      base::Optional<TouchDeviceIdentifier> touch_device_identifier);
 #endif
 
   // Sets/gets default multi display mode.
