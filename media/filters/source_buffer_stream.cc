@@ -13,9 +13,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/demuxer_memory_limit.h"
 #include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
-#include "media/filters/source_buffer_platform.h"
 #include "media/filters/source_buffer_range_by_dts.h"
 #include "media/filters/source_buffer_range_by_pts.h"
 
@@ -194,7 +194,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       range_for_next_append_(ranges_.end()),
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp),
-      memory_limit_(kSourceBufferAudioMemoryLimit) {
+      memory_limit_(kDemuxerStreamAudioMemoryLimit) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
@@ -209,7 +209,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       range_for_next_append_(ranges_.end()),
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp),
-      memory_limit_(kSourceBufferVideoMemoryLimit) {
+      memory_limit_(kDemuxerStreamVideoMemoryLimit) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
@@ -225,7 +225,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       range_for_next_append_(ranges_.end()),
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp),
-      memory_limit_(kSourceBufferAudioMemoryLimit) {}
+      memory_limit_(kDemuxerStreamAudioMemoryLimit) {}
 
 template <typename RangeClass>
 SourceBufferStream<RangeClass>::~SourceBufferStream() {}

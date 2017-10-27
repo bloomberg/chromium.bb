@@ -195,18 +195,6 @@ source_set("filters") {
       "h264_bitstream_buffer.h",
     ]
   }
-
-  if (use_low_memory_buffer) {
-    sources += [
-      "source_buffer_platform.h",
-      "source_buffer_platform_lowmem.cc",
-    ]
-  } else {
-    sources += [
-      "source_buffer_platform.cc",
-      "source_buffer_platform.h",
-    ]
-  }
 }
 
 source_set("perftests") {
