@@ -332,12 +332,6 @@ LayoutPoint InlineBox::PhysicalLocation() const {
   return rect.Location();
 }
 
-void InlineBox::LogicalRectToPhysicalRect(LayoutRect& rect) const {
-  if (!IsHorizontal())
-    rect = rect.TransposedRect();
-  FlipForWritingMode(rect);
-}
-
 void InlineBox::FlipForWritingMode(FloatRect& rect) const {
   if (!UNLIKELY(GetLineLayoutItem().HasFlippedBlocksWritingMode()))
     return;
