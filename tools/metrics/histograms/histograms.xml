@@ -80793,6 +80793,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Stability.RendererUnresponsiveBeforeTermination"
+    enum="BooleanUnresponsive">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    If the renderer is considered unresponsive from the browser's perspective
+    before the process is terminated. This metric is being used to figure out
+    crash reports that have all idle threads and perhaps the process is being
+    terminated when it shouldn't be. crbug.com/615090.
+  </summary>
+</histogram>
+
 <histogram name="Stars.Goog_Related" units="%">
   <owner>yefim@chromium.org</owner>
   <summary>

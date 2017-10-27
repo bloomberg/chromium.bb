@@ -3924,6 +3924,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Unknown"/>
 </enum>
 
+<enum name="BooleanUnresponsive">
+  <int value="0" label="Responsive"/>
+  <int value="1" label="Unresponsive"/>
+</enum>
+
 <enum name="BooleanUsage">
   <int value="0" label="Not Used"/>
   <int value="1" label="Used"/>

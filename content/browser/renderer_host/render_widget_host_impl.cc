@@ -1068,6 +1068,10 @@ void RenderWidgetHostImpl::RestartHangMonitorTimeoutIfNecessary() {
   }
 }
 
+bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
+  return is_unresponsive_;
+}
+
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   LogHangMonitorUnresponsive();
   hang_start_time_ = TimeTicks();
