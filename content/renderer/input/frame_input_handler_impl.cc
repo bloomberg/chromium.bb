@@ -268,8 +268,7 @@ void FrameInputHandlerImpl::CollapseSelection() {
   if (range.IsNull())
     return;
 
-  HandlingState handling_state(render_frame_.get(),
-                               UpdateState::kIsSelectingRange);
+  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->SelectRange(
       blink::WebRange(range.EndOffset(), 0),
       blink::WebLocalFrame::kHideSelectionHandle,
@@ -290,8 +289,7 @@ void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
   if (!render_frame_)
     return;
   RenderViewImpl* render_view = render_frame_->render_view();
-  HandlingState handling_state(render_frame_.get(),
-                               UpdateState::kIsSelectingRange);
+  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->SelectRange(
       render_view->ConvertWindowPointToViewport(base),
       render_view->ConvertWindowPointToViewport(extent));
@@ -320,8 +318,7 @@ void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(
   if (start - end > range.length() || range.StartOffset() + start < 0)
     return;
 
-  HandlingState handling_state(render_frame_.get(),
-                               UpdateState::kIsSelectingRange);
+  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   // A negative adjust amount moves the selection towards the beginning of
   // the document, a positive amount moves the selection towards the end of
   // the document.
@@ -343,8 +340,7 @@ void FrameInputHandlerImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
 
   if (!render_frame_)
     return;
-  HandlingState handling_state(render_frame_.get(),
-                               UpdateState::kIsSelectingRange);
+  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->MoveRangeSelectionExtent(
       render_frame_->render_view()->ConvertWindowPointToViewport(extent));
 }
@@ -401,7 +397,7 @@ void FrameInputHandlerImpl::ExecuteCommandOnMainThread(
   if (!render_frame_)
     return;
 
-  HandlingState handling_state(render_frame_.get(), update_state);
+  HandlingState handling_state(render_frame_, update_state);
   render_frame_->GetWebFrame()->ExecuteCommand(
       blink::WebString::FromUTF8(command));
 }
@@ -425,7 +421,7 @@ void FrameInputHandlerImpl::BindNow(mojom::FrameInputHandlerRequest request) {
 }
 
 FrameInputHandlerImpl::HandlingState::HandlingState(
-    RenderFrameImpl* render_frame,
+    const base::WeakPtr<RenderFrameImpl>& render_frame,
     UpdateState state)
     : render_frame_(render_frame),
       original_select_range_value_(render_frame->handling_select_range()),
@@ -442,6 +438,9 @@ FrameInputHandlerImpl::HandlingState::HandlingState(
 }
 
 FrameInputHandlerImpl::HandlingState::~HandlingState() {
+  // RenderFrame may have been destroyed while this object was on the stack.
+  if (!render_frame_)
+    return;
   render_frame_->set_handling_select_range(original_select_range_value_);
   render_frame_->set_is_pasting(original_pasting_value_);
 }
