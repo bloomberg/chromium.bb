@@ -378,6 +378,10 @@ TEST(ValuesTest, FindKey) {
   Value dict(std::move(storage));
   EXPECT_NE(nullptr, dict.FindKey("foo"));
   EXPECT_EQ(nullptr, dict.FindKey("baz"));
+
+  // Single not found key.
+  bool found = dict.FindKey("notfound");
+  EXPECT_FALSE(found);
 }
 
 TEST(ValuesTest, FindKeyChangeValue) {
@@ -603,17 +607,8 @@ TEST(ValuesTest, FindPath) {
   root.SetKey("foo", std::move(foo));
 
   // No key (stupid but well-defined and takes work to prevent).
-  Value* found = root.FindPath({});
+  Value* found = root.FindPath(std::vector<StringPiece>{});
   EXPECT_EQ(&root, found);
-
-  // Single not found key.
-  found = root.FindPath({"notfound"});
-  EXPECT_FALSE(found);
-
-  // Single found key.
-  found = root.FindPath({"foo"});
-  ASSERT_TRUE(found);
-  EXPECT_TRUE(found->is_dict());
 
   // Double key, second not found.
   found = root.FindPath(std::vector<StringPiece>{"foo", "notfound"});
@@ -629,8 +624,8 @@ TEST(ValuesTest, FindPath) {
 TEST(ValuesTest, SetPath) {
   Value root(Value::Type::DICTIONARY);
 
-  Value* inserted = root.SetPath({"one"}, Value(123));
-  Value* found = root.FindPathOfType({"one"}, Value::Type::INTEGER);
+  Value* inserted = root.SetPath({"one", "two"}, Value(123));
+  Value* found = root.FindPathOfType({"one", "two"}, Value::Type::INTEGER);
   ASSERT_TRUE(found);
   EXPECT_EQ(inserted, found);
   EXPECT_EQ(123, found->GetInt());
@@ -682,14 +677,14 @@ TEST(ValuesTest, RemovePath) {
   EXPECT_FALSE(root.RemovePath({"one", "two", "three"}));
 
   // Intermediate empty dictionaries should be cleared.
-  EXPECT_FALSE(root.FindPath({"one"}));
+  EXPECT_FALSE(root.FindKey("one"));
 
   root.SetPath({"one", "two", "three"}, Value(123));
   root.SetPath({"one", "two", "four"}, Value(124));
 
   EXPECT_TRUE(root.RemovePath(std::vector<StringPiece>{"one", "two", "three"}));
   // Intermediate non-empty dictionaries should be kept.
-  EXPECT_TRUE(root.FindPath({"one"}));
+  EXPECT_TRUE(root.FindKey("one"));
   EXPECT_TRUE(root.FindPath({"one", "two"}));
   EXPECT_TRUE(root.FindPath({"one", "two", "four"}));
 }

@@ -136,7 +136,7 @@ class DisplayPreferencesTest : public ash::AshTestBase {
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     base::DictionaryValue* pref_data = update.Get();
 
-    base::Value* layout_value = pref_data->FindPath({name});
+    base::Value* layout_value = pref_data->FindKey(name);
     if (layout_value) {
       return static_cast<base::DictionaryValue*>(layout_value)
           ->Get(key, out_value);
@@ -152,7 +152,7 @@ class DisplayPreferencesTest : public ash::AshTestBase {
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     base::DictionaryValue* pref_data = update.Get();
 
-    base::Value* layout_value = pref_data->FindPath({name});
+    base::Value* layout_value = pref_data->FindKey(name);
     if (layout_value) {
       static_cast<base::DictionaryValue*>(layout_value)
           ->Set(key, std::move(value));

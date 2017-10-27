@@ -217,8 +217,8 @@ void RecordCapability(size_t* call_count,
   ++(*call_count);
   const base::Value* capabilities = nullptr;
   if (capability) {
-    capabilities = capability->FindPathOfType({printing::kSettingCapabilities},
-                                              base::Value::Type::DICTIONARY);
+    capabilities = capability->FindKeyOfType(printing::kSettingCapabilities,
+                                             base::Value::Type::DICTIONARY);
   }
   *capability_out =
       capabilities ? base::DictionaryValue::From(

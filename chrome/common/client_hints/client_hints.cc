@@ -34,7 +34,7 @@ void GetAllowedClientHintsFromSource(
     DCHECK(ContentSettingsPattern::Wildcard() == rule.secondary_pattern);
     DCHECK(rule.setting_value->is_dict());
     const base::Value* expiration_time =
-        rule.setting_value->FindPath({"expiration_time"});
+        rule.setting_value->FindKey("expiration_time");
     DCHECK(expiration_time->is_double());
 
     if (base::Time::Now().ToDoubleT() > expiration_time->GetDouble()) {
@@ -42,8 +42,7 @@ void GetAllowedClientHintsFromSource(
       return;
     }
 
-    const base::Value* list_value =
-        rule.setting_value->FindPath({"client_hints"});
+    const base::Value* list_value = rule.setting_value->FindKey("client_hints");
     DCHECK(list_value->is_list());
     const base::Value::ListStorage& client_hints_list = list_value->GetList();
     for (const auto& client_hint : client_hints_list) {
