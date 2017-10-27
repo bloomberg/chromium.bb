@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "content/browser/frame_host/debug_urls.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -88,11 +89,15 @@ bool WebUIControllerFactoryRegistry::IsURLAcceptableForWebUI(
     BrowserContext* browser_context,
     const GURL& url) const {
   return UseWebUIForURL(browser_context, url) ||
-      // It's possible to load about:blank in a Web UI renderer.
-      // See http://crbug.com/42547
-      url.spec() == url::kAboutBlankURL ||
-      // javascript: and debug URLs like chrome://kill are allowed.
-      IsRendererDebugURL(url);
+         // It's possible to load about:blank in a Web UI renderer.
+         // See http://crbug.com/42547
+         url.spec() == url::kAboutBlankURL ||
+         // javascript: and debug URLs like chrome://kill are allowed.
+         IsRendererDebugURL(url) ||
+         // Temporarily allow the embedder to whitelist URLs allowed in WebUI
+         // until crbug.com/768526 is resolved.
+         GetContentClient()->browser()->IsURLAcceptableForWebUI(browser_context,
+                                                                url);
 }
 
 WebUIControllerFactoryRegistry::WebUIControllerFactoryRegistry() {
