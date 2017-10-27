@@ -81,11 +81,12 @@ class FrameInputHandlerImpl : public mojom::FrameInputHandler {
 
   class HandlingState {
    public:
-    HandlingState(RenderFrameImpl* render_frame, UpdateState state);
+    HandlingState(const base::WeakPtr<RenderFrameImpl>& render_frame,
+                  UpdateState state);
     ~HandlingState();
 
    private:
-    RenderFrameImpl* render_frame_;
+    base::WeakPtr<RenderFrameImpl> render_frame_;
     bool original_select_range_value_;
     bool original_pasting_value_;
   };
