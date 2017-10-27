@@ -246,6 +246,12 @@ bool HFSIterator::Open() {
     return false;
   }
 
+  if (volume_header_.blockSize == 0) {
+    DLOG(ERROR) << "Invalid volume header block size "
+                << volume_header_.blockSize;
+    return false;
+  }
+
   if (!ReadCatalogFile())
     return false;
 
