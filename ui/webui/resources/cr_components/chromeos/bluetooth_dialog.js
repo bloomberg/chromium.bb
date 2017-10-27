@@ -37,7 +37,7 @@ Polymer({
     },
 
     /** Dialog title */
-    title: String,
+    dialogTitle: String,
 
     /**
      * Current Pairing device.
