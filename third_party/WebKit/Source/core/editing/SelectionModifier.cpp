@@ -139,7 +139,7 @@ static bool IsBaseStart(const VisibleSelection& visible_selection,
 // handle base/extent don't match to start/end, e.g. granularity != character,
 // and start/end adjustment in |visibleSelection::validate()| for range
 // selection.
-static SelectionInDOMTree PrepareToExtendSeelction(
+static SelectionInDOMTree PrepareToExtendSelection(
     const VisibleSelection& visible_selection,
     SelectionModifyDirection direction) {
   if (visible_selection.Start().IsNull())
@@ -590,7 +590,7 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
 
   if (alter == SelectionModifyAlteration::kExtend) {
     selection_ =
-        CreateVisibleSelection(PrepareToExtendSeelction(selection_, direction));
+        CreateVisibleSelection(PrepareToExtendSelection(selection_, direction));
   }
 
   bool was_range = selection_.IsRange();
@@ -719,7 +719,7 @@ bool SelectionModifier::ModifyWithPageGranularity(
       GetFrame()->GetDocument()->Lifecycle());
 
   if (alter == SelectionModifyAlteration::kExtend) {
-    selection_ = CreateVisibleSelection(PrepareToExtendSeelction(
+    selection_ = CreateVisibleSelection(PrepareToExtendSelection(
         selection_, direction == SelectionModifyVerticalDirection::kUp
                         ? SelectionModifyDirection::kBackward
                         : SelectionModifyDirection::kForward));
