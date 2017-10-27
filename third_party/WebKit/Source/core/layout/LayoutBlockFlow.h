@@ -150,6 +150,42 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                       position, indent_text, logical_height);
   }
 
+  LayoutUnit AvailableLogicalWidthForAvoidingFloats(
+      LayoutUnit position,
+      LayoutUnit logical_height = LayoutUnit()) const {
+    return (LogicalRightOffsetForAvoidingFloats(position, logical_height) -
+            LogicalLeftOffsetForAvoidingFloats(position, logical_height))
+        .ClampNegativeToZero();
+  }
+  LayoutUnit LogicalLeftOffsetForAvoidingFloats(
+      LayoutUnit position,
+      LayoutUnit logical_height = LayoutUnit()) const {
+    return LogicalLeftFloatOffsetForAvoidingFloats(
+        position, LogicalLeftOffsetForContent(), logical_height);
+  }
+  LayoutUnit LogicalRightOffsetForAvoidingFloats(
+      LayoutUnit position,
+      LayoutUnit logical_height = LayoutUnit()) const {
+    return LogicalRightFloatOffsetForAvoidingFloats(
+        position, LogicalRightOffsetForContent(), logical_height);
+  }
+  LayoutUnit StartOffsetForAvoidingFloats(
+      LayoutUnit position,
+      LayoutUnit logical_height = LayoutUnit()) const {
+    return Style()->IsLeftToRightDirection()
+               ? LogicalLeftOffsetForAvoidingFloats(position, logical_height)
+               : LogicalWidth() - LogicalRightOffsetForAvoidingFloats(
+                                      position, logical_height);
+  }
+  LayoutUnit EndOffsetForAvoidingFloats(
+      LayoutUnit position,
+      LayoutUnit logical_height = LayoutUnit()) const {
+    return !Style()->IsLeftToRightDirection()
+               ? LogicalLeftOffsetForAvoidingFloats(position, logical_height)
+               : LogicalWidth() - LogicalRightOffsetForAvoidingFloats(
+                                      position, logical_height);
+  }
+
   const LineBoxList& LineBoxes() const { return line_boxes_; }
   LineBoxList* LineBoxes() { return &line_boxes_; }
   InlineFlowBox* FirstLineBox() const { return line_boxes_.FirstLineBox(); }
@@ -570,6 +606,15 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   LayoutUnit LogicalLeftFloatOffsetForLine(LayoutUnit logical_top,
                                            LayoutUnit fixed_offset,
                                            LayoutUnit logical_height) const;
+
+  LayoutUnit LogicalLeftFloatOffsetForAvoidingFloats(
+      LayoutUnit logical_top,
+      LayoutUnit fixed_offset,
+      LayoutUnit logical_height) const;
+  LayoutUnit LogicalRightFloatOffsetForAvoidingFloats(
+      LayoutUnit logical_top,
+      LayoutUnit fixed_offset,
+      LayoutUnit logical_height) const;
 
   LayoutUnit LogicalRightOffsetForPositioningFloat(
       LayoutUnit logical_top,

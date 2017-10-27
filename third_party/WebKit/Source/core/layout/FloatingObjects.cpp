@@ -626,6 +626,28 @@ LayoutUnit FloatingObjects::LogicalRightOffset(LayoutUnit fixed_offset,
   return std::min(fixed_offset, adapter.Offset());
 }
 
+LayoutUnit FloatingObjects::LogicalLeftOffsetForAvoidingFloats(
+    LayoutUnit fixed_offset,
+    LayoutUnit logical_top,
+    LayoutUnit logical_height) {
+  ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::kFloatLeft> adapter(
+      layout_object_, logical_top, logical_top + logical_height, fixed_offset);
+  PlacedFloatsTree().AllOverlapsWithAdapter(adapter);
+
+  return adapter.Offset();
+}
+
+LayoutUnit FloatingObjects::LogicalRightOffsetForAvoidingFloats(
+    LayoutUnit fixed_offset,
+    LayoutUnit logical_top,
+    LayoutUnit logical_height) {
+  ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::kFloatRight> adapter(
+      layout_object_, logical_top, logical_top + logical_height, fixed_offset);
+  PlacedFloatsTree().AllOverlapsWithAdapter(adapter);
+
+  return std::min(fixed_offset, adapter.Offset());
+}
+
 FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
     : floating_object(nullptr), dirty(true) {}
 
