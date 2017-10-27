@@ -22,23 +22,11 @@ RenderingStatsInstrumentation::RenderingStatsInstrumentation()
 
 RenderingStatsInstrumentation::~RenderingStatsInstrumentation() {}
 
-RenderingStats RenderingStatsInstrumentation::impl_thread_rendering_stats() {
+RenderingStats RenderingStatsInstrumentation::TakeImplThreadRenderingStats() {
   base::AutoLock scoped_lock(lock_);
-  return impl_thread_rendering_stats_;
-}
-
-RenderingStats RenderingStatsInstrumentation::GetRenderingStats() {
-  base::AutoLock scoped_lock(lock_);
-  RenderingStats rendering_stats;
-  rendering_stats = impl_thread_rendering_stats_accu_;
-  rendering_stats.Add(impl_thread_rendering_stats_);
-  return rendering_stats;
-}
-
-void RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats() {
-  base::AutoLock scoped_lock(lock_);
-  impl_thread_rendering_stats_accu_.Add(impl_thread_rendering_stats_);
+  auto stats = impl_thread_rendering_stats_;
   impl_thread_rendering_stats_ = RenderingStats();
+  return stats;
 }
 
 void RenderingStatsInstrumentation::IncrementFrameCount(int64_t count) {
