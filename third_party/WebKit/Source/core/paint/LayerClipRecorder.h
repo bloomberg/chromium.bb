@@ -55,7 +55,7 @@ class CORE_EXPORT LayerClipRecorder {
 
   // Build a vector of the border radius clips that should be applied to
   // the given PaintLayer, walking up the paint layer tree to the clip_root.
-  // The offset_within_layer is an offset to apply to the clip to position it
+  // The fragment_offset is an offset to apply to the clip to position it
   // in the required clipping coordinates (for cases when the painting
   // coordinate system is offset from the layer coordinate system).
   // cross_composited_scrollers should be true when the search for clips should
@@ -66,7 +66,7 @@ class CORE_EXPORT LayerClipRecorder {
   static void CollectRoundedRectClips(
       const PaintLayer&,
       const PaintLayer* clip_root,
-      const LayoutPoint& offset_within_layer,
+      const LayoutPoint& fragment_offset,
       bool cross_composited_scrollers,
       BorderRadiusClippingRule,
       Vector<FloatRoundedRect>& rounded_rect_clips);
