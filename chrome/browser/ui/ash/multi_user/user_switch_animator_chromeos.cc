@@ -8,12 +8,12 @@
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
-#include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "ui/app_list/presenter/app_list.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
@@ -94,6 +94,18 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
   window_list->push_back(*it);
 }
 
+void Unminimize(aura::Window* window) {
+  window->SetProperty(
+      aura::client::kShowStateKey,
+      window->GetProperty(aura::client::kPreMinimizedShowStateKey));
+  window->ClearProperty(aura::client::kPreMinimizedShowStateKey);
+}
+
+bool IsMinimized(aura::Window* window) {
+  return window->GetProperty(aura::client::kShowStateKey) ==
+         ui::SHOW_STATE_MINIMIZED;
+}
+
 }  // namespace
 
 UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
@@ -131,8 +143,10 @@ bool UserSwitchAnimatorChromeOS::CoversScreen(aura::Window* window) {
   // Full screen covers the screen naturally. Since a normal window can have the
   // same size as the work area, we only compare the bounds against the work
   // area.
-  if (ash::wm::GetWindowState(window)->IsFullscreen())
+  if (window->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_FULLSCREEN) {
     return true;
+  }
   gfx::Rect bounds = window->GetBoundsInScreen();
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
@@ -246,8 +260,6 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
         // window order (crbug.com/424307).
         PutMruWindowLast(&(user_pair.second));
         for (auto* window : user_pair.second) {
-          auto* window_state = ash::wm::GetWindowState(window);
-
           // Minimized visiting windows (minimized windows with an owner
           // different than that of the for_show_account_id) should retrun to
           // their
@@ -256,9 +268,9 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
               owner_->window_to_entry().find(window);
           DCHECK(itr != owner_->window_to_entry().end());
           if (show_for_account_id != itr->second->owner() &&
-              window_state->IsMinimized()) {
+              IsMinimized(window)) {
             owner_->ShowWindowForUserIntern(window, itr->second->owner());
-            window_state->Unminimize();
+            Unminimize(window);
             continue;
           }
 
@@ -311,9 +323,8 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
           ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList();
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
-        ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
         if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&
-            !window_state->IsMinimized()) {
+            !IsMinimized(window)) {
           // Several unit tests come here without an activation client.
           wm::ActivationClient* client =
               wm::GetActivationClient(window->GetRootWindow());

@@ -12,7 +12,6 @@
 #include "ash/public/interfaces/window_actions.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
-#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -515,7 +514,8 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
       (owner == account_id && IsWindowOnDesktopOfUser(window, account_id)))
     return false;
 
-  bool minimized = ash::wm::GetWindowState(window)->IsMinimized();
+  bool minimized = window->GetProperty(aura::client::kShowStateKey) ==
+                   ui::SHOW_STATE_MINIMIZED;
   // Check that we are not trying to transfer ownership of a minimized window.
   if (account_id != owner && minimized)
     return false;
