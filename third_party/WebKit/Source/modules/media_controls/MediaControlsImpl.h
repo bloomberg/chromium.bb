@@ -72,7 +72,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
   ~MediaControlsImpl() = default;
 
-  // Are the modern media controls enabled?
+  // Returns whether the ModernMediaControlsEnabled runtime flag is on.
   static bool IsModern();
 
   // Node override.

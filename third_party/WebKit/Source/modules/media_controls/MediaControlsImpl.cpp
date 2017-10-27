@@ -267,9 +267,9 @@ class MediaControlsImpl::MediaElementMutationCallback
   Member<MutationObserver> observer_;
 };
 
-// static.
+// static
 bool MediaControlsImpl::IsModern() {
-  return blink::RuntimeEnabledFeatures::ModernMediaControlsEnabled();
+  return RuntimeEnabledFeatures::ModernMediaControlsEnabled();
 }
 
 MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
