@@ -86,6 +86,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
@@ -1626,6 +1627,22 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
                                    gfx::Range::InvalidRange(), 4, 4));
 
   view_->ImeCancelComposition();
+  EXPECT_FALSE(view_->has_composition_text_);
+}
+
+// Checks that we reset has_composition_text_ to false upon when the focused
+// node is changed.
+TEST_F(RenderWidgetHostViewAuraTest, FocusedNodeChanged) {
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  ActivateViewForTextInputManager(view_, ui::TEXT_INPUT_TYPE_TEXT);
+
+  ui::CompositionText composition_text;
+  composition_text.text = base::ASCIIToUTF16("hello");
+  view_->SetCompositionText(composition_text);
+  EXPECT_TRUE(view_->has_composition_text_);
+
+  view_->FocusedNodeChanged(true, gfx::Rect());
   EXPECT_FALSE(view_->has_composition_text_);
 }
 
@@ -6437,6 +6454,19 @@ TEST_F(InputMethodStateAuraTest, ImeCancelCompositionForAllViews) {
     // The composition must have been canceled.
     EXPECT_FALSE(has_composition_text());
   }
+}
+
+// This test verifies that when the focused node is changed,
+// RenderWidgetHostViewAura will tell InputMethodAuraLinux to cancel the current
+// composition.
+TEST_F(InputMethodStateAuraTest, ImeFocusedNodeChanged) {
+  ActivateViewForTextInputManager(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
+  // There is no composition in the beginning.
+  EXPECT_FALSE(has_composition_text());
+  SetHasCompositionTextToTrue();
+  tab_view()->FocusedNodeChanged(true, gfx::Rect());
+  // The composition must have been canceled.
+  EXPECT_FALSE(has_composition_text());
 }
 
 }  // namespace content
