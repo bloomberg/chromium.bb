@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 
@@ -55,7 +56,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &NavigationURLLoaderImplCore::Start, core_, resource_context,
-          storage_partition->GetURLRequestContext(),
+          base::Unretained(storage_partition->GetURLRequestContext()),
           base::Unretained(storage_partition->GetFileSystemContext()),
           service_worker_handle_core, appcache_handle_core,
           base::Passed(&request_info), base::Passed(&navigation_ui_data)));
