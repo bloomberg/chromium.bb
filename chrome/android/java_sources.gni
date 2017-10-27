@@ -778,6 +778,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/page_info/CertificateViewer.java",
   "java/src/org/chromium/chrome/browser/page_info/ConnectionInfoPopup.java",
   "java/src/org/chromium/chrome/browser/page_info/PageInfoPopup.java",
+  "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmark.java",
   "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksProviderIterator.java",
   "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksReader.java",
   "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksShim.java",
