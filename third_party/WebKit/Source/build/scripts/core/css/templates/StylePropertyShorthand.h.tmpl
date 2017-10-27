@@ -55,7 +55,7 @@ class StylePropertyShorthand {
   CSSPropertyID m_shorthandID;
 };
 
-{% for property_id, property in properties.items() %}
+{% for property in properties %}
 const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand();
 {% endfor %}
 

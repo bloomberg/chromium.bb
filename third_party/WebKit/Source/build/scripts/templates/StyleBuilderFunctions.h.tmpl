@@ -16,12 +16,11 @@ class StyleResolverState;
 class StyleBuilderFunctions {
  public:
 
-  {% for property_id, property in properties.items()
-         if property.should_declare_functions
-            and not property.use_api_in_stylebuilder %}
-  static void applyInitial{{property_id}}(StyleResolverState&);
-  static void applyInherit{{property_id}}(StyleResolverState&);
-  static void applyValue{{property_id}}(StyleResolverState&, const CSSValue&);
+  {% for property in properties if property.should_declare_functions
+      and not property.use_api_in_stylebuilder %}
+  static void applyInitial{{property.property_id}}(StyleResolverState&);
+  static void applyInherit{{property.property_id}}(StyleResolverState&);
+  static void applyValue{{property.property_id}}(StyleResolverState&, const CSSValue&);
 
   {% endfor %}
 

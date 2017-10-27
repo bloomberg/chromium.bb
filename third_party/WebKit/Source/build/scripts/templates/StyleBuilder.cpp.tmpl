@@ -22,12 +22,12 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
                                  bool isInitial,
                                  bool isInherit) {
   switch (property) {
-    {% for property_id, property in properties.items()
+    {% for property in properties
         if property.should_declare_functions or property.use_handlers_for %}
-    {% set used_property = properties[property.use_handlers_for] or property %}
+    {% set used_property = properties_by_id[property.use_handlers_for] or property %}
     {% set used_property_id = used_property.property_id %}
     {% if used_property.use_api_in_stylebuilder %}
-    case {{property_id}}:
+    case {{property.property_id}}:
       if (isInitial)
         Get{{used_property_id}}API().ApplyInitial(state);
       else if (isInherit)
@@ -36,7 +36,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
         Get{{used_property_id}}API().ApplyValue(state, value);
       return;
       {% else %}
-    case {{property_id}}:
+    case {{property.property_id}}:
       if (isInitial)
         StyleBuilderFunctions::applyInitial{{used_property_id}}(state);
       else if (isInherit)
@@ -52,8 +52,8 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
       DCHECK(!isInherit);
       StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
       return;
-    {% for property_id, property in properties.items() if property.direction_aware_options %}
-    case {{property_id}}:
+    {% for property in properties if property.direction_aware_options %}
+    case {{property.property_id}}:
     {% endfor %}
     {
       CSSPropertyID resolvedProperty =
@@ -64,8 +64,8 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
       ApplyProperty(resolvedProperty, state, value);
       return;
     }
-    {% for property_id, property in properties.items() if property.builder_skip %}
-    case {{property_id}}:
+    {% for property in properties if property.builder_skip %}
+    case {{property.property_id}}:
     {% endfor %}
       return;
     default:

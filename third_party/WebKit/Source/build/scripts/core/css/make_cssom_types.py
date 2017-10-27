@@ -25,9 +25,9 @@ class CSSOMTypesWriter(json5_generator.Writer):
 
         self._input_files = json5_file_paths
         self._properties = (
-            css_properties.CSSProperties(json5_file_paths)).properties
+            css_properties.CSSProperties(json5_file_paths)).longhands
 
-        for property_ in self._properties.values():
+        for property_ in self._properties:
             types = []
             # Expand types
             for single_type in property_['typedom_types']:

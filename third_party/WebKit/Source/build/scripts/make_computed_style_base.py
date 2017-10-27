@@ -485,13 +485,13 @@ def _get_properties_ranking(properties_ranking_file, partition_rule):
                      for i in range(len(properties_ranking))]))
 
 
-def _evaluate_rare_non_inherited_group(all_properties, properties_ranking_file,
+def _evaluate_rare_non_inherited_group(properties, properties_ranking_file,
                                        number_of_layer, partition_rule=None):
     """Re-evaluate the grouping of RareNonInherited groups based on each property's
     popularity.
 
     Args:
-        all_properties: list of all css properties
+        properties: list of all css properties
         properties_ranking_file: file path to the ranking file
         number_of_layer: the number of group to split
         partition_rule: cumulative distribution over properties_ranking
@@ -506,7 +506,7 @@ def _evaluate_rare_non_inherited_group(all_properties, properties_ranking_file,
                    for i in range(number_of_layer)]
     properties_ranking = _get_properties_ranking(properties_ranking_file, partition_rule)
 
-    for property_ in all_properties:
+    for property_ in properties:
         if property_["field_group"] is not None and "*" in property_["field_group"] \
            and not property_["inherited"] and property_["name"] in properties_ranking:
 
@@ -521,13 +521,13 @@ def _evaluate_rare_non_inherited_group(all_properties, properties_ranking_file,
             property_["field_group"] = "->".join(group_tree)
 
 
-def _evaluate_rare_inherit_group(all_properties, properties_ranking_file,
+def _evaluate_rare_inherit_group(properties, properties_ranking_file,
                                  number_of_layer, partition_rule=None):
     """Re-evaluate the grouping of RareInherited groups based on each property's
     popularity.
 
     Args:
-        all_properties: list of all css properties
+        properties: list of all css properties
         properties_ranking_file: file path to the ranking file
         number_of_layer: the number of group to split
         partition_rule: cumulative distribution over properties_ranking
@@ -543,7 +543,7 @@ def _evaluate_rare_inherit_group(all_properties, properties_ranking_file,
 
     properties_ranking = _get_properties_ranking(properties_ranking_file, partition_rule)
 
-    for property_ in all_properties:
+    for property_ in properties:
         if property_["field_group"] is not None and "*" in property_["field_group"] \
            and property_["inherited"] and property_["name"] in properties_ranking:
             property_["field_group"] = "->".join(layers_name[0:properties_ranking[property_["name"]]])
@@ -556,24 +556,9 @@ def _evaluate_rare_inherit_group(all_properties, properties_ranking_file,
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, json5_file_paths):
-        # Reads CSSProperties.json5
-        super(ComputedStyleBaseWriter, self).__init__(json5_file_paths)
-
-        # Ignore shorthand properties
-        longhands = []
-        for property_ in self.properties.values():
-            if not property_['longhands']:
-                longhands.append(property_)
-                # Set default values for extra parameters in
-                # ComputedStyleExtraFields.json5.
-                property_['custom_copy'] = False
-                property_['custom_compare'] = False
-                property_['mutable'] = False
-
-            if property_['field_template'] is not None:
-                assert not property_['longhands'], \
-                    "Shorthand '{}' cannot have a field_template.".format(
-                        property_['name'])
+        # Reads CSSProperties.json5, ComputedStyleFieldAliases.json5 and
+        # ComputedStyleExtraFields.json5
+        super(ComputedStyleBaseWriter, self).__init__(json5_file_paths[0:3])
 
         # We sort the enum values based on each value's position in
         # the keywords as listed in CSSProperties.json5. This will ensure that
@@ -582,65 +567,62 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         # the generated enum will have the same order and continuity as
         # CSSProperties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
-        longhands = keyword_utils.sort_keyword_properties_by_canonical_order(
-            longhands, json5_file_paths[4], self.default_parameters)
+        self._properties = keyword_utils.sort_keyword_properties_by_canonical_order(
+            self.css_properties.longhands,
+            json5_file_paths[4],
+            self.default_parameters)
+        self._properties += self.css_properties.extra_fields
 
-        # Read ComputedStyleExtraFields.json5 using the parameter specification
-        # from the CSS properties file.
-        extra_fields = json5_generator.Json5File.load_from_files(
-            [json5_file_paths[2]],
-            default_parameters=self.default_parameters
-        ).name_dictionaries
-
-        for property_ in extra_fields:
-            if property_['mutable']:
-                assert property_['field_template'] == 'monotonic_flag', \
-                    'mutable keyword only implemented for monotonic_flag'
-            self._json5_properties.expand_parameters(property_)
-
-        all_properties = longhands + extra_fields
-
-        self._generated_enums = _create_enums(all_properties)
+        self._generated_enums = _create_enums(self._properties)
 
         # Organise fields into a tree structure where the root group
         # is ComputedStyleBase.
-        group_parameters = dict([(conf["name"], conf["cumulative_distribution"]) for conf in
-                                 json5_generator.Json5File.load_from_files([json5_file_paths[6]]).name_dictionaries])
+        group_parameters = dict([
+            (conf["name"], conf["cumulative_distribution"]) for conf in
+            json5_generator.Json5File.load_from_files(
+                [json5_file_paths[6]]).name_dictionaries])
 
-        _evaluate_rare_non_inherited_group(all_properties, json5_file_paths[5],
-                                           len(group_parameters["rare_non_inherited_properties_rule"]),
-                                           group_parameters["rare_non_inherited_properties_rule"])
-        _evaluate_rare_inherit_group(all_properties, json5_file_paths[5],
-                                     len(group_parameters["rare_inherited_properties_rule"]),
-                                     group_parameters["rare_inherited_properties_rule"])
-        self._root_group = _create_groups(all_properties)
-        self._diff_functions_map = _create_diff_groups_map(json5_generator.Json5File.load_from_files(
-            [json5_file_paths[3]]
-        ).name_dictionaries, self._root_group)
+        _evaluate_rare_non_inherited_group(
+            self._properties, json5_file_paths[5],
+            len(group_parameters["rare_non_inherited_properties_rule"]),
+            group_parameters["rare_non_inherited_properties_rule"])
+        _evaluate_rare_inherit_group(
+            self._properties, json5_file_paths[5],
+            len(group_parameters["rare_inherited_properties_rule"]),
+            group_parameters["rare_inherited_properties_rule"])
+        self._root_group = _create_groups(self._properties)
+        self._diff_functions_map = _create_diff_groups_map(
+            json5_generator.Json5File.load_from_files(
+                [json5_file_paths[3]]).name_dictionaries,
+            self._root_group)
 
-        self._include_paths = _get_include_paths(all_properties)
+        self._include_paths = _get_include_paths(self._properties)
         self._outputs = {
             'ComputedStyleBase.h': self.generate_base_computed_style_h,
             'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
-            'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
+            'ComputedStyleBaseConstants.h':
+                self.generate_base_computed_style_constants,
         }
 
-    @template_expander.use_jinja('templates/ComputedStyleBase.h.tmpl', tests={'in': lambda a, b: a in b})
+    @template_expander.use_jinja(
+        'templates/ComputedStyleBase.h.tmpl', tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_h(self):
         return {
             'input_files': self._input_files,
-            'properties': self.properties,
+            'properties': self._properties,
             'enums': self._generated_enums,
             'include_paths': self._include_paths,
             'computed_style': self._root_group,
             'diff_functions_map': self._diff_functions_map,
         }
 
-    @template_expander.use_jinja('templates/ComputedStyleBase.cpp.tmpl', tests={'in': lambda a, b: a in b})
+    @template_expander.use_jinja(
+        'templates/ComputedStyleBase.cpp.tmpl',
+        tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_cpp(self):
         return {
             'input_files': self._input_files,
-            'properties': self.properties,
+            'properties': self._properties,
             'enums': self._generated_enums,
             'include_paths': self._include_paths,
             'computed_style': self._root_group,

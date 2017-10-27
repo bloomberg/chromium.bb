@@ -152,10 +152,13 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
             'property_aliases': "\n".join(
                 map(self._array_item, self._css_properties.aliases)),
             'first_property_id': self._css_properties.first_property_id,
-            'properties_count': len(self._css_properties.properties),
+            'properties_count':
+                len(self._css_properties.properties_including_aliases),
             'last_property_id': self._css_properties.last_property_id,
-            'last_unresolved_property_id': self._css_properties.last_unresolved_property_id,
-            'max_name_length': max(map(len, self._css_properties.properties)),
+            'last_unresolved_property_id':
+                self._css_properties.last_unresolved_property_id,
+            'max_name_length':
+                max(map(len, self._css_properties.properties_by_id)),
         }
 
     def generate_implementation(self):

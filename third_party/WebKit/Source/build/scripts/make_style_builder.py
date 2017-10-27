@@ -71,13 +71,14 @@ class StyleBuilderWriter(json5_generator.Writer):
 
         self._json5_properties = css_properties.CSSProperties(json5_file_paths)
         self._input_files = json5_file_paths
-        self._properties = self._json5_properties.properties
-        for property_ in self._properties.values():
+        self._properties = self._json5_properties.longhands + \
+            self._json5_properties.shorthands
+        for property_ in self._properties:
             calculate_functions_to_declare(property_)
 
     @property
-    def properties(self):
-        return self._json5_properties.properties
+    def css_properties(self):
+        return self._json5_properties
 
     @property
     def default_parameters(self):
@@ -97,6 +98,7 @@ class StyleBuilderWriter(json5_generator.Writer):
         return {
             'input_files': self._input_files,
             'properties': self._properties,
+            'properties_by_id': self._json5_properties.properties_by_id,
         }
 
     @template_expander.use_jinja(
@@ -105,6 +107,7 @@ class StyleBuilderWriter(json5_generator.Writer):
         return {
             'input_files': self._input_files,
             'properties': self._properties,
+            'properties_by_id': self._json5_properties.properties_by_id,
         }
 
 

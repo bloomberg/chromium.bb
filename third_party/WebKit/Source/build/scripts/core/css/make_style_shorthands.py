@@ -51,17 +51,14 @@ class StylePropertyShorthandWriter(json5_generator.Writer):
                 self.generate_style_property_shorthand_h}
 
         json5_properties = css_properties.CSSProperties(json5_file_paths)
+        self._shorthands = json5_properties.shorthands
 
         self._longhand_dictionary = defaultdict(list)
-        self._shorthands = {}
-
-        for property_ in json5_properties.properties.values():
-            if property_['longhands']:
-                self._shorthands[property_['property_id']] = property_
-                property_['longhand_property_ids'] = map(
-                    enum_for_css_property, property_['longhands'])
-                for longhand in property_['longhand_property_ids']:
-                    self._longhand_dictionary[longhand].append(property_)
+        for property_ in json5_properties.shorthands:
+            property_['longhand_property_ids'] = map(
+                enum_for_css_property, property_['longhands'])
+            for longhand in property_['longhand_property_ids']:
+                self._longhand_dictionary[longhand].append(property_)
 
         for longhands in self._longhand_dictionary.values():
             # Sort first by number of longhands in decreasing order, then
