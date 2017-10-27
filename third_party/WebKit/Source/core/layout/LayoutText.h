@@ -269,8 +269,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
-  bool ShouldUseNGAlternatives() const;
-  const NGOffsetMapping& GetNGOffsetMapping() const;
+  // Returns the NGOffsetMapping object when the current text is laid out with
+  // LayoutNG, and flag LayoutNGPaintFragments is set.
+  // Note that the text can be in legacy layout even when LayoutNG is enabled,
+  // so we can't simply check the RuntimeEnabledFeature.
+  const NGOffsetMapping* GetNGOffsetMapping() const;
 
   bool CanBeSelectionLeafInternal() const final { return true; }
 

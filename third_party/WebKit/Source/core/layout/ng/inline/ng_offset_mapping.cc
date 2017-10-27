@@ -108,17 +108,31 @@ bool NGOffsetMapping::AcceptsPosition(const Position& position) {
 
 // static
 const NGOffsetMapping* NGOffsetMapping::GetFor(const Position& position) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return nullptr;
   if (!NGOffsetMapping::AcceptsPosition(position))
     return nullptr;
-  auto node_offset_pair = ToNodeOffsetPair(position);
+  const auto node_offset_pair = ToNodeOffsetPair(position);
   const LayoutObject* layout_object =
       AssociatedLayoutObjectOf(node_offset_pair.first, node_offset_pair.second);
+  return GetFor(layout_object);
+}
+
+// static
+const NGOffsetMapping* NGOffsetMapping::GetFor(
+    const LayoutObject* layout_object) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return nullptr;
   if (!layout_object || !layout_object->IsInline())
     return nullptr;
   LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();
   if (!block_flow)
     return nullptr;
   DCHECK(block_flow->ChildrenInline());
+  // Note: We are assuming that every LayoutNGBlockFlow with inline children is
+  // laid out with NG, and hence, has offset mapping. If any change breaks this
+  // assumption (e.g., disabling NG on contenteditable), extra checking is
+  // needed here.
   return &NGInlineNode(block_flow).ComputeOffsetMappingIfNeeded();
 }
 

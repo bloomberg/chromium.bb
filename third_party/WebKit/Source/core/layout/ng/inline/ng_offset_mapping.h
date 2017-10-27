@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class LayoutObject;
 class Node;
 
 enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
@@ -116,6 +117,11 @@ class CORE_EXPORT NGOffsetMapping {
 
   // Returns the mapping object of the block laying out the given position.
   static const NGOffsetMapping* GetFor(const Position&);
+
+  // Returns the mapping object of the block containing the given legacy
+  // LayoutObject, if it's laid out with NG. This makes the retrieval of the
+  // mapping object easier when we are holding LayoutObject instead of Node.
+  static const NGOffsetMapping* GetFor(const LayoutObject*);
 
   // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
   // node. If there are multiple qualifying units, returns the last one.
