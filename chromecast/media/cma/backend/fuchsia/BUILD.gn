@@ -24,6 +24,8 @@ source_set("fuchsia") {
     "//chromecast/public/media",
     "//media",
   ]
+
+  libs = [ "media_client" ]
 }
 
 source_set("unit_tests") {
