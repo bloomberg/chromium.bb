@@ -105,7 +105,11 @@ class ModuleMapTestModulator final : public DummyModulator {
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
 
-  struct TestRequest : public GarbageCollectedFinalized<TestRequest> {
+  struct TestRequest final : public GarbageCollectedFinalized<TestRequest> {
+    TestRequest(const KURL& in_url,
+                const ScriptFetchOptions& in_options,
+                ModuleScriptLoaderClient* in_client)
+        : url(in_url), options(in_options), client(in_client) {}
     KURL url;
     ScriptFetchOptions options;
     Member<ModuleScriptLoaderClient> client;
@@ -130,10 +134,8 @@ void ModuleMapTestModulator::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
     ModuleGraphLevel,
     ModuleScriptLoaderClient* client) {
-  TestRequest* test_request = new TestRequest;
-  test_request->url = request.Url();
-  test_request->options = request.Options();
-  test_request->client = client;
+  TestRequest* test_request =
+      new TestRequest(request.Url(), request.Options(), client);
   test_requests_.push_back(test_request);
 }
 

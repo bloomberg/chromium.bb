@@ -40,16 +40,16 @@ class ScriptFetchOptions final {
 
  private:
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-nonce
-  String nonce_;
+  const String nonce_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-integrity
   // TODO(kouhei): const IntegrityMetadata integrity_metadata_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-parser
-  ParserDisposition parser_state_;
+  const ParserDisposition parser_state_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-credentials
-  network::mojom::FetchCredentialsMode credentials_mode_;
+  const network::mojom::FetchCredentialsMode credentials_mode_;
 };
 
 }  // namespace blink
