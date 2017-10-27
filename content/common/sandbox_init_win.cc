@@ -11,16 +11,20 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_process_information.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/sandbox_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/service_manager/sandbox/sandbox.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
 
 namespace content {
 
-void ProcessDebugFlags(base::CommandLine* child_command_line) {}
+bool InitializeSandbox(service_manager::SandboxType sandbox_type,
+                       sandbox::SandboxInterfaceInfo* sandbox_info) {
+  return service_manager::Sandbox::Initialize(sandbox_type, sandbox_info);
+}
 
 sandbox::ResultCode StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
@@ -45,8 +49,8 @@ sandbox::ResultCode StartSandboxedProcess(
       child_command_line->AppendSwitch(switches::kWaitForDebugger);
   }
 
-  return StartSandboxedProcessInternal(child_command_line, type_str,
-                                       handles_to_inherit, delegate, process);
+  return service_manager::SandboxWin::StartSandboxedProcess(
+      child_command_line, type_str, handles_to_inherit, delegate, process);
 }
 
 }  // namespace content

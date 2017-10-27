@@ -227,8 +227,8 @@
 #include "base/win/windows_version.h"
 #include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #include "content/common/font_cache_dispatcher_win.h"
-#include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/dpi.h"
 #endif
 
@@ -412,13 +412,13 @@ class RendererSandboxedProcessLauncherDelegate
 
 #if defined(OS_WIN)
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    AddBaseHandleClosePolicy(policy);
+    service_manager::SandboxWin::AddBaseHandleClosePolicy(policy);
 
     const base::string16& sid =
         GetContentClient()->browser()->GetAppContainerSidForSandboxType(
             GetSandboxType());
     if (!sid.empty())
-      AddAppContainerPolicy(policy, sid.c_str());
+      service_manager::SandboxWin::AddAppContainerPolicy(policy, sid.c_str());
 
     return GetContentClient()->browser()->PreSpawnRenderer(policy);
   }
