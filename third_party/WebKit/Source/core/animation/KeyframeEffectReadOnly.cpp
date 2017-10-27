@@ -295,13 +295,18 @@ void KeyframeEffectReadOnly::StartAnimationOnCompositor(
     int group,
     double start_time,
     double current_time,
-    double animation_playback_rate) {
+    double animation_playback_rate,
+    CompositorAnimationPlayer* compositor_player) {
   DCHECK(!HasActiveAnimationsOnCompositor());
   DCHECK(CheckCanStartAnimationOnCompositor(animation_playback_rate).Ok());
 
+  if (!compositor_player)
+    compositor_player = GetAnimation()->CompositorPlayer();
+  DCHECK(compositor_player);
+
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),
-      *GetAnimation(), *Model(), compositor_animation_ids_,
+      GetAnimation(), *compositor_player, *Model(), compositor_animation_ids_,
       animation_playback_rate);
   DCHECK(!compositor_animation_ids_.IsEmpty());
 }
@@ -364,7 +369,8 @@ void KeyframeEffectReadOnly::PauseAnimationForTestingOnCompositor(
 void KeyframeEffectReadOnly::AttachCompositedLayers() {
   DCHECK(target_);
   DCHECK(GetAnimation());
-  CompositorAnimations::AttachCompositedLayers(*target_, *GetAnimation());
+  CompositorAnimations::AttachCompositedLayers(
+      *target_, GetAnimation()->CompositorPlayer());
 }
 
 void KeyframeEffectReadOnly::Trace(blink::Visitor* visitor) {

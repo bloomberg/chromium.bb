@@ -92,7 +92,9 @@ WorkletAnimation::WorkletAnimation(
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   DCHECK(Platform::Current()->CompositorSupport());
-  compositor_player_ = CompositorAnimationPlayer::Create();
+
+  compositor_player_ =
+      CompositorAnimationPlayer::CreateWorkletPlayer(animator_name_);
   compositor_player_->SetAnimationDelegate(this);
 }
 
@@ -119,19 +121,35 @@ void WorkletAnimation::cancel() {
 
 bool WorkletAnimation::StartOnCompositor() {
   DCHECK(IsMainThread());
-  // TODO(smcgruer): We need to start all of the effects, not just the first.
-  double animation_playback_rate = 1;
   Element& target = *effects_.at(0)->Target();
+
+  // TODO(smcgruer): Creating a WorkletAnimaiton should be a hint to blink
+  // compositing that the animated element should be promoted. Otherwise this
+  // fails. http://crbug.com/776533
+  CompositorAnimations::AttachCompositedLayers(target,
+                                               compositor_player_.get());
+
+  double animation_playback_rate = 1;
   ToKeyframeEffectModelBase(effects_.at(0)->Model())
       ->SnapshotAllCompositorKeyframes(target, target.ComputedStyleRef(),
                                        target.ParentComputedStyle());
+
   bool success =
       effects_.at(0)
           ->CheckCanStartAnimationOnCompositor(animation_playback_rate)
           .Ok();
-  // Currently |StartAnimationOnCompositor| is unable to propagate a
-  // WorkletAnimation effect to the compositor, so this method is a no-op.
-  // TODO(smcgruer): Actually create the element animations on the compositor.
+
+  if (success) {
+    double start_time = std::numeric_limits<double>::quiet_NaN();
+    double time_offset = 0;
+    int group = 0;
+
+    // TODO(smcgruer): We need to start all of the effects, not just the first.
+    effects_.at(0)->StartAnimationOnCompositor(group, start_time, time_offset,
+                                               animation_playback_rate,
+                                               compositor_player_.get());
+  }
+
   play_state_ = success ? Animation::kRunning : Animation::kIdle;
   return success;
 }

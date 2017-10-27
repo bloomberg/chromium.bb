@@ -63,6 +63,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   void Dispose();
 
+  Document* GetDocument() const override { return document_.Get(); }
   const String& Name() { return animator_name_; }
 
   const DocumentTimelineOrScrollTimeline& Timeline() { return timeline_; }

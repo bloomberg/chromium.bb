@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class Document;
+
 class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
  public:
   virtual ~WorkletAnimationBase() {}
@@ -21,6 +23,8 @@ class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
   // compositor later (e.g. if an incompatible property is removed from the
   // element), so the caller should try again next main frame.
   virtual bool StartOnCompositor() = 0;
+
+  virtual Document* GetDocument() const = 0;
 };
 
 }  // namespace blink

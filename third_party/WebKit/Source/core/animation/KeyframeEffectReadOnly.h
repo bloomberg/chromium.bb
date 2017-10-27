@@ -62,10 +62,12 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositor(
       double animation_playback_rate) const;
   // Must only be called once.
-  void StartAnimationOnCompositor(int group,
-                                  double start_time,
-                                  double time_offset,
-                                  double animation_playback_rate);
+  void StartAnimationOnCompositor(
+      int group,
+      double start_time,
+      double time_offset,
+      double animation_playback_rate,
+      CompositorAnimationPlayer* compositor_player = nullptr);
   bool HasActiveAnimationsOnCompositor() const;
   bool HasActiveAnimationsOnCompositor(const PropertyHandle&) const;
   bool CancelAnimationOnCompositor();

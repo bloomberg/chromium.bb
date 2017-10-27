@@ -37,8 +37,13 @@ function runTests(testcases) {
   });
 }
 
-const testcases = Array.prototype.map.call(document.querySelectorAll('script[type$=worklet]'), ($el) => {
-  return $el.textContent;
-});
+// Treat every <script type=text/worklet> as a test case and run then in the
+// animation worklet context.
+function runAnimationWorkletTests() {
+  const testcases = Array.prototype.map.call(document.querySelectorAll('script[type$=worklet]'), ($el) => {
+    return $el.textContent;
+  });
 
-runTests(testcases);
+  runTests(testcases);
+}
+
