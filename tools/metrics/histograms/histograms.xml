@@ -91203,22 +91203,67 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the available space that can be used when installing a WebAPK from
     Google Play fails. The space recorded is the available space beyond the
-    system's minimum free space threshold, with a range between -1000 and 500
+    system's minimum free space threshold, with a range between -1000 and 1000
     MB. Negative values mean that there is less free space available than the
     system's minimum, by the given amount.
   </summary>
 </histogram>
 
 <histogram name="WebApk.Install.AvailableSpace.Success" units="MB">
+  <obsolete>
+    Deprecated 2017-09. As of M64, this is no longer recorded.
+  </obsolete>
   <owner>hanxi@chromium.org</owner>
   <owner>ranj@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
     Records the available space that can be used when installing a WebAPK from
     Google Play succeeds. The space recorded is the available space beyond the
-    system's minimum free space threshold, with a range between -1000 and 500
+    system's minimum free space threshold, with a range between -1000 and 1000
     MB. Negative values mean that there is less free space available than the
     system's minimum, by the given amount.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Install.AvailableSpaceAfterFreeUpAll.Fail" units="MB">
+  <owner>hanxi@chromium.org</owner>
+  <owner>ranj@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the available space that can be used when installing a WebAPK from
+    Google Play fails after freeing up cache and unimportant storage. The space
+    recorded is the available space beyond the system's minimum free space
+    threshold, with a range between -1000 and 1000 MB. Negative values mean that
+    there is less free space available than the system's minimum, by the given
+    amount.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Install.AvailableSpaceAfterFreeUpCache.Fail" units="MB">
+  <owner>hanxi@chromium.org</owner>
+  <owner>ranj@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the available space that can be used when installing a WebAPK from
+    Google Play fails after freeing up cache. The space recorded is the
+    available space beyond the system's minimum free space threshold, with a
+    range between -1000 and 1000 MB. Negative values mean that there is less
+    free space available than the system's minimum, by the given amount.
+  </summary>
+</histogram>
+
+<histogram
+    name="WebApk.Install.AvailableSpaceAfterFreeUpUnimportantStorage.Fail"
+    units="MB">
+  <owner>hanxi@chromium.org</owner>
+  <owner>ranj@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the available space that can be used when installing a WebAPK from
+    Google Play fails after freeing up unimportant storage. The space recorded
+    is the available space beyond the system's minimum free space threshold,
+    with a range between -1000 and 1000 MB. Negative values mean that there is
+    less free space available than the system's minimum, by the given amount.
   </summary>
 </histogram>
 
@@ -91228,7 +91273,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>yfriedman@chromium.org</owner>
   <summary>
     Records the Chrome cache size when installing a WebAPK from Google Play
-    fails, with a range between 0 and 2000, rounded to the nearest 10MB.
+    fails, with a range between 0 and 1000, rounded to the nearest 10MB.
   </summary>
 </histogram>
 
