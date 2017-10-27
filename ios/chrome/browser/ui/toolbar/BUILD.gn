@@ -26,6 +26,8 @@ source_set("toolbar") {
     "toolbar_owner.h",
     "toolbar_tools_menu_button.h",
     "toolbar_tools_menu_button.mm",
+    "toolbar_utils.h",
+    "toolbar_utils.mm",
     "toolbar_view.h",
     "toolbar_view.mm",
     "tools_menu_button_observer_bridge.h",

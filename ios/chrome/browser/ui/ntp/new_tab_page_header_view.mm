@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -56,7 +57,7 @@
 
 - (void)addConstraintsToToolbar {
   _toolbarController.heightConstraint.constant =
-      [_toolbarController preferredToolbarHeightWhenAlignedToTopOfScreen];
+      ToolbarHeightWithTopOfScreenOffset([_toolbarController statusBarOffset]);
   _toolbarController.heightConstraint.active = YES;
   [NSLayoutConstraint activateConstraints:@[
     [[_toolbarController view].leadingAnchor
@@ -199,7 +200,8 @@
   [super safeAreaInsetsDidChange];
   if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     _toolbarController.heightConstraint.constant =
-        [_toolbarController preferredToolbarHeightWhenAlignedToTopOfScreen];
+        ToolbarHeightWithTopOfScreenOffset(
+            [_toolbarController statusBarOffset]);
   }
 }
 

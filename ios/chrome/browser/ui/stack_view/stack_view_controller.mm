@@ -52,6 +52,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -764,7 +765,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
         constraintEqualToAnchor:self.view.topAnchor]
         .active = YES;
     [_toolbarController heightConstraint].constant =
-        [_toolbarController preferredToolbarHeightWhenAlignedToTopOfScreen];
+        ToolbarHeightWithTopOfScreenOffset(
+            [_toolbarController statusBarOffset]);
     [_toolbarController heightConstraint].active = YES;
   }
 
@@ -807,7 +809,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   [super viewSafeAreaInsetsDidChange];
   if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [_toolbarController heightConstraint].constant =
-        [_toolbarController preferredToolbarHeightWhenAlignedToTopOfScreen];
+        ToolbarHeightWithTopOfScreenOffset(
+            [_toolbarController statusBarOffset]);
     [[_toolbarController view] setNeedsLayout];
   }
 }

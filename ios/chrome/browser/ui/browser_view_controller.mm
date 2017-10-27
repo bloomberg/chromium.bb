@@ -1328,10 +1328,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self setUpViewLayout];
   }
   if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
-    [_toolbarCoordinator.webToolbarController safeAreaInsetsDidChange];
-    _toolbarCoordinator.webToolbarController.heightConstraint.constant =
-        [_toolbarCoordinator.webToolbarController
-                preferredToolbarHeightWhenAlignedToTopOfScreen];
+    // TODO(crbug.com/778236): Check if this call can be removed once the
+    // Toolbar is a contained ViewController.
+    [_toolbarCoordinator.toolbarController viewSafeAreaInsetsDidChange];
+    [_toolbarCoordinator adjustToolbarHeight];
   }
 }
 
@@ -1925,10 +1925,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     topAnchor = [self view].topAnchor;
   }
 
-  [_toolbarCoordinator.webToolbarController heightConstraint].constant =
-      [_toolbarCoordinator.webToolbarController
-              preferredToolbarHeightWhenAlignedToTopOfScreen];
-  [_toolbarCoordinator.webToolbarController heightConstraint].active = YES;
+  [_toolbarCoordinator adjustToolbarHeight];
 
   [NSLayoutConstraint activateConstraints:@[
     [[_toolbarCoordinator view].leadingAnchor

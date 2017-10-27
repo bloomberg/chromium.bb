@@ -20,10 +20,6 @@ extern NSString* const kToolbarTransitionAnimationKey;
 // Update share button visibility and |standardButtons_| array.
 - (void)updateStandardButtons;
 
-// Height and Y offset to account for the status bar. Overridden by subclasses
-// if the toolbar shouldn't extend through the status bar.
-- (CGFloat)statusBarOffset;
-
 // Called when buttons are pressed. Records action metrics.
 // Subclasses must call |super| if they override this method.
 - (IBAction)recordUserMetrics:(id)sender;

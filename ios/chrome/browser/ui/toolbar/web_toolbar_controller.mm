@@ -60,6 +60,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_frame_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -695,8 +696,8 @@ using ios::material::TimingFunction;
 #pragma mark -
 #pragma mark Overridden public superclass methods.
 
-- (void)safeAreaInsetsDidChange {
-  [super safeAreaInsetsDidChange];
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
   if (!IsIPadIdiom()) {
     if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
       // The clipping view's height is supposed to match the toolbar's height.
@@ -713,7 +714,7 @@ using ios::material::TimingFunction;
 - (void)layoutClippingView {
   CGRect clippingFrame = [_clippingView frame];
   clippingFrame.size.height =
-      [self preferredToolbarHeightWhenAlignedToTopOfScreen];
+      ToolbarHeightWithTopOfScreenOffset(StatusBarHeight());
   clippingFrame.origin.y =
       [_webToolbar frame].size.height - clippingFrame.size.height;
   [_clippingView setFrame:clippingFrame];

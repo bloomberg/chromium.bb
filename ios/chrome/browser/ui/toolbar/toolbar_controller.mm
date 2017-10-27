@@ -116,17 +116,6 @@ using ios::material::TimingFunction;
 @synthesize heightConstraint = heightConstraint_;
 @synthesize dispatcher = dispatcher_;
 
-- (CGFloat)preferredToolbarHeightWhenAlignedToTopOfScreen {
-  DCHECK(base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar));
-  InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
-  CGRect frame = kToolbarFrame[idiom];
-  if (idiom == IPHONE_IDIOM) {
-    CGFloat statusBarOffset = [self statusBarOffset];
-    frame.size.height += statusBarOffset;
-  }
-  return frame.size.height;
-}
-
 - (NSLayoutConstraint*)heightConstraint {
   if (!heightConstraint_) {
     heightConstraint_ = [view_.heightAnchor constraintEqualToConstant:0];
@@ -305,7 +294,7 @@ using ios::material::TimingFunction;
 
 #pragma mark - Public API
 
-- (void)safeAreaInsetsDidChange {
+- (void)viewSafeAreaInsetsDidChange {
 }
 
 - (void)applicationDidEnterBackground:(NSNotification*)notify {
