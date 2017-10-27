@@ -857,7 +857,9 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   if (!have_context) {
     for (const auto& bound_texture_type : bound_textures_) {
       for (const auto& bound_texture : bound_texture_type.second) {
-        bound_texture.texture->MarkContextLost();
+        if (bound_texture.texture) {
+          bound_texture.texture->MarkContextLost();
+        }
       }
     }
   }
