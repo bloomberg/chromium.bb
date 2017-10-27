@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
@@ -51,6 +52,8 @@ class Coordinator : public mojom::Coordinator {
   friend std::default_delete<Coordinator>;
   friend class CoordinatorTest;  // For testing.
 
+  class TraceStreamer;
+
   ~Coordinator() override;
 
   // mojom::Coordinator
@@ -74,9 +77,8 @@ class Coordinator : public mojom::Coordinator {
                                         base::TimeTicks issue_ts,
                                         base::TimeTicks issue_end_ts);
   void StopAndFlushAfterClockSync();
-  void OnRecorderDataChange(const std::string& label);
-  bool StreamEventsForCurrentLabel();
-  void StreamMetadata();
+  void SendRecorder(base::WeakPtr<AgentRegistry::AgentEntry> agent_entry,
+                    mojom::RecorderPtr recorder);
   void OnFlushDone();
 
   void OnRequestBufferStatusResponse(AgentRegistry::AgentEntry* agent_entry,
@@ -91,20 +93,9 @@ class Coordinator : public mojom::Coordinator {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   AgentRegistry* agent_registry_;
   std::string config_;
-  std::map<std::string, std::set<std::unique_ptr<Recorder>>> recorders_;
   bool is_tracing_ = false;
 
-  std::string agent_label_;
-
-  // The stream to which trace events from different agents should be
-  // serialized, eventually. This is set when tracing is stopped.
-  mojo::ScopedDataPipeProducerHandle stream_;
-  // If |streaming_label_| is not empty, it shows the label for which we are
-  // writing chunks to the output stream.
-  std::string streaming_label_;
-  std::unique_ptr<base::DictionaryValue> metadata_;
-  bool stream_is_empty_ = true;
-  bool json_field_name_written_ = false;
+  std::unique_ptr<TraceStreamer> trace_streamer_;
   StartTracingCallback start_tracing_callback_;
   StopAndFlushCallback stop_and_flush_callback_;
 
@@ -116,6 +107,8 @@ class Coordinator : public mojom::Coordinator {
   // For getting categories.
   std::set<std::string> category_set_;
   GetCategoriesCallback get_categories_callback_;
+
+  base::WeakPtrFactory<Coordinator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Coordinator);
 };

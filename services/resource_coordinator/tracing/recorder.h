@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
@@ -29,26 +29,16 @@ class Recorder : public mojom::Recorder {
   // |on_data_change_callback| is run whenever the recorder receives data from
   // the agent or when the connection is lost to notify the tracing service of
   // the data change.
-  //
-  // |background_task_runner| is used so that if the tracing service is run on
-  // the UI thread we do not block it. So buffering trace events and copying
-  // them to data pipes are done on a background thread.
-  Recorder(
-      mojom::RecorderRequest request,
-      mojom::TraceDataType data_type,
-      const base::Closure& on_data_change_callback,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
+  Recorder(mojom::RecorderRequest request,
+           mojom::TraceDataType data_type,
+           const base::RepeatingClosure& on_data_change_callback);
   ~Recorder() override;
 
   const std::string& data() const {
-    // All access to |data_| should be done on the background thread.
-    DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
     return data_;
   }
 
   void clear_data() {
-    // All access to |data_| should be done on the background thread.
-    DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
     data_.clear();
   }
 
@@ -69,12 +59,10 @@ class Recorder : public mojom::Recorder {
   base::DictionaryValue metadata_;
   bool is_recording_;
   mojom::TraceDataType data_type_;
-  base::Closure on_data_change_callback_;
-  // To avoid blocking the UI thread if the tracing service is run on the UI
-  // thread, we make sure that buffering trace events and copying them to the
-  // final stream is done on a background thread.
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  base::RepeatingClosure on_data_change_callback_;
   mojo::Binding<mojom::Recorder> binding_;
+
+  base::WeakPtrFactory<Recorder> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Recorder);
 };

@@ -6,43 +6,20 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
 
 namespace tracing {
 
-Recorder::Recorder(
-    mojom::RecorderRequest request,
-    mojom::TraceDataType data_type,
-    const base::Closure& on_data_change_callback,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner)
+Recorder::Recorder(mojom::RecorderRequest request,
+                   mojom::TraceDataType data_type,
+                   const base::RepeatingClosure& on_data_change_callback)
     : is_recording_(true),
       data_type_(data_type),
       on_data_change_callback_(on_data_change_callback),
-      background_task_runner_(background_task_runner),
-      binding_(this, std::move(request)) {
-  // A recorder should be deleted only if |is_recording_| is false to ensure
-  // that:
-  //
-  // 1- |OnConnectionError| is already executed and so using Unretained(this) is
-  // safe here.
-  //
-  // 2- The task possibly posted by |OnConnectionError| is already executed and
-  // so using Unretained(this) is safe in that PostTask.
-  //
-  // 3- Since the connection is closed, the tasks posted by |AddChunk| are
-  // already executed and so using Unretained(this) is safe in the PostTask in
-  // |AddChunk|.
-  //
-  // We cannot use a weak pointer factory here since the weak pointers should be
-  // dereferenced on the same SequencedTaskRunner. We could use two weak pointer
-  // factories but that increases the complexity of the code since each factory
-  // should be created on the correct thread and we should deal with cases that
-  // one of the factories is not created, yet.
-  //
-  // The tracing coordinator deletes a recorder when |is_recording_| is false.
-  binding_.set_connection_error_handler(base::BindRepeating(
-      &Recorder::OnConnectionError, base::Unretained(this)));
+      binding_(this, std::move(request)),
+      weak_ptr_factory_(this) {
+  binding_.set_connection_error_handler(base::BindOnce(
+      &Recorder::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
 Recorder::~Recorder() = default;
@@ -50,12 +27,6 @@ Recorder::~Recorder() = default;
 void Recorder::AddChunk(const std::string& chunk) {
   if (chunk.empty())
     return;
-  if (!background_task_runner_->RunsTasksInCurrentSequence()) {
-    background_task_runner_->PostTask(
-        FROM_HERE, base::BindRepeating(&Recorder::AddChunk,
-                                       base::Unretained(this), chunk));
-    return;
-  }
   if (data_type_ != mojom::TraceDataType::STRING && !data_.empty())
     data_.append(",");
   data_.append(chunk);
@@ -67,12 +38,6 @@ void Recorder::AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) {
 }
 
 void Recorder::OnConnectionError() {
-  if (!background_task_runner_->RunsTasksInCurrentSequence()) {
-    background_task_runner_->PostTask(
-        FROM_HERE, base::BindRepeating(&Recorder::OnConnectionError,
-                                       base::Unretained(this)));
-    return;
-  }
   is_recording_ = false;
   on_data_change_callback_.Run();
 }
