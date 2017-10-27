@@ -15,6 +15,7 @@
 #include "platform/PlatformChromeClient.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
@@ -35,20 +36,20 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     return;
   abs_rect.MoveBy(paint_offset);
 
-  if (GetScrollableArea().Resizer()) {
+  if (const auto* resizer = GetScrollableArea().Resizer()) {
     if (!cull_rect.IntersectsCullRect(abs_rect))
       return;
-    ScrollbarPainter::PaintIntoRect(*GetScrollableArea().Resizer(), context,
-                                    paint_offset, LayoutRect(abs_rect));
+    ScrollbarPainter::PaintIntoRect(*resizer, context, paint_offset,
+                                    LayoutRect(abs_rect));
     return;
   }
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, GetScrollableArea().Box(), DisplayItem::kResizer))
+  const auto& client = DisplayItemClientForCorner();
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, client,
+                                                  DisplayItem::kResizer))
     return;
 
-  DrawingRecorder recorder(context, GetScrollableArea().Box(),
-                           DisplayItem::kResizer);
+  DrawingRecorder recorder(context, client, DisplayItem::kResizer);
 
   DrawPlatformResizerImage(context, abs_rect);
 
@@ -256,11 +257,10 @@ void ScrollableAreaPainter::PaintScrollCorner(
     return;
   abs_rect.MoveBy(paint_offset);
 
-  if (GetScrollableArea().ScrollCorner()) {
+  if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {
     if (!adjusted_cull_rect.IntersectsCullRect(abs_rect))
       return;
-    ScrollbarPainter::PaintIntoRect(*GetScrollableArea().ScrollCorner(),
-                                    context, paint_offset,
+    ScrollbarPainter::PaintIntoRect(*scroll_corner, context, paint_offset,
                                     LayoutRect(abs_rect));
     return;
   }
@@ -270,17 +270,24 @@ void ScrollableAreaPainter::PaintScrollCorner(
   if (GetScrollableArea().HasOverlayScrollbars())
     return;
 
+  const auto& client = DisplayItemClientForCorner();
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, GetScrollableArea().Box(), DisplayItem::kScrollbarCorner))
+          context, client, DisplayItem::kScrollbarCorner))
     return;
 
-  DrawingRecorder recorder(context, GetScrollableArea().Box(),
-                           DisplayItem::kScrollbarCorner);
+  DrawingRecorder recorder(context, client, DisplayItem::kScrollbarCorner);
   context.FillRect(abs_rect, Color::kWhite);
 }
 
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {
   return *scrollable_area_;
+}
+
+const DisplayItemClient& ScrollableAreaPainter::DisplayItemClientForCorner()
+    const {
+  if (const auto* graphics_layer = GetScrollableArea().LayerForScrollCorner())
+    return *graphics_layer;
+  return GetScrollableArea().Box();
 }
 
 }  // namespace blink
