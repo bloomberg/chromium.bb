@@ -4,10 +4,6 @@
 
 #include "ui/events/event.h"
 
-#include <utility>
-
-#include "base/memory/ptr_util.h"
-
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
 #include <X11/keysym.h>
@@ -16,6 +12,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"

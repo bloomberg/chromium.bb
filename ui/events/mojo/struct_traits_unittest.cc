@@ -136,7 +136,9 @@ TEST_F(StructTraitsTest, PointerEvent) {
                       /* radius_y */ 2.0f,
                       /* force */ 3.0f,
                       /* tilt_x */ 4.0f,
-                      /* tilt_y */ 5.0f),
+                      /* tilt_y */ 5.0f,
+                      /* tangential_pressure */ -1.f,
+                      /* twist */ 90),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(207)},
       {ET_POINTER_UP, gfx::Point(5, 6), gfx::Point(7, 8), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_PEN,
@@ -145,7 +147,9 @@ TEST_F(StructTraitsTest, PointerEvent) {
                       /* radius_y */ 2.0f,
                       /* force */ 3.0f,
                       /* tilt_x */ 4.0f,
-                      /* tilt_y */ 5.0f),
+                      /* tilt_y */ 5.0f,
+                      /* tangential_pressure */ 1.f,
+                      /* twist */ 180),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(208)},
   };
 

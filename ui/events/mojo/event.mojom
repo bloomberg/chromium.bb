@@ -106,6 +106,14 @@ struct BrushData {
   // for more information.
   float tilt_x;
   float tilt_y;
+  // The normalized tangential pressure (or barrel pressure), typically set by
+  // an additional control of the stylus, which has a range of [-1,1], where 0
+  // is the neutral position of the control. Always 0 if the device does not
+  // support it.
+  float tangential_pressure;
+  // The clockwise rotation of a pen stylus around its own major axis, in
+  // degrees in the range [0,359]. Always 0 if the device does not support it.
+  int32 twist;
 };
 
 // Data to support gesture events.
