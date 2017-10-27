@@ -5661,7 +5661,8 @@ void LocalFrameView::SetAnimationHost(
 }
 
 LayoutUnit LocalFrameView::CaretWidth() const {
-  return LayoutUnit(GetChromeClient()->WindowToViewportScalar(1));
+  return LayoutUnit(
+      std::max<float>(1.0, GetChromeClient()->WindowToViewportScalar(1)));
 }
 
 ScrollbarTheme& LocalFrameView::GetPageScrollbarTheme() const {
