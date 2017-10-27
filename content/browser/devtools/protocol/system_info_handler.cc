@@ -154,6 +154,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
         base::TimeDelta::FromMilliseconds(kGPUInfoWatchdogTimeoutMs));
 
     GpuDataManagerImpl::GetInstance()->AddObserver(this);
+    OnGpuInfoUpdate();
   }
 
   void OnGpuInfoUpdate() override {
