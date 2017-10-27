@@ -25,7 +25,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const std::size_t data_hash = std::hash<std::string>()(data_string);
   const int max_option_value = std::numeric_limits<int>::max();
   // Disable XML_PARSE_HUGE to avoid stack overflow.  http://crbug.com/738947.
-  const int random_option = data_hash & max_option_value & ~XML_PARSE_HUGE;
+  // Disable XML_PARSE_NOENT, XML_PARSE_DTD[LOAD|ATTR|VALID] to avoid timeout
+  // loading external entity from stdin. http://crbug.com/755142.
+  const int random_option = data_hash & max_option_value & ~XML_PARSE_NOENT &
+                            ~XML_PARSE_DTDLOAD & ~XML_PARSE_DTDATTR &
+                            ~XML_PARSE_DTDVALID & ~XML_PARSE_HUGE;
   const int options[] = {0, random_option};
 
   for (const auto option_value : options) {
