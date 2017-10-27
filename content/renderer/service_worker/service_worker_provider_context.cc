@@ -222,6 +222,16 @@ ServiceWorkerProviderContext::CreateWorkerClientRequest() {
   return request;
 }
 
+mojom::ServiceWorkerContainerHostPtrInfo
+ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(controllee_state_);
+  mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  container_host_->CloneForWorker(mojo::MakeRequest(&container_host_ptr_info));
+  return container_host_ptr_info;
+}
+
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
     mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());

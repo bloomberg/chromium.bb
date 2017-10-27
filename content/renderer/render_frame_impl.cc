@@ -3147,11 +3147,20 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
+  mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  ServiceWorkerProviderContext* provider_context = provider->context();
   // Some sandboxed iframes are not allowed to use service worker so don't have
   // a real service worker provider, so the provider context is null.
-  if (provider->context()) {
+  if (provider_context) {
     service_worker_client_request =
-        provider->context()->CreateWorkerClientRequest();
+        provider_context->CreateWorkerClientRequest();
+    // TODO(horo): Use this host pointer also when S13nServiceWorker is not
+    // enabled once we support navigator.serviceWorker on dedicated workers:
+    // crbug.com/371690. Currently we use this only to call
+    // GetControllerServiceWorker() from the worker thread if S13nServiceWorker
+    // is enabled.
+    if (ServiceWorkerUtils::IsServicificationEnabled())
+      container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
   ChildURLLoaderFactoryGetter* url_loader_factory_getter =
@@ -3160,6 +3169,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       base::MakeUnique<WorkerFetchContextImpl>(
           std::move(service_worker_client_request),
+          std::move(container_host_ptr_info),
           url_loader_factory_getter->GetClonedInfo());
 
   worker_fetch_context->set_parent_frame_id(routing_id_);
@@ -3167,10 +3177,11 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_is_secure_context(
       frame_->GetDocument().IsSecureContext());
-    worker_fetch_context->set_service_worker_provider_id(
-        provider->provider_id());
-    worker_fetch_context->set_is_controlled_by_service_worker(
-        provider->IsControlledByServiceWorker());
+  worker_fetch_context->set_service_worker_provider_id(provider->provider_id());
+  worker_fetch_context->set_is_controlled_by_service_worker(
+      provider->IsControlledByServiceWorker());
+  worker_fetch_context->set_origin_url(
+      GURL(frame_->GetDocument().Url()).GetOrigin());
   for (auto& observer : observers_)
     observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
   return std::move(worker_fetch_context);

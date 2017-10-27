@@ -97,6 +97,10 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
       mojom::ControllerServiceWorkerRequest request) override {
     NOTIMPLEMENTED();
   }
+  void CloneForWorker(
+      mojom::ServiceWorkerContainerHostRequest request) override {
+    NOTIMPLEMENTED();
+  }
 
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;

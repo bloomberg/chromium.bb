@@ -28,7 +28,6 @@ Bug(none) external/wpt/navigation-timing/nav2_test_attributes_values.html [ Fail
 Bug(none) external/wpt/preload/fetch-destination.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/resource-timing/test_resource_timing.html [ Failure Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/claim-shared-worker-fetch.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/claim-worker-fetch.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/client-navigate.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/clients-get.https.html [ Failure ]

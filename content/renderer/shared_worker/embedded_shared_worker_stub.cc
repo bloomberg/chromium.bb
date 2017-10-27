@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/scoped_child_process_reference.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -264,12 +265,22 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
   DCHECK(web_network_provider);
-  mojom::ServiceWorkerWorkerClientRequest request =
+  ServiceWorkerProviderContext* context =
       static_cast<WebServiceWorkerNetworkProviderForSharedWorker*>(
           web_network_provider)
           ->provider()
-          ->context()
-          ->CreateWorkerClientRequest();
+          ->context();
+  mojom::ServiceWorkerWorkerClientRequest request =
+      context->CreateWorkerClientRequest();
+
+  mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  // TODO(horo): Use this host pointer also when S13nServiceWorker is not
+  // enabled once we support navigator.serviceWorker on shared workers:
+  // crbug.com/371690. Currently we use this only to call
+  // GetControllerServiceWorker() from the worker thread if S13nServiceWorker
+  // is enabled.
+  if (ServiceWorkerUtils::IsServicificationEnabled())
+    container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
   scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter =
       RenderThreadImpl::current()
@@ -277,7 +288,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
           ->CreateDefaultURLLoaderFactoryGetter();
   DCHECK(url_loader_factory_getter);
   auto worker_fetch_context = base::MakeUnique<WorkerFetchContextImpl>(
-      std::move(request), url_loader_factory_getter->GetClonedInfo());
+      std::move(request), std::move(container_host_ptr_info),
+      url_loader_factory_getter->GetClonedInfo());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
@@ -290,6 +302,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // non-secure. crbug.com/723575
   // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
+  worker_fetch_context->set_origin_url(url_.GetOrigin());
   if (web_network_provider) {
     worker_fetch_context->set_service_worker_provider_id(
         web_network_provider->ProviderID());
