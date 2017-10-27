@@ -94,15 +94,21 @@ TEST(CastDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
 }
 
 TEST(CastAnalyticsTest, RecordCastChannelConnectResult) {
+  const MediaRouterChannelConnectResults success =
+      MediaRouterChannelConnectResults::SUCCESS;
+  const MediaRouterChannelConnectResults failure =
+      MediaRouterChannelConnectResults::FAILURE;
+
   base::HistogramTester tester;
   tester.ExpectTotalCount(CastAnalytics::kHistogramCastChannelConnectResult, 0);
-  CastAnalytics::RecordCastChannelConnectResult(true);
-  CastAnalytics::RecordCastChannelConnectResult(false);
-  CastAnalytics::RecordCastChannelConnectResult(true);
+  CastAnalytics::RecordCastChannelConnectResult(success);
+  CastAnalytics::RecordCastChannelConnectResult(failure);
+  CastAnalytics::RecordCastChannelConnectResult(success);
   tester.ExpectTotalCount(CastAnalytics::kHistogramCastChannelConnectResult, 3);
   EXPECT_THAT(
       tester.GetAllSamples(CastAnalytics::kHistogramCastChannelConnectResult),
-      ElementsAre(Bucket(false, 1), Bucket(true, 2)));
+      ElementsAre(Bucket(static_cast<int>(failure), 1),
+                  Bucket(static_cast<int>(success), 2)));
 }
 
 TEST(CastAnalyticsTest, RecordDeviceChannelError) {

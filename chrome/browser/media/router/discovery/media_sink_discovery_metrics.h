@@ -12,6 +12,15 @@
 
 namespace media_router {
 
+// Possible values for Cast channel connect results.
+enum class MediaRouterChannelConnectResults {
+  FAILURE = 0,
+  SUCCESS = 1,
+
+  // Note = Add entries only immediately above this line.
+  TOTAL_COUNT = 2
+};
+
 // Possible values for channel open errors.
 enum class MediaRouterChannelError {
   UNKNOWN = 0,
@@ -95,7 +104,8 @@ class CastAnalytics {
   static const char kHistogramCastMdnsChannelOpenSuccess[];
   static const char kHistogramCastMdnsChannelOpenFailure[];
 
-  static void RecordCastChannelConnectResult(bool channel_opened_successfully);
+  static void RecordCastChannelConnectResult(
+      MediaRouterChannelConnectResults result);
   static void RecordDeviceChannelError(MediaRouterChannelError channel_error);
   static void RecordDeviceChannelOpenDuration(bool success,
                                               const base::TimeDelta& duration);

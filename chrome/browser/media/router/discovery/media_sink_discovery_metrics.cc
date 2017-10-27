@@ -89,9 +89,10 @@ const char CastAnalytics::kHistogramCastMdnsChannelOpenFailure[] =
 
 // static
 void CastAnalytics::RecordCastChannelConnectResult(
-    bool channel_opened_successfully) {
-  UMA_HISTOGRAM_BOOLEAN(kHistogramCastChannelConnectResult,
-                        channel_opened_successfully);
+    MediaRouterChannelConnectResults result) {
+  DCHECK_LT(result, MediaRouterChannelConnectResults::TOTAL_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(kHistogramCastChannelConnectResult, result,
+                            MediaRouterChannelConnectResults::TOTAL_COUNT);
 }
 
 // static
