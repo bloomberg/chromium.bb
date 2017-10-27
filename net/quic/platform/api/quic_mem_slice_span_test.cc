@@ -34,6 +34,16 @@ TEST_F(QuicMemSliceSpanImplTest, SaveDataInSendBuffer) {
   EXPECT_EQ(10u, send_buffer.size());
 }
 
+TEST_F(QuicMemSliceSpanImplTest, SaveEmptyMemSliceInSendBuffer) {
+  SimpleBufferAllocator allocator;
+  QuicStreamSendBuffer send_buffer(&allocator);
+  buffers_.push_back(std::make_pair(nullptr, 0));
+  QuicTestMemSliceVector vector(buffers_);
+  EXPECT_EQ(10 * 1024u, vector.span().SaveMemSlicesInSendBuffer(&send_buffer));
+  // Verify the empty slice does not get saved.
+  EXPECT_EQ(10u, send_buffer.size());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

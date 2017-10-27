@@ -953,17 +953,28 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   AddWrite(ConstructRequestHeadersPacketInner(
       2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
-  AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, !kFin, 0,
-                                                   {kBody1, kBody2}));
+  if (FLAGS_quic_reloadable_flag_quic_use_mem_slices) {
+    AddWrite(ConstructDataPacket(3, kIncludeVersion, !kFin, 0,
+                                 "here are some datadata keep coming",
+                                 &client_maker_));
+  } else {
+    AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, !kFin,
+                                                     0, {kBody1, kBody2}));
+  }
   // Ack server's data packet.
   AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   const char kBody3[] = "hello there";
   const char kBody4[] = "another piece of small data";
   const char kBody5[] = "really small";
   QuicStreamOffset data_offset = strlen(kBody1) + strlen(kBody2);
-  AddWrite(ConstructClientMultipleDataFramesPacket(
-      5, !kIncludeVersion, kFin, data_offset, {kBody3, kBody4, kBody5}));
-
+  if (FLAGS_quic_reloadable_flag_quic_use_mem_slices) {
+    AddWrite(ConstructDataPacket(
+        5, !kIncludeVersion, kFin, data_offset,
+        "hello thereanother piece of small datareally small", &client_maker_));
+  } else {
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        5, !kIncludeVersion, kFin, data_offset, {kBody3, kBody4, kBody5}));
+  }
   Initialize();
 
   BidirectionalStreamRequestInfo request;
@@ -1157,19 +1168,27 @@ TEST_P(BidirectionalStreamQuicImplTest,
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   const char kBody1[] = "here are some data";
   const char kBody2[] = "data keep coming";
+  const char kBody1And2[] = "here are some datadata keep coming";
   std::vector<std::string> two_writes = {kBody1, kBody2};
+  std::vector<std::string> one_write = {kBody1And2};
   AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
       2, !kFin, DEFAULT_PRIORITY, &header_stream_offset,
-      &spdy_request_headers_frame_length, two_writes));
+      &spdy_request_headers_frame_length,
+      FLAGS_quic_reloadable_flag_quic_use_mem_slices ? one_write : two_writes));
   // Ack server's data packet.
   AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
   const char kBody3[] = "hello there";
   const char kBody4[] = "another piece of small data";
   const char kBody5[] = "really small";
   QuicStreamOffset data_offset = strlen(kBody1) + strlen(kBody2);
-  AddWrite(ConstructClientMultipleDataFramesPacket(
-      4, !kIncludeVersion, kFin, data_offset, {kBody3, kBody4, kBody5}));
-
+  if (FLAGS_quic_reloadable_flag_quic_use_mem_slices) {
+    AddWrite(ConstructDataPacket(
+        4, !kIncludeVersion, kFin, data_offset,
+        "hello thereanother piece of small datareally small", &client_maker_));
+  } else {
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        4, !kIncludeVersion, kFin, data_offset, {kBody3, kBody4, kBody5}));
+  }
   Initialize();
 
   BidirectionalStreamRequestInfo request;
