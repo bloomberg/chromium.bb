@@ -464,6 +464,13 @@ fuzzer_test("angle_translator_fuzzer") {
   libfuzzer_options = [ "max_len=1000" ]
 }
 
+fuzzer_test("swiftshader_vertex_routine_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/swiftshader:vertex_routine_fuzzer",
+  ]
+}
+
 fuzzer_test("sha1_fuzzer") {
   sources = [
     "sha1_fuzzer.cc",
