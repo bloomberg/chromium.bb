@@ -492,9 +492,9 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                                height:_searchFieldHeightConstraint
                             topMargin:_searchFieldTopMarginConstraint
                    subviewConstraints:constraints
+                        logoIsShowing:self.logoIsShowing
                             forOffset:[_mostVisitedView contentOffset].y
-                          screenWidth:_mostVisitedView.bounds.size.width
-                       safeAreaInsets:SafeAreaInsetsForView(self.view)];
+                                width:0];
 }
 
 - (void)addOverscrollActions {
@@ -686,10 +686,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
            forWidth:width];
   [_doodleTopMarginConstraint
       setConstant:content_suggestions::doodleTopMargin(YES)];
-  UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(self.view);
-  CGFloat contentWidth = width - safeAreaInsets.left - safeAreaInsets.right;
   [_searchFieldWidthConstraint
-      setConstant:content_suggestions::searchFieldWidth(contentWidth)];
+      setConstant:content_suggestions::searchFieldWidth(width)];
   [_searchFieldTopMarginConstraint
       setConstant:content_suggestions::searchFieldTopMargin()];
 }

@@ -18,12 +18,8 @@
     collectionSynchronizer;
 
 // Updates the iPhone fakebox's frame based on the current scroll view |offset|
-// and |width|. |width| is the width of the screen, including the space outside
-// the safe area. The |safeAreaInsets| is relative to the view used to calculate
-// the |width|.
-- (void)updateFakeOmniboxForOffset:(CGFloat)offset
-                       screenWidth:(CGFloat)screenWidth
-                    safeAreaInsets:(UIEdgeInsets)safeAreaInsets;
+// and |width|. |width| can be 0 to use the current view width.
+- (void)updateFakeOmniboxForOffset:(CGFloat)offset width:(CGFloat)width;
 
 // Updates the fakeomnibox's width in order to be adapted to the new |width|,
 // without taking the y-position into account.
