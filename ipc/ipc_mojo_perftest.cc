@@ -765,18 +765,18 @@ class CallbackPerfTest : public testing::Test {
   void RunSingleThreadNoPostTaskPingPongServer() {
     LockThreadAffinity thread_locker(kSharedCore);
     std::vector<PingPongTestParams> params = GetDefaultTestParams();
-    base::Callback<void(const std::string&,
-                        const base::Callback<void(const std::string&)>&)>
+    base::Callback<void(const std::string&, int,
+                        const base::Callback<void(const std::string&, int)>&)>
         ping = base::Bind(&CallbackPerfTest::SingleThreadPingNoPostTask,
                           base::Unretained(this));
     for (size_t i = 0; i < params.size(); i++) {
       payload_ = std::string(params[i].message_size(), 'a');
       std::string test_name =
-          base::StringPrintf("Callback_SingleThreadPostTask_Perf_%dx_%zu",
+          base::StringPrintf("Callback_SingleThreadNoPostTask_Perf_%dx_%zu",
                              params[i].message_count(), payload_.size());
       perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
       for (int j = 0; j < params[i].message_count(); ++j) {
-        ping.Run(payload_,
+        ping.Run(payload_, j,
                  base::Bind(&CallbackPerfTest::SingleThreadPongNoPostTask,
                             base::Unretained(this)));
       }
@@ -786,11 +786,12 @@ class CallbackPerfTest : public testing::Test {
 
   void SingleThreadPingNoPostTask(
       const std::string& value,
-      const base::Callback<void(const std::string&)>& pong) {
-    pong.Run(value);
+      int i,
+      const base::Callback<void(const std::string&, int)>& pong) {
+    pong.Run(value, i);
   }
 
-  void SingleThreadPongNoPostTask(const std::string& value) {}
+  void SingleThreadPongNoPostTask(const std::string& value, int i) {}
 
   void RunSingleThreadPostTaskPingPongServer() {
     LockThreadAffinity thread_locker(kSharedCore);
@@ -817,7 +818,7 @@ class CallbackPerfTest : public testing::Test {
     if (value == "hello") {
       DCHECK(!perf_logger_.get());
       std::string test_name =
-          base::StringPrintf("Callback_SingleThreadNoPostTask_Perf_%dx_%zu",
+          base::StringPrintf("Callback_SingleThreadPostTask_Perf_%dx_%zu",
                              message_count_, payload_.size());
       perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
     } else {
