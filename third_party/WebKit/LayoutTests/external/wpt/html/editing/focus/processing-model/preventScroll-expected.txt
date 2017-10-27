@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Sanity test
+PASS elm.focus() without arguments
+PASS elm.focus(undefined)
+PASS elm.focus(null)
+PASS elm.focus({})
+PASS elm.focus({preventScroll: false})
+FAIL elm.focus({preventScroll: true}) assert_false: expected false got true
+Harness: the test ran to completion.
+

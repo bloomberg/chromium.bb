@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5285 tests; 5165 PASS, 120 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5286 tests; 5166 PASS, 120 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -542,7 +542,7 @@ PASS HTMLElement interface: attribute dataset
 PASS HTMLElement interface: attribute hidden
 PASS HTMLElement interface: operation click()
 PASS HTMLElement interface: attribute tabIndex
-PASS HTMLElement interface: operation focus()
+PASS HTMLElement interface: operation focus(FocusOptions)
 PASS HTMLElement interface: operation blur()
 PASS HTMLElement interface: attribute accessKey
 FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
@@ -626,7 +626,8 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "hidden" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "click()" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "tabIndex" with the proper type
-PASS HTMLElement interface: document.createElement("noscript") must inherit property "focus()" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "focus(FocusOptions)" with the proper type
+PASS HTMLElement interface: calling focus(FocusOptions) on document.createElement("noscript") with too few arguments must throw TypeError
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "blur()" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "accessKey" with the proper type
 FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper type assert_inherits: property "accessKeyLabel" not found in prototype chain

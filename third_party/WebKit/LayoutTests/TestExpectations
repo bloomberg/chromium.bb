@@ -1746,6 +1746,11 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/771729 [ Win Debug ] external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/039.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts-3/font-synthesis-01.html [ Failure ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts-3/font-synthesis-02.html [ Failure ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts-3/font-synthesis-03.html [ Failure ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts-3/font-synthesis-04.html [ Failure ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts-3/font-synthesis-05.html [ Failure ]
 crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/requestidlecallback/idlharness.html [ Timeout ]
 crbug.com/626703 [ Android Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/acid/acid2/reftest.html [ Failure ]
 crbug.com/626703 [ Android Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/acid/acid3/test.html [ Failure ]
