@@ -62,16 +62,13 @@ class Map_Data {
       return false;
     }
 
-    if (!ValidatePointerNonNullable(
-            object->keys, "null key array in map struct", validation_context) ||
+    if (!ValidatePointerNonNullable(object->keys, 0, validation_context) ||
         !ValidateContainer(object->keys, validation_context,
                            validate_params->key_validate_params)) {
       return false;
     }
 
-    if (!ValidatePointerNonNullable(object->values,
-                                    "null value array in map struct",
-                                    validation_context) ||
+    if (!ValidatePointerNonNullable(object->values, 1, validation_context) ||
         !ValidateContainer(object->values, validation_context,
                            validate_params->element_validate_params)) {
       return false;

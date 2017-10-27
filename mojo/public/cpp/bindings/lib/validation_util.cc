@@ -8,6 +8,7 @@
 
 #include <limits>
 
+#include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
@@ -15,6 +16,17 @@
 
 namespace mojo {
 namespace internal {
+
+void ReportNonNullableValidationError(ValidationContext* validation_context,
+                                      ValidationError error,
+                                      int field_index) {
+  const char* null_or_invalid =
+      error == VALIDATION_ERROR_UNEXPECTED_NULL_POINTER ? "null" : "invalid";
+
+  std::string error_message =
+      base::StringPrintf("%s field %d", null_or_invalid, field_index);
+  ReportValidationError(validation_context, error, error_message.c_str());
+}
 
 bool ValidateStructHeaderAndClaimMemory(const void* data,
                                         ValidationContext* validation_context) {
@@ -118,53 +130,53 @@ bool IsHandleOrInterfaceValid(const Handle_Data& input) {
 
 bool ValidateHandleOrInterfaceNonNullable(
     const AssociatedInterface_Data& input,
-    const char* error_message,
+    int field_index,
     ValidationContext* validation_context) {
   if (IsHandleOrInterfaceValid(input))
     return true;
 
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
-                        error_message);
+  ReportNonNullableValidationError(
+      validation_context, VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
+      field_index);
   return false;
 }
 
 bool ValidateHandleOrInterfaceNonNullable(
     const AssociatedEndpointHandle_Data& input,
-    const char* error_message,
+    int field_index,
     ValidationContext* validation_context) {
   if (IsHandleOrInterfaceValid(input))
     return true;
 
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
-                        error_message);
+  ReportNonNullableValidationError(
+      validation_context, VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
+      field_index);
   return false;
 }
 
 bool ValidateHandleOrInterfaceNonNullable(
     const Interface_Data& input,
-    const char* error_message,
+    int field_index,
     ValidationContext* validation_context) {
   if (IsHandleOrInterfaceValid(input))
     return true;
 
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-                        error_message);
+  ReportNonNullableValidationError(validation_context,
+                                   VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+                                   field_index);
   return false;
 }
 
 bool ValidateHandleOrInterfaceNonNullable(
     const Handle_Data& input,
-    const char* error_message,
+    int field_index,
     ValidationContext* validation_context) {
   if (IsHandleOrInterfaceValid(input))
     return true;
 
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-                        error_message);
+  ReportNonNullableValidationError(validation_context,
+                                   VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+                                   field_index);
   return false;
 }
 
