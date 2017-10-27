@@ -8,7 +8,7 @@
 #include "core/animation/CompositorAnimator.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "modules/ModulesExport.h"
-#include "modules/compositorworker/AnimationWorkletGlobalScope.h"
+#include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorklet.h"
+#include "modules/animationworklet/AnimationWorklet.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
@@ -10,9 +10,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/page/ChromeClient.h"
 #include "core/workers/WorkerClients.h"
-#include "modules/compositorworker/AnimationWorkletMessagingProxy.h"
-#include "modules/compositorworker/AnimationWorkletProxyClientImpl.h"
-#include "modules/compositorworker/AnimationWorkletThread.h"
+#include "modules/animationworklet/AnimationWorkletMessagingProxy.h"
+#include "modules/animationworklet/AnimationWorkletProxyClientImpl.h"
+#include "modules/animationworklet/AnimationWorkletThread.h"
 
 namespace blink {
 

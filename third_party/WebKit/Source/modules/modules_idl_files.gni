@@ -55,6 +55,9 @@ modules_global_constructors_generated_idl_files = process_file_template(
 modules_idl_files =
     get_path_info(
         [
+          "animationworklet/AnimationWorkletGlobalScope.idl",
+          "animationworklet/EffectProxy.idl",
+          "animationworklet/WorkletAnimation.idl",
           "app_banner/BeforeInstallPromptEvent.idl",
           "background_fetch/BackgroundFetchClickEvent.idl",
           "background_fetch/BackgroundFetchEvent.idl",
@@ -84,9 +87,6 @@ modules_idl_files =
           "canvas/canvas2d/CanvasPattern.idl",
           "canvas/canvas2d/CanvasRenderingContext2D.idl",
           "canvas/canvas2d/Path2D.idl",
-          "compositorworker/AnimationWorkletGlobalScope.idl",
-          "compositorworker/EffectProxy.idl",
-          "compositorworker/WorkletAnimation.idl",
           "cookie_store/CookieStore.idl",
           "credentialmanager/AuthenticatorAssertionResponse.idl",
           "credentialmanager/AuthenticatorAttestationResponse.idl",
@@ -646,7 +646,7 @@ modules_dependency_idl_files =
           "cachestorage/WorkerCacheStorage.idl",
           "canvas/htmlcanvas/HTMLCanvasElementModule.idl",
           "canvas/canvas2d/CanvasPath.idl",
-          "compositorworker/WindowAnimationWorklet.idl",
+          "animationworklet/WindowAnimationWorklet.idl",
           "cookie_store/WindowCookieStore.idl",
           "credentialmanager/CredentialUserData.idl",
           "credentialmanager/NavigatorCredentials.idl",

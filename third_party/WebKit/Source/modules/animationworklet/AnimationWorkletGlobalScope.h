@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "modules/ModulesExport.h"
-#include "modules/compositorworker/Animator.h"
-#include "modules/compositorworker/AnimatorDefinition.h"
+#include "modules/animationworklet/Animator.h"
+#include "modules/animationworklet/AnimatorDefinition.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/graphics/CompositorAnimatorsState.h"
 

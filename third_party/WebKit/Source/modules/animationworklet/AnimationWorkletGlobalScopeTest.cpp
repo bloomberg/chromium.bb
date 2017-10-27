@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorkletGlobalScope.h"
+#include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptModule.h"
@@ -13,10 +13,10 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
-#include "modules/compositorworker/AnimationWorklet.h"
-#include "modules/compositorworker/AnimationWorkletThread.h"
-#include "modules/compositorworker/Animator.h"
-#include "modules/compositorworker/AnimatorDefinition.h"
+#include "modules/animationworklet/AnimationWorklet.h"
+#include "modules/animationworklet/AnimationWorkletThread.h"
+#include "modules/animationworklet/Animator.h"
+#include "modules/animationworklet/AnimatorDefinition.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/loader/fetch/AccessControlStatus.h"

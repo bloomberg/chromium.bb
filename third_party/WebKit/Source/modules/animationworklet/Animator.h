@@ -5,7 +5,7 @@
 #ifndef Animator_h
 #define Animator_h
 
-#include "modules/compositorworker/EffectProxy.h"
+#include "modules/animationworklet/EffectProxy.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"

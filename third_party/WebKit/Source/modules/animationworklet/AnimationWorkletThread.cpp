@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimationWorkletThread.h"
+#include "modules/animationworklet/AnimationWorkletThread.h"
 
 #include <memory>
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkletThreadHolder.h"
-#include "modules/compositorworker/AnimationWorkletGlobalScope.h"
+#include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

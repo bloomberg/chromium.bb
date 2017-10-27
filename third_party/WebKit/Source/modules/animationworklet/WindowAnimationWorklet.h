@@ -7,7 +7,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
-#include "modules/compositorworker/AnimationWorklet.h"
+#include "modules/animationworklet/AnimationWorklet.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

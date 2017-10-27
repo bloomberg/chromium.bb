@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/compositorworker/AnimatorDefinition.h"
+#include "modules/animationworklet/AnimatorDefinition.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "modules/compositorworker/Animator.h"
+#include "modules/animationworklet/Animator.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8ObjectConstructor.h"
