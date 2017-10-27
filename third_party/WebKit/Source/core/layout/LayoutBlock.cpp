@@ -1420,6 +1420,11 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
                      LayoutUnit(style_to_use.LogicalMinWidth().Value())));
   }
 
+  LayoutUnit border_and_padding = BorderAndPaddingLogicalWidth();
+  DCHECK_GE(border_and_padding, LayoutUnit());
+  min_preferred_logical_width_ += border_and_padding;
+  max_preferred_logical_width_ += border_and_padding;
+
   // Table layout uses integers, ceil the preferred widths to ensure that they
   // can contain the contents.
   if (IsTableCell()) {
@@ -1428,11 +1433,6 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
     max_preferred_logical_width_ =
         LayoutUnit(max_preferred_logical_width_.Ceil());
   }
-
-  LayoutUnit border_and_padding = BorderAndPaddingLogicalWidth();
-  DCHECK_GE(border_and_padding, LayoutUnit());
-  min_preferred_logical_width_ += border_and_padding;
-  max_preferred_logical_width_ += border_and_padding;
 
   ClearPreferredLogicalWidthsDirty();
 }
