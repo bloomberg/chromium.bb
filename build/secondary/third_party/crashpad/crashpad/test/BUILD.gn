@@ -49,6 +49,9 @@ static_library("crashpad_test") {
     "//third_party/crashpad/crashpad/snapshot",
     "//third_party/crashpad/crashpad/util",
   ]
+  data = [
+    "test_paths_test_data_root.txt",
+  ]
   include_dirs = [ ".." ]
   if (is_mac) {
     libs = [ "bsm" ]
@@ -57,11 +60,13 @@ static_library("crashpad_test") {
 
 static_library("crashpad_gtest_main") {
   testonly = true
+  defines = [ "CRASHPAD_IN_CHROMIUM" ]
   sources = [
     "gtest_main.cc",
   ]
   deps = [
     ":crashpad_test",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
   include_dirs = [ ".." ]
@@ -69,11 +74,13 @@ static_library("crashpad_gtest_main") {
 
 static_library("crashpad_gmock_main") {
   testonly = true
+  defines = [ "CRASHPAD_IN_CHROMIUM" ]
   sources = [
     "gmock_main.cc",
   ]
   deps = [
     ":crashpad_test",
+    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -397,6 +397,10 @@
     "label": "//courgette:courgette_unittests",
     "type": "console_test_launcher",
   },
+  "crashpad_util_test": {
+    "label": "//third_party/crashpad/crashpad/util:crashpad_util_test",
+    "type": "console_test_launcher",
+  },
   "cronet_package": {
     "label": "//components/cronet/android:cronet_package",
     "type": "additional_compile_target",
