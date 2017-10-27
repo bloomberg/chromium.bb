@@ -156,8 +156,10 @@ void LayoutTestMessageFilter::OnBlockThirdPartyCookies(bool block) {
 }
 
 void LayoutTestMessageFilter::OnDeleteAllCookies() {
-  request_context_getter_->GetURLRequestContext()->cookie_store()
-      ->DeleteAllAsync(net::CookieStore::DeleteCallback());
+  net::URLRequestContext* context =
+      request_context_getter_->GetURLRequestContext();
+  if (context)
+    context->cookie_store()->DeleteAllAsync(net::CookieStore::DeleteCallback());
 }
 
 void LayoutTestMessageFilter::OnSetPermission(
