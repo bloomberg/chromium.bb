@@ -387,7 +387,7 @@ void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
 
   target_tree->SetPropertyTrees(&property_trees_);
 
-  ScrollNode* scrolling_node = nullptr;
+  const ScrollNode* scrolling_node = nullptr;
   if (scrolling_element_id) {
     auto& scroll_tree = target_tree->property_trees()->scroll_tree;
     scrolling_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
@@ -623,7 +623,7 @@ int LayerTreeImpl::LastScrolledScrollNodeIndex() const {
   return last_scrolled_scroll_node_index_;
 }
 
-void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
+void LayerTreeImpl::SetCurrentlyScrollingNode(const ScrollNode* node) {
   if (node)
     last_scrolled_scroll_node_index_ = node->id;
 
