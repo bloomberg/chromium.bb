@@ -1539,9 +1539,6 @@ extern const char kFileManagerTouchModeDescription[];
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
 
-extern const char kFloatingVirtualKeyboardName[];
-extern const char kFloatingVirtualKeyboardDescription[];
-
 extern const char kForceEnableStylusToolsName[];
 extern const char kForceEnableStylusToolsDescription[];
 

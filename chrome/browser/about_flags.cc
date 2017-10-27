@@ -1759,10 +1759,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalInputViewFeaturesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(
          keyboard::switches::kEnableExperimentalInputViewFeatures)},
-    {"floating-virtual-keyboard",
-     flag_descriptions::kFloatingVirtualKeyboardName,
-     flag_descriptions::kFloatingVirtualKeyboardDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(keyboard::switches::kEnableFloatingVirtualKeyboard)},
     {"gesture-typing", flag_descriptions::kGestureTypingName,
      flag_descriptions::kGestureTypingDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},
