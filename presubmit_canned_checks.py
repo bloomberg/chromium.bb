@@ -1279,3 +1279,32 @@ def CheckCIPDPackages(input_api, output_api, platforms, packages):
   for k, v in packages.iteritems():
     manifest.append('%s %s' % (k, v))
   return CheckCIPDManifest(input_api, output_api, content='\n'.join(manifest))
+
+
+def CheckVPythonSpec(input_api, output_api, file_filter=None):
+  """Validates any changed .vpython files with vpython verification tool.
+
+  Args:
+    input_api: Bag of input related interfaces.
+    output_api: Bag of output related interfaces.
+    file_filter: Custom function that takes a path (relative to client root) and
+      returns boolean, which is used to filter files for which to apply the
+      verification to. Defaults to any path ending with .vpython, which captures
+      both global .vpython and <script>.vpython files.
+
+  Returns:
+    A list of input_api.Command objects containing verification commands.
+  """
+  file_filter = file_filter or (lambda f: f.LocalPath().endswith('.vpython'))
+  affected_files = input_api.AffectedFiles(file_filter=file_filter)
+  affected_files = map(lambda f: f.AbsoluteLocalPath(), affected_files)
+
+  commands = []
+  for f in affected_files:
+    commands.append(input_api.Command(
+      'Verify %s' % f,
+      ['vpython', '-vpython-spec', f, '-vpython-tool', 'verify'],
+      {'stderr': input_api.subprocess.STDOUT},
+      output_api.PresubmitError))
+
+  return commands

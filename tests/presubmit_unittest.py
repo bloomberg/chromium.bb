@@ -1707,6 +1707,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckGNFormatted',
       'CheckRietveldTryJobExecution',
       'CheckSingletonInHeaders',
+      'CheckVPythonSpec',
       'RunPythonUnitTests', 'RunPylint',
       'RunUnitTests', 'RunUnitTestsInDirectory',
       'GetCodereviewOwnerAndReviewers',
@@ -2831,6 +2832,31 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(command.cmd,
         ['cipd', 'ensure-file-verify', '-ensure-file=-'])
     self.assertEquals(command.kwargs, {'stdin': content})
+
+  def testCannedCheckVPythonSpec(self):
+    change = presubmit.Change('a', 'b', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+
+    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
+    affected_file.AbsoluteLocalPath().AndReturn('/path1/to/.vpython')
+    input_api.AffectedFiles(
+        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
+
+    self.mox.ReplayAll()
+
+    commands = presubmit_canned_checks.CheckVPythonSpec(
+        input_api, presubmit.OutputApi)
+    self.assertEqual(len(commands), 1)
+    self.assertEqual(commands[0].name, 'Verify /path1/to/.vpython')
+    self.assertEqual(commands[0].cmd, [
+      'vpython',
+      '-vpython-spec', '/path1/to/.vpython',
+      '-vpython-tool', 'verify'
+    ])
+    self.assertDictEqual(
+        commands[0].kwargs, {'stderr': input_api.subprocess.STDOUT})
+    self.assertEqual(commands[0].message, presubmit.OutputApi.PresubmitError)
+    self.assertIsNone(commands[0].info)
 
 
 if __name__ == '__main__':
