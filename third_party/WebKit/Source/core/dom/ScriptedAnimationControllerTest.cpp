@@ -118,15 +118,15 @@ namespace {
 
 class RunTaskEventListener final : public EventListener {
  public:
-  RunTaskEventListener(WTF::Closure task)
+  RunTaskEventListener(WTF::RepeatingClosure task)
       : EventListener(kCPPEventListenerType), task_(std::move(task)) {}
-  void handleEvent(ExecutionContext*, Event*) override { task_(); }
+  void handleEvent(ExecutionContext*, Event*) override { task_.Run(); }
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }
 
  private:
-  WTF::Closure task_;
+  WTF::RepeatingClosure task_;
 };
 
 }  // anonymous namespace
@@ -155,11 +155,11 @@ namespace {
 class RunTaskCallback final
     : public FrameRequestCallbackCollection::FrameCallback {
  public:
-  RunTaskCallback(WTF::Closure task) : task_(std::move(task)) {}
-  void Invoke(double) override { task_(); }
+  RunTaskCallback(WTF::RepeatingClosure task) : task_(std::move(task)) {}
+  void Invoke(double) override { task_.Run(); }
 
  private:
-  WTF::Closure task_;
+  WTF::RepeatingClosure task_;
 };
 
 }  // anonymous namespace

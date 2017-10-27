@@ -73,25 +73,28 @@ class SetContentDecryptionModuleResult final
   // ContentDecryptionModuleResult implementation.
   void Complete() override {
     DVLOG(EME_LOG_LEVEL) << __func__ << ": promise resolved.";
-    success_callback_();
+    std::move(success_callback_).Run();
   }
 
   void CompleteWithContentDecryptionModule(
       WebContentDecryptionModule*) override {
     NOTREACHED();
-    failure_callback_(kInvalidStateError, "Unexpected completion.");
+    std::move(failure_callback_)
+        .Run(kInvalidStateError, "Unexpected completion.");
   }
 
   void CompleteWithSession(
       WebContentDecryptionModuleResult::SessionStatus status) override {
     NOTREACHED();
-    failure_callback_(kInvalidStateError, "Unexpected completion.");
+    std::move(failure_callback_)
+        .Run(kInvalidStateError, "Unexpected completion.");
   }
 
   void CompleteWithKeyStatus(
       WebEncryptedMediaKeyInformation::KeyStatus key_status) override {
     NOTREACHED();
-    failure_callback_(kInvalidStateError, "Unexpected completion.");
+    std::move(failure_callback_)
+        .Run(kInvalidStateError, "Unexpected completion.");
   }
 
   void CompleteWithError(WebContentDecryptionModuleException code,
@@ -112,7 +115,8 @@ class SetContentDecryptionModuleResult final
     DVLOG(EME_LOG_LEVEL) << __func__ << ": promise rejected with code " << code
                          << " and message: " << result.ToString();
 
-    failure_callback_(WebCdmExceptionToExceptionCode(code), result.ToString());
+    std::move(failure_callback_)
+        .Run(WebCdmExceptionToExceptionCode(code), result.ToString());
   }
 
  private:

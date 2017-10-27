@@ -30,7 +30,7 @@ class CORE_EXPORT ElementVisibilityObserver final
   WTF_MAKE_NONCOPYABLE(ElementVisibilityObserver);
 
  public:
-  using VisibilityCallback = Function<void(bool), WTF::kSameThreadAffinity>;
+  using VisibilityCallback = WTF::RepeatingFunction<void(bool)>;
 
   ElementVisibilityObserver(Element*, VisibilityCallback);
   virtual ~ElementVisibilityObserver();

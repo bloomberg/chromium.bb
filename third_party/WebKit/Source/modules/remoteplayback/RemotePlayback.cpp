@@ -51,7 +51,7 @@ void RunRemotePlaybackTask(ExecutionContext* context,
                            WTF::Closure task,
                            std::unique_ptr<int> task_id) {
   probe::AsyncTask async_task(context, task_id.get());
-  task();
+  std::move(task).Run();
 }
 
 WebURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {

@@ -63,7 +63,7 @@ void RunCallback(ExecutionContext* execution_context,
     return;
   DCHECK(execution_context->IsContextThread());
   probe::AsyncTask async_task(execution_context, identifier.get());
-  task();
+  std::move(task).Run();
 }
 
 }  // namespace

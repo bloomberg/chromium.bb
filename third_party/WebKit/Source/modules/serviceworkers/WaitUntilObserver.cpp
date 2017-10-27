@@ -71,7 +71,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
     DCHECK(observer_);
     DCHECK(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
     if (callback_)
-      callback_(value);
+      callback_.Run(value);
     // According from step 4 of ExtendableEvent::waitUntil() in spec:
     // https://w3c.github.io/ServiceWorker/#dom-extendableevent-waituntil
     // "Upon fulfillment or rejection of f, queue a microtask to run these

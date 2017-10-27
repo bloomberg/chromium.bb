@@ -14,7 +14,7 @@ class MediaControlsImpl;
 
 class MediaControlsWindowEventListener final : public EventListener {
  public:
-  using Callback = Function<void(), WTF::kSameThreadAffinity>;
+  using Callback = WTF::RepeatingFunction<void()>;
 
   static MediaControlsWindowEventListener* Create(MediaControlsImpl*, Callback);
 

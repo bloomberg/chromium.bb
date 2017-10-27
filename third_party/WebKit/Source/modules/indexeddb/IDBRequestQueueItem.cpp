@@ -154,7 +154,7 @@ void IDBRequestQueueItem::OnResultLoadComplete() {
   ready_ = true;
 
   DCHECK(on_result_load_complete_);
-  on_result_load_complete_();
+  std::move(on_result_load_complete_).Run();
 }
 
 void IDBRequestQueueItem::OnResultLoadComplete(DOMException* error) {

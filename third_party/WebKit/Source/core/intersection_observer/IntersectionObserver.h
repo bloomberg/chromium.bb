@@ -29,9 +29,8 @@ class CORE_EXPORT IntersectionObserver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using EventCallback =
-      Function<void(const HeapVector<Member<IntersectionObserverEntry>>&),
-               WTF::kSameThreadAffinity>;
+  using EventCallback = WTF::RepeatingFunction<void(
+      const HeapVector<Member<IntersectionObserverEntry>>&)>;
 
   static IntersectionObserver* Create(const IntersectionObserverInit&,
                                       IntersectionObserverDelegate&,

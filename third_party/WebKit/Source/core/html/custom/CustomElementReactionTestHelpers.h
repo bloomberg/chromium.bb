@@ -38,7 +38,7 @@ class Call : public Command {
   using Callback = WTF::Function<void(Element*)>;
   Call(Callback callback) : callback_(std::move(callback)) {}
   ~Call() override = default;
-  void Run(Element* element) override { callback_(element); }
+  void Run(Element* element) override { std::move(callback_).Run(element); }
 
  private:
   Callback callback_;

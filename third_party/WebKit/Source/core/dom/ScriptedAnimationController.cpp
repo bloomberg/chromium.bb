@@ -90,7 +90,7 @@ void ScriptedAnimationController::RunTasks() {
   Vector<WTF::Closure> tasks;
   tasks.swap(task_queue_);
   for (auto& task : tasks)
-    task();
+    std::move(task).Run();
 }
 
 void ScriptedAnimationController::DispatchEvents(

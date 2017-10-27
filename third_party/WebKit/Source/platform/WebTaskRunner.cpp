@@ -32,7 +32,7 @@ namespace blink {
 namespace {
 
 void RunCrossThreadClosure(CrossThreadClosure task) {
-  task();
+  std::move(task).Run();
 }
 
 }  // namespace
@@ -72,7 +72,7 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
   void Run(const TaskHandle&) {
     WTF::Closure task = std::move(task_);
     weak_ptr_factory_.RevokeAll();
-    task();
+    std::move(task).Run();
   }
 
  private:

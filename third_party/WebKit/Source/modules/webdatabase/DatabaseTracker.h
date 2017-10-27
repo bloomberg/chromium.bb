@@ -78,7 +78,7 @@ class MODULES_EXPORT DatabaseTracker {
 
   void CloseDatabasesImmediately(SecurityOrigin*, const String& name);
 
-  using DatabaseCallback = Function<void(Database*)>;
+  using DatabaseCallback = WTF::RepeatingFunction<void(Database*)>;
   void ForEachOpenDatabaseInPage(Page*, DatabaseCallback);
 
   void PrepareToOpenDatabase(Database*);

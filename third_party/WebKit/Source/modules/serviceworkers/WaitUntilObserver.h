@@ -22,7 +22,8 @@ class ScriptState;
 class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollectedFinalized<WaitUntilObserver> {
  public:
-  using PromiseSettledCallback = Function<void(const ScriptValue&)>;
+  using PromiseSettledCallback =
+      WTF::RepeatingFunction<void(const ScriptValue&)>;
 
   enum EventType {
     kAbortPayment,
