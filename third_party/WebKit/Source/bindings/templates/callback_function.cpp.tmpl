@@ -83,15 +83,6 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
   return true;
 }
 
-{{cpp_class}}* NativeValueTraits<{{cpp_class}}>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  {{cpp_class}}* nativeValue = {{cpp_class}}::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "{{callback_function_name}}"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink
 
 {% endfilter %}{# format_blink_cpp_source_code #}

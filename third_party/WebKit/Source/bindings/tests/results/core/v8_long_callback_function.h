@@ -34,11 +34,6 @@ class CORE_EXPORT V8LongCallbackFunction final : public CallbackFunctionBase {
   V8LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8LongCallbackFunction> : public NativeValueTraitsBase<V8LongCallbackFunction> {
-  CORE_EXPORT static V8LongCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8LongCallbackFunction_h

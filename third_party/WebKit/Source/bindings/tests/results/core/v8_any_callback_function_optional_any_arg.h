@@ -34,11 +34,6 @@ class CORE_EXPORT V8AnyCallbackFunctionOptionalAnyArg final : public CallbackFun
   V8AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8AnyCallbackFunctionOptionalAnyArg> : public NativeValueTraitsBase<V8AnyCallbackFunctionOptionalAnyArg> {
-  CORE_EXPORT static V8AnyCallbackFunctionOptionalAnyArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8AnyCallbackFunctionOptionalAnyArg_h

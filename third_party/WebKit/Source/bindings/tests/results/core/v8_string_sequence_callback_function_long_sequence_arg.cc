@@ -78,13 +78,4 @@ bool V8StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* scri
   return true;
 }
 
-V8StringSequenceCallbackFunctionLongSequenceArg* NativeValueTraits<V8StringSequenceCallbackFunctionLongSequenceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  V8StringSequenceCallbackFunctionLongSequenceArg* nativeValue = V8StringSequenceCallbackFunctionLongSequenceArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "StringSequenceCallbackFunctionLongSequenceArg"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink

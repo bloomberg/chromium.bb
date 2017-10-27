@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class CallbackFunctionBase;
+
 // Boolean
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLBoolean>
@@ -525,6 +527,27 @@ struct NativeValueTraits<IDLRecord<K, V>>
     }
     // "5. Return result."
     return result;
+  }
+};
+
+// Callback functions
+template <typename T>
+struct NativeValueTraits<
+    T,
+    typename std::enable_if<
+        std::is_base_of<CallbackFunctionBase, T>::value>::type>
+    : public NativeValueTraitsBase<T> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    // Not implemented because of no use case so far.
+    CHECK(false)
+        // Emit a message so that NativeValueTraitsImplTest.IDLCallbackFunction
+        // test can confirm that it's hitting this specific failure. i.e.
+        // the template resolution is working as expected.
+        << "NativeValueTraits<CallbackFunctionBase>::NativeValue "
+        << "is not yet implemented.";
+    return nullptr;
   }
 };
 

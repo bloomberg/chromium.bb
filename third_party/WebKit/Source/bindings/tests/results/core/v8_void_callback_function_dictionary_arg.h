@@ -36,11 +36,6 @@ class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public CallbackFun
   V8VoidCallbackFunctionDictionaryArg(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8VoidCallbackFunctionDictionaryArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionDictionaryArg> {
-  CORE_EXPORT static V8VoidCallbackFunctionDictionaryArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8VoidCallbackFunctionDictionaryArg_h

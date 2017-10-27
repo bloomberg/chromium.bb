@@ -5,6 +5,7 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 
 #include <utility>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/ToV8ForCore.h"
@@ -12,6 +13,7 @@
 #include "bindings/core/v8/V8Internals.h"
 #include "bindings/core/v8/v8_test_sequence_callback.h"
 #include "platform/wtf/Vector.h"
+#include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -20,27 +22,24 @@ namespace {
 
 TEST(NativeValueTraitsImplTest, IDLInterface) {
   V8TestingScope scope;
-  {
-    DummyExceptionStateForTesting exception_state;
-    Internals* internals = NativeValueTraits<Internals>::NativeValue(
-        scope.GetIsolate(), v8::Number::New(scope.GetIsolate(), 42),
-        exception_state);
-    EXPECT_TRUE(exception_state.HadException());
-    EXPECT_EQ("Failed to convert value to 'Internals'.",
-              exception_state.Message());
-    EXPECT_EQ(nullptr, internals);
-  }
-  {
-    DummyExceptionStateForTesting exception_state;
-    V8TestSequenceCallback* callback_function =
-        NativeValueTraits<V8TestSequenceCallback>::NativeValue(
-            scope.GetIsolate(), v8::Undefined(scope.GetIsolate()),
-            exception_state);
-    EXPECT_TRUE(exception_state.HadException());
-    EXPECT_EQ("Failed to convert value to 'TestSequenceCallback'.",
-              exception_state.Message());
-    EXPECT_EQ(nullptr, callback_function);
-  }
+  DummyExceptionStateForTesting exception_state;
+  Internals* internals = NativeValueTraits<Internals>::NativeValue(
+      scope.GetIsolate(), v8::Number::New(scope.GetIsolate(), 42),
+      exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ("Failed to convert value to 'Internals'.",
+            exception_state.Message());
+  EXPECT_EQ(nullptr, internals);
+}
+
+TEST(NativeValueTraitsImplTest, IDLCallbackFunction) {
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  v8::Local<v8::Function> function =
+      v8::Function::New(scope.GetContext(), nullptr).ToLocalChecked();
+  ASSERT_DEATH(NativeValueTraits<V8TestSequenceCallback>::NativeValue(
+                   scope.GetIsolate(), function, exception_state),
+               "NativeValueTraits<CallbackFunctionBase>::NativeValue");
 }
 
 void ThrowException(v8::Local<v8::Name>,

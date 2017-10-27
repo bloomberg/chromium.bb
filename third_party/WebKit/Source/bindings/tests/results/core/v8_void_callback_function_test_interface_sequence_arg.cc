@@ -75,13 +75,4 @@ bool V8VoidCallbackFunctionTestInterfaceSequenceArg::call(ScriptWrappable* scrip
   return true;
 }
 
-V8VoidCallbackFunctionTestInterfaceSequenceArg* NativeValueTraits<V8VoidCallbackFunctionTestInterfaceSequenceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  V8VoidCallbackFunctionTestInterfaceSequenceArg* nativeValue = V8VoidCallbackFunctionTestInterfaceSequenceArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "VoidCallbackFunctionTestInterfaceSequenceArg"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink

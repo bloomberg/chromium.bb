@@ -34,11 +34,6 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
   V8VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8VoidCallbackFunctionModules> : public NativeValueTraitsBase<V8VoidCallbackFunctionModules> {
-  MODULES_EXPORT static V8VoidCallbackFunctionModules* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8VoidCallbackFunctionModules_h

@@ -27,11 +27,6 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   {{cpp_class}}(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<{{cpp_class}}> : public NativeValueTraitsBase<{{cpp_class}}> {
-  {{exported}}static {{cpp_class}}* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // {{cpp_class}}_h
