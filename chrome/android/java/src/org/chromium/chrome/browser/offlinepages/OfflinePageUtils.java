@@ -51,11 +51,7 @@ public class OfflinePageUtils {
     /** Background task tag to differentiate from other task types */
     public static final String TASK_TAG = "OfflinePageUtils";
 
-    public static final String EXTERNAL_MHTML_FILE_PATH = "offline-pages";
-
     private static final int DEFAULT_SNACKBAR_DURATION_MS = 6 * 1000; // 6 second
-
-    private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
 
     /**
      * Bit flags to be OR-ed together to build the context of a tab restore to be used to identify
