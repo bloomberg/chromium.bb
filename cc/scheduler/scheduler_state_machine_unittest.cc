@@ -2199,7 +2199,10 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, ImplSideInvalidationOnlyInsideDeadline) {
+TEST(SchedulerStateMachineTest,
+     ImplSideInvalidationAndMainFrame_NoMainFrameRequest) {
+  // No main frame request or any update in the last frame, invalidation runs
+  // immediately.
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state);
@@ -2207,8 +2210,81 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationOnlyInsideDeadline) {
   bool needs_first_draw_on_activation = true;
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     ImplSideInvalidationAndMainFrame_MainFrameRequest) {
+  // Main frame request and no abort history from the last frame, invalidation
+  // waits until deadline.
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsBeginMainFrame();
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     ImplSideInvalidationAndMainFrame_LastFrameCommit) {
+  // Main frame committed in the last impl frame, invalidation waits until the
+  // deadline.
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  state.SetNeedsBeginMainFrame();
+  state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     ImplSideInvalidationAndMainFrame_LastFrameAborted) {
+  // Last main frame was aborted. An invalidation is performed even if a main
+  // frame request is pending.
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  state.SetNeedsBeginMainFrame();
+  state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  state.SetNeedsBeginMainFrame();
+  state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
 }

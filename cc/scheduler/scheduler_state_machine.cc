@@ -595,24 +595,22 @@ bool SchedulerStateMachine::ShouldPerformImplSideInvalidation() const {
   if (!needs_impl_side_invalidation_)
     return false;
 
-  // Only perform impl side invalidation after the frame ends so that we wait
-  // for any commit to happen before invalidating.
-  // TODO(khushalsagar): Invalidate at the beginning of the frame if there is no
-  // commit request from the main thread.
-  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
-    return false;
-
-  if (!CouldCreatePendingTree())
-    return false;
-
-  // If the main thread is ready to commit, the impl-side invalidations will be
-  // merged with the incoming main frame.
-  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT)
-    return false;
-
   // Don't invalidate if we've already done so either from the scheduler or as
   // part of commit.
   if (did_perform_impl_side_invalidation_)
+    return false;
+
+  // No invalidations should be done outside the impl frame.
+  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE)
+    return false;
+
+  // We need to be able to create a pending tree to perform an invalidation.
+  if (!CouldCreatePendingTree())
+    return false;
+
+  // Check if we should defer invalidating so we can merge these invalidations
+  // with the main frame.
+  if (ShouldDeferInvalidatingForMainFrame())
     return false;
 
   // If invalidations go to the active tree and we are waiting for the previous
@@ -623,6 +621,58 @@ bool SchedulerStateMachine::ShouldPerformImplSideInvalidation() const {
   }
 
   return true;
+}
+
+bool SchedulerStateMachine::ShouldDeferInvalidatingForMainFrame() const {
+  DCHECK_NE(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE);
+
+  // If the main thread is ready to commit, the impl-side invalidations will be
+  // merged with the incoming main frame.
+  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT)
+    return true;
+
+  // If we are inside the deadline, and haven't performed an invalidation yet,
+  // do it now.
+  // TODO(khushalsagar): We could do better by scheduling a deadline for
+  // invalidating prior to the draw deadline. Since invalidating now implies
+  // this pending tree will miss the draw for this frame. And scheduling this
+  // deadline should only be required if:
+  // a) There is a request for impl-side invalidation.
+  // b) We have to wait on the main thread to respond to a main frame.
+  // In addition, the deadline task can be cancelled if the main thread
+  // responds before it runs.
+  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
+    return false;
+
+  // If commits are being aborted (which would be the common case for a
+  // compositor scroll), don't defer the invalidation.
+  if (last_frame_events_.commit_had_no_updates)
+    return false;
+
+  // If there is a request for a main frame, then this could either be a
+  // request that we need to respond to in this impl frame or its possible the
+  // request is for the next frame (a rAF issued at the beginning of the current
+  // main frame). In either case, defer invalidating so we can merge it with the
+  // main frame.
+  if (needs_begin_main_frame_)
+    return true;
+
+  // If the main frame was already sent, wait for the main thread to respond.
+  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_SENT ||
+      begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_STARTED)
+    return true;
+
+  // If the main thread committed during the last frame, i.e. it was not
+  // aborted, then we might get another main frame request later in the impl
+  // frame. This could be the case for a timer based animation running on the
+  // main thread which doesn't align with our vsync. For such cases,
+  // conservatively defer invalidating until the deadline.
+  if (last_frame_events_.did_commit_during_frame)
+    return true;
+
+  // If the main thread is not requesting any frames, perform the invalidation
+  // at the beginning of the impl frame.
+  return false;
 }
 
 void SchedulerStateMachine::WillPerformImplSideInvalidation() {
@@ -957,6 +1007,11 @@ void SchedulerStateMachine::OnBeginImplFrame(uint32_t source_id,
                                              uint64_t sequence_number) {
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
   current_frame_number_++;
+
+  // Cache the values from the previous impl frame before reseting them for this
+  // frame.
+  last_frame_events_.commit_had_no_updates = last_commit_had_no_updates_;
+  last_frame_events_.did_commit_during_frame = did_commit_during_frame_;
 
   last_commit_had_no_updates_ = false;
   did_draw_in_last_frame_ = false;
