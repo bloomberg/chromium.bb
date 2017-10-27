@@ -3582,10 +3582,6 @@ crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure 
 
 crbug.com/769056 fast/text/emoji-web-font.html [ Failure ]
 
-# Updated baselines needed after Skia roll
-crbug.com/778204 svg/W3C-SVG-1.1/filters-offset-01-b.svg [ NeedsManualRebaseline ]
-crbug.com/778204 svg/filters/feOffset.svg [ NeedsManualRebaseline ]
-
 # Paint-timing tests timeout without threaded-compositing, so skip them.
 crbug.com/720047 external/wpt/paint-timing [ Skip ]
 
