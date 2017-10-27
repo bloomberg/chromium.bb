@@ -1409,6 +1409,16 @@ static INLINE void transpose_int32(int32_t *dst, int dst_stride,
     for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
 }
 
+static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
+  return
+#if CONFIG_TX64X64 && !CONFIG_DAALA_TX
+      tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64
+          ? 1024
+          :
+#endif  // CONFIG_TX64X64 && !CONFIG_DAALA_TX
+          tx_size_2d[tx_size];
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

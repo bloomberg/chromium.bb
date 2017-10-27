@@ -75,7 +75,7 @@ class BlockErrorTest : public ::testing::TestWithParam<BlockErrorParam> {
     }
   }
 
-  intptr_t getCoeffNum() { return tx_size_2d[tx_size_]; }
+  intptr_t getCoeffNum() { return av1_get_max_eob(tx_size_); }
 
   void FillRandomData() {
     const intptr_t block_size = getCoeffNum();

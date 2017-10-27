@@ -134,7 +134,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const int eob = p->eobs[block];
   assert(mb->qindex > 0);
   assert((!plane_type && !plane) || (plane_type && plane));
-  assert(eob <= tx_size_2d[tx_size]);
+  assert(eob <= av1_get_max_eob(tx_size));
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
   const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -510,12 +510,20 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #if CONFIG_AOM_QM
   int seg_id = mbmi->segment_id;
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
-  const qm_val_t *qmatrix = IS_2D_TRANSFORM(tx_type)
-                                ? pd->seg_qmatrix[seg_id][tx_size]
-                                : cm->gqmatrix[NUM_QM_LEVELS - 1][0][tx_size];
-  const qm_val_t *iqmatrix = IS_2D_TRANSFORM(tx_type)
-                                 ? pd->seg_iqmatrix[seg_id][tx_size]
-                                 : cm->giqmatrix[NUM_QM_LEVELS - 1][0][tx_size];
+  const TX_SIZE qm_tx_size =
+#if CONFIG_TX64X64
+      tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64
+          ? TX_32X32
+          :
+#endif  // CONFIG_TX64X64
+          tx_size;
+  const qm_val_t *qmatrix =
+      IS_2D_TRANSFORM(tx_type) ? pd->seg_qmatrix[seg_id][qm_tx_size]
+                               : cm->gqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+  const qm_val_t *iqmatrix =
+      IS_2D_TRANSFORM(tx_type)
+          ? pd->seg_iqmatrix[seg_id][qm_tx_size]
+          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 #endif
 
   TxfmParam txfm_param;
@@ -531,7 +539,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif
 #endif
 
-  const int tx2d_size = tx_size_2d[tx_size];
   QUANT_PARAM qparam;
   const int16_t *src_diff;
 
@@ -611,16 +618,17 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_TXMG
 
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
+    const int n_coeffs = av1_get_max_eob(tx_size);
     if (LIKELY(!x->skip_block)) {
 #if CONFIG_DAALA_TX
-      quant_func_list[xform_quant_idx][1](coeff, tx2d_size, p, qcoeff, dqcoeff,
+      quant_func_list[xform_quant_idx][1](coeff, n_coeffs, p, qcoeff, dqcoeff,
                                           eob, scan_order, &qparam);
 #else
       quant_func_list[xform_quant_idx][txfm_param.is_hbd](
-          coeff, tx2d_size, p, qcoeff, dqcoeff, eob, scan_order, &qparam);
+          coeff, n_coeffs, p, qcoeff, dqcoeff, eob, scan_order, &qparam);
 #endif
     } else {
-      av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
+      av1_quantize_skip(n_coeffs, qcoeff, dqcoeff, eob);
     }
   }
 #if CONFIG_LV_MAP

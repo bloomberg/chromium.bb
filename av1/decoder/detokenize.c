@@ -110,7 +110,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         int ctx, const int16_t *scan, const int16_t *nb,
                         int16_t *max_scan_line, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  const int max_eob = tx_size_2d[tx_size];
+  const int max_eob = av1_get_max_eob(tx_size);
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
 #if CONFIG_AOM_QM && !CONFIG_NEW_QUANT
   const qm_val_t *iqmatrix = iqm[tx_size];

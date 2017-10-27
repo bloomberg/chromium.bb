@@ -327,7 +327,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
-  const int seg_eob = tx_size_2d[tx_size];
+  const int seg_eob = av1_get_max_eob(tx_size);
   int c;
   const int bwl = tx_size_wide_log2[tx_size];
   const int width = tx_size_wide[tx_size];
@@ -683,7 +683,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
 #endif
 
-  const int seg_eob = tx_size_2d[tx_size];
+  const int seg_eob = av1_get_max_eob(tx_size);
   int eob_cost = get_eob_cost(eob, seg_eob, coeff_costs, tx_type);
 
   av1_get_br_level_counts(levels, width, height, level_counts);
@@ -1358,7 +1358,7 @@ static int get_low_coeff_cost(int coeff_idx, const TxbCache *txb_cache,
 
 static INLINE void set_eob(TxbInfo *txb_info, int eob) {
   txb_info->eob = eob;
-  txb_info->seg_eob = tx_size_2d[txb_info->tx_size];
+  txb_info->seg_eob = av1_get_max_eob(txb_info->tx_size);
 }
 
 // TODO(angiebird): add static to this function once it's called
@@ -1814,7 +1814,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   int update = 0;
   // return update; //TODO: training only.
   if (txb_info->eob == 0) return update;
-  const int max_eob = tx_size_2d[txb_info->tx_size];
+  const int max_eob = av1_get_max_eob(txb_info->tx_size);
 
 #if TEST_OPTIMIZE_TXB
   int64_t sse;
@@ -1967,7 +1967,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   int cost_diff = 0;
   int64_t dist_diff = 0;
   int64_t rd_diff = 0;
-  const int max_eob = tx_size_2d[txb_info->tx_size];
+  const int max_eob = av1_get_max_eob(txb_info->tx_size);
 
 #if TEST_OPTIMIZE_TXB
   int64_t sse;
@@ -2095,7 +2095,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
   const int16_t *dequant = p->dequant_QTX;
-  const int seg_eob = tx_size_2d[tx_size];
+  const int seg_eob = av1_get_max_eob(tx_size);
   const int bwl = tx_size_wide_log2[tx_size];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];

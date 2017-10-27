@@ -137,7 +137,7 @@ static INLINE int av1_get_token_cost(int v, int16_t *token, int cat6_bits) {
 
 static INLINE int av1_get_tx_eob(const struct segmentation *seg, int segment_id,
                                  TX_SIZE tx_size) {
-  const int eob_max = tx_size_2d[tx_size];
+  const int eob_max = av1_get_max_eob(tx_size);
   return segfeature_active(seg, segment_id, SEG_LVL_SKIP) ? 0 : eob_max;
 }
 

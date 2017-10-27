@@ -171,7 +171,7 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     }
   }
 
-  int coeff_num() const { return tx_size_2d[tx_size_]; }
+  int coeff_num() const { return av1_get_max_eob(tx_size_); }
 
   void FillCoeff(tran_low_t c) {
     const int n_coeffs = coeff_num();

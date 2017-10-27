@@ -487,10 +487,12 @@ void aom_qm_init(AV1_COMMON *cm) {
       current = 0;
       for (t = 0; t < TX_SIZES_ALL; ++t) {
         const int size = tx_size_2d[t];
-        // Don't use QM for sizes > 32x32
-        if (q == NUM_QM_LEVELS - 1 || size > 1024) {
+        if (q == NUM_QM_LEVELS - 1) {
           cm->gqmatrix[q][c][t] = NULL;
           cm->giqmatrix[q][c][t] = NULL;
+        } else if (size > 1024) {  // Reuse matrices for TX_32X32
+          cm->gqmatrix[q][c][t] = cm->gqmatrix[q][c][TX_32X32];
+          cm->giqmatrix[q][c][t] = cm->giqmatrix[q][c][TX_32X32];
         } else {
           assert(current + size <= QM_TOTAL_SIZE);
           cm->gqmatrix[q][c][t] = &wt_matrix_ref[q][c >= 1][current];

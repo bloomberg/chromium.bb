@@ -2528,6 +2528,10 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
   }
   // Zero out the bottom 64x32 area.
   memset(output + 32 * 64, 0, 32 * 64 * sizeof(*output));
+  // Re-pack non-zero coeffs in the first 32x32 indices.
+  for (int row = 1; row < 32; ++row) {
+    memcpy(output + row * 32, output + row * 64, 32 * sizeof(*output));
+  }
 }
 
 void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
@@ -2623,6 +2627,10 @@ void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
   for (int row = 0; row < n; ++row) {
     memset(output + row * n2 + n, 0, n * sizeof(*output));
   }
+  // Re-pack non-zero coeffs in the first 32x32 indices.
+  for (int row = 1; row < 32; ++row) {
+    memcpy(output + row * 32, output + row * 64, 32 * sizeof(*output));
+  }
 }
 
 void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
@@ -2714,6 +2722,7 @@ void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Zero out the bottom 32x32 area.
   memset(output + n * n, 0, n * n * sizeof(*output));
+  // Note: no repacking needed here.
 }
 #endif  // CONFIG_TX64X64
 

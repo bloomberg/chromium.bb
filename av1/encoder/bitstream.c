@@ -427,7 +427,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            TOKEN_STATS *token_stats) {
   const TOKENEXTRA *p = *tp;
   int count = 0;
-  const int seg_eob = tx_size_2d[tx_size];
+  const int seg_eob = av1_get_max_eob(tx_size);
 
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   if (tx_type == MRC_DCT && ((is_inter && SIGNAL_MRC_MASK_INTER) ||

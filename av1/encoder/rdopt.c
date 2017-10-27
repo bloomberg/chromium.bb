@@ -1929,7 +1929,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       ) {
     // Transform domain distortion computation is more efficient as it does
     // not involve an inverse transform, but it is less accurate.
-    const int buffer_length = tx_size_2d[tx_size];
+    const int buffer_length = av1_get_max_eob(tx_size);
     int64_t this_sse;
 // TX-domain results need to shift down to Q2/D10 to match pixel
 // domain distortion values which are in Q2^2
@@ -2126,7 +2126,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
   tran_low_t *const coeff = BLOCK_OFFSET(x->plane[plane].coeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[plane].dqcoeff, block);
-  const int buffer_length = tx_size_2d[tx_size];
+  const int buffer_length = av1_get_max_eob(tx_size);
   int64_t tmp_dist;
   int64_t tmp;
 #if CONFIG_DAALA_TX
@@ -3744,7 +3744,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
 #endif
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
-  const int buffer_length = tx_size_2d[tx_size];
+  const int buffer_length = av1_get_max_eob(tx_size);
   int64_t tmp_dist, tmp_sse;
 #if CONFIG_DIST_8X8
   int blk_w = block_size_wide[plane_bsize];
