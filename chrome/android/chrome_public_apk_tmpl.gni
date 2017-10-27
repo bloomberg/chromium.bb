@@ -112,7 +112,6 @@ template("monochrome_public_apk_tmpl") {
     app_as_shared_lib = true
     use_chromium_linker = false
     requires_sdk_api_level_23 = true
-    extensions_to_not_compress = ".lpak,.pak,.bin,.dat"
 
     # Webview supports all locales (has no omitted ones).
     aapt_locale_whitelist = locales

@@ -1408,6 +1408,315 @@ if (enable_java_templates) {
     }
   }
 
+  # Runs process_resources.py
+  template("process_resources") {
+    action(target_name) {
+      set_sources_assignment_filter([])
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                               "visibility",
+                             ])
+      script = "//build/android/gyp/process_resources.py"
+
+      depfile = "$target_gen_dir/$target_name.d"
+      outputs = [
+        invoker.zip_path,
+        invoker.r_text_out_path,
+      ]
+
+      _all_resource_dirs = []
+      sources = []
+
+      if (defined(invoker.resource_dirs)) {
+        _all_resource_dirs += invoker.resource_dirs
+
+        # Speed up "gn gen" by short-circuiting the empty directory.
+        if (invoker.resource_dirs != [ "//build/android/empty" ] &&
+            invoker.resource_dirs != []) {
+          _sources_build_rel =
+              exec_script("//build/android/gyp/find.py",
+                          rebase_path(invoker.resource_dirs, root_build_dir),
+                          "list lines")
+          sources += rebase_path(_sources_build_rel, ".", root_build_dir)
+        }
+      }
+
+      if (defined(invoker.generated_resource_dirs)) {
+        assert(defined(invoker.generated_resource_files))
+        _all_resource_dirs += invoker.generated_resource_dirs
+        sources += invoker.generated_resource_files
+      }
+
+      _android_aapt_path = android_default_aapt_path
+
+      _android_sdk_jar = android_sdk_jar
+      if (defined(invoker.alternative_android_sdk_jar)) {
+        _android_sdk_jar = invoker.alternative_android_sdk_jar
+      }
+
+      inputs = [
+        invoker.build_config,
+        invoker.android_manifest,
+        _android_aapt_path,
+        _android_sdk_jar,
+      ]
+
+      _rebased_all_resource_dirs =
+          rebase_path(_all_resource_dirs, root_build_dir)
+      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--android-sdk-jar",
+        rebase_path(_android_sdk_jar, root_build_dir),
+        "--aapt-path",
+        rebase_path(_android_aapt_path, root_build_dir),
+        "--android-manifest",
+        rebase_path(invoker.android_manifest, root_build_dir),
+        "--resource-dirs=$_rebased_all_resource_dirs",
+        "--resource-zip-out",
+        rebase_path(invoker.zip_path, root_build_dir),
+        "--r-text-out",
+        rebase_path(invoker.r_text_out_path, root_build_dir),
+        "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
+        "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
+        "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
+      ]
+      if (defined(invoker.srcjar_path)) {
+        outputs += [ invoker.srcjar_path ]
+        args += [
+          "--srcjar-out",
+          rebase_path(invoker.srcjar_path, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.r_text_in_path)) {
+        _r_text_in_path = invoker.r_text_in_path
+        inputs += [ _r_text_in_path ]
+        args += [
+          "--r-text-in",
+          rebase_path(_r_text_in_path, root_build_dir),
+        ]
+      }
+
+      if (!defined(invoker.generate_constant_ids) ||
+          !invoker.generate_constant_ids) {
+        args += [ "--non-constant-id" ]
+      }
+
+      if (defined(invoker.custom_package)) {
+        args += [
+          "--custom-package",
+          invoker.custom_package,
+        ]
+      }
+
+      if (defined(invoker.v14_skip) && invoker.v14_skip) {
+        args += [ "--v14-skip" ]
+      }
+
+      if (defined(invoker.shared_resources) && invoker.shared_resources) {
+        args += [ "--shared-resources" ]
+      }
+
+      if (defined(invoker.app_as_shared_lib) && invoker.app_as_shared_lib) {
+        args += [ "--app-as-shared-lib" ]
+      }
+
+      if (defined(invoker.include_all_resources) &&
+          invoker.include_all_resources) {
+        args += [ "--include-all-resources" ]
+      }
+
+      if (defined(invoker.all_resources_zip_path)) {
+        _all_resources_zip = invoker.all_resources_zip_path
+        outputs += [ _all_resources_zip ]
+        args += [
+          "--all-resources-zip-out",
+          rebase_path(_all_resources_zip, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.proguard_file)) {
+        outputs += [ invoker.proguard_file ]
+        args += [
+          "--proguard-file",
+          rebase_path(invoker.proguard_file, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.proguard_file_main_dex)) {
+        outputs += [ invoker.proguard_file_main_dex ]
+        args += [
+          "--proguard-file-main-dex",
+          rebase_path(invoker.proguard_file_main_dex, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.args)) {
+        args += invoker.args
+      }
+    }
+  }
+
+  # Runs aapt to create an .ap_ file, which is a zip file containing
+  # compiled xml and a resources.arsc file.
+  #
+  # Required Variables:
+  #   output: Path to .ap_ to create.
+  #   android_manifest: The AndroidManifest.xml for the apk.
+  #   version_code: The verison code to use.
+  #   version_name: The verison name to use.
+  # Optional Variables:
+  #   aapt_locale_whitelist: If set, all locales not in this list will be
+  #     stripped from resources.arsc.
+  #   alternative_android_sdk_jar: An alternative android sdk jar.
+  #   app_as_shared_lib: Enables --app-as-shared-lib.
+  #   exclude_xxxhdpi: Causes all drawable-xxxhdpi images to be excluded
+  #     (mipmaps are still included).
+  #   png_to_webp: If true, pngs (with the exception of 9-patch) are
+  #     converted to webp.
+  #   post_process_script: Script to call to post-process the .ap_.
+  #   resources_zip: Resource .zip file created by process_resources to package.
+  #   shared_resources: Enables --shared-lib.
+  #   split_densities: A list of densities to create apk splits for.
+  #   split_languages: A list of language codes to create apk splits for.
+  #   xxxhdpi_whitelist: A list of globs used when exclude_xxxhdpi=true. Files
+  #     that match this whitelist will still be included.
+  template("package_resources") {
+    _post_process = defined(invoker.post_process_script)
+    _package_resources_target_name = target_name
+    _resource_packaged_apk_path = invoker.output
+    if (_post_process) {
+      _package_resources_target_name = "${target_name}__intermediate"
+      _resource_packaged_apk_path =
+          get_path_info(_resource_packaged_apk_path, "dir") + "/" +
+          get_path_info(_resource_packaged_apk_path, "name") +
+          ".intermediate.ap_"
+    }
+
+    action(_package_resources_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                               "visibility",
+                             ])
+
+      script = "//build/android/gyp/package_resources.py"
+      depfile = "${target_gen_dir}/${target_name}.d"
+      outputs = [
+        _resource_packaged_apk_path,
+      ]
+
+      _android_sdk_jar = android_sdk_jar
+      if (defined(invoker.alternative_android_sdk_jar)) {
+        _android_sdk_jar = invoker.alternative_android_sdk_jar
+      }
+
+      inputs = [
+        android_default_aapt_path,
+        _android_sdk_jar,
+        invoker.android_manifest,
+      ]
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--android-sdk-jar",
+        rebase_path(_android_sdk_jar, root_build_dir),
+        "--aapt-path",
+        rebase_path(android_default_aapt_path, root_build_dir),
+        "--android-manifest",
+        rebase_path(invoker.android_manifest, root_build_dir),
+        "--version-code",
+        invoker.version_code,
+        "--version-name",
+        invoker.version_name,
+        "--apk-path",
+        rebase_path(_resource_packaged_apk_path, root_build_dir),
+      ]
+
+      # Useful to have android:debuggable in the manifest even for Release
+      # builds. Just omit it for officai
+      if (debuggable_apks) {
+        args += [ "--debuggable" ]
+      }
+
+      if (defined(invoker.resources_zip)) {
+        inputs += [ invoker.resources_zip ]
+        args += [
+          "--resource-zips",
+          rebase_path(invoker.resources_zip, root_build_dir),
+        ]
+      }
+      if (defined(invoker.shared_resources) && invoker.shared_resources) {
+        args += [ "--shared-resources" ]
+      }
+      if (defined(invoker.app_as_shared_lib) && invoker.app_as_shared_lib) {
+        args += [ "--app-as-shared-lib" ]
+      }
+      if (defined(invoker.split_densities)) {
+        args += [ "--create-density-splits" ]
+        foreach(_density, invoker.split_densities) {
+          outputs += [ "${invoker.output}_${_density}" ]
+        }
+      }
+      if (defined(invoker.split_languages)) {
+        args += [ "--language-splits=${invoker.split_languages}" ]
+        foreach(_language, invoker.split_languages) {
+          outputs += [ "${invoker.output}_${_language}" ]
+        }
+      }
+      if (defined(invoker.aapt_locale_whitelist)) {
+        args += [ "--locale-whitelist=${invoker.aapt_locale_whitelist}" ]
+      }
+      if (defined(invoker.png_to_webp) && invoker.png_to_webp) {
+        _webp_target = "//third_party/libwebp:cwebp($host_toolchain)"
+        deps += [ _webp_target ]
+        args += [
+          "--png-to-webp",
+          "--webp-binary",
+          rebase_path(get_label_info(_webp_target, "root_out_dir") + "/cwebp",
+                      root_build_dir),
+        ]
+      }
+      if (defined(invoker.exclude_xxxhdpi) && invoker.exclude_xxxhdpi) {
+        args += [ "--exclude-xxxhdpi" ]
+        if (defined(invoker.xxxhdpi_whitelist)) {
+          args += [ "--xxxhdpi-whitelist=${invoker.xxxhdpi_whitelist}" ]
+        }
+      }
+    }
+
+    if (_post_process) {
+      action(target_name) {
+        depfile = "${target_gen_dir}/${target_name}.d"
+        script = invoker.post_process_script
+        args = [
+          "--depfile",
+          rebase_path(depfile, root_build_dir),
+          "--apk-path",
+          rebase_path(_resource_packaged_apk_path, root_build_dir),
+          "--output",
+          rebase_path(invoker.output, root_build_dir),
+        ]
+        inputs = [
+          _resource_packaged_apk_path,
+        ]
+        outputs = [
+          invoker.output,
+        ]
+        public_deps = [
+          ":${_package_resources_target_name}",
+        ]
+      }
+    }
+  }
+
   # Creates an unsigned .apk.
   #
   # Variables
@@ -1662,221 +1971,82 @@ if (enable_java_templates) {
       _split_languages = invoker.language_splits
     }
 
-    template("package_resources_helper") {
-      _resource_packaged_apk_path = invoker.resource_packaged_apk_path
-      _package_resources_target = target_name
-      _post_process = defined(invoker.post_process_package_resources_script)
-      if (_post_process) {
-        _package_resources_target = "${_package_resources_target}__intermediate"
-        _post_processed_resource_packaged_apk_path = _resource_packaged_apk_path
-        _resource_packaged_apk_path =
-            get_path_info(_resource_packaged_apk_path, "dir") + "/" +
-            get_path_info(_resource_packaged_apk_path, "name") +
-            ".intermediate.ap_"
-      }
-
-      action(_package_resources_target) {
-        deps = invoker.deps
-
-        script = "//build/android/gyp/package_resources.py"
-        depfile = "${target_gen_dir}/${target_name}.d"
-        outputs = [
-          _resource_packaged_apk_path,
-        ]
-
-        _android_aapt_path = android_default_aapt_path
-        if (defined(invoker.android_aapt_path)) {
-          _android_aapt_path = invoker.android_aapt_path
-        }
-
-        _android_sdk_jar = android_sdk_jar
-        if (defined(invoker.alternative_android_sdk_jar)) {
-          _android_sdk_jar = invoker.alternative_android_sdk_jar
-        }
-
-        inputs = [
-          _android_aapt_path,
-          _android_sdk_jar,
-          invoker.android_manifest,
-        ]
-        if (defined(_resources_zip)) {
-          inputs += [ _resources_zip ]
-        }
-
-        args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
-          "--android-sdk-jar",
-          rebase_path(_android_sdk_jar, root_build_dir),
-          "--aapt-path",
-          rebase_path(_android_aapt_path, root_build_dir),
-          "--android-manifest",
-          rebase_path(invoker.android_manifest, root_build_dir),
-          "--version-code",
-          _version_code,
-          "--version-name",
-          _version_name,
-          "--apk-path",
-          rebase_path(_resource_packaged_apk_path, root_build_dir),
-        ]
-
-        # Useful to have android:debuggable in the manifest even for Release
-        # builds. Just omit it for officai
-        if (debuggable_apks) {
-          args += [ "--debuggable" ]
-        }
-
-        if (defined(_resources_zip)) {
-          args += [
-            "--resource-zips",
-            rebase_path(_resources_zip, root_build_dir),
-          ]
-        }
-        if (_shared_resources) {
-          args += [ "--shared-resources" ]
-        }
-        if (_app_as_shared_lib) {
-          args += [ "--app-as-shared-lib" ]
-        }
-        if (_split_densities != []) {
-          args += [ "--create-density-splits" ]
-          foreach(_density, _split_densities) {
-            outputs += [ "${invoker.resource_packaged_apk_path}_${_density}" ]
-          }
-        }
-        if (_split_languages != []) {
-          args += [ "--language-splits=$_split_languages" ]
-          foreach(_language, _split_languages) {
-            outputs += [ "${invoker.resource_packaged_apk_path}_${_language}" ]
-          }
-        }
-        if (defined(invoker.aapt_locale_whitelist)) {
-          args += [ "--locale-whitelist=${invoker.aapt_locale_whitelist}" ]
-        }
-        if (defined(invoker.extensions_to_not_compress)) {
-          args += [
-            "--no-compress",
-            invoker.extensions_to_not_compress,
-          ]
-        }
-        if (defined(invoker.png_to_webp) && invoker.png_to_webp) {
-          _webp_target = "//third_party/libwebp:cwebp($host_toolchain)"
-          deps += [ _webp_target ]
-          args += [
-            "--png-to-webp",
-            "--webp-binary",
-            rebase_path(get_label_info(_webp_target, "root_out_dir") + "/cwebp",
-                        root_build_dir),
-          ]
-        }
-        if (defined(invoker.exclude_xxxhdpi) && invoker.exclude_xxxhdpi) {
-          args += [ "--exclude-xxxhdpi" ]
-          if (defined(invoker.xxxhdpi_whitelist)) {
-            args += [ "--xxxhdpi-whitelist=${invoker.xxxhdpi_whitelist}" ]
-          }
-        }
-      }
-
-      if (_post_process) {
-        action(target_name) {
-          depfile = "${target_gen_dir}/${target_name}.d"
-          script = invoker.post_process_package_resources_script
-          args = [
-            "--depfile",
-            rebase_path(depfile, root_build_dir),
-            "--apk-path",
-            rebase_path(_resource_packaged_apk_path, root_build_dir),
-            "--output",
-            rebase_path(_post_processed_resource_packaged_apk_path,
-                        root_build_dir),
-          ]
-          inputs = [
-            _resource_packaged_apk_path,
-          ]
-          outputs = [
-            _post_processed_resource_packaged_apk_path,
-          ]
-          deps = [
-            ":${_package_resources_target}",
-          ]
-        }
-      }
-    }
-
     _package_resources_target_name = "${target_name}__package_resources"
-    package_resources_helper(_package_resources_target_name) {
+    package_resources(_package_resources_target_name) {
       forward_variables_from(invoker,
                              [
                                "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
-                               "android_aapt_path",
+                               "android_manifest",
+                               "app_as_shared_lib",
+                               "deps",
                                "exclude_xxxhdpi",
-                               "extensions_to_not_compress",
                                "png_to_webp",
-                               "post_process_package_resources_script",
+                               "shared_resources",
+                               "version_code",
+                               "version_name",
                                "xxxhdpi_whitelist",
                              ])
-      deps = _deps
-      android_manifest = _android_manifest
-      resource_packaged_apk_path = _resource_packaged_apk_path
+      if (defined(invoker.post_process_package_resources_script)) {
+        post_process_script = invoker.post_process_package_resources_script
+      }
+      output = _resource_packaged_apk_path
+      resources_zip = _resources_zip
+      if (_split_densities != []) {
+        split_densities = _split_densities
+      }
+      if (_split_languages != []) {
+        split_languages = _split_languages
+      }
     }
 
-    _generate_incremental_manifest_target_name =
-        "${target_name}_incremental_generate_manifest"
+    _incremental_package_resources_target_name =
+        "${target_name}_incremental__package_resources"
     _incremental_android_manifest =
-        get_label_info(_generate_incremental_manifest_target_name,
+        get_label_info(_incremental_package_resources_target_name,
                        "target_gen_dir") + "/AndroidManifest.xml"
-    action(_generate_incremental_manifest_target_name) {
-      deps = _incremental_deps
+    action(_incremental_package_resources_target_name) {
+      deps = _incremental_deps + [ ":$_package_resources_target_name" ]
       script =
           "//build/android/incremental_install/generate_android_manifest.py"
-      depfile = "${target_gen_dir}/${target_name}.d"
       inputs = [
+        # Save on a depfile by listing only .py dep here.
+        "//build/android/gyp/util/build_utils.py",
         _android_manifest,
+        _resource_packaged_apk_path,
       ]
       outputs = [
+        # Output the non-compiled manifest for easy debugging (as opposed to
+        # generating to a temp file).
         _incremental_android_manifest,
+        _incremental_resource_packaged_apk_path,
       ]
 
-      _rebased_src_manifest = rebase_path(_android_manifest, root_build_dir)
-      _rebased_incremental_manifest =
-          rebase_path(_incremental_android_manifest, root_build_dir)
-      _rebased_depfile = rebase_path(depfile, root_build_dir)
+      _android_sdk_jar = android_sdk_jar
+      if (defined(invoker.alternative_android_sdk_jar)) {
+        _android_sdk_jar = invoker.alternative_android_sdk_jar
+      }
       args = [
-        "--src-manifest=$_rebased_src_manifest",
-        "--out-manifest=$_rebased_incremental_manifest",
-        "--depfile=$_rebased_depfile",
+        "--src-manifest",
+        rebase_path(_android_manifest, root_build_dir),
+        "--out-manifest",
+        rebase_path(_incremental_android_manifest, root_build_dir),
+        "--in-apk",
+        rebase_path(_resource_packaged_apk_path, root_build_dir),
+        "--out-apk",
+        rebase_path(_incremental_resource_packaged_apk_path, root_build_dir),
+        "--aapt-path",
+        rebase_path(android_default_aapt_path, root_build_dir),
+        "--android-sdk-jar",
+        rebase_path(_android_sdk_jar, root_build_dir),
       ]
       if (disable_incremental_isolated_processes) {
         args += [ "--disable-isolated-processes" ]
       }
     }
 
-    _incremental_package_resources_target_name =
-        "${target_name}_incremental__package_resources"
-
-    # TODO(agrieve): See if we can speed up this step by swapping the manifest
-    # from the result of the main package_resources step.
-    package_resources_helper(_incremental_package_resources_target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "aapt_locale_whitelist",
-                               "alternative_android_sdk_jar",
-                               "android_aapt_path",
-                               "exclude_xxxhdpi",
-                               "extensions_to_not_compress",
-                               "png_to_webp",
-                               "post_process_package_resources_script",
-                               "xxxhdpi_whitelist",
-                             ])
-      deps =
-          _incremental_deps + [ ":$_generate_incremental_manifest_target_name" ]
-      android_manifest = _incremental_android_manifest
-      resource_packaged_apk_path = _incremental_resource_packaged_apk_path
-    }
-
-    package_target = "${target_name}__package"
-    package_apk(package_target) {
+    _package_target = "${target_name}__package_apk"
+    package_apk(_package_target) {
       forward_variables_from(invoker,
                              [
                                "assets_build_config",
@@ -1901,7 +2071,7 @@ if (enable_java_templates) {
       resource_packaged_apk_path = _resource_packaged_apk_path
     }
 
-    _incremental_package_target = "${target_name}_incremental__package"
+    _incremental_package_target = "${target_name}_incremental__package_apk"
     package_apk(_incremental_package_target) {
       forward_variables_from(invoker,
                              [
@@ -1946,7 +2116,7 @@ if (enable_java_templates) {
 
       public_deps = [
         # Generator of the _packaged_apk_path this target takes as input.
-        ":$package_target",
+        ":$_package_target",
       ]
     }
 
@@ -2783,163 +2953,6 @@ if (enable_java_templates) {
       public_deps = _final_deps
       if (_has_lint_target) {
         data_deps += [ ":${_template_name}__analysis" ]
-      }
-    }
-  }
-
-  # Runs process_resources.py
-  template("process_resources") {
-    action(target_name) {
-      set_sources_assignment_filter([])
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "testonly",
-                               "visibility",
-                             ])
-      script = "//build/android/gyp/process_resources.py"
-
-      depfile = "$target_gen_dir/$target_name.d"
-      outputs = [
-        invoker.zip_path,
-        invoker.r_text_out_path,
-      ]
-
-      _all_resource_dirs = []
-      sources = []
-
-      if (defined(invoker.resource_dirs)) {
-        _all_resource_dirs += invoker.resource_dirs
-
-        # Speed up "gn gen" by short-circuiting the empty directory.
-        if (invoker.resource_dirs != [ "//build/android/empty" ] &&
-            invoker.resource_dirs != []) {
-          _sources_build_rel =
-              exec_script("//build/android/gyp/find.py",
-                          rebase_path(invoker.resource_dirs, root_build_dir),
-                          "list lines")
-          sources += rebase_path(_sources_build_rel, ".", root_build_dir)
-        }
-      }
-
-      if (defined(invoker.generated_resource_dirs)) {
-        assert(defined(invoker.generated_resource_files))
-        _all_resource_dirs += invoker.generated_resource_dirs
-        sources += invoker.generated_resource_files
-      }
-
-      _android_aapt_path = android_default_aapt_path
-      if (defined(invoker.android_aapt_path)) {
-        _android_aapt_path = invoker.android_aapt_path
-      }
-
-      _android_sdk_jar = android_sdk_jar
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _android_sdk_jar = invoker.alternative_android_sdk_jar
-      }
-
-      inputs = [
-        invoker.build_config,
-        invoker.android_manifest,
-        _android_aapt_path,
-        _android_sdk_jar,
-      ]
-
-      _rebased_all_resource_dirs =
-          rebase_path(_all_resource_dirs, root_build_dir)
-      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
-
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--android-sdk-jar",
-        rebase_path(_android_sdk_jar, root_build_dir),
-        "--aapt-path",
-        rebase_path(_android_aapt_path, root_build_dir),
-        "--android-manifest",
-        rebase_path(invoker.android_manifest, root_build_dir),
-        "--resource-dirs=$_rebased_all_resource_dirs",
-        "--resource-zip-out",
-        rebase_path(invoker.zip_path, root_build_dir),
-        "--r-text-out",
-        rebase_path(invoker.r_text_out_path, root_build_dir),
-        "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
-        "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
-        "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
-      ]
-      if (defined(invoker.srcjar_path)) {
-        outputs += [ invoker.srcjar_path ]
-        args += [
-          "--srcjar-out",
-          rebase_path(invoker.srcjar_path, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.r_text_in_path)) {
-        _r_text_in_path = invoker.r_text_in_path
-        inputs += [ _r_text_in_path ]
-        args += [
-          "--r-text-in",
-          rebase_path(_r_text_in_path, root_build_dir),
-        ]
-      }
-
-      if (!defined(invoker.generate_constant_ids) ||
-          !invoker.generate_constant_ids) {
-        args += [ "--non-constant-id" ]
-      }
-
-      if (defined(invoker.custom_package)) {
-        args += [
-          "--custom-package",
-          invoker.custom_package,
-        ]
-      }
-
-      if (defined(invoker.v14_skip) && invoker.v14_skip) {
-        args += [ "--v14-skip" ]
-      }
-
-      if (defined(invoker.shared_resources) && invoker.shared_resources) {
-        args += [ "--shared-resources" ]
-      }
-
-      if (defined(invoker.app_as_shared_lib) && invoker.app_as_shared_lib) {
-        args += [ "--app-as-shared-lib" ]
-      }
-
-      if (defined(invoker.include_all_resources) &&
-          invoker.include_all_resources) {
-        args += [ "--include-all-resources" ]
-      }
-
-      if (defined(invoker.all_resources_zip_path)) {
-        _all_resources_zip = invoker.all_resources_zip_path
-        outputs += [ _all_resources_zip ]
-        args += [
-          "--all-resources-zip-out",
-          rebase_path(_all_resources_zip, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.proguard_file)) {
-        outputs += [ invoker.proguard_file ]
-        args += [
-          "--proguard-file",
-          rebase_path(invoker.proguard_file, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.proguard_file_main_dex)) {
-        outputs += [ invoker.proguard_file_main_dex ]
-        args += [
-          "--proguard-file-main-dex",
-          rebase_path(invoker.proguard_file_main_dex, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.args)) {
-        args += invoker.args
       }
     }
   }
