@@ -4145,6 +4145,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBarDelegate.java",
+      "../android/java/src/org/chromium/chrome/browser/infobar/NearOomInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/PreviewsInfoBar.java",
