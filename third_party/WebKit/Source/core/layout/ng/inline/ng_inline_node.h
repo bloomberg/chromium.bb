@@ -38,7 +38,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   LayoutBlockFlow* GetLayoutBlockFlow() const {
     return ToLayoutBlockFlow(box_);
   }
-  NGLayoutInputNode NextSibling();
+  NGLayoutInputNode NextSibling() { return nullptr; }
 
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
                                        NGBreakToken* = nullptr);
@@ -74,7 +74,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
   TextDirection BaseDirection() const { return Data().BaseDirection(); }
 
-  bool IsEmptyInline() const { return Data().is_empty_inline_; }
+  bool IsEmptyInline() { return EnsureData().is_empty_inline_; }
 
   void AssertOffset(unsigned index, unsigned offset) const;
   void AssertEndOffset(unsigned index, unsigned offset) const;
@@ -83,24 +83,21 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   String ToString() const;
 
  protected:
-  bool IsPrepareLayoutFinished() const { return !Text().IsNull(); }
+  bool IsPrepareLayoutFinished() const;
 
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayoutIfNeeded();
 
-  void CollectInlines();
-  void SegmentText();
-  void ShapeText();
+  void CollectInlines(NGInlineNodeData*);
+  void SegmentText(NGInlineNodeData*);
+  void ShapeText(NGInlineNodeData*);
   void ShapeText(const String&, Vector<NGInlineItem>*);
-  void ShapeTextForFirstLineIfNeeded();
+  void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
 
-  NGInlineNodeData* MutableData() {
-    return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
-  }
-  const NGInlineNodeData& Data() const {
-    return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
-  }
+  NGInlineNodeData* MutableData();
+  const NGInlineNodeData& Data() const;
+  const NGInlineNodeData& EnsureData();
 
   friend class NGLineBreakerTest;
 };

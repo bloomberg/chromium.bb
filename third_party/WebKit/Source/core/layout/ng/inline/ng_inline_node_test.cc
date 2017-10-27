@@ -31,36 +31,40 @@ class NGInlineNodeForTest : public NGInlineNode {
   void Append(const String& text,
               const ComputedStyle* style = nullptr,
               LayoutObject* layout_object = nullptr) {
-    unsigned start = Data().text_content_.length();
-    MutableData()->text_content_.append(text);
-    MutableData()->items_.push_back(NGInlineItem(NGInlineItem::kText, start,
-                                                 start + text.length(), style,
-                                                 layout_object));
-    MutableData()->is_empty_inline_ = false;
+    NGInlineNodeData* data = MutableData();
+    unsigned start = data->text_content_.length();
+    data->text_content_.append(text);
+    data->items_.push_back(NGInlineItem(NGInlineItem::kText, start,
+                                        start + text.length(), style,
+                                        layout_object));
+    data->is_empty_inline_ = false;
   }
 
   void Append(UChar character) {
-    MutableData()->text_content_.append(character);
-    unsigned end = Data().text_content_.length();
-    MutableData()->items_.push_back(
+    NGInlineNodeData* data = MutableData();
+    data->text_content_.append(character);
+    unsigned end = data->text_content_.length();
+    data->items_.push_back(
         NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));
-    MutableData()->is_bidi_enabled_ = true;
-    MutableData()->is_empty_inline_ = false;
+    data->is_bidi_enabled_ = true;
+    data->is_empty_inline_ = false;
   }
 
   void ClearText() {
-    MutableData()->text_content_ = String();
-    MutableData()->items_.clear();
-    MutableData()->is_empty_inline_ = true;
+    NGInlineNodeData* data = MutableData();
+    data->text_content_ = String();
+    data->items_.clear();
+    data->is_empty_inline_ = true;
   }
 
   void SegmentText() {
-    MutableData()->is_bidi_enabled_ = true;
-    NGInlineNode::SegmentText();
+    NGInlineNodeData* data = MutableData();
+    data->is_bidi_enabled_ = true;
+    NGInlineNode::SegmentText(data);
   }
 
-  using NGInlineNode::CollectInlines;
-  using NGInlineNode::ShapeText;
+  void CollectInlines() { NGInlineNode::CollectInlines(MutableData()); }
+  void ShapeText() { NGInlineNode::ShapeText(MutableData()); }
 };
 
 class NGInlineNodeTest : public RenderingTest {
