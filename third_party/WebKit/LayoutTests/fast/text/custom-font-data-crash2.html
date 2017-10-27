@@ -9,12 +9,10 @@
 <div id="y">EFGH</div>
 </body>
 <script>
-window.onload = function() {
+function finish() {
     document.body.innerHTML = "PASS";
-    setTimeout(function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }, 0);
+	if (window.testRunner)
+	    testRunner.notifyDone();
 }
 
 if (window.testRunner) {
@@ -24,6 +22,9 @@ if (window.testRunner) {
 
 document.designMode = 'on';
 document.execCommand('selectall');
+
+// Let the font load to finish.
+setTimeout("finish()", 50);
 </script>
 <style>
 #y:before { content: "ABCD"; }

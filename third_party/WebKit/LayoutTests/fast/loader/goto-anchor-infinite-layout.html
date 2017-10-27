@@ -15,15 +15,8 @@
     This is the anchor.
 </div>
 <script>
-    if (window.testRunner) {
+    if (window.testRunner)
         testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
 
     document.write(location.href="#anchor");
-
-    window.onload = setTimeout(function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }, 0);
 </script>
