@@ -28,7 +28,7 @@ ScopedWinrtInitializer::~ScopedWinrtInitializer() {
     base::win::RoUninitialize();
 }
 
-bool ScopedWinrtInitializer::succeeded() const {
+bool ScopedWinrtInitializer::Succeeded() const {
   return SUCCEEDED(hr_);
 }
 

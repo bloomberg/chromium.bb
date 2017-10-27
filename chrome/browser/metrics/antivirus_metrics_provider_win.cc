@@ -234,7 +234,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
   base::AssertBlockingAllowed();
   base::win::ScopedCOMInitializer com_initializer;
 
-  if (!com_initializer.succeeded())
+  if (!com_initializer.Succeeded())
     return RESULT_FAILED_TO_INITIALIZE_COM;
 
   Microsoft::WRL::ComPtr<IWSCProductList> product_list;
@@ -335,7 +335,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   base::AssertBlockingAllowed();
   base::win::ScopedCOMInitializer com_initializer;
 
-  if (!com_initializer.succeeded())
+  if (!com_initializer.Succeeded())
     return RESULT_FAILED_TO_INITIALIZE_COM;
 
   Microsoft::WRL::ComPtr<IWbemLocator> wmi_locator;

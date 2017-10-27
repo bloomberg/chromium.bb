@@ -20,21 +20,21 @@ TEST(ComInitUtil, AssertUninitialized) {
   // status will be updated. This covers that case.
   {
     ScopedCOMInitializer com_initializer;
-    ASSERT_TRUE(com_initializer.succeeded());
+    ASSERT_TRUE(com_initializer.Succeeded());
   }
   EXPECT_DCHECK_DEATH(AssertComInitialized());
 }
 
 TEST(ComInitUtil, AssertSTAInitialized) {
   ScopedCOMInitializer com_initializer;
-  ASSERT_TRUE(com_initializer.succeeded());
+  ASSERT_TRUE(com_initializer.Succeeded());
 
   AssertComInitialized();
 }
 
 TEST(ComInitUtil, AssertMTAInitialized) {
   ScopedCOMInitializer com_initializer(ScopedCOMInitializer::kMTA);
-  ASSERT_TRUE(com_initializer.succeeded());
+  ASSERT_TRUE(com_initializer.Succeeded());
 
   AssertComInitialized();
 }
@@ -50,7 +50,7 @@ TEST(ComInitUtil, AssertNoneApartmentTypeUninitialized) {
   // status will be updated. This covers that case.
   {
     ScopedCOMInitializer com_initializer;
-    ASSERT_TRUE(com_initializer.succeeded());
+    ASSERT_TRUE(com_initializer.Succeeded());
   }
   AssertComApartmentType(ComApartmentType::NONE);
   EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::STA));

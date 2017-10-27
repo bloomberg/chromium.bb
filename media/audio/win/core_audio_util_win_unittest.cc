@@ -29,7 +29,7 @@ class CoreAudioUtilWinTest : public ::testing::Test {
   // If we don't initialize the COM library on a thread before using COM,
   // all function calls will return CO_E_NOTINITIALIZED.
   CoreAudioUtilWinTest() {
-    DCHECK(com_init_.succeeded());
+    DCHECK(com_init_.Succeeded());
   }
   ~CoreAudioUtilWinTest() override {}
 

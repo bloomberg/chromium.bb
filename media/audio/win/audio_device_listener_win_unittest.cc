@@ -29,7 +29,7 @@ static const char kSecondTestDevice[] = "test_device_1";
 class AudioDeviceListenerWinTest : public testing::Test {
  public:
   AudioDeviceListenerWinTest() {
-    DCHECK(com_init_.succeeded());
+    DCHECK(com_init_.Succeeded());
   }
 
   virtual void SetUp() {

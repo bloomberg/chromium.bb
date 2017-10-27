@@ -33,7 +33,7 @@ class BASE_EXPORT ScopedWinrtInitializer
   ~ScopedWinrtInitializer() override;
 
   // ScopedWindowsThreadEnvironment:
-  bool succeeded() const override;
+  bool Succeeded() const override;
 
  private:
   const HRESULT hr_;

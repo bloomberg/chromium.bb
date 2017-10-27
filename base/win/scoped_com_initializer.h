@@ -36,7 +36,7 @@ class BASE_EXPORT ScopedCOMInitializer : public ScopedWindowsThreadEnvironment {
   ~ScopedCOMInitializer() override;
 
   // ScopedWindowsThreadEnvironment:
-  bool succeeded() const override;
+  bool Succeeded() const override;
 
  private:
   void Initialize(COINIT init);

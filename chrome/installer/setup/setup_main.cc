@@ -1340,7 +1340,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   // Initialize COM for use later.
   base::win::ScopedCOMInitializer com_initializer;
-  if (!com_initializer.succeeded()) {
+  if (!com_initializer.Succeeded()) {
     installer_state.WriteInstallerResult(
         installer::OS_ERROR, IDS_INSTALL_OS_ERROR_BASE, NULL);
     return installer::OS_ERROR;

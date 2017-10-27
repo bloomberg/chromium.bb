@@ -267,7 +267,7 @@ void HostService::RunAsServiceImpl() {
 
   // Initialize COM.
   base::win::ScopedCOMInitializer com_initializer;
-  if (!com_initializer.succeeded())
+  if (!com_initializer.Succeeded())
     return;
 
   if (!InitializeComSecurity(base::WideToUTF8(kComProcessSd),
@@ -304,7 +304,7 @@ int HostService::RunInConsole() {
 
   // Initialize COM.
   base::win::ScopedCOMInitializer com_initializer;
-  if (!com_initializer.succeeded())
+  if (!com_initializer.Succeeded())
     return result;
 
   if (!InitializeComSecurity(base::WideToUTF8(kComProcessSd),
