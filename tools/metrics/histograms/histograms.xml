@@ -36835,6 +36835,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="MobileDownload.Notification.FixingSummaryLeak"
     enum="BooleanForegroundNotification">
+  <obsolete>
+    Deprecated 10/2017 in Issue 722320 with the removal of
+    DownloadNotificationService.hideDanglingSummaryNotification.
+  </obsolete>
   <owner>dtrainor@chromium.org</owner>
   <summary>
     Android: Records the situation where we try to fix a standalone downloads
