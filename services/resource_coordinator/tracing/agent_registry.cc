@@ -120,7 +120,7 @@ void AgentRegistry::RegisterAgent(mojom::AgentPtr agent,
                                   mojom::TraceDataType type,
                                   bool supports_explicit_clock_sync) {
   auto id = next_agent_id_++;
-  auto entry = base::MakeUnique<AgentEntry>(id, this, std::move(agent), label,
+  auto entry = std::make_unique<AgentEntry>(id, this, std::move(agent), label,
                                             type, supports_explicit_clock_sync);
   if (!agent_initialization_callback_.is_null())
     agent_initialization_callback_.Run(entry.get());

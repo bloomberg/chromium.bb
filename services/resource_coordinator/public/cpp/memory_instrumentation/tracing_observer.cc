@@ -5,7 +5,6 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -73,7 +72,7 @@ void TracingObserver::OnTraceLogEnabled() {
       trace_config.memory_dump_config();
 
   memory_dump_config_ =
-      base::MakeUnique<base::trace_event::TraceConfig::MemoryDumpConfig>(
+      std::make_unique<base::trace_event::TraceConfig::MemoryDumpConfig>(
           memory_dump_config);
 
   if (memory_dump_manager_)
@@ -129,7 +128,7 @@ bool TracingObserver::AddChromeDumpToTraceIfEnabled(
   if (!ShouldAddToTrace(args))
     return false;
 
-  std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
+  std::unique_ptr<TracedValue> traced_value = std::make_unique<TracedValue>();
   process_memory_dump->SerializeAllocatorDumpsInto(traced_value.get());
 
   AddToTrace(args, pid, std::move(traced_value));
@@ -145,7 +144,7 @@ bool TracingObserver::AddOsDumpToTraceIfEnabled(
   if (!ShouldAddToTrace(args))
     return false;
 
-  std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
+  std::unique_ptr<TracedValue> traced_value = std::make_unique<TracedValue>();
 
   traced_value->BeginDictionary("process_totals");
   OsDumpAsValueInto(traced_value.get(), *os_dump);

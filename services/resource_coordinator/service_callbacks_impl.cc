@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -31,7 +30,7 @@ void ServiceCallbacksImpl::Create(
     resource_coordinator::mojom::ServiceCallbacksRequest request,
     const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<ServiceCallbacksImpl>(service_ref_factory,
+      std::make_unique<ServiceCallbacksImpl>(service_ref_factory,
                                              resource_coordinator_service),
       std::move(request));
 }
@@ -39,7 +38,7 @@ void ServiceCallbacksImpl::Create(
 void ServiceCallbacksImpl::SetUkmRecorderInterface(
     ukm::mojom::UkmRecorderInterfacePtr ukm_recorder_interface) {
   resource_coordinator_service_->SetUkmRecorder(
-      base::MakeUnique<ukm::MojoUkmRecorder>(
+      std::make_unique<ukm::MojoUkmRecorder>(
           std::move(ukm_recorder_interface)));
 }
 

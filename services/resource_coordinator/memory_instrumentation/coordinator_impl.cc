@@ -49,13 +49,13 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
 
 CoordinatorImpl::CoordinatorImpl(service_manager::Connector* connector)
     : next_dump_id_(0) {
-  process_map_ = base::MakeUnique<ProcessMap>(connector);
+  process_map_ = std::make_unique<ProcessMap>(connector);
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
   base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
       mojom::kServiceTracingProcessId);
 
-  tracing_observer_ = base::MakeUnique<TracingObserver>(
+  tracing_observer_ = std::make_unique<TracingObserver>(
       base::trace_event::TraceLog::GetInstance(), nullptr);
 }
 
@@ -124,7 +124,7 @@ void CoordinatorImpl::RegisterClientProcess(
       base::Bind(&CoordinatorImpl::UnregisterClientProcess,
                  base::Unretained(this), client_process));
   auto identity = GetClientIdentityForCurrentRequest();
-  auto client_info = base::MakeUnique<ClientInfo>(
+  auto client_info = std::make_unique<ClientInfo>(
       std::move(identity), std::move(client_process_ptr), process_type);
   auto iterator_and_inserted =
       clients_.emplace(client_process, std::move(client_info));

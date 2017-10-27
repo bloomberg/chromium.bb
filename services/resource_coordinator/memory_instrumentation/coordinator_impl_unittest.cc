@@ -371,9 +371,9 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
       base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       MemoryDumpLevelOfDetail::DETAILED};
 
-  auto client_process_1 = base::MakeUnique<NiceMock<MockClientProcess>>(
+  auto client_process_1 = std::make_unique<NiceMock<MockClientProcess>>(
       this, 1, mojom::ProcessType::BROWSER);
-  auto client_process_2 = base::MakeUnique<NiceMock<MockClientProcess>>(this);
+  auto client_process_2 = std::make_unique<NiceMock<MockClientProcess>>(this);
 
   // One of the client processes dies after a global dump is requested and
   // before it receives the corresponding process dump request. The coordinator
@@ -416,7 +416,7 @@ TEST_F(CoordinatorImplTest, SingleClientCrashDuringGlobalDump) {
       base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       MemoryDumpLevelOfDetail::DETAILED};
 
-  auto client_process = base::MakeUnique<NiceMock<MockClientProcess>>(
+  auto client_process = std::make_unique<NiceMock<MockClientProcess>>(
       this, 1, mojom::ProcessType::BROWSER);
 
   ON_CALL(*client_process, RequestChromeMemoryDump(_, _))
