@@ -414,7 +414,7 @@ test("crashpad_util_test") {
   ]
 
   if (is_win) {
-    deps += [
+    data_deps = [
       ":crashpad_util_test_process_info_test_child",
       ":crashpad_util_test_safe_terminate_process_test_child",
     ]
@@ -431,6 +431,12 @@ test("crashpad_util_test") {
   }
 
   include_dirs = [ ".." ]
+  defines = [ "CRASHPAD_IN_CHROMIUM" ]
+
+  data = [
+    "net/http_transport_test_server.py",
+    "net/testdata/",
+  ]
 }
 
 if (is_win) {

@@ -189,12 +189,14 @@ void TestOtherProcess(const base::string16& directory_modification) {
   VerifyAddressInInCodePage(process_info, code_address);
 }
 
-TEST(ProcessInfo, OtherProcess) {
+// https://crashpad.chromium.org/bug/204
+TEST(ProcessInfo, DISABLED_OtherProcess) {
   TestOtherProcess(FILE_PATH_LITERAL("."));
 }
 
 #if defined(ARCH_CPU_64_BITS)
-TEST(ProcessInfo, OtherProcessWOW64) {
+// https://crashpad.chromium.org/bug/203
+TEST(ProcessInfo, DISABLED_OtherProcessWOW64) {
 #ifndef NDEBUG
   TestOtherProcess(FILE_PATH_LITERAL("..\\..\\out\\Debug"));
 #else
