@@ -274,6 +274,11 @@ message PolicyFetchRequest {
   // Encoded information from a policy invalidation notification. This is opaque
   // to the client and should be forwarded from the invalidation notification.
   optional string policy_invalidation_info = 10;
+
+  // Whether or not the client only supports the new PolicyData invalidation
+  // keys. If true, only the policy_invalidation_key and
+  // command_invalidation_key fields will be set in the PolicyData response.
+  optional bool new_invalidation_keys_only = 11;
 }
 
 // This message customizes how the device behaves when it is disabled by its
