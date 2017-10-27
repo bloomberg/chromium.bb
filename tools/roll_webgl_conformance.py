@@ -298,16 +298,6 @@ class AutoRoller(object):
         # Kick off tryjobs.
         base_try_cmd = ['git', 'cl', 'try']
         self._RunCommand(base_try_cmd)
-        if extra_trybots:
-          # Run additional tryjobs.
-          # TODO(kbr): this should not be necessary -- the
-          # CQ_INCLUDE_TRYBOTS directive above should handle it.
-          # http://crbug.com/585237
-          for trybot in extra_trybots:
-            for builder in trybot['buildernames']:
-              self._RunCommand(base_try_cmd + [
-                  '-m', trybot['mastername'],
-                  '-b', builder])
 
       cl_info = self._GetCLInfo()
       print 'Issue: %d URL: %s' % (cl_info.issue, cl_info.url)
