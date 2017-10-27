@@ -457,7 +457,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // The amount of time to wait before suspending shared timers, and loading
   // etc. after the renderer has been backgrounded. This is used only if
   // background suspension is enabled.
-  static const int kStopWhenBackgroundedDelayMillis = 5 * 60 * 1000;
+  static const int kDelayForBackgroundTabStoppingMillis = 5 * 60 * 1000;
 
   // The time we should stay in a priority-escalated mode after a call to
   // DidAnimateForInputOnCompositorThread().
@@ -564,6 +564,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       device::SharedMemorySeqLockBuffer<QueueingTimeEstimator>;
 
   SeqLockQueueingTimeEstimator seqlock_queueing_time_estimator_;
+
+  base::TimeDelta delay_for_background_tab_stopping_;
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
