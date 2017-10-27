@@ -84,7 +84,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
       const String& script,
       const String& url_str,
       AccessControlStatus access_control_status,
-      WebURLRequest::FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       const String& nonce,
       ParserDisposition parser_state,
       const TextPosition& position,

@@ -57,7 +57,7 @@ struct CORSTestCase {
   const char* base_url;
   const char* input_html;
   network::mojom::FetchRequestMode request_mode;
-  WebURLRequest::FetchCredentialsMode credentials_mode;
+  network::mojom::FetchCredentialsMode credentials_mode;
 };
 
 struct NonceTestCase {
@@ -142,7 +142,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
   void CORSRequestVerification(
       Document* document,
       network::mojom::FetchRequestMode request_mode,
-      WebURLRequest::FetchCredentialsMode credentials_mode) {
+      network::mojom::FetchCredentialsMode credentials_mode) {
     ASSERT_TRUE(preload_request_.get());
     Resource* resource = preload_request_->Start(document);
     ASSERT_TRUE(resource);
@@ -796,26 +796,26 @@ TEST_F(HTMLPreloadScannerTest, testCORS) {
   CORSTestCase test_cases[] = {
       {"http://example.test", "<script src='/script'></script>",
        network::mojom::FetchRequestMode::kNoCORS,
-       WebURLRequest::kFetchCredentialsModeInclude},
+       network::mojom::FetchCredentialsMode::kInclude},
       {"http://example.test", "<script crossorigin src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,
-       WebURLRequest::kFetchCredentialsModeSameOrigin},
+       network::mojom::FetchCredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script crossorigin=use-credentials src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,
-       WebURLRequest::kFetchCredentialsModeInclude},
+       network::mojom::FetchCredentialsMode::kInclude},
       {"http://example.test", "<script type='module' src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,
-       WebURLRequest::kFetchCredentialsModeOmit},
+       network::mojom::FetchCredentialsMode::kOmit},
       {"http://example.test",
        "<script type='module' crossorigin='anonymous' src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,
-       WebURLRequest::kFetchCredentialsModeSameOrigin},
+       network::mojom::FetchCredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='use-credentials' "
        "src='/script'></script>",
        network::mojom::FetchRequestMode::kCORS,
-       WebURLRequest::kFetchCredentialsModeInclude},
+       network::mojom::FetchCredentialsMode::kInclude},
   };
 
   for (const auto& test_case : test_cases) {

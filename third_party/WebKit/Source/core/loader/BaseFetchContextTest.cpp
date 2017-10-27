@@ -286,7 +286,7 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
   resource_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
+      network::mojom::FetchCredentialsMode::kOmit);
 
   ResourceLoaderOptions options;
 

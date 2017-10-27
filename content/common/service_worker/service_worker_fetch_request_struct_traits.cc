@@ -10,50 +10,11 @@
 
 namespace mojo {
 
-using blink::mojom::FetchCredentialsMode;
 using blink::mojom::FetchRedirectMode;
 using blink::mojom::RequestContextFrameType;
 using blink::mojom::RequestContextType;
 using blink::mojom::ServiceWorkerFetchType;
-
-FetchCredentialsMode
-EnumTraits<FetchCredentialsMode, content::FetchCredentialsMode>::ToMojom(
-    content::FetchCredentialsMode input) {
-  switch (input) {
-    case content::FETCH_CREDENTIALS_MODE_OMIT:
-      return FetchCredentialsMode::OMIT;
-    case content::FETCH_CREDENTIALS_MODE_SAME_ORIGIN:
-      return FetchCredentialsMode::SAME_ORIGIN;
-    case content::FETCH_CREDENTIALS_MODE_INCLUDE:
-      return FetchCredentialsMode::INCLUDE;
-    case content::FETCH_CREDENTIALS_MODE_PASSWORD:
-      return FetchCredentialsMode::PASSWORD;
-  }
-
-  NOTREACHED();
-  return FetchCredentialsMode::OMIT;
-}
-
-bool EnumTraits<FetchCredentialsMode, content::FetchCredentialsMode>::FromMojom(
-    FetchCredentialsMode input,
-    content::FetchCredentialsMode* out) {
-  switch (input) {
-    case FetchCredentialsMode::OMIT:
-      *out = content::FETCH_CREDENTIALS_MODE_OMIT;
-      return true;
-    case FetchCredentialsMode::SAME_ORIGIN:
-      *out = content::FETCH_CREDENTIALS_MODE_SAME_ORIGIN;
-      return true;
-    case FetchCredentialsMode::INCLUDE:
-      *out = content::FETCH_CREDENTIALS_MODE_INCLUDE;
-      return true;
-    case FetchCredentialsMode::PASSWORD:
-      *out = content::FETCH_CREDENTIALS_MODE_PASSWORD;
-      return true;
-  }
-
-  return false;
-}
+using network::mojom::FetchRequestMode;
 
 FetchRedirectMode
 EnumTraits<FetchRedirectMode, content::FetchRedirectMode>::ToMojom(

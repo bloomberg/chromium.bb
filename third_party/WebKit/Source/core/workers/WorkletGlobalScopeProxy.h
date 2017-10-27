@@ -28,7 +28,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
   virtual void FetchAndInvokeScript(
       const KURL& module_url_record,
       WorkletModuleResponsesMap*,
-      WebURLRequest::FetchCredentialsMode,
+      network::mojom::FetchCredentialsMode,
       scoped_refptr<WebTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) = 0;
 

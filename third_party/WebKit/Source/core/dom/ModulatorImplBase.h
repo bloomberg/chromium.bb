@@ -67,7 +67,7 @@ class ModulatorImplBase : public Modulator {
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus,
-                             WebURLRequest::FetchCredentialsMode,
+                             network::mojom::FetchCredentialsMode,
                              const String& nonce,
                              ParserDisposition,
                              const TextPosition&,

@@ -133,7 +133,7 @@ ScriptModule ModulatorImplBase::CompileModule(
     const String& provided_source,
     const String& url_str,
     AccessControlStatus access_control_status,
-    WebURLRequest::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     const String& nonce,
     ParserDisposition parser_state,
     const TextPosition& position,

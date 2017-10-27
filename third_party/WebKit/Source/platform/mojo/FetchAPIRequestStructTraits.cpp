@@ -15,50 +15,9 @@
 
 namespace mojo {
 
-using blink::mojom::FetchCredentialsMode;
 using blink::mojom::FetchRedirectMode;
 using blink::mojom::RequestContextFrameType;
 using blink::mojom::RequestContextType;
-
-FetchCredentialsMode
-EnumTraits<FetchCredentialsMode, blink::WebURLRequest::FetchCredentialsMode>::
-    ToMojom(blink::WebURLRequest::FetchCredentialsMode input) {
-  switch (input) {
-    case blink::WebURLRequest::kFetchCredentialsModeOmit:
-      return FetchCredentialsMode::OMIT;
-    case blink::WebURLRequest::kFetchCredentialsModeSameOrigin:
-      return FetchCredentialsMode::SAME_ORIGIN;
-    case blink::WebURLRequest::kFetchCredentialsModeInclude:
-      return FetchCredentialsMode::INCLUDE;
-    case blink::WebURLRequest::kFetchCredentialsModePassword:
-      return FetchCredentialsMode::PASSWORD;
-  }
-
-  NOTREACHED();
-  return FetchCredentialsMode::OMIT;
-}
-
-bool EnumTraits<FetchCredentialsMode,
-                blink::WebURLRequest::FetchCredentialsMode>::
-    FromMojom(FetchCredentialsMode input,
-              blink::WebURLRequest::FetchCredentialsMode* out) {
-  switch (input) {
-    case FetchCredentialsMode::OMIT:
-      *out = blink::WebURLRequest::kFetchCredentialsModeOmit;
-      return true;
-    case FetchCredentialsMode::SAME_ORIGIN:
-      *out = blink::WebURLRequest::kFetchCredentialsModeSameOrigin;
-      return true;
-    case FetchCredentialsMode::INCLUDE:
-      *out = blink::WebURLRequest::kFetchCredentialsModeInclude;
-      return true;
-    case FetchCredentialsMode::PASSWORD:
-      *out = blink::WebURLRequest::kFetchCredentialsModePassword;
-      return true;
-  }
-
-  return false;
-}
 
 FetchRedirectMode
 EnumTraits<FetchRedirectMode, blink::WebURLRequest::FetchRedirectMode>::ToMojom(
@@ -415,7 +374,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   WTF::String blobUuid;
   blink::mojom::blink::BlobPtr blob;
   blink::Referrer referrer;
-  blink::WebURLRequest::FetchCredentialsMode credentialsMode;
+  network::mojom::FetchCredentialsMode credentialsMode;
   blink::WebURLRequest::FetchRedirectMode redirectMode;
   WTF::String integrity;
   WTF::String clientId;

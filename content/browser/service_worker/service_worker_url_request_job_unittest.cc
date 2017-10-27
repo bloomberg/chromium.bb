@@ -120,7 +120,8 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
     job_ = new ServiceWorkerURLRequestJob(
         request, network_delegate, provider_host_->client_uuid(),
         blob_storage_context_, resource_context_,
-        network::mojom::FetchRequestMode::kNoCORS, FETCH_CREDENTIALS_MODE_OMIT,
+        network::mojom::FetchRequestMode::kNoCORS,
+        network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,

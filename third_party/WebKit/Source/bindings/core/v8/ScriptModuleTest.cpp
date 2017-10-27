@@ -85,7 +85,7 @@ TEST(ScriptModuleTest, compileSuccess) {
   V8TestingScope scope;
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "export const a = 42;", "foo.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
   EXPECT_EQ(ScriptModuleState::kUninstantiated,
@@ -96,7 +96,7 @@ TEST(ScriptModuleTest, compileFail) {
   V8TestingScope scope;
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "123 = 456", "foo.js", kSharableCrossOrigin,
-      WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), scope.GetExceptionState());
   ASSERT_TRUE(module.IsNull());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
@@ -108,12 +108,12 @@ TEST(ScriptModuleTest, equalAndHash) {
   ScriptModule module_null;
   ScriptModule module_a = ScriptModule::Compile(
       scope.GetIsolate(), "export const a = 'a';", "a.js", kSharableCrossOrigin,
-      WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_a.IsNull());
   ScriptModule module_b = ScriptModule::Compile(
       scope.GetIsolate(), "export const b = 'b';", "b.js", kSharableCrossOrigin,
-      WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_b.IsNull());
   Vector<char> module_deleted_buffer(sizeof(ScriptModule));
@@ -154,9 +154,9 @@ TEST(ScriptModuleTest, moduleRequests) {
   V8TestingScope scope;
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "import 'a'; import 'b'; export const c = 'c';",
-      "foo.js", kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit,
-      "", kParserInserted, TextPosition::MinimumPosition(),
-      ASSERT_NO_EXCEPTION);
+      "foo.js", kSharableCrossOrigin,
+      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
+      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
 
   auto requests = module.ModuleRequests(scope.GetScriptState());
@@ -173,7 +173,7 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
 
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "export const a = 42;", "foo.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
   ScriptValue exception = module.Instantiate(scope.GetScriptState());
@@ -192,21 +192,21 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
 
   ScriptModule module_a = ScriptModule::Compile(
       scope.GetIsolate(), "export const a = 'a';", "foo.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_a.IsNull());
   resolver->PushScriptModule(module_a);
 
   ScriptModule module_b = ScriptModule::Compile(
       scope.GetIsolate(), "export const b = 'b';", "foo.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_b.IsNull());
   resolver->PushScriptModule(module_b);
 
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "import 'a'; import 'b'; export const c = 123;",
-      "c.js", kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit,
+      "c.js", kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit,
       "", kParserInserted, TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
@@ -234,7 +234,7 @@ TEST(ScriptModuleTest, instantiateError) {
 
   ScriptModule module_failure = ScriptModule::Compile(
       scope.GetIsolate(), "nonexistent_function()", "failure.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_failure.IsNull());
   module_failure.Instantiate(scope.GetScriptState());
@@ -251,7 +251,7 @@ TEST(ScriptModuleTest, instantiateError) {
 
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "import 'failure'; export const c = 123;", "c.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(),
       scope.GetExceptionState());
   ASSERT_FALSE(module.IsNull());
@@ -275,7 +275,7 @@ TEST(ScriptModuleTest, Evaluate) {
 
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "export const a = 42; window.foo = 'bar';", "foo.js",
-      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
   ScriptValue exception = module.Instantiate(scope.GetScriptState());
@@ -309,7 +309,7 @@ TEST(ScriptModuleTest, EvaluateCaptureError) {
 
   ScriptModule module = ScriptModule::Compile(
       scope.GetIsolate(), "throw 'bar';", "foo.js", kSharableCrossOrigin,
-      WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
   ScriptValue exception = module.Instantiate(scope.GetScriptState());

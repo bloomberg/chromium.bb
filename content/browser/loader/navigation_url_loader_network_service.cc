@@ -523,7 +523,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->allow_download = allow_download_;
 
   new_request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-  new_request->fetch_credentials_mode = FETCH_CREDENTIALS_MODE_INCLUDE;
+  new_request->fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kInclude;
   new_request->fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
 
   int frame_tree_node_id = request_info->frame_tree_node_id;

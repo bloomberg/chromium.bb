@@ -102,10 +102,10 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
           network::mojom::FetchRequestMode::kNavigate,
-          FETCH_CREDENTIALS_MODE_INCLUDE, FetchRedirectMode::MANUAL_MODE,
-          std::string() /* integrity */, resource_type, request_context_type,
-          frame_type, blob_storage_context->AsWeakPtr(), body,
-          skip_service_worker));
+          network::mojom::FetchCredentialsMode::kInclude,
+          FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
+          resource_type, request_context_type, frame_type,
+          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
   if (handler)
     request->SetUserData(&kUserDataKey, std::move(handler));
 
@@ -156,10 +156,10 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
           network::mojom::FetchRequestMode::kNavigate,
-          FETCH_CREDENTIALS_MODE_INCLUDE, FetchRedirectMode::MANUAL_MODE,
-          std::string() /* integrity */, resource_type, request_context_type,
-          frame_type, blob_storage_context->AsWeakPtr(), body,
-          skip_service_worker));
+          network::mojom::FetchCredentialsMode::kInclude,
+          FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
+          resource_type, request_context_type, frame_type,
+          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
 
   // Transfer ownership to the ServiceWorkerNavigationHandleCore.
   // In the case of a successful navigation, the SWProviderHost will be
@@ -179,7 +179,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     int provider_id,
     bool skip_service_worker,
     network::mojom::FetchRequestMode request_mode,
-    FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
     ResourceType resource_type,

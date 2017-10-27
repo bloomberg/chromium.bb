@@ -172,7 +172,7 @@ AccessStatus CheckAccess(
     const WebURL response_url,
     const int response_status_code,
     const WebHTTPHeaderMap& response_header,
-    const WebURLRequest::FetchCredentialsMode credentials_mode,
+    const network::mojom::FetchCredentialsMode credentials_mode,
     const WebSecurityOrigin& security_origin) {
   if (!response_status_code)
     return AccessStatus::kInvalidResponse;
@@ -229,7 +229,7 @@ bool HandleRedirect(WebSecurityOrigin& current_security_origin,
                     const WebURL redirect_response_url,
                     const int redirect_response_status_code,
                     const WebHTTPHeaderMap& redirect_response_header,
-                    WebURLRequest::FetchCredentialsMode credentials_mode,
+                    network::mojom::FetchCredentialsMode credentials_mode,
                     ResourceLoaderOptions& options,
                     WebString& error_message) {
   const KURL& last_url = redirect_response_url;
@@ -352,7 +352,7 @@ WebURLRequest CreateAccessControlPreflightRequest(
   preflight_request.SetPriority(request.GetPriority());
   preflight_request.SetRequestContext(request.GetRequestContext());
   preflight_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
+      network::mojom::FetchCredentialsMode::kOmit);
   preflight_request.SetServiceWorkerMode(
       WebURLRequest::ServiceWorkerMode::kNone);
   preflight_request.SetHTTPReferrer(request.HttpHeaderField(HTTPNames::Referer),

@@ -321,17 +321,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // 16. "Let module script credentials mode be determined by switching
   //      on CORS setting:"
-  WebURLRequest::FetchCredentialsMode credentials_mode =
-      WebURLRequest::kFetchCredentialsModeOmit;
+  network::mojom::FetchCredentialsMode credentials_mode =
+      network::mojom::FetchCredentialsMode::kOmit;
   switch (cross_origin) {
     case kCrossOriginAttributeNotSet:
-      credentials_mode = WebURLRequest::kFetchCredentialsModeOmit;
+      credentials_mode = network::mojom::FetchCredentialsMode::kOmit;
       break;
     case kCrossOriginAttributeAnonymous:
-      credentials_mode = WebURLRequest::kFetchCredentialsModeSameOrigin;
+      credentials_mode = network::mojom::FetchCredentialsMode::kSameOrigin;
       break;
     case kCrossOriginAttributeUseCredentials:
-      credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
+      credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
       break;
   }
 

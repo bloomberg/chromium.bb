@@ -78,7 +78,7 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       weak_factory_(this) {
   DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
             resource_request_.fetch_request_mode);
-  DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
+  DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
             resource_request_.fetch_credentials_mode);
   DCHECK_EQ(FetchRedirectMode::MANUAL_MODE,
             resource_request_.fetch_redirect_mode);

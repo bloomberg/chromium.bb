@@ -492,7 +492,8 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
   // ImageResource to be populated later.
   if (loading_image_document_) {
     ResourceRequest request(ImageSourceToKURL(element_->ImageSourceURL()));
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
     ImageResource* image_resource = ImageResource::Create(request);
     image_resource->SetStatus(ResourceStatus::kPending);
     image_resource->NotifyStartLoad();

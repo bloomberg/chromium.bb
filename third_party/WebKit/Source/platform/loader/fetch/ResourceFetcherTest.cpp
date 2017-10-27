@@ -311,7 +311,7 @@ TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
   ResourceRequest request(KURL("data:text/html,foo"));
   request.SetRequestContext(WebURLRequest::kRequestContextVideo);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
   options.initiator_info.name = FetchInitiatorTypeNames::internal;

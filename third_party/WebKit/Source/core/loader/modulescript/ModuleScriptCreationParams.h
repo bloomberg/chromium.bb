@@ -20,7 +20,7 @@ class ModuleScriptCreationParams {
   ModuleScriptCreationParams(
       const KURL& response_url,
       const String& source_text,
-      WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
+      network::mojom::FetchCredentialsMode fetch_credentials_mode,
       AccessControlStatus access_control_status)
       : response_url_(response_url),
         source_text_(source_text),
@@ -30,7 +30,7 @@ class ModuleScriptCreationParams {
 
   const KURL& GetResponseUrl() const { return response_url_; };
   const String& GetSourceText() const { return source_text_; }
-  WebURLRequest::FetchCredentialsMode GetFetchCredentialsMode() const {
+  network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
     return fetch_credentials_mode_;
   }
   AccessControlStatus GetAccessControlStatus() const {
@@ -40,7 +40,7 @@ class ModuleScriptCreationParams {
  private:
   const KURL response_url_;
   const String source_text_;
-  const WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
+  const network::mojom::FetchCredentialsMode fetch_credentials_mode_;
   const AccessControlStatus access_control_status_;
 };
 

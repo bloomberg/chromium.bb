@@ -95,7 +95,7 @@ bool ParseAccessControlAllowList(const std::string& string, SetType& set) {
 }  // namespace
 
 WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
-    WebURLRequest::FetchCredentialsMode credentials_mode)
+    network::mojom::FetchCredentialsMode credentials_mode)
     : absolute_expiry_time_(0),
       credentials_(
           FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {}
@@ -103,7 +103,7 @@ WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
 // static
 std::unique_ptr<WebCORSPreflightResultCacheItem>
 WebCORSPreflightResultCacheItem::Create(
-    const WebURLRequest::FetchCredentialsMode credentials_mode,
+    const network::mojom::FetchCredentialsMode credentials_mode,
     const WebHTTPHeaderMap& response_header,
     WebString& error_description) {
   std::unique_ptr<WebCORSPreflightResultCacheItem> item =
@@ -200,7 +200,7 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
 }
 
 bool WebCORSPreflightResultCacheItem::AllowsRequest(
-    WebURLRequest::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     const WebString& method,
     const WebHTTPHeaderMap& request_headers) const {
   WebString ignored_explanation;
@@ -240,7 +240,7 @@ void WebCORSPreflightResultCache::AppendEntry(
 bool WebCORSPreflightResultCache::CanSkipPreflight(
     const WebString& web_origin,
     const WebURL& web_url,
-    WebURLRequest::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     const WebString& method,
     const WebHTTPHeaderMap& request_headers) {
   std::string origin(web_origin.Ascii());

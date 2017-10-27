@@ -116,7 +116,7 @@ void ResourceMultiBufferDataProvider::Start() {
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
     if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {
       request.SetFetchCredentialsMode(
-          WebURLRequest::kFetchCredentialsModeSameOrigin);
+          network::mojom::FetchCredentialsMode::kSameOrigin);
     }
   }
   active_loader_ =

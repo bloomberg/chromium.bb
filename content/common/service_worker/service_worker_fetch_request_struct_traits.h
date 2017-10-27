@@ -13,16 +13,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<blink::mojom::FetchCredentialsMode,
-                  content::FetchCredentialsMode> {
-  static blink::mojom::FetchCredentialsMode ToMojom(
-      content::FetchCredentialsMode input);
-
-  static bool FromMojom(blink::mojom::FetchCredentialsMode input,
-                        content::FetchCredentialsMode* out);
-};
-
-template <>
 struct EnumTraits<blink::mojom::FetchRedirectMode, content::FetchRedirectMode> {
   static blink::mojom::FetchRedirectMode ToMojom(
       content::FetchRedirectMode input);
@@ -117,7 +107,7 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.referrer;
   }
 
-  static content::FetchCredentialsMode credentials_mode(
+  static network::mojom::FetchCredentialsMode credentials_mode(
       const content::ServiceWorkerFetchRequest& request) {
     return request.credentials_mode;
   }

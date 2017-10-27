@@ -163,7 +163,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   void CheckMethodFails(const char* unsafe_method) {
     WebURLRequest request(ToKURL("http://www.test.com/success.html"));
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
     request.SetHTTPMethod(WebString::FromUTF8(unsafe_method));
     WebAssociatedURLLoaderOptions options;
     options.untrusted_http = true;
@@ -177,7 +178,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   void CheckHeaderFails(const char* header_field, const char* header_value) {
     WebURLRequest request(ToKURL("http://www.test.com/success.html"));
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
     if (EqualIgnoringASCIICase(WebString::FromUTF8(header_field), "referer")) {
       request.SetHTTPReferrer(WebString::FromUTF8(header_value),
                               kWebReferrerPolicyDefault);
@@ -216,7 +218,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
     KURL url = ToKURL(id);
     WebURLRequest request(url);
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
 
     WebString header_name_string(WebString::FromUTF8(header_name));
     expected_response_ = WebURLResponse();
@@ -271,7 +274,7 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginSuccess) {
   KURL url = ToKURL("http://www.test.com/SameOriginSuccess.html");
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -294,7 +297,7 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginRestriction) {
   KURL url = ToKURL("http://www.other.com/SameOriginRestriction.html");
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   CheckFails(request);
 }
 
@@ -306,7 +309,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
   // default context. So we set the context as Script here.
   request.SetRequestContext(WebURLRequest::kRequestContextScript);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -331,7 +334,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
       ToKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -389,7 +392,7 @@ TEST_F(WebAssociatedURLLoaderTest,
       ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -419,7 +422,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
 
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_redirect_response_ = WebURLResponse();
   expected_redirect_response_.SetMIMEType("text/html");
@@ -455,7 +458,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
 
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_redirect_response_ = WebURLResponse();
   expected_redirect_response_.SetMIMEType("text/html");
@@ -495,7 +498,7 @@ TEST_F(WebAssociatedURLLoaderTest,
 
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_redirect_response_ = WebURLResponse();
   expected_redirect_response_.SetMIMEType("text/html");
@@ -538,7 +541,7 @@ TEST_F(WebAssociatedURLLoaderTest,
 
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   // Add a CORS simple header.
   request.SetHTTPHeaderField("accept", "application/json");
 
@@ -663,7 +666,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
       ToKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
   WebURLRequest request(url);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   WebString header_name_string(WebString::FromUTF8("non-whitelisted"));
   expected_response_ = WebURLResponse();

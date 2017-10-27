@@ -61,7 +61,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       int provider_id,
       ServiceWorkerMode service_worker_mode,
       network::mojom::FetchRequestMode request_mode,
-      FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
       ResourceType resource_type,
@@ -92,7 +92,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       ServiceWorkerContextWrapper* context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       network::mojom::FetchRequestMode request_mode,
-      FetchCredentialsMode credentials_mode,
+      network::mojom::FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
       const std::string& integrity,
       ResourceType resource_type,
@@ -127,7 +127,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   ResourceType resource_type_;
   network::mojom::FetchRequestMode request_mode_;
-  FetchCredentialsMode credentials_mode_;
+  network::mojom::FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
   std::string integrity_;
   RequestContextType request_context_type_;

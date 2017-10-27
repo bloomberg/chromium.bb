@@ -318,10 +318,10 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     ServiceWorkerRequestHandler::InitializeHandler(
         request_.get(), context_wrapper(), &blob_storage_context_, process_id,
         provider_id, false, network::mojom::FetchRequestMode::kNoCORS,
-        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-        std::string() /* integrity */, RESOURCE_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
-        scoped_refptr<ResourceRequestBody>());
+        network::mojom::FetchCredentialsMode::kOmit,
+        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
+        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        REQUEST_CONTEXT_FRAME_TYPE_NONE, scoped_refptr<ResourceRequestBody>());
   }
 
   int NextVersionId() { return next_version_id_++; }

@@ -216,7 +216,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
                                              ? kParserInserted
                                              : kNotParserInserted;
   ScriptFetchOptions fetch_options(nonce, parser_state,
-                                   WebURLRequest::kFetchCredentialsModeOmit);
+                                   network::mojom::FetchCredentialsMode::kOmit);
   if (!is_external_) {
     ScriptSourceCode source_code(GetElement()->TextFromChildren(), document_url,
                                  StartingPosition());

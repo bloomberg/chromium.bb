@@ -39,9 +39,9 @@ class PLATFORM_EXPORT FetchUtils {
   // Used by e.g. the CORS check algorithm to check if the FetchCredentialsMode
   // should be treated as equivalent to "include" in the Fetch spec.
   static bool ShouldTreatCredentialsModeAsInclude(
-      const WebURLRequest::FetchCredentialsMode credentials_mode) {
-    return credentials_mode == WebURLRequest::kFetchCredentialsModeInclude ||
-           credentials_mode == WebURLRequest::kFetchCredentialsModePassword;
+      const network::mojom::FetchCredentialsMode credentials_mode) {
+    return credentials_mode == network::mojom::FetchCredentialsMode::kInclude ||
+           credentials_mode == network::mojom::FetchCredentialsMode::kPassword;
   }
 };
 

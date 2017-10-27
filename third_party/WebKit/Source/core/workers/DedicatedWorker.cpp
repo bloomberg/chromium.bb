@@ -81,11 +81,11 @@ void DedicatedWorker::Start() {
   DCHECK(IsMainThread());
   network::mojom::FetchRequestMode fetch_request_mode =
       network::mojom::FetchRequestMode::kSameOrigin;
-  WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
-      WebURLRequest::kFetchCredentialsModeSameOrigin;
+  network::mojom::FetchCredentialsMode fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kSameOrigin;
   if (script_url_.ProtocolIsData()) {
     fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
-    fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
+    fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
   }
 
   script_loader_ = WorkerScriptLoader::Create();

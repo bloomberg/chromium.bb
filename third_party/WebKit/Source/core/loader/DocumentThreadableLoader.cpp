@@ -155,7 +155,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       async_(blocking_behavior == kLoadAsynchronously),
       request_context_(WebURLRequest::kRequestContextUnspecified),
       fetch_request_mode_(network::mojom::FetchRequestMode::kSameOrigin),
-      fetch_credentials_mode_(WebURLRequest::kFetchCredentialsModeOmit),
+      fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
       timeout_timer_(
           TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()),
           this,
@@ -197,7 +197,7 @@ void DocumentThreadableLoader::DispatchInitialRequestOutOfBlinkCORS(
 void DocumentThreadableLoader::HandleResponseOutOfBlinkCORS(
     unsigned long identifier,
     network::mojom::FetchRequestMode request_mode,
-    WebURLRequest::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   // TODO(hintzed) replace this delegation with an implementation that does not
@@ -906,7 +906,7 @@ void DocumentThreadableLoader::ReportResponseReceived(
 void DocumentThreadableLoader::HandleResponse(
     unsigned long identifier,
     network::mojom::FetchRequestMode request_mode,
-    WebURLRequest::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   if (out_of_blink_cors_) {
@@ -921,7 +921,7 @@ void DocumentThreadableLoader::HandleResponse(
 void DocumentThreadableLoader::HandleResponseBlinkCORS(
     unsigned long identifier,
     network::mojom::FetchRequestMode request_mode,
-    WebURLRequest::FetchCredentialsMode credentials_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(client_);
@@ -1288,9 +1288,9 @@ void DocumentThreadableLoader::LoadRequest(
 
   bool allow_stored_credentials = false;
   switch (request.GetFetchCredentialsMode()) {
-    case WebURLRequest::kFetchCredentialsModeOmit:
+    case network::mojom::FetchCredentialsMode::kOmit:
       break;
-    case WebURLRequest::kFetchCredentialsModeSameOrigin:
+    case network::mojom::FetchCredentialsMode::kSameOrigin:
       // TODO(tyoshino): It's wrong to use |cors_flag| here. Fix it to use the
       // response tainting.
       //
@@ -1300,8 +1300,8 @@ void DocumentThreadableLoader::LoadRequest(
       // - https://github.com/whatwg/fetch/issues/169
       allow_stored_credentials = !cors_flag_ || suborigin_force_credentials_;
       break;
-    case WebURLRequest::kFetchCredentialsModeInclude:
-    case WebURLRequest::kFetchCredentialsModePassword:
+    case network::mojom::FetchCredentialsMode::kInclude:
+    case network::mojom::FetchCredentialsMode::kPassword:
       allow_stored_credentials = true;
       break;
   }

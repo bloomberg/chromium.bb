@@ -12,9 +12,10 @@ namespace blink {
 
 TEST(ReferrerScriptInfo, IsDefaultValue) {
   EXPECT_TRUE(ReferrerScriptInfo().IsDefaultValue());
-  EXPECT_FALSE(ReferrerScriptInfo(WebURLRequest::kFetchCredentialsModePassword,
-                                  "", kNotParserInserted)
-                   .IsDefaultValue());
+  EXPECT_FALSE(
+      ReferrerScriptInfo(network::mojom::FetchCredentialsMode::kPassword, "",
+                         kNotParserInserted)
+          .IsDefaultValue());
 }
 
 TEST(ReferrerScriptInfo, ToFromV8) {
@@ -24,14 +25,14 @@ TEST(ReferrerScriptInfo, ToFromV8) {
                   .ToV8HostDefinedOptions(scope.GetIsolate())
                   .IsEmpty());
 
-  ReferrerScriptInfo info(WebURLRequest::kFetchCredentialsModePassword,
+  ReferrerScriptInfo info(network::mojom::FetchCredentialsMode::kPassword,
                           "foobar", kNotParserInserted);
   v8::Local<v8::PrimitiveArray> v8_info =
       info.ToV8HostDefinedOptions(scope.GetIsolate());
 
   ReferrerScriptInfo decoded =
       ReferrerScriptInfo::FromV8HostDefinedOptions(scope.GetContext(), v8_info);
-  EXPECT_EQ(WebURLRequest::kFetchCredentialsModePassword,
+  EXPECT_EQ(network::mojom::FetchCredentialsMode::kPassword,
             decoded.CredentialsMode());
   EXPECT_EQ("foobar", decoded.Nonce());
   EXPECT_EQ(kNotParserInserted, decoded.ParserState());

@@ -47,7 +47,7 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem
     : public WebNonCopyable {
  public:
   static std::unique_ptr<WebCORSPreflightResultCacheItem> Create(
-      const WebURLRequest::FetchCredentialsMode,
+      const network::mojom::FetchCredentialsMode,
       const WebHTTPHeaderMap&,
       WebString& error_description);
 
@@ -55,12 +55,13 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem
                                WebString& error_description) const;
   bool AllowsCrossOriginHeaders(const WebHTTPHeaderMap&,
                                 WebString& error_description) const;
-  bool AllowsRequest(WebURLRequest::FetchCredentialsMode,
+  bool AllowsRequest(network::mojom::FetchCredentialsMode,
                      const WebString& method,
                      const WebHTTPHeaderMap& request_headers) const;
 
  private:
-  explicit WebCORSPreflightResultCacheItem(WebURLRequest::FetchCredentialsMode);
+  explicit WebCORSPreflightResultCacheItem(
+      network::mojom::FetchCredentialsMode);
 
   bool Parse(const WebHTTPHeaderMap& response_header,
              WebString& error_description);
@@ -87,7 +88,7 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache
                    std::unique_ptr<WebCORSPreflightResultCacheItem>);
   bool CanSkipPreflight(const WebString& origin,
                         const WebURL&,
-                        WebURLRequest::FetchCredentialsMode,
+                        network::mojom::FetchCredentialsMode,
                         const WebString& method,
                         const WebHTTPHeaderMap& request_headers);
 

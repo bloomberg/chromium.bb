@@ -123,11 +123,11 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
 
   network::mojom::FetchRequestMode fetch_request_mode =
       network::mojom::FetchRequestMode::kSameOrigin;
-  WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
-      WebURLRequest::kFetchCredentialsModeSameOrigin;
+  network::mojom::FetchCredentialsMode fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kSameOrigin;
   if ((static_cast<KURL>(url_)).ProtocolIsData()) {
     fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
-    fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
+    fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
   }
 
   main_script_loader_->LoadAsynchronously(
