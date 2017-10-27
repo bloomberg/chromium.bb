@@ -1662,6 +1662,12 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   CGRect currentCardFrame =
       AlignRectOriginAndSizeToPixels(LayoutRectGetRect(currentCardLayout));
 
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    // Forces a layout because the views may not yet be positioned correctly
+    // due to a screen rotation.
+    [self.view layoutIfNeeded];
+  }
+
   // Animate the dummy toolbar background view.
   [self animateDummyToolbarForCardFrame:currentCardFrame
                         transitionStyle:transitionStyle];

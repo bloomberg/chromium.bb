@@ -43,7 +43,7 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
     _dispatcher = dispatcher;
     _stackViewToolbar =
         [[UIView alloc] initWithFrame:[self specificControlsArea]];
-    [_stackViewToolbar setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
+    [_stackViewToolbar setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
                                            UIViewAutoresizingFlexibleWidth];
 
     _openNewTabButton = [[NewTabButton alloc] initWithFrame:CGRectZero];
