@@ -544,8 +544,9 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
   }
 
   handler->StartGetCapability(
-      printer_name, base::Bind(&PrintPreviewHandler::SendPrinterCapabilities,
-                               weak_factory_.GetWeakPtr(), callback_id));
+      printer_name,
+      base::BindOnce(&PrintPreviewHandler::SendPrinterCapabilities,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
@@ -736,10 +737,11 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     else if (print_with_privet)
       type = PrinterType::kPrivetPrinter;
     PrinterHandler* handler = GetPrinterHandler(type);
-    handler->StartPrint(destination_id, capabilities, title, print_ticket,
-                        gfx::Size(width, height), data,
-                        base::Bind(&PrintPreviewHandler::OnPrintResult,
-                                   weak_factory_.GetWeakPtr(), callback_id));
+    handler->StartPrint(
+        destination_id, capabilities, title, print_ticket,
+        gfx::Size(width, height), data,
+        base::BindOnce(&PrintPreviewHandler::OnPrintResult,
+                       weak_factory_.GetWeakPtr(), callback_id));
     return;
   }
 
@@ -846,9 +848,9 @@ void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
 
   GetPrinterHandler(PrinterType::kLocalPrinter)
       ->StartGetCapability(
-          printer_name,
-          base::Bind(&PrintPreviewHandler::SendPrinterSetup,
-                     weak_factory_.GetWeakPtr(), callback_id, printer_name));
+          printer_name, base::BindOnce(&PrintPreviewHandler::SendPrinterSetup,
+                                       weak_factory_.GetWeakPtr(), callback_id,
+                                       printer_name));
 }
 
 void PrintPreviewHandler::OnSigninComplete(const std::string& callback_id) {

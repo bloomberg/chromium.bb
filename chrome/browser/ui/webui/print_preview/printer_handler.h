@@ -41,10 +41,10 @@ class Profile;
 class PrinterHandler {
  public:
   using DefaultPrinterCallback =
-      base::Callback<void(const std::string& printer_name)>;
+      base::OnceCallback<void(const std::string& printer_name)>;
   using AddedPrintersCallback =
-      base::Callback<void(const base::ListValue& printers)>;
-  using GetPrintersDoneCallback = base::Closure;
+      base::RepeatingCallback<void(const base::ListValue& printers)>;
+  using GetPrintersDoneCallback = base::OnceClosure;
   // |capability| should contain a CDD with key printing::kSettingCapabilities.
   // It may also contain other information about the printer in a dictionary
   // with key printing::kPrinter.
@@ -54,11 +54,11 @@ class PrinterHandler {
   // If the dictionary with key printing::kSettingCapabilities is
   // empty, this indicates capabilities were retrieved but the printer does
   // not support any of the capability fields in a CDD.
-  using GetCapabilityCallback =
-      base::Callback<void(std::unique_ptr<base::DictionaryValue> capability)>;
-  using PrintCallback = base::Callback<void(const base::Value& error)>;
+  using GetCapabilityCallback = base::OnceCallback<void(
+      std::unique_ptr<base::DictionaryValue> capability)>;
+  using PrintCallback = base::OnceCallback<void(const base::Value& error)>;
   using GetPrinterInfoCallback =
-      base::Callback<void(const base::DictionaryValue& printer_info)>;
+      base::OnceCallback<void(const base::DictionaryValue& printer_info)>;
 
   // Creates an instance of a PrinterHandler for extension printers.
   static std::unique_ptr<PrinterHandler> CreateForExtensionPrinters(
@@ -86,7 +86,7 @@ class PrinterHandler {
 
   // Returns the name of the default printer through |cb|. Must be overridden
   // by implementations that expect this method to be called.
-  virtual void GetDefaultPrinter(const DefaultPrinterCallback& cb);
+  virtual void GetDefaultPrinter(DefaultPrinterCallback cb);
 
   // Starts getting available printers.
   // |added_printers_callback| should be called in the response when printers
@@ -95,13 +95,13 @@ class PrinterHandler {
   // |done_callback| must be called exactly once when the search is complete.
   virtual void StartGetPrinters(
       const AddedPrintersCallback& added_printers_callback,
-      const GetPrintersDoneCallback& done_callback) = 0;
+      GetPrintersDoneCallback done_callback) = 0;
 
   // Starts getting printing capability of the printer with the provided
   // destination ID.
   // |callback| should be called in the response to the request.
   virtual void StartGetCapability(const std::string& destination_id,
-                                  const GetCapabilityCallback& callback) = 0;
+                                  GetCapabilityCallback callback) = 0;
 
   // Starts granting access to the given provisional printer. The print handler
   // will respond with more information about the printer including its non-
@@ -109,7 +109,7 @@ class PrinterHandler {
   // this method to be called.
   // |callback| should be called in response to the request.
   virtual void StartGrantPrinterAccess(const std::string& printer_id,
-                                       const GetPrinterInfoCallback& callback);
+                                       GetPrinterInfoCallback callback);
 
   // Starts a print request.
   // |destination_id|: The printer to which print job should be sent.
@@ -127,7 +127,7 @@ class PrinterHandler {
       const std::string& ticket_json,
       const gfx::Size& page_size,
       const scoped_refptr<base::RefCountedBytes>& print_data,
-      const PrintCallback& callback) = 0;
+      PrintCallback callback) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINTER_HANDLER_H_

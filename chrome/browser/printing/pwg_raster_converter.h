@@ -34,8 +34,8 @@ class PWGRasterConverter {
   // |temp_file| is the path to the temp file (owned by the converter) that
   //     contains the PWG raster data.
   using ResultCallback =
-      base::Callback<void(bool /*success*/,
-                          const base::FilePath& /*temp_file*/)>;
+      base::OnceCallback<void(bool /*success*/,
+                              const base::FilePath& /*temp_file*/)>;
 
   virtual ~PWGRasterConverter() {}
 
@@ -57,7 +57,7 @@ class PWGRasterConverter {
   virtual void Start(base::RefCountedMemory* data,
                      const PdfRenderSettings& conversion_settings,
                      const PwgRasterSettings& bitmap_settings,
-                     const ResultCallback& callback) = 0;
+                     ResultCallback callback) = 0;
 };
 
 }  // namespace printing

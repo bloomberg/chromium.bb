@@ -42,28 +42,28 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::GetName() {
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
-    const ResultCallback& callback) {
-  endpoint_resolver_->Start(name_,
-                            base::Bind(&ResolutionImpl::ResolveComplete,
-                                       base::Unretained(this), callback));
+    ResultCallback callback) {
+  endpoint_resolver_->Start(
+      name_, base::BindOnce(&ResolutionImpl::ResolveComplete,
+                            base::Unretained(this), std::move(callback)));
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
     const net::HostPortPair& address,
-    const ResultCallback& callback) {
-  endpoint_resolver_->Start(address,
-                            base::Bind(&ResolutionImpl::ResolveComplete,
-                                       base::Unretained(this), callback));
+    ResultCallback callback) {
+  endpoint_resolver_->Start(
+      address, base::BindOnce(&ResolutionImpl::ResolveComplete,
+                              base::Unretained(this), std::move(callback)));
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(
-    const ResultCallback& callback,
+    ResultCallback callback,
     const net::IPEndPoint& endpoint) {
   if (endpoint.address().empty())
-    return callback.Run(std::unique_ptr<PrivetHTTPClient>());
+    return std::move(callback).Run(std::unique_ptr<PrivetHTTPClient>());
 
   net::HostPortPair new_address = net::HostPortPair::FromIPEndPoint(endpoint);
-  callback.Run(std::unique_ptr<PrivetHTTPClient>(
+  std::move(callback).Run(std::unique_ptr<PrivetHTTPClient>(
       new PrivetHTTPClientImpl(name_, new_address, request_context_.get())));
 }
 

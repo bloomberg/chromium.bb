@@ -46,16 +46,16 @@ class PdfPrinterHandler : public PrinterHandler,
   void Reset() override;
   // Required by PrinterHandler implementation but should never be called.
   void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
-                        const GetPrintersDoneCallback& done_callback) override;
+                        GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
-                          const GetCapabilityCallback& callback) override;
+                          GetCapabilityCallback callback) override;
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
                   const base::string16& job_title,
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedBytes>& print_data,
-                  const PrintCallback& callback) override;
+                  PrintCallback callback) override;
 
   // SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,

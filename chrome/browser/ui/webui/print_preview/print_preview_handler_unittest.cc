@@ -141,26 +141,26 @@ class TestPrinterHandler : public PrinterHandler {
 
   void Reset() override {}
 
-  void GetDefaultPrinter(const DefaultPrinterCallback& cb) override {
-    cb.Run(default_printer_);
+  void GetDefaultPrinter(DefaultPrinterCallback cb) override {
+    std::move(cb).Run(default_printer_);
   }
 
   void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
-                        const GetPrintersDoneCallback& done_callback) override {
+                        GetPrintersDoneCallback done_callback) override {
     if (!printers_.empty())
       added_printers_callback.Run(printers_);
-    done_callback.Run();
+    std::move(done_callback).Run();
   }
 
   void StartGetCapability(const std::string& destination_id,
-                          const GetCapabilityCallback& callback) override {
-    callback.Run(base::DictionaryValue::From(std::make_unique<base::Value>(
-        printer_capabilities_[destination_id]->Clone())));
+                          GetCapabilityCallback callback) override {
+    std::move(callback).Run(
+        base::DictionaryValue::From(std::make_unique<base::Value>(
+            printer_capabilities_[destination_id]->Clone())));
   }
 
-  void StartGrantPrinterAccess(
-      const std::string& printer_id,
-      const GetPrinterInfoCallback& callback) override {}
+  void StartGrantPrinterAccess(const std::string& printer_id,
+                               GetPrinterInfoCallback callback) override {}
 
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
@@ -168,8 +168,8 @@ class TestPrinterHandler : public PrinterHandler {
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedBytes>& print_data,
-                  const PrintCallback& callback) override {
-    callback.Run(base::Value());
+                  PrintCallback callback) override {
+    std::move(callback).Run(base::Value());
   }
 
   void SetPrinters(const std::vector<PrinterInfo>& printers) {

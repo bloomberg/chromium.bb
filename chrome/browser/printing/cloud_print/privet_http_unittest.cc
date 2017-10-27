@@ -380,8 +380,8 @@ class MockJSONCallback{
 
   const base::DictionaryValue* value() { return value_.get(); }
   PrivetJSONOperation::ResultCallback callback() {
-    return base::Bind(&MockJSONCallback::OnPrivetJSONDone,
-                      base::Unretained(this));
+    return base::BindOnce(&MockJSONCallback::OnPrivetJSONDone,
+                          base::Unretained(this));
   }
  protected:
   std::unique_ptr<base::DictionaryValue> value_;
@@ -744,10 +744,11 @@ class FakePWGRasterConverter : public printing::PWGRasterConverter {
   void Start(base::RefCountedMemory* data,
              const printing::PdfRenderSettings& conversion_settings,
              const printing::PwgRasterSettings& bitmap_settings,
-             const ResultCallback& callback) override {
+             ResultCallback callback) override {
     bitmap_settings_ = bitmap_settings;
     std::string data_str(data->front_as<char>(), data->size());
-    callback.Run(true, base::FilePath().AppendASCII(data_str + "test.pdf"));
+    std::move(callback).Run(
+        true, base::FilePath().AppendASCII(data_str + "test.pdf"));
   }
 
   const printing::PwgRasterSettings& bitmap_settings() {

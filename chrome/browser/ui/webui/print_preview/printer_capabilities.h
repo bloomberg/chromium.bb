@@ -42,7 +42,7 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
 // converted list as the argument if it is not empty, and runs |done_callback|.
 void ConvertPrinterListForCallback(
     const PrinterHandler::AddedPrintersCallback& callback,
-    const PrinterHandler::GetPrintersDoneCallback& done_callback,
+    PrinterHandler::GetPrintersDoneCallback done_callback,
     const printing::PrinterList& printer_list);
 
 // Returns a unique_ptr to a sanitized version of |cdd| to prevent possible JS

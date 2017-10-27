@@ -120,7 +120,7 @@ class PWGRasterConverterHelper
                            const PwgRasterSettings& bitmap_settings);
 
   void Convert(base::RefCountedMemory* data,
-               const PWGRasterConverter::ResultCallback& callback);
+               PWGRasterConverter::ResultCallback callback);
 
  private:
   friend class base::RefCountedThreadSafe<PWGRasterConverterHelper>;
@@ -156,10 +156,10 @@ PWGRasterConverterHelper::~PWGRasterConverterHelper() {}
 
 void PWGRasterConverterHelper::Convert(
     base::RefCountedMemory* data,
-    const PWGRasterConverter::ResultCallback& callback) {
+    PWGRasterConverter::ResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   CHECK(!files_);
   files_.reset(new FileHandlers());
 
@@ -206,17 +206,21 @@ class PWGRasterConverterImpl : public PWGRasterConverter {
   void Start(base::RefCountedMemory* data,
              const PdfRenderSettings& conversion_settings,
              const PwgRasterSettings& bitmap_settings,
-             const ResultCallback& callback) override;
+             ResultCallback callback) override;
 
  private:
+  // TODO (rbpotter): Once CancelableOnceCallback is added, remove this and
+  // change callback_ to a CancelableOnceCallback.
+  void RunCallback(bool success, const base::FilePath& temp_file);
+
   scoped_refptr<PWGRasterConverterHelper> utility_client_;
-  base::CancelableCallback<ResultCallback::RunType> callback_;
+  ResultCallback callback_;
+  base::WeakPtrFactory<PWGRasterConverterImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PWGRasterConverterImpl);
 };
 
-PWGRasterConverterImpl::PWGRasterConverterImpl() {
-}
+PWGRasterConverterImpl::PWGRasterConverterImpl() : weak_ptr_factory_(this) {}
 
 PWGRasterConverterImpl::~PWGRasterConverterImpl() {
 }
@@ -224,13 +228,20 @@ PWGRasterConverterImpl::~PWGRasterConverterImpl() {
 void PWGRasterConverterImpl::Start(base::RefCountedMemory* data,
                                    const PdfRenderSettings& conversion_settings,
                                    const PwgRasterSettings& bitmap_settings,
-                                   const ResultCallback& callback) {
-  // Rebind cancelable callback to avoid calling callback if
-  // PWGRasterConverterImpl is destroyed.
-  callback_.Reset(callback);
+                                   ResultCallback callback) {
+  // Bind callback here and pass a wrapper to the utility client to avoid
+  // calling callback if PWGRasterConverterImpl is destroyed.
+  callback_ = std::move(callback);
   utility_client_ = base::MakeRefCounted<PWGRasterConverterHelper>(
       conversion_settings, bitmap_settings);
-  utility_client_->Convert(data, callback_.callback());
+  utility_client_->Convert(data,
+                           base::BindOnce(&PWGRasterConverterImpl::RunCallback,
+                                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PWGRasterConverterImpl::RunCallback(bool success,
+                                         const base::FilePath& temp_file) {
+  std::move(callback_).Run(success, temp_file);
 }
 
 }  // namespace

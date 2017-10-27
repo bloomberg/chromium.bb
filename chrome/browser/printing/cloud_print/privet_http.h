@@ -32,8 +32,8 @@ class PrivetHTTPClient;
 class PrivetJSONOperation {
  public:
   // If value is null, the operation failed.
-  typedef base::Callback<void(
-      const base::DictionaryValue* /*value*/)> ResultCallback;
+  using ResultCallback =
+      base::OnceCallback<void(const base::DictionaryValue* /*value*/)>;
 
   virtual ~PrivetJSONOperation() {}
 
@@ -52,7 +52,7 @@ class PrivetHTTPClient {
 
   // Creates operation to query basic information about local device.
   virtual std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
-      const PrivetJSONOperation::ResultCallback& callback) = 0;
+      PrivetJSONOperation::ResultCallback callback) = 0;
 
   // Creates a URL fetcher for PrivetV1.
   virtual std::unique_ptr<PrivetURLFetcher> CreateURLFetcher(
@@ -194,7 +194,7 @@ class PrivetV1HTTPClient {
 
   // Creates operation to query basic information about local device.
   virtual std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
-      const PrivetJSONOperation::ResultCallback& callback) = 0;
+      PrivetJSONOperation::ResultCallback callback) = 0;
 
   // Creates operation to register local device using Privet v1 protocol.
   virtual std::unique_ptr<PrivetRegisterOperation> CreateRegisterOperation(
@@ -203,7 +203,7 @@ class PrivetV1HTTPClient {
 
   // Creates operation to query capabilities of local printer.
   virtual std::unique_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
-      const PrivetJSONOperation::ResultCallback& callback) = 0;
+      PrivetJSONOperation::ResultCallback callback) = 0;
 
   // Creates operation to submit print job to local printer.
   virtual std::unique_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(

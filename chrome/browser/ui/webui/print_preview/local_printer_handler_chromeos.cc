@@ -57,16 +57,16 @@ void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
 }
 
 void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
-                       const PrinterHandler::GetCapabilityCallback& cb) {
+                       LocalPrinterHandlerChromeos::GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   printing::PrinterBasicInfo basic_info = ToBasicInfo(*printer);
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&printing::GetSettingsOnBlockingPool, printer->id(),
-                 basic_info),
-      cb);
+      base::BindOnce(&printing::GetSettingsOnBlockingPool, printer->id(),
+                     basic_info),
+      std::move(cb));
 }
 
 }  // namespace
@@ -89,18 +89,17 @@ void LocalPrinterHandlerChromeos::Reset() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void LocalPrinterHandlerChromeos::GetDefaultPrinter(
-    const DefaultPrinterCallback& cb) {
+void LocalPrinterHandlerChromeos::GetDefaultPrinter(DefaultPrinterCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(crbug.com/660898): Add default printers to ChromeOS.
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(cb, ""));
+                                   base::BindOnce(std::move(cb), ""));
 }
 
 void LocalPrinterHandlerChromeos::StartGetPrinters(
     const AddedPrintersCallback& added_printers_callback,
-    const GetPrintersDoneCallback& done_callback) {
+    GetPrintersDoneCallback done_callback) {
   // SyncedPrintersManager is not thread safe and must be called from the UI
   // thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -116,13 +115,13 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
       printers_manager_->GetPrinters(CupsPrintersManager::kAutomatic),
       &printer_list);
 
-  printing::ConvertPrinterListForCallback(added_printers_callback,
-                                          done_callback, printer_list);
+  printing::ConvertPrinterListForCallback(
+      added_printers_callback, std::move(done_callback), printer_list);
 }
 
 void LocalPrinterHandlerChromeos::StartGetCapability(
     const std::string& printer_name,
-    const GetCapabilityCallback& cb) {
+    GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<chromeos::Printer> printer =
@@ -130,7 +129,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   if (!printer) {
     // If the printer was removed, the lookup will fail.
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(cb, nullptr));
+                                     base::BindOnce(std::move(cb), nullptr));
     return;
   }
 
@@ -141,15 +140,16 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
 
   if (printers_manager_->IsPrinterInstalled(*printer)) {
     // Skip setup if the printer is already installed.
-    HandlePrinterSetup(std::move(printer), cb, chromeos::kSuccess);
+    HandlePrinterSetup(std::move(printer), std::move(cb), chromeos::kSuccess);
     return;
   }
 
   const chromeos::Printer& printer_ref = *printer;
   printer_configurer_->SetUpPrinter(
       printer_ref,
-      base::Bind(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
-                 weak_factory_.GetWeakPtr(), base::Passed(&printer), cb));
+      base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
+                     weak_factory_.GetWeakPtr(), base::Passed(&printer),
+                     std::move(cb)));
 }
 
 void LocalPrinterHandlerChromeos::StartPrint(
@@ -159,13 +159,13 @@ void LocalPrinterHandlerChromeos::StartPrint(
     const std::string& ticket_json,
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedBytes>& print_data,
-    const PrintCallback& callback) {
+    PrintCallback callback) {
   NOTREACHED();
 }
 
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     std::unique_ptr<chromeos::Printer> printer,
-    const GetCapabilityCallback& cb,
+    GetCapabilityCallback cb,
     chromeos::PrinterSetupResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -176,7 +176,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
       printers_manager_->PrinterInstalled(*printer);
 
       // fetch settings on the blocking pool and invoke callback.
-      FetchCapabilities(std::move(printer), cb);
+      FetchCapabilities(std::move(printer), std::move(cb));
       return;
     case chromeos::PrinterSetupResult::kPpdNotFound:
       LOG(WARNING) << "Could not find PPD.  Check printer configuration.";
@@ -201,5 +201,5 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
   }
 
   // TODO(skau): Open printer settings if this is resolvable.
-  cb.Run(nullptr);
+  std::move(cb).Run(nullptr);
 }
