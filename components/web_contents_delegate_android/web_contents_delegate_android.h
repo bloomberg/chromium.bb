@@ -46,11 +46,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   WebContentsDelegateAndroid(JNIEnv* env, jobject obj);
   ~WebContentsDelegateAndroid() override;
 
-  // Binds this WebContentsDelegateAndroid to the passed WebContents instance,
-  // such that when that WebContents is destroyed, this
-  // WebContentsDelegateAndroid instance will be destroyed too.
-  void SetOwnerWebContents(content::WebContents* contents);
-
   // Overridden from WebContentsDelegate:
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
