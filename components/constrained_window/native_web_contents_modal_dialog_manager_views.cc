@@ -48,10 +48,8 @@ NativeWebContentsModalDialogManagerViews::
   if (host_)
     host_->RemoveObserver(this);
 
-  for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
-       it != observed_widgets_.end(); ++it) {
-    (*it)->RemoveObserver(this);
-  }
+  for (auto* widget : observed_widgets_)
+    widget->RemoveObserver(this);
 }
 
 void NativeWebContentsModalDialogManagerViews::ManageDialog() {
@@ -142,10 +140,8 @@ void NativeWebContentsModalDialogManagerViews::Pulse() {}
 void NativeWebContentsModalDialogManagerViews::OnPositionRequiresUpdate() {
   DCHECK(host_);
 
-  for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
-       it != observed_widgets_.end(); ++it) {
-    constrained_window::UpdateWebContentsModalDialogPosition(*it, host_);
-  }
+  for (auto* widget : observed_widgets_)
+    constrained_window::UpdateWebContentsModalDialogPosition(widget, host_);
 }
 
 void NativeWebContentsModalDialogManagerViews::OnHostDestroying() {
@@ -177,9 +173,8 @@ void NativeWebContentsModalDialogManagerViews::HostChanged(
   if (host_) {
     host_->AddObserver(this);
 
-    for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
-         it != observed_widgets_.end(); ++it) {
-      views::Widget::ReparentNativeView((*it)->GetNativeView(),
+    for (auto* widget : observed_widgets_) {
+      views::Widget::ReparentNativeView(widget->GetNativeView(),
                                         host_->GetHostView());
     }
 
