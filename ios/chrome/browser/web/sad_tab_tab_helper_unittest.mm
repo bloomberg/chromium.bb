@@ -24,19 +24,20 @@
 
 // Delegate for testing.
 @interface SadTabTabHelperTestDelegate : NSObject<SadTabTabHelperDelegate>
-@property(nonatomic, assign) BOOL sadTabShown;
 // |repeatedFailure| could be used by the delegate to display different types of
 // SadTabs.
 @property(nonatomic, assign) BOOL repeatedFailure;
 @end
 
 @implementation SadTabTabHelperTestDelegate
-@synthesize sadTabShown = sadTabShown;
 @synthesize repeatedFailure = _repeatedFailure;
 
-- (void)presentSadTabForRepeatedFailure:(BOOL)repeatedFailure {
-  self.sadTabShown = YES;
+- (void)sadTabTabHelper:(SadTabTabHelper*)tabHelper
+    presentSadTabForRepeatedFailure:(BOOL)repeatedFailure {
   self.repeatedFailure = repeatedFailure;
+  CRWContentView* contentView = [[CRWGenericContentView alloc]
+      initWithView:[[UIView alloc] initWithFrame:CGRectZero]];
+  tabHelper->web_state()->ShowTransientContentView(contentView);
 }
 
 @end
@@ -81,12 +82,12 @@ TEST_F(SadTabTabHelperTest, ReloadedWhenWebStateWasShown) {
   web_state_.WasHidden();
 
   // Delegate should not present a SadTab.
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Helper should get notified of render process failure,
   // but Sad Tab should not be presented, because web state was not shown.
   web_state_.OnRenderProcessGone();
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Navigation item must be reloaded once web state is shown.
   EXPECT_FALSE(navigation_manager_->LoadIfNecessaryWasCalled());
@@ -104,12 +105,12 @@ TEST_F(SadTabTabHelperTest, AppInBackground) {
   web_state_.WasShown();
 
   // Delegate should not present a SadTab.
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Helper should get notified of render process failure,
   // but Sad Tab should not be presented, because application is backgrounded.
   web_state_.OnRenderProcessGone();
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Navigation item must be reloaded once the app became active.
   EXPECT_FALSE(navigation_manager_->LoadIfNecessaryWasCalled());
@@ -129,12 +130,12 @@ TEST_F(SadTabTabHelperTest, AppIsInactive) {
   web_state_.WasShown();
 
   // Delegate should not present a SadTab.
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Helper should get notified of render process failure,
   // but Sad Tab should not be presented, because application is inactive.
   web_state_.OnRenderProcessGone();
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Navigation item must be reloaded once the app became active.
   EXPECT_FALSE(navigation_manager_->LoadIfNecessaryWasCalled());
@@ -153,12 +154,12 @@ TEST_F(SadTabTabHelperTest, Presented) {
   web_state_.WasShown();
 
   // Delegate should not present a SadTab.
-  EXPECT_FALSE(sad_tab_delegate_.sadTabShown);
+  EXPECT_FALSE(web_state_.GetTransientContentView());
 
   // Helper should get notified of render process failure. And the delegate
   // should present a SadTab.
   web_state_.OnRenderProcessGone();
-  EXPECT_TRUE(sad_tab_delegate_.sadTabShown);
+  EXPECT_TRUE(web_state_.GetTransientContentView());
 }
 
 // Tests that repeated failures are communicated to the delegate correctly.
@@ -170,18 +171,18 @@ TEST_F(SadTabTabHelperTest, RepeatedFailuresShowCorrectUI) {
   web_state_.OnRenderProcessGone();
 
   // SadTab should be displayed and repeatedFailure should be NO.
-  EXPECT_TRUE(sad_tab_delegate_.sadTabShown);
+  EXPECT_TRUE(web_state_.GetTransientContentView());
   EXPECT_FALSE(sad_tab_delegate_.repeatedFailure);
 
   // On a second render process crash, SadTab should be displayed and
   // repeatedFailure should be YES.
   web_state_.OnRenderProcessGone();
-  EXPECT_TRUE(sad_tab_delegate_.sadTabShown);
+  EXPECT_TRUE(web_state_.GetTransientContentView());
   EXPECT_TRUE(sad_tab_delegate_.repeatedFailure);
 
   // All subsequent crashes should have repeatedFailure as YES.
   web_state_.OnRenderProcessGone();
-  EXPECT_TRUE(sad_tab_delegate_.sadTabShown);
+  EXPECT_TRUE(web_state_.GetTransientContentView());
   EXPECT_TRUE(sad_tab_delegate_.repeatedFailure);
 }
 
@@ -202,12 +203,12 @@ TEST_F(SadTabTabHelperTest, FailureInterval) {
   web_state.OnRenderProcessGone();
 
   // SadTab should be displayed and repeatedFailure should be NO.
-  EXPECT_TRUE(sad_tab_delegate_.sadTabShown);
+  EXPECT_TRUE(web_state.GetTransientContentView());
   EXPECT_FALSE(sad_tab_delegate_.repeatedFailure);
 
   // On a second render process crash, SadTab should be displayed and
   // repeatedFailure should still be NO due to the 0.0f interval timeout.
   web_state.OnRenderProcessGone();
-  EXPECT_TRUE(sad_tab_delegate_.sadTabShown);
+  EXPECT_TRUE(web_state.GetTransientContentView());
   EXPECT_FALSE(sad_tab_delegate_.repeatedFailure);
 }

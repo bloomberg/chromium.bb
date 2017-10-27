@@ -37,6 +37,7 @@ source_set("coordinator") {
   deps = [
     ":sad_tab",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/web",
   ]
