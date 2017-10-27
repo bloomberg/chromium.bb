@@ -117,7 +117,7 @@ class PLATFORM_EXPORT Cursor {
 
  private:
   Type type_;
-  RefPtr<Image> image_;
+  scoped_refptr<Image> image_;
   IntPoint hot_spot_;
   float image_scale_factor_;
 };

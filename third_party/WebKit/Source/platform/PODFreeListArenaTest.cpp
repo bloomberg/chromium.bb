@@ -56,7 +56,7 @@ struct TestClass2 {
 
 class PODFreeListArenaTest : public ::testing::Test {
  protected:
-  int GetFreeListSize(RefPtr<PODFreeListArena<TestClass1>> arena) const {
+  int GetFreeListSize(scoped_refptr<PODFreeListArena<TestClass1>> arena) const {
     return arena->GetFreeListSizeForTesting();
   }
 };
@@ -64,8 +64,8 @@ class PODFreeListArenaTest : public ::testing::Test {
 // Make sure the arena can successfully allocate from more than one
 // region.
 TEST_F(PODFreeListArenaTest, CanAllocateFromMoreThanOneRegion) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
-  RefPtr<PODFreeListArena<TestClass1>> arena =
+  scoped_refptr<TrackedAllocator> allocator = TrackedAllocator::Create();
+  scoped_refptr<PODFreeListArena<TestClass1>> arena =
       PODFreeListArena<TestClass1>::Create(allocator);
   int num_iterations = 10 * PODArena::kDefaultChunkSize / sizeof(TestClass1);
   for (int i = 0; i < num_iterations; ++i)
@@ -75,9 +75,9 @@ TEST_F(PODFreeListArenaTest, CanAllocateFromMoreThanOneRegion) {
 
 // Make sure the arena frees all allocated regions during destruction.
 TEST_F(PODFreeListArenaTest, FreesAllAllocatedRegions) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
+  scoped_refptr<TrackedAllocator> allocator = TrackedAllocator::Create();
   {
-    RefPtr<PODFreeListArena<TestClass1>> arena =
+    scoped_refptr<PODFreeListArena<TestClass1>> arena =
         PODFreeListArena<TestClass1>::Create(allocator);
     for (int i = 0; i < 3; i++)
       arena->AllocateObject();
@@ -88,7 +88,7 @@ TEST_F(PODFreeListArenaTest, FreesAllAllocatedRegions) {
 
 // Make sure the arena runs constructors of the objects allocated within.
 TEST_F(PODFreeListArenaTest, RunsConstructorsOnNewObjects) {
-  RefPtr<PODFreeListArena<TestClass1>> arena =
+  scoped_refptr<PODFreeListArena<TestClass1>> arena =
       PODFreeListArena<TestClass1>::Create();
   for (int i = 0; i < 10000; i++) {
     TestClass1* tc1 = arena->AllocateObject();
@@ -102,7 +102,7 @@ TEST_F(PODFreeListArenaTest, RunsConstructorsOnNewObjects) {
 // Make sure the arena runs constructors of the objects allocated within.
 TEST_F(PODFreeListArenaTest, RunsConstructorsOnReusedObjects) {
   std::set<TestClass1*> objects;
-  RefPtr<PODFreeListArena<TestClass1>> arena =
+  scoped_refptr<PODFreeListArena<TestClass1>> arena =
       PODFreeListArena<TestClass1>::Create();
   for (int i = 0; i < 100; i++) {
     TestClass1* tc1 = arena->AllocateObject();
@@ -132,7 +132,7 @@ TEST_F(PODFreeListArenaTest, RunsConstructorsOnReusedObjects) {
 // Make sure freeObject puts the object in the free list.
 TEST_F(PODFreeListArenaTest, AddsFreedObjectsToFreedList) {
   Vector<TestClass1*, 100> objects;
-  RefPtr<PODFreeListArena<TestClass1>> arena =
+  scoped_refptr<PODFreeListArena<TestClass1>> arena =
       PODFreeListArena<TestClass1>::Create();
   for (int i = 0; i < 100; i++) {
     objects.push_back(arena->AllocateObject());
@@ -146,7 +146,7 @@ TEST_F(PODFreeListArenaTest, AddsFreedObjectsToFreedList) {
 // Make sure allocations use previously freed memory.
 TEST_F(PODFreeListArenaTest, ReusesPreviouslyFreedObjects) {
   std::set<TestClass2*> objects;
-  RefPtr<PODFreeListArena<TestClass2>> arena =
+  scoped_refptr<PODFreeListArena<TestClass2>> arena =
       PODFreeListArena<TestClass2>::Create();
   for (int i = 0; i < 100; i++) {
     objects.insert(arena->AllocateObject());

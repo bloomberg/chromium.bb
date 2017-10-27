@@ -89,7 +89,7 @@ class PLATFORM_EXPORT Length {
     float_value_ = static_cast<float>(v);
   }
 
-  explicit Length(RefPtr<CalculationValue>);
+  explicit Length(scoped_refptr<CalculationValue>);
 
   Length(const Length& length) {
     memcpy(this, &length, sizeof(Length));

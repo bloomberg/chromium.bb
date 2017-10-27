@@ -88,14 +88,14 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     NetworkStateObserverHandle(NetworkStateNotifier*,
                                ObserverType,
                                NetworkStateObserver*,
-                               RefPtr<WebTaskRunner>);
+                               scoped_refptr<WebTaskRunner>);
     ~NetworkStateObserverHandle();
 
    private:
     NetworkStateNotifier* notifier_;
     ObserverType type_;
     NetworkStateObserver* observer_;
-    RefPtr<WebTaskRunner> task_runner_;
+    scoped_refptr<WebTaskRunner> task_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkStateObserverHandle);
   };
@@ -217,10 +217,10 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // and then added during notification.
   std::unique_ptr<NetworkStateObserverHandle> AddConnectionObserver(
       NetworkStateObserver*,
-      RefPtr<WebTaskRunner>);
+      scoped_refptr<WebTaskRunner>);
   std::unique_ptr<NetworkStateObserverHandle> AddOnLineObserver(
       NetworkStateObserver*,
-      RefPtr<WebTaskRunner>);
+      scoped_refptr<WebTaskRunner>);
 
   // Returns the randomization salt (weak and insecure) that should be used when
   // adding noise to the network quality metrics. This is known only to the
@@ -255,33 +255,33 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // The ObserverListMap is cross-thread accessed, adding/removing Observers
   // running on a task runner.
   using ObserverListMap =
-      HashMap<RefPtr<WebTaskRunner>, std::unique_ptr<ObserverList>>;
+      HashMap<scoped_refptr<WebTaskRunner>, std::unique_ptr<ObserverList>>;
 
   void NotifyObservers(ObserverListMap&, ObserverType, const NetworkState&);
   void NotifyObserversOnTaskRunner(ObserverListMap*,
                                    ObserverType,
-                                   RefPtr<WebTaskRunner>,
+                                   scoped_refptr<WebTaskRunner>,
                                    const NetworkState&);
 
   void AddObserverToMap(ObserverListMap&,
                         NetworkStateObserver*,
-                        RefPtr<WebTaskRunner>);
+                        scoped_refptr<WebTaskRunner>);
   void RemoveObserver(ObserverType,
                       NetworkStateObserver*,
-                      RefPtr<WebTaskRunner>);
+                      scoped_refptr<WebTaskRunner>);
   void RemoveObserverFromMap(ObserverListMap&,
                              NetworkStateObserver*,
-                             RefPtr<WebTaskRunner>);
+                             scoped_refptr<WebTaskRunner>);
 
   ObserverList* LockAndFindObserverList(ObserverListMap&,
-                                        RefPtr<WebTaskRunner>);
+                                        scoped_refptr<WebTaskRunner>);
 
   // Removed observers are nulled out in the list in case the list is being
   // iterated over. Once done iterating, call this to clean up nulled
   // observers.
   void CollectZeroedObservers(ObserverListMap&,
                               ObserverList*,
-                              RefPtr<WebTaskRunner>);
+                              scoped_refptr<WebTaskRunner>);
 
   mutable Mutex mutex_;
   NetworkState state_;

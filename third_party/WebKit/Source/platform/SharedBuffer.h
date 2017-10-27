@@ -45,31 +45,31 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
   enum : unsigned { kSegmentSize = 0x1000 };
 
-  static RefPtr<SharedBuffer> Create() {
+  static scoped_refptr<SharedBuffer> Create() {
     return WTF::AdoptRef(new SharedBuffer);
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static RefPtr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
+  static scoped_refptr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
     return WTF::AdoptRef(new SharedBuffer(size));
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static RefPtr<SharedBuffer> Create(const char* data,
-                                     STRICTLY_TYPED_ARG(size)) {
+  static scoped_refptr<SharedBuffer> Create(const char* data,
+                                            STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
     return WTF::AdoptRef(new SharedBuffer(data, size));
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static RefPtr<SharedBuffer> Create(const unsigned char* data,
-                                     STRICTLY_TYPED_ARG(size)) {
+  static scoped_refptr<SharedBuffer> Create(const unsigned char* data,
+                                            STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
     return WTF::AdoptRef(new SharedBuffer(data, size));
   }
 
-  static RefPtr<SharedBuffer> AdoptVector(Vector<char>&);
+  static scoped_refptr<SharedBuffer> AdoptVector(Vector<char>&);
 
   ~SharedBuffer();
 
@@ -161,13 +161,13 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     STACK_ALLOCATED();
 
    public:
-    explicit DeprecatedFlatData(RefPtr<const SharedBuffer>);
+    explicit DeprecatedFlatData(scoped_refptr<const SharedBuffer>);
 
     const char* Data() const { return data_; }
     size_t size() const { return buffer_->size(); }
 
    private:
-    RefPtr<const SharedBuffer> buffer_;
+    scoped_refptr<const SharedBuffer> buffer_;
     Vector<char> flat_buffer_;
     const char* data_;
   };

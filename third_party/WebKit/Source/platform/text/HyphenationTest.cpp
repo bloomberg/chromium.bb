@@ -31,7 +31,7 @@ class NoHyphenation : public Hyphenation {
 };
 
 TEST(HyphenationTest, Get) {
-  RefPtr<Hyphenation> hyphenation = WTF::AdoptRef(new NoHyphenation);
+  scoped_refptr<Hyphenation> hyphenation = WTF::AdoptRef(new NoHyphenation);
   LayoutLocale::SetHyphenationForTesting("en-US", hyphenation);
   EXPECT_EQ(hyphenation.get(), LayoutLocale::Get("en-US")->GetHyphenation());
 
@@ -52,7 +52,7 @@ TEST(HyphenationTest, HyphenLocations) {
     // Ignore this test on platforms without hyphenation dictionaries.
     return;
   }
-  RefPtr<Hyphenation> hyphenation =
+  scoped_refptr<Hyphenation> hyphenation =
       HyphenationMinikin::FromFileForTesting(std::move(file));
 #else
   const LayoutLocale* locale = LayoutLocale::Get("en-us");

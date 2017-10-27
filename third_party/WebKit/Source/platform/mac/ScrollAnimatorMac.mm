@@ -337,7 +337,7 @@ class BlinkScrollbarPartAnimationTimer {
   double start_time_;                       // In seconds.
   double duration_;                         // In seconds.
   BlinkScrollbarPartAnimation* animation_;  // Weak, owns this.
-  RefPtr<CubicBezierTimingFunction> timing_function_;
+  scoped_refptr<CubicBezierTimingFunction> timing_function_;
 };
 
 }  // namespace blink

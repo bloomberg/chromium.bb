@@ -374,7 +374,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Returns the task runner to be used for scrollable area timers.
   // Ideally a frame-specific throttled one can be used.
-  virtual RefPtr<WebTaskRunner> GetTimerTaskRunner() const = 0;
+  virtual scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const = 0;
 
   // Callback for compositor-side scrolling.
   virtual void DidScroll(const gfx::ScrollOffset&);

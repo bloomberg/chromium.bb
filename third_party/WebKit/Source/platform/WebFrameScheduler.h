@@ -116,7 +116,7 @@ class WebFrameScheduler {
   // and unthrottled task runner corresponds to pausable task runner.
 
   // Returns a WebTaskRunner that is suitable with the given task type.
-  virtual RefPtr<WebTaskRunner> GetTaskRunner(TaskType) = 0;
+  virtual scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) = 0;
 
   // Returns the parent WebViewScheduler.
   virtual WebViewScheduler* GetWebViewScheduler() = 0;

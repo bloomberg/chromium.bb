@@ -47,7 +47,7 @@ class PLATFORM_EXPORT TimerBase {
   WTF_MAKE_NONCOPYABLE(TimerBase);
 
  public:
-  explicit TimerBase(RefPtr<WebTaskRunner>);
+  explicit TimerBase(scoped_refptr<WebTaskRunner>);
   virtual ~TimerBase();
 
   void Start(double next_fire_interval,
@@ -83,19 +83,19 @@ class PLATFORM_EXPORT TimerBase {
     repeat_interval_ += delta;
   }
 
-  void MoveToNewTaskRunner(RefPtr<WebTaskRunner>);
+  void MoveToNewTaskRunner(scoped_refptr<WebTaskRunner>);
 
   struct PLATFORM_EXPORT Comparator {
     bool operator()(const TimerBase* a, const TimerBase* b) const;
   };
 
  protected:
-  static RefPtr<WebTaskRunner> GetTimerTaskRunner();
+  static scoped_refptr<WebTaskRunner> GetTimerTaskRunner();
 
  private:
   virtual void Fired() = 0;
 
-  virtual RefPtr<WebTaskRunner> TimerTaskRunner() const;
+  virtual scoped_refptr<WebTaskRunner> TimerTaskRunner() const;
 
   NO_SANITIZE_ADDRESS
   virtual bool CanFire() const { return true; }
@@ -109,7 +109,7 @@ class PLATFORM_EXPORT TimerBase {
   double next_fire_time_;   // 0 if inactive
   double repeat_interval_;  // 0 if not repeating
   WebTraceLocation location_;
-  RefPtr<WebTaskRunner> web_task_runner_;
+  scoped_refptr<WebTaskRunner> web_task_runner_;
 
 #if DCHECK_IS_ON()
   ThreadIdentifier thread_;
@@ -140,7 +140,7 @@ class TaskRunnerTimer : public TimerBase {
  public:
   using TimerFiredFunction = void (TimerFiredClass::*)(TimerBase*);
 
-  TaskRunnerTimer(RefPtr<WebTaskRunner> web_task_runner,
+  TaskRunnerTimer(scoped_refptr<WebTaskRunner> web_task_runner,
                   TimerFiredClass* o,
                   TimerFiredFunction f)
       : TimerBase(std::move(web_task_runner)), object_(o), function_(f) {}

@@ -64,7 +64,7 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   return String(domain.data(), domain.length());
 }
 
-RefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
+scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
     const KURL& url,
     ResourceResponse& response) {
   // The following code contains duplication of GetInfoFromDataURL() and
@@ -86,7 +86,7 @@ RefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
   if (!blink::IsSupportedMimeType(utf8_mime_type))
     return nullptr;
 
-  RefPtr<SharedBuffer> data =
+  scoped_refptr<SharedBuffer> data =
       SharedBuffer::Create(data_string.data(), data_string.size());
   response.SetHTTPStatusCode(200);
   response.SetHTTPStatusText("OK");

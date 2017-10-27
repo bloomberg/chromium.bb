@@ -79,7 +79,7 @@ class PLATFORM_EXPORT Reverb {
   Vector<std::unique_ptr<ReverbConvolver>> convolvers_;
 
   // For "True" stereo processing
-  RefPtr<AudioBus> temp_buffer_;
+  scoped_refptr<AudioBus> temp_buffer_;
 };
 
 }  // namespace blink

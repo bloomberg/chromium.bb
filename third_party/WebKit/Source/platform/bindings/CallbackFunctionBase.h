@@ -31,7 +31,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
 
  protected:
   CallbackFunctionBase(ScriptState*, v8::Local<v8::Function>);
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 

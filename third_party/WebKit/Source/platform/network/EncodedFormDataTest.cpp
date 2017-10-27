@@ -34,7 +34,7 @@ class EncodedFormDataTest : public ::testing::Test {
 };
 
 TEST_F(EncodedFormDataTest, DeepCopy) {
-  RefPtr<EncodedFormData> original(EncodedFormData::Create());
+  scoped_refptr<EncodedFormData> original(EncodedFormData::Create());
   original->AppendData("Foo", 3);
   original->AppendFileRange("example.txt", 12345, 56789, 9999.0);
   original->AppendBlob("originalUUID", nullptr);
@@ -47,7 +47,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   original->SetBoundary(boundary_vector);
   original->SetContainsPasswordData(true);
 
-  RefPtr<EncodedFormData> copy = original->DeepCopy();
+  scoped_refptr<EncodedFormData> copy = original->DeepCopy();
 
   // Check that contents are copied (compare the copy with expected values).
   const Vector<FormDataElement>& original_elements = original->Elements();

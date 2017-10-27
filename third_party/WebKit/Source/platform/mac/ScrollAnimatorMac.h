@@ -135,7 +135,7 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   void SendContentAreaScrolledTask();
   TaskHandle send_content_area_scrolled_task_handle_;
-  RefPtr<WebTaskRunner> task_runner_;
+  scoped_refptr<WebTaskRunner> task_runner_;
   ScrollOffset content_area_scrolled_timer_scroll_delta_;
 
   ScrollResult UserScroll(ScrollGranularity,

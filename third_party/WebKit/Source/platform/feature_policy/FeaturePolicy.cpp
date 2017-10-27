@@ -18,7 +18,7 @@ namespace {
 // TODO(loonybear): Deprecate the methods in this namesapce when deprecating old
 // allow syntax.
 bool IsValidOldAllowSyntax(const String& policy,
-                           RefPtr<SecurityOrigin> src_origin) {
+                           scoped_refptr<SecurityOrigin> src_origin) {
   // Old syntax enable all features on src_origin, If src_origin does not exist
   // (example, http header does not have a src_origin), then the syntax cannot
   // be valid.
@@ -54,7 +54,7 @@ bool IsValidOldAllowSyntax(const String& policy,
 
 Vector<WebParsedFeaturePolicyDeclaration> ParseOldAllowSyntax(
     const String& policy,
-    RefPtr<SecurityOrigin> origin,
+    scoped_refptr<SecurityOrigin> origin,
     Vector<String>* messages,
     const FeatureNameMap& feature_names) {
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;
@@ -81,17 +81,18 @@ Vector<WebParsedFeaturePolicyDeclaration> ParseOldAllowSyntax(
 
 }  // namespace
 
-WebParsedFeaturePolicy ParseFeaturePolicyHeader(const String& policy,
-                                                RefPtr<SecurityOrigin> origin,
-                                                Vector<String>* messages) {
-  return ParseFeaturePolicy(policy, origin, RefPtr<SecurityOrigin>(), messages,
-                            GetDefaultFeatureNameMap());
+WebParsedFeaturePolicy ParseFeaturePolicyHeader(
+    const String& policy,
+    scoped_refptr<SecurityOrigin> origin,
+    Vector<String>* messages) {
+  return ParseFeaturePolicy(policy, origin, scoped_refptr<SecurityOrigin>(),
+                            messages, GetDefaultFeatureNameMap());
 }
 
 Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicyAttribute(
     const String& policy,
-    RefPtr<SecurityOrigin> self_origin,
-    RefPtr<SecurityOrigin> src_origin,
+    scoped_refptr<SecurityOrigin> self_origin,
+    scoped_refptr<SecurityOrigin> src_origin,
     Vector<String>* messages,
     bool* old_syntax) {
   return ParseFeaturePolicy(policy, self_origin, src_origin, messages,
@@ -100,8 +101,8 @@ Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicyAttribute(
 
 Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicy(
     const String& policy,
-    RefPtr<SecurityOrigin> self_origin,
-    RefPtr<SecurityOrigin> src_origin,
+    scoped_refptr<SecurityOrigin> self_origin,
+    scoped_refptr<SecurityOrigin> src_origin,
     Vector<String>* messages,
     const FeatureNameMap& feature_names,
     bool* old_syntax) {

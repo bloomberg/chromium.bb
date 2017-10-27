@@ -40,7 +40,7 @@
 
 namespace blink {
 
-TimerBase::TimerBase(RefPtr<WebTaskRunner> web_task_runner)
+TimerBase::TimerBase(scoped_refptr<WebTaskRunner> web_task_runner)
     : next_fire_time_(0),
       repeat_interval_(0),
       web_task_runner_(std::move(web_task_runner)),
@@ -85,7 +85,7 @@ double TimerBase::NextFireInterval() const {
   return next_fire_time_ - current;
 }
 
-void TimerBase::MoveToNewTaskRunner(RefPtr<WebTaskRunner> task_runner) {
+void TimerBase::MoveToNewTaskRunner(scoped_refptr<WebTaskRunner> task_runner) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(thread_, CurrentThread());
   DCHECK(task_runner->RunsTasksInCurrentSequence());
@@ -111,11 +111,11 @@ void TimerBase::MoveToNewTaskRunner(RefPtr<WebTaskRunner> task_runner) {
 }
 
 // static
-RefPtr<WebTaskRunner> TimerBase::GetTimerTaskRunner() {
+scoped_refptr<WebTaskRunner> TimerBase::GetTimerTaskRunner() {
   return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
 }
 
-RefPtr<WebTaskRunner> TimerBase::TimerTaskRunner() const {
+scoped_refptr<WebTaskRunner> TimerBase::TimerTaskRunner() const {
   return web_task_runner_;
 }
 

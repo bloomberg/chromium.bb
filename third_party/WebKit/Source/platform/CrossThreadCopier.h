@@ -98,19 +98,19 @@ template <typename T>
 struct CrossThreadCopier<WTF::RetainedRefWrapper<T>> {
   STATIC_ONLY(CrossThreadCopier);
   static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value,
-                "RefPtr<T> can be passed across threads only if T is "
+                "scoped_refptr<T> can be passed across threads only if T is "
                 "ThreadSafeRefCounted.");
   using Type = WTF::RetainedRefWrapper<T>;
   static Type Copy(Type pointer) { return pointer; }
 };
 template <typename T>
-struct CrossThreadCopier<RefPtr<T>> {
+struct CrossThreadCopier<scoped_refptr<T>> {
   STATIC_ONLY(CrossThreadCopier);
   static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value,
-                "RefPtr<T> can be passed across threads only if T is "
+                "scoped_refptr<T> can be passed across threads only if T is "
                 "ThreadSafeRefCounted.");
-  using Type = RefPtr<T>;
-  static RefPtr<T> Copy(RefPtr<T> pointer) { return pointer; }
+  using Type = scoped_refptr<T>;
+  static scoped_refptr<T> Copy(scoped_refptr<T> pointer) { return pointer; }
 };
 template <typename T>
 struct CrossThreadCopier<sk_sp<T>>

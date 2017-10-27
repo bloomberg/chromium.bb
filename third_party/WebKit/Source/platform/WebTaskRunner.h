@@ -47,8 +47,8 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
  private:
   friend class WebTaskRunner;
 
-  explicit TaskHandle(RefPtr<Runner>);
-  RefPtr<Runner> runner_;
+  explicit TaskHandle(scoped_refptr<Runner>);
+  scoped_refptr<Runner> runner_;
 };
 
 // The blink representation of a chromium SingleThreadTaskRunner.

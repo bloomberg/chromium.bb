@@ -64,18 +64,19 @@ const int kElevationIndexTable[kElevationIndexTableSize] = {
 
 // Lazily load a concatenated HRTF database for given subject and store it in a
 // local hash table to ensure quick efficient future retrievals.
-static RefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
+static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
     const String& subject_name) {
-  typedef HashMap<String, RefPtr<AudioBus>> AudioBusMap;
+  typedef HashMap<String, scoped_refptr<AudioBus>> AudioBusMap;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioBusMap, audio_bus_map, ());
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
 
   MutexLocker locker(mutex);
-  RefPtr<AudioBus> bus;
+  scoped_refptr<AudioBus> bus;
   AudioBusMap::iterator iterator = audio_bus_map.find(subject_name);
   if (iterator == audio_bus_map.end()) {
-    RefPtr<AudioBus> concatenated_impulse_responses(AudioBus::GetDataResource(
-        subject_name.Utf8().data(), kResponseSampleRate));
+    scoped_refptr<AudioBus> concatenated_impulse_responses(
+        AudioBus::GetDataResource(subject_name.Utf8().data(),
+                                  kResponseSampleRate));
     DCHECK(concatenated_impulse_responses);
     if (!concatenated_impulse_responses)
       return nullptr;
@@ -129,7 +130,8 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   // implementation detail.
   int positive_elevation = elevation < 0 ? elevation + 360 : elevation;
 
-  RefPtr<AudioBus> bus(GetConcatenatedImpulseResponsesForSubject(subject_name));
+  scoped_refptr<AudioBus> bus(
+      GetConcatenatedImpulseResponsesForSubject(subject_name));
 
   if (!bus)
     return false;
@@ -167,9 +169,9 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   // (hardware) sample-rate.
   unsigned start_frame = index * kResponseFrameSize;
   unsigned stop_frame = start_frame + kResponseFrameSize;
-  RefPtr<AudioBus> pre_sample_rate_converted_response(
+  scoped_refptr<AudioBus> pre_sample_rate_converted_response(
       AudioBus::CreateBufferFromRange(bus.get(), start_frame, stop_frame));
-  RefPtr<AudioBus> response(AudioBus::CreateBySampleRateConverting(
+  scoped_refptr<AudioBus> response(AudioBus::CreateBySampleRateConverting(
       pre_sample_rate_converted_response.get(), false, sample_rate));
   AudioChannel* left_ear_impulse_response =
       response->Channel(AudioBus::kChannelLeft);

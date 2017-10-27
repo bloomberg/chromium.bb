@@ -28,7 +28,7 @@ class PLATFORM_EXPORT HyphenationMinikin final : public Hyphenation {
                             size_t before_index) const override;
   Vector<size_t, 8> HyphenLocations(const StringView&) const override;
 
-  static RefPtr<HyphenationMinikin> FromFileForTesting(base::File);
+  static scoped_refptr<HyphenationMinikin> FromFileForTesting(base::File);
 
  private:
   bool OpenDictionary(base::File);

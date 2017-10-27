@@ -46,8 +46,8 @@ class SharedPersistent : public RefCounted<SharedPersistent<T>> {
   WTF_MAKE_NONCOPYABLE(SharedPersistent);
 
  public:
-  static RefPtr<SharedPersistent<T>> Create(v8::Local<T> value,
-                                            v8::Isolate* isolate) {
+  static scoped_refptr<SharedPersistent<T>> Create(v8::Local<T> value,
+                                                   v8::Isolate* isolate) {
     return WTF::AdoptRef(new SharedPersistent<T>(value, isolate));
   }
 

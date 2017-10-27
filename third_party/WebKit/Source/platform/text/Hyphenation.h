@@ -39,7 +39,8 @@ class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
 
  private:
   friend class LayoutLocale;
-  static RefPtr<Hyphenation> PlatformGetHyphenation(const AtomicString& locale);
+  static scoped_refptr<Hyphenation> PlatformGetHyphenation(
+      const AtomicString& locale);
 };
 
 }  // namespace blink

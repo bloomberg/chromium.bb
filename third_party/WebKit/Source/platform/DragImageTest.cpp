@@ -49,11 +49,11 @@ namespace blink {
 
 class TestImage : public Image {
  public:
-  static RefPtr<TestImage> Create(sk_sp<SkImage> image) {
+  static scoped_refptr<TestImage> Create(sk_sp<SkImage> image) {
     return WTF::AdoptRef(new TestImage(image));
   }
 
-  static RefPtr<TestImage> Create(const IntSize& size) {
+  static scoped_refptr<TestImage> Create(const IntSize& size) {
     return WTF::AdoptRef(new TestImage(size));
   }
 
@@ -109,12 +109,12 @@ class TestImage : public Image {
 TEST(DragImageTest, NullHandling) {
   EXPECT_FALSE(DragImage::Create(nullptr));
 
-  RefPtr<TestImage> null_test_image(TestImage::Create(IntSize()));
+  scoped_refptr<TestImage> null_test_image(TestImage::Create(IntSize()));
   EXPECT_FALSE(DragImage::Create(null_test_image.get()));
 }
 
 TEST(DragImageTest, NonNullHandling) {
-  RefPtr<TestImage> test_image(TestImage::Create(IntSize(2, 2)));
+  scoped_refptr<TestImage> test_image(TestImage::Create(IntSize(2, 2)));
   std::unique_ptr<DragImage> drag_image = DragImage::Create(test_image.get());
   ASSERT_TRUE(drag_image);
 
@@ -128,7 +128,7 @@ TEST(DragImageTest, CreateDragImage) {
   // Tests that the DrageImage implementation doesn't choke on null values
   // of imageForCurrentFrame().
   // FIXME: how is this test any different from test NullHandling?
-  RefPtr<TestImage> test_image(TestImage::Create(IntSize()));
+  scoped_refptr<TestImage> test_image(TestImage::Create(IntSize()));
   EXPECT_FALSE(DragImage::Create(test_image.get()));
 }
 
@@ -169,7 +169,7 @@ TEST(DragImageTest, InterpolationNone) {
   test_bitmap.eraseArea(SkIRect::MakeXYWH(1, 0, 1, 1), 0xFF000000);
   test_bitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
 
-  RefPtr<TestImage> test_image =
+  scoped_refptr<TestImage> test_image =
       TestImage::Create(SkImage::MakeFromBitmap(test_bitmap));
   std::unique_ptr<DragImage> drag_image = DragImage::Create(
       test_image.get(), kDoNotRespectImageOrientation, 1, kInterpolationNone);

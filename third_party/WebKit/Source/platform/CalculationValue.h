@@ -40,8 +40,8 @@ namespace blink {
 
 class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
  public:
-  static RefPtr<CalculationValue> Create(PixelsAndPercent value,
-                                         ValueRange range) {
+  static scoped_refptr<CalculationValue> Create(PixelsAndPercent value,
+                                                ValueRange range) {
     return WTF::AdoptRef(new CalculationValue(value, range));
   }
 
