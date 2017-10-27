@@ -43,21 +43,28 @@
   isOpen_ = YES;
   didOpen_ = YES;
 
-  if (openCallback_)
-    openCallback_(self);
-
-  if (closeAfterOpening_) {
-    NSArray* modes = @[ NSEventTrackingRunLoopMode, NSDefaultRunLoopMode ];
-    [menu_ performSelector:@selector(cancelTracking)
-                withObject:nil
-                afterDelay:0
-                   inModes:modes];
-  }
+  // Post the callback to the runloop, since in this notification callback,
+  // the menu may not be fully in its tracking mode yet.
+  NSArray* modes = @[ NSEventTrackingRunLoopMode, NSDefaultRunLoopMode ];
+  [self performSelector:@selector(performOpenTasks)
+             withObject:nil
+             afterDelay:0
+                inModes:modes];
 }
 
 - (void)menuDidEndTracking:(NSNotification*)notif {
   DCHECK_EQ(menu_, [notif object]);
   isOpen_ = NO;
+}
+
+- (void)performOpenTasks {
+  DCHECK(isOpen_);
+
+  if (openCallback_)
+    openCallback_(self);
+
+  if (closeAfterOpening_)
+    [menu_ cancelTracking];
 }
 
 @end

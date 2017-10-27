@@ -15,11 +15,13 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/menu_test_observer.h"
 #include "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/resources/grit/ui_resources.h"
 
 // Implements the target interface for the tab, which gets sent messages when
@@ -518,6 +520,34 @@ TEST_F(TabControllerTest, Menu) {
   NSMenu* menu = [[controller view] menu];
   EXPECT_TRUE(menu);
   EXPECT_EQ(3, [menu numberOfItems]);
+}
+
+// Regression test for https://crbug.com/778776. An accessibility message can
+// cause -[TabController menu] to be called while the existing menu is open.
+// Test that this does not cause the running menu to be deleted.
+TEST_F(TabControllerTest, RecursiveMenu) {
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerTestTarget> target(
+      [[TabControllerTestTarget alloc] init]);
+  [controller setTarget:target];
+
+  NSMenu* menu = [controller menu];
+
+  base::scoped_nsobject<MenuTestObserver> menu_observer(
+      [[MenuTestObserver alloc] initWithMenu:menu]);
+  [menu_observer setCloseAfterOpening:YES];
+  [menu_observer setOpenCallback:^(MenuTestObserver*) {
+    NSMenu* open_menu = [controller menu];
+    EXPECT_TRUE(open_menu);
+    EXPECT_EQ(menu, open_menu);
+  }];
+
+  [NSMenu
+      popUpContextMenu:menu
+             withEvent:cocoa_test_event_utils::LeftMouseDownAtPoint(NSZeroPoint)
+               forView:[controller view]];
+
+  EXPECT_NE(menu, [controller menu]);
 }
 
 // Tests that the title field is correctly positioned and sized when the

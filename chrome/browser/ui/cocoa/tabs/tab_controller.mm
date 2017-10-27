@@ -212,6 +212,15 @@ static const CGFloat kTabElementYOrigin = 6;
 // the menu based off of the cross-platform model. Re-create the menu and
 // model every time to get the correct labels and enabling.
 - (NSMenu*)menu {
+  // If the menu is currently open, then this method is being called from
+  // the nested runloop of the menu. This can happen when an accessibility
+  // message is sent to retrieve the menu options. Do not delete the objects
+  // associated with a running menu, which could lead to a use-after-free,
+  // and instead just return the existing instance. https://crbug.com/778776
+  if ([contextMenuController_ isMenuOpen]) {
+    return [contextMenuController_ menu];
+  }
+
   contextMenuDelegate_.reset(new MenuDelegate(target_, self));
   contextMenuModel_.reset(
       [target_ contextMenuModelForController:self
