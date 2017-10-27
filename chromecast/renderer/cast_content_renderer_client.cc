@@ -117,8 +117,8 @@ void CastContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
-    blink::WebFrameWidget* web_frame_widget = render_view->GetWebFrameWidget();
-    web_frame_widget->SetBaseBackgroundColor(kColorBlack);
+    if (auto* web_frame_widget = render_view->GetWebFrameWidget())
+      web_frame_widget->SetBaseBackgroundColor(kColorBlack);
 
     // Disable application cache as Chromecast doesn't support off-line
     // application running.

@@ -266,13 +266,6 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
       VLOG(2) << "Skip setting default switch '" << name << "', already set";
     }
   }
-
-  // If browser-side navigation is not explicitly enabled or disabled, disable
-  // it.
-  if (!command_line->HasSwitch(switches::kDisableBrowserSideNavigation) &&
-      !command_line->HasSwitch(switches::kEnableBrowserSideNavigation)) {
-    command_line->AppendSwitch(switches::kDisableBrowserSideNavigation);
-  }
 }
 
 }  // namespace

@@ -107,6 +107,12 @@ bool ContentBrowserClient::ShouldAllowOpenURL(SiteInstance* site_instance,
   return true;
 }
 
+bool ContentBrowserClient::IsURLAcceptableForWebUI(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  return false;
+}
+
 bool ContentBrowserClient::
     ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
         const GURL& url,
