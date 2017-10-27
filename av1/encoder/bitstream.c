@@ -5299,7 +5299,10 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     }
     // TODO(jbb): Figure out what to do if compressed_hdr_size > 16 bits.
     assert(compressed_hdr_size <= 0xffff);
-    aom_wb_write_literal(&saved_wb, compressed_hdr_size, 16);
+    // Fill in the compressed header size (but only if we're using one)
+    if (use_compressed_header(cm)) {
+      aom_wb_write_literal(&saved_wb, compressed_hdr_size, 16);
+    }
   } else {
 #endif  // CONFIG_EXT_TILE
     data += data_size;
