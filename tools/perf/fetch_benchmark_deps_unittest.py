@@ -57,7 +57,7 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
     self._RunFetchBenchmarkDepsTest('smoothness.top_25_smooth')
 
   def testFetchServingDirs(self):
-    self._RunFetchBenchmarkDepsTest('media.tough_video_cases')
+    self._RunFetchBenchmarkDepsTest('media.desktop')
 
   def testFetchOctane(self):
     octane_wpr_path = os.path.join(

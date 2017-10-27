@@ -50,48 +50,6 @@ class _MSEMeasurement(legacy_page_test.LegacyPageTest):
             value=float(metrics[m]), important=True))
 
 
-# android: See media.android.tough_video_cases below
-@benchmark.Owner(emails=['crouleau@chromium.org'],
-                 component='Internals>Media')
-class MediaToughVideoCases(perf_benchmark.PerfBenchmark):
-  """Obtains media metrics for key user scenarios."""
-  test = media.Media
-  page_set = page_sets.ToughVideoCasesPageSet
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
-
-  @classmethod
-  def Name(cls):
-    return 'media.tough_video_cases'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
-
-# If any story is failing on svelte, please only disable on svelte.
-@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'],
-                 component='Internals>Media')
-class MediaAndroidToughVideoCases(perf_benchmark.PerfBenchmark):
-  """Obtains media metrics for key user scenarios on Android."""
-  test = media.Media
-  tag = 'android'
-  page_set = page_sets.ToughVideoCasesPageSet
-  options = {'story_tag_filter_exclude': 'is_4k,is_50fps'}
-  SUPPORTED_PLATFORMS = [story.expectations.ANDROID_NOT_WEBVIEW]
-
-  @classmethod
-  def Name(cls):
-    return 'media.android.tough_video_cases'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
-
 class _MediaBenchmark(perf_benchmark.PerfBenchmark):
   """ Base class for TBMv2-based media benchmarks (MediaDesktop and
   MediaMobile)."""
@@ -132,8 +90,7 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
 @benchmark.Owner(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
                  component='Internals>Media')
 class MediaDesktop(_MediaBenchmark):
-  """Obtains media metrics using TBMv2.
-  Will eventually replace MediaToughVideoCases class."""
+  """Obtains media performance for key user scenarios on desktop."""
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
@@ -158,8 +115,7 @@ class MediaDesktop(_MediaBenchmark):
 @benchmark.Owner(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
                  component='Internals>Media')
 class MediaMobile(_MediaBenchmark):
-  """Obtains media metrics for key user scenarios on Android using TBMv2.
-  Will eventually replace MediaAndroidToughVideoCases class."""
+  """Obtains media performance for key user scenarios on mobile devices."""
 
   tag = 'android'
   options = {'story_tag_filter_exclude': 'is_4k,is_50fps'}
