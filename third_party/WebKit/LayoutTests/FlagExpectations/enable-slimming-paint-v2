@@ -1793,3 +1793,6 @@ Bug(none) fast/multicol/newmulticol/clipping-overflow-hidden.html [ Failure ]
 Bug(none) fast/multicol/newmulticol/clipping-top-overflow.html [ Failure ]
 Bug(none) fast/multicol/overflow-content.html [ Failure ]
 Bug(none) fast/multicol/scale-transform-text.html [ Failure ]
+
+Bug(none) paint/invalidation/filters/effect-reference-repaint-primitive-attr-mutation.html [ Failure ]
+Bug(none) compositing/overflow-trumps-transform-style.html [ Failure ]

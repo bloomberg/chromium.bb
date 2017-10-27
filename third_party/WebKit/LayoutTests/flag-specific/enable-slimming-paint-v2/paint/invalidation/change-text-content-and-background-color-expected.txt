@@ -30,7 +30,7 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },
     {
