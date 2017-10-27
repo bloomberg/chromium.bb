@@ -55,6 +55,39 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
     QueueReport(url, "default", "deprecation", std::move(body));
   }
 
+  void QueueCspViolationReport(const GURL& url,
+                               const std::string& group,
+                               const std::string& document_uri,
+                               const std::string& referrer,
+                               const std::string& violated_directive,
+                               const std::string& effective_directive,
+                               const std::string& original_policy,
+                               const std::string& disposition,
+                               const std::string& blocked_uri,
+                               int line_number,
+                               int column_number,
+                               const std::string& source_file,
+                               int status_code,
+                               const std::string& script_sample) override {
+    auto body = std::make_unique<base::DictionaryValue>();
+    body->SetString("document-uri", document_uri);
+    body->SetString("referrer", referrer);
+    body->SetString("violated-directive", violated_directive);
+    body->SetString("effective-directive", effective_directive);
+    body->SetString("original-policy", original_policy);
+    body->SetString("disposition", disposition);
+    body->SetString("blocked-uri", blocked_uri);
+    if (line_number)
+      body->SetInteger("line-number", line_number);
+    if (column_number)
+      body->SetInteger("column-number", column_number);
+    body->SetString("source-file", source_file);
+    if (status_code)
+      body->SetInteger("status-code", status_code);
+    body->SetString("script-sample", script_sample);
+    QueueReport(url, group, "csp", std::move(body));
+  }
+
  private:
   void QueueReport(const GURL& url,
                    const std::string& group,

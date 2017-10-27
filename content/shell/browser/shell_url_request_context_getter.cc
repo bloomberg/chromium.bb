@@ -21,6 +21,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/cert/cert_verifier.h"
@@ -33,6 +34,9 @@
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
+#include "net/reporting/reporting_feature.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
@@ -197,6 +201,17 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     // Set up interceptors in the reverse order.
     builder.SetInterceptors(std::move(request_interceptors_));
+
+#if BUILDFLAG(ENABLE_REPORTING)
+    if (base::FeatureList::IsEnabled(features::kReporting)) {
+      std::unique_ptr<net::ReportingPolicy> reporting_policy =
+          base::MakeUnique<net::ReportingPolicy>();
+      if (command_line.HasSwitch(switches::kRunLayoutTest))
+        reporting_policy->delivery_interval =
+            base::TimeDelta::FromMilliseconds(100);
+      builder.set_reporting_policy(std::move(reporting_policy));
+    }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
     url_request_context_ = builder.Build();
   }
