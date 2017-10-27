@@ -2947,6 +2947,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BrowserActions.MenuOpened">
+  <owner>ltian@chromium.org</owner>
+  <description>
+    A Browser Actions menu is opened in Chrome. A Browser Actions menu is a
+    Chrome style context menu opened by 3rd party apps.
+  </description>
+</action>
+
 <action name="BrowserForSystemProfile">
   <owner>mlerman@chromium.org</owner>
   <description>
