@@ -3,28 +3,20 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../assert_selection.js"></script>
 <script>
-test(() => assert_selection(
+selection_test(
   [
     '<div contenteditable>',
-    '   ^Will select from here',
-    '   <div contenteditable="false">',
-    '       over this contenteditable=false div',
-    '   </div>',
-    '   until here.|',
+    '<i>^foo</i>',
+    '<div contenteditable="false">bar</div>',
+    '<i>baz|</i>',
     '</div>',
-  ].join('\n'),
-  selection => {
-    selection.document.execCommand('italic');
-    selection.document.execCommand('formatblock', false, '<h1>');
-  },
+  ],
+  'formatblock <h1>',
   [
-    '<div contenteditable><h1><i>',
-    '   ^Will select from here',
-    '   </i><br><i>',
-    '   until here.|',
-    '</i></h1><div contenteditable="false">',
-    '       over this contenteditable=false div',
-    '   </div></div>',
-  ].join('\n')),
+    '<div contenteditable>',
+    '<h1><i>^foo</i><br><i>baz|</i></h1>',
+    '<div contenteditable="false">bar</div>',
+    '</div>',
+  ],
   'formatBlock with uneditable');
 </script>
