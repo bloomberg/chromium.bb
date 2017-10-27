@@ -36,11 +36,12 @@ enum BidiEmbeddingSource { kFromStyleOrDOM, kFromUnicode };
 // Used to keep track of explicit embeddings.
 class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
  public:
-  static RefPtr<BidiContext> Create(unsigned char level,
-                                    WTF::Unicode::CharDirection,
-                                    bool override = false,
-                                    BidiEmbeddingSource = kFromStyleOrDOM,
-                                    BidiContext* parent = 0);
+  static scoped_refptr<BidiContext> Create(
+      unsigned char level,
+      WTF::Unicode::CharDirection,
+      bool override = false,
+      BidiEmbeddingSource = kFromStyleOrDOM,
+      BidiContext* parent = 0);
 
   BidiContext* Parent() const { return parent_.get(); }
   unsigned char Level() const { return level_; }
@@ -52,7 +53,7 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
     return static_cast<BidiEmbeddingSource>(source_);
   }
 
-  RefPtr<BidiContext> CopyStackRemovingUnicodeEmbeddingContexts();
+  scoped_refptr<BidiContext> CopyStackRemovingUnicodeEmbeddingContexts();
 
   // http://www.unicode.org/reports/tr9/#Modifications
   // 6.3 raised the limit from 61 to 125.
@@ -73,11 +74,11 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
     DCHECK(level <= kMaxLevel);
   }
 
-  static RefPtr<BidiContext> CreateUncached(unsigned char level,
-                                            WTF::Unicode::CharDirection,
-                                            bool override,
-                                            BidiEmbeddingSource,
-                                            BidiContext* parent);
+  static scoped_refptr<BidiContext> CreateUncached(unsigned char level,
+                                                   WTF::Unicode::CharDirection,
+                                                   bool override,
+                                                   BidiEmbeddingSource,
+                                                   BidiContext* parent);
 
   // The maximium bidi level is 125:
   // http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
@@ -85,7 +86,7 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
   unsigned direction_ : 5;  // Direction
   unsigned override_ : 1;
   unsigned source_ : 1;  // BidiEmbeddingSource
-  RefPtr<BidiContext> parent_;
+  scoped_refptr<BidiContext> parent_;
 };
 
 inline unsigned char NextGreaterOddLevel(unsigned char level) {

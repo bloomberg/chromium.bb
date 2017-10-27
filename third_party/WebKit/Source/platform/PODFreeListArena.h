@@ -35,13 +35,13 @@ namespace blink {
 template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
  public:
-  static RefPtr<PODFreeListArena> Create() {
+  static scoped_refptr<PODFreeListArena> Create() {
     return WTF::AdoptRef(new PODFreeListArena);
   }
 
   // Creates a new PODFreeListArena configured with the given Allocator.
-  static RefPtr<PODFreeListArena> Create(
-      RefPtr<PODArena::Allocator> allocator) {
+  static scoped_refptr<PODFreeListArena> Create(
+      scoped_refptr<PODArena::Allocator> allocator) {
     return WTF::AdoptRef(new PODFreeListArena(std::move(allocator)));
   }
 
@@ -83,7 +83,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
  private:
   PODFreeListArena() : arena_(PODArena::Create()), free_list_(0) {}
 
-  explicit PODFreeListArena(RefPtr<PODArena::Allocator> allocator)
+  explicit PODFreeListArena(scoped_refptr<PODArena::Allocator> allocator)
       : arena_(PODArena::Create(std::move(allocator))), free_list_(0) {}
 
   ~PODFreeListArena() {}
@@ -105,7 +105,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
     return total;
   }
 
-  RefPtr<PODArena> arena_;
+  scoped_refptr<PODArena> arena_;
 
   // This free list contains pointers within every chunk that's been allocated
   // so far. None of the individual chunks can be freed until the arena is

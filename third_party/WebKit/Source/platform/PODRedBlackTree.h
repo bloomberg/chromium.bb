@@ -137,7 +137,7 @@ class PODRedBlackTree {
 
   // Constructs a new red-black tree, allocating temporary objects
   // from the given PODArena.
-  explicit PODRedBlackTree(RefPtr<PODFreeListArena<Node>> arena)
+  explicit PODRedBlackTree(scoped_refptr<PODFreeListArena<Node>> arena)
       : arena_(std::move(arena)),
         root_(0),
         needs_full_ordering_comparisons_(false)
@@ -782,7 +782,7 @@ class PODRedBlackTree {
   //----------------------------------------------------------------------
   // Data members
 
-  RefPtr<PODFreeListArena<Node>> arena_;
+  scoped_refptr<PODFreeListArena<Node>> arena_;
   Node* root_;
   bool needs_full_ordering_comparisons_;
 #ifndef NDEBUG

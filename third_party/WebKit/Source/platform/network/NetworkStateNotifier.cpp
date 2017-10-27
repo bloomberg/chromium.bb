@@ -77,7 +77,7 @@ NetworkStateNotifier::NetworkStateObserverHandle::NetworkStateObserverHandle(
     NetworkStateNotifier* notifier,
     NetworkStateNotifier::ObserverType type,
     NetworkStateNotifier::NetworkStateObserver* observer,
-    RefPtr<WebTaskRunner> task_runner)
+    scoped_refptr<WebTaskRunner> task_runner)
     : notifier_(notifier),
       type_(type),
       observer_(observer),
@@ -138,16 +138,18 @@ void NetworkStateNotifier::SetNetworkQuality(WebEffectiveConnectionType type,
 }
 
 std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
-NetworkStateNotifier::AddConnectionObserver(NetworkStateObserver* observer,
-                                            RefPtr<WebTaskRunner> task_runner) {
+NetworkStateNotifier::AddConnectionObserver(
+    NetworkStateObserver* observer,
+    scoped_refptr<WebTaskRunner> task_runner) {
   AddObserverToMap(connection_observers_, observer, task_runner);
   return std::make_unique<NetworkStateNotifier::NetworkStateObserverHandle>(
       this, ObserverType::kConnectionType, observer, task_runner);
 }
 
 std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
-NetworkStateNotifier::AddOnLineObserver(NetworkStateObserver* observer,
-                                        RefPtr<WebTaskRunner> task_runner) {
+NetworkStateNotifier::AddOnLineObserver(
+    NetworkStateObserver* observer,
+    scoped_refptr<WebTaskRunner> task_runner) {
   AddObserverToMap(on_line_state_observers_, observer, task_runner);
   return std::make_unique<NetworkStateNotifier::NetworkStateObserverHandle>(
       this, ObserverType::kOnLineState, observer, task_runner);
@@ -204,7 +206,7 @@ void NetworkStateNotifier::NotifyObservers(ObserverListMap& map,
   DCHECK(IsMainThread());
   MutexLocker locker(mutex_);
   for (const auto& entry : map) {
-    RefPtr<WebTaskRunner> task_runner = entry.key;
+    scoped_refptr<WebTaskRunner> task_runner = entry.key;
     task_runner->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&NetworkStateNotifier::NotifyObserversOnTaskRunner,
@@ -216,7 +218,7 @@ void NetworkStateNotifier::NotifyObservers(ObserverListMap& map,
 void NetworkStateNotifier::NotifyObserversOnTaskRunner(
     ObserverListMap* map,
     ObserverType type,
-    RefPtr<WebTaskRunner> task_runner,
+    scoped_refptr<WebTaskRunner> task_runner,
     const NetworkState& state) {
   ObserverList* observer_list = LockAndFindObserverList(*map, task_runner);
 
@@ -253,9 +255,10 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
     CollectZeroedObservers(*map, observer_list, std::move(task_runner));
 }
 
-void NetworkStateNotifier::AddObserverToMap(ObserverListMap& map,
-                                            NetworkStateObserver* observer,
-                                            RefPtr<WebTaskRunner> task_runner) {
+void NetworkStateNotifier::AddObserverToMap(
+    ObserverListMap& map,
+    NetworkStateObserver* observer,
+    scoped_refptr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(observer);
 
@@ -269,9 +272,10 @@ void NetworkStateNotifier::AddObserverToMap(ObserverListMap& map,
   result.stored_value->value->observers.push_back(observer);
 }
 
-void NetworkStateNotifier::RemoveObserver(ObserverType type,
-                                          NetworkStateObserver* observer,
-                                          RefPtr<WebTaskRunner> task_runner) {
+void NetworkStateNotifier::RemoveObserver(
+    ObserverType type,
+    NetworkStateObserver* observer,
+    scoped_refptr<WebTaskRunner> task_runner) {
   switch (type) {
     case ObserverType::kConnectionType:
       RemoveObserverFromMap(connection_observers_, observer,
@@ -287,7 +291,7 @@ void NetworkStateNotifier::RemoveObserver(ObserverType type,
 void NetworkStateNotifier::RemoveObserverFromMap(
     ObserverListMap& map,
     NetworkStateObserver* observer,
-    RefPtr<WebTaskRunner> task_runner) {
+    scoped_refptr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(observer);
 
@@ -309,7 +313,7 @@ void NetworkStateNotifier::RemoveObserverFromMap(
 NetworkStateNotifier::ObserverList*
 NetworkStateNotifier::LockAndFindObserverList(
     ObserverListMap& map,
-    RefPtr<WebTaskRunner> task_runner) {
+    scoped_refptr<WebTaskRunner> task_runner) {
   MutexLocker locker(mutex_);
   ObserverListMap::iterator it = map.find(task_runner);
   return it == map.end() ? nullptr : it->value.get();
@@ -318,7 +322,7 @@ NetworkStateNotifier::LockAndFindObserverList(
 void NetworkStateNotifier::CollectZeroedObservers(
     ObserverListMap& map,
     ObserverList* list,
-    RefPtr<WebTaskRunner> task_runner) {
+    scoped_refptr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(!list->iterating);
 

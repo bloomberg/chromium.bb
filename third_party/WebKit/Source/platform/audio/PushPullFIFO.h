@@ -93,7 +93,7 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
   size_t frames_available_ = 0;
   size_t index_read_ = 0;
   size_t index_write_ = 0;
-  RefPtr<AudioBus> fifo_bus_;
+  scoped_refptr<AudioBus> fifo_bus_;
 };
 
 }  // namespace blink

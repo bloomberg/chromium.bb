@@ -49,7 +49,7 @@ class HyphenationCF final : public Hyphenation {
   RetainPtr<CFLocaleRef> locale_cf_;
 };
 
-RefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
+scoped_refptr<Hyphenation> Hyphenation::PlatformGetHyphenation(
     const AtomicString& locale) {
   RetainPtr<CFStringRef> locale_cf_string = locale.Impl()->CreateCFString();
   RetainPtr<CFLocaleRef> locale_cf =

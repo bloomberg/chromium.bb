@@ -50,7 +50,7 @@ class PLATFORM_EXPORT FormDataElement final {
         file_length_(file_length),
         expected_file_modification_time_(expected_file_modification_time) {}
   explicit FormDataElement(const String& blob_uuid,
-                           RefPtr<BlobDataHandle> optional_handle)
+                           scoped_refptr<BlobDataHandle> optional_handle)
       : type_(kEncodedBlob),
         blob_uuid_(blob_uuid),
         optional_blob_data_handle_(std::move(optional_handle)) {}
@@ -70,7 +70,7 @@ class PLATFORM_EXPORT FormDataElement final {
   Vector<char> data_;
   String filename_;
   String blob_uuid_;
-  RefPtr<BlobDataHandle> optional_blob_data_handle_;
+  scoped_refptr<BlobDataHandle> optional_blob_data_handle_;
   KURL file_system_url_;
   long long file_start_;
   long long file_length_;
@@ -110,12 +110,12 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
     kMultipartFormData  // for multipart/form-data
   };
 
-  static RefPtr<EncodedFormData> Create();
-  static RefPtr<EncodedFormData> Create(const void*, size_t);
-  static RefPtr<EncodedFormData> Create(const CString&);
-  static RefPtr<EncodedFormData> Create(const Vector<char>&);
-  RefPtr<EncodedFormData> Copy() const;
-  RefPtr<EncodedFormData> DeepCopy() const;
+  static scoped_refptr<EncodedFormData> Create();
+  static scoped_refptr<EncodedFormData> Create(const void*, size_t);
+  static scoped_refptr<EncodedFormData> Create(const CString&);
+  static scoped_refptr<EncodedFormData> Create(const Vector<char>&);
+  scoped_refptr<EncodedFormData> Copy() const;
+  scoped_refptr<EncodedFormData> DeepCopy() const;
   ~EncodedFormData();
 
   void AppendData(const void* data, size_t);
@@ -125,7 +125,7 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
                        long long length,
                        double expected_modification_time);
   void AppendBlob(const String& blob_uuid,
-                  RefPtr<BlobDataHandle> optional_handle);
+                  scoped_refptr<BlobDataHandle> optional_handle);
   void AppendFileSystemURL(const KURL&);
   void AppendFileSystemURLRange(const KURL&,
                                 long long start,

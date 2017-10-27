@@ -39,10 +39,10 @@ using TreeTestHelpers::InitRandom;
 using TreeTestHelpers::NextRandom;
 
 TEST(PODRedBlackTreeTest, TestTreeAllocatesFromArena) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
+  scoped_refptr<TrackedAllocator> allocator = TrackedAllocator::Create();
   {
     typedef PODFreeListArena<PODRedBlackTree<int>::Node> PODIntegerArena;
-    RefPtr<PODIntegerArena> arena = PODIntegerArena::Create(allocator);
+    scoped_refptr<PODIntegerArena> arena = PODIntegerArena::Create(allocator);
     PODRedBlackTree<int> tree(arena);
     int num_additions = 2 * PODArena::kDefaultChunkSize / sizeof(int);
     for (int i = 0; i < num_additions; ++i)

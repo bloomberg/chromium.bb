@@ -36,21 +36,21 @@ TEST(PushPullFIFOBasicTest, BasicTests) {
 
   // The input bus length must be |AudioUtilities::kRenderQuantumFrames|.
   // i.e.) input_bus->length() == kRenderQuantumFrames
-  RefPtr<AudioBus> input_bus_129_frames =
+  scoped_refptr<AudioBus> input_bus_129_frames =
       AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames + 1);
   EXPECT_DEATH(test_fifo->Push(input_bus_129_frames.get()), "");
-  RefPtr<AudioBus> input_bus_127_frames =
+  scoped_refptr<AudioBus> input_bus_127_frames =
       AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames - 1);
   EXPECT_DEATH(test_fifo->Push(input_bus_127_frames.get()), "");
 
   // Pull request frames cannot exceed the length of output bus.
   // i.e.) frames_requested <= output_bus->length()
-  RefPtr<AudioBus> output_bus_512_frames = AudioBus::Create(2, 512);
+  scoped_refptr<AudioBus> output_bus_512_frames = AudioBus::Create(2, 512);
   EXPECT_DEATH(test_fifo->Pull(output_bus_512_frames.get(), 513), "");
 
   // Pull request frames cannot exceed the length of FIFO.
   // i.e.) frames_requested <= fifo_length_
-  RefPtr<AudioBus> output_bus_1025_frames = AudioBus::Create(2, 1025);
+  scoped_refptr<AudioBus> output_bus_1025_frames = AudioBus::Create(2, 1025);
   EXPECT_DEATH(test_fifo->Pull(output_bus_1025_frames.get(), 1025), "");
 }
 
@@ -144,13 +144,13 @@ TEST_P(PushPullFIFOFeatureTest, FeatureTests) {
   std::unique_ptr<PushPullFIFO> fifo = WTF::WrapUnique(
       new PushPullFIFO(setup.number_of_channels, setup.fifo_length));
 
-  RefPtr<AudioBus> output_bus;
+  scoped_refptr<AudioBus> output_bus;
 
   // Iterate all the scheduled push/pull actions.
   size_t frame_counter = 0;
   for (const auto& action : setup.fifo_actions) {
     if (strcmp(action.action, "PUSH") == 0) {
-      RefPtr<AudioBus> input_bus =
+      scoped_refptr<AudioBus> input_bus =
           AudioBus::Create(setup.number_of_channels, action.number_of_frames);
       frame_counter = FillBusWithLinearRamp(input_bus.get(), frame_counter);
       fifo->Push(input_bus.get());

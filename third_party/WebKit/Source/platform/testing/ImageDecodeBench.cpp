@@ -182,7 +182,7 @@ static double GetCurrentTime() {
 
 #endif
 
-RefPtr<SharedBuffer> ReadFile(const char* file_name) {
+scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
   FILE* fp = fopen(file_name, "rb");
   if (!fp) {
     fprintf(stderr, "Can't open file %s\n", file_name);
@@ -226,7 +226,7 @@ bool DecodeImageData(SharedBuffer* data,
     return !decoder->Failed();
   }
 
-  RefPtr<SharedBuffer> packet_data = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> packet_data = SharedBuffer::Create();
   size_t position = 0;
   size_t next_frame_to_decode = 0;
   while (true) {
@@ -314,7 +314,7 @@ int Main(int argc, char* argv[]) {
   // Read entire file content to data, and consolidate the SharedBuffer data
   // segments into one, contiguous block of memory.
 
-  RefPtr<SharedBuffer> data = ReadFile(argv[1]);
+  scoped_refptr<SharedBuffer> data = ReadFile(argv[1]);
   if (!data.get() || !data->size()) {
     fprintf(stderr, "Error reading image data from [%s]\n", argv[1]);
     exit(2);

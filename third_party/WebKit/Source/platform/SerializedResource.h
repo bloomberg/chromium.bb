@@ -42,11 +42,11 @@ struct SerializedResource {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   KURL url;
   String mime_type;
-  RefPtr<const SharedBuffer> data;
+  scoped_refptr<const SharedBuffer> data;
 
   SerializedResource(const KURL& url,
                      const String& mime_type,
-                     RefPtr<const SharedBuffer> data)
+                     scoped_refptr<const SharedBuffer> data)
       : url(url), mime_type(mime_type), data(std::move(data)) {}
 };
 

@@ -69,7 +69,7 @@ class PLATFORM_EXPORT HRTFPanner final : public Panner {
   int CalculateDesiredAzimuthIndexAndBlend(double azimuth,
                                            double& azimuth_blend);
 
-  RefPtr<HRTFDatabaseLoader> database_loader_;
+  scoped_refptr<HRTFDatabaseLoader> database_loader_;
 
   float sample_rate_;
 

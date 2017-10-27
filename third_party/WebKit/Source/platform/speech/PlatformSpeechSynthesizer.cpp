@@ -76,7 +76,7 @@ void PlatformSpeechSynthesizer::Cancel() {
 }
 
 void PlatformSpeechSynthesizer::SetVoiceList(
-    Vector<RefPtr<PlatformSpeechSynthesisVoice>>& voices) {
+    Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>& voices) {
   voice_list_ = voices;
 }
 

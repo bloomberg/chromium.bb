@@ -60,9 +60,9 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 
   AtomicString LocaleWithBreakKeyword(LineBreakIteratorMode) const;
 
-  static RefPtr<LayoutLocale> CreateForTesting(const AtomicString&);
+  static scoped_refptr<LayoutLocale> CreateForTesting(const AtomicString&);
   static void SetHyphenationForTesting(const AtomicString&,
-                                       RefPtr<Hyphenation>);
+                                       scoped_refptr<Hyphenation>);
 
  private:
   explicit LayoutLocale(const AtomicString&);
@@ -71,7 +71,7 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 
   AtomicString string_;
   mutable CString string_for_sk_font_mgr_;
-  mutable RefPtr<Hyphenation> hyphenation_;
+  mutable scoped_refptr<Hyphenation> hyphenation_;
 
   // hb_language_t is defined in hb.h, which not all files can include.
   const hb_language_impl_t* harfbuzz_language_;

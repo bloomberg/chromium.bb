@@ -38,7 +38,7 @@ struct SameSizeAsBidiContext
 static_assert(sizeof(BidiContext) == sizeof(SameSizeAsBidiContext),
               "BidiContext should stay small");
 
-inline RefPtr<BidiContext> BidiContext::CreateUncached(
+inline scoped_refptr<BidiContext> BidiContext::CreateUncached(
     unsigned char level,
     CharDirection direction,
     bool override,
@@ -48,11 +48,11 @@ inline RefPtr<BidiContext> BidiContext::CreateUncached(
       new BidiContext(level, direction, override, source, parent));
 }
 
-RefPtr<BidiContext> BidiContext::Create(unsigned char level,
-                                        CharDirection direction,
-                                        bool override,
-                                        BidiEmbeddingSource source,
-                                        BidiContext* parent) {
+scoped_refptr<BidiContext> BidiContext::Create(unsigned char level,
+                                               CharDirection direction,
+                                               bool override,
+                                               BidiEmbeddingSource source,
+                                               BidiContext* parent) {
   DCHECK_EQ(direction, (level % 2 ? kRightToLeft : kLeftToRight));
 
   if (parent || level >= 2)
@@ -86,7 +86,7 @@ RefPtr<BidiContext> BidiContext::Create(unsigned char level,
   return rtl_override_context;
 }
 
-static inline RefPtr<BidiContext> CopyContextAndRebaselineLevel(
+static inline scoped_refptr<BidiContext> CopyContextAndRebaselineLevel(
     BidiContext* context,
     BidiContext* parent) {
   DCHECK(context);
@@ -103,7 +103,8 @@ static inline RefPtr<BidiContext> CopyContextAndRebaselineLevel(
 // The BidiContext stack must be immutable -- they're re-used for re-layout
 // after DOM modification/editing -- so we copy all the non-unicode contexts,
 // and recalculate their levels.
-RefPtr<BidiContext> BidiContext::CopyStackRemovingUnicodeEmbeddingContexts() {
+scoped_refptr<BidiContext>
+BidiContext::CopyStackRemovingUnicodeEmbeddingContexts() {
   Vector<BidiContext*, 64> contexts;
   for (BidiContext* iter = this; iter; iter = iter->Parent()) {
     if (iter->Source() != kFromUnicode)
@@ -111,7 +112,7 @@ RefPtr<BidiContext> BidiContext::CopyStackRemovingUnicodeEmbeddingContexts() {
   }
   DCHECK(contexts.size());
 
-  RefPtr<BidiContext> top_context =
+  scoped_refptr<BidiContext> top_context =
       CopyContextAndRebaselineLevel(contexts.back(), nullptr);
   for (int i = contexts.size() - 1; i > 0; --i) {
     top_context =

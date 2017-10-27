@@ -65,14 +65,14 @@ class PLATFORM_EXPORT AudioDestination
   AudioDestination(AudioIOCallback&,
                    unsigned number_of_output_channels,
                    const WebAudioLatencyHint&,
-                   RefPtr<SecurityOrigin>);
+                   scoped_refptr<SecurityOrigin>);
   ~AudioDestination() override;
 
-  static RefPtr<AudioDestination> Create(
+  static scoped_refptr<AudioDestination> Create(
       AudioIOCallback&,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint&,
-      RefPtr<SecurityOrigin>);
+      scoped_refptr<SecurityOrigin>);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
   // invoked by the media renderer. This is never called after Stop() is called.
@@ -133,11 +133,11 @@ class PLATFORM_EXPORT AudioDestination
   std::unique_ptr<PushPullFIFO> fifo_;
 
   // Accessed by device thread: to pass the data from FIFO to the device.
-  RefPtr<AudioBus> output_bus_;
+  scoped_refptr<AudioBus> output_bus_;
 
   // Accessed by rendering thread: to push the rendered result from WebAudio
   // graph into the FIFO.
-  RefPtr<AudioBus> render_bus_;
+  scoped_refptr<AudioBus> render_bus_;
 
   // Accessed by rendering thread: the render callback function of WebAudio
   // engine. (i.e. DestinationNode)

@@ -116,9 +116,9 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       return Referrer(origin + "/", referrer_policy_no_default);
     }
     case kReferrerPolicyOriginWhenCrossOrigin: {
-      RefPtr<SecurityOrigin> referrer_origin =
+      scoped_refptr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
-      RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
+      scoped_refptr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
       if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
         String origin = referrer_origin->ToString();
         return Referrer(origin + "/", referrer_policy_no_default);
@@ -126,9 +126,9 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       break;
     }
     case kReferrerPolicySameOrigin: {
-      RefPtr<SecurityOrigin> referrer_origin =
+      scoped_refptr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
-      RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
+      scoped_refptr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
       if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
         return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
       }
@@ -142,9 +142,9 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
                       referrer_policy_no_default);
     }
     case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin: {
-      RefPtr<SecurityOrigin> referrer_origin =
+      scoped_refptr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
-      RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
+      scoped_refptr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
       if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
         String origin = referrer_origin->ToString();
         return Referrer(ShouldHideReferrer(url, referrer_url)
@@ -211,7 +211,7 @@ bool SecurityPolicy::IsAccessWhiteListed(const SecurityOrigin* active_origin,
 bool SecurityPolicy::IsAccessToURLWhiteListed(
     const SecurityOrigin* active_origin,
     const KURL& url) {
-  RefPtr<SecurityOrigin> target_origin = SecurityOrigin::Create(url);
+  scoped_refptr<SecurityOrigin> target_origin = SecurityOrigin::Create(url);
   return IsAccessWhiteListed(active_origin, target_origin.get());
 }
 

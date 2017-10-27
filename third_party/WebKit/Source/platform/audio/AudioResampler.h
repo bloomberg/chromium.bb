@@ -69,7 +69,7 @@ class PLATFORM_EXPORT AudioResampler {
  private:
   double rate_;
   Vector<std::unique_ptr<AudioResamplerKernel>> kernels_;
-  RefPtr<AudioBus> source_bus_;
+  scoped_refptr<AudioBus> source_bus_;
 };
 
 }  // namespace blink

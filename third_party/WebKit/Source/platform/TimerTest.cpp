@@ -81,7 +81,7 @@ class OnHeapTimerOwner final
  public:
   class Record final : public RefCounted<Record> {
    public:
-    static RefPtr<Record> Create() { return WTF::AdoptRef(new Record); }
+    static scoped_refptr<Record> Create() { return WTF::AdoptRef(new Record); }
 
     bool TimerHasFired() const { return timer_has_fired_; }
     bool IsDisposed() const { return is_disposed_; }
@@ -98,7 +98,7 @@ class OnHeapTimerOwner final
     bool owner_is_destructed_ = false;
   };
 
-  explicit OnHeapTimerOwner(RefPtr<Record> record)
+  explicit OnHeapTimerOwner(scoped_refptr<Record> record)
       : timer_(this, &OnHeapTimerOwner::Fired), record_(std::move(record)) {}
   ~OnHeapTimerOwner() { record_->SetOwnerIsDestructed(); }
 
@@ -115,7 +115,7 @@ class OnHeapTimerOwner final
   }
 
   Timer<OnHeapTimerOwner> timer_;
-  RefPtr<Record> record_;
+  scoped_refptr<Record> record_;
 };
 
 class GCForbiddenScope final {
@@ -528,7 +528,7 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 
   ~TimerForTest() override {}
 
-  TimerForTest(RefPtr<WebTaskRunner> web_task_runner,
+  TimerForTest(scoped_refptr<WebTaskRunner> web_task_runner,
                TimerFiredClass* timer_fired_class,
                TimerFiredFunction timer_fired_function)
       : TaskRunnerTimer<TimerFiredClass>(std::move(web_task_runner),
@@ -540,7 +540,7 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
   scoped_refptr<scheduler::TaskQueue> task_runner(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner =
       scheduler::WebTaskRunnerImpl::Create(task_runner);
   TimerForTest<TimerTest> timer(web_task_runner, this,
                                 &TimerTest::CountingTask);
@@ -551,7 +551,8 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
 }
 
 TEST_F(TimerTest, RunOnHeapTimer) {
-  RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::Create();
+  scoped_refptr<OnHeapTimerOwner::Record> record =
+      OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
   owner->StartOneShot(0, BLINK_FROM_HERE);
@@ -562,7 +563,8 @@ TEST_F(TimerTest, RunOnHeapTimer) {
 }
 
 TEST_F(TimerTest, DestructOnHeapTimer) {
-  RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::Create();
+  scoped_refptr<OnHeapTimerOwner::Record> record =
+      OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
   record->Dispose();
@@ -580,7 +582,8 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
 }
 
 TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
-  RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::Create();
+  scoped_refptr<OnHeapTimerOwner::Record> record =
+      OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
   record->Dispose();
@@ -605,8 +608,8 @@ namespace {
 
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
-  TaskObserver(RefPtr<WebTaskRunner> task_runner,
-               std::vector<RefPtr<WebTaskRunner>>* run_order)
+  TaskObserver(scoped_refptr<WebTaskRunner> task_runner,
+               std::vector<scoped_refptr<WebTaskRunner>>* run_order)
       : task_runner_(std::move(task_runner)), run_order_(run_order) {}
 
   void WillProcessTask(const base::PendingTask&) {}
@@ -616,19 +619,19 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
   }
 
  private:
-  RefPtr<WebTaskRunner> task_runner_;
-  std::vector<RefPtr<WebTaskRunner>>* run_order_;
+  scoped_refptr<WebTaskRunner> task_runner_;
+  std::vector<scoped_refptr<WebTaskRunner>>* run_order_;
 };
 
 }  // namespace
 
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
-  std::vector<RefPtr<WebTaskRunner>> run_order;
+  std::vector<scoped_refptr<WebTaskRunner>> run_order;
 
   scoped_refptr<scheduler::TaskQueue> task_runner1(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
       scheduler::WebTaskRunnerImpl::Create(task_runner1);
   TaskObserver task_observer1(web_task_runner1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
@@ -636,7 +639,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   scoped_refptr<scheduler::TaskQueue> task_runner2(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
       scheduler::WebTaskRunnerImpl::Create(task_runner2);
   TaskObserver task_observer2(web_task_runner2, &run_order);
   task_runner2->AddTaskObserver(&task_observer2);
@@ -663,12 +666,12 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
-  std::vector<RefPtr<WebTaskRunner>> run_order;
+  std::vector<scoped_refptr<WebTaskRunner>> run_order;
 
   scoped_refptr<scheduler::TaskQueue> task_runner1(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
       scheduler::WebTaskRunnerImpl::Create(task_runner1);
   TaskObserver task_observer1(web_task_runner1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
@@ -676,7 +679,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   scoped_refptr<scheduler::TaskQueue> task_runner2(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
       scheduler::WebTaskRunnerImpl::Create(task_runner2);
   TaskObserver task_observer2(web_task_runner2, &run_order);
   task_runner2->AddTaskObserver(&task_observer2);
@@ -710,13 +713,13 @@ TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
   scoped_refptr<scheduler::TaskQueue> task_runner1(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
       scheduler::WebTaskRunnerImpl::Create(task_runner1);
 
   scoped_refptr<scheduler::TaskQueue> task_runner2(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE));
-  RefPtr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
+  scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
       scheduler::WebTaskRunnerImpl::Create(task_runner2);
 
   TimerForTest<TimerTest> timer(web_task_runner1, this,

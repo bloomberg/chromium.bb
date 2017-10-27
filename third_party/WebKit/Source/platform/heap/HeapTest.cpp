@@ -422,7 +422,7 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
 
 class OffHeapInt : public RefCounted<OffHeapInt> {
  public:
-  static RefPtr<OffHeapInt> Create(int x) {
+  static scoped_refptr<OffHeapInt> Create(int x) {
     return WTF::AdoptRef(new OffHeapInt(x));
   }
 
@@ -661,7 +661,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
       ref_counted_chain_ = WTF::AdoptRef(RefCountedChain::Create(count));
     }
 
-    RefPtr<RefCountedChain> ref_counted_chain_;
+    scoped_refptr<RefCountedChain> ref_counted_chain_;
   };
 
   void RunThread() override {
@@ -3793,7 +3793,7 @@ TEST(HeapTest, WeakHeapHashCountedSetToVector) {
 TEST(HeapTest, RefCountedGarbageCollected) {
   RefCountedAndGarbageCollected::destructor_calls_ = 0;
   {
-    RefPtr<RefCountedAndGarbageCollected> ref_ptr3;
+    scoped_refptr<RefCountedAndGarbageCollected> ref_ptr3;
     {
       Persistent<RefCountedAndGarbageCollected> persistent;
       {
@@ -4889,7 +4889,7 @@ TEST(HeapTest, SetWithCustomWeaknessHandling) {
 }
 
 TEST(HeapTest, MapWithCustomWeaknessHandling) {
-  typedef HeapHashMap<PairWithWeakHandling, RefPtr<OffHeapInt>> Map;
+  typedef HeapHashMap<PairWithWeakHandling, scoped_refptr<OffHeapInt>> Map;
   typedef Map::iterator Iterator;
   ClearOutOldGarbage();
   OffHeapInt::destructor_calls_ = 0;
@@ -4949,7 +4949,7 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
   map1->insert(
       PairWithWeakHandling(IntWrapper::Create(103), IntWrapper::Create(103)),
       OffHeapInt::Create(2002));  // This one gets zapped too.
-  RefPtr<OffHeapInt> dupe_int(OffHeapInt::Create(2003));
+  scoped_refptr<OffHeapInt> dupe_int(OffHeapInt::Create(2003));
   map1->insert(PairWithWeakHandling(living_int, living_int), dupe_int);
   map1->insert(
       PairWithWeakHandling(living_int, living_int),
@@ -4971,7 +4971,7 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
 }
 
 TEST(HeapTest, MapWithCustomWeaknessHandling2) {
-  typedef HeapHashMap<RefPtr<OffHeapInt>, PairWithWeakHandling> Map;
+  typedef HeapHashMap<scoped_refptr<OffHeapInt>, PairWithWeakHandling> Map;
   typedef Map::iterator Iterator;
   ClearOutOldGarbage();
   OffHeapInt::destructor_calls_ = 0;
@@ -5033,7 +5033,7 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2) {
                PairWithWeakHandling(
                    IntWrapper::Create(103),
                    IntWrapper::Create(103)));  // This one gets zapped too.
-  RefPtr<OffHeapInt> dupe_int(OffHeapInt::Create(2003));
+  scoped_refptr<OffHeapInt> dupe_int(OffHeapInt::Create(2003));
   map1->insert(dupe_int, PairWithWeakHandling(living_int, living_int));
   // This one is identical to the previous and doesn't add anything.
   map1->insert(dupe_int, PairWithWeakHandling(living_int, living_int));
@@ -5138,7 +5138,7 @@ TEST(HeapTest, RemoveEmptySets) {
 
   Persistent<IntWrapper> living_int(IntWrapper::Create(42));
 
-  typedef RefPtr<OffHeapInt> Key;
+  typedef scoped_refptr<OffHeapInt> Key;
   typedef HeapHashMap<Key, WeakSet, WTF::DefaultHash<Key>::Hash,
                       HashTraits<Key>, EmptyClearingHashSetTraits>
       Map;
@@ -6089,7 +6089,7 @@ TEST(HeapTest, DequeExpand) {
 
 class SimpleRefValue : public RefCounted<SimpleRefValue> {
  public:
-  static RefPtr<SimpleRefValue> Create(int i) {
+  static scoped_refptr<SimpleRefValue> Create(int i) {
     return WTF::AdoptRef(new SimpleRefValue(i));
   }
 
@@ -6112,7 +6112,7 @@ class PartObjectWithRef {
   int Value() const { return value_->Value(); }
 
  private:
-  RefPtr<SimpleRefValue> value_;
+  scoped_refptr<SimpleRefValue> value_;
 };
 
 }  // namespace blink

@@ -46,9 +46,9 @@ using namespace VectorMath;
 
 const unsigned kMaxBusChannels = 32;
 
-RefPtr<AudioBus> AudioBus::Create(unsigned number_of_channels,
-                                  size_t length,
-                                  bool allocate) {
+scoped_refptr<AudioBus> AudioBus::Create(unsigned number_of_channels,
+                                         size_t length,
+                                         bool allocate) {
   DCHECK_LE(number_of_channels, kMaxBusChannels);
   if (number_of_channels > kMaxBusChannels)
     return nullptr;
@@ -184,9 +184,10 @@ bool AudioBus::TopologyMatches(const AudioBus& bus) const {
   return true;
 }
 
-RefPtr<AudioBus> AudioBus::CreateBufferFromRange(const AudioBus* source_buffer,
-                                                 unsigned start_frame,
-                                                 unsigned end_frame) {
+scoped_refptr<AudioBus> AudioBus::CreateBufferFromRange(
+    const AudioBus* source_buffer,
+    unsigned start_frame,
+    unsigned end_frame) {
   size_t number_of_source_frames = source_buffer->length();
   unsigned number_of_channels = source_buffer->NumberOfChannels();
 
@@ -199,7 +200,7 @@ RefPtr<AudioBus> AudioBus::CreateBufferFromRange(const AudioBus* source_buffer,
 
   size_t range_length = end_frame - start_frame;
 
-  RefPtr<AudioBus> audio_bus = Create(number_of_channels, range_length);
+  scoped_refptr<AudioBus> audio_bus = Create(number_of_channels, range_length);
   audio_bus->SetSampleRate(source_buffer->SampleRate());
 
   for (unsigned i = 0; i < number_of_channels; ++i)
@@ -624,7 +625,7 @@ void AudioBus::CopyWithSampleAccurateGainValuesFrom(
   }
 }
 
-RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
+scoped_refptr<AudioBus> AudioBus::CreateBySampleRateConverting(
     const AudioBus* source_bus,
     bool mix_to_mono,
     double new_sample_rate) {
@@ -652,7 +653,7 @@ RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
   }
 
   if (source_bus->IsSilent()) {
-    RefPtr<AudioBus> silent_bus = Create(
+    scoped_refptr<AudioBus> silent_bus = Create(
         number_of_source_channels, source_bus->length() / sample_rate_ratio);
     silent_bus->SetSampleRate(new_sample_rate);
     return silent_bus;
@@ -660,7 +661,7 @@ RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
 
   // First, mix to mono (if necessary) then sample-rate convert.
   const AudioBus* resampler_source_bus;
-  RefPtr<AudioBus> mixed_mono_bus;
+  scoped_refptr<AudioBus> mixed_mono_bus;
   if (mix_to_mono) {
     mixed_mono_bus = AudioBus::CreateByMixingToMono(source_bus);
     resampler_source_bus = mixed_mono_bus.get();
@@ -676,7 +677,7 @@ RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
   // Create destination bus with same number of channels.
   unsigned number_of_destination_channels =
       resampler_source_bus->NumberOfChannels();
-  RefPtr<AudioBus> destination_bus =
+  scoped_refptr<AudioBus> destination_bus =
       Create(number_of_destination_channels, destination_length);
 
   // Sample-rate convert each channel.
@@ -693,7 +694,8 @@ RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
   return destination_bus;
 }
 
-RefPtr<AudioBus> AudioBus::CreateByMixingToMono(const AudioBus* source_bus) {
+scoped_refptr<AudioBus> AudioBus::CreateByMixingToMono(
+    const AudioBus* source_bus) {
   if (source_bus->IsSilent())
     return Create(1, source_bus->length());
 
@@ -704,7 +706,7 @@ RefPtr<AudioBus> AudioBus::CreateByMixingToMono(const AudioBus* source_bus) {
                                              source_bus->length());
     case 2: {
       unsigned n = source_bus->length();
-      RefPtr<AudioBus> destination_bus = Create(1, n);
+      scoped_refptr<AudioBus> destination_bus = Create(1, n);
 
       const float* source_l = source_bus->Channel(0)->Data();
       const float* source_r = source_bus->Channel(1)->Data();
@@ -737,15 +739,15 @@ void AudioBus::ClearSilentFlag() {
     channels_[i]->ClearSilentFlag();
 }
 
-RefPtr<AudioBus> DecodeAudioFileData(const char* data, size_t size) {
+scoped_refptr<AudioBus> DecodeAudioFileData(const char* data, size_t size) {
   WebAudioBus web_audio_bus;
   if (Platform::Current()->DecodeAudioFileData(&web_audio_bus, data, size))
     return web_audio_bus.Release();
   return nullptr;
 }
 
-RefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
-                                           float sample_rate) {
+scoped_refptr<AudioBus> AudioBus::GetDataResource(const char* name,
+                                                  float sample_rate) {
   const WebData& resource = Platform::Current()->GetDataResource(name);
   if (resource.IsEmpty())
     return nullptr;
@@ -755,8 +757,8 @@ RefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
   // If this becomes problematic, we'll have the refactor DecodeAudioFileData
   // to take WebData and use segmented access.
   SharedBuffer::DeprecatedFlatData flat_data(
-      resource.operator RefPtr<SharedBuffer>());
-  RefPtr<AudioBus> audio_bus =
+      resource.operator scoped_refptr<SharedBuffer>());
+  scoped_refptr<AudioBus> audio_bus =
       DecodeAudioFileData(flat_data.Data(), flat_data.size());
 
   if (!audio_bus.get())
@@ -770,11 +772,11 @@ RefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
                                                 sample_rate);
 }
 
-RefPtr<AudioBus> CreateBusFromInMemoryAudioFile(const void* data,
-                                                size_t data_size,
-                                                bool mix_to_mono,
-                                                float sample_rate) {
-  RefPtr<AudioBus> audio_bus =
+scoped_refptr<AudioBus> CreateBusFromInMemoryAudioFile(const void* data,
+                                                       size_t data_size,
+                                                       bool mix_to_mono,
+                                                       float sample_rate) {
+  scoped_refptr<AudioBus> audio_bus =
       DecodeAudioFileData(static_cast<const char*>(data), data_size);
   if (!audio_bus.get())
     return nullptr;

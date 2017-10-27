@@ -87,7 +87,7 @@ class ChannelProvider final : public AudioSourceProvider {
 
  private:
   AudioSourceProvider* multi_channel_provider_;
-  RefPtr<AudioBus> multi_channel_bus_;
+  scoped_refptr<AudioBus> multi_channel_bus_;
   unsigned number_of_channels_;
   unsigned current_channel_;
   // Used to verify that all channels ask for the same amount.

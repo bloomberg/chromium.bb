@@ -30,7 +30,7 @@ class ScriptValue;
 //
 // In some cases, you need ScriptState in code that doesn't have any JavaScript
 // on the stack. Then you can store ScriptState on a C++ object using
-// RefPtr<ScriptState>.
+// scoped_refptr<ScriptState>.
 //
 // class SomeObject {
 //   void someMethod(ScriptState* scriptState) {
@@ -48,7 +48,7 @@ class ScriptValue;
 //     // Do V8 related things.
 //     ToV8(...);
 //   }
-//   RefPtr<ScriptState> script_state_;
+//   scoped_refptr<ScriptState> script_state_;
 // };
 //
 // You should not store ScriptState on a C++ object that can be accessed
@@ -88,8 +88,8 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
     v8::Local<v8::Context> context_;
   };
 
-  static RefPtr<ScriptState> Create(v8::Local<v8::Context>,
-                                    RefPtr<DOMWrapperWorld>);
+  static scoped_refptr<ScriptState> Create(v8::Local<v8::Context>,
+                                           scoped_refptr<DOMWrapperWorld>);
   virtual ~ScriptState();
 
   static ScriptState* Current(v8::Isolate* isolate)  // DEPRECATED
@@ -146,7 +146,7 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
   void DisposePerContextData();
 
  protected:
-  ScriptState(v8::Local<v8::Context>, RefPtr<DOMWrapperWorld>);
+  ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
 
  private:
   v8::Isolate* isolate_;
@@ -155,7 +155,7 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
 
   // This RefPtr doesn't cause a cycle because all persistent handles that
   // DOMWrapperWorld holds are weak.
-  RefPtr<DOMWrapperWorld> world_;
+  scoped_refptr<DOMWrapperWorld> world_;
 
   // This std::unique_ptr causes a cycle:
   // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState
@@ -188,7 +188,7 @@ class ScriptStateProtectingContext {
   }
 
  private:
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   ScopedPersistent<v8::Context> context_;
 };
 

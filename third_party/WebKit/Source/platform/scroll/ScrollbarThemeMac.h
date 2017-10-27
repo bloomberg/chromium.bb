@@ -112,7 +112,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   int TickmarkBorderWidth() override { return 1; }
 
-  RefPtr<Pattern> overhang_pattern_;
+  scoped_refptr<Pattern> overhang_pattern_;
 };
 }
 

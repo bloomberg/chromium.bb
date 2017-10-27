@@ -36,12 +36,13 @@ namespace blink {
 class PLATFORM_EXPORT PlatformSpeechSynthesisVoice final
     : public RefCounted<PlatformSpeechSynthesisVoice> {
  public:
-  static RefPtr<PlatformSpeechSynthesisVoice> Create(const String& voice_uri,
-                                                     const String& name,
-                                                     const String& lang,
-                                                     bool local_service,
-                                                     bool is_default);
-  static RefPtr<PlatformSpeechSynthesisVoice> Create();
+  static scoped_refptr<PlatformSpeechSynthesisVoice> Create(
+      const String& voice_uri,
+      const String& name,
+      const String& lang,
+      bool local_service,
+      bool is_default);
+  static scoped_refptr<PlatformSpeechSynthesisVoice> Create();
 
   const String& VoiceURI() const { return voice_uri_; }
   void SetVoiceURI(const String& voice_uri) { voice_uri_ = voice_uri; }

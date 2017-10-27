@@ -66,7 +66,7 @@ String CoreTestDataPath(const String& relative_path = String());
 // specified.
 String PlatformTestDataPath(const String& relative_path = String());
 
-RefPtr<SharedBuffer> ReadFromFile(const String& path);
+scoped_refptr<SharedBuffer> ReadFromFile(const String& path);
 
 }  // namespace testing
 }  // namespace blink

@@ -66,7 +66,7 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
 
   virtual ~PlatformSpeechSynthesizer();
 
-  const Vector<RefPtr<PlatformSpeechSynthesisVoice>>& VoiceList() const {
+  const Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>& VoiceList() const {
     return voice_list_;
   }
   virtual void Speak(PlatformSpeechSynthesisUtterance*);
@@ -78,7 +78,7 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
     return speech_synthesizer_client_;
   }
 
-  void SetVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice>>&);
+  void SetVoiceList(Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>&);
 
   // Eager finalization is required to promptly release the owned
   // WebSpeechSynthesizer.
@@ -98,7 +98,7 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
 
   virtual void InitializeVoiceList();
 
-  Vector<RefPtr<PlatformSpeechSynthesisVoice>> voice_list_;
+  Vector<scoped_refptr<PlatformSpeechSynthesisVoice>> voice_list_;
 
  private:
   Member<PlatformSpeechSynthesizerClient> speech_synthesizer_client_;

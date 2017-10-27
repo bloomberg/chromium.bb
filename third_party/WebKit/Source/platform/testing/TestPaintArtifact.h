@@ -47,24 +47,24 @@ class TestPaintArtifact {
   ~TestPaintArtifact();
 
   // Add to the artifact.
-  TestPaintArtifact& Chunk(RefPtr<const TransformPaintPropertyNode>,
-                           RefPtr<const ClipPaintPropertyNode>,
-                           RefPtr<const EffectPaintPropertyNode>);
+  TestPaintArtifact& Chunk(scoped_refptr<const TransformPaintPropertyNode>,
+                           scoped_refptr<const ClipPaintPropertyNode>,
+                           scoped_refptr<const EffectPaintPropertyNode>);
   TestPaintArtifact& Chunk(const PaintChunkProperties&);
   TestPaintArtifact& RectDrawing(const FloatRect& bounds, Color);
   TestPaintArtifact& ForeignLayer(const FloatPoint&,
                                   const IntSize&,
                                   scoped_refptr<cc::Layer>);
   TestPaintArtifact& ScrollHitTest(
-      RefPtr<const TransformPaintPropertyNode> scroll_offset);
+      scoped_refptr<const TransformPaintPropertyNode> scroll_offset);
   TestPaintArtifact& KnownToBeOpaque();
 
   // Add to the artifact, with specified display item client. These are used
   // to test incremental paint artifact updates.
   TestPaintArtifact& Chunk(DisplayItemClient&,
-                           RefPtr<const TransformPaintPropertyNode>,
-                           RefPtr<const ClipPaintPropertyNode>,
-                           RefPtr<const EffectPaintPropertyNode>);
+                           scoped_refptr<const TransformPaintPropertyNode>,
+                           scoped_refptr<const ClipPaintPropertyNode>,
+                           scoped_refptr<const EffectPaintPropertyNode>);
   TestPaintArtifact& Chunk(DisplayItemClient&, const PaintChunkProperties&);
   TestPaintArtifact& RectDrawing(DisplayItemClient&,
                                  const FloatRect& bounds,
@@ -75,7 +75,7 @@ class TestPaintArtifact {
                                   scoped_refptr<cc::Layer>);
   TestPaintArtifact& ScrollHitTest(
       DisplayItemClient&,
-      RefPtr<const TransformPaintPropertyNode> scroll_offset);
+      scoped_refptr<const TransformPaintPropertyNode> scroll_offset);
 
   // Can't add more things once this is called.
   const PaintArtifact& Build();

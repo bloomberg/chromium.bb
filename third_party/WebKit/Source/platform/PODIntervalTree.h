@@ -85,7 +85,7 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
 
   PODIntervalTree() : PODRedBlackTree<IntervalType>() { Init(); }
 
-  explicit PODIntervalTree(RefPtr<PODArena> arena)
+  explicit PODIntervalTree(scoped_refptr<PODArena> arena)
       : PODRedBlackTree<IntervalType>(arena) {
     Init();
   }

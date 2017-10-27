@@ -113,10 +113,11 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
 
   void AddObserverOnNotification(NetworkStateNotifier* notifier,
                                  StateObserver* observer_to_add,
-                                 RefPtr<WebTaskRunner> task_runner) {
+                                 scoped_refptr<WebTaskRunner> task_runner) {
     closure_ = base::BindOnce(
         [](StateObserver* observer, NetworkStateNotifier* notifier,
-           StateObserver* observer_to_add, RefPtr<WebTaskRunner> task_runner) {
+           StateObserver* observer_to_add,
+           scoped_refptr<WebTaskRunner> task_runner) {
           observer->added_handle_ =
               notifier->AddConnectionObserver(observer_to_add, task_runner);
         },
@@ -221,8 +222,8 @@ class NetworkStateNotifierTest : public ::testing::Test {
                downlink_throughput_mbps;
   }
 
-  RefPtr<FakeWebTaskRunner> task_runner_;
-  RefPtr<FakeWebTaskRunner> task_runner2_;
+  scoped_refptr<FakeWebTaskRunner> task_runner_;
+  scoped_refptr<FakeWebTaskRunner> task_runner2_;
   NetworkStateNotifier notifier_;
 };
 

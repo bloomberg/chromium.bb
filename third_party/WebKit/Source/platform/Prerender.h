@@ -75,7 +75,7 @@ class PLATFORM_EXPORT Prerender final
   const String& GetReferrer() const { return referrer_.referrer; }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_.referrer_policy; }
 
-  void SetExtraData(RefPtr<ExtraData> extra_data) {
+  void SetExtraData(scoped_refptr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
   ExtraData* GetExtraData() { return extra_data_.get(); }
@@ -98,7 +98,7 @@ class PLATFORM_EXPORT Prerender final
   const unsigned rel_types_;
   const Referrer referrer_;
 
-  RefPtr<ExtraData> extra_data_;
+  scoped_refptr<ExtraData> extra_data_;
 };
 
 }  // namespace blink

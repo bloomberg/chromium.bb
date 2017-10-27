@@ -68,7 +68,7 @@ class FIFOClient {
   }
 
   PushPullFIFO* fifo_;
-  RefPtr<AudioBus> bus_;
+  scoped_refptr<AudioBus> bus_;
   std::unique_ptr<WebThread> client_thread_;
   std::unique_ptr<WaitableEvent> done_event_;
 

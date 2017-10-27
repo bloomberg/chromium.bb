@@ -45,34 +45,36 @@ inline EncodedFormData::EncodedFormData(const EncodedFormData& data)
 
 EncodedFormData::~EncodedFormData() {}
 
-RefPtr<EncodedFormData> EncodedFormData::Create() {
+scoped_refptr<EncodedFormData> EncodedFormData::Create() {
   return WTF::AdoptRef(new EncodedFormData);
 }
 
-RefPtr<EncodedFormData> EncodedFormData::Create(const void* data, size_t size) {
-  RefPtr<EncodedFormData> result = Create();
+scoped_refptr<EncodedFormData> EncodedFormData::Create(const void* data,
+                                                       size_t size) {
+  scoped_refptr<EncodedFormData> result = Create();
   result->AppendData(data, size);
   return result;
 }
 
-RefPtr<EncodedFormData> EncodedFormData::Create(const CString& string) {
-  RefPtr<EncodedFormData> result = Create();
+scoped_refptr<EncodedFormData> EncodedFormData::Create(const CString& string) {
+  scoped_refptr<EncodedFormData> result = Create();
   result->AppendData(string.data(), string.length());
   return result;
 }
 
-RefPtr<EncodedFormData> EncodedFormData::Create(const Vector<char>& vector) {
-  RefPtr<EncodedFormData> result = Create();
+scoped_refptr<EncodedFormData> EncodedFormData::Create(
+    const Vector<char>& vector) {
+  scoped_refptr<EncodedFormData> result = Create();
   result->AppendData(vector.data(), vector.size());
   return result;
 }
 
-RefPtr<EncodedFormData> EncodedFormData::Copy() const {
+scoped_refptr<EncodedFormData> EncodedFormData::Copy() const {
   return WTF::AdoptRef(new EncodedFormData(*this));
 }
 
-RefPtr<EncodedFormData> EncodedFormData::DeepCopy() const {
-  RefPtr<EncodedFormData> form_data(Create());
+scoped_refptr<EncodedFormData> EncodedFormData::DeepCopy() const {
+  scoped_refptr<EncodedFormData> form_data(Create());
 
   form_data->identifier_ = identifier_;
   form_data->boundary_ = boundary_;
@@ -127,8 +129,9 @@ void EncodedFormData::AppendFileRange(const String& filename,
       FormDataElement(filename, start, length, expected_modification_time));
 }
 
-void EncodedFormData::AppendBlob(const String& uuid,
-                                 RefPtr<BlobDataHandle> optional_handle) {
+void EncodedFormData::AppendBlob(
+    const String& uuid,
+    scoped_refptr<BlobDataHandle> optional_handle) {
   elements_.push_back(FormDataElement(uuid, std::move(optional_handle)));
 }
 

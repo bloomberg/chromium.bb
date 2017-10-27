@@ -120,7 +120,7 @@ class PLATFORM_EXPORT StringCache {
   // Note: RefPtr is a must as we cache by StringImpl* equality, not identity
   // hence lastStringImpl might be not a key of the cache (in sense of identity)
   // and hence it's not refed on addition.
-  RefPtr<StringImpl> last_string_impl_;
+  scoped_refptr<StringImpl> last_string_impl_;
 };
 
 }  // namespace blink

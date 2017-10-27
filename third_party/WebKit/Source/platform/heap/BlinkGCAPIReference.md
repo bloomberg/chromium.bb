@@ -91,7 +91,7 @@ public:
     ~YourClass() { ... } // Non-empty destructor means finalization is needed.
 
 private:
-    RefPtr<Something> m_something; // RefPtr<> has non-empty destructor, so finalization is needed.
+    scoped_refptr<Something> m_something; // scoped_refptr<> has non-empty destructor, so finalization is needed.
 };
 ```
 
@@ -247,7 +247,7 @@ Classes with this annotation need a `Trace()` method, but should not inherit a g
 
 ## Handles
 
-Class templates in this section are smart pointers, each carrying a pointer to an on-heap object (think of `RefPtr<T>`
+Class templates in this section are smart pointers, each carrying a pointer to an on-heap object (think of `scoped_refptr<T>`
 for `RefCounted<T>`). Collectively, they are called *handles*.
 
 On-heap objects must be retained by any of these, depending on the situation.
@@ -271,7 +271,7 @@ In a garbage-collected class, on-heap objects must be retained by `Member<T>` or
 the desired semantics.
 
 `Member<T>` represents a *strong* reference to an object of type `T`, which means that the referred object is kept
-alive as long as the owner class instance is alive. Unlike `RefPtr<T>`, it is okay to form a reference cycle with
+alive as long as the owner class instance is alive. Unlike `scoped_refptr<T>`, it is okay to form a reference cycle with
 members (in on-heap objects) and raw pointers (on stack).
 
 `WeakMember<T>` is a *weak* reference to an object of type `T`. Unlike `Member<T>`, `WeakMember<T>` does not keep

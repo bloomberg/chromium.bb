@@ -56,8 +56,8 @@ class PODArenaTest : public ::testing::Test {};
 // Make sure the arena can successfully allocate from more than one
 // region.
 TEST_F(PODArenaTest, CanAllocateFromMoreThanOneRegion) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
-  RefPtr<PODArena> arena = PODArena::Create(allocator);
+  scoped_refptr<TrackedAllocator> allocator = TrackedAllocator::Create();
+  scoped_refptr<PODArena> arena = PODArena::Create(allocator);
   int num_iterations = 10 * PODArena::kDefaultChunkSize / sizeof(TestClassXYZW);
   for (int i = 0; i < num_iterations; ++i)
     arena->AllocateObject<TestClassXYZW>();
@@ -66,9 +66,9 @@ TEST_F(PODArenaTest, CanAllocateFromMoreThanOneRegion) {
 
 // Make sure the arena frees all allocated regions during destruction.
 TEST_F(PODArenaTest, FreesAllAllocatedRegions) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
+  scoped_refptr<TrackedAllocator> allocator = TrackedAllocator::Create();
   {
-    RefPtr<PODArena> arena = PODArena::Create(allocator);
+    scoped_refptr<PODArena> arena = PODArena::Create(allocator);
     for (int i = 0; i < 3; i++)
       arena->AllocateObject<TestClassXYZW>();
     EXPECT_GT(allocator->NumRegions(), 0);
@@ -78,7 +78,7 @@ TEST_F(PODArenaTest, FreesAllAllocatedRegions) {
 
 // Make sure the arena runs constructors of the objects allocated within.
 TEST_F(PODArenaTest, RunsConstructors) {
-  RefPtr<PODArena> arena = PODArena::Create();
+  scoped_refptr<PODArena> arena = PODArena::Create();
   for (int i = 0; i < 10000; i++) {
     TestClassXYZW* tc1 = arena->AllocateObject<TestClassXYZW>();
     EXPECT_EQ(0, tc1->x);

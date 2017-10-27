@@ -31,7 +31,7 @@ PLATFORM_EXPORT const FeatureNameMap& GetDefaultFeatureNameMap();
 //     "vibrate a.com b.com; fullscreen 'none'; payment 'self', payment *".
 PLATFORM_EXPORT WebParsedFeaturePolicy
 ParseFeaturePolicyHeader(const String& policy,
-                         RefPtr<SecurityOrigin>,
+                         scoped_refptr<SecurityOrigin>,
                          Vector<String>* messages);
 
 // Converts a container policy string into a vector of whitelists, given self
@@ -47,8 +47,8 @@ ParseFeaturePolicyHeader(const String& policy,
 // https://crbug.com/761009.
 PLATFORM_EXPORT Vector<WebParsedFeaturePolicyDeclaration>
 ParseFeaturePolicyAttribute(const String& policy,
-                            RefPtr<SecurityOrigin> self_origin,
-                            RefPtr<SecurityOrigin> src_origin,
+                            scoped_refptr<SecurityOrigin> self_origin,
+                            scoped_refptr<SecurityOrigin> src_origin,
                             Vector<String>* messages,
                             bool* old_syntax);
 
@@ -63,8 +63,8 @@ ParseFeaturePolicyAttribute(const String& policy,
 // https://crbug.com/761009.
 PLATFORM_EXPORT Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicy(
     const String& policy,
-    RefPtr<SecurityOrigin> self_origin,
-    RefPtr<SecurityOrigin> src_origin,
+    scoped_refptr<SecurityOrigin> self_origin,
+    scoped_refptr<SecurityOrigin> src_origin,
     Vector<String>* messages,
     const FeatureNameMap& feature_names,
     bool* old_syntax = nullptr);

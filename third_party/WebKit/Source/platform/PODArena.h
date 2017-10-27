@@ -61,7 +61,7 @@ class PODArena final : public RefCounted<PODArena> {
   // fastFree to allocate chunks of storage.
   class FastMallocAllocator : public Allocator {
    public:
-    static RefPtr<FastMallocAllocator> Create() {
+    static scoped_refptr<FastMallocAllocator> Create() {
       return WTF::AdoptRef(new FastMallocAllocator);
     }
 
@@ -76,10 +76,12 @@ class PODArena final : public RefCounted<PODArena> {
   };
 
   // Creates a new PODArena configured with a FastMallocAllocator.
-  static RefPtr<PODArena> Create() { return WTF::AdoptRef(new PODArena); }
+  static scoped_refptr<PODArena> Create() {
+    return WTF::AdoptRef(new PODArena);
+  }
 
   // Creates a new PODArena configured with the given Allocator.
-  static RefPtr<PODArena> Create(RefPtr<Allocator> allocator) {
+  static scoped_refptr<PODArena> Create(scoped_refptr<Allocator> allocator) {
     return WTF::AdoptRef(new PODArena(std::move(allocator)));
   }
 
@@ -107,7 +109,7 @@ class PODArena final : public RefCounted<PODArena> {
         current_(0),
         current_chunk_size_(kDefaultChunkSize) {}
 
-  explicit PODArena(RefPtr<Allocator> allocator)
+  explicit PODArena(scoped_refptr<Allocator> allocator)
       : allocator_(std::move(allocator)),
         current_(0),
         current_chunk_size_(kDefaultChunkSize) {}
@@ -182,7 +184,7 @@ class PODArena final : public RefCounted<PODArena> {
     size_t current_offset_;
   };
 
-  RefPtr<Allocator> allocator_;
+  scoped_refptr<Allocator> allocator_;
   Chunk* current_;
   size_t current_chunk_size_;
   Vector<std::unique_ptr<Chunk>> chunks_;

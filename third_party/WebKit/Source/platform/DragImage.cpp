@@ -309,7 +309,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
                           FloatPoint(text_pos), Font::kDoNotPaintIfFontNotReady,
                           device_scale_factor, text_paint);
 
-  RefPtr<StaticBitmapImage> image = buffer->NewImageSnapshot();
+  scoped_refptr<StaticBitmapImage> image = buffer->NewImageSnapshot();
   return DragImage::Create(image.get(), kDoNotRespectImageOrientation,
                            device_scale_factor);
 }
