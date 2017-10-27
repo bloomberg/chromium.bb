@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "media/audio/audio_device_description.h"
@@ -61,6 +62,8 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   // Calling this method will make the checks for permission from the user
   // always return |override_value|.
   void OverridePermissionsForTesting(bool override_value);
+
+  static void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time);
 
  private:
   void HashDeviceId(
