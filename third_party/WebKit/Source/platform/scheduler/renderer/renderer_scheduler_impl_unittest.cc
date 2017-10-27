@@ -676,9 +676,9 @@ class RendererSchedulerImplTest : public ::testing::Test {
         RendererSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
   }
 
-  static base::TimeDelta stop_when_backgrounded_delay() {
+  static base::TimeDelta delay_for_background_tab_stopping() {
     return base::TimeDelta::FromMilliseconds(
-        RendererSchedulerImpl::kStopWhenBackgroundedDelayMillis);
+        RendererSchedulerImpl::kDelayForBackgroundTabStoppingMillis);
   }
 
   static base::TimeDelta rails_response_time() {
@@ -2528,7 +2528,7 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
   EXPECT_THAT(run_order, ::testing::ElementsAre(std::string("T3")));
 
   // Advance the time until after the scheduled timer queue suspension.
-  now = base::TimeTicks() + stop_when_backgrounded_delay() +
+  now = base::TimeTicks() + delay_for_background_tab_stopping() +
         base::TimeDelta::FromMilliseconds(10);
   run_order.clear();
   clock_->SetNowTicks(now);
@@ -2582,7 +2582,7 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedLoadingSuspension) {
   EXPECT_THAT(run_order, ::testing::ElementsAre(std::string("L3")));
 
   // Advance the time until after the scheduled loading queue suspension.
-  now = base::TimeTicks() + stop_when_backgrounded_delay() +
+  now = base::TimeTicks() + delay_for_background_tab_stopping() +
         base::TimeDelta::FromMilliseconds(10);
   run_order.clear();
   clock_->SetNowTicks(now);

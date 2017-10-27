@@ -8,9 +8,11 @@
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -145,6 +147,17 @@ RendererSchedulerImpl::RendererSchedulerImpl(
     base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
         weak_factory_.GetWeakPtr());
   }
+
+  int32_t delay_for_background_tab_stopping_millis;
+  if (!base::StringToInt(
+          base::GetFieldTrialParamValue("BackgroundTabStopping",
+                                        "DelayForBackgroundTabStoppingMills"),
+          &delay_for_background_tab_stopping_millis)) {
+    delay_for_background_tab_stopping_millis =
+        kDelayForBackgroundTabStoppingMillis;
+  }
+  delay_for_background_tab_stopping_ = base::TimeDelta::FromMilliseconds(
+      delay_for_background_tab_stopping_millis);
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
@@ -1048,9 +1061,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   bool newly_stopped = false;
   if (main_thread_only().renderer_backgrounded &&
       main_thread_only().stopping_when_backgrounded_enabled) {
-    base::TimeTicks stop_at =
-        main_thread_only().background_status_changed_at +
-        base::TimeDelta::FromMilliseconds(kStopWhenBackgroundedDelayMillis);
+    base::TimeTicks stop_at = main_thread_only().background_status_changed_at +
+                              delay_for_background_tab_stopping_;
 
     newly_stopped = !main_thread_only().stopped_when_backgrounded;
     main_thread_only().stopped_when_backgrounded = now >= stop_at;
