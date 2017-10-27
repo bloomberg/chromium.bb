@@ -134,7 +134,7 @@ class ReflectorImplTest : public testing::Test {
     ui::ContextFactory* context_factory = nullptr;
     ui::ContextFactoryPrivate* context_factory_private = nullptr;
 
-    message_loop_ = base::MakeUnique<base::MessageLoop>();
+    message_loop_ = std::make_unique<base::MessageLoop>();
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
     ImageTransportFactory::SetFactory(
@@ -142,7 +142,7 @@ class ReflectorImplTest : public testing::Test {
     task_runner_ = message_loop_->task_runner();
     compositor_task_runner_ = new FakeTaskRunner();
     begin_frame_source_.reset(new viz::DelayBasedBeginFrameSource(
-        base::MakeUnique<viz::DelayBasedTimeSource>(
+        std::make_unique<viz::DelayBasedTimeSource>(
             compositor_task_runner_.get())));
     compositor_.reset(new ui::Compositor(
         context_factory_private->AllocateFrameSinkId(), context_factory,
@@ -154,7 +154,7 @@ class ReflectorImplTest : public testing::Test {
     auto context_provider = cc::TestContextProvider::Create();
     context_provider->BindToCurrentThread();
     output_surface_ =
-        base::MakeUnique<TestOutputSurface>(std::move(context_provider));
+        std::make_unique<TestOutputSurface>(std::move(context_provider));
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());
@@ -166,7 +166,7 @@ class ReflectorImplTest : public testing::Test {
   }
 
   void SetUpReflector() {
-    reflector_ = base::MakeUnique<ReflectorImpl>(compositor_.get(),
+    reflector_ = std::make_unique<ReflectorImpl>(compositor_.get(),
                                                  mirroring_layer_.get());
     reflector_->OnSourceSurfaceReady(output_surface_.get());
   }

@@ -56,7 +56,7 @@ void MediaStreamVideoSource::AddTrack(
 
   pending_tracks_.push_back(PendingTrackInfo(
       track, frame_callback,
-      base::MakeUnique<VideoTrackAdapterSettings>(track_adapter_settings),
+      std::make_unique<VideoTrackAdapterSettings>(track_adapter_settings),
       callback));
 
   switch (state_) {

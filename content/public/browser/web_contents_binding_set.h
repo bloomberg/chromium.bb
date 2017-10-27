@@ -116,7 +116,7 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
       : WebContentsBindingSet(
             web_contents,
             Interface::Name_,
-            base::MakeUnique<FrameInterfaceBinder>(this, web_contents, impl)) {}
+            std::make_unique<FrameInterfaceBinder>(this, web_contents, impl)) {}
   ~WebContentsFrameBindingSet() {}
 
   // Returns the RenderFrameHost currently targeted by a message dispatch to

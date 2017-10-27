@@ -243,7 +243,7 @@ void* ImageDataSimpleBackend::Map() {
     skia_bitmap_.setPixels(shared_memory_->memory());
     // Our platform bitmaps are set to opaque by default, which we don't want.
     skia_bitmap_.setAlphaType(kPremul_SkAlphaType);
-    skia_canvas_ = base::MakeUnique<SkCanvas>(skia_bitmap_);
+    skia_canvas_ = std::make_unique<SkCanvas>(skia_bitmap_);
     return skia_bitmap_.getAddr32(0, 0);
   }
   return shared_memory_->memory();

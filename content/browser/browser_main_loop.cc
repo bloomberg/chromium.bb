@@ -408,12 +408,12 @@ CreateWinMemoryPressureMonitor(const base::CommandLine& parsed_command_line) {
       base::StringToInt(thresholds[1], &critical_threshold_mb) &&
       moderate_threshold_mb >= critical_threshold_mb &&
       critical_threshold_mb >= 0) {
-    return base::MakeUnique<base::win::MemoryPressureMonitor>(
+    return std::make_unique<base::win::MemoryPressureMonitor>(
         moderate_threshold_mb, critical_threshold_mb);
   }
 
   // In absence of valid switches use the automatic defaults.
-  return base::MakeUnique<base::win::MemoryPressureMonitor>();
+  return std::make_unique<base::win::MemoryPressureMonitor>();
 }
 #endif  // defined(OS_WIN)
 
@@ -429,7 +429,7 @@ std::unique_ptr<base::TaskScheduler::InitParams>
 GetDefaultTaskSchedulerInitParams() {
 #if defined(OS_ANDROID)
   // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
-  return base::MakeUnique<base::TaskScheduler::InitParams>(
+  return std::make_unique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
           base::TimeDelta::FromSeconds(30)),
@@ -444,7 +444,7 @@ GetDefaultTaskSchedulerInitParams() {
           base::TimeDelta::FromSeconds(60)));
 #else
   // Desktop config.
-  return base::MakeUnique<base::TaskScheduler::InitParams>(
+  return std::make_unique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
           base::TimeDelta::FromSeconds(30)),
@@ -770,7 +770,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
   if (parameters_.create_discardable_memory) {
     discardable_shared_memory_manager_ =
-        base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     // TODO(boliu): kSingleProcess check is a temporary workaround for
     // in-process Android WebView. crbug.com/503724 tracks proper fix.
     if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
@@ -940,10 +940,10 @@ void BrowserMainLoop::CreateStartupTasks() {
 
   DCHECK(!startup_task_runner_);
 #if defined(OS_ANDROID)
-  startup_task_runner_ = base::MakeUnique<StartupTaskRunner>(
+  startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::Bind(&BrowserStartupComplete), base::ThreadTaskRunnerHandle::Get());
 #else
-  startup_task_runner_ = base::MakeUnique<StartupTaskRunner>(
+  startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::Callback<void(int)>(), base::ThreadTaskRunnerHandle::Get());
 #endif
   StartupTask pre_create_threads =
@@ -1481,7 +1481,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
   if (!is_mus) {
-    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
+    host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
 
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
 
@@ -1644,12 +1644,12 @@ void BrowserMainLoop::InitializeMemoryManagementComponent() {
 #if defined(OS_CHROMEOS)
   if (chromeos::switches::MemoryPressureHandlingEnabled()) {
     memory_pressure_monitor_ =
-        base::MakeUnique<base::chromeos::MemoryPressureMonitor>(
+        std::make_unique<base::chromeos::MemoryPressureMonitor>(
             chromeos::switches::GetMemoryPressureThresholds());
   }
 #elif defined(OS_MACOSX)
   memory_pressure_monitor_ =
-    base::MakeUnique<base::mac::MemoryPressureMonitor>();
+      std::make_unique<base::mac::MemoryPressureMonitor>();
 #elif defined(OS_WIN)
   memory_pressure_monitor_ =
       CreateWinMemoryPressureMonitor(parsed_command_line_);
@@ -1747,7 +1747,7 @@ void BrowserMainLoop::InitializeMojo() {
   GetContentClient()->OnServiceManagerConnected(
       ServiceManagerConnection::GetForProcess());
 
-  tracing_controller_ = base::MakeUnique<content::TracingControllerImpl>();
+  tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
   content::BackgroundTracingManagerImpl::GetInstance()
       ->AddMetadataGeneratorFunction();
 
@@ -1866,9 +1866,9 @@ void BrowserMainLoop::CreateAudioManager() {
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
   if (!audio_manager_) {
-    audio_manager_ = media::AudioManager::Create(
-        base::MakeUnique<media::AudioThreadImpl>(),
-        MediaInternals::GetInstance());
+    audio_manager_ =
+        media::AudioManager::Create(std::make_unique<media::AudioThreadImpl>(),
+                                    MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
   audio_system_ = media::AudioSystem::CreateInstance();

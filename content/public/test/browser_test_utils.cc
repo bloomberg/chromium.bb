@@ -2260,7 +2260,7 @@ class MockOverscrollControllerImpl : public OverscrollController,
 MockOverscrollController* MockOverscrollController::Create(
     RenderWidgetHostView* rwhv) {
   std::unique_ptr<MockOverscrollControllerImpl> mock =
-      base::MakeUnique<MockOverscrollControllerImpl>();
+      std::make_unique<MockOverscrollControllerImpl>();
   MockOverscrollController* raw_mock = mock.get();
 
   RenderWidgetHostViewAura* rwhva =

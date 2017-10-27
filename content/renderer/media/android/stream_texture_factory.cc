@@ -103,7 +103,7 @@ ScopedStreamTextureProxy StreamTextureFactory::CreateProxy(
   if (!route_id)
     return ScopedStreamTextureProxy();
   return ScopedStreamTextureProxy(new StreamTextureProxy(
-      base::MakeUnique<StreamTextureHost>(channel_, route_id)));
+      std::make_unique<StreamTextureHost>(channel_, route_id)));
 }
 
 unsigned StreamTextureFactory::CreateStreamTexture(

@@ -1177,7 +1177,7 @@ void NetworkHandler::ContinueInterceptedRequest(
 
   devtools_url_request_interceptor->ContinueInterceptedRequest(
       interception_id,
-      base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
+      std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
           std::move(method), std::move(post_data), std::move(headers),
           std::move(auth_challenge_response), mark_as_canceled),

@@ -81,12 +81,12 @@ class RestrictedCookieManagerImplTest : public testing::Test {
   RestrictedCookieManagerImplTest()
       : cookie_monster_(nullptr, nullptr),
         service_(
-            base::MakeUnique<RestrictedCookieManagerImpl>(&cookie_monster_,
+            std::make_unique<RestrictedCookieManagerImpl>(&cookie_monster_,
                                                           MSG_ROUTING_NONE,
                                                           MSG_ROUTING_NONE)),
         binding_(service_.get(), mojo::MakeRequest(&service_ptr_)) {
     sync_service_ =
-        base::MakeUnique<RestrictedCookieManagerSync>(service_ptr_.get());
+        std::make_unique<RestrictedCookieManagerSync>(service_ptr_.get());
   }
   ~RestrictedCookieManagerImplTest() override {}
 
@@ -105,7 +105,7 @@ class RestrictedCookieManagerImplTest : public testing::Test {
                           bool can_modify_httponly) {
     net::ResultSavingCookieCallback<bool> callback;
     cookie_monster_.SetCanonicalCookieAsync(
-        base::MakeUnique<net::CanonicalCookie>(cookie), secure_source,
+        std::make_unique<net::CanonicalCookie>(cookie), secure_source,
         can_modify_httponly,
         base::BindOnce(&net::ResultSavingCookieCallback<bool>::Run,
                        base::Unretained(&callback)));

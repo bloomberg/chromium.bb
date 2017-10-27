@@ -814,7 +814,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
 
   // The first repetition should be trimmed and replaced by a null value.
   base::ListValue expected_list;
-  expected_list.Append(base::MakeUnique<base::Value>());
+  expected_list.Append(std::make_unique<base::Value>());
 
   // The actual result.
   std::unique_ptr<base::Value> actual_list(
@@ -835,7 +835,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
 
   // The first repetition should be trimmed and replaced by a null value.
   base::DictionaryValue expected_dictionary;
-  expected_dictionary.Set(key, base::MakeUnique<base::Value>());
+  expected_dictionary.Set(key, std::make_unique<base::Value>());
 
   // The actual result.
   std::unique_ptr<base::Value> actual_dictionary(
@@ -1021,7 +1021,7 @@ class V8ValueConverterOverridingStrategyForTesting
 
  private:
   static std::unique_ptr<base::Value> NewReferenceValue() {
-    return base::MakeUnique<base::Value>("strategy");
+    return std::make_unique<base::Value>("strategy");
   }
   std::unique_ptr<base::Value> reference_value_;
 };

@@ -74,7 +74,7 @@ void RecursivelyGenerateFrameEntries(
 
   for (const ExplodedFrameState& child_state : state.children) {
     node->children.push_back(
-        base::MakeUnique<NavigationEntryImpl::TreeNode>(node, nullptr));
+        std::make_unique<NavigationEntryImpl::TreeNode>(node, nullptr));
     RecursivelyGenerateFrameEntries(child_state, empty_file_list,
                                     node->children.back().get());
   }
@@ -863,7 +863,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       site_instance, std::move(source_site_instance), url, referrer,
       redirect_chain, page_state, method, post_id);
   parent_node->children.push_back(
-      base::MakeUnique<NavigationEntryImpl::TreeNode>(parent_node,
+      std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,
                                                       frame_entry));
 }
 

@@ -324,7 +324,7 @@ void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&GetControllerParameters, service_worker_context_,
-                     base::Passed(base::MakeUnique<BackgroundSyncParameters>(
+                     base::Passed(std::make_unique<BackgroundSyncParameters>(
                          *parameters_))),
       base::BindOnce(&BackgroundSyncManager::InitDidGetControllerParameters,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -532,7 +532,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
         FROM_HERE,
         base::BindOnce(
             std::move(callback), BACKGROUND_SYNC_STATUS_OK,
-            base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
+            base::Passed(std::make_unique<BackgroundSyncRegistration>(
                 *existing_registration))));
     return;
   }
@@ -705,7 +705,7 @@ void BackgroundSyncManager::RegisterDidStore(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
-                     base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
+                     base::Passed(std::make_unique<BackgroundSyncRegistration>(
                          new_registration))));
 }
 
@@ -822,7 +822,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
       const BackgroundSyncRegistration& registration =
           tag_and_registration.second;
       out_registrations.push_back(
-          base::MakeUnique<BackgroundSyncRegistration>(registration));
+          std::make_unique<BackgroundSyncRegistration>(registration));
     }
   }
 

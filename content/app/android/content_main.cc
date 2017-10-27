@@ -33,7 +33,7 @@ static jint Start(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
 
   DCHECK(!g_service_manager_main_delegate.Get());
   g_service_manager_main_delegate.Get() =
-      base::MakeUnique<ContentServiceManagerMainDelegate>(
+      std::make_unique<ContentServiceManagerMainDelegate>(
           ContentMainParams(g_content_main_delegate.Get().get()));
 
   service_manager::MainParams main_params(

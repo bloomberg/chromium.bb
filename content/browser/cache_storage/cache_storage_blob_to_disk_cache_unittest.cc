@@ -62,7 +62,7 @@ class NullURLRequestContextGetter : public net::URLRequestContextGetter {
 // the memory.
 std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
     storage::BlobStorageContext* blob_storage_context) {
-  return base::MakeUnique<storage::BlobProtocolHandler>(blob_storage_context,
+  return std::make_unique<storage::BlobProtocolHandler>(blob_storage_context,
                                                         nullptr);
 }
 

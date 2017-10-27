@@ -91,7 +91,7 @@ void WebIDBCursorImpl::Advance(unsigned long count,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id_, this);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
       io_runner_);
   io_runner_->PostTask(
@@ -120,7 +120,7 @@ void WebIDBCursorImpl::Continue(const WebIDBKey& key,
       // Request pre-fetch.
       ++pending_onsuccess_callbacks_;
 
-      auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+      auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
           std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
           io_runner_);
       io_runner_->PostTask(
@@ -144,7 +144,7 @@ void WebIDBCursorImpl::Continue(const WebIDBKey& key,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id_, this);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
       io_runner_);
   io_runner_->PostTask(

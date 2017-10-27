@@ -631,7 +631,7 @@ int ResourceDispatcher::StartAsync(
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
-  pending_requests_[request_id] = base::MakeUnique<PendingRequestInfo>(
+  pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
       std::move(peer), request->resource_type, request->origin_pid,
       frame_origin, request->url, request->download_to_file);
 
@@ -645,7 +645,7 @@ int ResourceDispatcher::StartAsync(
 
   if (consumer_handle.is_valid()) {
     pending_requests_[request_id]->url_loader_client =
-        base::MakeUnique<URLLoaderClientImpl>(request_id, this, task_runner);
+        std::make_unique<URLLoaderClientImpl>(request_id, this, task_runner);
 
     task_runner->PostTask(
         FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,

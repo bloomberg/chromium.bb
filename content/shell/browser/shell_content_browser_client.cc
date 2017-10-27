@@ -202,7 +202,7 @@ void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (!frame_interfaces_) {
-    frame_interfaces_ = base::MakeUnique<
+    frame_interfaces_ = std::make_unique<
         service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
     ExposeInterfacesToFrame(frame_interfaces_.get());
   }

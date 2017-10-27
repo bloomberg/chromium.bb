@@ -495,7 +495,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
                                      true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
-  auto container = base::MakeUnique<MockServiceWorkerContainer>(
+  auto container = std::make_unique<MockServiceWorkerContainer>(
       std::move(*remote_endpoints_.back().client_request()));
 
   // Create an active version and then start the navigation.
@@ -535,7 +535,7 @@ TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
                                      true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
-  auto container = base::MakeUnique<MockServiceWorkerContainer>(
+  auto container = std::make_unique<MockServiceWorkerContainer>(
       std::move(*remote_endpoints_.back().client_request()));
 
   // Create an installing version and then start the navigation.

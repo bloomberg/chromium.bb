@@ -70,7 +70,7 @@ SlowDownloadHttpResponse::HandleSlowDownloadRequest(
     return nullptr;
   }
   auto response =
-      base::MakeUnique<SlowDownloadHttpResponse>(request.relative_url);
+      std::make_unique<SlowDownloadHttpResponse>(request.relative_url);
   return std::move(response);
 }
 

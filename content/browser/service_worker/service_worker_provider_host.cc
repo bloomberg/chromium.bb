@@ -482,15 +482,15 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   if (skip_service_worker) {
     if (!ServiceWorkerUtils::IsMainResourceType(resource_type))
       return std::unique_ptr<ServiceWorkerRequestHandler>();
-    return base::MakeUnique<ServiceWorkerURLTrackingRequestHandler>(
+    return std::make_unique<ServiceWorkerURLTrackingRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
   if (IsHostToRunningServiceWorker()) {
-    return base::MakeUnique<ServiceWorkerContextRequestHandler>(
+    return std::make_unique<ServiceWorkerContextRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) || controller()) {
-    return base::MakeUnique<ServiceWorkerControlleeRequestHandler>(
+    return std::make_unique<ServiceWorkerControlleeRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, request_mode,
         credentials_mode, redirect_mode, integrity, resource_type,
         request_context_type, frame_type, body);
@@ -737,7 +737,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory_ptr_info;
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::MakeStrongAssociatedBinding(
-        base::MakeUnique<ServiceWorkerScriptURLLoaderFactory>(
+        std::make_unique<ServiceWorkerScriptURLLoaderFactory>(
             context_, AsWeakPtr(), context_->loader_factory_getter()),
         mojo::MakeRequest(&script_loader_factory_ptr_info));
     provider_info->script_loader_factory_ptr_info =
@@ -1159,7 +1159,7 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
                            this);
   DCHECK(!get_ready_callback_);
   get_ready_callback_ =
-      base::MakeUnique<GetRegistrationForReadyCallback>(std::move(callback));
+      std::make_unique<GetRegistrationForReadyCallback>(std::move(callback));
   ReturnRegistrationForReadyIfNeeded();
 }
 

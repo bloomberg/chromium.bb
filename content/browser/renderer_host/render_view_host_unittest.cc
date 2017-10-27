@@ -83,7 +83,7 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
 
   mojom::WidgetPtr widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
   test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
 }
 

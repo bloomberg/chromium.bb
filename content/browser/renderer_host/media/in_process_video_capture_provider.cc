@@ -27,7 +27,7 @@ std::unique_ptr<VideoCaptureProvider>
 InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb) {
-  return base::MakeUnique<InProcessVideoCaptureProvider>(
+  return std::make_unique<InProcessVideoCaptureProvider>(
       nullptr, std::move(device_task_runner), std::move(emit_log_message_cb));
 }
 
@@ -37,7 +37,7 @@ InProcessVideoCaptureProvider::CreateInstance(
     std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb) {
-  return base::MakeUnique<InProcessVideoCaptureProvider>(
+  return std::make_unique<InProcessVideoCaptureProvider>(
       std::move(video_capture_system), std::move(device_task_runner),
       std::move(emit_log_message_cb));
 }
@@ -67,7 +67,7 @@ void InProcessVideoCaptureProvider::GetDeviceInfosAsync(
 std::unique_ptr<VideoCaptureDeviceLauncher>
 InProcessVideoCaptureProvider::CreateDeviceLauncher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::MakeUnique<InProcessVideoCaptureDeviceLauncher>(
+  return std::make_unique<InProcessVideoCaptureDeviceLauncher>(
       device_task_runner_, video_capture_system_.get());
 }
 

@@ -32,7 +32,7 @@ void ManifestManagerHost::RenderFrameDeleted(
 void ManifestManagerHost::GetManifest(const GetManifestCallback& callback) {
   auto& manifest_manager = GetManifestManager();
   int request_id =
-      callbacks_.Add(base::MakeUnique<GetManifestCallback>(callback));
+      callbacks_.Add(std::make_unique<GetManifestCallback>(callback));
   manifest_manager.RequestManifest(
       base::BindOnce(&ManifestManagerHost::OnRequestManifestResponse,
                      base::Unretained(this), request_id));

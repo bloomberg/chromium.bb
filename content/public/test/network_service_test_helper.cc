@@ -62,7 +62,7 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
 void NetworkServiceTestHelper::BindNetworkServiceTestRequest(
     content::mojom::NetworkServiceTestRequest request) {
   if (!network_service_test_impl_)
-    network_service_test_impl_ = base::MakeUnique<NetworkServiceTestImpl>();
+    network_service_test_impl_ = std::make_unique<NetworkServiceTestImpl>();
   network_service_test_impl_->BindRequest(std::move(request));
 }
 

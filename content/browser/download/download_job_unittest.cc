@@ -24,10 +24,10 @@ class DownloadJobTest : public testing::Test {
   ~DownloadJobTest() override = default;
 
   void SetUp() override {
-    item_delegate_ = base::MakeUnique<DownloadItemImplDelegate>();
+    item_delegate_ = std::make_unique<DownloadItemImplDelegate>();
     download_item_ =
-        base::MakeUnique<NiceMock<MockDownloadItemImpl>>(item_delegate_.get());
-    download_job_ = base::MakeUnique<MockDownloadJob>(download_item_.get());
+        std::make_unique<NiceMock<MockDownloadItemImpl>>(item_delegate_.get());
+    download_job_ = std::make_unique<MockDownloadJob>(download_item_.get());
   }
 
   content::TestBrowserThreadBundle browser_threads_;

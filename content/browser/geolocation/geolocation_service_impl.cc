@@ -75,7 +75,7 @@ void GeolocationServiceImpl::Bind(
     device::mojom::GeolocationServiceRequest request) {
   binding_set_.AddBinding(
       this, std::move(request),
-      base::MakeUnique<GeolocationServiceImplContext>(permission_manager_));
+      std::make_unique<GeolocationServiceImplContext>(permission_manager_));
 }
 
 void GeolocationServiceImpl::CreateGeolocation(

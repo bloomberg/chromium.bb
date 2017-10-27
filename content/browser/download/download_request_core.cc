@@ -88,7 +88,7 @@ const int DownloadRequestData::kKey = 0;
 void DownloadRequestData::Attach(net::URLRequest* request,
                                  DownloadUrlParameters* parameters,
                                  uint32_t download_id) {
-  auto request_data = base::MakeUnique<DownloadRequestData>();
+  auto request_data = std::make_unique<DownloadRequestData>();
   request_data->save_info_.reset(
       new DownloadSaveInfo(parameters->GetSaveInfo()));
   request_data->download_id_ = download_id;

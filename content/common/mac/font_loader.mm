@@ -70,7 +70,7 @@ std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
     return nullptr;
   }
 
-  auto result = base::MakeUnique<FontLoader::ResultInternal>();
+  auto result = std::make_unique<FontLoader::ResultInternal>();
 
   int32_t font_file_size_32 = static_cast<int32_t>(font_file_size_64);
   if (!result->font_data.CreateAndMapAnonymous(font_file_size_32)) {

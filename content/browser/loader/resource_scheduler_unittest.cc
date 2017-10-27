@@ -273,7 +273,7 @@ class ResourceSchedulerTest : public testing::Test {
         NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
     std::unique_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
         child_id, route_id, is_async, url_request.get()));
-    auto request = base::MakeUnique<TestRequest>(
+    auto request = std::make_unique<TestRequest>(
         std::move(url_request), std::move(throttle), scheduler());
     request->Start();
     return request;
@@ -394,7 +394,7 @@ class ResourceSchedulerTest : public testing::Test {
     ASSERT_TRUE(field_trial);
 
     std::unique_ptr<base::FeatureList> feature_list(
-        base::MakeUnique<base::FeatureList>());
+        std::make_unique<base::FeatureList>());
     feature_list->RegisterFieldTrialOverride(
         "ThrottleDelayable",
         experiment_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
@@ -425,7 +425,7 @@ class ResourceSchedulerTest : public testing::Test {
     base::FieldTrial* field_trial =
         base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
     std::unique_ptr<base::FeatureList> feature_list(
-        base::MakeUnique<base::FeatureList>());
+        std::make_unique<base::FeatureList>());
     feature_list->RegisterFieldTrialOverride(
         kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         field_trial);
@@ -1801,7 +1801,7 @@ TEST_F(ResourceSchedulerTest, ReadInvalidConfigTest) {
   base::FieldTrial* field_trial =
       base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
   std::unique_ptr<base::FeatureList> feature_list(
-      base::MakeUnique<base::FeatureList>());
+      std::make_unique<base::FeatureList>());
   feature_list->RegisterFieldTrialOverride(
       kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
       field_trial);

@@ -140,7 +140,7 @@ NetworkQualityObserverImpl::NetworkQualityObserverImpl(
   network_quality_estimator_->AddRTTAndThroughputEstimatesObserver(this);
   network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
 
-  ui_thread_observer_ = base::MakeUnique<UiThreadObserver>();
+  ui_thread_observer_ = std::make_unique<UiThreadObserver>();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UiThreadObserver::InitOnUIThread,
@@ -217,7 +217,7 @@ void NetworkQualityObserverImpl::OnRTTOrThroughputEstimatesComputed(
 std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
 CreateNetworkQualityObserver(
     net::NetworkQualityEstimator* network_quality_estimator) {
-  return base::MakeUnique<NetworkQualityObserverImpl>(
+  return std::make_unique<NetworkQualityObserverImpl>(
       network_quality_estimator);
 }
 

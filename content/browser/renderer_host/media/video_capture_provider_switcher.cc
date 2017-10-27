@@ -77,7 +77,7 @@ void VideoCaptureProviderSwitcher::GetDeviceInfosAsync(
 
 std::unique_ptr<VideoCaptureDeviceLauncher>
 VideoCaptureProviderSwitcher::CreateDeviceLauncher() {
-  return base::MakeUnique<VideoCaptureDeviceLauncherSwitcher>(
+  return std::make_unique<VideoCaptureDeviceLauncherSwitcher>(
       media_device_capture_provider_->CreateDeviceLauncher(),
       other_types_capture_provider_->CreateDeviceLauncher());
 }

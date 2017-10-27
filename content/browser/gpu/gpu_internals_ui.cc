@@ -91,7 +91,7 @@ std::unique_ptr<base::DictionaryValue> NewDescriptionValuePair(
 #if defined(OS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
 std::unique_ptr<base::ListValue> DxDiagNodeToList(const gpu::DxDiagNode& node) {
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   for (std::map<std::string, std::string>::const_iterator it =
       node.values.begin();
       it != node.values.end();
@@ -123,21 +123,21 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
 
 std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
-  auto basic_info = base::MakeUnique<base::ListValue>();
+  auto basic_info = std::make_unique<base::ListValue>();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
       base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
       "In-process GPU",
-      base::MakeUnique<base::Value>(gpu_info.in_process_gpu)));
+      std::make_unique<base::Value>(gpu_info.in_process_gpu)));
   basic_info->Append(NewDescriptionValuePair(
       "Passthrough Command Decoder",
-      base::MakeUnique<base::Value>(gpu_info.passthrough_cmd_decoder)));
+      std::make_unique<base::Value>(gpu_info.passthrough_cmd_decoder)));
   basic_info->Append(NewDescriptionValuePair(
       "Supports overlays",
-      base::MakeUnique<base::Value>(gpu_info.supports_overlays)));
+      std::make_unique<base::Value>(gpu_info.supports_overlays)));
   basic_info->Append(NewDescriptionValuePair(
-      "Sandboxed", base::MakeUnique<base::Value>(gpu_info.sandboxed)));
+      "Sandboxed", std::make_unique<base::Value>(gpu_info.sandboxed)));
   basic_info->Append(NewDescriptionValuePair(
       "GPU0", GPUDeviceToString(gpu_info.gpu)));
   for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
@@ -146,12 +146,12 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
         GPUDeviceToString(gpu_info.secondary_gpus[i])));
   }
   basic_info->Append(NewDescriptionValuePair(
-      "Optimus", base::MakeUnique<base::Value>(gpu_info.optimus)));
+      "Optimus", std::make_unique<base::Value>(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
-      "Optimus", base::MakeUnique<base::Value>(gpu_info.optimus)));
+      "Optimus", std::make_unique<base::Value>(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
       "AMD switchable",
-      base::MakeUnique<base::Value>(gpu_info.amd_switchable)));
+      std::make_unique<base::Value>(gpu_info.amd_switchable)));
 #if defined(OS_WIN)
   std::string compositor =
       ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
@@ -238,12 +238,12 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
 
   basic_info->Append(NewDescriptionValuePair(
       "GPU process crash count",
-      base::MakeUnique<base::Value>(gpu_info.process_crash_count)));
+      std::make_unique<base::Value>(gpu_info.process_crash_count)));
 
-  auto info = base::MakeUnique<base::DictionaryValue>();
+  auto info = std::make_unique<base::DictionaryValue>();
 
 #if defined(OS_WIN)
-  auto dx_info = base::MakeUnique<base::Value>();
+  auto dx_info = std::make_unique<base::Value>();
   if (gpu_info.dx_diagnostics.children.size())
     dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
   info->Set("diagnostics", std::move(dx_info));
@@ -327,7 +327,7 @@ const char* BufferUsageToString(gfx::BufferUsage usage) {
 }
 
 std::unique_ptr<base::ListValue> CompositorInfo() {
-  auto compositor_info = base::MakeUnique<base::ListValue>();
+  auto compositor_info = std::make_unique<base::ListValue>();
 
   compositor_info->Append(NewDescriptionValuePair(
       "Tile Update Mode",
@@ -339,7 +339,7 @@ std::unique_ptr<base::ListValue> CompositorInfo() {
 }
 
 std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
-  auto gpu_memory_buffer_info = base::MakeUnique<base::ListValue>();
+  auto gpu_memory_buffer_info = std::make_unique<base::ListValue>();
 
   const auto native_configurations =
       gpu::GetNativeGpuMemoryBufferConfigurations();
@@ -369,7 +369,7 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
 }
 
 std::unique_ptr<base::ListValue> getDisplayInfo() {
-  auto display_info = base::MakeUnique<base::ListValue>();
+  auto display_info = std::make_unique<base::ListValue>();
   const std::vector<display::Display> displays =
       display::Screen::GetScreen()->GetAllDisplays();
   for (const auto& display : displays) {
@@ -463,7 +463,7 @@ void GpuMessageHandler::OnCallAsync(const base::ListValue* args) {
   ok = args->GetString(1, &submessage);
   DCHECK(ok);
 
-  auto submessageArgs = base::MakeUnique<base::ListValue>();
+  auto submessageArgs = std::make_unique<base::ListValue>();
   for (size_t i = 2; i < args->GetSize(); ++i) {
     const base::Value* arg;
     ok = args->Get(i, &arg);
@@ -517,7 +517,7 @@ std::unique_ptr<base::DictionaryValue> GpuMessageHandler::OnRequestClientInfo(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
 
   dict->SetString("version", GetContentClient()->GetProduct());
   dict->SetString("command_line",
@@ -547,10 +547,10 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
       GpuInfoAsDictionaryValue());
 
   // Add in blacklisting features
-  auto feature_status = base::MakeUnique<base::DictionaryValue>();
+  auto feature_status = std::make_unique<base::DictionaryValue>();
   feature_status->Set("featureStatus", GetFeatureStatus());
   feature_status->Set("problems", GetProblems());
-  auto workarounds = base::MakeUnique<base::ListValue>();
+  auto workarounds = std::make_unique<base::ListValue>();
   for (const std::string& workaround : GetDriverBugWorkarounds())
     workarounds->AppendString(workaround);
   feature_status->Set("workarounds", std::move(workarounds));
@@ -579,7 +579,7 @@ void GpuMessageHandler::OnGpuSwitched() {
 
 GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<GpuMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<GpuMessageHandler>());
 
   // Set up the chrome://gpu/ source.
   BrowserContext* browser_context =

@@ -183,7 +183,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(info);
   // No need to calculate hash.
-  std::unique_ptr<SaveFile> save_file = base::MakeUnique<SaveFile>(info, false);
+  std::unique_ptr<SaveFile> save_file = std::make_unique<SaveFile>(info, false);
 
   // TODO(phajdan.jr): We should check the return value and handle errors here.
   save_file->Initialize();

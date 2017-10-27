@@ -845,7 +845,7 @@ void ContentDecryptorDelegate::OnSessionKeysChange(
   keys_info.reserve(key_count);
   for (uint32_t i = 0; i < key_count; ++i) {
     const auto& info = key_information[i];
-    keys_info.push_back(base::MakeUnique<media::CdmKeyInformation>(
+    keys_info.push_back(std::make_unique<media::CdmKeyInformation>(
         info.key_id, info.key_id_size,
         PpCdmKeyStatusToCdmKeyInformationKeyStatus(info.key_status),
         info.system_code));

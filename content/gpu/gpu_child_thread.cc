@@ -103,7 +103,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
         registry_->BindInterface(interface_name, std::move(*interface_pipe));
       } else {
         std::unique_ptr<PendingRequest> request =
-            base::MakeUnique<PendingRequest>();
+            std::make_unique<PendingRequest>();
         request->interface_name = interface_name;
         request->interface_pipe = std::move(*interface_pipe);
         pending_requests_.push_back(std::move(request));
@@ -191,7 +191,7 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   associated_registry->AddInterface(base::Bind(
       &GpuChildThread::CreateVizMainService, base::Unretained(this)));
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&GpuChildThread::BindServiceFactoryRequest,
                                     weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
@@ -199,7 +199,7 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
     GetContentClient()->gpu()->InitializeRegistry(registry.get());
 
   std::unique_ptr<QueueingConnectionFilter> filter =
-      base::MakeUnique<QueueingConnectionFilter>(GetIOTaskRunner(),
+      std::make_unique<QueueingConnectionFilter>(GetIOTaskRunner(),
                                                  std::move(registry));
   release_pending_requests_closure_ = filter->GetReleaseCallback();
   GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
@@ -294,7 +294,7 @@ std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
         FROM_HERE, base::BindOnce(bind_connector_request, std::move(request)));
   }
 
-  return base::MakeUnique<media::MojoAndroidOverlay>(
+  return std::make_unique<media::MojoAndroidOverlay>(
       std::move(overlay_provider), std::move(config), routing_token,
       std::move(context_ref));
 }

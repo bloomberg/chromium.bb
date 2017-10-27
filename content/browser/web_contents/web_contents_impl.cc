@@ -1860,7 +1860,7 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
 void WebContentsImpl::AddDestructionObserver(WebContentsImpl* web_contents) {
   if (!ContainsKey(destruction_observers_, web_contents)) {
     destruction_observers_[web_contents] =
-        base::MakeUnique<DestructionObserver>(this, web_contents);
+        std::make_unique<DestructionObserver>(this, web_contents);
   }
 }
 
@@ -3329,7 +3329,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
             "triggered by user request."
           policy_exception_justification: "Not implemented."
         })");
-  auto params = base::MakeUnique<DownloadUrlParameters>(
+  auto params = std::make_unique<DownloadUrlParameters>(
       url, frame_host->GetProcess()->GetID(),
       frame_host->GetRenderViewHost()->GetRoutingID(),
       frame_host->GetRoutingID(), storage_partition->GetURLRequestContext(),
@@ -5714,12 +5714,12 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
 }
 
 std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
-  std::unique_ptr<WebUIImpl> web_ui = base::MakeUnique<WebUIImpl>(this);
+  std::unique_ptr<WebUIImpl> web_ui = std::make_unique<WebUIImpl>(this);
   WebUIController* controller =
       WebUIControllerFactoryRegistry::GetInstance()
           ->CreateWebUIControllerForURL(web_ui.get(), url);
   if (controller) {
-    web_ui->AddMessageHandler(base::MakeUnique<GenericHandler>());
+    web_ui->AddMessageHandler(std::make_unique<GenericHandler>());
     web_ui->SetController(controller);
     return web_ui;
   }

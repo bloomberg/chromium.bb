@@ -348,7 +348,7 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
   config.enable_longpress_drag_selection =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLongpressDragSelection);
-  return base::MakeUnique<ui::TouchSelectionController>(client, config);
+  return std::make_unique<ui::TouchSelectionController>(client, config);
 }
 
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
@@ -506,7 +506,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
   host_->SetView(this);
   touch_selection_controller_client_manager_ =
-      base::MakeUnique<TouchSelectionControllerClientManagerAndroid>(this);
+      std::make_unique<TouchSelectionControllerClientManagerAndroid>(this);
   SetContentViewCore(content_view_core);
 
   CreateOverscrollControllerIfPossible();
@@ -2417,13 +2417,13 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
   if (!compositor)
     return;
 
-  overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
+  overscroll_controller_ = std::make_unique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, compositor, view_.GetDipScale());
 }
 
 void RenderWidgetHostViewAndroid::SetOverscrollControllerForTesting(
     ui::OverscrollRefreshHandler* overscroll_refresh_handler) {
-  overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
+  overscroll_controller_ = std::make_unique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, view_.GetWindowAndroid()->GetCompositor(),
       view_.GetDipScale());
 }

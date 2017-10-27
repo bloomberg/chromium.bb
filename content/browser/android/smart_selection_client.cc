@@ -55,7 +55,7 @@ SmartSelectionClient::SmartSelectionClient(
       weak_ptr_factory_(this) {
   DCHECK(!web_contents_->GetUserData(kSmartSelectionClientUDKey));
   web_contents_->SetUserData(kSmartSelectionClientUDKey,
-                             base::MakeUnique<UserData>(this));
+                             std::make_unique<UserData>(this));
 }
 
 SmartSelectionClient::~SmartSelectionClient() {

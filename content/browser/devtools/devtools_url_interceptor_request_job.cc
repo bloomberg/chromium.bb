@@ -179,10 +179,10 @@ std::unique_ptr<net::UploadDataStream> GetUploadData(net::URLRequest* request) {
   proxy_readers.reserve(readers->size());
   for (auto& reader : *readers) {
     proxy_readers.push_back(
-        base::MakeUnique<ProxyUploadElementReader>(reader.get()));
+        std::make_unique<ProxyUploadElementReader>(reader.get()));
   }
 
-  return base::MakeUnique<net::ElementsUploadDataStream>(
+  return std::make_unique<net::ElementsUploadDataStream>(
       std::move(proxy_readers), 0);
 }
 }  // namespace
@@ -506,7 +506,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
 
     case WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE:
       ProcessInterceptionRespose(
-          base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
+          std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
               protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
               protocol::Maybe<protocol::Network::Headers>(),
@@ -521,7 +521,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
                                ResponseEnum::Default)
               .Build();
       ProcessAuthRespose(
-          base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
+          std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
               protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
               protocol::Maybe<protocol::Network::Headers>(),
@@ -661,7 +661,7 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
       std::vector<char> data(post_data.begin(), post_data.end());
       request_details_.post_data =
           net::ElementsUploadDataStream::CreateWithReader(
-              base::MakeUnique<net::UploadOwnedBytesElementReader>(&data), 0);
+              std::make_unique<net::UploadOwnedBytesElementReader>(&data), 0);
     }
 
     if (modifications->modified_headers.isJust()) {

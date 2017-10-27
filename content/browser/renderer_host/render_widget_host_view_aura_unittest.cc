@@ -413,7 +413,7 @@ class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura,
   std::unique_ptr<ui::CompositorLock> GetCompositorLock(
       ui::CompositorLockClient* client) override {
     resize_locked_ = compositor_locked_ = true;
-    return base::MakeUnique<ui::CompositorLock>(nullptr,
+    return std::make_unique<ui::CompositorLock>(nullptr,
                                                 weak_ptr_factory_.GetWeakPtr());
   }
   // CompositorResizeLockClient implemention. Overrides from
@@ -460,7 +460,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     viz::mojom::CompositorFrameSinkClientRequest client_request =
         mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
     renderer_compositor_frame_sink_ =
-        base::MakeUnique<FakeRendererCompositorFrameSink>(
+        std::make_unique<FakeRendererCompositorFrameSink>(
             std::move(sink), std::move(client_request));
     DidCreateNewRendererCompositorFrameSink(
         renderer_compositor_frame_sink_ptr_.get());
@@ -601,7 +601,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
                                           int32_t routing_id) {
     mojom::WidgetPtr widget;
     std::unique_ptr<MockWidgetImpl> widget_impl =
-        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
 
     return new MockRenderWidgetHostImpl(delegate, process, routing_id,
                                         std::move(widget_impl),

@@ -28,7 +28,7 @@ EmbeddedWorkerInstanceClientImpl::WorkerWrapper::WorkerWrapper(
     std::unique_ptr<blink::WebEmbeddedWorker> worker,
     int devtools_agent_route_id)
     : worker_(std::move(worker)),
-      devtools_agent_(base::MakeUnique<EmbeddedWorkerDevToolsAgent>(
+      devtools_agent_(std::make_unique<EmbeddedWorkerDevToolsAgent>(
           worker_.get(),
           devtools_agent_route_id)) {}
 
@@ -68,7 +68,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   auto interface_provider = std::move(provider_info->interface_provider);
-  auto client = base::MakeUnique<ServiceWorkerContextClient>(
+  auto client = std::make_unique<ServiceWorkerContextClient>(
       params.embedded_worker_id, params.service_worker_version_id, params.scope,
       params.script_url,
       ServiceWorkerUtils::IsScriptStreamingEnabled() && installed_scripts_info,
@@ -141,7 +141,7 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
         std::move(installed_scripts_info), io_thread_runner_);
   }
 
-  auto wrapper = base::MakeUnique<WorkerWrapper>(
+  auto wrapper = std::make_unique<WorkerWrapper>(
       blink::WebEmbeddedWorker::Create(
           std::move(context_client), std::move(manager),
           content_settings_proxy.PassInterface().PassHandle(),

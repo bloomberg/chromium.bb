@@ -94,12 +94,12 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     int render_process_id,
     const media::AudioParameters& params,
     const std::string& output_device_id) {
-  auto socket = base::MakeUnique<base::CancelableSyncSocket>();
+  auto socket = std::make_unique<base::CancelableSyncSocket>();
   auto reader = AudioSyncReader::Create(params, socket.get());
   if (!reader)
     return nullptr;
 
-  return base::MakeUnique<AudioOutputDelegateImpl>(
+  return std::make_unique<AudioOutputDelegateImpl>(
       std::move(reader), std::move(socket), handler, audio_manager,
       std::move(audio_log), mirroring_manager, media_observer, stream_id,
       render_frame_id, render_process_id, params, output_device_id);
@@ -136,7 +136,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
   // Since the event handler never directly calls functions on |this| but rather
   // posts them to the IO thread, passing a pointer from the constructor is
   // safe.
-  controller_event_handler_ = base::MakeUnique<ControllerEventHandler>(
+  controller_event_handler_ = std::make_unique<ControllerEventHandler>(
       weak_factory_.GetWeakPtr(), stream_id_);
   controller_ = media::AudioOutputController::Create(
       audio_manager, controller_event_handler_.get(), params, output_device_id,

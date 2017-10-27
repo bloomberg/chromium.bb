@@ -228,7 +228,7 @@ class DownloadFileTest : public testing::Test {
 
     download_file_.reset(new TestDownloadFileImpl(
         std::move(save_info), base::FilePath(),
-        base::MakeUnique<DownloadManager::InputStream>(
+        std::make_unique<DownloadManager::InputStream>(
             std::unique_ptr<ByteStreamReader>(input_stream_)),
         net::NetLogWithSource(), observer_factory_.GetWeakPtr()));
 
@@ -919,7 +919,7 @@ TEST_F(DownloadFileTest, MutipleStreamsWrite) {
 
   // Activate the streams.
   download_file_->AddInputStream(
-      base::MakeUnique<DownloadManager::InputStream>(
+      std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       stream_0_length, DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
@@ -966,11 +966,11 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
 
   // Activate all the streams.
   download_file_->AddInputStream(
-      base::MakeUnique<DownloadManager::InputStream>(
+      std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       stream_0_length, stream_1_length);
   download_file_->AddInputStream(
-      base::MakeUnique<DownloadManager::InputStream>(
+      std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[1])),
       stream_0_length + stream_1_length, DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
@@ -1012,7 +1012,7 @@ TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
 
   additional_streams_[0] = new StrictMock<MockByteStreamReader>();
   download_file_->AddInputStream(
-      base::MakeUnique<DownloadManager::InputStream>(
+      std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       stream_0_length - 1, DownloadSaveInfo::kLengthFullContent);
   base::RunLoop().RunUntilIdle();
@@ -1053,7 +1053,7 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
       .RetiresOnSaturation();
 
   download_file_->AddInputStream(
-      base::MakeUnique<DownloadManager::InputStream>(
+      std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       0, DownloadSaveInfo::kLengthFullContent);
 

@@ -569,7 +569,7 @@ std::unique_ptr<UploadProgressTracker>
 MojoAsyncResourceHandler::CreateUploadProgressTracker(
     const base::Location& from_here,
     UploadProgressTracker::UploadProgressReportCallback callback) {
-  return base::MakeUnique<UploadProgressTracker>(from_here, std::move(callback),
+  return std::make_unique<UploadProgressTracker>(from_here, std::move(callback),
                                                  request());
 }
 

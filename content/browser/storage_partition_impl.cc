@@ -261,7 +261,7 @@ class StoragePartitionImpl::NetworkContextOwner {
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context_getter_ = std::move(context_getter);
-    network_context_ = base::MakeUnique<NetworkContext>(
+    network_context_ = std::make_unique<NetworkContext>(
         std::move(network_context_request),
         context_getter_->GetURLRequestContext());
   }
@@ -592,7 +592,7 @@ mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   if (!network_context_) {
     DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
     DCHECK(!network_context_owner_);
-    network_context_owner_ = base::MakeUnique<NetworkContextOwner>();
+    network_context_owner_ = std::make_unique<NetworkContextOwner>();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&NetworkContextOwner::Initialize,

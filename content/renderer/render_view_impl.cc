@@ -1306,7 +1306,7 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
 void RenderViewImpl::OnForceRedraw(const ui::LatencyInfo& latency_info) {
   if (RenderWidgetCompositor* rwc = compositor()) {
     rwc->QueueSwapPromise(
-        base::MakeUnique<AlwaysDrawSwapPromise>(latency_info));
+        std::make_unique<AlwaysDrawSwapPromise>(latency_info));
     rwc->SetNeedsForcedRedraw();
   }
 }

@@ -134,18 +134,18 @@ void TracingControllerImpl::AddAgents() {
 
 // Register tracing agents.
 #if defined(ENABLE_POWER_TRACING)
-  agents_.push_back(base::MakeUnique<PowerTracingAgent>(connector));
+  agents_.push_back(std::make_unique<PowerTracingAgent>(connector));
 #endif
 
 #if defined(OS_CHROMEOS)
-  agents_.push_back(base::MakeUnique<CrOSTracingAgent>(connector));
-  agents_.push_back(base::MakeUnique<ArcTracingAgentImpl>(connector));
+  agents_.push_back(std::make_unique<CrOSTracingAgent>(connector));
+  agents_.push_back(std::make_unique<ArcTracingAgentImpl>(connector));
 #elif defined(OS_WIN)
-  agents_.push_back(base::MakeUnique<EtwTracingAgent>(connector));
+  agents_.push_back(std::make_unique<EtwTracingAgent>(connector));
 #endif
 
   auto chrome_agent =
-      base::MakeUnique<tracing::ChromeTraceEventAgent>(connector);
+      std::make_unique<tracing::ChromeTraceEventAgent>(connector);
   // For adding general CPU, network, OS, and other system information to the
   // metadata.
   chrome_agent->AddMetadataGeneratorFunction(base::BindRepeating(
@@ -160,7 +160,7 @@ void TracingControllerImpl::AddAgents() {
 
 std::unique_ptr<base::DictionaryValue>
 TracingControllerImpl::GenerateMetadataDict() const {
-  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
+  auto metadata_dict = std::make_unique<base::DictionaryValue>();
   metadata_dict->SetString("trace-config", trace_config_->ToString());
 
   metadata_dict->SetString("network-type", GetNetworkTypeString());
@@ -291,7 +291,7 @@ bool TracingControllerImpl::StartTracing(
     const StartTracingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   trace_config_ =
-      base::MakeUnique<base::trace_event::TraceConfig>(trace_config);
+      std::make_unique<base::trace_event::TraceConfig>(trace_config);
   coordinator_->StartTracing(
       trace_config.ToString(),
       base::BindRepeating(
@@ -375,7 +375,7 @@ void TracingControllerImpl::OnDataAvailable(const void* data,
   if (trace_data_endpoint_) {
     const std::string chunk(static_cast<const char*>(data), num_bytes);
     trace_data_endpoint_->ReceiveTraceChunk(
-        base::MakeUnique<std::string>(chunk));
+        std::make_unique<std::string>(chunk));
   }
 }
 
@@ -406,12 +406,12 @@ void TracingControllerImpl::OnMetadataAvailable(
   if (metadata_filter.is_null()) {
     filtered_metadata_ = std::move(metadata);
   } else {
-    filtered_metadata_ = base::MakeUnique<base::DictionaryValue>();
+    filtered_metadata_ = std::make_unique<base::DictionaryValue>();
     for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
          it.Advance()) {
       if (metadata_filter.Run(it.key())) {
         filtered_metadata_->Set(
-            it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
+            it.key(), std::make_unique<base::Value>(it.value().Clone()));
       } else {
         filtered_metadata_->SetString(it.key(), "__stripped__");
       }

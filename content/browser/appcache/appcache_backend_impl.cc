@@ -39,7 +39,7 @@ bool AppCacheBackendImpl::RegisterHost(int id) {
   if (GetHost(id))
     return false;
 
-  hosts_[id] = base::MakeUnique<AppCacheHost>(id, frontend_, service_);
+  hosts_[id] = std::make_unique<AppCacheHost>(id, frontend_, service_);
   return true;
 }
 
@@ -143,7 +143,7 @@ std::unique_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(
   std::unique_ptr<AppCacheHost> transferree = std::move(found->second);
 
   // Put a new empty host in its place.
-  found->second = base::MakeUnique<AppCacheHost>(host_id, frontend_, service_);
+  found->second = std::make_unique<AppCacheHost>(host_id, frontend_, service_);
 
   // We give up ownership.
   transferree->PrepareForTransfer();

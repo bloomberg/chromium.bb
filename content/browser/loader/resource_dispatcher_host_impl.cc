@@ -363,7 +363,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       FROM_HERE, base::BindOnce(&ResourceDispatcherHostImpl::OnInit,
                                 base::Unretained(this)));
 
-  update_load_states_timer_ = base::MakeUnique<base::RepeatingTimer>();
+  update_load_states_timer_ = std::make_unique<base::RepeatingTimer>();
 
   // Monitor per-tab outstanding requests only if OOPIF is not enabled, because
   // the routing id doesn't represent tabs in OOPIF modes.
@@ -371,7 +371,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       !SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
       !SiteIsolationPolicy::AreIsolatedOriginsEnabled()) {
     record_outstanding_requests_stats_timer_ =
-        base::MakeUnique<base::RepeatingTimer>();
+        std::make_unique<base::RepeatingTimer>();
   }
 }
 
@@ -1257,7 +1257,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
     if (request_data.originated_from_service_worker) {
       new_request->SetUserData(URLRequestServiceWorkerData::kUserDataKey,
-                               base::MakeUnique<URLRequestServiceWorkerData>());
+                               std::make_unique<URLRequestServiceWorkerData>());
     }
 
     // If the request is a MAIN_FRAME request, the first-party URL gets updated
@@ -1481,7 +1481,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     }
 
     std::unique_ptr<DetachableResourceHandler> detachable_handler =
-        base::MakeUnique<DetachableResourceHandler>(request, timeout,
+        std::make_unique<DetachableResourceHandler>(request, timeout,
                                                     std::move(handler));
     if (start_detached)
       detachable_handler->Detach();
@@ -1539,7 +1539,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // PlzNavigate: the throttle is unnecessary as communication with the UI
   // thread is handled by the NavigationResourceHandler below.
   if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
-    throttles.push_back(base::MakeUnique<NavigationResourceThrottle>(
+    throttles.push_back(std::make_unique<NavigationResourceThrottle>(
         request, delegate_, fetch_request_context_type,
         fetch_mixed_content_context_type));
   }
@@ -1555,7 +1555,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   if (request->has_upload()) {
     // Request wake lock while uploading data.
     throttles.push_back(
-        base::MakeUnique<WakeLockResourceThrottle>(request->url().host()));
+        std::make_unique<WakeLockResourceThrottle>(request->url().host()));
   }
 
   // The Clear-Site-Data throttle.
@@ -2283,7 +2283,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     // reasonable.
     handler->OnResponseCompleted(
         request->status(),
-        base::MakeUnique<NullResourceController>(&was_resumed));
+        std::make_unique<NullResourceController>(&was_resumed));
     // TODO(darin): The handler is not ready for us to kill the request. Oops!
     DCHECK(was_resumed);
 
@@ -2534,7 +2534,7 @@ void ResourceDispatcherHostImpl::BlockRequestsForRoute(
          blocked_loaders_map_.end())
       << "BlockRequestsForRoute called  multiple time for the same RFH";
   blocked_loaders_map_[global_routing_id] =
-      base::MakeUnique<BlockedLoadersList>();
+      std::make_unique<BlockedLoadersList>();
 }
 
 void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute(

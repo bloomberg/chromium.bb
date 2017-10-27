@@ -66,9 +66,9 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
  protected:
   void SetUp() override {
     factory_binding_ =
-        base::MakeUnique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
+        std::make_unique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
             &mock_device_factory_, mojo::MakeRequest(&device_factory_));
-    launcher_ = base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
+    launcher_ = std::make_unique<ServiceVideoCaptureDeviceLauncher>(
         connect_to_device_factory_cb_.Get());
     launcher_has_connected_to_device_factory_ = false;
     launcher_has_released_device_factory_ = false;
@@ -77,7 +77,7 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
         .WillByDefault(Invoke(
             [this](std::unique_ptr<VideoCaptureFactoryDelegate>* out_factory) {
               launcher_has_connected_to_device_factory_ = true;
-              *out_factory = base::MakeUnique<VideoCaptureFactoryDelegate>(
+              *out_factory = std::make_unique<VideoCaptureFactoryDelegate>(
                   &device_factory_, release_connection_cb_.Get());
             }));
 

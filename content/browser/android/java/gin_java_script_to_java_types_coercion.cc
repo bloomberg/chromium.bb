@@ -466,7 +466,7 @@ jobject CoerceJavaScriptListToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  auto null_value = base::MakeUnique<base::Value>();
+  auto null_value = std::make_unique<base::Value>();
   for (jsize i = 0; i < length; ++i) {
     const base::Value* value_element = null_value.get();
     list_value->Get(i, &value_element);
@@ -538,7 +538,7 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  auto null_value = base::MakeUnique<base::Value>();
+  auto null_value = std::make_unique<base::Value>();
   for (jsize i = 0; i < length; ++i) {
     const std::string key(base::IntToString(i));
     const base::Value* value_element = null_value.get();

@@ -85,7 +85,7 @@ class TypedArraySerializerImpl : public TypedArraySerializer {
                      *end = element + typed_array_->Length();
          element != end;
          ++element) {
-      out->Append(base::MakeUnique<base::Value>(ListType(*element)));
+      out->Append(std::make_unique<base::Value>(ListType(*element)));
     }
   }
 

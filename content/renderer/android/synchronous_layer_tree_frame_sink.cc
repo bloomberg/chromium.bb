@@ -190,8 +190,8 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
 
   viz::RendererSettings software_renderer_settings;
 
-  auto output_surface = base::MakeUnique<SoftwareOutputSurface>(
-      base::MakeUnique<SoftwareDevice>(&current_sw_canvas_));
+  auto output_surface = std::make_unique<SoftwareOutputSurface>(
+      std::make_unique<SoftwareDevice>(&current_sw_canvas_));
   software_output_surface_ = output_surface.get();
 
   // The gpu_memory_buffer_manager here is null as the Display is only used for
@@ -201,7 +201,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   // resources.
   // TODO(crbug.com/692814): The Display never sends its resources out of
   // process so there is no reason for it to use a SharedBitmapManager.
-  display_ = base::MakeUnique<viz::Display>(
+  display_ = std::make_unique<viz::Display>(
       shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
       software_renderer_settings, kRootFrameSinkId, std::move(output_surface),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */);

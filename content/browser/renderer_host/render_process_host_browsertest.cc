@@ -58,14 +58,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleBeacon(
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != "/beacon")
     return nullptr;
-  return base::MakeUnique<net::test_server::BasicHttpResponse>();
+  return std::make_unique<net::test_server::BasicHttpResponse>();
 }
 
 std::unique_ptr<net::test_server::HttpResponse> HandleHungBeacon(
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != "/beacon")
     return nullptr;
-  return base::MakeUnique<net::test_server::HungResponse>();
+  return std::make_unique<net::test_server::HungResponse>();
 }
 
 class RenderProcessHostTest : public ContentBrowserTest,

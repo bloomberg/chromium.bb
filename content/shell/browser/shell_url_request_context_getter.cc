@@ -136,7 +136,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     std::unique_ptr<net::CookieStore> cookie_store =
         CreateCookieStore(CookieStoreConfig());
     std::unique_ptr<net::ChannelIDService> channel_id_service =
-        base::MakeUnique<net::ChannelIDService>(
+        std::make_unique<net::ChannelIDService>(
             new net::DefaultChannelIDStore(nullptr));
     cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
     builder.SetCookieAndChannelIdStores(std::move(cookie_store),
@@ -205,7 +205,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 #if BUILDFLAG(ENABLE_REPORTING)
     if (base::FeatureList::IsEnabled(features::kReporting)) {
       std::unique_ptr<net::ReportingPolicy> reporting_policy =
-          base::MakeUnique<net::ReportingPolicy>();
+          std::make_unique<net::ReportingPolicy>();
       if (command_line.HasSwitch(switches::kRunLayoutTest))
         reporting_policy->delivery_interval =
             base::TimeDelta::FromMilliseconds(100);

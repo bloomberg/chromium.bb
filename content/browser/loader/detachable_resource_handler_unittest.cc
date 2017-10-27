@@ -74,15 +74,15 @@ class DetachableResourceHandlerTest
 
     std::unique_ptr<TestResourceHandler> test_handler;
     if (GetParam() != DetachPhase::DETACHED_FROM_CREATION) {
-      test_handler = base::MakeUnique<TestResourceHandler>();
+      test_handler = std::make_unique<TestResourceHandler>();
       test_handler_ = test_handler->GetWeakPtr();
     }
     // TODO(mmenke):  This file currently has no timeout tests. Should it?
-    detachable_handler_ = base::MakeUnique<DetachableResourceHandler>(
+    detachable_handler_ = std::make_unique<DetachableResourceHandler>(
         request_.get(), base::TimeDelta::FromMinutes(30),
         std::move(test_handler));
     mock_loader_ =
-        base::MakeUnique<MockResourceLoader>(detachable_handler_.get());
+        std::make_unique<MockResourceLoader>(detachable_handler_.get());
   }
 
   // If the DetachableResourceHandler is supposed to detach the next handler at

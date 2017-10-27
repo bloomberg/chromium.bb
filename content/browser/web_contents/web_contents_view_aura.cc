@@ -805,7 +805,7 @@ void WebContentsViewAura::CreateView(
   // value is set shortly after this, so its safe to ignore.
 
   DCHECK(aura::Env::GetInstanceDontCreate());
-  window_ = base::MakeUnique<aura::Window>(this);
+  window_ = std::make_unique<aura::Window>(this);
   window_->set_owned_by_parent(false);
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetName("WebContentsViewAura");

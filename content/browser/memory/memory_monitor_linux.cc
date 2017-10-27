@@ -43,7 +43,7 @@ int MemoryMonitorLinux::GetFreeMemoryUntilCriticalMB() {
 // static
 std::unique_ptr<MemoryMonitorLinux> MemoryMonitorLinux::Create(
     MemoryMonitorDelegate* delegate) {
-  return base::MakeUnique<MemoryMonitorLinux>(delegate);
+  return std::make_unique<MemoryMonitorLinux>(delegate);
 }
 
 // Implementation of factory function defined in memory_monitor.h.

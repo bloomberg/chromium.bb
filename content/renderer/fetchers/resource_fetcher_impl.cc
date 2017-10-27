@@ -312,7 +312,7 @@ void ResourceFetcherImpl::Start(
   }
   request_.resource_type = WebURLRequestContextToResourceType(request_context);
 
-  client_ = base::MakeUnique<ClientImpl>(this, std::move(callback),
+  client_ = std::make_unique<ClientImpl>(this, std::move(callback),
                                          maximum_download_size);
   // TODO(kinuko, toyoshim): This task runner should be given by the consumer
   // of this class.

@@ -125,7 +125,7 @@ class RTCVideoEncoderTest
         ADD_FAILURE() << "Unexpected codec type: " << codec_type;
         media_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
     }
-    rtc_encoder_ = base::MakeUnique<RTCVideoEncoder>(media_profile,
+    rtc_encoder_ = std::make_unique<RTCVideoEncoder>(media_profile,
                                                      mock_gpu_factories_.get());
   }
 

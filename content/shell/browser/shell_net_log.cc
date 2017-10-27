@@ -28,7 +28,7 @@ std::unique_ptr<base::DictionaryValue> GetShellConstants(
       net::GetNetConstants();
 
   // Add a dictionary with client information
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
 
   dict->SetString("name", app_name);
   dict->SetString(

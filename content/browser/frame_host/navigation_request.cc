@@ -1046,7 +1046,7 @@ void NavigationRequest::OnStartChecksComplete(
 
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
-      base::MakeUnique<NavigationRequestInfo>(
+      std::make_unique<NavigationRequestInfo>(
           common_params_, begin_params_, site_for_cookies,
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,
           IsSecureFrame(frame_tree_node_->parent()),

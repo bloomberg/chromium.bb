@@ -46,7 +46,7 @@ MockResourceLoader::Status MockResourceLoader::OnWillStart(const GURL& url) {
   EXPECT_EQ(Status::IDLE, status_);
 
   status_ = Status::CALLING_HANDLER;
-  resource_handler_->OnWillStart(url, base::MakeUnique<TestResourceController>(
+  resource_handler_->OnWillStart(url, std::make_unique<TestResourceController>(
                                           weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
@@ -65,7 +65,7 @@ MockResourceLoader::Status MockResourceLoader::OnRequestRedirected(
   // needs to hold onto its own pointer to it.
   resource_handler_->OnRequestRedirected(
       redirect_info, response.get(),
-      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+      std::make_unique<TestResourceController>(weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
   return status_;
@@ -82,7 +82,7 @@ MockResourceLoader::Status MockResourceLoader::OnResponseStarted(
   // needs to hold onto its own pointer to it.
   resource_handler_->OnResponseStarted(
       response.get(),
-      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+      std::make_unique<TestResourceController>(weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
   return status_;
@@ -96,7 +96,7 @@ MockResourceLoader::Status MockResourceLoader::OnWillRead() {
   waiting_on_buffer_ = true;
   resource_handler_->OnWillRead(
       &io_buffer_, &io_buffer_size_,
-      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+      std::make_unique<TestResourceController>(weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER) {
     // Shouldn't update  |io_buffer_| or |io_buffer_size_| yet if Resume()
     // hasn't yet been called.
@@ -121,7 +121,7 @@ MockResourceLoader::Status MockResourceLoader::OnReadCompleted(
   io_buffer_size_ = 0;
   resource_handler_->OnReadCompleted(
       bytes.size(),
-      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+      std::make_unique<TestResourceController>(weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
   return status_;
@@ -141,7 +141,7 @@ MockResourceLoader::Status MockResourceLoader::OnResponseCompleted(
   status_ = Status::CALLING_HANDLER;
   resource_handler_->OnResponseCompleted(
       status,
-      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+      std::make_unique<TestResourceController>(weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
   EXPECT_NE(Status::CANCELED, status_);
@@ -162,7 +162,7 @@ MockResourceLoader::OnResponseCompletedFromExternalOutOfBandCancel(
 
   resource_handler_->OnResponseCompleted(
       url_request_status,
-      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+      std::make_unique<TestResourceController>(weak_factory_.GetWeakPtr()));
   if (status_ == Status::CALLING_HANDLER)
     status_ = Status::CALLBACK_PENDING;
   EXPECT_NE(Status::CANCELED, status_);

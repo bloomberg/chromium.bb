@@ -143,8 +143,8 @@ void ProcessLinkHeaderValueForRequest(
   if (rel_param == params.end() || !rel_param->second)
     return;
 
-  const auto validator = base::MakeUnique<blink::TrialTokenValidator>(
-      base::MakeUnique<TrialPolicyImpl>());
+  const auto validator = std::make_unique<blink::TrialTokenValidator>(
+      std::make_unique<TrialPolicyImpl>());
   for (const auto& rel : base::SplitStringPiece(rel_param->second.value(),
                                                 HTTP_LWS, base::TRIM_WHITESPACE,
                                                 base::SPLIT_WANT_NONEMPTY)) {

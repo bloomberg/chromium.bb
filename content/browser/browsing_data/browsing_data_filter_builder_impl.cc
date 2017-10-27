@@ -115,7 +115,7 @@ bool NoopFilter(const GURL& url) {
 // static
 std::unique_ptr<BrowsingDataFilterBuilder>
 BrowsingDataFilterBuilder::Create(Mode mode) {
-  return base::MakeUnique<BrowsingDataFilterBuilderImpl>(mode);
+  return std::make_unique<BrowsingDataFilterBuilderImpl>(mode);
 }
 
 // static
@@ -199,7 +199,7 @@ BrowsingDataFilterBuilderImpl::GetMode() const {
 std::unique_ptr<BrowsingDataFilterBuilder>
 BrowsingDataFilterBuilderImpl::Copy() const {
   std::unique_ptr<BrowsingDataFilterBuilderImpl> copy =
-      base::MakeUnique<BrowsingDataFilterBuilderImpl>(mode_);
+      std::make_unique<BrowsingDataFilterBuilderImpl>(mode_);
   copy->origins_ = origins_;
   copy->domains_ = domains_;
   return std::move(copy);

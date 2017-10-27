@@ -390,7 +390,7 @@ void LevelDBWrapperImpl::OnMapLoaded(
 }
 
 void LevelDBWrapperImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
-  map_ = data ? std::move(data) : base::MakeUnique<ValueMap>();
+  map_ = data ? std::move(data) : std::make_unique<ValueMap>();
   bytes_used_ = 0;
   for (const auto& it : *map_)
     bytes_used_ += it.first.size() + it.second.size();

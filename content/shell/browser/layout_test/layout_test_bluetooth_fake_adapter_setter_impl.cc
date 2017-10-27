@@ -25,7 +25,7 @@ LayoutTestBluetoothFakeAdapterSetterImpl::
 void LayoutTestBluetoothFakeAdapterSetterImpl::Create(
     mojom::LayoutTestBluetoothFakeAdapterSetterRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<LayoutTestBluetoothFakeAdapterSetterImpl>(),
+      std::make_unique<LayoutTestBluetoothFakeAdapterSetterImpl>(),
       std::move(request));
 }
 

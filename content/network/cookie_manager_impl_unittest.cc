@@ -139,10 +139,10 @@ class CookieManagerImplTest : public testing::Test {
   CookieManagerImplTest()
       : connection_error_seen_(false),
         cookie_monster_(nullptr, nullptr),
-        cookie_service_(base::MakeUnique<CookieManagerImpl>(&cookie_monster_)) {
+        cookie_service_(std::make_unique<CookieManagerImpl>(&cookie_monster_)) {
     cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
-        base::MakeUnique<SynchronousCookieManager>(cookie_service_ptr_.get());
+        std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
     cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
         &CookieManagerImplTest::OnConnectionError, base::Unretained(this)));
   }
@@ -157,7 +157,7 @@ class CookieManagerImplTest : public testing::Test {
                           bool can_modify_httponly) {
     net::ResultSavingCookieCallback<bool> callback;
     cookie_monster_.SetCanonicalCookieAsync(
-        base::MakeUnique<net::CanonicalCookie>(cookie), secure_source,
+        std::make_unique<net::CanonicalCookie>(cookie), secure_source,
         can_modify_httponly,
         base::BindOnce(&net::ResultSavingCookieCallback<bool>::Run,
                        base::Unretained(&callback)));
@@ -1433,7 +1433,7 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
   network::mojom::CookieChangeNotificationRequest request1(
       mojo::MakeRequest(&ptr1));
   std::unique_ptr<CookieChangeNotificationImpl> notification_impl1(
-      base::MakeUnique<CookieChangeNotificationImpl>(std::move(request1)));
+      std::make_unique<CookieChangeNotificationImpl>(std::move(request1)));
   cookie_service_client()->RequestNotification(
       notification_url, notification_name, std::move(ptr1));
 
@@ -1441,7 +1441,7 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
   network::mojom::CookieChangeNotificationRequest request2(
       mojo::MakeRequest(&ptr2));
   std::unique_ptr<CookieChangeNotificationImpl> notification_impl2(
-      base::MakeUnique<CookieChangeNotificationImpl>(std::move(request2)));
+      std::make_unique<CookieChangeNotificationImpl>(std::move(request2)));
   cookie_service_client()->RequestNotification(
       notification_url, notification_name, std::move(ptr2));
 

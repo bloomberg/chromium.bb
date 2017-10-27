@@ -106,7 +106,7 @@ StoragePartitionImplMap* GetStoragePartitionMap(
           browser_context->GetUserData(kStoragePartitionMapKeyName));
   if (!partition_map) {
     auto partition_map_owned =
-        base::MakeUnique<StoragePartitionImplMap>(browser_context);
+        std::make_unique<StoragePartitionImplMap>(browser_context);
     partition_map = partition_map_owned.get();
     browser_context->SetUserData(kStoragePartitionMapKeyName,
                                  std::move(partition_map_owned));
@@ -230,7 +230,7 @@ storage::ExternalMountPoints* BrowserContext::GetMountPoints(
         storage::ExternalMountPoints::CreateRefCounted();
     context->SetUserData(
         kMountPointsKey,
-        base::MakeUnique<UserDataAdapter<storage::ExternalMountPoints>>(
+        std::make_unique<UserDataAdapter<storage::ExternalMountPoints>>(
             mount_points.get()));
   }
 
@@ -248,7 +248,7 @@ content::BrowsingDataRemover* content::BrowserContext::GetBrowsingDataRemover(
 
   if (!context->GetUserData(kBrowsingDataRemoverKey)) {
     std::unique_ptr<BrowsingDataRemoverImpl> remover =
-        base::MakeUnique<BrowsingDataRemoverImpl>(context);
+        std::make_unique<BrowsingDataRemoverImpl>(context);
     remover->SetEmbedderDelegate(context->GetBrowsingDataRemoverDelegate());
     context->SetUserData(kBrowsingDataRemoverKey, std::move(remover));
   }
@@ -461,10 +461,10 @@ void BrowserContext::Initialize(
   RemoveBrowserContextFromUserIdMap(browser_context);
   g_user_id_to_context.Get()[new_id] = browser_context;
   browser_context->SetUserData(kServiceUserId,
-                               base::MakeUnique<ServiceUserIdHolder>(new_id));
+                               std::make_unique<ServiceUserIdHolder>(new_id));
 
   browser_context->SetUserData(
-      kMojoWasInitialized, base::MakeUnique<base::SupportsUserData::Data>());
+      kMojoWasInitialized, std::make_unique<base::SupportsUserData::Data>());
 
   ServiceManagerConnection* service_manager_connection =
       ServiceManagerConnection::GetForProcess();

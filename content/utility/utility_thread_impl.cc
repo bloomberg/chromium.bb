@@ -70,7 +70,7 @@ void UtilityThreadImpl::EnsureBlinkInitialized() {
 void UtilityThreadImpl::Init() {
   ChildProcess::current()->AddRefProcess();
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
       base::Bind(&UtilityThreadImpl::BindServiceFactoryRequest,
                  base::Unretained(this)),
@@ -79,7 +79,7 @@ void UtilityThreadImpl::Init() {
   content::ServiceManagerConnection* connection = GetServiceManagerConnection();
   if (connection) {
     connection->AddConnectionFilter(
-        base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+        std::make_unique<SimpleConnectionFilter>(std::move(registry)));
   }
 
   GetContentClient()->utility()->UtilityThreadStarted();

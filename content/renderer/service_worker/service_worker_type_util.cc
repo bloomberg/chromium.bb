@@ -48,7 +48,7 @@ std::unique_ptr<HeaderVisitor> MakeHeaderVisitor(
 std::unique_ptr<ServiceWorkerHeaderMap> GetHeaderMap(
     const blink::WebServiceWorkerResponse& web_response) {
   std::unique_ptr<ServiceWorkerHeaderMap> result =
-      base::MakeUnique<ServiceWorkerHeaderMap>();
+      std::make_unique<ServiceWorkerHeaderMap>();
   web_response.VisitHTTPHeaderFields(MakeHeaderVisitor(result.get()).get());
   return result;
 }
@@ -56,7 +56,7 @@ std::unique_ptr<ServiceWorkerHeaderMap> GetHeaderMap(
 std::unique_ptr<ServiceWorkerHeaderList> GetHeaderList(
     const blink::WebVector<blink::WebString>& web_headers) {
   std::unique_ptr<ServiceWorkerHeaderList> result =
-      base::MakeUnique<ServiceWorkerHeaderList>(web_headers.size());
+      std::make_unique<ServiceWorkerHeaderList>(web_headers.size());
   std::transform(web_headers.begin(), web_headers.end(), result->begin(),
                  [](const blink::WebString& s) { return s.Latin1(); });
   return result;
@@ -65,7 +65,7 @@ std::unique_ptr<ServiceWorkerHeaderList> GetHeaderList(
 std::unique_ptr<std::vector<GURL>> GetURLList(
     const blink::WebVector<blink::WebURL>& web_url_list) {
   std::unique_ptr<std::vector<GURL>> result =
-      base::MakeUnique<std::vector<GURL>>(web_url_list.size());
+      std::make_unique<std::vector<GURL>>(web_url_list.size());
   std::transform(web_url_list.begin(), web_url_list.end(), result->begin(),
                  [](const blink::WebURL& url) { return url; });
   return result;

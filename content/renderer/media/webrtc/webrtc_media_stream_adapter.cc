@@ -24,7 +24,7 @@ WebRtcMediaStreamAdapter::CreateLocalStreamAdapter(
     PeerConnectionDependencyFactory* factory,
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
     const blink::WebMediaStream& web_stream) {
-  return base::MakeUnique<LocalWebRtcMediaStreamAdapter>(
+  return std::make_unique<LocalWebRtcMediaStreamAdapter>(
       factory, std::move(track_adapter_map), web_stream);
 }
 
@@ -34,7 +34,7 @@ WebRtcMediaStreamAdapter::CreateRemoteStreamAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
     scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream) {
-  return base::MakeUnique<RemoteWebRtcMediaStreamAdapter>(
+  return std::make_unique<RemoteWebRtcMediaStreamAdapter>(
       std::move(main_thread), std::move(track_adapter_map),
       std::move(webrtc_stream));
 }

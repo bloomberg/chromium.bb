@@ -80,7 +80,7 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
   // Re-creates the data manager. Useful for testing that data was persisted.
   void RestartDataManagerFromPersistentStorage() {
     background_fetch_data_manager_ =
-        base::MakeUnique<BackgroundFetchDataManager>(
+        std::make_unique<BackgroundFetchDataManager>(
             browser_context(),
             embedded_worker_test_helper()->context_wrapper());
   }

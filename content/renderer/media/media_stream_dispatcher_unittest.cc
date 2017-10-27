@@ -91,8 +91,8 @@ class MockMediaStreamDispatcherEventHandler
 class MediaStreamDispatcherTest : public ::testing::Test {
  public:
   MediaStreamDispatcherTest()
-      : dispatcher_(base::MakeUnique<MediaStreamDispatcher>(nullptr)),
-        handler_(base::MakeUnique<MockMediaStreamDispatcherEventHandler>()),
+      : dispatcher_(std::make_unique<MediaStreamDispatcher>(nullptr)),
+        handler_(std::make_unique<MockMediaStreamDispatcherEventHandler>()),
         controls_(true, true),
         security_origin_(url::Origin::Create(GURL("http://test.com"))) {
     mojom::MediaStreamDispatcherHostPtr dispatcher_host =

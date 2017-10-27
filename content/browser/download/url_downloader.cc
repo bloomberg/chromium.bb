@@ -218,7 +218,7 @@ void UrlDownloader::OnStart(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStarted,
                      delegate_, std::move(create_info),
-                     base::MakeUnique<DownloadManager::InputStream>(
+                     std::make_unique<DownloadManager::InputStream>(
                          std::move(stream_reader)),
                      callback));
 }

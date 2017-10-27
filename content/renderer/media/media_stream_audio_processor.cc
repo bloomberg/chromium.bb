@@ -507,7 +507,7 @@ void MediaStreamAudioProcessor::OnAec3Enable(bool enable) {
     // information then will not be properly updated.
     echo_information_.reset();
   } else {
-    echo_information_ = base::MakeUnique<EchoInformation>();
+    echo_information_ = std::make_unique<EchoInformation>();
   }
 }
 
@@ -684,7 +684,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     if (!apm_config.echo_canceller3.enabled) {
       // Prepare for logging echo information. If there are data remaining in
       // |echo_information_| we simply discard it.
-      echo_information_ = base::MakeUnique<EchoInformation>();
+      echo_information_ = std::make_unique<EchoInformation>();
     } else {
       // Do not log any echo information when AEC3 is active, as the echo
       // information then will not be properly updated.

@@ -55,7 +55,7 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
   owned_url_request_context_ = MakeURLRequestContext(params_.get());
   url_request_context_ = owned_url_request_context_.get();
   cookie_manager_ =
-      base::MakeUnique<CookieManagerImpl>(url_request_context_->cookie_store());
+      std::make_unique<CookieManagerImpl>(url_request_context_->cookie_store());
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -75,21 +75,21 @@ NetworkContext::NetworkContext(
   if (params_ && params_->http_cache_path) {
     // Only sample 0.1% of NetworkContexts that get created.
     if (base::RandUint64() % 1000 == 0)
-      disk_checker_ = base::MakeUnique<DiskChecker>(*params_->http_cache_path);
+      disk_checker_ = std::make_unique<DiskChecker>(*params_->http_cache_path);
   }
   network_service_->RegisterNetworkContext(this);
   ApplyContextParamsToBuilder(builder.get(), params_.get());
   owned_url_request_context_ = builder->Build();
   url_request_context_ = owned_url_request_context_.get();
   cookie_manager_ =
-      base::MakeUnique<CookieManagerImpl>(url_request_context_->cookie_store());
+      std::make_unique<CookieManagerImpl>(url_request_context_->cookie_store());
 }
 
 NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
                                net::URLRequestContext* url_request_context)
     : network_service_(nullptr),
       binding_(this, std::move(request)),
-      cookie_manager_(base::MakeUnique<CookieManagerImpl>(
+      cookie_manager_(std::make_unique<CookieManagerImpl>(
           url_request_context->cookie_store())) {
   url_request_context_ = url_request_context;
 }
@@ -125,7 +125,7 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     uint32_t process_id) {
   loader_factory_bindings_.AddBinding(
-      base::MakeUnique<NetworkServiceURLLoaderFactoryImpl>(this, process_id),
+      std::make_unique<NetworkServiceURLLoaderFactoryImpl>(this, process_id),
       std::move(request));
 }
 
@@ -146,7 +146,7 @@ void NetworkContext::GetRestrictedCookieManager(
   // TODO(crbug.com/729800): RestrictedCookieManagerImpl should own its bindings
   //     and NetworkContext should own the RestrictedCookieManagerImpl
   //     instances.
-  mojo::MakeStrongBinding(base::MakeUnique<RestrictedCookieManagerImpl>(
+  mojo::MakeStrongBinding(std::make_unique<RestrictedCookieManagerImpl>(
                               url_request_context_->cookie_store(),
                               render_process_id, render_frame_id),
                           std::move(request));
@@ -224,7 +224,7 @@ std::unique_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     config.proxy_rules().ParseFromString(
         command_line->GetSwitchValueASCII(switches::kProxyServer));
     std::unique_ptr<net::ProxyConfigService> fixed_config_service =
-        base::MakeUnique<net::ProxyConfigServiceFixed>(config);
+        std::make_unique<net::ProxyConfigServiceFixed>(config);
     builder.set_proxy_config_service(std::move(fixed_config_service));
   } else {
     builder.set_proxy_service(net::ProxyService::CreateDirect());

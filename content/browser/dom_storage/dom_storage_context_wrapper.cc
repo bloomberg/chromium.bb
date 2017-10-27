@@ -49,7 +49,7 @@ void GetLocalStorageUsageHelper(
     base::SingleThreadTaskRunner* reply_task_runner,
     DOMStorageContextImpl* context,
     const DOMStorageContext::GetLocalStorageUsageCallback& callback) {
-  auto infos = base::MakeUnique<std::vector<LocalStorageUsageInfo>>();
+  auto infos = std::make_unique<std::vector<LocalStorageUsageInfo>>();
   context->GetLocalStorageUsage(infos.get(), true);
   reply_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&InvokeLocalStorageUsageCallbackHelper,
@@ -151,7 +151,7 @@ void DOMStorageContextWrapper::GetLocalStorageUsage(
     const GetLocalStorageUsageCallback& callback) {
   DCHECK(context_.get());
   if (mojo_state_) {
-    auto infos = base::MakeUnique<std::vector<LocalStorageUsageInfo>>();
+    auto infos = std::make_unique<std::vector<LocalStorageUsageInfo>>();
     auto* infos_ptr = infos.get();
     base::RepeatingClosure got_local_storage_usage = base::BarrierClosure(
         2, base::BindOnce(&InvokeLocalStorageUsageCallbackHelper, callback,

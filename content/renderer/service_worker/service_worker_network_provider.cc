@@ -131,7 +131,7 @@ class WebServiceWorkerNetworkProviderForFrame
     // S13nServiceWorker:
     // Create our own SubresourceLoader to route the request
     // to the controller ServiceWorker.
-    return base::MakeUnique<WebURLLoaderImpl>(
+    return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
         std::move(task_runner),
         provider_->context()->subresource_loader_factory());
@@ -200,7 +200,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
   } else {
     network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider());
   }
-  return base::MakeUnique<WebServiceWorkerNetworkProviderForFrame>(
+  return std::make_unique<WebServiceWorkerNetworkProviderForFrame>(
       std::move(network_provider));
 }
 

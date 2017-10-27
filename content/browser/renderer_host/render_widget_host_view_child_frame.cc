@@ -168,7 +168,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
       // We have managers in Aura and Android, as well as outside of content/.
       // There is no manager for Mac OS.
       selection_controller_client_ =
-          base::MakeUnique<TouchSelectionControllerClientChildFrame>(this,
+          std::make_unique<TouchSelectionControllerClientChildFrame>(this,
                                                                      manager);
       manager->AddObserver(this);
     }
@@ -813,7 +813,7 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
   if (!IsSurfaceAvailableForCopy()) {
     // Defer submitting the copy request until after a frame is drawn, at which
     // point we should be guaranteed that the surface is available.
-    RegisterFrameSwappedCallback(base::MakeUnique<base::Closure>(base::Bind(
+    RegisterFrameSwappedCallback(std::make_unique<base::Closure>(base::Bind(
         &RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest, AsWeakPtr(),
         src_rect, output_size, callback, preferred_color_type)));
     return;

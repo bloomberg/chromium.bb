@@ -688,7 +688,7 @@ class SyntheticGestureControllerTestBase {
   template<typename MockGestureTarget>
   void CreateControllerAndTarget() {
     target_ = new MockGestureTarget();
-    controller_ = base::MakeUnique<SyntheticGestureController>(
+    controller_ = std::make_unique<SyntheticGestureController>(
         &delegate_, std::unique_ptr<SyntheticGestureTarget>(target_));
   }
 

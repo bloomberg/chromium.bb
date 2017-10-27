@@ -11,7 +11,7 @@
 namespace content {
 
 ScreenCaptureDeviceAndroid::ScreenCaptureDeviceAndroid()
-    : core_(base::MakeUnique<media::ScreenCaptureMachineAndroid>()) {}
+    : core_(std::make_unique<media::ScreenCaptureMachineAndroid>()) {}
 
 ScreenCaptureDeviceAndroid::~ScreenCaptureDeviceAndroid() {
   DVLOG(2) << "ScreenCaptureDeviceAndroid@" << this << " destroying.";

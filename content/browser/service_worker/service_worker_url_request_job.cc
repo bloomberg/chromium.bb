@@ -615,7 +615,7 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
 
   if (features::IsMojoBlobsEnabled()) {
     blink::mojom::BlobPtr blob_ptr;
-    storage::BlobImpl::Create(base::MakeUnique<storage::BlobDataHandle>(
+    storage::BlobImpl::Create(std::make_unique<storage::BlobDataHandle>(
                                   *request_body_blob_data_handle_),
                               MakeRequest(&blob_ptr));
     request_body_blob_handle_ =
@@ -1005,7 +1005,7 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();
-  nav_preload_metrics_ = base::MakeUnique<NavigationPreloadMetrics>(this);
+  nav_preload_metrics_ = std::make_unique<NavigationPreloadMetrics>(this);
   if (simulate_navigation_preload_for_test_) {
     did_navigation_preload_ = true;
   } else {

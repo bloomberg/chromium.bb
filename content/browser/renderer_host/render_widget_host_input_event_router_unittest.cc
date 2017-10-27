@@ -85,28 +85,28 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    browser_context_ = base::MakeUnique<TestBrowserContext>();
+    browser_context_ = std::make_unique<TestBrowserContext>();
     process_host1_ =
-        base::MakeUnique<MockRenderProcessHost>(browser_context_.get());
+        std::make_unique<MockRenderProcessHost>(browser_context_.get());
     process_host2_ =
-        base::MakeUnique<MockRenderProcessHost>(browser_context_.get());
+        std::make_unique<MockRenderProcessHost>(browser_context_.get());
     mojom::WidgetPtr widget1;
     widget_impl1_ =
-        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget1));
-    widget_host1_ = base::MakeUnique<RenderWidgetHostImpl>(
+        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget1));
+    widget_host1_ = std::make_unique<RenderWidgetHostImpl>(
         &delegate_, process_host1_.get(), process_host1_->GetNextRoutingID(),
         std::move(widget1), false);
     mojom::WidgetPtr widget2;
     widget_impl2_ =
-        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget2));
-    widget_host2_ = base::MakeUnique<RenderWidgetHostImpl>(
+        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget2));
+    widget_host2_ = std::make_unique<RenderWidgetHostImpl>(
         &delegate_, process_host2_.get(), process_host2_->GetNextRoutingID(),
         std::move(widget2), false);
 
-    view_root_ = base::MakeUnique<MockRootRenderWidgetHostView>(
+    view_root_ = std::make_unique<MockRootRenderWidgetHostView>(
         widget_host1_.get(), frame_sink_id_map_);
     view_other_ =
-        base::MakeUnique<MockRenderWidgetHostView>(widget_host2_.get());
+        std::make_unique<MockRenderWidgetHostView>(widget_host2_.get());
 
     // Set up the RWHIER's FrameSinkId to RWHV map so that we can control the
     // result of RWHIER's hittesting.

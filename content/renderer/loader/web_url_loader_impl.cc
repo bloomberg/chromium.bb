@@ -501,7 +501,7 @@ WebURLLoaderImpl::Context::Context(
       task_runner_(std::move(task_runner)),
       keep_alive_handle_(
           keep_alive_handle_ptr
-              ? base::MakeUnique<KeepAliveHandleWithChildProcessReference>(
+              ? std::make_unique<KeepAliveHandleWithChildProcessReference>(
                     std::move(keep_alive_handle_ptr))
               : nullptr),
       defers_loading_(NOT_DEFERRING),
@@ -702,7 +702,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       std::move(resource_request), request.RequestorID(), task_runner_,
       extra_data->frame_origin(), GetTrafficAnnotationTag(request),
       false /* is_sync */,
-      base::MakeUnique<WebURLLoaderImpl::RequestPeerImpl>(this),
+      std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this),
       request.GetLoadingIPCType(), url_loader_factory_,
       extra_data->TakeURLLoaderThrottles(), std::move(consumer_handle));
 
@@ -808,7 +808,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
     }
 
-    auto read_handle = base::MakeUnique<SharedMemoryDataConsumerHandle>(
+    auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
         mode, base::Bind(&Context::CancelBodyStreaming, this),
         &body_stream_writer_);
 
@@ -832,7 +832,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   DCHECK(!ftp_listing_delegate_);
   if (info.mime_type == "text/vnd.chromium.ftp-dir" && !show_raw_listing) {
     ftp_listing_delegate_ =
-        base::MakeUnique<FtpDirectoryListingResponseDelegate>(client_, loader_,
+        std::make_unique<FtpDirectoryListingResponseDelegate>(client_, loader_,
                                                               response);
   }
 }
@@ -1028,7 +1028,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
     OnReceivedResponse(info);
     auto size = data.size();
     if (size != 0)
-      OnReceivedData(base::MakeUnique<FixedReceivedData>(data.data(), size));
+      OnReceivedData(std::make_unique<FixedReceivedData>(data.data(), size));
   }
 
   OnCompletedRequest(error_code, false, base::TimeTicks::Now(), 0, data.size(),

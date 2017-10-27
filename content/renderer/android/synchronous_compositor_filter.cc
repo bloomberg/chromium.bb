@@ -187,7 +187,7 @@ void SynchronousCompositorFilter::CreateSynchronousCompositorProxy(
     ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(sync_compositor_map_.find(routing_id) == sync_compositor_map_.end());
   std::unique_ptr<SynchronousCompositorProxy> proxy =
-      base::MakeUnique<SynchronousCompositorProxy>(
+      std::make_unique<SynchronousCompositorProxy>(
           routing_id, this, synchronous_input_handler_proxy);
   sync_compositor_map_[routing_id] = std::move(proxy);
 }

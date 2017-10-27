@@ -48,7 +48,7 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
   // Instances of CORSURLLoader are owned by this class and their pipe so that
   // they can share |network_loader_factory_|.
   loader_bindings_.AddBinding(
-      base::MakeUnique<CORSURLLoader>(
+      std::make_unique<CORSURLLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
           traffic_annotation, network_loader_factory_.get()),
       std::move(request));

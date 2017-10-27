@@ -17,7 +17,7 @@ CacheTestUtil::CacheTestUtil(content::StoragePartition* partition)
   done_callback_ =
       base::Bind(&CacheTestUtil::DoneCallback, base::Unretained(this));
   // UI and IO thread synchronization.
-  waitable_event_ = base::MakeUnique<base::WaitableEvent>(
+  waitable_event_ = std::make_unique<base::WaitableEvent>(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   BrowserThread::PostTask(

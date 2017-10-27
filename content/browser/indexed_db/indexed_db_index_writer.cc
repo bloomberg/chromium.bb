@@ -137,7 +137,7 @@ bool MakeIndexWriters(IndexedDBTransaction* transaction,
       keys.second.push_back(primary_key);
 
     std::unique_ptr<IndexWriter> index_writer(
-        base::MakeUnique<IndexWriter>(index, keys));
+        std::make_unique<IndexWriter>(index, keys));
     bool can_add_keys = false;
     bool backing_store_success =
         index_writer->VerifyIndexKeys(backing_store,

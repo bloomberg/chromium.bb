@@ -32,7 +32,7 @@ class TestSSLStatusData : public SSLStatus::UserData {
   // SSLStatus implementation:
   std::unique_ptr<SSLStatus::UserData> Clone() override {
     std::unique_ptr<TestSSLStatusData> cloned =
-        base::MakeUnique<TestSSLStatusData>();
+        std::make_unique<TestSSLStatusData>();
     cloned->set_user_data_flag(user_data_flag_);
     return std::move(cloned);
   }
@@ -176,7 +176,7 @@ TEST_F(NavigationEntryTest, NavigationEntrySSLStatus) {
 TEST_F(NavigationEntryTest, SSLStatusUserData) {
   // Set up an SSLStatus with some user data on it.
   SSLStatus ssl;
-  ssl.user_data = base::MakeUnique<TestSSLStatusData>();
+  ssl.user_data = std::make_unique<TestSSLStatusData>();
   TestSSLStatusData* ssl_data =
       static_cast<TestSSLStatusData*>(ssl.user_data.get());
   ASSERT_TRUE(ssl_data);

@@ -94,7 +94,7 @@ void TestBrowserThreadBundle::Init() {
   // Similar to Chrome's UI thread, we need to initialize COM separately for
   // this thread as we don't call Start() for the UI TestBrowserThread; it's
   // already started!
-  com_initializer_ = base::MakeUnique<base::win::ScopedCOMInitializer>();
+  com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>();
   CHECK(com_initializer_->succeeded());
 #endif
 
@@ -104,7 +104,7 @@ void TestBrowserThreadBundle::Init() {
   // ScopedTaskEnvironment.
   if (!base::MessageLoop::current()) {
     scoped_task_environment_ =
-        base::MakeUnique<base::test::ScopedTaskEnvironment>(
+        std::make_unique<base::test::ScopedTaskEnvironment>(
             options_ & IO_MAINLOOP
                 ? base::test::ScopedTaskEnvironment::MainThreadType::IO
                 : base::test::ScopedTaskEnvironment::MainThreadType::UI);
@@ -114,7 +114,7 @@ void TestBrowserThreadBundle::Init() {
                                                  : base::MessageLoop::TYPE_UI));
 
   // Set the current thread as the UI thread.
-  ui_thread_ = base::MakeUnique<TestBrowserThread>(
+  ui_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::UI, base::MessageLoop::current());
 
   if (!(options_ & DONT_CREATE_BROWSER_THREADS))
@@ -124,22 +124,22 @@ void TestBrowserThreadBundle::Init() {
 void TestBrowserThreadBundle::CreateBrowserThreads() {
   CHECK(!threads_created_);
 
-  db_thread_ = base::MakeUnique<TestBrowserThread>(
+  db_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::DB, base::MessageLoop::current());
-  file_thread_ = base::MakeUnique<TestBrowserThread>(
+  file_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::FILE, base::MessageLoop::current());
-  file_user_blocking_thread_ = base::MakeUnique<TestBrowserThread>(
+  file_user_blocking_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current());
-  process_launcher_thread_ = base::MakeUnique<TestBrowserThread>(
+  process_launcher_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::PROCESS_LAUNCHER, base::MessageLoop::current());
-  cache_thread_ = base::MakeUnique<TestBrowserThread>(
+  cache_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::CACHE, base::MessageLoop::current());
 
   if (options_ & REAL_IO_THREAD) {
-    io_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::IO);
+    io_thread_ = std::make_unique<TestBrowserThread>(BrowserThread::IO);
     io_thread_->StartIOThread();
   } else {
-    io_thread_ = base::MakeUnique<TestBrowserThread>(
+    io_thread_ = std::make_unique<TestBrowserThread>(
         BrowserThread::IO, base::MessageLoop::current());
   }
 

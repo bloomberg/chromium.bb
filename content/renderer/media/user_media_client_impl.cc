@@ -100,7 +100,7 @@ UserMediaClientImpl::UserMediaClientImpl(
     const scoped_refptr<base::TaskRunner>& worker_task_runner)
     : UserMediaClientImpl(
           render_frame,
-          base::MakeUnique<UserMediaProcessor>(
+          std::make_unique<UserMediaProcessor>(
               render_frame,
               dependency_factory,
               std::move(media_stream_dispatcher),
@@ -149,7 +149,7 @@ void UserMediaClientImpl::RequestUserMedia(
   // make decisions about the permissions UI. Its value can be lost while
   // switching threads, so saving its value here.
   std::unique_ptr<UserMediaRequest> request_info =
-      base::MakeUnique<UserMediaRequest>(
+      std::make_unique<UserMediaRequest>(
           request_id, web_request,
           blink::WebUserGestureIndicator::IsProcessingUserGesture());
   pending_request_infos_.push_back(Request(std::move(request_info)));

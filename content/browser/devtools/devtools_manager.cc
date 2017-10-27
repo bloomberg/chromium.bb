@@ -25,7 +25,7 @@ void DevToolsAgentHost::StartRemoteDebuggingServer(
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (!manager->delegate())
     return;
-  manager->SetHttpHandler(base::MakeUnique<DevToolsHttpHandler>(
+  manager->SetHttpHandler(std::make_unique<DevToolsHttpHandler>(
       manager->delegate(), std::move(server_socket_factory), frontend_url,
       active_port_output_directory, debug_frontend_dir));
 }
@@ -33,7 +33,7 @@ void DevToolsAgentHost::StartRemoteDebuggingServer(
 // static
 void DevToolsAgentHost::StartRemoteDebuggingPipeHandler() {
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->SetPipeHandler(base::MakeUnique<DevToolsPipeHandler>());
+  manager->SetPipeHandler(std::make_unique<DevToolsPipeHandler>());
 }
 
 // static

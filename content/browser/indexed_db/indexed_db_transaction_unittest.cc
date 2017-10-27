@@ -55,7 +55,7 @@ class IndexedDBTransactionTest : public testing::Test {
     leveldb::Status s;
     std::tie(db_, s) = IndexedDBDatabase::Create(
         base::ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
-        base::MakeUnique<FakeIndexedDBMetadataCoding>(),
+        std::make_unique<FakeIndexedDBMetadataCoding>(),
         IndexedDBDatabase::Identifier());
     ASSERT_TRUE(s.ok());
   }
@@ -97,7 +97,7 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -143,7 +143,7 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -178,7 +178,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -240,7 +240,7 @@ TEST_P(IndexedDBTransactionTestMode, TaskFails) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -305,7 +305,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -367,7 +367,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -396,7 +396,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
@@ -450,7 +450,7 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(
+      std::make_unique<IndexedDBConnection>(
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
 
   base::WeakPtr<IndexedDBTransaction> transaction =

@@ -245,7 +245,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   void AddDeletingNavigationThrottle() {
     DCHECK(test_handle_);
     test_handle()->RegisterThrottleForTesting(
-        base::MakeUnique<DeletingNavigationThrottle>(
+        std::make_unique<DeletingNavigationThrottle>(
             test_handle(), base::BindRepeating(
                                &NavigationHandleImplTest::ResetNavigationHandle,
                                base::Unretained(this))));
@@ -290,7 +290,7 @@ class NavigationHandleImplThrottleInsertionTest
     RenderViewHostImplTestHarness::SetUp();
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
     test_browser_client_ =
-        base::MakeUnique<ThrottleInserterContentBrowserClient>(
+        std::make_unique<ThrottleInserterContentBrowserClient>(
             base::Bind(&NavigationHandleImplThrottleInsertionTest::GetThrottles,
                        base::Unretained(this)));
     old_browser_client_ =
@@ -307,7 +307,7 @@ class NavigationHandleImplThrottleInsertionTest
  private:
   std::vector<std::unique_ptr<NavigationThrottle>> GetThrottles(
       NavigationHandle* handle) {
-    auto throttle = base::MakeUnique<TestNavigationThrottle>(handle);
+    auto throttle = std::make_unique<TestNavigationThrottle>(handle);
     std::vector<std::unique_ptr<NavigationThrottle>> vec;
     throttles_inserted_++;
     vec.push_back(std::move(throttle));

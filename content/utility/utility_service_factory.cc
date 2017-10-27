@@ -49,7 +49,7 @@ extern sandbox::TargetServices* g_utility_target_services;
 namespace {
 
 std::unique_ptr<service_manager::Service> CreateVideoCaptureService() {
-  return base::MakeUnique<video_capture::ServiceImpl>();
+  return std::make_unique<video_capture::ServiceImpl>();
 }
 
 }  // anonymous namespace
@@ -98,7 +98,7 @@ class CdmMojoMediaClient final : public media::MojoMediaClient {
 
 std::unique_ptr<service_manager::Service> CreateCdmService() {
   return std::unique_ptr<service_manager::Service>(
-      new ::media::MediaService(base::MakeUnique<CdmMojoMediaClient>()));
+      new ::media::MediaService(std::make_unique<CdmMojoMediaClient>()));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -114,7 +114,7 @@ std::unique_ptr<service_manager::Service> CreateVizService() {
 }  // namespace
 
 UtilityServiceFactory::UtilityServiceFactory()
-    : network_registry_(base::MakeUnique<service_manager::BinderRegistry>()) {}
+    : network_registry_(std::make_unique<service_manager::BinderRegistry>()) {}
 
 UtilityServiceFactory::~UtilityServiceFactory() {}
 
@@ -172,7 +172,7 @@ void UtilityServiceFactory::OnLoadFailed() {
 
 std::unique_ptr<service_manager::Service>
 UtilityServiceFactory::CreateNetworkService() {
-  return base::MakeUnique<NetworkServiceImpl>(std::move(network_registry_));
+  return std::make_unique<NetworkServiceImpl>(std::move(network_registry_));
 }
 
 }  // namespace content

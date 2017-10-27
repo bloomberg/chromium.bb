@@ -34,7 +34,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
 
   for (NSString* family_name in sortedFonts) {
     NSString* localized_family_name = fonts_dict[family_name];
-    auto font_item = base::MakeUnique<base::ListValue>();
+    auto font_item = std::make_unique<base::ListValue>();
     font_item->AppendString(base::SysNSStringToUTF16(family_name));
     font_item->AppendString(base::SysNSStringToUTF16(localized_family_name));
     font_list->Append(std::move(font_item));

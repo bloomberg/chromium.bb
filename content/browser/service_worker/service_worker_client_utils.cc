@@ -531,7 +531,7 @@ void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                 const ClientsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto clients = base::MakeUnique<ServiceWorkerClients>();
+  auto clients = std::make_unique<ServiceWorkerClients>();
   if (!controller->HasControllee() && !options.include_uncontrolled) {
     DidGetClients(callback, std::move(clients));
     return;

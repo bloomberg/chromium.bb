@@ -709,7 +709,7 @@ void NavigationSimulator::DidStartNavigation(
 
   // Add a throttle to count NavigationThrottle calls count.
   handle->RegisterThrottleForTesting(
-      base::MakeUnique<NavigationThrottleCallbackRunner>(
+      std::make_unique<NavigationThrottleCallbackRunner>(
           handle,
           base::Bind(&NavigationSimulator::OnWillStartRequest,
                      weak_factory_.GetWeakPtr()),

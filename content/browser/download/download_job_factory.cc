@@ -96,20 +96,19 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     const DownloadCreateInfo& create_info,
     bool is_save_package_download) {
   if (is_save_package_download) {
-    return base::MakeUnique<SavePackageDownloadJob>(download_item,
+    return std::make_unique<SavePackageDownloadJob>(download_item,
                                                     std::move(req_handle));
   }
 
   bool is_parallelizable = IsParallelizableDownload(create_info, download_item);
   // Build parallel download job.
   if (IsParallelDownloadEnabled() && is_parallelizable) {
-    return base::MakeUnique<ParallelDownloadJob>(download_item,
-                                                 std::move(req_handle),
-                                                 create_info);
+    return std::make_unique<ParallelDownloadJob>(
+        download_item, std::move(req_handle), create_info);
   }
 
   // An ordinary download job.
-  return base::MakeUnique<DownloadJobImpl>(download_item, std::move(req_handle),
+  return std::make_unique<DownloadJobImpl>(download_item, std::move(req_handle),
                                            is_parallelizable);
 }
 

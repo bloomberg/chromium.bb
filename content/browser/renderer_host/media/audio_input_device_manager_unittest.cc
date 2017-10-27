@@ -66,7 +66,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
     // AudioInputDeviceManager accesses AudioSystem from IO thread, so it never
     // runs on the same thread with it, even on Mac.
     audio_manager_ = media::AudioManager::CreateForTesting(
-        base::MakeUnique<media::AudioThreadImpl>());
+        std::make_unique<media::AudioThreadImpl>());
     // Flush the message loop to ensure proper initialization of AudioManager.
     base::RunLoop().RunUntilIdle();
 

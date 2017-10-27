@@ -111,7 +111,7 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
  private:
   std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId session_id) const override {
-    auto video_capture_impl = base::MakeUnique<MockVideoCaptureImpl>(
+    auto video_capture_impl = std::make_unique<MockVideoCaptureImpl>(
         session_id, pause_callback_, stop_capture_callback_);
     video_capture_impl->SetVideoCaptureHostForTesting(video_capture_impl.get());
     return std::move(video_capture_impl);

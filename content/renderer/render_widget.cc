@@ -542,7 +542,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
-  input_handler_ = base::MakeUnique<RenderWidgetInputHandler>(this, this);
+  input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();

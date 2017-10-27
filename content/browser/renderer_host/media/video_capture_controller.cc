@@ -235,7 +235,7 @@ void VideoCaptureController::AddClient(
     event_handler->OnStarted(id);
 
   std::unique_ptr<ControllerClient> client =
-      base::MakeUnique<ControllerClient>(id, event_handler, session_id, params);
+      std::make_unique<ControllerClient>(id, event_handler, session_id, params);
   // If we already have gotten frame_info from the device, repeat it to the new
   // client.
   if (state_ != VIDEO_CAPTURE_STATE_ERROR) {

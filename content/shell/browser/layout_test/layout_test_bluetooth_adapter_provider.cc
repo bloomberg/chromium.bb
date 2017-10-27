@@ -666,7 +666,7 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
 
   if (add_descriptors) {
     const std::string descriptorName = kCharacteristicUserDescription;
-    auto user_description = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
+    auto user_description = std::make_unique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), descriptorName,
         BluetoothUUID(kUserDescriptionUUID), false /* is_local */,
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ);
@@ -683,15 +683,15 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
     ON_CALL(*user_description, WriteRemoteDescriptor(_, _, _))
         .WillByDefault(RunCallback<1 /* success_callback */>());
 
-    auto client_config = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
+    auto client_config = std::make_unique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), "gatt.client_characteristic_configuration",
         BluetoothUUID(kClientConfigUUID), false /* is_local */,
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
-   // Crash if WriteRemoteDescriptor called. Not using GoogleMock's Expect
-   // because this is used in layout tests that may not report a mock
-   // expectation.
+    // Crash if WriteRemoteDescriptor called. Not using GoogleMock's Expect
+    // because this is used in layout tests that may not report a mock
+    // expectation.
     ON_CALL(*client_config, WriteRemoteDescriptor(_, _, _))
         .WillByDefault(
             Invoke([](const std::vector<uint8_t>&, const base::Closure&,
@@ -699,7 +699,7 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
               NOTREACHED();
             }));
 
-    auto no_read_descriptor = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
+    auto no_read_descriptor = std::make_unique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), kBlocklistedReadDescriptorUUID,
         BluetoothUUID(kBlocklistedReadDescriptorUUID), false,
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
@@ -719,7 +719,7 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
     // Add it here with full permission as the blocklist should prevent us from
     // accessing this descriptor
     auto blocklisted_descriptor =
-        base::MakeUnique<NiceMockBluetoothGattDescriptor>(
+        std::make_unique<NiceMockBluetoothGattDescriptor>(
             measurement_interval.get(), kBlocklistedDescriptorUUID,
             BluetoothUUID(kBlocklistedDescriptorUUID), false,
             device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
@@ -876,7 +876,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
             }
 
             device_ptr->SetConnected(true);
-            return base::MakeUnique<NiceMockBluetoothGattConnection>(
+            return std::make_unique<NiceMockBluetoothGattConnection>(
                 adapter_ptr, device_ptr->GetAddress());
           }));
 
@@ -934,7 +934,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
               const BluetoothDevice::GattConnectionCallback& callback,
               const BluetoothDevice::ConnectErrorCallback& error_callback) {
             device_ptr->SetConnected(true);
-            callback.Run(base::MakeUnique<NiceMockBluetoothGattConnection>(
+            callback.Run(std::make_unique<NiceMockBluetoothGattConnection>(
                 adapter_ptr, device_ptr->GetAddress()));
             device_ptr->RunPendingCallbacks();
           }));
@@ -1024,7 +1024,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
         }
       }));
 
-  auto user_descriptor = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
+  auto user_descriptor = std::make_unique<NiceMockBluetoothGattDescriptor>(
       measurement_interval.get(), kCharacteristicUserDescription,
       BluetoothUUID(kUserDescriptionUUID), false,
       device::BluetoothRemoteGattCharacteristic::PROPERTY_READ);
@@ -1099,7 +1099,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
               const BluetoothDevice::GattConnectionCallback& callback,
               const BluetoothDevice::ConnectErrorCallback& error_callback) {
             device_ptr->SetConnected(true);
-            callback.Run(base::MakeUnique<NiceMockBluetoothGattConnection>(
+            callback.Run(std::make_unique<NiceMockBluetoothGattConnection>(
                 adapter_ptr, device_ptr->GetAddress()));
             device_ptr->RunPendingCallbacks();
           }));
@@ -1121,7 +1121,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter_ptr, device_ptr, measurement_ptr, disconnect]() {
             std::unique_ptr<NiceMockBluetoothGattNotifySession> notify_session =
-                base::MakeUnique<NiceMockBluetoothGattNotifySession>(
+                std::make_unique<NiceMockBluetoothGattNotifySession>(
                     measurement_ptr->GetWeakPtr());
 
             ON_CALL(*notify_session, Stop(_))
@@ -1226,7 +1226,7 @@ LayoutTestBluetoothAdapterProvider::GetFailingGATTOperationsAdapter() {
 std::unique_ptr<NiceMockBluetoothDiscoverySession>
 LayoutTestBluetoothAdapterProvider::GetDiscoverySession() {
   auto discovery_session =
-      base::MakeUnique<NiceMockBluetoothDiscoverySession>();
+      std::make_unique<NiceMockBluetoothDiscoverySession>();
 
   ON_CALL(*discovery_session, Stop(_, _))
       .WillByDefault(RunCallback<0 /* success_callback */>());
@@ -1243,7 +1243,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseDevice(
     const char* device_name,
     device::BluetoothDevice::UUIDList uuids,
     const std::string& address) {
-  auto device = base::MakeUnique<NiceMockBluetoothDevice>(
+  auto device = std::make_unique<NiceMockBluetoothDevice>(
       adapter, 0x1F00 /* Bluetooth class */, device_name, address,
       false /* paired */, false /* connected */);
 
@@ -1309,7 +1309,7 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter, device_ptr]() {
             device_ptr->SetConnected(true);
-            return base::MakeUnique<NiceMockBluetoothGattConnection>(
+            return std::make_unique<NiceMockBluetoothGattConnection>(
                 adapter, device_ptr->GetAddress());
           }));
 
@@ -1357,7 +1357,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTService(
     const std::string& identifier,
     MockBluetoothDevice* device,
     const std::string& uuid) {
-  auto service = base::MakeUnique<NiceMockBluetoothGattService>(
+  auto service = std::make_unique<NiceMockBluetoothGattService>(
       device, identifier, BluetoothUUID(uuid), true /* is_primary */,
       false /* is_local */);
 
@@ -1588,7 +1588,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
     MockBluetoothGattService* service,
     const std::string& uuid,
     BluetoothRemoteGattCharacteristic::Properties properties) {
-  auto characteristic = base::MakeUnique<NiceMockBluetoothGattCharacteristic>(
+  auto characteristic = std::make_unique<NiceMockBluetoothGattCharacteristic>(
       service, identifier, BluetoothUUID(uuid), false /* is_local */,
       properties, BluetoothGattCharacteristic::Permission::PERMISSION_NONE);
 
@@ -1644,7 +1644,7 @@ LayoutTestBluetoothAdapterProvider::GetErrorCharacteristic(
       .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
 
   // Add error descriptor to |characteristic|
-  auto error_descriptor = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
+  auto error_descriptor = std::make_unique<NiceMockBluetoothGattDescriptor>(
       characteristic.get(), kCharacteristicUserDescription,
       BluetoothUUID(kUserDescriptionUUID), false,
       device::BluetoothRemoteGattCharacteristic::PROPERTY_READ);
@@ -1667,7 +1667,7 @@ std::unique_ptr<NiceMockBluetoothGattNotifySession>
 LayoutTestBluetoothAdapterProvider::GetBaseGATTNotifySession(
     base::WeakPtr<device::BluetoothRemoteGattCharacteristic> characteristic) {
   auto session =
-      base::MakeUnique<NiceMockBluetoothGattNotifySession>(characteristic);
+      std::make_unique<NiceMockBluetoothGattNotifySession>(characteristic);
 
   ON_CALL(*session, Stop(_))
       .WillByDefault(testing::DoAll(

@@ -106,7 +106,7 @@ class RequestBlockingResourceDispatcherHostDelegate
 
 std::unique_ptr<ResourceHandler> CreateDownloadResourceHandler(
     net::URLRequest* request) {
-  return base::MakeUnique<TestResourceHandler>();
+  return std::make_unique<TestResourceHandler>();
 }
 
 }  // namespace
@@ -127,10 +127,10 @@ class NavigationURLLoaderTest : public testing::Test {
     job_factory_.SetProtocolHandler(
         "test", net::URLRequestTestJob::CreateProtocolHandler());
     job_factory_.SetProtocolHandler(
-        "blob", base::MakeUnique<StreamProtocolHandler>(
+        "blob", std::make_unique<StreamProtocolHandler>(
                     StreamContext::GetFor(browser_context_.get())->registry()));
     job_factory_.SetProtocolHandler(
-        "download", base::MakeUnique<DownloadProtocolHandler>());
+        "download", std::make_unique<DownloadProtocolHandler>());
     request_context->set_job_factory(&job_factory_);
 
     // NavigationURLLoader is only used for browser-side navigations.

@@ -689,7 +689,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
   video_capture_capabilities_cached_data_.Clear();
 
   for (const auto& device_format_pair : descriptors_and_formats) {
-    auto format_list = base::MakeUnique<base::ListValue>();
+    auto format_list = std::make_unique<base::ListValue>();
     // TODO(nisse): Representing format information as a string, to be
     // parsed by the javascript handler, is brittle. Consider passing
     // a list of mappings instead.
@@ -788,7 +788,7 @@ void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
     } else if (!has_entry) {
       DCHECK_EQ(type, CREATE);
       audio_streams_cached_data_.Set(
-          cache_key, base::MakeUnique<base::Value>(value->Clone()));
+          cache_key, std::make_unique<base::Value>(value->Clone()));
     } else if (type == UPDATE_AND_DELETE) {
       std::unique_ptr<base::Value> out_value;
       CHECK(audio_streams_cached_data_.Remove(cache_key, &out_value));

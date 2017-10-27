@@ -197,7 +197,7 @@ class SharedMemoryDataConsumerHandleTest
     handle_.reset(new SharedMemoryDataConsumerHandle(GetParam(), &writer_));
   }
   std::unique_ptr<FixedReceivedData> NewFixedData(const char* s) {
-    return base::MakeUnique<FixedReceivedData>(s, strlen(s));
+    return std::make_unique<FixedReceivedData>(s, strlen(s));
   }
 
   StrictMock<MockClient> client_;
@@ -901,17 +901,17 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, Read) {
   size_t size;
 
   std::unique_ptr<Writer> writer;
-  auto handle = base::MakeUnique<SharedMemoryDataConsumerHandle>(
+  auto handle = std::make_unique<SharedMemoryDataConsumerHandle>(
       kApplyBackpressure, &writer);
   scoped_refptr<Logger> logger(new Logger);
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data1", "Once ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data1", "Once ", logger));
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data2", "upon ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data2", "upon ", logger));
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data3", "a ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data3", "a ", logger));
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data4", "time ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data4", "time ", logger));
 
   auto reader = handle->ObtainReader(nullptr);
   logger->Add("1");
@@ -946,15 +946,15 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
   size_t size;
 
   std::unique_ptr<Writer> writer;
-  auto handle = base::MakeUnique<SharedMemoryDataConsumerHandle>(
+  auto handle = std::make_unique<SharedMemoryDataConsumerHandle>(
       kApplyBackpressure, &writer);
   scoped_refptr<Logger> logger(new Logger);
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data1", "Once ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data1", "Once ", logger));
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data2", "upon ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data2", "upon ", logger));
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data3", "a ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data3", "a ", logger));
 
   auto reader = handle->ObtainReader(nullptr);
   logger->Add("1");
@@ -989,16 +989,16 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
 TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
   base::MessageLoop loop;
   std::unique_ptr<Writer> writer;
-  auto handle = base::MakeUnique<SharedMemoryDataConsumerHandle>(
+  auto handle = std::make_unique<SharedMemoryDataConsumerHandle>(
       kDoNotApplyBackpressure, &writer);
   scoped_refptr<Logger> logger(new Logger);
 
   logger->Add("1");
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data1", "Once ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data1", "Once ", logger));
   logger->Add("2");
   writer->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data2", "upon ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data2", "upon ", logger));
   logger->Add("3");
 
   EXPECT_EQ(
@@ -1012,7 +1012,7 @@ TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
 
 TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
   base::RunLoop run_loop;
-  auto operation = base::MakeUnique<ReadDataOperation>(
+  auto operation = std::make_unique<ReadDataOperation>(
       std::move(handle_), &loop_, run_loop.QuitClosure());
   scoped_refptr<Logger> logger(new Logger);
 
@@ -1025,15 +1025,15 @@ TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
 
   logger->Add("1");
   writer_->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data1", "Once ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data1", "Once ", logger));
   writer_->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data2", "upon ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data2", "upon ", logger));
   writer_->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data3", "a time ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data3", "a time ", logger));
   writer_->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data4", "there ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data4", "there ", logger));
   writer_->AddData(
-      base::MakeUnique<LoggingFixedReceivedData>("data5", "was ", logger));
+      std::make_unique<LoggingFixedReceivedData>("data5", "was ", logger));
   writer_->Close();
   logger->Add("2");
 

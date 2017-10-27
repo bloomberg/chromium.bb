@@ -208,7 +208,7 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveAndGetCallback(
       // Make sure the VideoCaptureDeliverFrameCB is released on the main
       // render thread since it was added on the main render thread in
       // VideoTrackAdapter::AddTrack.
-      ret = base::MakeUnique<VideoCaptureDeliverFrameCB>(it->second);
+      ret = std::make_unique<VideoCaptureDeliverFrameCB>(it->second);
       callbacks_.erase(it);
       break;
     }

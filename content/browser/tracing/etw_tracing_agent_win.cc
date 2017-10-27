@@ -199,7 +199,7 @@ void EtwTracingAgent::AddSyncEventToBuffer() {
   now_in_us.QuadPart = now.ToInternalValue();
 
   // Add fields to the event.
-  auto value = base::MakeUnique<base::DictionaryValue>();
+  auto value = std::make_unique<base::DictionaryValue>();
   value->SetString("guid", "ClockSync");
   value->SetString("walltime",
                    base::StringPrintf("%08lX%08lX", walltime_in_us.HighPart,
@@ -212,7 +212,7 @@ void EtwTracingAgent::AddSyncEventToBuffer() {
 }
 
 void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
-  auto value = base::MakeUnique<base::DictionaryValue>();
+  auto value = std::make_unique<base::DictionaryValue>();
 
   // Add header fields to the event.
   LARGE_INTEGER ts_us;
@@ -255,7 +255,7 @@ void EtwTracingAgent::TraceAndConsumeOnThread() {
 
 void EtwTracingAgent::FlushOnThread() {
   // Add the header information to the stream.
-  auto header = base::MakeUnique<base::DictionaryValue>();
+  auto header = std::make_unique<base::DictionaryValue>();
   header->SetString("name", "ETW");
 
   // Release and pass the events buffer.

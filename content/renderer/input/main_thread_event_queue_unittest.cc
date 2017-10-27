@@ -171,7 +171,7 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
     feature_list_.InitFromCommandLine(base::JoinString(features, ","),
                                       base::JoinString(disabled_features, ","));
 
-    handler_callback_ = base::MakeUnique<HandledEventCallbackTracker>();
+    handler_callback_ = std::make_unique<HandledEventCallbackTracker>();
   }
 
   void SetUp() override {
@@ -241,7 +241,7 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
 
   std::vector<ReceivedCallback> GetAndResetCallbackResults() {
     std::unique_ptr<HandledEventCallbackTracker> callback =
-        base::MakeUnique<HandledEventCallbackTracker>();
+        std::make_unique<HandledEventCallbackTracker>();
     handler_callback_.swap(callback);
     return callback->GetReceivedCallbacks();
   }

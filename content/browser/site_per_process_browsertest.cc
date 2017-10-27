@@ -1104,7 +1104,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
 
   std::unique_ptr<InputEventAckWaiter> gesture_fling_start_ack_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureFlingStart);
   if (child_rwhv->wheel_scroll_latching_enabled()) {
     // If wheel scroll latching is enabled, the fling start won't bubble since
@@ -1186,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
       filter.get());
 
   std::unique_ptr<InputEventAckWaiter> ack_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollEnd);
   parent_iframe_node->current_frame_host()
       ->GetRenderWidgetHost()
@@ -1433,13 +1433,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   WaitForChildFrameSurfaceReady(iframe_node->current_frame_host());
 
   std::unique_ptr<InputEventAckWaiter> scroll_begin_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollBegin);
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       scroll_begin_observer.get());
 
   std::unique_ptr<InputEventAckWaiter> scroll_end_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollEnd);
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       scroll_end_observer.get());
@@ -1555,7 +1555,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
 
   std::unique_ptr<InputEventAckWaiter> ack_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollBegin);
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       ack_observer.get());
@@ -1564,11 +1564,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   if (root_view->wheel_scroll_latching_enabled()) {
     // All GSU events will be wrapped between a single GSB-GSE pair. The
     // expected delta value is equal to summation of all scroll update deltas.
-    scroll_observer = base::MakeUnique<ScrollObserver>(0, 15);
+    scroll_observer = std::make_unique<ScrollObserver>(0, 15);
   } else {
     // Each GSU will be wrapped betweeen its own GSB-GSE pair. The expected
     // delta value is the delta of the first GSU event.
-    scroll_observer = base::MakeUnique<ScrollObserver>(0, 5);
+    scroll_observer = std::make_unique<ScrollObserver>(0, 5);
   }
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       scroll_observer.get());
@@ -1784,7 +1784,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewAura*>(rwhv_root);
   std::unique_ptr<MockOverscrollControllerDelegateAura>
       mock_overscroll_delegate =
-          base::MakeUnique<MockOverscrollControllerDelegateAura>(rwhva);
+          std::make_unique<MockOverscrollControllerDelegateAura>(rwhva);
   rwhva->overscroll_controller()->set_delegate(mock_overscroll_delegate.get());
   MockOverscrollObserver* mock_overscroll_observer =
       mock_overscroll_delegate.get();
@@ -1792,7 +1792,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderWidgetHostViewAndroid* rwhv_android =
       static_cast<RenderWidgetHostViewAndroid*>(rwhv_root);
   std::unique_ptr<MockOverscrollRefreshHandlerAndroid> mock_overscroll_handler =
-      base::MakeUnique<MockOverscrollRefreshHandlerAndroid>();
+      std::make_unique<MockOverscrollRefreshHandlerAndroid>();
   rwhv_android->SetOverscrollControllerForTesting(
       mock_overscroll_handler.get());
   MockOverscrollObserver* mock_overscroll_observer =
@@ -1800,13 +1800,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #endif  // defined(USE_AURA)
 
   std::unique_ptr<InputEventAckWaiter> gesture_begin_observer_child =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollBegin);
   child_node->current_frame_host()
       ->GetRenderWidgetHost()
       ->AddInputEventObserver(gesture_begin_observer_child.get());
   std::unique_ptr<InputEventAckWaiter> gesture_end_observer_child =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollEnd);
   child_node->current_frame_host()
       ->GetRenderWidgetHost()
@@ -2997,7 +2997,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   bool network_service =
       base::FeatureList::IsEnabled(features::kNetworkService);
   mojom::URLLoaderFactoryPtr failing_factory;
-  mojo::MakeStrongBinding(base::MakeUnique<FailingLoadFactory>(),
+  mojo::MakeStrongBinding(std::make_unique<FailingLoadFactory>(),
                           mojo::MakeRequest(&failing_factory));
   StoragePartitionImpl* storage_partition = nullptr;
   if (network_service) {
@@ -6467,7 +6467,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Wait until renderer's compositor thread is synced.
   {
     auto observer =
-        base::MakeUnique<MainThreadFrameObserver>(render_widget_host);
+        std::make_unique<MainThreadFrameObserver>(render_widget_host);
     observer->Wait();
   }
 
@@ -6481,7 +6481,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   rwhv->OnTouchEvent(&touch_event);
   {
     auto observer =
-        base::MakeUnique<MainThreadFrameObserver>(render_widget_host);
+        std::make_unique<MainThreadFrameObserver>(render_widget_host);
     observer->Wait();
   }
 
@@ -7836,7 +7836,7 @@ class ChildFrameCompositorFrameSwapCounter {
 
  private:
   void RegisterCallback() {
-    view_->RegisterFrameSwappedCallback(base::MakeUnique<base::Closure>(
+    view_->RegisterFrameSwappedCallback(std::make_unique<base::Closure>(
         base::Bind(&ChildFrameCompositorFrameSwapCounter::OnFrameSwapped,
                    weak_factory_.GetWeakPtr())));
   }
@@ -10798,7 +10798,7 @@ class RequestDelayingSitePerProcessBrowserTest
     : public SitePerProcessBrowserTest {
  public:
   RequestDelayingSitePerProcessBrowserTest()
-      : test_server_(base::MakeUnique<net::EmbeddedTestServer>()) {}
+      : test_server_(std::make_unique<net::EmbeddedTestServer>()) {}
 
   // Must be called after any calls to SetDelayedRequestsForPath.
   void SetUpEmbeddedTestServer() {
@@ -10846,7 +10846,7 @@ class RequestDelayingSitePerProcessBrowserTest
     // send an empty response.
     if (it->second > 0) {
       --it->second;
-      return base::MakeUnique<DelayedResponse>(this);
+      return std::make_unique<DelayedResponse>(this);
     }
     MaybeStartRequests();
     return std::unique_ptr<net::test_server::BasicHttpResponse>();

@@ -62,7 +62,7 @@ class TrackingResourceDispatcherHostDelegate
     ASSERT_FALSE(throttle_created_);
     // If this is a request for the tracked URL, add a throttle to track it.
     if (request->url() == tracked_url_)
-      throttles->push_back(base::MakeUnique<TrackingThrottle>(request, this));
+      throttles->push_back(std::make_unique<TrackingThrottle>(request, this));
   }
 
   // Starts tracking a URL.  The request for previously tracked URL, if any,

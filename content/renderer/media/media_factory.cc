@@ -156,7 +156,7 @@ void MediaFactory::SetupMojo() {
   GetRemoterFactory()->Create(std::move(remoting_source),
                               mojo::MakeRequest(&remoter));
   remoting_sink_observer_ =
-      base::MakeUnique<media::remoting::SinkAvailabilityObserver>(
+      std::make_unique<media::remoting::SinkAvailabilityObserver>(
           std::move(remoting_source_request), std::move(remoter));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 }
@@ -268,9 +268,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 #endif
 
   if (!fetch_context_) {
-    fetch_context_ = base::MakeUnique<FrameFetchContext>(web_frame);
+    fetch_context_ = std::make_unique<FrameFetchContext>(web_frame);
     DCHECK(!url_index_);
-    url_index_ = base::MakeUnique<media::UrlIndex>(fetch_context_.get());
+    url_index_ = std::make_unique<media::UrlIndex>(fetch_context_.get());
   }
   DCHECK_EQ(static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
             web_frame);
@@ -341,7 +341,7 @@ MediaFactory::CreateRendererFactorySelector(
   if (!render_thread)
     return nullptr;
 
-  auto factory_selector = base::MakeUnique<media::RendererFactorySelector>();
+  auto factory_selector = std::make_unique<media::RendererFactorySelector>();
 
 #if defined(OS_ANDROID)
   DCHECK(remote_interfaces_);
@@ -349,7 +349,7 @@ MediaFactory::CreateRendererFactorySelector(
   // The only MojoRendererService that is registered at the RenderFrameHost
   // level uses the MediaPlayerRenderer as its underlying media::Renderer.
   auto mojo_media_player_renderer_factory =
-      base::MakeUnique<media::MojoRendererFactory>(
+      std::make_unique<media::MojoRendererFactory>(
           media::MojoRendererFactory::GetGpuFactoriesCB(),
           remote_interfaces_->get());
 
@@ -357,7 +357,7 @@ MediaFactory::CreateRendererFactorySelector(
   // might fallback to it if the final redirected URL is an HLS url.
   factory_selector->AddFactory(
       media::RendererFactorySelector::FactoryType::MEDIA_PLAYER,
-      base::MakeUnique<MediaPlayerRendererClientFactory>(
+      std::make_unique<MediaPlayerRendererClientFactory>(
           render_thread->compositor_task_runner(),
           std::move(mojo_media_player_renderer_factory),
           base::Bind(&StreamTextureWrapperImpl::Create,
@@ -380,7 +380,7 @@ MediaFactory::CreateRendererFactorySelector(
   if (use_mojo_renderer_factory) {
     factory_selector->AddFactory(
         media::RendererFactorySelector::FactoryType::MOJO,
-        base::MakeUnique<media::MojoRendererFactory>(
+        std::make_unique<media::MojoRendererFactory>(
             base::Bind(&RenderThreadImpl::GetGpuFactories,
                        base::Unretained(render_thread)),
             GetMediaInterfaceFactory()));
@@ -393,7 +393,7 @@ MediaFactory::CreateRendererFactorySelector(
   if (!use_mojo_renderer_factory) {
     factory_selector->AddFactory(
         media::RendererFactorySelector::FactoryType::DEFAULT,
-        base::MakeUnique<media::DefaultRendererFactory>(
+        std::make_unique<media::DefaultRendererFactory>(
             media_log, decoder_factory,
             base::Bind(&RenderThreadImpl::GetGpuFactories,
                        base::Unretained(render_thread))));
@@ -415,7 +415,7 @@ MediaFactory::CreateRendererFactorySelector(
   *out_media_observer = remoting_controller->GetWeakPtr();
 
   auto courier_factory =
-      base::MakeUnique<media::remoting::CourierRendererFactory>(
+      std::make_unique<media::remoting::CourierRendererFactory>(
           std::move(remoting_controller));
 
   // base::Unretained is safe here because |factory_selector| owns
@@ -447,7 +447,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
 
   return new WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(),
-      base::MakeUnique<RenderMediaLog>(url::Origin(security_origin).GetURL()),
+      std::make_unique<RenderMediaLog>(url::Origin(security_origin).GetURL()),
       CreateMediaStreamRendererFactory(), render_thread->GetIOTaskRunner(),
       compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),

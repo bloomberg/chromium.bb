@@ -37,7 +37,7 @@ std::unique_ptr<media::AudioOutputIPC> AudioIPCFactory::CreateAudioOutputIPC(
     int frame_id) const {
   if (UsingMojoFactories()) {
     // Unretained is safe due to the contract at the top of the header file.
-    return base::MakeUnique<MojoAudioOutputIPC>(base::BindRepeating(
+    return std::make_unique<MojoAudioOutputIPC>(base::BindRepeating(
         &AudioIPCFactory::GetRemoteFactory, base::Unretained(this), frame_id));
   }
   return audio_message_filter_->CreateAudioOutputIPC(frame_id);

@@ -70,7 +70,7 @@ GetDefaultTaskSchedulerInitParams() {
   constexpr int kMaxNumThreadsInForegroundBlockingPool = 1;
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
-  return base::MakeUnique<base::TaskScheduler::InitParams>(
+  return std::make_unique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(kMaxNumThreadsInBackgroundPool,
                                       kSuggestedReclaimTime),
       base::SchedulerWorkerPoolParams(kMaxNumThreadsInBackgroundBlockingPool,

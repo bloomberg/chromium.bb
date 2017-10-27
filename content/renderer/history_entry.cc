@@ -47,7 +47,7 @@ namespace content {
 
 HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild(
     const WebHistoryItem& item) {
-  children_.push_back(base::MakeUnique<HistoryNode>(entry_, item));
+  children_.push_back(std::make_unique<HistoryNode>(entry_, item));
   return children_.back().get();
 }
 

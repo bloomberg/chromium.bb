@@ -74,7 +74,7 @@ class BatteryMonitorTest : public ContentBrowserTest {
   BatteryMonitorTest() = default;
 
   void SetUpOnMainThread() override {
-    mock_battery_monitor_ = base::MakeUnique<MockBatteryMonitor>();
+    mock_battery_monitor_ = std::make_unique<MockBatteryMonitor>();
     // Because Device Service also runs in this process(browser process), here
     // we can directly set our binder to intercept interface requests against
     // it.

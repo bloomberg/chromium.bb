@@ -117,7 +117,7 @@ void NavigationResourceHandler::OnRequestRedirected(
 
   HoldController(std::move(controller));
   response_ = response;
-  redirect_info_ = base::MakeUnique<net::RedirectInfo>(redirect_info);
+  redirect_info_ = std::make_unique<net::RedirectInfo>(redirect_info);
 }
 
 void NavigationResourceHandler::OnResponseStarted(

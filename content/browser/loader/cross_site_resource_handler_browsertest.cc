@@ -57,7 +57,7 @@ class TestResourceDispatcherHostDelegate
       ASSERT_FALSE(throttle_created_);
       throttle_created_ = true;
 
-      throttles->push_back(base::MakeUnique<CallbackRunningResourceThrottle>(
+      throttles->push_back(std::make_unique<CallbackRunningResourceThrottle>(
           request, this, run_on_start_));
     }
   }

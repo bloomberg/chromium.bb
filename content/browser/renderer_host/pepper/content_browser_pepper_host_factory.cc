@@ -167,7 +167,7 @@ ContentBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_VpnProvider_Create::ID: {
         scoped_refptr<PepperVpnProviderMessageFilter> vpn_provider(
             new PepperVpnProviderMessageFilter(host_, instance));
-        return base::MakeUnique<ppapi::host::MessageFilterHost>(
+        return std::make_unique<ppapi::host::MessageFilterHost>(
             host_->GetPpapiHost(), instance, resource, std::move(vpn_provider));
       }
 #endif

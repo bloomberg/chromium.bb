@@ -264,7 +264,7 @@ void WebIDBDatabaseImpl::Get(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE, base::BindOnce(&IOThreadHelper::Get, base::Unretained(helper_),
@@ -283,7 +283,7 @@ void WebIDBDatabaseImpl::GetAll(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
@@ -344,7 +344,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
     mojo_value->blob_or_file_info.push_back(std::move(blob_info));
   }
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
@@ -391,7 +391,7 @@ void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
@@ -409,7 +409,7 @@ void WebIDBDatabaseImpl::Count(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
@@ -426,7 +426,7 @@ void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
@@ -442,7 +442,7 @@ void WebIDBDatabaseImpl::Clear(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,

@@ -371,7 +371,7 @@ class FrameFactoryImpl : public mojom::FrameFactory {
 
 void CreateFrameFactory(mojom::FrameFactoryRequest request,
                         const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(base::MakeUnique<FrameFactoryImpl>(source_info),
+  mojo::MakeStrongBinding(std::make_unique<FrameFactoryImpl>(source_info),
                           std::move(request));
 }
 
@@ -675,7 +675,7 @@ void RenderThreadImpl::Init(
   GetConnector()->BindInterface(
       mojom::kBrowserServiceName,
       mojo::MakeRequest(&shared_bitmap_allocation_notifier_ptr));
-  shared_bitmap_manager_ = base::MakeUnique<viz::ClientSharedBitmapManager>(
+  shared_bitmap_manager_ = std::make_unique<viz::ClientSharedBitmapManager>(
       viz::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr::Create(
           shared_bitmap_allocation_notifier_ptr.PassInterface(),
           GetChannel()->ipc_task_runner_refptr()));
@@ -789,12 +789,12 @@ void RenderThreadImpl::Init(
 
   {
     auto registry_with_source_info =
-        base::MakeUnique<service_manager::BinderRegistryWithArgs<
+        std::make_unique<service_manager::BinderRegistryWithArgs<
             const service_manager::BindSourceInfo&>>();
     registry_with_source_info->AddInterface(
         base::Bind(&CreateFrameFactory), base::ThreadTaskRunnerHandle::Get());
     GetServiceManagerConnection()->AddConnectionFilter(
-        base::MakeUnique<SimpleConnectionFilterWithSourceInfo>(
+        std::make_unique<SimpleConnectionFilterWithSourceInfo>(
             std::move(registry_with_source_info)));
   }
 
@@ -939,7 +939,7 @@ void RenderThreadImpl::Init(
         mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
   }
 
-  discardable_shared_memory_manager_ = base::MakeUnique<
+  discardable_shared_memory_manager_ = std::make_unique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
       std::move(manager_ptr), GetIOTaskRunner());
 
@@ -1675,7 +1675,7 @@ blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
 
 std::unique_ptr<viz::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
-  return base::MakeUnique<CompositorExternalBeginFrameSource>(
+  return std::make_unique<CompositorExternalBeginFrameSource>(
       compositor_message_filter_.get(), sync_message_filter(), routing_id);
 }
 
@@ -1684,8 +1684,8 @@ RenderThreadImpl::CreateSyntheticBeginFrameSource() {
   base::SingleThreadTaskRunner* compositor_impl_side_task_runner =
       compositor_task_runner_ ? compositor_task_runner_.get()
                               : base::ThreadTaskRunnerHandle::Get().get();
-  return base::MakeUnique<viz::BackToBackBeginFrameSource>(
-      base::MakeUnique<viz::DelayBasedTimeSource>(
+  return std::make_unique<viz::BackToBackBeginFrameSource>(
+      std::make_unique<viz::DelayBasedTimeSource>(
           compositor_impl_side_task_runner));
 }
 
@@ -1984,7 +1984,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   params.enable_surface_synchronization =
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
   params.local_surface_id_provider =
-      base::MakeUnique<RendererLocalSurfaceIdProvider>();
+      std::make_unique<RendererLocalSurfaceIdProvider>();
 
   // In disable gpu vsync mode, also let the renderer tick as fast as it
   // can. The top level begin frame source will also be running as a back
@@ -2029,7 +2029,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       DCHECK(!layout_test_mode());
       frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                             std::move(client));
-      callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
+      callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
           std::move(vulkan_context_provider), &params));
       return;
     }
@@ -2056,7 +2056,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                           std::move(client));
     params.shared_bitmap_manager = shared_bitmap_manager();
-    callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
+    callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, &params));
     return;
   }
@@ -2115,7 +2115,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         params.synthetic_begin_frame_source
             ? std::move(params.synthetic_begin_frame_source)
             : CreateExternalBeginFrameSource(routing_id);
-    callback.Run(base::MakeUnique<SynchronousLayerTreeFrameSink>(
+    callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
         GetGpuMemoryBufferManager(), shared_bitmap_manager(), routing_id,
         g_next_layer_tree_frame_sink_id++, std::move(begin_frame_source),
@@ -2127,7 +2127,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                         std::move(client));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
-  callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
+  callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), std::move(worker_context_provider),
       &params));
 }
@@ -2155,7 +2155,7 @@ RenderThreadImpl::CreateMediaStreamCenter(
         GetContentClient()->renderer()->OverrideCreateWebMediaStreamCenter(
             client);
     if (!media_stream_center) {
-      media_stream_center = base::MakeUnique<MediaStreamCenter>(
+      media_stream_center = std::make_unique<MediaStreamCenter>(
           client, GetPeerConnectionDependencyFactory());
     }
   }

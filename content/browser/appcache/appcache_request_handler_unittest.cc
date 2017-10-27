@@ -441,7 +441,7 @@ class AppCacheRequestHandlerTest
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
 
     if (request_handler_type_ == URLREQUEST) {
-      job_factory_->SetJob(base::MakeUnique<MockURLRequestJob>(
+      job_factory_->SetJob(std::make_unique<MockURLRequestJob>(
           url_request_.get(), nullptr, info));
       request_->AsURLRequest()->GetURLRequest()->Start();
       // All our simulation needs to satisfy are the DCHECK's for the request
@@ -457,7 +457,7 @@ class AppCacheRequestHandlerTest
 
   void SimulateResponseInfo(const net::HttpResponseInfo& info) {
     if (request_handler_type_ == URLREQUEST) {
-      job_factory_->SetJob(base::MakeUnique<MockURLRequestJob>(
+      job_factory_->SetJob(std::make_unique<MockURLRequestJob>(
           url_request_.get(), nullptr, info));
       request_->AsURLRequest()->GetURLRequest()->Start();
     } else {

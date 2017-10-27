@@ -242,7 +242,7 @@ std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
   auto it = request.headers.find("Save-Data");
   EXPECT_EQ(request.headers.end(), it);
-  return base::MakeUnique<net::test_server::BasicHttpResponse>();
+  return std::make_unique<net::test_server::BasicHttpResponse>();
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
@@ -1690,7 +1690,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     if (request.relative_url.substr(0, query_position) != relative_url)
       return std::unique_ptr<net::test_server::HttpResponse>();
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-        base::MakeUnique<net::test_server::BasicHttpResponse>());
+        std::make_unique<net::test_server::BasicHttpResponse>());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content(content);
     http_response->set_content_type(content_type);
@@ -1704,7 +1704,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     const size_t query_position = request.relative_url.find('?');
     if (request.relative_url.substr(0, query_position) != relative_url)
       return std::unique_ptr<net::test_server::HttpResponse>();
-    return base::MakeUnique<CustomResponse>(response);
+    return std::make_unique<CustomResponse>(response);
   }
 
   std::unique_ptr<net::test_server::HttpResponse> KeepSearchRedirectHandler(

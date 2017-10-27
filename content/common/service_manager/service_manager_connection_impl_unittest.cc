@@ -21,7 +21,7 @@ constexpr char kTestServiceName[] = "test service";
 std::unique_ptr<service_manager::Service> LaunchService(
     base::WaitableEvent* event) {
   event->Signal();
-  return base::MakeUnique<service_manager::Service>();
+  return std::make_unique<service_manager::Service>();
 }
 
 }  // namespace

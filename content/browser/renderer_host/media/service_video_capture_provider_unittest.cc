@@ -89,9 +89,9 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    auto mock_service_connector = base::MakeUnique<MockServiceConnector>();
+    auto mock_service_connector = std::make_unique<MockServiceConnector>();
     mock_service_connector_ = mock_service_connector.get();
-    provider_ = base::MakeUnique<ServiceVideoCaptureProvider>(
+    provider_ = std::make_unique<ServiceVideoCaptureProvider>(
         std::move(mock_service_connector), kIgnoreLogMessageCB);
 
     ON_CALL(*mock_service_connector_, BindFactoryProvider(_))

@@ -298,7 +298,7 @@ void NavigationStallDelegate::RequestBeginning(
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (request->url() == url_)
-    throttles->push_back(base::MakeUnique<HttpRequestStallThrottle>());
+    throttles->push_back(std::make_unique<HttpRequestStallThrottle>());
 }
 
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file)

@@ -1754,7 +1754,7 @@ RTCPeerConnectionHandler::GetSenders() {
       }
       it = rtp_senders_
                .insert(std::make_pair(
-                   id, base::MakeUnique<RTCRtpSender>(
+                   id, std::make_unique<RTCRtpSender>(
                            webrtc_senders[i].get(), std::move(track_adapter))))
                .first;
     }
@@ -1808,7 +1808,7 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
   auto it = rtp_senders_
                 .insert(std::make_pair(
                     webrtc_sender_id,
-                    base::MakeUnique<RTCRtpSender>(std::move(webrtc_sender),
+                    std::make_unique<RTCRtpSender>(std::move(webrtc_sender),
                                                    std::move(track_adapter),
                                                    std::move(stream_adapters))))
                 .first;
@@ -2056,7 +2056,7 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
       rtp_receivers_
           .insert(std::make_pair(
               receiver_id,
-              base::MakeUnique<RTCRtpReceiver>(
+              std::make_unique<RTCRtpReceiver>(
                   webrtc_receiver.get(), std::move(remote_track_adapter_ref),
                   std::move(remote_stream_adapter_refs))))
           .first->second;

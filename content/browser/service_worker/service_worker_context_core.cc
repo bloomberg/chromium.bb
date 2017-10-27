@@ -244,8 +244,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
         observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      providers_(base::MakeUnique<ProcessToProviderMap>()),
-      provider_by_uuid_(base::MakeUnique<ProviderByClientUUIDMap>()),
+      providers_(std::make_unique<ProcessToProviderMap>()),
+      provider_by_uuid_(std::make_unique<ProviderByClientUUIDMap>()),
       loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
       next_handle_id_(0),
@@ -329,7 +329,7 @@ void ServiceWorkerContextCore::AddProviderHost(
   int provider_id = host->provider_id();
   ProviderMap* map = GetProviderMapForProcess(process_id);
   if (!map) {
-    providers_->AddWithID(base::MakeUnique<ProviderMap>(), process_id);
+    providers_->AddWithID(std::make_unique<ProviderMap>(), process_id);
     map = GetProviderMapForProcess(process_id);
   }
   map->AddWithID(std::move(host), provider_id);

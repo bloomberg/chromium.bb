@@ -65,7 +65,7 @@ class PermissionServiceImplTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     static_cast<TestBrowserContext*>(browser_context())
-        ->SetPermissionManager(base::MakeUnique<TestPermissionManager>());
+        ->SetPermissionManager(std::make_unique<TestPermissionManager>());
     NavigateAndCommit(origin_.GetURL());
     service_context_.reset(new PermissionServiceContext(main_rfh()));
     service_impl_.reset(new PermissionServiceImpl(service_context_.get()));

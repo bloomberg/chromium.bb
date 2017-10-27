@@ -228,7 +228,7 @@ void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
 
 void P2PSocketDispatcherHost::OnGetHostAddress(const std::string& host_name,
                                                int32_t request_id) {
-  std::unique_ptr<DnsRequest> request = base::MakeUnique<DnsRequest>(
+  std::unique_ptr<DnsRequest> request = std::make_unique<DnsRequest>(
       request_id, resource_context_->GetHostResolver());
   DnsRequest* request_ptr = request.get();
   dns_requests_.insert(std::move(request));

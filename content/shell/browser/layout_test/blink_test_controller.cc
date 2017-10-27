@@ -541,7 +541,7 @@ std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
     return bluetooth_chooser_factory_->RunBluetoothChooser(frame,
                                                            event_handler);
   }
-  return base::MakeUnique<LayoutTestFirstDeviceBluetoothChooser>(event_handler);
+  return std::make_unique<LayoutTestFirstDeviceBluetoothChooser>(event_handler);
 }
 
 bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {

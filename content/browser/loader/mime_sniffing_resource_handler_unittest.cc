@@ -282,7 +282,7 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
 
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
-      new InterceptingResourceHandler(base::MakeUnique<TestResourceHandler>(),
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
                                       nullptr));
   std::unique_ptr<TestResourceHandler> scoped_test_handler(
       new TestResourceHandler());
@@ -341,7 +341,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
-      new InterceptingResourceHandler(base::MakeUnique<TestResourceHandler>(),
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
                                       nullptr));
 
   std::unique_ptr<TestResourceHandler> scoped_test_handler(
@@ -503,7 +503,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
-      new InterceptingResourceHandler(base::MakeUnique<TestResourceHandler>(),
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
                                       nullptr));
 
   std::unique_ptr<TestResourceHandler> scoped_test_handler(
@@ -883,7 +883,7 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<ResourceHandler> intercepting_handler(
-      new InterceptingResourceHandler(base::MakeUnique<TestResourceHandler>(),
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
                                       nullptr));
   MimeSniffingResourceHandler mime_sniffing_handler(
       std::unique_ptr<ResourceHandler>(new TestResourceHandler()), &host,
@@ -932,7 +932,7 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
-      new InterceptingResourceHandler(base::MakeUnique<TestResourceHandler>(),
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
                                       nullptr));
 
   std::unique_ptr<TestResourceHandler> scoped_test_handler(

@@ -140,7 +140,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // means tests must ensure any MessageLoop they make is created before
   // the RenderViewHostTestEnabler.
   if (!base::MessageLoop::current())
-    message_loop_ = base::MakeUnique<base::MessageLoop>();
+    message_loop_ = std::make_unique<base::MessageLoop>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
       std::make_unique<NoTransportImageTransportFactory>());

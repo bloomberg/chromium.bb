@@ -46,7 +46,7 @@ SyncLoadContext::SyncLoadContext(
   url_loader_factory_.Bind(std::move(url_loader_factory));
 
   // Constructs a new ResourceDispatcher specifically for this request.
-  resource_dispatcher_ = base::MakeUnique<ResourceDispatcher>(
+  resource_dispatcher_ = std::make_unique<ResourceDispatcher>(
       nullptr, base::ThreadTaskRunnerHandle::Get());
 
   // Initialize the final URL with the original request URL. It will be

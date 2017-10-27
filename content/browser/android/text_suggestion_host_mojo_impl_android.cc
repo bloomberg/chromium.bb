@@ -18,7 +18,7 @@ void TextSuggestionHostMojoImplAndroid::Create(
     TextSuggestionHostAndroid* text_suggestion_host,
     blink::mojom::TextSuggestionHostRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<TextSuggestionHostMojoImplAndroid>(text_suggestion_host),
+      std::make_unique<TextSuggestionHostMojoImplAndroid>(text_suggestion_host),
       std::move(request));
 }
 

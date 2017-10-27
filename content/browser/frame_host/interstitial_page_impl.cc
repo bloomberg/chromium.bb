@@ -167,7 +167,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       // While we get the code to a point to do this, pass NULL for it.
       // TODO(creis): We will also need to pass delegates for the RVHM as we
       // start to use it.
-      frame_tree_(base::MakeUnique<FrameTree>(
+      frame_tree_(std::make_unique<FrameTree>(
           new InterstitialPageNavigatorImpl(this, controller_),
           this,
           this,

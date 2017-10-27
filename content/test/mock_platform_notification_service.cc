@@ -82,7 +82,7 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
     BrowserContext* browser_context,
     const DisplayedNotificationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+  auto displayed_notifications = std::make_unique<std::set<std::string>>();
 
   for (const auto& kv : persistent_notifications_)
     displayed_notifications->insert(kv.first);

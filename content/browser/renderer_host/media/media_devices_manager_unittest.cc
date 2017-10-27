@@ -44,7 +44,7 @@ const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
 class MockAudioManager : public media::FakeAudioManager {
  public:
   MockAudioManager()
-      : FakeAudioManager(base::MakeUnique<media::TestAudioThread>(),
+      : FakeAudioManager(std::make_unique<media::TestAudioThread>(),
                          &fake_audio_log_factory_),
         num_output_devices_(2),
         num_input_devices_(2) {}
@@ -147,12 +147,12 @@ class MediaDevicesManagerTest : public ::testing::Test {
     audio_system_ =
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     auto video_capture_device_factory =
-        base::MakeUnique<MockVideoCaptureDeviceFactory>();
+        std::make_unique<MockVideoCaptureDeviceFactory>();
     video_capture_device_factory_ = video_capture_device_factory.get();
-    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+    auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
         std::move(video_capture_device_factory));
     auto video_capture_provider =
-        base::MakeUnique<InProcessVideoCaptureProvider>(
+        std::make_unique<InProcessVideoCaptureProvider>(
             std::move(video_capture_system),
             base::ThreadTaskRunnerHandle::Get(), kIgnoreLogMessageCB);
     video_capture_manager_ = new VideoCaptureManager(

@@ -561,7 +561,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   prepare_callback.Run();
 
   mojom::ServiceWorkerFetchResponseCallbackPtr mojo_response_callback_ptr;
-  auto response_callback = base::MakeUnique<ResponseCallback>(
+  auto response_callback = std::make_unique<ResponseCallback>(
       mojo::MakeRequest(&mojo_response_callback_ptr),
       weak_factory_.GetWeakPtr(), version_.get());
   ResponseCallback* response_callback_rawptr = response_callback.get();
@@ -728,7 +728,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   mojom::URLLoaderClientPtr url_loader_client_ptr;
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
-  auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
+  auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(url_loader_client_ptr), std::move(on_response), request);
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   url_loader_client->Bind(&url_loader_client_ptr_to_pass);
@@ -789,7 +789,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   mojom::URLLoaderClientPtr url_loader_client_ptr;
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
-  auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
+  auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(url_loader_client_ptr), std::move(on_response),
       resource_request);
 

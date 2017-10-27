@@ -81,7 +81,7 @@ std::unique_ptr<OverscrollGlow> CreateGlowEffect(OverscrollGlowClient* client,
     return nullptr;
   }
 
-  return base::MakeUnique<OverscrollGlow>(client);
+  return std::make_unique<OverscrollGlow>(client);
 }
 
 std::unique_ptr<OverscrollRefresh> CreateRefreshEffect(
@@ -91,7 +91,7 @@ std::unique_ptr<OverscrollRefresh> CreateRefreshEffect(
     return nullptr;
   }
 
-  return base::MakeUnique<OverscrollRefresh>(overscroll_refresh_handler);
+  return std::make_unique<OverscrollRefresh>(overscroll_refresh_handler);
 }
 
 }  // namespace

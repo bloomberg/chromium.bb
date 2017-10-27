@@ -62,7 +62,7 @@ void BlobRegistryWrapper::Bind(int process_id,
                                blink::mojom::BlobRegistryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blob_registry_->Bind(std::move(request),
-                       base::MakeUnique<BindingDelegate>(process_id));
+                       std::make_unique<BindingDelegate>(process_id));
 }
 
 BlobRegistryWrapper::~BlobRegistryWrapper() {}
@@ -71,7 +71,7 @@ void BlobRegistryWrapper::InitializeOnIOThread(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
     scoped_refptr<storage::FileSystemContext> file_system_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  blob_registry_ = base::MakeUnique<storage::BlobRegistryImpl>(
+  blob_registry_ = std::make_unique<storage::BlobRegistryImpl>(
       blob_storage_context->context(), std::move(file_system_context));
 }
 

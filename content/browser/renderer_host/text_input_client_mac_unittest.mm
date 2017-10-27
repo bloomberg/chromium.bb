@@ -61,7 +61,7 @@ class TextInputClientMacTest : public testing::Test {
     int32_t routing_id = rph->GetNextRoutingID();
     mojom::WidgetPtr widget;
     mock_widget_impl_ =
-        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
 
     widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id,
                                            std::move(widget), false));

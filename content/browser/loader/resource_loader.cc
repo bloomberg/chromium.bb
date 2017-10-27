@@ -251,7 +251,7 @@ void ResourceLoader::StartRequest() {
                          TRACE_EVENT_FLAG_FLOW_OUT);
 
   ScopedDeferral scoped_deferral(this, DEFERRED_START);
-  handler_->OnWillStart(request_->url(), base::MakeUnique<Controller>(this));
+  handler_->OnWillStart(request_->url(), std::make_unique<Controller>(this));
 }
 
 void ResourceLoader::CancelRequest(bool from_renderer) {
@@ -359,7 +359,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
   // |defer| to false instead of calling back into the URLRequest.
   deferred_stage_ = DEFERRED_SYNC;
   handler_->OnRequestRedirected(redirect_info, response.get(),
-                                base::MakeUnique<Controller>(this));
+                                std::make_unique<Controller>(this));
   if (is_deferred()) {
     *defer = true;
     deferred_redirect_url_ = redirect_info.new_url;
@@ -675,7 +675,7 @@ void ResourceLoader::CompleteResponseStarted() {
   // defers handling of the response.
   deferred_stage_ = DEFERRED_SYNC;
   handler_->OnResponseStarted(response.get(),
-                              base::MakeUnique<Controller>(this));
+                              std::make_unique<Controller>(this));
   if (is_deferred()) {
     deferred_stage_ = DEFERRED_READ;
   } else {
@@ -691,7 +691,7 @@ void ResourceLoader::PrepareToReadMore(bool handle_result_async) {
   deferred_stage_ = DEFERRED_SYNC;
 
   handler_->OnWillRead(&read_buffer_, &read_buffer_size_,
-                       base::MakeUnique<Controller>(this));
+                       std::make_unique<Controller>(this));
 
   if (is_deferred()) {
     deferred_stage_ = DEFERRED_ON_WILL_READ;
@@ -749,7 +749,7 @@ void ResourceLoader::CompleteRead(int bytes_read) {
 
   ScopedDeferral scoped_deferral(
       this, bytes_read > 0 ? DEFERRED_READ : DEFERRED_RESPONSE_COMPLETE);
-  handler_->OnReadCompleted(bytes_read, base::MakeUnique<Controller>(this));
+  handler_->OnReadCompleted(bytes_read, std::make_unique<Controller>(this));
 }
 
 void ResourceLoader::ResponseCompleted() {
@@ -761,7 +761,7 @@ void ResourceLoader::ResponseCompleted() {
 
   ScopedDeferral scoped_deferral(this, DEFERRED_FINISH);
   handler_->OnResponseCompleted(request_->status(),
-                                base::MakeUnique<Controller>(this));
+                                std::make_unique<Controller>(this));
 }
 
 void ResourceLoader::CallDidFinishLoading() {

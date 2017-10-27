@@ -71,9 +71,9 @@ class MockRefresh : public OverscrollRefresh {
 class OverscrollControllerAndroidUnitTest : public testing::Test {
  public:
   OverscrollControllerAndroidUnitTest() {
-    std::unique_ptr<MockGlow> glow_ptr = base::MakeUnique<MockGlow>();
-    std::unique_ptr<MockRefresh> refresh_ptr = base::MakeUnique<MockRefresh>();
-    compositor_ = base::MakeUnique<MockCompositor>();
+    std::unique_ptr<MockGlow> glow_ptr = std::make_unique<MockGlow>();
+    std::unique_ptr<MockRefresh> refresh_ptr = std::make_unique<MockRefresh>();
+    compositor_ = std::make_unique<MockCompositor>();
     glow_ = glow_ptr.get();
     refresh_ = refresh_ptr.get();
     controller_ = OverscrollControllerAndroid::CreateForTests(

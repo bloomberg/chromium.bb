@@ -106,7 +106,7 @@ LayoutTestBluetoothChooserFactory::RunBluetoothChooser(
   event += origin.Serialize();
   event += ")";
   events_.push_back(event);
-  return base::MakeUnique<Chooser>(weak_this_.GetWeakPtr(), event_handler);
+  return std::make_unique<Chooser>(weak_this_.GetWeakPtr(), event_handler);
 }
 
 std::vector<std::string>

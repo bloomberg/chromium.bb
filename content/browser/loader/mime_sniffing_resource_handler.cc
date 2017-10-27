@@ -378,7 +378,7 @@ void MimeSniffingResourceHandler::CallOnWillRead() {
 
   state_ = STATE_WAITING_FOR_BUFFER;
   next_handler_->OnWillRead(&read_buffer_, &read_buffer_size_,
-                            base::MakeUnique<Controller>(this));
+                            std::make_unique<Controller>(this));
 }
 
 void MimeSniffingResourceHandler::BufferReceived() {
@@ -403,7 +403,7 @@ void MimeSniffingResourceHandler::ReplayResponseReceived() {
   DCHECK_EQ(STATE_INTERCEPTION_CHECK_DONE, state_);
   state_ = STATE_REPLAYING_RESPONSE_RECEIVED;
   next_handler_->OnResponseStarted(response_.get(),
-                                   base::MakeUnique<Controller>(this));
+                                   std::make_unique<Controller>(this));
 }
 
 void MimeSniffingResourceHandler::ReplayReadCompleted() {
@@ -423,7 +423,7 @@ void MimeSniffingResourceHandler::ReplayReadCompleted() {
   bytes_read_ = 0;
 
   next_handler_->OnReadCompleted(bytes_read,
-                                 base::MakeUnique<Controller>(this));
+                                 std::make_unique<Controller>(this));
 }
 
 bool MimeSniffingResourceHandler::MaybeStartInterception() {

@@ -179,7 +179,7 @@ void TracingHandler::OnTraceDataCollected(
 
 void TracingHandler::OnTraceComplete() {
   if (!trace_data_buffer_state_.data.empty())
-    OnTraceDataCollected(base::MakeUnique<std::string>(""));
+    OnTraceDataCollected(std::make_unique<std::string>(""));
 
   DCHECK(trace_data_buffer_state_.data.empty());
   DCHECK_EQ(0u, trace_data_buffer_state_.pos);

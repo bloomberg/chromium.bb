@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
 
   GlobalMemoryDumpPtr before_ptr = DoGlobalDump();
 
-  std::unique_ptr<char[]> buffer = base::MakeUnique<char[]>(kAllocSize);
+  std::unique_ptr<char[]> buffer = std::make_unique<char[]>(kAllocSize);
   memset(buffer.get(), 1, kAllocSize);
   volatile char* x = static_cast<volatile char*>(buffer.get());
   EXPECT_EQ(x[0] + x[kAllocSize - 1], 2);

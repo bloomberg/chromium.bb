@@ -725,7 +725,7 @@ void RenderWidgetCompositor::SetNeedsForcedRedraw() {
 std::unique_ptr<cc::SwapPromiseMonitor>
 RenderWidgetCompositor::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
-  return base::MakeUnique<cc::LatencyInfoSwapPromiseMonitor>(
+  return std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
       latency, layer_tree_host_->GetSwapPromiseManager(), nullptr);
 }
 
@@ -1304,7 +1304,7 @@ void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
 }
 
 void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
-  QueueSwapPromise(base::MakeUnique<ReportTimeSwapPromise>(
+  QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(callback), base::ThreadTaskRunnerHandle::Get()));
 }
 

@@ -51,7 +51,7 @@ class NavigationSimulatorTest
   }
 
   void DidStartNavigation(content::NavigationHandle* handle) override {
-    auto throttle = base::MakeUnique<TestNavigationThrottle>(handle);
+    auto throttle = std::make_unique<TestNavigationThrottle>(handle);
     throttle->SetCallback(
         TestNavigationThrottle::WILL_FAIL_REQUEST,
         base::BindRepeating(&NavigationSimulatorTest::OnWillFailRequestCalled,

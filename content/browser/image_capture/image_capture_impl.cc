@@ -98,7 +98,7 @@ void ImageCaptureImpl::Create(
   if (!base::FeatureList::IsEnabled(features::kImageCaptureAPI))
     return;
 
-  mojo::MakeStrongBinding(base::MakeUnique<ImageCaptureImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<ImageCaptureImpl>(),
                           std::move(request));
 }
 

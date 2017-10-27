@@ -362,7 +362,7 @@ MockRenderProcessHost::GetProcessResourceCoordinator() {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     process_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
             connector, resource_coordinator::CoordinationUnitType::kProcess);
   }
   return process_resource_coordinator_.get();
@@ -461,7 +461,7 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     BrowserContext* browser_context) const {
   processes_.push_back(
-      base::MakeUnique<MockRenderProcessHost>(browser_context));
+      std::make_unique<MockRenderProcessHost>(browser_context));
   processes_.back()->SetFactory(this);
   return processes_.back().get();
 }

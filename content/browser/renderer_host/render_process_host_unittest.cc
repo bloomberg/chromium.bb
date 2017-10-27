@@ -67,7 +67,7 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
   ASSERT_NE(0u, kMaxRendererProcessCount);
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    hosts.push_back(base::MakeUnique<MockRenderProcessHost>(browser_context()));
+    hosts.push_back(std::make_unique<MockRenderProcessHost>(browser_context()));
   }
 
   // Verify that the renderer sharing will happen.
@@ -86,7 +86,7 @@ TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroid) {
   ASSERT_NE(0u, kMaxRendererProcessCount);
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    hosts.push_back(base::MakeUnique<MockRenderProcessHost>(browser_context()));
+    hosts.push_back(std::make_unique<MockRenderProcessHost>(browser_context()));
   }
 
   // Verify that the renderer sharing still won't happen.

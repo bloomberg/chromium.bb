@@ -121,7 +121,7 @@ void ParallelDownloadJob::OnByteStreamReady(
     DownloadWorker* worker,
     std::unique_ptr<ByteStreamReader> stream_reader) {
   bool success = DownloadJob::AddInputStream(
-      base::MakeUnique<DownloadManager::InputStream>(std::move(stream_reader)),
+      std::make_unique<DownloadManager::InputStream>(std::move(stream_reader)),
       worker->offset(), worker->length());
   RecordParallelDownloadAddStreamSuccess(success);
 
@@ -234,7 +234,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   DCHECK(download_item_);
 
   std::unique_ptr<DownloadWorker> worker =
-      base::MakeUnique<DownloadWorker>(this, offset, length);
+      std::make_unique<DownloadWorker>(this, offset, length);
 
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartitionForSite(

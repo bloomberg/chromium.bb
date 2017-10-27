@@ -68,8 +68,7 @@ RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
 
 TestRenderFrame::TestRenderFrame(const RenderFrameImpl::CreateParams& params)
     : RenderFrameImpl(params),
-      mock_frame_host_(base::MakeUnique<MockFrameHost>()) {
-}
+      mock_frame_host_(std::make_unique<MockFrameHost>()) {}
 
 TestRenderFrame::~TestRenderFrame() {}
 

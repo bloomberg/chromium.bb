@@ -269,7 +269,7 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
                    int routing_id,
                    media::mojom::RemoterFactoryRequest request) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<RemoterFactoryImpl>(process_id, routing_id),
+        std::make_unique<RemoterFactoryImpl>(process_id, routing_id),
         std::move(request));
   }
 
@@ -415,7 +415,7 @@ void CreateMediaPlayerRenderer(int process_id,
                                RenderFrameHostDelegate* delegate,
                                media::mojom::RendererRequest request) {
   std::unique_ptr<MediaPlayerRenderer> renderer =
-      base::MakeUnique<MediaPlayerRenderer>(process_id, routing_id,
+      std::make_unique<MediaPlayerRenderer>(process_id, routing_id,
                                             delegate->GetAsWebContents());
 
   // base::Unretained is safe here because the lifetime of the MediaPlayerRender
@@ -2343,7 +2343,7 @@ void RenderFrameHostImpl::OnBeginNavigation(
     return;
 
   if (waiting_for_init_) {
-    pendinging_navigate_ = base::MakeUnique<PendingNavigation>(
+    pendinging_navigate_ = std::make_unique<PendingNavigation>(
         validated_params, validated_begin_params);
     return;
   }
@@ -2887,7 +2887,7 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
 
   if (!keep_alive_handle_factory_) {
     keep_alive_handle_factory_ =
-        base::MakeUnique<KeepAliveHandleFactory>(GetProcess());
+        std::make_unique<KeepAliveHandleFactory>(GetProcess());
   }
   keep_alive_handle_factory_->Create(std::move(request));
 }
@@ -3459,8 +3459,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (registry_.get())
     return;
 
-  associated_registry_ = base::MakeUnique<AssociatedInterfaceRegistryImpl>();
-  registry_ = base::MakeUnique<service_manager::BinderRegistry>();
+  associated_registry_ = std::make_unique<AssociatedInterfaceRegistryImpl>();
+  registry_ = std::make_unique<service_manager::BinderRegistry>();
 
   auto make_binding = [](RenderFrameHostImpl* impl,
                          mojom::FrameHostAssociatedRequest request) {
@@ -3621,12 +3621,12 @@ RenderFrameHostImpl::GetFrameResourceCoordinator() {
 
   if (!resource_coordinator::IsResourceCoordinatorEnabled()) {
     frame_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
             nullptr, resource_coordinator::CoordinationUnitType::kFrame);
   } else {
     auto* connection = ServiceManagerConnection::GetForProcess();
     frame_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
             connection ? connection->GetConnector() : nullptr,
             resource_coordinator::CoordinationUnitType::kFrame);
   }
@@ -4065,7 +4065,7 @@ WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
   // |binding_| which may run the error handler. |binding_| can't run the error
   // handler after it's destroyed so it can't run after the RFHI is destroyed.
   auto web_bluetooth_service =
-      base::MakeUnique<WebBluetoothServiceImpl>(this, std::move(request));
+      std::make_unique<WebBluetoothServiceImpl>(this, std::move(request));
   web_bluetooth_service->SetClientConnectionErrorHandler(
       base::Bind(&RenderFrameHostImpl::DeleteWebBluetoothService,
                  base::Unretained(this), web_bluetooth_service.get()));
@@ -4329,7 +4329,7 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
           GetUserData(kRenderFrameHostAndroidKey));
   if (!render_frame_host_android) {
     service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
-    java_interface_registry_ = base::MakeUnique<JavaInterfaceProvider>(
+    java_interface_registry_ = std::make_unique<JavaInterfaceProvider>(
         base::Bind(&RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
                    weak_ptr_factory_.GetWeakPtr()),
         mojo::MakeRequest(&interface_provider_ptr));

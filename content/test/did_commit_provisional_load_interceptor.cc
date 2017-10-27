@@ -67,7 +67,7 @@ void DidCommitProvisionalLoadInterceptor::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   bool did_insert;
   std::tie(std::ignore, did_insert) = frame_agents_.emplace(
-      render_frame_host, base::MakeUnique<FrameAgent>(this, render_frame_host));
+      render_frame_host, std::make_unique<FrameAgent>(this, render_frame_host));
   DCHECK(did_insert);
 }
 

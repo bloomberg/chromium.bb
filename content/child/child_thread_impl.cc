@@ -413,7 +413,7 @@ void ChildThreadImpl::ConnectChannel(
   mojo::ScopedMessagePipeHandle handle =
       mojo::MakeRequest(&bootstrap).PassMessagePipe();
   service_manager_connection_->AddConnectionFilter(
-      base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
+      std::make_unique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
 
   channel_->Init(
       IPC::ChannelMojo::CreateClientFactory(
@@ -470,14 +470,14 @@ void ChildThreadImpl::Init(const Options& options) {
   thread_safe_sender_ = new ThreadSafeSender(
       message_loop_->task_runner(), sync_message_filter_.get());
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
                          GetIOTaskRunner());
   registry->AddInterface(base::Bind(&ChildThreadImpl::OnChildControlRequest,
                                     base::Unretained(this)),
                          base::ThreadTaskRunnerHandle::Get());
   GetServiceManagerConnection()->AddConnectionFilter(
-      base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+      std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
   InitTracing();
 
@@ -510,7 +510,7 @@ void ChildThreadImpl::Init(const Options& options) {
   // not create the power monitor.
   if (!base::PowerMonitor::Get() && service_manager_connection_) {
     auto power_monitor_source =
-        base::MakeUnique<device::PowerMonitorBroadcastSource>(
+        std::make_unique<device::PowerMonitorBroadcastSource>(
             GetConnector(), GetIOTaskRunner());
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));
@@ -598,7 +598,7 @@ void ChildThreadImpl::InitTracing() {
       ChildProcess::current()->io_task_runner()));
 
   chrome_trace_event_agent_ =
-      base::MakeUnique<tracing::ChromeTraceEventAgent>(GetConnector());
+      std::make_unique<tracing::ChromeTraceEventAgent>(GetConnector());
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
@@ -707,7 +707,7 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     return nullptr;
   }
 
-  return base::MakeUnique<base::SharedMemory>(shared_buf, false);
+  return std::make_unique<base::SharedMemory>(shared_buf, false);
 }
 
 #if defined(OS_LINUX)

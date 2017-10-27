@@ -43,7 +43,7 @@ namespace {
 class MockIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit MockIDBFactory(IndexedDBContextImpl* context)
-      : MockIDBFactory(context, base::MakeUnique<base::DefaultClock>()) {}
+      : MockIDBFactory(context, std::make_unique<base::DefaultClock>()) {}
   MockIDBFactory(IndexedDBContextImpl* context,
                  std::unique_ptr<base::Clock> clock)
       : IndexedDBFactoryImpl(context, std::move(clock)) {}
@@ -411,7 +411,7 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
 class DiskFullFactory : public IndexedDBFactoryImpl {
  public:
   explicit DiskFullFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactoryImpl(context, base::MakeUnique<base::DefaultClock>()) {}
+      : IndexedDBFactoryImpl(context, std::make_unique<base::DefaultClock>()) {}
 
  private:
   ~DiskFullFactory() override {}
@@ -470,7 +470,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
                 base::MakeRefCounted<DiskFullFactory>(context);
             const base::string16 name(ASCIIToUTF16("name"));
             std::unique_ptr<IndexedDBPendingConnection> connection(
-                base::MakeUnique<IndexedDBPendingConnection>(
+                std::make_unique<IndexedDBPendingConnection>(
                     callbacks, dummy_database_callbacks,
                     0 /* child_process_id */, 2 /* transaction_id */,
                     1 /* version */));
@@ -498,7 +498,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
             const Origin origin = Origin::Create(GURL("http://localhost:81"));
             const int64_t transaction_id = 1;
             std::unique_ptr<IndexedDBPendingConnection> connection(
-                base::MakeUnique<IndexedDBPendingConnection>(
+                std::make_unique<IndexedDBPendingConnection>(
                     callbacks, db_callbacks, 0 /* child_process_id */,
                     transaction_id,
                     IndexedDBDatabaseMetadata::DEFAULT_VERSION));
@@ -536,7 +536,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
             const Origin origin = Origin::Create(GURL("http://localhost:81"));
             const int64_t transaction_id = 1;
             std::unique_ptr<IndexedDBPendingConnection> connection(
-                base::MakeUnique<IndexedDBPendingConnection>(
+                std::make_unique<IndexedDBPendingConnection>(
                     callbacks, db_callbacks, 0 /* child_process_id */,
                     transaction_id,
                     IndexedDBDatabaseMetadata::DEFAULT_VERSION));
@@ -648,7 +648,7 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
             const Origin origin = Origin::Create(GURL("http://localhost:81"));
             const int64_t transaction_id = 1;
             std::unique_ptr<IndexedDBPendingConnection> connection(
-                base::MakeUnique<IndexedDBPendingConnection>(
+                std::make_unique<IndexedDBPendingConnection>(
                     callbacks, db_callbacks, 0 /* child_process_id */,
                     transaction_id,
                     IndexedDBDatabaseMetadata::DEFAULT_VERSION));
@@ -750,7 +750,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
             const int64_t db_version = 2;
             (*factory)->Open(
                 db_name,
-                base::MakeUnique<IndexedDBPendingConnection>(
+                std::make_unique<IndexedDBPendingConnection>(
                     *upgrade_callbacks, db_callbacks, 0 /* child_process_id */,
                     transaction_id, db_version),
                 nullptr /* request_context */, origin, context->data_path());
@@ -790,7 +790,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
             {
               const int64_t db_version = 1;
               std::unique_ptr<IndexedDBPendingConnection> connection(
-                  base::MakeUnique<IndexedDBPendingConnection>(
+                  std::make_unique<IndexedDBPendingConnection>(
                       failed_open_callbacks, db_callbacks,
                       0 /* child_process_id */, transaction_id, db_version));
               factory->Open(db_name, std::move(connection),
@@ -866,7 +866,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
               *factory = base::MakeRefCounted<MockIDBFactory>(context);
               (*factory)->Open(
                   ASCIIToUTF16("test_db"),
-                  base::MakeUnique<IndexedDBPendingConnection>(
+                  std::make_unique<IndexedDBPendingConnection>(
                       *callbacks, db_callbacks, 0 /* child_process_id */,
                       transaction_id, 1 /* version */),
                   nullptr /* request_context */, origin, context->data_path());

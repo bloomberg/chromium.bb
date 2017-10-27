@@ -93,7 +93,7 @@ TEST_F(HostZoomMapTest, LastModifiedTimestamp) {
   host_zoom_map.SetStoreLastModified(true);
 
   base::Time now = base::Time::Now();
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  auto test_clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock = test_clock.get();
   host_zoom_map.SetClockForTesting(std::move(test_clock));
 
@@ -131,7 +131,7 @@ TEST_F(HostZoomMapTest, ClearZoomLevels) {
   HostZoomMapImpl host_zoom_map;
   host_zoom_map.SetStoreLastModified(true);
 
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  auto test_clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock = test_clock.get();
   host_zoom_map.SetClockForTesting(std::move(test_clock));
 

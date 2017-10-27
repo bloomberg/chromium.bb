@@ -60,7 +60,7 @@ namespace content {
 
 // static
 std::unique_ptr<CursorRenderer> CursorRenderer::Create(gfx::NativeView view) {
-  return base::MakeUnique<CursorRendererMac>(view);
+  return std::make_unique<CursorRendererMac>(view);
 }
 
 CursorRendererMac::CursorRendererMac(gfx::NativeView view)

@@ -95,7 +95,7 @@ BrowserMediaPlayerManager::CreateMediaPlayer(
     case MEDIA_PLAYER_TYPE_REMOTE_ONLY:
     case MEDIA_PLAYER_TYPE_URL: {
       const std::string user_agent = GetContentClient()->GetUserAgent();
-      auto media_player_bridge = base::MakeUnique<MediaPlayerBridge>(
+      auto media_player_bridge = std::make_unique<MediaPlayerBridge>(
           media_player_params.player_id, media_player_params.url,
           media_player_params.site_for_cookies, user_agent, hide_url_log, this,
           base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,

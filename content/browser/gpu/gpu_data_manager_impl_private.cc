@@ -899,7 +899,7 @@ void GpuDataManagerImplPrivate::ProcessCrashed(
 
 std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()
     const {
-  auto value = base::MakeUnique<base::ListValue>();
+  auto value = std::make_unique<base::ListValue>();
   for (size_t ii = 0; ii < log_messages_.size(); ++ii) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetInteger("level", log_messages_[ii].level);

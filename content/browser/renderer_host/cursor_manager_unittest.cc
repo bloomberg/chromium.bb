@@ -53,7 +53,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
                                       int32_t routing_id) {
     mojom::WidgetPtr widget;
     std::unique_ptr<MockWidgetImpl> widget_impl =
-        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
 
     return new MockRenderWidgetHost(delegate, process, routing_id,
                                     std::move(widget_impl), std::move(widget));

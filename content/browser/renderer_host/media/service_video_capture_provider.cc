@@ -42,7 +42,7 @@ namespace content {
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
-    : ServiceVideoCaptureProvider(base::MakeUnique<ServiceConnectorImpl>(),
+    : ServiceVideoCaptureProvider(std::make_unique<ServiceConnectorImpl>(),
                                   std::move(emit_log_message_cb)) {}
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
@@ -79,7 +79,7 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
 std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
+  return std::make_unique<ServiceVideoCaptureDeviceLauncher>(
       base::BindRepeating(&ServiceVideoCaptureProvider::ConnectToDeviceFactory,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -90,7 +90,7 @@ void ServiceVideoCaptureProvider::ConnectToDeviceFactory(
   IncreaseUsageCount();
   LazyConnectToService();
   launcher_has_connected_to_device_factory_ = true;
-  *out_factory = base::MakeUnique<VideoCaptureFactoryDelegate>(
+  *out_factory = std::make_unique<VideoCaptureFactoryDelegate>(
       &device_factory_,
       base::BindOnce(&ServiceVideoCaptureProvider::DecreaseUsageCount,
                      weak_ptr_factory_.GetWeakPtr()));

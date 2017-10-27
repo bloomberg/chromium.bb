@@ -59,7 +59,7 @@ class NetworkContextTest : public testing::Test {
 
   std::unique_ptr<NetworkContext> CreateContextWithParams(
       mojom::NetworkContextParamsPtr context_params) {
-    return base::MakeUnique<NetworkContext>(
+    return std::make_unique<NetworkContext>(
         network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
         std::move(context_params));
   }

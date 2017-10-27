@@ -162,7 +162,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir);
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        base::MakeUnique<breakpad::ChildProcessCrashObserver>(
+        std::make_unique<breakpad::ChildProcessCrashObserver>(
             crash_dumps_dir, kAndroidMinidumpDescriptor,
             base::Bind(&base::DoNothing)));
   }

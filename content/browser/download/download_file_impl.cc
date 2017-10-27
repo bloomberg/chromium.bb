@@ -79,12 +79,12 @@ DownloadFileImpl::SourceStream::~SourceStream() = default;
 void DownloadFileImpl::SourceStream::Initialize() {
   if (stream_handle_.is_null())
     return;
-  binding_ = base::MakeUnique<mojo::Binding<mojom::DownloadStreamClient>>(
+  binding_ = std::make_unique<mojo::Binding<mojom::DownloadStreamClient>>(
       this, std::move(stream_handle_->client_request));
   binding_->set_connection_error_handler(base::Bind(
       &DownloadFileImpl::SourceStream::OnStreamCompleted,
       base::Unretained(this), mojom::NetworkRequestStatus::USER_CANCELED));
-  handle_watcher_ = base::MakeUnique<mojo::SimpleWatcher>(
+  handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
 }
 
@@ -207,7 +207,7 @@ DownloadFileImpl::DownloadFileImpl(
                        default_download_directory,
                        download_item_net_log,
                        observer) {
-  source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
+  source_streams_[save_info_->offset] = std::make_unique<SourceStream>(
       save_info_->offset, save_info_->length, std::move(stream));
 }
 
@@ -298,7 +298,7 @@ void DownloadFileImpl::AddInputStream(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_streams_[offset] =
-      base::MakeUnique<SourceStream>(offset, length, std::move(stream));
+      std::make_unique<SourceStream>(offset, length, std::move(stream));
   OnSourceStreamAdded(source_streams_[offset].get());
 }
 

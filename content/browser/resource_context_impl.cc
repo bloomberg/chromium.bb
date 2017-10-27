@@ -51,7 +51,7 @@ URLDataManagerBackend* GetURLDataManagerForResourceContext(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context->GetUserData(kURLDataManagerBackendKeyName)) {
     context->SetUserData(kURLDataManagerBackendKeyName,
-                         base::MakeUnique<URLDataManagerBackend>());
+                         std::make_unique<URLDataManagerBackend>());
   }
   return static_cast<URLDataManagerBackend*>(
       context->GetUserData(kURLDataManagerBackendKeyName));
@@ -62,11 +62,11 @@ void InitializeResourceContext(BrowserContext* browser_context) {
 
   resource_context->SetUserData(
       kBlobStorageContextKeyName,
-      base::MakeUnique<UserDataAdapter<ChromeBlobStorageContext>>(
+      std::make_unique<UserDataAdapter<ChromeBlobStorageContext>>(
           ChromeBlobStorageContext::GetFor(browser_context)));
 
   resource_context->SetUserData(
-      kStreamContextKeyName, base::MakeUnique<UserDataAdapter<StreamContext>>(
+      kStreamContextKeyName, std::make_unique<UserDataAdapter<StreamContext>>(
                                  StreamContext::GetFor(browser_context)));
 
   resource_context->DetachFromSequence();

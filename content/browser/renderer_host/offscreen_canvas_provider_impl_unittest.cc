@@ -124,14 +124,14 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
     ImageTransportFactory::SetFactory(
         std::make_unique<NoTransportImageTransportFactory>());
 #endif
-    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
+    host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
 
     // The FrameSinkManagerImpl implementation is in-process here for tests.
-    frame_sink_manager_ = base::MakeUnique<viz::FrameSinkManagerImpl>();
+    frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>();
     surface_utils::ConnectWithLocalFrameSinkManager(
         host_frame_sink_manager_.get(), frame_sink_manager_.get());
 
-    provider_ = base::MakeUnique<OffscreenCanvasProviderImpl>(
+    provider_ = std::make_unique<OffscreenCanvasProviderImpl>(
         host_frame_sink_manager_.get(), kRendererClientId);
   }
   void TearDown() override {

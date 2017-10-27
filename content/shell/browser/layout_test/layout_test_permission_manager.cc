@@ -155,7 +155,7 @@ int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto subscription = base::MakeUnique<Subscription>();
+  auto subscription = std::make_unique<Subscription>();
   subscription->permission =
       PermissionDescription(permission, requesting_origin, embedding_origin);
   subscription->callback = callback;

@@ -400,7 +400,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
       std::unique_ptr<RequestPeer> current_peer,
       const std::string& mime_type,
       const GURL& url) override {
-    return base::MakeUnique<WrapperPeer>(std::move(current_peer));
+    return std::make_unique<WrapperPeer>(std::move(current_peer));
   }
 
   class WrapperPeer : public RequestPeer {
@@ -435,7 +435,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
         original_peer_->OnReceivedData(
-            base::MakeUnique<FixedReceivedData>(data_.data(), data_.size()));
+            std::make_unique<FixedReceivedData>(data_.data(), data_.size()));
       }
       original_peer_->OnCompletedRequest(error_code, stale_copy_in_cache,
                                          completion_time, total_transfer_size,

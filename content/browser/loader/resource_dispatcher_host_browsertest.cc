@@ -261,7 +261,7 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
                      base::Unretained(ResourceDispatcherHostImpl::Get()),
                      child_id));
 
-  return base::MakeUnique<net::test_server::HungResponse>();
+  return std::make_unique<net::test_server::HungResponse>();
 }
 
 }  // namespace
@@ -843,7 +843,7 @@ class RequestDataResourceDispatcherHostDelegate
       AppCacheService* appcache_service,
       ResourceType resource_type,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
-    requests_.push_back(base::MakeUnique<RequestDataForDelegate>(
+    requests_.push_back(std::make_unique<RequestDataForDelegate>(
         request->url(), request->site_for_cookies(), request->initiator(),
         request->load_flags(), request->referrer()));
   }

@@ -154,7 +154,7 @@ void BrowserPpapiHostImpl::AddInstance(
   // See http://crbug.com/733548.
   if (instance_map_.find(instance) == instance_map_.end()) {
     instance_map_[instance] =
-        base::MakeUnique<InstanceData>(renderer_instance_data);
+        std::make_unique<InstanceData>(renderer_instance_data);
   } else {
     NOTREACHED();
   }

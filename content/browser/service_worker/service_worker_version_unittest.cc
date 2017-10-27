@@ -209,7 +209,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   }
 
   virtual std::unique_ptr<MessageReceiver> GetMessageReceiver() {
-    return base::MakeUnique<MessageReceiver>();
+    return std::make_unique<MessageReceiver>();
   }
 
   void TearDown() override {
@@ -344,7 +344,7 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
   }
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::MakeUnique<MessageReceiverDisallowStart>();
+    return std::make_unique<MessageReceiverDisallowStart>();
   }
 
  private:
@@ -390,7 +390,7 @@ class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTest {
   ServiceWorkerStallInStoppingTest() : ServiceWorkerVersionTest() {}
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::MakeUnique<MessageReceiverDisallowStop>();
+    return std::make_unique<MessageReceiverDisallowStop>();
   }
 
  private:
@@ -893,7 +893,7 @@ class ServiceWorkerRequestTimeoutTest : public ServiceWorkerVersionTest {
   ServiceWorkerRequestTimeoutTest() : ServiceWorkerVersionTest() {}
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::MakeUnique<MessageReceiverControlEvents>();
+    return std::make_unique<MessageReceiverControlEvents>();
   }
 
   bool has_extendable_message_event_callback() {

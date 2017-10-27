@@ -91,7 +91,7 @@ TEST(IPCMessageTest, ListValue) {
   base::ListValue input;
   input.AppendDouble(42.42);
   input.AppendString("forty");
-  input.Append(base::MakeUnique<base::Value>());
+  input.Append(std::make_unique<base::Value>());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
@@ -111,15 +111,15 @@ TEST(IPCMessageTest, ListValue) {
 
 TEST(IPCMessageTest, DictionaryValue) {
   base::DictionaryValue input;
-  input.Set("null", base::MakeUnique<base::Value>());
+  input.Set("null", std::make_unique<base::Value>());
   input.SetBoolean("bool", true);
   input.SetInteger("int", 42);
 
-  auto subdict = base::MakeUnique<base::DictionaryValue>();
+  auto subdict = std::make_unique<base::DictionaryValue>();
   subdict->SetString("str", "forty two");
   subdict->SetBoolean("bool", false);
 
-  auto sublist = base::MakeUnique<base::ListValue>();
+  auto sublist = std::make_unique<base::ListValue>();
   sublist->AppendDouble(42.42);
   sublist->AppendString("forty");
   sublist->AppendString("two");

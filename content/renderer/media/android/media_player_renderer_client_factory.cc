@@ -39,7 +39,7 @@ MediaPlayerRendererClientFactory::CreateRenderer(
   media::ScopedStreamTextureWrapper stream_texture_wrapper =
       get_stream_texture_wrapper_cb_.Run();
 
-  return base::MakeUnique<MediaPlayerRendererClient>(
+  return std::make_unique<MediaPlayerRendererClient>(
       media_task_runner, compositor_task_runner_, mojo_renderer,
       std::move(stream_texture_wrapper), video_renderer_sink);
 }

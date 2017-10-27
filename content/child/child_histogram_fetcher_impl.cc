@@ -26,7 +26,7 @@ ChildHistogramFetcherFactoryImpl::~ChildHistogramFetcherFactoryImpl() {}
 
 void ChildHistogramFetcherFactoryImpl::Create(
     content::mojom::ChildHistogramFetcherFactoryRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<ChildHistogramFetcherFactoryImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<ChildHistogramFetcherFactoryImpl>(),
                           std::move(request));
 }
 
@@ -51,7 +51,7 @@ void ChildHistogramFetcherFactoryImpl::CreateFetcher(
     global_allocator->CreateTrackingHistograms(global_allocator->Name());
 
   content::mojom::ChildHistogramFetcherPtr child_histogram_interface;
-  mojo::MakeStrongBinding(base::MakeUnique<ChildHistogramFetcherImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<ChildHistogramFetcherImpl>(),
                           std::move(request));
 }
 

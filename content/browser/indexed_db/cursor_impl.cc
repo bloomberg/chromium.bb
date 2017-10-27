@@ -111,8 +111,8 @@ void CursorImpl::IDBSequenceHelper::Continue(
     const IndexedDBKey& primary_key,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   cursor_->Continue(
-      key.IsValid() ? base::MakeUnique<IndexedDBKey>(key) : nullptr,
-      primary_key.IsValid() ? base::MakeUnique<IndexedDBKey>(primary_key)
+      key.IsValid() ? std::make_unique<IndexedDBKey>(key) : nullptr,
+      primary_key.IsValid() ? std::make_unique<IndexedDBKey>(primary_key)
                             : nullptr,
       std::move(callbacks));
 }

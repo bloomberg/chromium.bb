@@ -631,7 +631,7 @@ void DatabaseImpl::IDBSequenceHelper::Get(
     return;
 
   connection_->database()->Get(transaction, object_store_id, index_id,
-                               base::MakeUnique<IndexedDBKeyRange>(key_range),
+                               std::make_unique<IndexedDBKeyRange>(key_range),
                                key_only, callbacks);
 }
 
@@ -654,7 +654,7 @@ void DatabaseImpl::IDBSequenceHelper::GetAll(
 
   connection_->database()->GetAll(
       transaction, object_store_id, index_id,
-      base::MakeUnique<IndexedDBKeyRange>(key_range), key_only, max_count,
+      std::make_unique<IndexedDBKeyRange>(key_range), key_only, max_count,
       std::move(callbacks));
 }
 
@@ -687,7 +687,7 @@ void DatabaseImpl::IDBSequenceHelper::Put(
   swap(value.bits, mojo_value->bits);
   swap(value.blob_info, blob_info);
   connection_->database()->Put(transaction, object_store_id, &value, &handles,
-                               base::MakeUnique<IndexedDBKey>(key), mode,
+                               std::make_unique<IndexedDBKey>(key), mode,
                                std::move(callbacks), index_keys);
 
   // Size can't be big enough to overflow because it represents the
@@ -710,7 +710,7 @@ void DatabaseImpl::IDBSequenceHelper::SetIndexKeys(
     return;
 
   connection_->database()->SetIndexKeys(
-      transaction, object_store_id, base::MakeUnique<IndexedDBKey>(primary_key),
+      transaction, object_store_id, std::make_unique<IndexedDBKey>(primary_key),
       index_keys);
 }
 
@@ -751,7 +751,7 @@ void DatabaseImpl::IDBSequenceHelper::OpenCursor(
 
   connection_->database()->OpenCursor(
       transaction, object_store_id, index_id,
-      base::MakeUnique<IndexedDBKeyRange>(key_range), direction, key_only,
+      std::make_unique<IndexedDBKeyRange>(key_range), direction, key_only,
       task_type, std::move(callbacks));
 }
 
@@ -771,7 +771,7 @@ void DatabaseImpl::IDBSequenceHelper::Count(
     return;
 
   connection_->database()->Count(transaction, object_store_id, index_id,
-                                 base::MakeUnique<IndexedDBKeyRange>(key_range),
+                                 std::make_unique<IndexedDBKeyRange>(key_range),
                                  std::move(callbacks));
 }
 
@@ -790,7 +790,7 @@ void DatabaseImpl::IDBSequenceHelper::DeleteRange(
 
   connection_->database()->DeleteRange(
       transaction, object_store_id,
-      base::MakeUnique<IndexedDBKeyRange>(key_range), std::move(callbacks));
+      std::make_unique<IndexedDBKeyRange>(key_range), std::move(callbacks));
 }
 
 void DatabaseImpl::IDBSequenceHelper::Clear(

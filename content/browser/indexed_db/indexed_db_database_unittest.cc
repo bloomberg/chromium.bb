@@ -46,7 +46,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
     backing_store_ = new IndexedDBFakeBackingStore();
     factory_ = new MockIndexedDBFactory();
     std::unique_ptr<FakeIndexedDBMetadataCoding> metadata_coding =
-        base::MakeUnique<FakeIndexedDBMetadataCoding>();
+        std::make_unique<FakeIndexedDBMetadataCoding>();
     metadata_coding_ = metadata_coding.get();
     EXPECT_TRUE(backing_store_->HasOneRef());
     leveldb::Status s;
@@ -80,7 +80,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id1 = 1;
   std::unique_ptr<IndexedDBPendingConnection> connection1(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request1, callbacks1, kFakeChildProcessId, transaction_id1,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   db_->OpenConnection(std::move(connection1));
@@ -92,7 +92,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id2 = 2;
   std::unique_ptr<IndexedDBPendingConnection> connection2(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request2, callbacks2, kFakeChildProcessId, transaction_id2,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   db_->OpenConnection(std::move(connection2));
@@ -119,7 +119,7 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
   scoped_refptr<MockIndexedDBCallbacks> request(new MockIndexedDBCallbacks());
   const int64_t upgrade_transaction_id = 3;
   std::unique_ptr<IndexedDBPendingConnection> connection(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request, callbacks, kFakeChildProcessId, upgrade_transaction_id,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   db_->OpenConnection(std::move(connection));
@@ -170,7 +170,7 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id1 = 1;
   std::unique_ptr<IndexedDBPendingConnection> connection(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request1, callbacks1, kFakeChildProcessId, transaction_id1,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   db_->OpenConnection(std::move(connection));
@@ -214,7 +214,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id1 = 1;
   std::unique_ptr<IndexedDBPendingConnection> connection1(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request1, callbacks1, kFakeChildProcessId, transaction_id1,
           kDatabaseVersion));
   db_->OpenConnection(std::move(connection1));
@@ -230,7 +230,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id2 = 2;
   std::unique_ptr<IndexedDBPendingConnection> connection2(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request2, callbacks2, kFakeChildProcessId, transaction_id2,
           kDatabaseVersion));
   db_->OpenConnection(std::move(connection2));
@@ -246,7 +246,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id3 = 3;
   std::unique_ptr<IndexedDBPendingConnection> connection3(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request3, callbacks3, kFakeChildProcessId, transaction_id3,
           kDatabaseVersion));
   db_->OpenConnection(std::move(connection3));
@@ -280,7 +280,7 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id1 = 1;
   std::unique_ptr<IndexedDBPendingConnection> connection(
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           request1, callbacks1, kFakeChildProcessId, transaction_id1,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   db_->OpenConnection(std::move(connection));
@@ -315,7 +315,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
   void SetUp() override {
     backing_store_ = new IndexedDBFakeBackingStore();
     std::unique_ptr<FakeIndexedDBMetadataCoding> metadata_coding =
-        base::MakeUnique<FakeIndexedDBMetadataCoding>();
+        std::make_unique<FakeIndexedDBMetadataCoding>();
     metadata_coding_ = metadata_coding.get();
     leveldb::Status s;
     std::tie(db_, s) = IndexedDBDatabase::Create(
@@ -327,13 +327,13 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     callbacks_ = new MockIndexedDBDatabaseCallbacks();
     const int64_t transaction_id = 1;
     std::unique_ptr<IndexedDBPendingConnection> connection(
-        base::MakeUnique<IndexedDBPendingConnection>(
+        std::make_unique<IndexedDBPendingConnection>(
             request_, callbacks_, kFakeChildProcessId, transaction_id,
             IndexedDBDatabaseMetadata::DEFAULT_VERSION));
     db_->OpenConnection(std::move(connection));
     EXPECT_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
 
-    connection_ = base::MakeUnique<IndexedDBConnection>(kFakeChildProcessId,
+    connection_ = std::make_unique<IndexedDBConnection>(kFakeChildProcessId,
                                                         db_, callbacks_);
     transaction_ = connection_->CreateTransaction(
         transaction_id, std::set<int64_t>() /*scope*/,
@@ -453,7 +453,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   // Put is asynchronous
   IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
-  std::unique_ptr<IndexedDBKey> key(base::MakeUnique<IndexedDBKey>("key"));
+  std::unique_ptr<IndexedDBKey> key(std::make_unique<IndexedDBKey>("key"));
   std::vector<IndexedDBIndexKeys> index_keys;
   scoped_refptr<MockIndexedDBCallbacks> request(
       new MockIndexedDBCallbacks(false));

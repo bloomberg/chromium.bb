@@ -36,7 +36,7 @@ WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
 
 WebRTCInternalsUI::WebRTCInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<WebRTCInternalsMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<WebRTCInternalsMessageHandler>());
 
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

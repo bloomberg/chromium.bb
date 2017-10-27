@@ -229,7 +229,7 @@ std::unique_ptr<blink::WebApplicationCacheHost>
 EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
   std::unique_ptr<WebApplicationCacheHostImpl> host =
-      base::MakeUnique<SharedWorkerWebApplicationCacheHostImpl>(client);
+      std::make_unique<SharedWorkerWebApplicationCacheHostImpl>(client);
   app_cache_host_ = host.get();
   return std::move(host);
 }
@@ -242,7 +242,7 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
       ServiceWorkerNetworkProvider::CreateForSharedWorker(route_id_));
 
   // Blink is responsible for deleting the returned object.
-  return base::MakeUnique<WebServiceWorkerNetworkProviderForSharedWorker>(
+  return std::make_unique<WebServiceWorkerNetworkProviderForSharedWorker>(
       std::move(provider), IsOriginSecure(url_));
 }
 
@@ -287,7 +287,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
           ->blink_platform_impl()
           ->CreateDefaultURLLoaderFactoryGetter();
   DCHECK(url_loader_factory_getter);
-  auto worker_fetch_context = base::MakeUnique<WorkerFetchContextImpl>(
+  auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
       std::move(request), std::move(container_host_ptr_info),
       url_loader_factory_getter->GetClonedInfo());
 

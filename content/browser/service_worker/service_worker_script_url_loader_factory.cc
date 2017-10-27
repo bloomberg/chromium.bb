@@ -50,7 +50,7 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
   mojo::MakeStrongBinding(
-      base::MakeUnique<ServiceWorkerScriptURLLoader>(
+      std::make_unique<ServiceWorkerScriptURLLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
           provider_host_->running_hosted_version(), loader_factory_getter_,
           traffic_annotation),

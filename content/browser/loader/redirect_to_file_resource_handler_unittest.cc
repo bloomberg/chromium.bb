@@ -214,7 +214,7 @@ class RedirectToFileResourceHandlerTest
                                                TRAFFIC_ANNOTATION_FOR_TESTS)) {
     base::CreateTemporaryFile(&temp_file_path_);
     std::unique_ptr<TestResourceHandler> test_handler =
-        base::MakeUnique<TestResourceHandler>();
+        std::make_unique<TestResourceHandler>();
     test_handler->set_expect_on_data_downloaded(true);
     if (GetParam() == CompletionMode::ASYNC) {
       // Don't defer OnResponseCompleted, by default, since that's really
@@ -224,16 +224,16 @@ class RedirectToFileResourceHandlerTest
     }
     test_handler_ = test_handler->GetWeakPtr();
 
-    redirect_to_file_handler_ = base::MakeUnique<RedirectToFileResourceHandler>(
+    redirect_to_file_handler_ = std::make_unique<RedirectToFileResourceHandler>(
         std::move(test_handler), url_request_.get());
     mock_loader_ =
-        base::MakeUnique<MockResourceLoader>(redirect_to_file_handler_.get());
+        std::make_unique<MockResourceLoader>(redirect_to_file_handler_.get());
     redirect_to_file_handler_->SetCreateTemporaryFileStreamFunctionForTesting(
         base::Bind(&RedirectToFileResourceHandlerTest::
                        SetCreateTemporaryFileStreamCallback,
                    base::Unretained(this)));
 
-    file_stream_ = base::MakeUnique<MockFileStream>();
+    file_stream_ = std::make_unique<MockFileStream>();
     file_stream_->set_open_result(
         MockFileStream::OperationResult(net::OK, GetParam()));
     file_stream_->set_all_write_results(MockFileStream::OperationResult(

@@ -46,7 +46,7 @@ class TestSyncMessageFilter : public IPC::SyncMessageFilter {
       std::vector<IPC::Message> messages = std::get<1>(param);
       last_swap_messages_.clear();
       for (const IPC::Message& message : messages) {
-        last_swap_messages_.push_back(base::MakeUnique<IPC::Message>(message));
+        last_swap_messages_.push_back(std::make_unique<IPC::Message>(message));
       }
       delete message;
     } else {

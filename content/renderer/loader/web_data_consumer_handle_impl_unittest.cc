@@ -240,7 +240,7 @@ class WebDataConsumerHandleImplTest : public ::testing::Test {
 
 TEST_F(WebDataConsumerHandleImplTest, ReadData) {
   base::RunLoop run_loop;
-  auto operation = base::MakeUnique<ReadDataOperation>(
+  auto operation = std::make_unique<ReadDataOperation>(
       std::move(consumer_), &message_loop_, run_loop.QuitClosure());
 
   base::Thread t("DataConsumerHandle test thread");
@@ -261,7 +261,7 @@ TEST_F(WebDataConsumerHandleImplTest, ReadData) {
 
 TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   base::RunLoop run_loop;
-  auto operation = base::MakeUnique<TwoPhaseReadDataOperation>(
+  auto operation = std::make_unique<TwoPhaseReadDataOperation>(
       std::move(consumer_), &message_loop_, run_loop.QuitClosure());
 
   base::Thread t("DataConsumerHandle test thread");
@@ -325,7 +325,7 @@ TEST_F(WebDataConsumerHandleImplTest, DidGetReadable) {
   static constexpr size_t kTotalSize = kBlockSize * 3;
 
   std::unique_ptr<CountDidGetReadableClient> client =
-      base::MakeUnique<CountDidGetReadableClient>();
+      std::make_unique<CountDidGetReadableClient>();
   std::unique_ptr<WebDataConsumerHandleImpl> handle(
       new WebDataConsumerHandleImpl(std::move(consumer_)));
   std::unique_ptr<WebDataConsumerHandle::Reader> reader(

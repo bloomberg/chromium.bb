@@ -174,7 +174,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   std::unique_ptr<EmbeddedWorkerStartParams>
   CreateStartParams(int version_id, const GURL& scope, const GURL& script_url) {
     std::unique_ptr<EmbeddedWorkerStartParams> params =
-        base::MakeUnique<EmbeddedWorkerStartParams>();
+        std::make_unique<EmbeddedWorkerStartParams>();
     params->service_worker_version_id = version_id;
     params->scope = scope;
     params->script_url = script_url;
@@ -186,7 +186,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
       int /* process_id */) {
     provider_host_endpoints_.emplace_back(
-        base::MakeUnique<ProviderHostEndpoints>());
+        std::make_unique<ProviderHostEndpoints>());
     return provider_host_endpoints_.back()->CreateProviderInfoPtr();
   }
 
@@ -692,7 +692,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
 
   bool was_resume_after_download_called = false;
   helper_->RegisterMockInstanceClient(
-      base::MakeUnique<DontReceiveResumeAfterDownloadInstanceClient>(
+      std::make_unique<DontReceiveResumeAfterDownloadInstanceClient>(
           helper_->AsWeakPtr(), &was_resume_after_download_called));
 
   std::unique_ptr<EmbeddedWorkerInstance> worker =
@@ -882,7 +882,7 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
 
   // Let StartWorker fail; binding is discarded in the middle of IPC
   helper_->RegisterMockInstanceClient(
-      base::MakeUnique<FailEmbeddedWorkerInstanceClientImpl>(
+      std::make_unique<FailEmbeddedWorkerInstanceClientImpl>(
           helper_->AsWeakPtr()));
   ASSERT_EQ(mock_instance_clients()->size(), 1UL);
 
@@ -936,7 +936,7 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
   std::unique_ptr<StoreMessageInstanceClient> instance_client =
-      base::MakeUnique<StoreMessageInstanceClient>(helper_->AsWeakPtr());
+      std::make_unique<StoreMessageInstanceClient>(helper_->AsWeakPtr());
   StoreMessageInstanceClient* instance_client_rawptr = instance_client.get();
   helper_->RegisterMockInstanceClient(std::move(instance_client));
   ASSERT_EQ(mock_instance_clients()->size(), 1UL);
@@ -987,7 +987,7 @@ TEST_F(EmbeddedWorkerInstanceTest, NoDispatcherHost) {
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
   SetWorkerStatus(worker.get(), EmbeddedWorkerStatus::STARTING);
-  auto params = base::MakeUnique<EmbeddedWorkerStartParams>();
+  auto params = std::make_unique<EmbeddedWorkerStartParams>();
   ServiceWorkerStatusCode result =
       SimulateSendStartWorker(worker.get(), std::move(params));
   EXPECT_EQ(SERVICE_WORKER_ERROR_IPC_FAILED, result);

@@ -563,7 +563,7 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
   // This is an initial find operation.
   Reset(request);
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
-    frame_observers_.push_back(base::MakeUnique<FrameObserver>(contents, this));
+    frame_observers_.push_back(std::make_unique<FrameObserver>(contents, this));
     for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
       AddFrame(node->current_frame_host(), false /* force */);
     }

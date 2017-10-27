@@ -2050,7 +2050,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WebUIImpl* web_ui = rfh->web_ui();
 
   EXPECT_TRUE(web_ui->CanCallJavascript());
-  auto handler_owner = base::MakeUnique<TestWebUIMessageHandler>();
+  auto handler_owner = std::make_unique<TestWebUIMessageHandler>();
   TestWebUIMessageHandler* handler = handler_owner.get();
 
   web_ui->AddMessageHandler(std::move(handler_owner));

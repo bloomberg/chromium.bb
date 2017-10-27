@@ -85,7 +85,7 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
         new ChromeBlobStorageContext();
     context->SetUserData(
         kBlobStorageContextKeyName,
-        base::MakeUnique<UserDataAdapter<ChromeBlobStorageContext>>(
+        std::make_unique<UserDataAdapter<ChromeBlobStorageContext>>(
             blob.get()));
 
     // Check first to avoid memory leak in unittests.

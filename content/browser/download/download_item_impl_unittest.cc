@@ -322,7 +322,7 @@ class DownloadItemTest : public testing::Test {
     }
 
     std::unique_ptr<MockRequestHandle> request_handle =
-        base::MakeUnique<NiceMock<MockRequestHandle>>();
+        std::make_unique<NiceMock<MockRequestHandle>>();
     item->Start(std::move(download_file), std::move(request_handle),
                 *create_info_);
     task_environment_.RunUntilIdle();
@@ -852,9 +852,9 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
   for (int i = 0; i < (DownloadItemImpl::kMaxAutoResumeAttempts + 1); ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i);
 
-    mock_download_file = base::MakeUnique<NiceMock<MockDownloadFile>>();
+    mock_download_file = std::make_unique<NiceMock<MockDownloadFile>>();
     mock_download_file_ref = mock_download_file.get();
-    mock_request_handle = base::MakeUnique<NiceMock<MockRequestHandle>>();
+    mock_request_handle = std::make_unique<NiceMock<MockRequestHandle>>();
 
     ON_CALL(*mock_download_file_ref, FullPath())
         .WillByDefault(ReturnRefOfCopy(base::FilePath()));
@@ -1168,9 +1168,9 @@ TEST_F(DownloadItemTest, Start) {
 // file initialization failing.
 TEST_F(DownloadItemTest, InitDownloadFileFails) {
   DownloadItemImpl* item = CreateDownloadItem();
-  std::unique_ptr<MockDownloadFile> file = base::MakeUnique<MockDownloadFile>();
+  std::unique_ptr<MockDownloadFile> file = std::make_unique<MockDownloadFile>();
   std::unique_ptr<MockRequestHandle> request_handle =
-      base::MakeUnique<MockRequestHandle>();
+      std::make_unique<MockRequestHandle>();
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(*file, Cancel());

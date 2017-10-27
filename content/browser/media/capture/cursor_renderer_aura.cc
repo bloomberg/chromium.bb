@@ -18,7 +18,7 @@ namespace content {
 // static
 std::unique_ptr<CursorRenderer> CursorRenderer::Create(
     gfx::NativeWindow window) {
-  return base::MakeUnique<CursorRendererAura>(window,
+  return std::make_unique<CursorRendererAura>(window,
                                               kCursorEnabledOnMouseMovement);
 }
 

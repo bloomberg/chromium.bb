@@ -705,7 +705,7 @@ bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return AddVideoTrackToMediaStream(base::MakeUnique<MockVideoCapturerSource>(),
+  return AddVideoTrackToMediaStream(std::make_unique<MockVideoCapturerSource>(),
                                     false,  // is_remote
                                     stream);
 #else

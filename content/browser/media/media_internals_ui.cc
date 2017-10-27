@@ -39,7 +39,7 @@ WebUIDataSource* CreateMediaInternalsHTMLSource() {
 
 MediaInternalsUI::MediaInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<MediaInternalsMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<MediaInternalsMessageHandler>());
 
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

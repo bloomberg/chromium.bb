@@ -140,7 +140,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
     return dispatcher_->StartAsync(
         std::move(request), 0, nullptr, url::Origin(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
-        base::MakeUnique<TestRequestPeer>(context, message_loop_.task_runner()),
+        std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         mojo::ScopedDataPipeConsumerHandle());

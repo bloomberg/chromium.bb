@@ -295,7 +295,7 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
   bool gpu_access_blocked =
       !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
 
-  auto feature_status_dict = base::MakeUnique<base::DictionaryValue>();
+  auto feature_status_dict = std::make_unique<base::DictionaryValue>();
 
   bool eof = false;
   for (size_t i = 0; !eof; ++i) {
@@ -350,15 +350,15 @@ std::unique_ptr<base::ListValue> GetProblems() {
   bool gpu_access_blocked =
       !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
 
-  auto problem_list = base::MakeUnique<base::ListValue>();
+  auto problem_list = std::make_unique<base::ListValue>();
   manager->GetBlacklistReasons(problem_list.get());
 
   if (gpu_access_blocked) {
-    auto problem = base::MakeUnique<base::DictionaryValue>();
+    auto problem = std::make_unique<base::DictionaryValue>();
     problem->SetString("description",
         "GPU process was unable to boot: " + gpu_access_blocked_reason);
-    problem->Set("crBugs", base::MakeUnique<base::ListValue>());
-    auto disabled_features = base::MakeUnique<base::ListValue>();
+    problem->Set("crBugs", std::make_unique<base::ListValue>());
+    auto disabled_features = std::make_unique<base::ListValue>();
     disabled_features->AppendString("all");
     problem->Set("affectedGpuSettings", std::move(disabled_features));
     problem->SetString("tag", "disabledFeatures");
@@ -369,10 +369,10 @@ std::unique_ptr<base::ListValue> GetProblems() {
   for (size_t i = 0; !eof; ++i) {
     const GpuFeatureData gpu_feature_data = GetGpuFeatureData(i, &eof);
     if (gpu_feature_data.disabled) {
-      auto problem = base::MakeUnique<base::DictionaryValue>();
+      auto problem = std::make_unique<base::DictionaryValue>();
       problem->SetString("description", gpu_feature_data.disabled_description);
-      problem->Set("crBugs", base::MakeUnique<base::ListValue>());
-      auto disabled_features = base::MakeUnique<base::ListValue>();
+      problem->Set("crBugs", std::make_unique<base::ListValue>());
+      auto disabled_features = std::make_unique<base::ListValue>();
       disabled_features->AppendString(gpu_feature_data.name);
       problem->Set("affectedGpuSettings", std::move(disabled_features));
       problem->SetString("tag", "disabledFeatures");

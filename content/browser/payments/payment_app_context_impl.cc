@@ -70,7 +70,7 @@ void PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   payment_app_database_ =
-      base::MakeUnique<PaymentAppDatabase>(service_worker_context);
+      std::make_unique<PaymentAppDatabase>(service_worker_context);
 }
 
 void PaymentAppContextImpl::CreatePaymentManagerOnIO(

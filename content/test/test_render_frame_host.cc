@@ -438,7 +438,7 @@ void TestRenderFrameHost::SendNavigateWithParams(
     navigation_handle()->set_response_headers_for_testing(response_headers);
   }
   DidCommitProvisionalLoad(
-      base::MakeUnique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params));
+      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params));
   last_commit_was_error_page_ = params->url_is_unreachable;
 }
 

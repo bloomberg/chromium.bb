@@ -335,7 +335,7 @@ class RemovePluginPrivateDataTester {
         filesystem_context_->GetAsyncFileUtil(
             storage::kFileSystemTypePluginPrivate);
     std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-        base::MakeUnique<storage::FileSystemOperationContext>(
+        std::make_unique<storage::FileSystemOperationContext>(
             filesystem_context_);
     async_file_util->CreateOrOpen(
         std::move(operation_context), clearkey_file_,
@@ -381,7 +381,7 @@ class RemovePluginPrivateDataTester {
     storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
         storage::kFileSystemTypePluginPrivate);
     std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-        base::MakeUnique<storage::FileSystemOperationContext>(
+        std::make_unique<storage::FileSystemOperationContext>(
             filesystem_context_);
     operation_context->set_allowed_bytes_growth(
         storage::QuotaManager::kNoLimit);
@@ -398,7 +398,7 @@ class RemovePluginPrivateDataTester {
     storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
         storage::kFileSystemTypePluginPrivate);
     std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-        base::MakeUnique<storage::FileSystemOperationContext>(
+        std::make_unique<storage::FileSystemOperationContext>(
             filesystem_context_);
     file_util->DeleteFile(
         std::move(operation_context), file_url,
@@ -415,7 +415,7 @@ class RemovePluginPrivateDataTester {
     storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
         storage::kFileSystemTypePluginPrivate);
     std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-        base::MakeUnique<storage::FileSystemOperationContext>(
+        std::make_unique<storage::FileSystemOperationContext>(
             filesystem_context_);
     file_util->Touch(std::move(operation_context), file_url, time_stamp,
                      time_stamp,

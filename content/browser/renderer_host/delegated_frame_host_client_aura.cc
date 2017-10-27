@@ -70,7 +70,7 @@ DelegatedFrameHostClientAura::DelegatedFrameHostCreateResizeLock() {
   host->dispatcher()->HoldPointerMoves();
 
   gfx::Size desired_size = render_widget_host_view_->window_->bounds().size();
-  return base::MakeUnique<CompositorResizeLock>(this, desired_size);
+  return std::make_unique<CompositorResizeLock>(this, desired_size);
 }
 
 viz::LocalSurfaceId DelegatedFrameHostClientAura::GetLocalSurfaceId() const {

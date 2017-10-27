@@ -93,7 +93,7 @@ void SetupOnUIThread(
     SetupProcessCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto process_info =
-      base::MakeUnique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
+      std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
   if (!process_manager) {
     BrowserThread::PostTask(
@@ -141,7 +141,7 @@ void SetupOnUIThread(
   params->worker_devtools_agent_route_id = routing_id;
   // Create DevToolsProxy here to ensure that the WorkerCreated() call is
   // balanced by DevToolsProxy's destructor calling WorkerDestroyed().
-  devtools_proxy = base::MakeUnique<EmbeddedWorkerInstance::DevToolsProxy>(
+  devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
       process_id, routing_id);
 
   // Set EmbeddedWorkerSettings for content settings only readable from the UI
@@ -416,7 +416,7 @@ class EmbeddedWorkerInstance::StartTask {
     // Notify the instance that a process is allocated.
     state_ = ProcessAllocationState::ALLOCATED;
     instance_->OnProcessAllocated(
-        base::MakeUnique<WorkerProcessHandle>(instance_->context_,
+        std::make_unique<WorkerProcessHandle>(instance_->context_,
                                               instance_->embedded_worker_id(),
                                               process_info->process_id),
         start_situation);
@@ -651,7 +651,7 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
   instance_host_binding_.Bind(mojo::MakeRequest(&host_ptr_info));
 
   blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy_ptr_info;
-  content_settings_ = base::MakeUnique<ServiceWorkerContentSettingsProxyImpl>(
+  content_settings_ = std::make_unique<ServiceWorkerContentSettingsProxyImpl>(
       params->script_url, context_,
       mojo::MakeRequest(&content_settings_proxy_ptr_info));
 

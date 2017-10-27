@@ -333,7 +333,7 @@ std::unique_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
 GpuVideoAcceleratorFactoriesImpl::GetGLContextLock() {
   if (CheckContextLost())
     return nullptr;
-  return base::MakeUnique<ScopedGLContextLockImpl>(context_provider_);
+  return std::make_unique<ScopedGLContextLockImpl>(context_provider_);
 }
 
 std::unique_ptr<base::SharedMemory>

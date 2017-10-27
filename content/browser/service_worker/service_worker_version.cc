@@ -289,11 +289,11 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
       context_(context),
       script_cache_map_(this, context),
-      tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
-      clock_(base::MakeUnique<base::DefaultClock>()),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      clock_(std::make_unique<base::DefaultClock>()),
       ping_controller_(new PingController(this)),
-      validator_(base::MakeUnique<blink::TrialTokenValidator>(
-          base::MakeUnique<TrialPolicyImpl>())),
+      validator_(std::make_unique<blink::TrialTokenValidator>(
+          std::make_unique<TrialPolicyImpl>())),
       weak_factory_(this) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
@@ -575,7 +575,7 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << " can only be dispatched to an active worker: " << status();
 
   int request_id = pending_requests_.Add(
-      base::MakeUnique<PendingRequest>(std::move(error_callback), clock_->Now(),
+      std::make_unique<PendingRequest>(std::move(error_callback), clock_->Now(),
                                        tick_clock_->NowTicks(), event_type));
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
                            pending_requests_.Lookup(request_id), "Request id",
@@ -1525,7 +1525,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)) {
     DCHECK(!event_recorder_);
     event_recorder_ =
-        base::MakeUnique<ServiceWorkerMetrics::ScopedEventRecorder>(
+        std::make_unique<ServiceWorkerMetrics::ScopedEventRecorder>(
             start_worker_first_purpose_.value());
   }
   // We don't clear |start_worker_first_purpose_| here but clear in
@@ -1538,7 +1538,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       ServiceWorkerProviderHost::PreCreateForController(context());
   provider_host_ = pending_provider_host->AsWeakPtr();
 
-  auto params = base::MakeUnique<EmbeddedWorkerStartParams>();
+  auto params = std::make_unique<EmbeddedWorkerStartParams>();
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;
@@ -1550,7 +1550,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       !pause_after_download_) {
     DCHECK(!installed_scripts_sender_);
     installed_scripts_sender_ =
-        base::MakeUnique<ServiceWorkerInstalledScriptsSender>(this);
+        std::make_unique<ServiceWorkerInstalledScriptsSender>(this);
     installed_scripts_info = installed_scripts_sender_->CreateInfoAndBind();
     installed_scripts_sender_->Start();
   }

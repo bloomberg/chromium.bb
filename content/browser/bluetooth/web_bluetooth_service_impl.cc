@@ -1029,7 +1029,7 @@ void WebBluetoothServiceImpl::OnStartNotifySessionSuccess(
   std::move(callback).Run(blink::mojom::WebBluetoothResult::SUCCESS);
   // Saving the BluetoothGattNotifySession keeps notifications active.
   auto gatt_notify_session_and_client =
-      base::MakeUnique<GATTNotifySessionAndCharacteristicClient>(
+      std::make_unique<GATTNotifySessionAndCharacteristicClient>(
           std::move(notify_session), std::move(client));
   characteristic_id_to_notify_session_[characteristic_instance_id] =
       std::move(gatt_notify_session_and_client);

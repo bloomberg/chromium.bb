@@ -417,7 +417,7 @@ template <typename MockType, typename... Args>
 MockType* EmbeddedWorkerTestHelper::CreateAndRegisterMockInstanceClient(
     Args&&... args) {
   std::unique_ptr<MockType> mock =
-      base::MakeUnique<MockType>(std::forward<Args>(args)...);
+      std::make_unique<MockType>(std::forward<Args>(args)...);
   MockType* mock_rawptr = mock.get();
   RegisterMockInstanceClient(std::move(mock));
   return mock_rawptr;
