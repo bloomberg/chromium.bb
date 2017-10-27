@@ -5,6 +5,8 @@
 #include "core/animation/WorkletAnimationController.h"
 
 #include "core/animation/WorkletAnimationBase.h"
+#include "core/dom/Document.h"
+#include "core/frame/LocalFrameView.h"
 
 namespace blink {
 
@@ -15,10 +17,14 @@ WorkletAnimationController::~WorkletAnimationController() = default;
 void WorkletAnimationController::AttachAnimation(
     WorkletAnimationBase& animation) {
   DCHECK(IsMainThread());
-  // TODO(smcgruer): Call NeedsCompositingUpdate on the relevant LocalFrameView.
   DCHECK(!pending_animations_.Contains(&animation));
   DCHECK(!compositor_animations_.Contains(&animation));
   pending_animations_.insert(&animation);
+
+  // TODO(majidvp): We should DCHECK that the animation document is the same
+  // as the controller's owning document.
+  if (LocalFrameView* view = animation.GetDocument()->View())
+    view->ScheduleAnimation();
 }
 
 void WorkletAnimationController::DetachAnimation(
