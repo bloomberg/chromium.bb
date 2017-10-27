@@ -72,7 +72,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    let direction = getComputedStyle(this).direction == 'rtl' ? -1 : 1;
+    let direction = this.matches(':host-context([dir=rtl]) cr-toggle') ? -1 : 1;
 
     this.boundPointerMove_ = (e) => {
       // Prevent unwanted text selection to occur while moving the pointer, this
