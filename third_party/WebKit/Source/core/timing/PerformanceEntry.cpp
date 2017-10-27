@@ -30,13 +30,14 @@
 
 #include "core/timing/PerformanceEntry.h"
 
+#include "base/atomic_sequence_num.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 
 namespace blink {
 
 namespace {
-static size_t max_index = 0;
+static base::AtomicSequenceNumber index_seq;
 }
 
 PerformanceEntry::PerformanceEntry(const String& name,
@@ -47,9 +48,8 @@ PerformanceEntry::PerformanceEntry(const String& name,
       entry_type_(entry_type),
       start_time_(start_time),
       duration_(finish_time - start_time),
-      entry_type_enum_(ToEntryTypeEnum(entry_type)) {
-  index_ = ++max_index;
-}
+      entry_type_enum_(ToEntryTypeEnum(entry_type)),
+      index_(index_seq.GetNext()) {}
 
 PerformanceEntry::~PerformanceEntry() {}
 
