@@ -396,8 +396,7 @@
             "manifest_version": true,
             "overlays": "both",
             "packages": [
-                "virtual/chromeos-firmware",
-                "chromeos-base/autotest-all"
+                "virtual/chromeos-firmware"
             ],
             "push_image": true,
             "sign_types": [
@@ -434,8 +433,7 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "overlays": "both",
             "packages": [
-                "virtual/chromeos-firmware",
-                "chromeos-base/autotest-all"
+                "virtual/chromeos-firmware"
             ],
             "sign_types": [
                 "firmware"
@@ -508,8 +506,7 @@
             "manifest_version": true,
             "overlays": "both",
             "packages": [
-                "virtual/chromeos-firmware",
-                "chromeos-base/autotest-all"
+                "virtual/chromeos-firmware"
             ],
             "push_image": true,
             "sign_types": [
