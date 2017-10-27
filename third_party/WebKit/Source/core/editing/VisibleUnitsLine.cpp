@@ -364,18 +364,27 @@ static PositionWithAffinityTemplate<Strategy> LogicalStartOfLineAlgorithm(
   return HonorEditingBoundaryAtOrBefore(vis_pos, c.GetPosition());
 }
 
+static PositionWithAffinity LogicalStartOfLine(
+    const PositionWithAffinity& position) {
+  return LogicalStartOfLineAlgorithm<EditingStrategy>(position);
+}
+
+static PositionInFlatTreeWithAffinity LogicalStartOfLine(
+    const PositionInFlatTreeWithAffinity& position) {
+  return LogicalStartOfLineAlgorithm<EditingInFlatTreeStrategy>(position);
+}
+
 VisiblePosition LogicalStartOfLine(const VisiblePosition& current_position) {
   DCHECK(current_position.IsValid()) << current_position;
-  return CreateVisiblePosition(LogicalStartOfLineAlgorithm<EditingStrategy>(
-      current_position.ToPositionWithAffinity()));
+  return CreateVisiblePosition(
+      LogicalStartOfLine(current_position.ToPositionWithAffinity()));
 }
 
 VisiblePositionInFlatTree LogicalStartOfLine(
     const VisiblePositionInFlatTree& current_position) {
   DCHECK(current_position.IsValid()) << current_position;
   return CreateVisiblePosition(
-      LogicalStartOfLineAlgorithm<EditingInFlatTreeStrategy>(
-          current_position.ToPositionWithAffinity()));
+      LogicalStartOfLine(current_position.ToPositionWithAffinity()));
 }
 
 InlineBox* FindLeftNonPseudoNodeInlineBox(const RootInlineBox& root_box) {
@@ -388,23 +397,23 @@ InlineBox* FindLeftNonPseudoNodeInlineBox(const RootInlineBox& root_box) {
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> EndPositionForLine(
-    const VisiblePositionTemplate<Strategy>& c,
+static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
+    const PositionWithAffinityTemplate<Strategy>& c,
     LineEndpointComputationMode mode) {
-  DCHECK(c.IsValid()) << c;
   if (c.IsNull())
-    return VisiblePositionTemplate<Strategy>();
+    return PositionWithAffinityTemplate<Strategy>();
 
-  RootInlineBox* root_box = RenderedPosition(c).RootBox();
+  RootInlineBox* root_box =
+      RenderedPosition(c.GetPosition(), c.Affinity()).RootBox();
   if (!root_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.
-    const PositionTemplate<Strategy> p = c.DeepEquivalent();
+    const PositionTemplate<Strategy> p = c.GetPosition();
     if (p.AnchorNode()->GetLayoutObject() &&
         p.AnchorNode()->GetLayoutObject()->IsLayoutBlock() &&
         !p.ComputeEditingOffset())
       return c;
-    return VisiblePositionTemplate<Strategy>();
+    return PositionWithAffinityTemplate<Strategy>();
   }
 
   Node* end_node;
@@ -412,7 +421,7 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
   if (mode == kUseLogicalOrdering) {
     end_node = root_box->GetLogicalEndBoxWithNode(end_box);
     if (!end_node)
-      return VisiblePositionTemplate<Strategy>();
+      return PositionWithAffinityTemplate<Strategy>();
   } else {
     // Generated content (e.g. list markers and CSS :before and :after
     // pseudo elements) have no corresponding DOM element, and so cannot be
@@ -421,12 +430,12 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
     // find non-pseudo node.
     end_box = FindLeftNonPseudoNodeInlineBox(*root_box);
     if (!end_box)
-      return VisiblePositionTemplate<Strategy>();
+      return PositionWithAffinityTemplate<Strategy>();
     end_node = end_box->GetLineLayoutItem().NonPseudoNode();
   }
 
   if (IsHTMLBRElement(*end_node)) {
-    return CreateVisiblePosition(
+    return PositionWithAffinityTemplate<Strategy>(
         PositionTemplate<Strategy>::BeforeNode(*end_node),
         TextAffinity::kUpstreamIfPossible);
   }
@@ -435,22 +444,22 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
     int end_offset = end_text_box->Start();
     if (!end_text_box->IsLineBreak())
       end_offset += end_text_box->Len();
-    return CreateVisiblePosition(
+    return PositionWithAffinityTemplate<Strategy>(
         PositionTemplate<Strategy>(ToText(end_node), end_offset),
         TextAffinity::kUpstreamIfPossible);
   }
-  return CreateVisiblePosition(PositionTemplate<Strategy>::AfterNode(*end_node),
-                               TextAffinity::kUpstreamIfPossible);
+  return PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::AfterNode(*end_node),
+      TextAffinity::kUpstreamIfPossible);
 }
 
 // TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> EndOfLineAlgorithm(
-    const VisiblePositionTemplate<Strategy>& current_position) {
-  DCHECK(current_position.IsValid()) << current_position;
+static PositionWithAffinityTemplate<Strategy> EndOfLineAlgorithm(
+    const PositionWithAffinityTemplate<Strategy>& current_position) {
   // TODO(yosin) this is the current behavior that might need to be fixed.
   // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-  const VisiblePositionTemplate<Strategy>& candidate_position =
+  const PositionWithAffinityTemplate<Strategy>& candidate_position =
       EndPositionForLine(current_position, kUseInlineBoxOrdering);
 
   // Make sure the end of line is at the same line as the given input
@@ -463,44 +472,57 @@ static VisiblePositionTemplate<Strategy> EndOfLineAlgorithm(
   // that style, which would break before a space by default.
   if (InSameLine(current_position, candidate_position)) {
     return HonorEditingBoundaryAtOrAfter(candidate_position,
-                                         current_position.DeepEquivalent());
+                                         current_position.GetPosition());
   }
-  const VisiblePositionTemplate<Strategy>& adjusted_position =
-      PreviousPositionOf(current_position);
+  const PositionWithAffinityTemplate<Strategy>& adjusted_position =
+      PreviousPositionOf(CreateVisiblePosition(current_position))
+          .ToPositionWithAffinity();
   if (adjusted_position.IsNull())
-    return VisiblePositionTemplate<Strategy>();
+    return PositionWithAffinityTemplate<Strategy>();
   return HonorEditingBoundaryAtOrAfter(
       EndPositionForLine(adjusted_position, kUseInlineBoxOrdering),
-      current_position.DeepEquivalent());
+      current_position.GetPosition());
+}
+
+static PositionWithAffinity EndOfLine(const PositionWithAffinity& position) {
+  return EndOfLineAlgorithm<EditingStrategy>(position);
+}
+
+static PositionInFlatTreeWithAffinity EndOfLine(
+    const PositionInFlatTreeWithAffinity& position) {
+  return EndOfLineAlgorithm<EditingInFlatTreeStrategy>(position);
 }
 
 // TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition EndOfLine(const VisiblePosition& current_position) {
-  return EndOfLineAlgorithm<EditingStrategy>(current_position);
+  DCHECK(current_position.IsValid()) << current_position;
+  return CreateVisiblePosition(
+      EndOfLine(current_position.ToPositionWithAffinity()));
 }
 
 VisiblePositionInFlatTree EndOfLine(
     const VisiblePositionInFlatTree& current_position) {
-  return EndOfLineAlgorithm<EditingInFlatTreeStrategy>(current_position);
-}
-
-template <typename Strategy>
-static bool InSameLogicalLine(const VisiblePositionTemplate<Strategy>& a,
-                              const VisiblePositionTemplate<Strategy>& b) {
-  DCHECK(a.IsValid()) << a;
-  DCHECK(b.IsValid()) << b;
-  return a.IsNotNull() && LogicalStartOfLine(a).DeepEquivalent() ==
-                              LogicalStartOfLine(b).DeepEquivalent();
-}
-
-template <typename Strategy>
-static VisiblePositionTemplate<Strategy> LogicalEndOfLineAlgorithm(
-    const VisiblePositionTemplate<Strategy>& current_position) {
   DCHECK(current_position.IsValid()) << current_position;
+  return CreateVisiblePosition(
+      EndOfLine(current_position.ToPositionWithAffinity()));
+}
+
+template <typename Strategy>
+static bool InSameLogicalLine(
+    const PositionWithAffinityTemplate<Strategy>& position1,
+    const PositionWithAffinityTemplate<Strategy>& position2) {
+  return position1.IsNotNull() &&
+         LogicalStartOfLine(position1).GetPosition() ==
+             LogicalStartOfLine(position2).GetPosition();
+}
+
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> LogicalEndOfLineAlgorithm(
+    const PositionWithAffinityTemplate<Strategy>& current_position) {
   // TODO(yosin) this is the current behavior that might need to be fixed.
   // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-  VisiblePositionTemplate<Strategy> vis_pos =
-      EndPositionForLine(current_position, kUseLogicalOrdering);
+  PositionWithAffinityTemplate<Strategy> vis_pos =
+      EndPositionForLine<Strategy>(current_position, kUseLogicalOrdering);
 
   // Make sure the end of line is at the same line as the given input
   // position. For a wrapping line, the logical end position for the
@@ -510,29 +532,44 @@ static VisiblePositionTemplate<Strategy> LogicalEndOfLineAlgorithm(
   // a xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz </div>
   // In this case, use the previous position of the computed logical end
   // position.
-  if (!InSameLogicalLine(current_position, vis_pos))
-    vis_pos = PreviousPositionOf(vis_pos);
+  if (!InSameLogicalLine(current_position, vis_pos)) {
+    vis_pos = PreviousPositionOf(CreateVisiblePosition(vis_pos))
+                  .ToPositionWithAffinity();
+  }
 
   if (ContainerNode* editable_root =
-          HighestEditableRoot(current_position.DeepEquivalent())) {
+          HighestEditableRoot(current_position.GetPosition())) {
     if (!editable_root->contains(
-            vis_pos.DeepEquivalent().ComputeContainerNode())) {
-      return CreateVisiblePosition(
+            vis_pos.GetPosition().ComputeContainerNode())) {
+      return PositionWithAffinityTemplate<Strategy>(
           PositionTemplate<Strategy>::LastPositionInNode(*editable_root));
     }
   }
 
-  return HonorEditingBoundaryAtOrAfter(vis_pos,
-                                       current_position.DeepEquivalent());
+  return HonorEditingBoundaryAtOrAfter(vis_pos, current_position.GetPosition());
+}
+
+static PositionWithAffinity LogicalEndOfLine(
+    const PositionWithAffinity& position) {
+  return LogicalEndOfLineAlgorithm<EditingStrategy>(position);
+}
+
+static PositionInFlatTreeWithAffinity LogicalEndOfLine(
+    const PositionInFlatTreeWithAffinity& position) {
+  return LogicalEndOfLineAlgorithm<EditingInFlatTreeStrategy>(position);
 }
 
 VisiblePosition LogicalEndOfLine(const VisiblePosition& current_position) {
-  return LogicalEndOfLineAlgorithm<EditingStrategy>(current_position);
+  DCHECK(current_position.IsValid()) << current_position;
+  return CreateVisiblePosition(
+      LogicalEndOfLine(current_position.ToPositionWithAffinity()));
 }
 
 VisiblePositionInFlatTree LogicalEndOfLine(
     const VisiblePositionInFlatTree& current_position) {
-  return LogicalEndOfLineAlgorithm<EditingInFlatTreeStrategy>(current_position);
+  DCHECK(current_position.IsValid()) << current_position;
+  return CreateVisiblePosition(
+      LogicalEndOfLine(current_position.ToPositionWithAffinity()));
 }
 
 template <typename Strategy>
