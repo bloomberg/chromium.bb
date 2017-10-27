@@ -403,12 +403,31 @@ int SimpleBackendImpl::CreateEntry(const std::string& key,
       CreateOrFindActiveOrDoomedEntry(entry_hash, key, &post_doom);
 
   if (!simple_entry) {
-    Callback<int(const net::CompletionCallback&)> operation =
-        base::Bind(&SimpleBackendImpl::CreateEntry,
-                   base::Unretained(this), key, entry);
-    post_doom->push_back(
-        base::Bind(&RunOperationAndCallback, operation, callback));
-    return net::ERR_IO_PENDING;
+    // We would like to optimistically have create go ahead, for benefit of
+    // HTTP cache use. This can only be sanely done if we are the only op
+    // serialized after doom's completion.
+    if (post_doom->empty() &&
+        entry_operations_mode_ == SimpleEntryImpl::OPTIMISTIC_OPERATIONS) {
+      simple_entry = new SimpleEntryImpl(
+          cache_type_, path_, cleanup_tracker_.get(), entry_hash,
+          entry_operations_mode_, this, net_log_);
+      simple_entry->SetKey(key);
+      simple_entry->SetActiveEntryProxy(
+          ActiveEntryProxy::Create(entry_hash, this));
+      simple_entry->SetCreatePendingDoom();
+      std::pair<EntryMap::iterator, bool> insert_result =
+          active_entries_.insert(
+              EntryMap::value_type(entry_hash, simple_entry.get()));
+      post_doom->push_back(base::Bind(
+          &SimpleEntryImpl::NotifyDoomBeforeCreateComplete, simple_entry));
+      DCHECK(insert_result.second);
+    } else {
+      Callback<int(const net::CompletionCallback&)> operation = base::Bind(
+          &SimpleBackendImpl::CreateEntry, base::Unretained(this), key, entry);
+      post_doom->push_back(
+          base::Bind(&RunOperationAndCallback, operation, callback));
+      return net::ERR_IO_PENDING;
+    }
   }
 
   return simple_entry->CreateEntry(entry, callback);

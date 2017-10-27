@@ -3267,6 +3267,46 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateRace) {
   EXPECT_THAT(doom_callback.GetResult(net::ERR_IO_PENDING), IsOk());
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateOptimistic) {
+  // Test that we optimize the doom -> create sequence when optimistic ops
+  // are on.
+  SetSimpleCacheMode();
+  InitCache();
+  const char kKey[] = "the key";
+
+  // Create entry and initiate its Doom.
+  disk_cache::Entry* entry1 = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry1), IsOk());
+  ASSERT_TRUE(entry1 != nullptr);
+
+  net::TestCompletionCallback doom_callback;
+  cache_->DoomEntry(kKey, doom_callback.callback());
+
+  disk_cache::Entry* entry2 = nullptr;
+  net::TestCompletionCallback create_callback;
+  // Open entry2, with same key. With optimistic ops, this should succeed
+  // immediately, hence us using cache_->CreateEntry directly rather than using
+  // the DiskCacheTestWithCache::CreateEntry wrapper which blocks when needed.
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(kKey, &entry2, create_callback.callback()));
+
+  // Do some I/O to make sure it's alive.
+  const int kSize = 2048;
+  scoped_refptr<net::IOBuffer> buf_1(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buf_2(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buf_1->data(), kSize, false);
+
+  EXPECT_EQ(kSize, WriteData(entry2, /* stream_index = */ 1, /* offset = */ 0,
+                             buf_1.get(), kSize, /* truncate = */ false));
+  EXPECT_EQ(kSize, ReadData(entry2, /* stream_index = */ 1, /* offset = */ 0,
+                            buf_2.get(), kSize));
+
+  doom_callback.WaitForResult();
+
+  entry1->Close();
+  entry2->Close();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheDoomDoom) {
   // Test sequence:
   // Create, Doom, Create, Doom (1st entry), Open.

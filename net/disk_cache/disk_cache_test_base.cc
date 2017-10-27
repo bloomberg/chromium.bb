@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -25,6 +26,7 @@
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/test/gtest_util.h"
+#include "net/test/net_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -276,16 +278,13 @@ void DiskCacheTestWithCache::AddDelay() {
 }
 
 void DiskCacheTestWithCache::TearDown() {
-  base::RunLoop().RunUntilIdle();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   cache_.reset();
 
   if (!memory_only_ && !simple_cache_mode_ && integrity_) {
     EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
   }
-  base::RunLoop().RunUntilIdle();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   DiskCacheTest::TearDown();
 }
 
