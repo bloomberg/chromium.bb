@@ -18,9 +18,9 @@ public final class CastCrashHandler {
 
     @CalledByNative
     public static void initializeUploader(String crashDumpPath, String uuid,
-            boolean uploadCrashToStaging, boolean periodicUpload) {
+            String applicationFeedback, boolean uploadCrashToStaging, boolean periodicUpload) {
         CastCrashUploader uploader = CastCrashUploaderFactory.createCastCrashUploader(
-                crashDumpPath, uuid, uploadCrashToStaging);
+                crashDumpPath, uuid, applicationFeedback, uploadCrashToStaging);
         if (ChromecastConfigAndroid.canSendUsageStats()) {
             if (periodicUpload) {
                 uploader.startPeriodicUpload();
