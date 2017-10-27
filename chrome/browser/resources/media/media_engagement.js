@@ -18,6 +18,7 @@ var info = null;
 var engagementTableBody = null;
 var sortReverse = true;
 var sortKey = 'totalScore';
+var configTableBody = null;
 
 /**
  * Creates a single row in the engagement table.
@@ -82,6 +83,36 @@ function compareTableItem(sortKey, a, b) {
 }
 
 /**
+ * Creates a single row in the config table.
+ * @param {string} name The name of the config setting.
+ * @param {string} value The value of the config setting.
+ * @return {!HTMLElement}
+ */
+function createConfigRow(name, value) {
+  var template = $('configrow');
+  var td = template.content.querySelectorAll('td');
+  td[0].textContent = name;
+  td[1].textContent = value;
+  return document.importNode(template.content, true);
+}
+
+/**
+ * Regenerates the config table.
+ * @param {!MediaEngagementConfig} config The config of the MEI service.
+ */
+
+function renderConfigTable(config) {
+  configTableBody.innerHTML = '';
+
+  configTableBody.appendChild(
+      createConfigRow('Min Visits', config.scoreMinVisits));
+  configTableBody.appendChild(
+      createConfigRow('Lower Threshold', config.highScoreLowerThreshold));
+  configTableBody.appendChild(
+      createConfigRow('Upper Threshold', config.highScoreUpperThreshold));
+}
+
+/**
  * Regenerates the engagement table from |info|.
  */
 function renderTable() {
@@ -100,6 +131,11 @@ function updateEngagementTable() {
     renderTable();
     pageIsPopulatedResolver.resolve();
   });
+
+  // Populate config settings.
+  uiHandler.getMediaEngagementConfig().then(response => {
+    renderConfigTable(response.config);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -110,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updateEngagementTable();
 
   engagementTableBody = $('engagement-table-body');
+  configTableBody = $('config-table-body');
 
   // Set table header sort handlers.
   var engagementTableHeader = $('engagement-table-header');

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
 
 #include "base/macros.h"
+#include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -37,6 +38,15 @@ class MediaEngagementScoreDetailsProviderImpl
       media::mojom::MediaEngagementScoreDetailsProvider::
           GetMediaEngagementScoreDetailsCallback callback) override {
     std::move(callback).Run(service_->GetAllScoreDetails());
+  }
+
+  void GetMediaEngagementConfig(
+      media::mojom::MediaEngagementScoreDetailsProvider::
+          GetMediaEngagementConfigCallback callback) override {
+    std::move(callback).Run(media::mojom::MediaEngagementConfig::New(
+        MediaEngagementScore::GetScoreMinVisits(),
+        MediaEngagementScore::GetHighScoreLowerThreshold(),
+        MediaEngagementScore::GetHighScoreUpperThreshold()));
   }
 
  private:

@@ -20,6 +20,7 @@
 
     table {
       border-collapse: collapse;
+      margin-bottom: 20px;
     }
 
     table td,
@@ -72,6 +73,10 @@
       outline: none;
     }
 
+    .name-cell {
+      background-color: rgba(230, 230, 230, 0.5);
+    }
+
     table tr:hover {
       background: rgb(255, 255, 187);
     }
@@ -89,6 +94,20 @@
 </head>
 <body>
   <h1>Media Engagement</h1>
+  <table>
+    <thead>
+      <tr id="config-table-header">
+        <th>
+          Setting Name
+        </th>
+        <th>
+          Setting Value
+        </th>
+      </tr>
+    </thead>
+    <tbody id="config-table-body">
+    </tbody>
+  </table>
   <table>
     <thead>
       <tr id="engagement-table-header">
@@ -127,6 +146,12 @@
       <td class="engagement-bar-cell">
         <div class="engagement-bar"></div>
       </td>
+    </tr>
+  </template>
+  <template id="configrow">
+    <tr>
+      <td class="name-cell"></td>
+      <td></td>
     </tr>
   </template>
 </body>
