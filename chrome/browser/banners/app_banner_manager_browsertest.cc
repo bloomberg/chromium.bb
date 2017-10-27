@@ -98,7 +98,7 @@ class AppBannerManagerTest : public AppBannerManager {
   void ShowBannerUi() override {
     // Fake the call to ReportStatus here - this is usually called in
     // platform-specific code which is not exposed here.
-    ReportStatus(nullptr, SHOWING_WEB_APP_BANNER);
+    ReportStatus(SHOWING_WEB_APP_BANNER);
     RecordDidShowBanner("AppBanner.WebApp.Shown");
 
     ASSERT_FALSE(banner_shown_.get());
