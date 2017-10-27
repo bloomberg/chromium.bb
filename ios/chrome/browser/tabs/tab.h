@@ -132,7 +132,7 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, assign) BOOL isPrerenderTab;
 
 // Whether this tab is displaying a voice search result.
-@property(nonatomic, assign) BOOL isVoiceSearchResultsTab;
+@property(nonatomic, readonly) BOOL isVoiceSearchResultsTab;
 
 // |YES| if the tab has finished loading.
 @property(nonatomic, readonly) BOOL loadFinished;
