@@ -16,6 +16,7 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
+#include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -34,13 +35,6 @@ using media::AudioManager;
 namespace content {
 
 namespace {
-
-void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time) {
-  UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.OutputDeviceAuthorizationTime",
-                             base::TimeTicks::Now() - auth_start_time,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(5000), 50);
-}
 
 // Check that the routing ID references a valid RenderFrameHost, and run
 // |callback| on the IO thread with true if the ID is valid.
@@ -198,7 +192,8 @@ void AudioRendererHost::AuthorizationCompleted(
     const std::string& device_id_for_renderer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  UMALogDeviceAuthorizationTime(auth_start_time);
+  AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
+      auth_start_time);
 
   auto auth_data = authorizations_.find(stream_id);
   if (auth_data == authorizations_.end())

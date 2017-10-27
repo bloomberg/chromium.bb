@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
+#include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/base/audio_parameters.h"
@@ -15,17 +15,6 @@
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace content {
-
-namespace {
-
-void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time) {
-  UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.OutputDeviceAuthorizationTime",
-                             base::TimeTicks::Now() - auth_start_time,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(5000), 50);
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
@@ -117,7 +106,8 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
     const std::string& raw_device_id,
     const std::string& device_id_for_renderer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UMALogDeviceAuthorizationTime(auth_start_time);
+  AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
+      auth_start_time);
 
   if (status != media::OUTPUT_DEVICE_STATUS_OK) {
     std::move(callback).Run(media::OutputDeviceStatus(status),
