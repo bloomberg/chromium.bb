@@ -216,7 +216,7 @@ class CC_EXPORT LayerTreeImpl {
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
   int LastScrolledScrollNodeIndex() const;
-  void SetCurrentlyScrollingNode(ScrollNode* node);
+  void SetCurrentlyScrollingNode(const ScrollNode* node);
   void ClearCurrentlyScrollingNode();
 
   struct ViewportLayerIds {
