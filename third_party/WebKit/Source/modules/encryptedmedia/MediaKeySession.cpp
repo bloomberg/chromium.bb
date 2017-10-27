@@ -357,10 +357,10 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
       closed_promise_(new ClosedPromise(ExecutionContext::From(script_state),
                                         this,
                                         ClosedPromise::kClosed)),
-      action_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state),
-          this,
-          &MediaKeySession::ActionTimerFired) {
+      action_timer_(ExecutionContext::From(script_state)
+                        ->GetTaskRunner(TaskType::kMiscPlatformAPI),
+                    this,
+                    &MediaKeySession::ActionTimerFired) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
   InstanceCounters::IncrementCounter(InstanceCounters::kMediaKeySessionCounter);
 

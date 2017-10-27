@@ -31,6 +31,7 @@
 #include "modules/quota/DeprecatedStorageInfo.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/quota/StorageErrorCallback.h"
@@ -54,7 +55,8 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
   DeprecatedStorageQuota* storage_quota = GetStorageQuota(storage_type);
   if (!storage_quota) {
     // Unknown storage type is requested.
-    TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state)
+    ExecutionContext::From(script_state)
+        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
         ->PostTask(BLINK_FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
                                         error_callback, kNotSupportedError));
     return;
@@ -73,7 +75,8 @@ void DeprecatedStorageInfo::requestQuota(ScriptState* script_state,
   DeprecatedStorageQuota* storage_quota = GetStorageQuota(storage_type);
   if (!storage_quota) {
     // Unknown storage type is requested.
-    TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state)
+    ExecutionContext::From(script_state)
+        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
         ->PostTask(BLINK_FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
                                         error_callback, kNotSupportedError));
     return;

@@ -15,7 +15,6 @@ namespace blink {
 class Document;
 class ExecutionContext;
 class LocalFrame;
-class ScriptState;
 class WebTaskRunner;
 class WorkerOrWorkletGlobalScope;
 class WorkerThread;
@@ -30,7 +29,6 @@ class CORE_EXPORT TaskRunnerHelper final {
   static scoped_refptr<WebTaskRunner> Get(TaskType, LocalFrame*);
   static scoped_refptr<WebTaskRunner> Get(TaskType, Document*);
   static scoped_refptr<WebTaskRunner> Get(TaskType, ExecutionContext*);
-  static scoped_refptr<WebTaskRunner> Get(TaskType, ScriptState*);
   static scoped_refptr<WebTaskRunner> Get(TaskType,
                                           WorkerOrWorkletGlobalScope*);
 

@@ -23,8 +23,8 @@ class TestPerformanceBase : public PerformanceBase {
  public:
   explicit TestPerformanceBase(ScriptState* script_state)
       : PerformanceBase(0,
-                        TaskRunnerHelper::Get(TaskType::kPerformanceTimeline,
-                                              script_state)) {}
+                        ExecutionContext::From(script_state)
+                            ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
   ~TestPerformanceBase() {}
 
   ExecutionContext* GetExecutionContext() const override { return nullptr; }

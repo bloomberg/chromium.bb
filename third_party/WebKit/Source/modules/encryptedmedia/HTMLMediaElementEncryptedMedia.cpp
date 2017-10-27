@@ -137,7 +137,8 @@ SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* script_state,
       element_(element),
       new_media_keys_(media_keys),
       made_reservation_(false),
-      timer_(TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state),
+      timer_(ExecutionContext::From(script_state)
+                 ->GetTaskRunner(TaskType::kMiscPlatformAPI),
              this,
              &SetMediaKeysHandler::TimerFired) {
   DVLOG(EME_LOG_LEVEL) << __func__;
