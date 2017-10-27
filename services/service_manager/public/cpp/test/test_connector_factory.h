@@ -40,7 +40,7 @@ class TestConnectorFactory {
   // Constructs a new TestConnectorFactory which creates Connectors whose
   // requests are routed directly to |service|. |service| is not owned and must
   // outlive this TestConnectorFactory instance.
-  explicit TestConnectorFactory(Service* service);
+  explicit TestConnectorFactory(std::unique_ptr<Service> service);
   ~TestConnectorFactory();
 
   // Allows a test to override the default Identity seen by the target service
