@@ -114,6 +114,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
     domain_reliability_monitor_ = std::move(monitor);
   }
 
+  domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor() {
+    return domain_reliability_monitor_.get();
+  }
+
   void set_data_use_aggregator(
       data_usage::DataUseAggregator* data_use_aggregator,
       bool is_data_usage_off_the_record);

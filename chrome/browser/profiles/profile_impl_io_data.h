@@ -202,10 +202,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable std::unique_ptr<net::URLRequestContext> media_request_context_;
 
-  // Owned by ChromeNetworkDelegate (which is owned by |network_delegate_|).
-  mutable domain_reliability::DomainReliabilityMonitor*
-      domain_reliability_monitor_;
-
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;
   int app_cache_max_size_;
