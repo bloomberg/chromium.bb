@@ -1,9 +1,0 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-<p>This checks that "box-sizing: border-box" doesn't have any effect on a positioned element where the height is set by the offset properties.</p>
-<p>The test passes if you see a magenta square with a cyan box inside. The cyan box fills it leaving a gap only at the top (not at the bottom).</p>
-<div style="position: relative; width: 200px; height: 200px;">
-    <div style="border: 10px solid magenta; position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding-top: 50px;">
-        <div style="background: cyan; height: -webkit-fill-available;"></div>
-    </div>
-</div>

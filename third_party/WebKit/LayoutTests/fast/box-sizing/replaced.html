@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta name="assert" content="This checks that 'box-sizing: border-box' doesn't have any effect on a positioned element when the height is set by the offset properties.">
-<link rel="stylesheet" href="../css-intrinsic-dimensions/resources/width-keyword-classes.css">
-<link rel="stylesheet" href="../css-intrinsic-dimensions/resources/height-keyword-classes.css">
+<meta name="assert" content="This checks that 'box-sizing: border-box' doesn't have any effect on a positioned element that is warpping a replaced element, when the height of the positioned element is set by the offset properties.">
 <style>
 .wrapper {
   position: relative;
@@ -19,9 +17,11 @@
   bottom: 0;
 }
 
-.fill-available {
+iframe {
   border: 20px dotted cyan;
   background: yellow;
+  width: 100%;
+  height: 100%;
 }
 
 .border-box {
@@ -39,25 +39,25 @@
 
 <div class="wrapper" data-expected-width="200" data-expected-height="200">
   <div class="positioned" data-expected-width="200" data-expected-height="200">
-    <div class="fill-available" data-expected-width="180" data-expected-height="180"></div>
+    <iframe data-expected-width="220" data-expected-height="220"></iframe>
   </div>
 </div>
 
 <div class="wrapper" data-expected-width="200" data-expected-height="200">
   <div class="positioned" data-expected-width="200" data-expected-height="200">
-    <div class="fill-available border-box" data-expected-width="180" data-expected-height="180"></div>
+    <iframe class="border-box" data-expected-width="180" data-expected-height="180"></iframe>
   </div>
 </div>
 
 <div class="wrapper" data-expected-width="200" data-expected-height="200">
   <div class="positioned border-box" data-expected-width="200" data-expected-height="200">
-    <div class="fill-available" data-expected-width="180" data-expected-height="180"></div>
+    <iframe data-expected-width="220" data-expected-height="220"></iframe>
   </div>
 </div>
 
 <div class="wrapper" data-expected-width="200" data-expected-height="200">
   <div class="positioned border-box" data-expected-width="200" data-expected-height="200">
-    <div class="fill-available border-box" data-expected-width="180" data-expected-height="180"></div>
+    <iframe class="border-box" data-expected-width="180" data-expected-height="180"></iframe>
   </div>
 </div>
 
