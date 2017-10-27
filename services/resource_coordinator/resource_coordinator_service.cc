@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 #include "services/resource_coordinator/observers/metrics_collector.h"
 #include "services/resource_coordinator/observers/tab_signal_generator_impl.h"
@@ -19,7 +18,7 @@ namespace resource_coordinator {
 
 std::unique_ptr<service_manager::Service> ResourceCoordinatorService::Create() {
   auto resource_coordinator_service =
-      base::MakeUnique<ResourceCoordinatorService>();
+      std::make_unique<ResourceCoordinatorService>();
 
   return resource_coordinator_service;
 }
@@ -45,7 +44,7 @@ void ResourceCoordinatorService::OnStart() {
                  base::Unretained(&introspector_)));
 
   // Register new |CoordinationUnitGraphObserver| implementations here.
-  auto tab_signal_generator_impl = base::MakeUnique<TabSignalGeneratorImpl>();
+  auto tab_signal_generator_impl = std::make_unique<TabSignalGeneratorImpl>();
   registry_.AddInterface(
       base::Bind(&TabSignalGeneratorImpl::BindToInterface,
                  base::Unretained(tab_signal_generator_impl.get())));
@@ -53,7 +52,7 @@ void ResourceCoordinatorService::OnStart() {
       std::move(tab_signal_generator_impl));
 
   coordination_unit_manager_.RegisterObserver(
-      base::MakeUnique<MetricsCollector>());
+      std::make_unique<MetricsCollector>());
 
   coordination_unit_manager_.OnStart(&registry_, ref_factory_.get());
 
@@ -63,18 +62,18 @@ void ResourceCoordinatorService::OnStart() {
   // memory_instrumentation::CoordinatorImpl to
   // memory_instrumentation::Coordinator.
   memory_instrumentation_coordinator_ =
-      base::MakeUnique<memory_instrumentation::CoordinatorImpl>(
+      std::make_unique<memory_instrumentation::CoordinatorImpl>(
           context()->connector());
   registry_.AddInterface(base::BindRepeating(
       &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
       base::Unretained(memory_instrumentation_coordinator_.get())));
 
-  tracing_agent_registry_ = base::MakeUnique<tracing::AgentRegistry>();
+  tracing_agent_registry_ = std::make_unique<tracing::AgentRegistry>();
   registry_.AddInterface(
       base::BindRepeating(&tracing::AgentRegistry::BindAgentRegistryRequest,
                           base::Unretained(tracing_agent_registry_.get())));
 
-  tracing_coordinator_ = base::MakeUnique<tracing::Coordinator>();
+  tracing_coordinator_ = std::make_unique<tracing::Coordinator>();
   registry_.AddInterface(
       base::BindRepeating(&tracing::Coordinator::BindCoordinatorRequest,
                           base::Unretained(tracing_coordinator_.get())));

@@ -75,15 +75,15 @@ CoordinationUnitBase* CoordinationUnitBase::CreateCoordinationUnit(
 
   switch (id.type) {
     case CoordinationUnitType::kFrame:
-      new_cu = base::MakeUnique<FrameCoordinationUnitImpl>(
+      new_cu = std::make_unique<FrameCoordinationUnitImpl>(
           id, std::move(service_ref));
       break;
     case CoordinationUnitType::kProcess:
-      new_cu = base::MakeUnique<ProcessCoordinationUnitImpl>(
+      new_cu = std::make_unique<ProcessCoordinationUnitImpl>(
           id, std::move(service_ref));
       break;
     case CoordinationUnitType::kPage:
-      new_cu = base::MakeUnique<PageCoordinationUnitImpl>(
+      new_cu = std::make_unique<PageCoordinationUnitImpl>(
           id, std::move(service_ref));
       break;
     default:

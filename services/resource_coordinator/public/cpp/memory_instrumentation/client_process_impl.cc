@@ -64,7 +64,7 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
           base::Unretained(this)),
       is_coordinator_process);
 
-  tracing_observer_ = base::MakeUnique<TracingObserver>(
+  tracing_observer_ = std::make_unique<TracingObserver>(
       base::trace_event::TraceLog::GetInstance(),
       base::trace_event::MemoryDumpManager::GetInstance());
 }

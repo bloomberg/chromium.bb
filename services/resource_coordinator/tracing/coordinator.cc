@@ -17,7 +17,6 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -70,7 +69,7 @@ Coordinator::Coordinator()
 
 Coordinator::~Coordinator() {
   if (!stop_and_flush_callback_.is_null())
-    stop_and_flush_callback_.Run(base::MakeUnique<base::DictionaryValue>());
+    stop_and_flush_callback_.Run(std::make_unique<base::DictionaryValue>());
   if (!start_tracing_callback_.is_null())
     base::ResetAndReturn(&start_tracing_callback_).Run(false);
   if (!request_buffer_usage_callback_.is_null())
@@ -143,7 +142,7 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
                                     const StopAndFlushCallback& callback) {
   if (!is_tracing_) {
     stream.reset();
-    callback.Run(base::MakeUnique<base::DictionaryValue>());
+    callback.Run(std::make_unique<base::DictionaryValue>());
     return;
   }
   DCHECK(!stream_.is_valid());
@@ -223,7 +222,7 @@ void Coordinator::StopAndFlushAfterClockSync() {
     if (!agent_entry->is_tracing())
       return;
     mojom::RecorderPtr ptr;
-    recorders_[agent_entry->label()].insert(base::MakeUnique<Recorder>(
+    recorders_[agent_entry->label()].insert(std::make_unique<Recorder>(
         MakeRequest(&ptr), agent_entry->type(),
         base::BindRepeating(&Coordinator::OnRecorderDataChange,
                             base::Unretained(this), agent_entry->label()),

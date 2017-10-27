@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
@@ -67,7 +66,7 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
 TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
   EXPECT_TRUE(coordination_unit_manager().observers_for_testing().empty());
   coordination_unit_manager().RegisterObserver(
-      base::MakeUnique<TestCoordinationUnitGraphObserver>());
+      std::make_unique<TestCoordinationUnitGraphObserver>());
   EXPECT_EQ(1u, coordination_unit_manager().observers_for_testing().size());
 
   TestCoordinationUnitGraphObserver* observer =

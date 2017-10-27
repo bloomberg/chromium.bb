@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -136,8 +135,8 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
 class MemoryTracingIntegrationTest : public testing::Test {
  public:
   void SetUp() override {
-    message_loop_ = base::MakeUnique<base::MessageLoop>();
-    coordinator_ = base::MakeUnique<MockCoordinator>(this);
+    message_loop_ = std::make_unique<base::MessageLoop>();
+    coordinator_ = std::make_unique<MockCoordinator>(this);
   }
 
   void InitializeClientProcess(mojom::ProcessType process_type) {
@@ -278,7 +277,7 @@ TEST_F(MemoryTracingIntegrationTest, InitializedAfterStartOfTracing) {
 TEST_F(MemoryTracingIntegrationTest, TestBackgroundTracingSetup) {
   InitializeClientProcess(mojom::ProcessType::BROWSER);
   base::trace_event::SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
-  auto mdp = base::MakeUnique<MockMemoryDumpProvider>();
+  auto mdp = std::make_unique<MockMemoryDumpProvider>();
   RegisterDumpProvider(&*mdp, nullptr, MemoryDumpProvider::Options(),
                        kWhitelistedMDPName);
 
@@ -393,7 +392,7 @@ TEST_F(MemoryTracingIntegrationTest, PeriodicDumpingWithMultipleModes) {
   const int kHeavyDumpPeriodMs = kHeavyDumpRate * kLightDumpPeriodMs;
 
   // The expected sequence with light=1ms, heavy=5ms is H,L,L,L,L,H,...
-  auto mdp = base::MakeUnique<MockMemoryDumpProvider>();
+  auto mdp = std::make_unique<MockMemoryDumpProvider>();
   RegisterDumpProvider(&*mdp, nullptr, MemoryDumpProvider::Options(),
                        kWhitelistedMDPName);
 
@@ -504,7 +503,7 @@ TEST_F(MemoryTracingIntegrationTest, GenerationChangeDoesntReenterMDM) {
       std::string("-*,") + MemoryDumpManager::kTraceCategory;
 
   auto thread =
-      base::MakeUnique<base::TestIOThread>(base::TestIOThread::kAutoStart);
+      std::make_unique<base::TestIOThread>(base::TestIOThread::kAutoStart);
 
   TraceLog::GetInstance()->SetEnabled(
       TraceConfig(kMemoryInfraTracingOnly,

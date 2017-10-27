@@ -38,7 +38,7 @@ void CoordinationUnitManager::OnStart(
         const service_manager::BindSourceInfo&>* registry,
     service_manager::ServiceContextRefFactory* service_ref_factory) {
   provider_ =
-      base::MakeUnique<CoordinationUnitProviderImpl>(service_ref_factory, this);
+      std::make_unique<CoordinationUnitProviderImpl>(service_ref_factory, this);
 
   registry->AddInterface(base::Bind(&CoordinationUnitProviderImpl::Bind,
                                     base::Unretained(provider_.get())));

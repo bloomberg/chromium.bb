@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
+
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"

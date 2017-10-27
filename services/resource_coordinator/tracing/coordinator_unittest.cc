@@ -48,7 +48,7 @@ class CoordinatorTest : public testing::Test,
   void OnDataComplete() override { base::ResetAndReturn(&quit_closure_).Run(); }
 
   MockAgent* AddArrayAgent() {
-    auto agent = base::MakeUnique<MockAgent>();
+    auto agent = std::make_unique<MockAgent>();
     agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "traceEvents",
                                    mojom::TraceDataType::ARRAY, false);
     agents_.push_back(std::move(agent));
@@ -56,7 +56,7 @@ class CoordinatorTest : public testing::Test,
   }
 
   MockAgent* AddObjectAgent() {
-    auto agent = base::MakeUnique<MockAgent>();
+    auto agent = std::make_unique<MockAgent>();
     agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "systemTraceEvents",
                                    mojom::TraceDataType::OBJECT, false);
     agents_.push_back(std::move(agent));
@@ -64,7 +64,7 @@ class CoordinatorTest : public testing::Test,
   }
 
   MockAgent* AddStringAgent() {
-    auto agent = base::MakeUnique<MockAgent>();
+    auto agent = std::make_unique<MockAgent>();
     agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "battor",
                                    mojom::TraceDataType::STRING, false);
     agents_.push_back(std::move(agent));
