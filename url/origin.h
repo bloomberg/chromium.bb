@@ -174,17 +174,8 @@ class URL_EXPORT Origin {
   bool operator<(const Origin& other) const;
 
  private:
-  explicit Origin(const GURL& url);
-  Origin(base::StringPiece scheme,
-         base::StringPiece host,
-         uint16_t port,
-         base::StringPiece suborigin,
-         SchemeHostPort::ConstructPolicy policy);
-  Origin(std::string scheme,
-         std::string host,
-         uint16_t port,
-         std::string suborigin,
-         SchemeHostPort::ConstructPolicy policy);
+  // |tuple| must be valid, implying that the created Origin is never unique.
+  Origin(SchemeHostPort tuple, std::string suborigin);
 
   SchemeHostPort tuple_;
   bool unique_;
