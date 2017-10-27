@@ -105,6 +105,11 @@ class LargeIconService : public KeyedService {
   // postpones the automatic eviction of the favicon from the database.
   void TouchIconFromGoogleServer(const GURL& icon_url);
 
+  // Extracts the organization-identifying domain from |url| which excludes
+  // registrar portion (e.g. final ".com"). Used for logging UMA metrics.
+  // Exposed publicly for testing.
+  static std::string GetOrganizationNameForUma(const GURL& url);
+
  private:
   base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyleImpl(
       const GURL& page_url,
