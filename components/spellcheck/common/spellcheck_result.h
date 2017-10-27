@@ -16,11 +16,12 @@
 struct SpellCheckResult {
   enum Decoration {
     // Red underline for misspelled words.
-    SPELLING = 1 << 1,
+    SPELLING,
 
     // Gray underline for correctly spelled words that are incorrectly used in
     // their context.
-    GRAMMAR = 1 << 2,
+    GRAMMAR,
+    LAST = GRAMMAR,
   };
 
   // Default values are so we have a default constructor for IPC::ReadParam()

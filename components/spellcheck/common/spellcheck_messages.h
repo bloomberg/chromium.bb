@@ -17,7 +17,7 @@
 
 #define IPC_MESSAGE_START SpellCheckMsgStart
 
-IPC_ENUM_TRAITS(SpellCheckResult::Decoration)
+IPC_ENUM_TRAITS_MAX_VALUE(SpellCheckResult::Decoration, SpellCheckResult::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
   IPC_STRUCT_TRAITS_MEMBER(decoration)
