@@ -23,6 +23,9 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
+#include "base/process/process_handle.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 
@@ -834,22 +837,71 @@ bool GlobalHistogramAllocator::CreateWithActiveFileInDir(const FilePath& dir,
 }
 
 // static
+FilePath GlobalHistogramAllocator::ConstructFilePath(const FilePath& dir,
+                                                     StringPiece name) {
+  return dir.AppendASCII(name).AddExtension(
+      PersistentMemoryAllocator::kFileExtension);
+}
+
+// static
+FilePath GlobalHistogramAllocator::ConstructFilePathForUploadDir(
+    const FilePath& dir,
+    StringPiece name,
+    base::Time stamp,
+    ProcessId pid) {
+  return ConstructFilePath(
+      dir,
+      StringPrintf("%.*s-%lX-%lX", static_cast<int>(name.length()), name.data(),
+                   static_cast<long>(stamp.ToTimeT()), static_cast<long>(pid)));
+}
+
+// static
+bool GlobalHistogramAllocator::ParseFilePath(const FilePath& path,
+                                             std::string* out_name,
+                                             Time* out_stamp,
+                                             ProcessId* out_pid) {
+  std::string filename = path.BaseName().AsUTF8Unsafe();
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      filename, "-.", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (parts.size() != 4)
+    return false;
+
+  if (out_name)
+    *out_name = parts[0].as_string();
+
+  if (out_stamp) {
+    int64_t stamp;
+    if (!HexStringToInt64(parts[1], &stamp))
+      return false;
+    *out_stamp = Time::FromTimeT(static_cast<time_t>(stamp));
+  }
+
+  if (out_pid) {
+    int64_t pid;
+    if (!HexStringToInt64(parts[2], &pid))
+      return false;
+    *out_pid = static_cast<ProcessId>(pid);
+  }
+
+  return true;
+}
+
+// static
 void GlobalHistogramAllocator::ConstructFilePaths(const FilePath& dir,
                                                   StringPiece name,
                                                   FilePath* out_base_path,
                                                   FilePath* out_active_path,
                                                   FilePath* out_spare_path) {
   if (out_base_path)
-    *out_base_path = MakeMetricsFilePath(dir, name);
+    *out_base_path = ConstructFilePath(dir, name);
 
   if (out_active_path) {
     *out_active_path =
-        MakeMetricsFilePath(dir, name.as_string().append("-active"));
+        ConstructFilePath(dir, name.as_string().append("-active"));
   }
 
   if (out_spare_path) {
-    *out_spare_path =
-        MakeMetricsFilePath(dir, name.as_string().append("-spare"));
+    *out_spare_path = ConstructFilePath(dir, name.as_string().append("-spare"));
   }
 }
 
@@ -862,20 +914,18 @@ void GlobalHistogramAllocator::ConstructFilePathsForUploadDir(
     FilePath* out_active_path,
     FilePath* out_spare_path) {
   if (out_upload_path) {
-    std::string name_stamp =
-        StringPrintf("%s-%X", name.c_str(),
-                     static_cast<unsigned int>(Time::Now().ToTimeT()));
-    *out_upload_path = MakeMetricsFilePath(upload_dir, name_stamp);
+    *out_upload_path = ConstructFilePathForUploadDir(
+        upload_dir, name, Time::Now(), GetCurrentProcId());
   }
 
   if (out_active_path) {
     *out_active_path =
-        MakeMetricsFilePath(active_dir, name + std::string("-active"));
+        ConstructFilePath(active_dir, name + std::string("-active"));
   }
 
   if (out_spare_path) {
     *out_spare_path =
-        MakeMetricsFilePath(active_dir, name + std::string("-spare"));
+        ConstructFilePath(active_dir, name + std::string("-spare"));
   }
 }
 
@@ -1063,13 +1113,6 @@ void GlobalHistogramAllocator::ImportHistogramsToStatisticsRecorder() {
       break;
     StatisticsRecorder::RegisterOrDeleteDuplicate(histogram.release());
   }
-}
-
-// static
-FilePath GlobalHistogramAllocator::MakeMetricsFilePath(const FilePath& dir,
-                                                       StringPiece name) {
-  return dir.AppendASCII(name).AddExtension(
-      PersistentMemoryAllocator::kFileExtension);
 }
 
 }  // namespace base

@@ -129,6 +129,34 @@ TEST_F(PersistentHistogramAllocatorTest, CreateAndIterate) {
   EXPECT_FALSE(recovered);
 }
 
+TEST_F(PersistentHistogramAllocatorTest, ConstructPaths) {
+  const FilePath dir_path(FILE_PATH_LITERAL("foo/"));
+  const std::string dir_string =
+      dir_path.NormalizePathSeparators().AsUTF8Unsafe();
+
+  FilePath path = GlobalHistogramAllocator::ConstructFilePath(dir_path, "bar");
+  EXPECT_EQ(dir_string + "bar.pma", path.AsUTF8Unsafe());
+
+  std::string name;
+  Time stamp;
+  ProcessId pid;
+  EXPECT_FALSE(
+      GlobalHistogramAllocator::ParseFilePath(path, &name, nullptr, nullptr));
+  EXPECT_FALSE(
+      GlobalHistogramAllocator::ParseFilePath(path, nullptr, &stamp, nullptr));
+  EXPECT_FALSE(
+      GlobalHistogramAllocator::ParseFilePath(path, nullptr, nullptr, &pid));
+
+  path = GlobalHistogramAllocator::ConstructFilePathForUploadDir(
+      dir_path, "bar", Time::FromTimeT(12345), 6789);
+  EXPECT_EQ(dir_string + "bar-3039-1A85.pma", path.AsUTF8Unsafe());
+  ASSERT_TRUE(
+      GlobalHistogramAllocator::ParseFilePath(path, &name, &stamp, &pid));
+  EXPECT_EQ(name, "bar");
+  EXPECT_EQ(Time::FromTimeT(12345), stamp);
+  EXPECT_EQ(static_cast<ProcessId>(6789), pid);
+}
+
 TEST_F(PersistentHistogramAllocatorTest, CreateWithFile) {
   const char temp_name[] = "CreateWithFileTest";
   ScopedTempDir temp_dir;
