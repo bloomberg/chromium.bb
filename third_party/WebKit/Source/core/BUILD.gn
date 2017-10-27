@@ -1603,7 +1603,6 @@ jumbo_source_set("unit_tests") {
     "layout/TextAutosizerTest.cpp",
     "layout/VisualRectMappingTest.cpp",
     "layout/api/SelectionStateTest.cpp",
-    "layout/line/InlineBoxTest.cpp",
     "layout/line/InlineTextBoxTest.cpp",
     "layout/ng/NGInlineLayoutTest.cpp",
     "layout/ng/geometry/ng_box_strut_test.cc",

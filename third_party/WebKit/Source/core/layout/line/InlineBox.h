@@ -369,11 +369,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   // block.
   LayoutPoint PhysicalLocation() const;
 
-  // Converts from a rect in the logical space of the InlineBox to one in the
-  // physical space of the containing block. The logical space of an InlineBox
-  // may be transposed for vertical text and flipped for right-to-left text.
-  void LogicalRectToPhysicalRect(LayoutRect&) const;
-
   // TODO(szager): The Rect versions should return a rect, not modify the
   // argument.
   void FlipForWritingMode(FloatRect&) const;
