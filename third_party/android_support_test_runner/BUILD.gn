@@ -6,7 +6,7 @@ import("//build/config/android/rules.gni")
 
 android_java_prebuilt("runner_java") {
   testonly = true
-  jar_path = "lib/runner-0.5-release-no-dep.jar"
+  jar_path = "lib/runner-release-no-dep.jar"
   deps = [
     ":exposed_instrumentation_api_publish_java",
     "//third_party/guava:guava_java",
@@ -15,10 +15,10 @@ android_java_prebuilt("runner_java") {
 }
 
 android_java_prebuilt("exposed_instrumentation_api_publish_java") {
-  jar_path = "lib/exposed-instrumentation-api-publish-0.5-no-dep.jar"
+  jar_path = "lib/exposed-instrumentation-api-publish-no-dep.jar"
 }
 
 android_aar_prebuilt("rules_java") {
   testonly = true
-  aar_path = "lib/rules-0.5.aar"
+  aar_path = "lib/rules.aar"
 }
