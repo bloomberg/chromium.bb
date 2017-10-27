@@ -210,15 +210,15 @@ class UnmaskCardRequest : public PaymentsRequest {
     base::DictionaryValue request_dict;
     request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
     request_dict.SetString("credit_card_id", request_details_.card.server_id());
-    request_dict.SetPath({"risk_data_encoded"},
-                         BuildRiskDictionary(request_details_.risk_data));
+    request_dict.SetKey("risk_data_encoded",
+                        BuildRiskDictionary(request_details_.risk_data));
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetInteger("billable_service", kUnmaskCardBillableServiceNumber);
     if (IsAutofillSendBillingCustomerNumberExperimentEnabled() &&
         request_details_.billing_customer_number != 0) {
-      context->SetPath({"customer_context"},
-                       BuildCustomerContextDictionary(
-                           request_details_.billing_customer_number));
+      context->SetKey("customer_context",
+                      BuildCustomerContextDictionary(
+                          request_details_.billing_customer_number));
     }
     request_dict.Set("context", std::move(context));
 
@@ -342,8 +342,8 @@ class UploadCardRequest : public PaymentsRequest {
     base::DictionaryValue request_dict;
     request_dict.SetString("encrypted_pan", "__param:s7e_1_pan");
     request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
-    request_dict.SetPath({"risk_data_encoded"},
-                         BuildRiskDictionary(request_details_.risk_data));
+    request_dict.SetKey("risk_data_encoded",
+                        BuildRiskDictionary(request_details_.risk_data));
 
     const std::string& app_locale = request_details_.app_locale;
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
@@ -351,9 +351,9 @@ class UploadCardRequest : public PaymentsRequest {
     context->SetInteger("billable_service", kUploadCardBillableServiceNumber);
     if (IsAutofillSendBillingCustomerNumberExperimentEnabled() &&
         request_details_.billing_customer_number != 0) {
-      context->SetPath({"customer_context"},
-                       BuildCustomerContextDictionary(
-                           request_details_.billing_customer_number));
+      context->SetKey("customer_context",
+                      BuildCustomerContextDictionary(
+                          request_details_.billing_customer_number));
     }
     request_dict.Set("context", std::move(context));
 

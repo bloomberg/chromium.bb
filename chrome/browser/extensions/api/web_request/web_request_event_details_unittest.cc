@@ -98,17 +98,17 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
     details.SetResponseHeaders(request.get(), headers.get());
     std::unique_ptr<base::DictionaryValue> dict =
         details.GetFilteredDict(kFilter, nullptr, std::string(), false);
-    base::Value* filtered_headers = dict->FindPath({"responseHeaders"});
+    base::Value* filtered_headers = dict->FindKey("responseHeaders");
     ASSERT_TRUE(filtered_headers);
-    EXPECT_EQ(2u, filtered_headers->GetList().size());
+    ASSERT_EQ(2u, filtered_headers->GetList().size());
     EXPECT_EQ("Key1",
-              filtered_headers->GetList()[0].FindPath({"name"})->GetString());
+              filtered_headers->GetList()[0].FindKey("name")->GetString());
     EXPECT_EQ("Value1",
-              filtered_headers->GetList()[0].FindPath({"value"})->GetString());
+              filtered_headers->GetList()[0].FindKey("value")->GetString());
     EXPECT_EQ("X-Chrome-ID-Consistency-Response",
-              filtered_headers->GetList()[1].FindPath({"name"})->GetString());
+              filtered_headers->GetList()[1].FindKey("name")->GetString());
     EXPECT_EQ("Value2",
-              filtered_headers->GetList()[1].FindPath({"value"})->GetString());
+              filtered_headers->GetList()[1].FindKey("value")->GetString());
   }
 
   {
@@ -120,13 +120,13 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
     gaia_details.SetResponseHeaders(gaia_request.get(), headers.get());
     std::unique_ptr<base::DictionaryValue> dict =
         gaia_details.GetFilteredDict(kFilter, nullptr, std::string(), false);
-    base::Value* filtered_headers = dict->FindPath({"responseHeaders"});
+    base::Value* filtered_headers = dict->FindKey("responseHeaders");
     ASSERT_TRUE(filtered_headers);
-    EXPECT_EQ(1u, filtered_headers->GetList().size());
+    ASSERT_EQ(1u, filtered_headers->GetList().size());
     EXPECT_EQ("Key1",
-              filtered_headers->GetList()[0].FindPath({"name"})->GetString());
+              filtered_headers->GetList()[0].FindKey("name")->GetString());
     EXPECT_EQ("Value1",
-              filtered_headers->GetList()[0].FindPath({"value"})->GetString());
+              filtered_headers->GetList()[0].FindKey("value")->GetString());
   }
 }
 

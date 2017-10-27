@@ -149,10 +149,10 @@ void ValidateDump(base::Value* heaps_v2,
     base::Value* strings = heaps_v2->FindPath({"maps", "strings"});
     for (base::Value& dict : strings->GetList()) {
       // Each dict has the format {"id":1,"string":"kPartitionAllocTypeName"}
-      int id = dict.FindPath({"id"})->GetInt();
+      int id = dict.FindKey("id")->GetInt();
       if (id == type) {
         found = true;
-        std::string name = dict.FindPath({"string"})->GetString();
+        std::string name = dict.FindKey("string")->GetString();
         EXPECT_STREQ(name.c_str(), type_name);
         break;
       }
