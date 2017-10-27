@@ -284,8 +284,11 @@ ResourceId CreateResource(
   std::vector<TransferableResource> list;
   child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
   parent_resource_provider->ReceiveFromChild(child_id, list);
-  ResourceId parent_resource_id = list[0].id;
-  return parent_resource_id;
+
+  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  cc::ResourceProvider::ResourceIdMap resource_map =
+      parent_resource_provider->GetChildToParentMap(child_id);
+  return resource_map[list[0].id];
 }
 
 SolidColorDrawQuad* CreateSolidColorQuadAt(
