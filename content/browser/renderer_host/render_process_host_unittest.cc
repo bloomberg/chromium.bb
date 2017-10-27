@@ -78,7 +78,7 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroid) {
+TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroidOrChromeOS) {
   // Disable any overrides.
   RenderProcessHostImpl::SetMaxRendererProcessCount(0);
 
