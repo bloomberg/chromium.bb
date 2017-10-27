@@ -353,6 +353,8 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
 
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   gfx::RectF rect = controller.GetRectBetweenBounds();
+  if (rect.IsEmpty())
+    return rect;
 
   rect.Union(controller.GetStartHandleRect());
   rect.Union(controller.GetEndHandleRect());
