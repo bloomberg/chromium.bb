@@ -188,6 +188,10 @@ config("hide_all_but_jni") {
               rebase_path("//build/android/android_only_jni_exports.lst") ]
 }
 
+config("lld_pack_relocations") {
+  ldflags = [ "-Wl,--pack-dyn-relocs=android" ]
+}
+
 # Instrumentation -------------------------------------------------------------
 #
 # The BUILDCONFIG file sets the "default_cygprofile_instrumentation" config on

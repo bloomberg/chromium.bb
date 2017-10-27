@@ -411,6 +411,9 @@ if (android_64bit_target_cpu) {
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
+    if (use_lld) {
+      configs += [ "//build/config/android:lld_pack_relocations" ]
+    }
   }
 }
 

@@ -10,20 +10,6 @@ import("//third_party/leakcanary/config.gni")
 import("channel.gni")
 
 declare_args() {
-  # Whether chrome_public_apk should use the crazy linker.
-  chrome_public_apk_use_chromium_linker = chromium_linker_supported
-
-  # Whether chrome_public_apk should use the relocation packer.
-  chrome_public_apk_use_relocation_packer = chromium_linker_supported
-
-  # Whether native libraries should be loaded from within the apk.
-  # Only attempt loading the library from the APK for 64 bit devices
-  # until the number of 32 bit devices which don't support this
-  # approach falls to a minimal level -  http://crbug.com/390618.
-  chrome_public_apk_load_library_from_apk =
-      chromium_linker_supported &&
-      (current_cpu == "arm64" || current_cpu == "x64")
-
   # Enables ProGuard obfuscation of Chromium packages.
   enable_proguard_obfuscation = false
 
@@ -84,17 +70,25 @@ template("chrome_public_apk_tmpl") {
     }
 
     if (!defined(use_chromium_linker)) {
-      use_chromium_linker = chrome_public_apk_use_chromium_linker
+      use_chromium_linker = chromium_linker_supported
     }
 
     if (use_chromium_linker) {
       if (!defined(load_library_from_apk)) {
-        load_library_from_apk = chrome_public_apk_load_library_from_apk
+        # Whether native libraries should be loaded from within the apk.
+        # Only attempt loading the library from the APK for 64 bit devices
+        # until the number of 32 bit devices which don't support this
+        # approach falls to a minimal level -  http://crbug.com/390618.
+        load_library_from_apk = chromium_linker_supported &&
+                                (current_cpu == "arm64" || current_cpu == "x64")
       }
-
-      if (!defined(enable_relocation_packing)) {
-        enable_relocation_packing = chrome_public_apk_use_relocation_packer
+    }
+    if (!defined(pack_relocations)) {
+      if (!defined(requires_sdk_api_level_23)) {
+        requires_sdk_api_level_23 = false
       }
+      pack_relocations =
+          !use_lld && (use_chromium_linker || requires_sdk_api_level_23)
     }
     command_line_flags_file = "chrome-command-line"
   }
@@ -118,7 +112,6 @@ template("monochrome_public_apk_tmpl") {
     app_as_shared_lib = true
     use_chromium_linker = false
     requires_sdk_api_level_23 = true
-    enable_relocation_packing = true
     extensions_to_not_compress = ".lpak,.pak,.bin,.dat"
 
     # Webview supports all locales (has no omitted ones).

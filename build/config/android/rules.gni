@@ -1805,15 +1805,8 @@ if (enable_java_templates) {
 
     _use_chromium_linker =
         defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
-    _enable_relocation_packing = defined(invoker.enable_relocation_packing) &&
-                                 invoker.enable_relocation_packing
-
-    if (use_lld) {
-      # TODO(pcc): lld's output is currently incompatible with the relocation
-      # packer tool. We will probably want to implement relocation packing in
-      # lld itself eventually. http://crbug.com/760838.
-      _enable_relocation_packing = false
-    }
+    _pack_relocations =
+        defined(invoker.pack_relocations) && invoker.pack_relocations
 
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
@@ -1822,16 +1815,17 @@ if (enable_java_templates) {
 
     assert(_use_chromium_linker || true)  # Mark as used.
     assert(_requires_sdk_api_level_23 || true)
-    if (_enable_relocation_packing) {
-      assert(_use_chromium_linker || _requires_sdk_api_level_23,
-             "enable_relocation_packing requires either use_chromium_linker " +
-                 "or requires_sdk_api_level_23")
-    }
-    if (_load_library_from_apk) {
-      assert(_use_chromium_linker || _requires_sdk_api_level_23,
-             "load_library_from_apk requires use_chromium_linker " +
-                 "or requires_sdk_api_level_23")
-    }
+    assert(!_pack_relocations || !use_lld,
+           "Use //build/config/android:lld_pack_relocations to pack " +
+               "relocations when use_lld=true.")
+    assert(!_pack_relocations || _use_chromium_linker ||
+               _requires_sdk_api_level_23,
+           "pack_relocations requires either use_chromium_linker " +
+               "or requires_sdk_api_level_23")
+    assert(!_load_library_from_apk || _use_chromium_linker ||
+               _requires_sdk_api_level_23,
+           "load_library_from_apk requires use_chromium_linker " +
+               "or requires_sdk_api_level_23")
 
     # The dependency that makes the chromium linker, if any is needed.
     _native_libs_deps = []
@@ -1977,11 +1971,7 @@ if (enable_java_templates) {
       if (_proguard_enabled) {
         proguard_info = "$_proguard_output_jar_path.info"
       }
-      if (_enable_relocation_packing) {
-        enable_relocation_packing = "1"
-      } else {
-        enable_relocation_packing = "0"
-      }
+      non_native_packed_relocations = _pack_relocations
 
       # Don't depend on the runtime_deps target in order to avoid having to
       # build the native libraries just to create the .build_config file.
@@ -2327,7 +2317,7 @@ if (enable_java_templates) {
     assert(_secondary_abi_native_libs_file_arg != "" &&
            _secondary_abi_native_libs_file_arg_dep != "")  # Mark as used.
 
-    if (_native_libs_deps != [] && _enable_relocation_packing) {
+    if (_native_libs_deps != [] && _pack_relocations) {
       _prepare_native_target_name = "${_template_name}__prepare_native"
       _native_libs_json = "$gen_dir/packed-libs/filelist.json"
       _rebased_native_libs_json = rebase_path(_native_libs_json, root_build_dir)
@@ -2397,7 +2387,7 @@ if (enable_java_templates) {
       stack_script(_create_stack_script_rule_name) {
         stack_target_name = invoker.target_name
         deps = _native_libs_deps
-        if (_native_libs_deps != [] && _enable_relocation_packing) {
+        if (_native_libs_deps != [] && _pack_relocations) {
           packed_libraries = _native_libs_file_arg
           deps += [ _native_libs_file_arg_dep ]
         }

@@ -304,11 +304,9 @@ template("write_build_config") {
         }
       }
     }
-    if (defined(invoker.enable_relocation_packing)) {
-      args += [
-        "--enable-relocation-packing",
-        invoker.enable_relocation_packing,
-      ]
+    if (defined(invoker.non_native_packed_relocations) &&
+        invoker.non_native_packed_relocations) {
+      args += [ "--non-native-packed-relocations" ]
     }
     if (defined(invoker.java_sources_file)) {
       args += [
@@ -550,8 +548,8 @@ template("test_runner_script") {
         }
         test_runner_args += [ "--apk-under-test=$_apk_under_test" ]
         test_runner_args += [
-          "--enable-relocation-packing",
-          "@FileArg($_rebased_apk_under_test_build_config:deps_info:enable_relocation_packing)",
+          "--non-native-packed-relocations",
+          "@FileArg($_rebased_apk_under_test_build_config:deps_info:non_native_packed_relocations)",
         ]
       }
       if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
