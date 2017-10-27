@@ -996,6 +996,9 @@ class TestExpectationSerializationTests(unittest.TestCase):
         self.assertEqual(
             TestExpectationLine._format_line([], ['MODIFIERS'], 'name', ['EXPECTATIONS'], None),
             '[ MODIFIERS ] name [ EXPECTATIONS ]')
+        self.assertEqual(
+            TestExpectationLine._format_line([], [], 'foo/test.html', ['Skip', 'WontFix'], None),
+            'foo/test.html [ WontFix ]')
 
     def test_string_roundtrip(self):
         self.assert_round_trip('')
