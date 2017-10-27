@@ -171,7 +171,7 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
 
 void ModuleScriptLoader::NotifyFetchFinished(
     const WTF::Optional<ModuleScriptCreationParams>& params,
-    ConsoleMessage* error_message) {
+    const HeapVector<Member<ConsoleMessage>>& error_messages) {
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
     AdvanceState(State::kFinished);
@@ -184,7 +184,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // null, asynchronously complete this algorithm with null, and abort these
   // steps." [spec text]
   if (!params.has_value()) {
-    if (error_message) {
+    for (ConsoleMessage* error_message : error_messages) {
       ExecutionContext::From(modulator_->GetScriptState())
           ->AddConsoleMessage(error_message);
     }

@@ -13,10 +13,13 @@ namespace blink {
 
 namespace {
 
-bool WasModuleLoadSuccessful(Resource* resource,
-                             ConsoleMessage** error_message) {
+bool WasModuleLoadSuccessful(
+    Resource* resource,
+    HeapVector<Member<ConsoleMessage>>* error_messages) {
   // Implements conditions in Step 7 of
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
+
+  DCHECK(error_messages);
 
   // - response's type is "error"
   if (!resource || resource->ErrorOccurred()) {
@@ -38,17 +41,15 @@ bool WasModuleLoadSuccessful(Resource* resource,
   // MimeType() may be rewritten by mime sniffer.
   if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
           response.HttpContentType())) {
-    if (error_message) {
-      String message =
-          "Failed to load module script: The server responded with a "
-          "non-JavaScript MIME type of \"" +
-          response.HttpContentType() +
-          "\". Strict MIME type checking is enforced for module scripts per "
-          "HTML spec.";
-      *error_message = ConsoleMessage::CreateForRequest(
-          kJSMessageSource, kErrorMessageLevel, message,
-          response.Url().GetString(), resource->Identifier());
-    }
+    String message =
+        "Failed to load module script: The server responded with a "
+        "non-JavaScript MIME type of \"" +
+        response.HttpContentType() +
+        "\". Strict MIME type checking is enforced for module scripts per "
+        "HTML spec.";
+    error_messages->push_back(ConsoleMessage::CreateForRequest(
+        kJSMessageSource, kErrorMessageLevel, message,
+        response.Url().GetString(), resource->Identifier()));
     return false;
   }
 
@@ -86,9 +87,10 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ClearResource();
 
   ScriptResource* script_resource = ToScriptResource(resource);
-  ConsoleMessage* error_message = nullptr;
-  if (!WasModuleLoadSuccessful(script_resource, &error_message)) {
-    Finalize(WTF::nullopt, error_message);
+
+  HeapVector<Member<ConsoleMessage>> error_messages;
+  if (!WasModuleLoadSuccessful(script_resource, &error_messages)) {
+    Finalize(WTF::nullopt, error_messages);
     return;
   }
 
@@ -96,14 +98,14 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
       script_resource->GetResponse().Url(), script_resource->SourceText(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode(),
       script_resource->CalculateAccessControlStatus());
-  Finalize(params, nullptr /* error_message */);
+  Finalize(params, error_messages);
 }
 
 void DocumentModuleScriptFetcher::Finalize(
     const WTF::Optional<ModuleScriptCreationParams>& params,
-    ConsoleMessage* error_message) {
+    const HeapVector<Member<ConsoleMessage>>& error_messages) {
   was_fetched_ = true;
-  NotifyFetchFinished(params, error_message);
+  NotifyFetchFinished(params, error_messages);
 }
 
 void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {

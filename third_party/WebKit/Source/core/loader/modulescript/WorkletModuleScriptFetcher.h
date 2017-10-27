@@ -39,7 +39,7 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
 
  private:
   void Finalize(const WTF::Optional<ModuleScriptCreationParams>&,
-                ConsoleMessage* error_message);
+                const HeapVector<Member<ConsoleMessage>>& error_messages);
 
   Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
 };

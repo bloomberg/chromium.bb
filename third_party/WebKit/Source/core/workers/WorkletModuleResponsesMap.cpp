@@ -50,13 +50,13 @@ class WorkletModuleResponsesMap::Entry final
   // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
   void NotifyFetchFinished(
       const WTF::Optional<ModuleScriptCreationParams>& params,
-      ConsoleMessage* error_message) override {
+      const HeapVector<Member<ConsoleMessage>>& error_messages) override {
     // The entry can be disposed of during the resource fetch.
     if (state_ == State::kFailed)
       return;
 
     if (!params) {
-      // TODO(nhiroki): Add |error_message| to the context's message storage.
+      // TODO(nhiroki): Add |error_messages| to the context's message storage.
       NotifyFailure();
       return;
     }
