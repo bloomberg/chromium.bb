@@ -35,7 +35,6 @@ FrameProcessingTimeEstimator::FrameProcessingTimeEstimator()
 FrameProcessingTimeEstimator::~FrameProcessingTimeEstimator() = default;
 
 void FrameProcessingTimeEstimator::StartFrame() {
-  DCHECK(start_time_.is_null());
   start_time_ = Now();
 }
 
@@ -61,7 +60,9 @@ void FrameProcessingTimeEstimator::SetBandwidthKbps(int bandwidth_kbps) {
 
 base::TimeDelta FrameProcessingTimeEstimator::EstimatedProcessingTime(
     bool key_frame) const {
-  if (key_frame) {
+  // Avoid returning 0 if there are no records for delta-frames.
+  if ((key_frame && !key_frame_processing_us_.IsEmpty()) ||
+      delta_frame_processing_us_.IsEmpty()) {
     return base::TimeDelta::FromMicroseconds(
         key_frame_processing_us_.Average());
   }
@@ -78,7 +79,9 @@ base::TimeDelta FrameProcessingTimeEstimator::EstimatedTransitTime(
     // TimeDelta::Max().
     return base::TimeDelta::FromMinutes(1);
   }
-  if (key_frame) {
+  // Avoid returning 0 if there are no records for delta-frames.
+  if ((key_frame && !key_frame_size_.IsEmpty()) ||
+      delta_frame_size_.IsEmpty()) {
     return base::TimeDelta::FromMilliseconds(
         key_frame_size_.Average() * 8 / bandwidth_kbps_.Average());
   }

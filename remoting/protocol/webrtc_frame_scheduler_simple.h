@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "remoting/base/leaky_bucket.h"
 #include "remoting/base/running_samples.h"
+#include "remoting/codec/frame_processing_time_estimator.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 
 namespace remoting {
@@ -62,7 +63,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
     int current_target_bitrate_ = 0;
   };
 
-  void ScheduleNextFrame(base::TimeTicks now);
+  void ScheduleNextFrame();
   void CaptureNextFrame();
 
   base::Closure capture_callback_;
@@ -93,8 +94,9 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   // Set to true when encoding unchanged frames for top-off.
   bool top_off_is_active_ = false;
 
-  // Accumulator for capture and encoder delay history.
-  RunningSamples frame_processing_delay_us_;
+  // Accumulator for capture and encoder delay history, as well as the transit
+  // time.
+  FrameProcessingTimeEstimator processing_time_estimator_;
 
   // Accumulator for updated region area in the previously encoded frames.
   RunningSamples updated_region_area_;

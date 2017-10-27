@@ -71,4 +71,42 @@ TEST(FrameProcessingTimeEstimatorTest, NegativeBandwidthShouldBeDropped) {
             estimator.EstimatedTransitTime(true));
 }
 
+TEST(FrameProcessingTimeEstimatorTest, ShouldNotReturn0WithOnlyKeyFrames) {
+  TestFrameProcessingTimeEstimator estimator;
+  estimator.StartFrame();
+  estimator.TimeElapseMs(10);
+  estimator.FinishFrame(CreateEncodedFrame(true, 100));
+  estimator.SetBandwidthKbps(100);
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(10),
+            estimator.EstimatedProcessingTime(true));
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(8),
+            estimator.EstimatedTransitTime(true));
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(10),
+            estimator.EstimatedProcessingTime(false));
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(8),
+            estimator.EstimatedTransitTime(false));
+}
+
+TEST(FrameProcessingTimeEstimatorTest, ShouldNotReturn0WithOnlyDeltaFrames) {
+  TestFrameProcessingTimeEstimator estimator;
+  estimator.StartFrame();
+  estimator.TimeElapseMs(1);
+  estimator.FinishFrame(CreateEncodedFrame(false, 50));
+  estimator.SetBandwidthKbps(100);
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(1),
+            estimator.EstimatedProcessingTime(false));
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(4),
+            estimator.EstimatedTransitTime(false));
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(1),
+            estimator.EstimatedProcessingTime(true));
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(4),
+            estimator.EstimatedTransitTime(true));
+}
+
+TEST(FrameProcessingTimeEstimatorTest, ShouldReturn0WithNoRecords) {
+  TestFrameProcessingTimeEstimator estimator;
+  ASSERT_EQ(base::TimeDelta(), estimator.EstimatedProcessingTime(true));
+  ASSERT_EQ(base::TimeDelta(), estimator.EstimatedProcessingTime(false));
+}
+
 }  // namespace remoting
