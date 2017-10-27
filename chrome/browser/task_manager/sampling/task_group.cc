@@ -127,21 +127,14 @@ TaskGroup::TaskGroup(
         base::Bind(&TaskGroup::OnProcessPriorityDone,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    shared_sampler_->RegisterCallbacks(
+    shared_sampler_->RegisterCallback(
         process_id_,
-        base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&TaskGroup::OnPhysicalMemoryUsageRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&TaskGroup::OnStartTimeRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&TaskGroup::OnCpuTimeRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&TaskGroup::OnSamplerRefreshDone, base::Unretained(this)));
   }
 }
 
 TaskGroup::~TaskGroup() {
-  shared_sampler_->UnregisterCallbacks(process_id_);
+  shared_sampler_->UnregisterCallback(process_id_);
 }
 
 void TaskGroup::AddTask(Task* task) {
@@ -290,34 +283,20 @@ void TaskGroup::OnRefreshNaClDebugStubPortDone(int nacl_debug_stub_port) {
 }
 #endif  // BUILDFLAG(ENABLE_NACL)
 
+#if defined(OS_LINUX)
+void TaskGroup::OnOpenFdCountRefreshDone(int open_fd_count) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  open_fd_count_ = open_fd_count;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_FD_COUNT);
+}
+#endif  // defined(OS_LINUX)
+
 void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   platform_independent_cpu_usage_ = cpu_usage;
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_CPU);
-}
-
-void TaskGroup::OnStartTimeRefreshDone(base::Time start_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  start_time_ = start_time;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_START_TIME);
-}
-
-void TaskGroup::OnCpuTimeRefreshDone(base::TimeDelta cpu_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  cpu_time_ = cpu_time;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_CPU_TIME);
-}
-
-void TaskGroup::OnPhysicalMemoryUsageRefreshDone(int64_t physical_bytes) {
-#if defined(OS_WIN)
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  memory_usage_.physical_bytes = physical_bytes;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PHYSICAL_MEMORY);
-#endif  // OS_WIN
 }
 
 void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
@@ -334,6 +313,13 @@ void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
 #endif // OS_WIN
 }
 
+void TaskGroup::OnProcessPriorityDone(bool is_backgrounded) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  is_backgrounded_ = is_backgrounded;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PRIORITY);
+}
+
 void TaskGroup::OnIdleWakeupsRefreshDone(int idle_wakeups_per_second) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -341,20 +327,32 @@ void TaskGroup::OnIdleWakeupsRefreshDone(int idle_wakeups_per_second) {
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_IDLE_WAKEUPS);
 }
 
-#if defined(OS_LINUX)
-void TaskGroup::OnOpenFdCountRefreshDone(int open_fd_count) {
+void TaskGroup::OnSamplerRefreshDone(
+    base::Optional<SharedSampler::SamplingResult> results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  open_fd_count_ = open_fd_count;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_FD_COUNT);
-}
-#endif  // defined(OS_LINUX)
+  // If any of the Optional<> fields have no value then replace them with
+  // sentinel values.
+  // TODO(wez): Migrate the TaskGroup fields to Optional<> so we can remove
+  // the need for all this sentinel-handling logic.
+  if (results) {
+    start_time_ = results->start_time;
+    cpu_time_ = results->cpu_time;
+    idle_wakeups_per_second_ = results->idle_wakeups_per_second;
+#if defined(OS_WIN)
+    memory_usage_.physical_bytes = results->physical_bytes;
+#endif
+  } else {
+    start_time_ = base::Time();
+    cpu_time_ = base::TimeDelta();
+    idle_wakeups_per_second_ = -1;
+#if defined(OS_WIN)
+    memory_usage_.physical_bytes = -1;
+#endif
+  }
 
-void TaskGroup::OnProcessPriorityDone(bool is_backgrounded) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  is_backgrounded_ = is_backgrounded;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PRIORITY);
+  OnBackgroundRefreshTypeFinished(expected_on_bg_done_flags_ &
+                                  shared_sampler_->GetSupportedFlags());
 }
 
 void TaskGroup::OnBackgroundRefreshTypeFinished(int64_t finished_refresh_type) {
