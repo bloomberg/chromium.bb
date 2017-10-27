@@ -4532,7 +4532,8 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
-  contents()->ProceedWithCrossSiteNavigation();
+  if (!IsBrowserSideNavigationEnabled())
+    contents()->GetMainFrame()->PrepareForCommitIfNecessary();
   // Also make sure we told the page to navigate.
   GURL nav_url = GetLastNavigationURL();
   EXPECT_EQ(url1, nav_url);
@@ -4544,7 +4545,8 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   EXPECT_EQ(2, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
-  contents()->ProceedWithCrossSiteNavigation();
+  if (!IsBrowserSideNavigationEnabled())
+    contents()->GetMainFrame()->PrepareForCommitIfNecessary();
   nav_url = GetLastNavigationURL();
   EXPECT_EQ(url3, nav_url);
   contents()->CommitPendingNavigation();

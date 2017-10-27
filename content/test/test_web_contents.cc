@@ -91,23 +91,8 @@ void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       bool did_create_new_entry,
                                       const GURL& url,
                                       ui::PageTransition transition) {
-  TestDidNavigateWithReferrer(render_frame_host,
-                              nav_entry_id,
-                              did_create_new_entry,
-                              url,
-                              Referrer(),
-                              transition);
-}
-
-void TestWebContents::TestDidNavigateWithReferrer(
-    RenderFrameHost* render_frame_host,
-    int nav_entry_id,
-    bool did_create_new_entry,
-    const GURL& url,
-    const Referrer& referrer,
-    ui::PageTransition transition) {
   TestDidNavigateWithSequenceNumber(render_frame_host, nav_entry_id,
-                                    did_create_new_entry, url, referrer,
+                                    did_create_new_entry, url, Referrer(),
                                     transition, false, -1, -1);
 }
 
@@ -297,12 +282,6 @@ void TestWebContents::CommitPendingNavigation() {
   // happens.
   if (old_rfh != rfh)
     old_rfh->OnSwappedOut();
-}
-
-void TestWebContents::ProceedWithCrossSiteNavigation() {
-  if (!GetPendingMainFrame())
-    return;
-  GetMainFrame()->SendBeforeUnloadACK(true);
 }
 
 RenderViewHostDelegateView* TestWebContents::GetDelegateView() {

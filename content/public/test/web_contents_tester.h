@@ -29,7 +29,6 @@ class NavigationData;
 class NavigationHandle;
 class RenderFrameHost;
 class WebContents;
-struct Referrer;
 
 // This interface allows embedders of content/ to write tests that depend on a
 // test version of WebContents.  This interface can be retrieved from any
@@ -80,11 +79,6 @@ class WebContentsTester {
   // Sets the loading state to the given value.
   virtual void TestSetIsLoading(bool value) = 0;
 
-  // Simulates the current RVH notifying that it has unloaded so that the
-  // pending RVH navigation can proceed.
-  // Does nothing if no cross-navigation is pending.
-  virtual void ProceedWithCrossSiteNavigation() = 0;
-
   // Simulates a navigation with the given information.
   //
   // Guidance for calling these:
@@ -99,12 +93,6 @@ class WebContentsTester {
                                bool did_create_new_entry,
                                const GURL& url,
                                ui::PageTransition transition) = 0;
-  virtual void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
-                                           int nav_entry_id,
-                                           bool did_create_new_entry,
-                                           const GURL& url,
-                                           const Referrer& referrer,
-                                           ui::PageTransition transition) = 0;
 
   // Sets NavgationData on |navigation_handle|.
   virtual void SetNavigationData(

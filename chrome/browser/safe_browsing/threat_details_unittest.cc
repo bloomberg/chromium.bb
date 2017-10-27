@@ -27,6 +27,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/io_buffer.h"
@@ -398,14 +399,11 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 
 // Tests creating a simple threat report of a malware URL.
 TEST_F(ThreatDetailsTest, ThreatSubResource) {
-  // Commit a load.
-  content::WebContentsTester::For(web_contents())
-      ->TestDidNavigateWithReferrer(
-          web_contents()->GetMainFrame(), 0 /* nav_entry_id */,
-          true /* did_create_new_entry */, GURL(kLandingURL),
-          content::Referrer(GURL(kReferrerURL),
-                            blink::kWebReferrerPolicyDefault),
-          ui::PAGE_TRANSITION_TYPED);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kLandingURL), web_contents());
+  navigation->SetReferrer(
+      content::Referrer(GURL(kReferrerURL), blink::kWebReferrerPolicyDefault));
+  navigation->Commit();
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::CLIENT_SIDE_DETECTION,
@@ -1176,13 +1174,11 @@ TEST_F(ThreatDetailsTest, ThreatOnMainPageLoadBlocked) {
 
   // Load and commit an unrelated URL. The ThreatDetails should not use this
   // navigation entry.
-  content::WebContentsTester::For(web_contents())
-      ->TestDidNavigateWithReferrer(
-          web_contents()->GetMainFrame(), 0 /* nav_entry_id */,
-          true /* did_create_new_entry */, GURL(kUnrelatedURL),
-          content::Referrer(GURL(kUnrelatedReferrerURL),
-                            blink::kWebReferrerPolicyDefault),
-          ui::PAGE_TRANSITION_TYPED);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kUnrelatedURL), web_contents());
+  navigation->SetReferrer(content::Referrer(GURL(kUnrelatedReferrerURL),
+                                            blink::kWebReferrerPolicyDefault));
+  navigation->Commit();
 
   // Start a pending load with a referrer.
   controller().LoadURL(
@@ -1237,13 +1233,11 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
   const char* kPendingURL = "http://www.pending.com/some/path";
 
   // Load and commit the landing URL with a referrer.
-  content::WebContentsTester::For(web_contents())
-      ->TestDidNavigateWithReferrer(
-          web_contents()->GetMainFrame(), 0 /* nav_entry_id */,
-          true /* did_create_new_entry */, GURL(kLandingURL),
-          content::Referrer(GURL(kReferrerURL),
-                            blink::kWebReferrerPolicyDefault),
-          ui::PAGE_TRANSITION_TYPED);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kLandingURL), web_contents());
+  navigation->SetReferrer(
+      content::Referrer(GURL(kReferrerURL), blink::kWebReferrerPolicyDefault));
+  navigation->Commit();
 
   // Create UnsafeResource for fake sub-resource of landing page.
   UnsafeResource resource;
