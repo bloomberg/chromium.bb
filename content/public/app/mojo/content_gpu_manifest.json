@@ -10,7 +10,7 @@
           "content::mojom::ChildHistogramFetcherFactory",
           "IPC::mojom::ChannelBootstrap",
           "service_manager::mojom::ServiceFactory",
-          "ui::mojom::GpuMain"
+          "viz::mojom::VizMain"
         ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"

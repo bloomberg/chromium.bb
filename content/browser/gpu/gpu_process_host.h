@@ -31,10 +31,10 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"
@@ -320,7 +320,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool wake_up_gpu_before_drawing_ = false;
   bool dont_disable_webgl_when_compositor_context_lost_ = false;
 
-  ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
+  viz::mojom::VizMainAssociatedPtr gpu_main_ptr_;
   viz::mojom::GpuServicePtr gpu_service_ptr_;
   mojo::Binding<viz::mojom::GpuHost> gpu_host_binding_;
   gpu::GpuProcessHostActivityFlags activity_flags_;

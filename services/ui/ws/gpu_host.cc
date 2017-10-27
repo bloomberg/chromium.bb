@@ -49,23 +49,23 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this),
       gpu_thread_("GpuThread"),
-      gpu_main_wait_(base::WaitableEvent::ResetPolicy::MANUAL,
+      viz_main_wait_(base::WaitableEvent::ResetPolicy::MANUAL,
                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
-  auto request = MakeRequest(&gpu_main_);
+  auto request = MakeRequest(&viz_main_);
   if (connector && HasSplitVizProcess()) {
     connector->BindInterface(viz::mojom::kVizServiceName, std::move(request));
   } else {
     // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
     gpu_thread_.Start();
     gpu_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&DefaultGpuHost::InitializeGpuMain,
+        FROM_HERE, base::BindOnce(&DefaultGpuHost::InitializeVizMain,
                                   base::Unretained(this),
-                                  base::Passed(MakeRequest(&gpu_main_))));
+                                  base::Passed(MakeRequest(&viz_main_))));
   }
 
   viz::mojom::GpuHostPtr gpu_host_proxy;
   gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
-  gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
+  viz_main_->CreateGpuService(MakeRequest(&gpu_service_),
                               std::move(gpu_host_proxy),
                               mojo::ScopedSharedBufferHandle());
   gpu_memory_buffer_manager_ =
@@ -75,12 +75,12 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
 
 DefaultGpuHost::~DefaultGpuHost() {
   // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
-  // Make sure |gpu_main_impl_| has been successfully created (i.e. the task
-  // posted in the constructor to run InitializeGpuMain() has actually run).
+  // Make sure |viz_main_impl_| has been successfully created (i.e. the task
+  // posted in the constructor to run InitializeVizMain() has actually run).
   if (gpu_thread_.IsRunning()) {
-    gpu_main_wait_.Wait();
-    gpu_main_impl_->TearDown();
-    gpu_thread_.task_runner()->DeleteSoon(FROM_HERE, std::move(gpu_main_impl_));
+    viz_main_wait_.Wait();
+    viz_main_impl_->TearDown();
+    gpu_thread_.task_runner()->DeleteSoon(FROM_HERE, std::move(viz_main_impl_));
     gpu_thread_.Stop();
   }
 }
@@ -106,7 +106,7 @@ void DefaultGpuHost::OnAcceleratedWidgetDestroyed(
 void DefaultGpuHost::CreateFrameSinkManager(
     viz::mojom::FrameSinkManagerRequest request,
     viz::mojom::FrameSinkManagerClientPtr client) {
-  gpu_main_->CreateFrameSinkManager(std::move(request), std::move(client));
+  viz_main_->CreateFrameSinkManager(std::move(request), std::move(client));
 }
 
 GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
@@ -124,12 +124,12 @@ void DefaultGpuHost::OnBadMessageFromGpu() {
   NOTIMPLEMENTED();
 }
 
-void DefaultGpuHost::InitializeGpuMain(mojom::GpuMainRequest request) {
-  GpuMain::ExternalDependencies deps;
+void DefaultGpuHost::InitializeVizMain(viz::mojom::VizMainRequest request) {
+  viz::VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor = true;
-  gpu_main_impl_ = std::make_unique<GpuMain>(nullptr, std::move(deps));
-  gpu_main_impl_->Bind(std::move(request));
-  gpu_main_wait_.Signal();
+  viz_main_impl_ = std::make_unique<viz::VizMainImpl>(nullptr, std::move(deps));
+  viz_main_impl_->Bind(std::move(request));
+  viz_main_wait_.Signal();
 }
 
 void DefaultGpuHost::DidInitialize(

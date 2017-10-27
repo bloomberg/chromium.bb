@@ -7,7 +7,6 @@ specific_include_rules = {
     "+gpu/command_buffer/service",
     "+gpu/ipc/common",
     "+mojo/public/cpp/bindings",
-    "+services/ui/gpu/interfaces",
     "+third_party/skia",
   ],
   ".*_unittest\.cc": [

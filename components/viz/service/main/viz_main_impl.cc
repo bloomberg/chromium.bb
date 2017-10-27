@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/gpu/gpu_main.h"
+#include "components/viz/service/main/viz_main_impl.h"
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -52,21 +52,21 @@ std::unique_ptr<base::Thread> CreateAndStartIOThread() {
 
 }  // namespace
 
-namespace ui {
+namespace viz {
 
-GpuMain::ExternalDependencies::ExternalDependencies() = default;
+VizMainImpl::ExternalDependencies::ExternalDependencies() = default;
 
-GpuMain::ExternalDependencies::~ExternalDependencies() = default;
+VizMainImpl::ExternalDependencies::~ExternalDependencies() = default;
 
-GpuMain::ExternalDependencies::ExternalDependencies(
+VizMainImpl::ExternalDependencies::ExternalDependencies(
     ExternalDependencies&& other) = default;
 
-GpuMain::ExternalDependencies& GpuMain::ExternalDependencies::operator=(
+VizMainImpl::ExternalDependencies& VizMainImpl::ExternalDependencies::operator=(
     ExternalDependencies&& other) = default;
 
-GpuMain::GpuMain(Delegate* delegate,
-                 ExternalDependencies dependencies,
-                 std::unique_ptr<gpu::GpuInit> gpu_init)
+VizMainImpl::VizMainImpl(Delegate* delegate,
+                         ExternalDependencies dependencies,
+                         std::unique_ptr<gpu::GpuInit> gpu_init)
     : delegate_(delegate),
       dependencies_(std::move(dependencies)),
       gpu_init_(std::move(gpu_init)),
@@ -105,32 +105,32 @@ GpuMain::GpuMain(Delegate* delegate,
     compositor_thread_task_runner_ = compositor_thread_->task_runner();
   }
 
-  gpu_service_ = base::MakeUnique<viz::GpuServiceImpl>(
+  gpu_service_ = base::MakeUnique<GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
       io_thread_ ? io_thread_->task_runner()
                  : dependencies_.io_thread_task_runner,
       gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences());
 }
 
-GpuMain::~GpuMain() {
+VizMainImpl::~VizMainImpl() {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   if (io_thread_)
     io_thread_->Stop();
 }
 
-void GpuMain::SetLogMessagesForHost(LogMessages log_messages) {
+void VizMainImpl::SetLogMessagesForHost(LogMessages log_messages) {
   log_messages_ = std::move(log_messages);
 }
 
-void GpuMain::Bind(mojom::GpuMainRequest request) {
+void VizMainImpl::Bind(mojom::VizMainRequest request) {
   binding_.Bind(std::move(request));
 }
 
-void GpuMain::BindAssociated(mojom::GpuMainAssociatedRequest request) {
+void VizMainImpl::BindAssociated(mojom::VizMainAssociatedRequest request) {
   associated_binding_.Bind(std::move(request));
 }
 
-void GpuMain::TearDown() {
+void VizMainImpl::TearDown() {
   DCHECK(!gpu_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!compositor_thread_task_runner_->BelongsToCurrentThread());
   // The compositor holds on to some resources from gpu service. So destroy the
@@ -141,7 +141,7 @@ void GpuMain::TearDown() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::CloseGpuMainBindingOnGpuThread,
+      FROM_HERE, base::Bind(&VizMainImpl::CloseVizMainBindingOnGpuThread,
                             base::Unretained(this), &binding_wait));
   binding_wait.Wait();
 
@@ -149,21 +149,22 @@ void GpuMain::TearDown() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   compositor_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::TearDownOnCompositorThread,
+      FROM_HERE, base::Bind(&VizMainImpl::TearDownOnCompositorThread,
                             base::Unretained(this), &compositor_wait));
   compositor_wait.Wait();
 
   base::WaitableEvent gpu_wait(base::WaitableEvent::ResetPolicy::MANUAL,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::TearDownOnGpuThread,
+      FROM_HERE, base::Bind(&VizMainImpl::TearDownOnGpuThread,
                             base::Unretained(this), &gpu_wait));
   gpu_wait.Wait();
 }
 
-void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
-                               viz::mojom::GpuHostPtr gpu_host,
-                               mojo::ScopedSharedBufferHandle activity_flags) {
+void VizMainImpl::CreateGpuService(
+    mojom::GpuServiceRequest request,
+    mojom::GpuHostPtr gpu_host,
+    mojo::ScopedSharedBufferHandle activity_flags) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   gpu_service_->UpdateGPUInfo();
   for (const LogMessage& log : log_messages_)
@@ -193,9 +194,9 @@ void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
     delegate_->OnGpuServiceConnection(gpu_service_.get());
 }
 
-void GpuMain::CreateFrameSinkManager(
-    viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtr client) {
+void VizMainImpl::CreateFrameSinkManager(
+    mojom::FrameSinkManagerRequest request,
+    mojom::FrameSinkManagerClientPtr client) {
   DCHECK(compositor_thread_task_runner_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   if (!gpu_service_ || !gpu_service_->is_initialized()) {
@@ -206,9 +207,9 @@ void GpuMain::CreateFrameSinkManager(
   CreateFrameSinkManagerInternal(std::move(request), client.PassInterface());
 }
 
-void GpuMain::CreateFrameSinkManagerInternal(
-    viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtrInfo client_info) {
+void VizMainImpl::CreateFrameSinkManagerInternal(
+    mojom::FrameSinkManagerRequest request,
+    mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!gpu_command_service_);
   DCHECK(gpu_service_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
@@ -219,39 +220,39 @@ void GpuMain::CreateFrameSinkManagerInternal(
 
   compositor_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GpuMain::CreateFrameSinkManagerOnCompositorThread,
+      base::Bind(&VizMainImpl::CreateFrameSinkManagerOnCompositorThread,
                  base::Unretained(this), base::Passed(std::move(request)),
                  base::Passed(std::move(client_info))));
 }
 
-void GpuMain::CreateFrameSinkManagerOnCompositorThread(
-    viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtrInfo client_info) {
+void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
+    mojom::FrameSinkManagerRequest request,
+    mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!frame_sink_manager_);
-  viz::mojom::FrameSinkManagerClientPtr client;
+  mojom::FrameSinkManagerClientPtr client;
   client.Bind(std::move(client_info));
 
-  display_provider_ = base::MakeUnique<viz::GpuDisplayProvider>(
+  display_provider_ = base::MakeUnique<GpuDisplayProvider>(
       gpu_command_service_, gpu_service_->gpu_channel_manager());
 
-  frame_sink_manager_ = base::MakeUnique<viz::FrameSinkManagerImpl>(
-      viz::SurfaceManager::LifetimeType::REFERENCES, display_provider_.get());
+  frame_sink_manager_ = base::MakeUnique<FrameSinkManagerImpl>(
+      SurfaceManager::LifetimeType::REFERENCES, display_provider_.get());
   frame_sink_manager_->BindAndSetClient(std::move(request), nullptr,
                                         std::move(client));
 }
 
-void GpuMain::CloseGpuMainBindingOnGpuThread(base::WaitableEvent* wait) {
+void VizMainImpl::CloseVizMainBindingOnGpuThread(base::WaitableEvent* wait) {
   binding_.Close();
   wait->Signal();
 }
 
-void GpuMain::TearDownOnCompositorThread(base::WaitableEvent* wait) {
+void VizMainImpl::TearDownOnCompositorThread(base::WaitableEvent* wait) {
   frame_sink_manager_.reset();
   display_provider_.reset();
   wait->Signal();
 }
 
-void GpuMain::TearDownOnGpuThread(base::WaitableEvent* wait) {
+void VizMainImpl::TearDownOnGpuThread(base::WaitableEvent* wait) {
   gpu_command_service_ = nullptr;
   gpu_service_.reset();
   gpu_memory_buffer_factory_.reset();
@@ -259,15 +260,16 @@ void GpuMain::TearDownOnGpuThread(base::WaitableEvent* wait) {
   wait->Signal();
 }
 
-void GpuMain::PreSandboxStartup() {
+void VizMainImpl::PreSandboxStartup() {
   // TODO(sad): https://crbug.com/645602
 }
 
-bool GpuMain::EnsureSandboxInitialized(gpu::GpuWatchdogThread* watchdog_thread,
-                                       const gpu::GPUInfo* gpu_info,
-                                       const gpu::GpuPreferences& gpu_prefs) {
+bool VizMainImpl::EnsureSandboxInitialized(
+    gpu::GpuWatchdogThread* watchdog_thread,
+    const gpu::GPUInfo* gpu_info,
+    const gpu::GpuPreferences& gpu_prefs) {
   // TODO(sad): https://crbug.com/645602
   return true;
 }
 
-}  // namespace ui
+}  // namespace viz

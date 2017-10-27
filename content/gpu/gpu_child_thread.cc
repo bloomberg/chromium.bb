@@ -131,8 +131,8 @@ class QueueingConnectionFilter : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(QueueingConnectionFilter);
 };
 
-ui::GpuMain::ExternalDependencies CreateGpuMainDependencies() {
-  ui::GpuMain::ExternalDependencies deps;
+viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies() {
+  viz::VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
   if (GetContentClient()->gpu())
@@ -146,9 +146,9 @@ ui::GpuMain::ExternalDependencies CreateGpuMainDependencies() {
 }  // namespace
 
 GpuChildThread::GpuChildThread(std::unique_ptr<gpu::GpuInit> gpu_init,
-                               ui::GpuMain::LogMessages log_messages)
+                               viz::VizMainImpl::LogMessages log_messages)
     : GpuChildThread(GetOptions(), std::move(gpu_init)) {
-  gpu_main_.SetLogMessagesForHost(std::move(log_messages));
+  viz_main_.SetLogMessagesForHost(std::move(log_messages));
 }
 
 GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
@@ -163,7 +163,7 @@ GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
 GpuChildThread::GpuChildThread(const ChildThreadImpl::Options& options,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
     : ChildThreadImpl(options),
-      gpu_main_(this, CreateGpuMainDependencies(), std::move(gpu_init)),
+      viz_main_(this, CreateVizMainDependencies(), std::move(gpu_init)),
       weak_factory_(this) {
   if (in_process_gpu()) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -176,7 +176,7 @@ GpuChildThread::GpuChildThread(const ChildThreadImpl::Options& options,
 GpuChildThread::~GpuChildThread() {}
 
 void GpuChildThread::Init(const base::Time& process_start_time) {
-  gpu_main_.gpu_service()->set_start_time(process_start_time);
+  viz_main_.gpu_service()->set_start_time(process_start_time);
 
   // When running in in-process mode, this has been set in the browser at
   // ChromeBrowserMainPartsAndroid::PreMainMessageLoopRun().
@@ -189,7 +189,7 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
   AssociatedInterfaceRegistry* associated_registry = &associated_interfaces_;
   associated_registry->AddInterface(base::Bind(
-      &GpuChildThread::CreateGpuMainService, base::Unretained(this)));
+      &GpuChildThread::CreateVizMainService, base::Unretained(this)));
 
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&GpuChildThread::BindServiceFactoryRequest,
@@ -207,13 +207,13 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   StartServiceManagerConnection();
 }
 
-void GpuChildThread::CreateGpuMainService(
-    ui::mojom::GpuMainAssociatedRequest request) {
-  gpu_main_.BindAssociated(std::move(request));
+void GpuChildThread::CreateVizMainService(
+    viz::mojom::VizMainAssociatedRequest request) {
+  viz_main_.BindAssociated(std::move(request));
 }
 
 bool GpuChildThread::in_process_gpu() const {
-  return gpu_main_.gpu_service()->gpu_info().in_process_gpu;
+  return viz_main_.gpu_service()->gpu_info().in_process_gpu;
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {

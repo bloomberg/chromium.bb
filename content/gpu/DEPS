@@ -8,8 +8,8 @@ include_rules = [
   "+services/service_manager",
   "+services/shape_detection",
   "+services/ui/common",
-  "+services/ui/gpu",
-  "+services/viz/privileged/interfaces/gl",
+  "+services/viz/privileged/interfaces",
+  "+services/viz/service",
   "+sandbox",
   "+skia",
 ]
