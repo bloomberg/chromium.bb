@@ -12,7 +12,7 @@ body {
   width: 100%;
 }
 
-iframe {
+webview {
   overflow-x: scroll;
   overflow-y: scroll;
 }

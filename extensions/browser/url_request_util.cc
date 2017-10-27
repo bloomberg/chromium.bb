@@ -169,6 +169,24 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
       return true;
     }
 
+    // Allow mobile setup web UI (chrome://mobilesetup) to embed resources from
+    // the component mobile activation extension in a webview. This is needed
+    // because the activation web UI relies on the activation extension to
+    // provide parts of its UI, and to redirect POST requests to the network
+    // payment URL during mobile device initialization.
+    //
+    // TODO(http://crbug.com/778021): Fix mobile activation UI not to require
+    // this workaround.
+    bool is_mobile_activation_extension =
+        extension && extension->id() == "iadeocfgjdjdmpenejdbfeaocpbikmab";
+    if (is_mobile_activation_extension &&
+        (resource_path == "/activation.html" ||
+         resource_path == "/portal_offline.html" ||
+         resource_path == "/invalid_device_info.html")) {
+      *allowed = true;
+      return true;
+    }
+
     // An extension's resources should only be accessible to WebViews owned by
     // that extension.
     if (owner_extension != extension) {

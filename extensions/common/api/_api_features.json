@@ -200,6 +200,7 @@
         "chrome://extensions/*",
         "chrome://chrome-signin/*",
         "chrome://media-router/*",
+        "chrome://mobilesetup/*",
         "chrome://oobe/*"
       ]
     }
@@ -556,6 +557,7 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
+      "chrome://mobilesetup/*",
       "chrome://oobe/*"
     ]
   }],
@@ -570,6 +572,7 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
+      "chrome://mobilesetup/*",
       "chrome://oobe/*"
     ]
   }],
@@ -582,6 +585,7 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
+      "chrome://mobilesetup/*",
       "chrome://oobe/*"
     ]
   }]
