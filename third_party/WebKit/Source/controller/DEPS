@@ -3,6 +3,7 @@ include_rules = [
     "+bindings",
     "+core",
     "+modules",
+    "+mojo/public",
     "+controller",
     "+platform",
     "+web",

@@ -126,6 +126,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h",
   "+third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h",
   "+third_party/WebKit/public/platform/modules/websockets/websocket.mojom.h",
+  "+third_party/WebKit/public/platform/oom_intervention.mojom.h",
   "+third_party/WebKit/public/platform/reporting.mojom.h",
   "+third_party/WebKit/public/public_features.h",
   "+third_party/WebKit/public/web/WebAXEnums.h",

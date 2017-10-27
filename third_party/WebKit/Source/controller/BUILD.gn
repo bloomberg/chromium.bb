@@ -37,6 +37,8 @@ component("controller") {
     "BlinkInitializer.cpp",
     "BlinkInitializer.h",
     "ControllerExport.h",
+    "OomInterventionImpl.cpp",
+    "OomInterventionImpl.h",
   ]
 
   if (is_mac) {
@@ -86,6 +88,7 @@ jumbo_source_set("webkit_unit_tests_sources") {
   testonly = true
 
   sources = [
+    "OomInterventionImplTest.cpp",
     "tests/RunAllTests.cpp",
   ]
   sources += bindings_unittest_files
