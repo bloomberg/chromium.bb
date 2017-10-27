@@ -58,24 +58,6 @@ void CharacterIteratorAlgorithm<Strategy>::Initialize() {
 }
 
 template <typename Strategy>
-EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::Range()
-    const {
-  EphemeralRangeTemplate<Strategy> range(text_iterator_.Range());
-  if (text_iterator_.AtEnd() || text_iterator_.length() <= 1)
-    return range;
-  PositionTemplate<Strategy> start_position =
-      range.StartPosition().ParentAnchoredEquivalent();
-  PositionTemplate<Strategy> end_position =
-      range.EndPosition().ParentAnchoredEquivalent();
-  Node* node = start_position.ComputeContainerNode();
-  DCHECK_EQ(node, end_position.ComputeContainerNode());
-  int offset = start_position.OffsetInContainerNode() + run_offset_;
-  return EphemeralRangeTemplate<Strategy>(
-      PositionTemplate<Strategy>(node, offset),
-      PositionTemplate<Strategy>(node, offset + 1));
-}
-
-template <typename Strategy>
 Document* CharacterIteratorAlgorithm<Strategy>::OwnerDocument() const {
   return text_iterator_.OwnerDocument();
 }
