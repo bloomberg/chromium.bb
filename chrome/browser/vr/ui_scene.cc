@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -125,8 +126,11 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
 
-    // Update layout, which depends on size.
-    for (auto& element : *root_element_) {
+    // Update layout, which depends on size. Note that the layout phase changes
+    // the size of layout-type elements, as they adjust to fit the cumulative
+    // size of their children. This must be done in reverse order, such that
+    // children are correctly sized when laid out by their parent.
+    for (auto& element : base::Reversed(*root_element_)) {
       element.LayOutChildren();
       element.set_update_phase(UiElement::kUpdatedLayout);
     }
