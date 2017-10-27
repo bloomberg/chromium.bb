@@ -52,6 +52,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/IdlenessDetector.h"
+#include "core/loader/InteractiveDetector.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/PingLoader.h"
@@ -81,6 +82,7 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
@@ -466,6 +468,13 @@ void FrameFetchContext::DispatchWillSendRequest(
                          initiator_info, resource_type);
   if (IdlenessDetector* idleness_detector = GetFrame()->GetIdlenessDetector())
     idleness_detector->OnWillSendRequest(MasterDocumentLoader()->Fetcher());
+  if (document_) {
+    InteractiveDetector* interactive_detector(
+        InteractiveDetector::From(*document_));
+    if (interactive_detector) {
+      interactive_detector->OnResourceLoadBegin(WTF::nullopt);
+    }
+  }
   if (GetFrame()->FrameScheduler())
     GetFrame()->FrameScheduler()->DidStartLoading(identifier);
 }
@@ -575,6 +584,14 @@ void FrameFetchContext::DispatchDidFinishLoading(unsigned long identifier,
   probe::didFinishLoading(GetFrame()->GetDocument(), identifier,
                           MasterDocumentLoader(), finish_time,
                           encoded_data_length, decoded_body_length);
+  if (document_) {
+    InteractiveDetector* interactive_detector(
+        InteractiveDetector::From(*document_));
+    if (interactive_detector) {
+      interactive_detector->OnResourceLoadEnd(finish_time);
+    }
+  }
+
   if (GetFrame()->FrameScheduler())
     GetFrame()->FrameScheduler()->DidStopLoading(identifier);
 }
@@ -589,6 +606,15 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
   probe::didFailLoading(GetFrame()->GetDocument(), identifier,
                         MasterDocumentLoader(), error);
+  if (document_) {
+    InteractiveDetector* interactive_detector(
+        InteractiveDetector::From(*document_));
+    if (interactive_detector) {
+      // We have not yet recorded load_finish_time. Pass nullopt here; we will
+      // call MonotonicallyIncreasingTime lazily when we need it.
+      interactive_detector->OnResourceLoadEnd(WTF::nullopt);
+    }
+  }
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!is_internal_request)
