@@ -2060,6 +2060,23 @@ TEST_F(InputMethodMacTest, ImeCancelCompositionForAllViews) {
   EXPECT_FALSE([rwhv_cocoa_ hasMarkedText]);
 }
 
+// This test verifies that calling FocusedNodeChanged() on
+// RenderWidgetHostViewMac calls cancelComposition on the Cocoa view.
+TEST_F(InputMethodMacTest, FocusedNodeChanged) {
+  // Some values for the call to setMarkedText.
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithString:@"sample text"]);
+  NSRange selectedRange = NSMakeRange(0, 1);
+  NSRange replacementRange = NSMakeRange(0, 1);
+
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  EXPECT_TRUE([rwhv_cocoa_ hasMarkedText]);
+  rwhv_mac_->FocusedNodeChanged(true, gfx::Rect());
+  EXPECT_FALSE([rwhv_cocoa_ hasMarkedText]);
+}
+
 // This test verifies that when a RenderWidgetHostView changes its
 // TextInputState to NONE we send the IPC to stop monitor composition info and,
 // conversely, when its state is set to non-NONE, we start monitoring the

@@ -1421,6 +1421,8 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
 void RenderWidgetHostViewMac::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
+  [cocoa_view_ cancelComposition];
+
   // If the Mac Zoom feature is enabled, update it with the bounds of the
   // current focused node so that it can ensure that it's scrolled into view.
   // Don't do anything if it's an editable node, as this will be handled by
