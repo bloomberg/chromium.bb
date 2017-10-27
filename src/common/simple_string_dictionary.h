@@ -209,20 +209,22 @@ class NonAllocatingMap {
 
   // Given |key|, removes any associated value. |key| must not be NULL. If
   // the key is not found, this is a noop.
-  void RemoveKey(const char* key) {
+  bool RemoveKey(const char* key) {
     assert(key);
     if (!key)
-      return;
+      return false;
 
     Entry* entry = GetEntryForKey(key);
     if (entry) {
       entry->key[0] = '\0';
       entry->value[0] = '\0';
+      return true;
     }
 
 #ifndef NDEBUG
     assert(GetEntryForKey(key) == NULL);
 #endif
+    return false;
   }
 
   // Places a serialized version of the map into |map| and returns the size.
