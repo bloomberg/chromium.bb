@@ -727,8 +727,6 @@ source_set("browser") {
     "fileapi/browser_file_system_helper.h",
     "fileapi/fileapi_message_filter.cc",
     "fileapi/fileapi_message_filter.h",
-    "fileapi/upload_file_system_file_element_reader.cc",
-    "fileapi/upload_file_system_file_element_reader.h",
     "find_request_manager.cc",
     "find_request_manager.h",
     "font_list_async.cc",

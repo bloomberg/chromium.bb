@@ -1213,7 +1213,6 @@ test("content_unittests") {
     "../browser/fileapi/browser_file_system_helper_unittest.cc",
     "../browser/fileapi/file_system_operation_runner_unittest.cc",
     "../browser/fileapi/fileapi_message_filter_unittest.cc",
-    "../browser/fileapi/upload_file_system_file_element_reader_unittest.cc",
     "../browser/frame_host/ancestor_throttle_unittest.cc",
     "../browser/frame_host/frame_service_base_unittest.cc",
     "../browser/frame_host/frame_tree_node_blame_context_unittest.cc",

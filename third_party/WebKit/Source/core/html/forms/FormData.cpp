@@ -289,8 +289,6 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
         // Do not add the file if the path is empty.
         if (!file->GetPath().IsEmpty())
           form_data->AppendFile(file->GetPath());
-        if (!file->FileSystemURL().IsEmpty())
-          form_data->AppendFileSystemURL(file->FileSystemURL());
       } else {
         form_data->AppendBlob(entry->GetBlob()->Uuid(),
                               entry->GetBlob()->GetBlobDataHandle());
