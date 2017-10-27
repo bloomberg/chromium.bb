@@ -76,6 +76,9 @@ component("sandbox") {
     sources += [
       "features.cc",
       "features.h",
+      "win/sandbox_win.cc",
+      "win/sandbox_win.h",
     ]
+    deps += [ "//sandbox/win:sandbox" ]
   }
 }

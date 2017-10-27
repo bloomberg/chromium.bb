@@ -280,8 +280,6 @@ source_set("common") {
     "sandbox_init_linux.cc",
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",
-    "sandbox_win.cc",
-    "sandbox_win.h",
     "savable_subframe.h",
     "send_zygote_child_ping_linux.cc",
     "service_manager/service_manager_connection_impl.cc",

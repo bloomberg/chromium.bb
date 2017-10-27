@@ -80,8 +80,9 @@
 #endif
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
@@ -245,7 +246,8 @@ class GpuSandboxedProcessLauncherDelegate
       // Open GL path.
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
-      SetJobLevel(cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+      service_manager::SandboxWin::SetJobLevel(
+          cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
@@ -257,12 +259,12 @@ class GpuSandboxedProcessLauncherDelegate
       // turn blocks on the browser UI thread. So, instead we forgo a window
       // message pump entirely and just add job restrictions to prevent child
       // processes.
-      SetJobLevel(cmd_line_, sandbox::JOB_LIMITED_USER,
-                  JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
-                      JOB_OBJECT_UILIMIT_DESKTOP |
-                      JOB_OBJECT_UILIMIT_EXITWINDOWS |
-                      JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
-                  policy);
+      service_manager::SandboxWin::SetJobLevel(
+          cmd_line_, sandbox::JOB_LIMITED_USER,
+          JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS | JOB_OBJECT_UILIMIT_DESKTOP |
+              JOB_OBJECT_UILIMIT_EXITWINDOWS |
+              JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
+          policy);
 
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }

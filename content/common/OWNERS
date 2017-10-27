@@ -5,8 +5,6 @@ jln@chromium.org
 # For security review of Windows sandbox.
 per-file sandbox_init_win.cc=set noparent
 per-file sandbox_init_win.cc=file://sandbox/win/OWNERS
-per-file sandbox_win.*=set noparent
-per-file sandbox_win.*=file://sandbox/win/OWNERS
 
 # Mac Sandbox.
 per-file sandbox_init_mac.*=rsesek@chromium.org
