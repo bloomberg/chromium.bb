@@ -15,14 +15,11 @@ SharedSampler::~SharedSampler() {}
 
 int64_t SharedSampler::GetSupportedFlags() const { return 0; }
 
-void SharedSampler::RegisterCallbacks(
+void SharedSampler::RegisterCallback(
     base::ProcessId process_id,
-    const OnIdleWakeupsCallback& on_idle_wakeups,
-    const OnPhysicalMemoryCallback& on_physical_memory,
-    const OnStartTimeCallback& on_start_time,
-    const OnCpuTimeCallback& on_cpu_time) {}
+    OnSamplingCompleteCallback on_sampling_complete) {}
 
-void SharedSampler::UnregisterCallbacks(base::ProcessId process_id) {}
+void SharedSampler::UnregisterCallback(base::ProcessId process_id) {}
 
 void SharedSampler::Refresh(base::ProcessId process_id,
                              int64_t refresh_flags) {}

@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/task.h"
+#include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/task_group_sampler.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "components/nacl/common/features.h"
@@ -120,23 +121,17 @@ class TaskGroup {
   void RefreshNaClDebugStubPort(int child_process_unique_id);
   void OnRefreshNaClDebugStubPortDone(int port);
 #endif
-
-  void OnCpuRefreshDone(double cpu_usage);
-
-  void OnStartTimeRefreshDone(base::Time start_time);
-
-  void OnCpuTimeRefreshDone(base::TimeDelta cpu_time);
-
-  void OnPhysicalMemoryUsageRefreshDone(int64_t physical_bytes);
-  void OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage);
-
-  void OnIdleWakeupsRefreshDone(int idle_wakeups_per_second);
-
 #if defined(OS_LINUX)
   void OnOpenFdCountRefreshDone(int open_fd_count);
 #endif  // defined(OS_LINUX)
 
+  void OnCpuRefreshDone(double cpu_usage);
+  void OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage);
   void OnProcessPriorityDone(bool is_backgrounded);
+  void OnIdleWakeupsRefreshDone(int idle_wakeups_per_second);
+
+  void OnSamplerRefreshDone(
+      base::Optional<SharedSampler::SamplingResult> results);
 
   void OnBackgroundRefreshTypeFinished(int64_t finished_refresh_type);
 

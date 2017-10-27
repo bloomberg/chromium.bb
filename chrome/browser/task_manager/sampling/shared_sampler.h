@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -37,29 +38,26 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   explicit SharedSampler(
       const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner);
 
-  // Below are the types of callbacks that are invoked on the UI thread
-  // when the refresh is done on the worker thread.
-  // These callbacks are passed via RegisterCallbacks.
-  using OnIdleWakeupsCallback = base::Callback<void(int)>;
-  using OnPhysicalMemoryCallback = base::Callback<void(int64_t)>;
-  using OnStartTimeCallback = base::Callback<void(base::Time)>;
-  using OnCpuTimeCallback = base::Callback<void(base::TimeDelta)>;
+  struct SamplingResult {
+    int idle_wakeups_per_second;
+    int64_t physical_bytes;
+    base::Time start_time;
+    base::TimeDelta cpu_time;
+  };
+  using OnSamplingCompleteCallback =
+      base::Callback<void(base::Optional<SamplingResult>)>;
 
   // Returns a combination of refresh flags supported by the shared sampler.
   int64_t GetSupportedFlags() const;
 
   // Registers task group specific callbacks.
-  void RegisterCallbacks(base::ProcessId process_id,
-                         const OnIdleWakeupsCallback& on_idle_wakeups,
-                         const OnPhysicalMemoryCallback& on_physical_memory,
-                         const OnStartTimeCallback& on_start_time,
-                         const OnCpuTimeCallback& on_cpu_time);
+  void RegisterCallback(base::ProcessId process_id,
+                        OnSamplingCompleteCallback on_sampling_complete);
 
   // Unregisters task group specific callbacks.
-  void UnregisterCallbacks(base::ProcessId process_id);
+  void UnregisterCallback(base::ProcessId process_id);
 
-  // Refreshes the expensive process' stats (for now only idle wakeups per
-  // second) on the worker thread.
+  // Triggers a refresh of the expensive process' stats, on the worker thread.
   void Refresh(base::ProcessId process_id, int64_t refresh_flags);
 
 #if defined(OS_WIN)
@@ -74,41 +72,21 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   friend class base::RefCountedThreadSafe<SharedSampler>;
   ~SharedSampler();
 
+  typedef std::map<base::ProcessId, OnSamplingCompleteCallback> CallbacksMap;
+
 #if defined(OS_WIN)
-  // The UI-thread callbacks in TaskGroup registered with RegisterCallbacks and
-  // to be called when refresh on the worker thread is done.
-  struct Callbacks {
-    Callbacks();
-    Callbacks(Callbacks&& other);
-    ~Callbacks();
-
-    OnIdleWakeupsCallback on_idle_wakeups;
-    OnPhysicalMemoryCallback on_physical_memory;
-    OnStartTimeCallback on_start_time;
-    OnCpuTimeCallback on_cpu_time;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Callbacks);
-  };
-
-  typedef std::map<base::ProcessId, Callbacks> CallbacksMap;
-
   // Contains all results of refresh for a single process.
-  struct RefreshResult {
+  struct ProcessIdAndSamplingResult {
     base::ProcessId process_id;
-    int idle_wakeups_per_second;
-    int64_t physical_bytes;
-    base::Time start_time;
-    base::TimeDelta cpu_time;
+    SamplingResult data;
   };
-
-  typedef std::vector<RefreshResult> RefreshResults;
+  typedef std::vector<ProcessIdAndSamplingResult> AllSamplingResults;
 
   // Posted on the worker thread to do the actual refresh.
-  std::unique_ptr<RefreshResults> RefreshOnWorkerThread();
+  AllSamplingResults RefreshOnWorkerThread();
 
   // Called on UI thread when the refresh is done.
-  void OnRefreshDone(std::unique_ptr<RefreshResults> refresh_results);
+  void OnRefreshDone(AllSamplingResults sampling_results);
 
   // Clear cached data.
   void ClearState();
@@ -122,16 +100,14 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   std::unique_ptr<ProcessDataSnapshot> CaptureSnapshot();
 
   // Produce refresh results by diffing two snapshots.
-  static void MakeResultsFromTwoSnapshots(
+  static AllSamplingResults MakeResultsFromTwoSnapshots(
       const ProcessDataSnapshot& prev_snapshot,
-      const ProcessDataSnapshot& snapshot,
-      RefreshResults* results);
+      const ProcessDataSnapshot& snapshot);
 
   // Produce refresh results from one snapshot.
   // This is used only the first time when only one snapshot is available.
-  static void MakeResultsFromSnapshot(
-      const ProcessDataSnapshot& snapshot,
-      RefreshResults* results);
+  static AllSamplingResults MakeResultsFromSnapshot(
+      const ProcessDataSnapshot& snapshot);
 
   // Accumulates callbacks passed from TaskGroup objects passed via
   // RegisterCallbacks calls.
