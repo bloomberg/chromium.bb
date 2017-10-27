@@ -6,6 +6,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "mock_tracker.cc",
+    "mock_tracker.h",
     "test_tracker.cc",
     "test_tracker.h",
   ]
@@ -14,5 +16,6 @@ source_set("test_support") {
     "//base",
     "//components/feature_engagement/internal",
     "//components/feature_engagement/public",
+    "//testing/gmock",
   ]
 }

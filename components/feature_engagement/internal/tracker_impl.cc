@@ -191,8 +191,20 @@ bool TrackerImpl::ShouldTriggerHelpUI(const base::Feature& feature) {
   return result.NoErrors() && !feature_config.tracking_only;
 }
 
+bool TrackerImpl::WouldTriggerHelpUI(const base::Feature& feature) const {
+  FeatureConfig feature_config = configuration_->GetFeatureConfig(feature);
+  ConditionValidator::Result result = condition_validator_->MeetsConditions(
+      feature, feature_config, *event_model_, *availability_model_,
+      time_provider_->GetCurrentDay());
+  DVLOG(2) << "Would trigger result for " << feature.name
+           << ": trigger=" << result.NoErrors()
+           << " tracking_only=" << feature_config.tracking_only << " "
+           << result;
+  return result.NoErrors() && !feature_config.tracking_only;
+}
+
 Tracker::TriggerState TrackerImpl::GetTriggerState(
-    const base::Feature& feature) {
+    const base::Feature& feature) const {
   if (!IsInitialized()) {
     DVLOG(2) << "TriggerState for " << feature.name << ": "
              << static_cast<int>(Tracker::TriggerState::NOT_READY);
@@ -220,7 +232,7 @@ void TrackerImpl::Dismissed(const base::Feature& feature) {
   stats::RecordUserDismiss();
 }
 
-bool TrackerImpl::IsInitialized() {
+bool TrackerImpl::IsInitialized() const {
   return event_model_->IsReady() && availability_model_->IsReady();
 }
 

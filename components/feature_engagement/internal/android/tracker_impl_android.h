@@ -46,6 +46,10 @@ class TrackerImplAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj,
       const base::android::JavaParamRef<jstring>& jfeature);
+  virtual bool WouldTriggerHelpUI(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jfeature);
   virtual jint GetTriggerState(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj,

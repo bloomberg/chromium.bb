@@ -123,6 +123,7 @@ source_set("unit_tests") {
     "//components/favicon/core",
     "//components/favicon/core/test:test_support",
     "//components/feature_engagement",
+    "//components/feature_engagement/test:test_support",
     "//components/prefs",
     "//components/reading_list/core",
     "//components/url_formatter",

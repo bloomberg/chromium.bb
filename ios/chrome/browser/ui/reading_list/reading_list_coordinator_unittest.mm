@@ -11,6 +11,7 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/feature_engagement/test/mock_tracker.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -99,24 +100,6 @@ using testing::_;
 
 @end
 
-#pragma mark - feature_engagement::Tracker
-namespace feature_engagement {
-namespace {
-
-class TrackerStub : public feature_engagement::Tracker {
- public:
-  MOCK_METHOD1(NotifyEvent, void(const std::string&));
-  MOCK_METHOD1(ShouldTriggerHelpUI, bool(const base::Feature& feature));
-  MOCK_METHOD1(GetTriggerState,
-               Tracker::TriggerState(const base::Feature& feature));
-  MOCK_METHOD1(Dismissed, void(const base::Feature& feature));
-  MOCK_METHOD0(IsInitialized, bool());
-  MOCK_METHOD1(AddOnInitializedCallback, void(OnInitializedCallback callback));
-};
-
-}  //  namespace
-}  //  namespace feature_engagement
-
 #pragma mark - ReadingListCoordinatorTest
 
 class ReadingListCoordinatorTest : public web::WebTestWithWebState {
@@ -127,7 +110,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
         feature_engagement::TrackerFactory::GetInstance(),
-        ReadingListCoordinatorTest::BuildFeatureEngagementTrackerStub);
+        ReadingListCoordinatorTest::BuildFeatureEngagementMockTracker);
     browser_state_ = builder.Build();
 
     reading_list_model_.reset(new ReadingListModelImpl(
@@ -164,9 +147,9 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
                    toolbar:nil];
   }
 
-  static std::unique_ptr<KeyedService> BuildFeatureEngagementTrackerStub(
+  static std::unique_ptr<KeyedService> BuildFeatureEngagementMockTracker(
       web::BrowserState*) {
-    return base::MakeUnique<feature_engagement::TrackerStub>();
+    return base::MakeUnique<feature_engagement::test::MockTracker>();
   }
 
  private:
@@ -263,8 +246,8 @@ TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
 
 TEST_F(ReadingListCoordinatorTest, SendViewedReadingListEventInStart) {
   // Setup.
-  feature_engagement::TrackerStub* tracker =
-      static_cast<feature_engagement::TrackerStub*>(
+  feature_engagement::test::MockTracker* tracker =
+      static_cast<feature_engagement::test::MockTracker*>(
           feature_engagement::TrackerFactory::GetForBrowserState(
               GetBrowserState()));
 

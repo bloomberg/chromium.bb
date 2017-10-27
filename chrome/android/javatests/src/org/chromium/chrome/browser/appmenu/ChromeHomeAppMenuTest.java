@@ -43,6 +43,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.feature_engagement.TriggerState;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -76,8 +77,14 @@ public class ChromeHomeAppMenuTest {
         }
 
         @Override
+        public boolean wouldTriggerHelpUI(String feature) {
+            return TextUtils.equals(mEnabledFeature, feature);
+        }
+
+        @Override
         public int getTriggerState(String feature) {
-            return 0;
+            return TextUtils.equals(mEnabledFeature, feature) ? TriggerState.HAS_NOT_BEEN_DISPLAYED
+                                                              : TriggerState.HAS_BEEN_DISPLAYED;
         }
 
         @Override
