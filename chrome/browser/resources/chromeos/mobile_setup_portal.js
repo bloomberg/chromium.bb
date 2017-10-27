@@ -4,16 +4,19 @@
 
 cr.define('mobile', function() {
 
-  // TODO(tbarzic): Share code with mobile_setup.js.
+  /** @const {string} */
   var EXTENSION_BASE_URL =
       'chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/';
-  var REDIRECT_POST_PAGE_URL = EXTENSION_BASE_URL + 'redirect.html?autoPost=1';
+  /** @const {string} */
   var PORTAL_OFFLINE_PAGE_URL = EXTENSION_BASE_URL + 'portal_offline.html';
+  /** @const {string} */
   var INVALID_DEVICE_INFO_PAGE_URL =
       EXTENSION_BASE_URL + 'invalid_device_info.html';
 
+  /** @enum {number} */
   var NetworkState = {UNKNOWN: 0, PORTAL_REACHABLE: 1, PORTAL_UNREACHABLE: 2};
 
+  /** @enum {number} */
   var CarrierPageType = {NOT_SET: 0, PORTAL_OFFLINE: 1, INVALID_DEVICE_INFO: 2};
 
   function PortalImpl() {
@@ -72,12 +75,20 @@ cr.define('mobile', function() {
         // If the portal is reachable and device info is valid, set and show
         // portalFrame; and hide system status displaying 'offline portal' page.
         this.setPortalFrameIfNeeded_(this.deviceInfo_);
+        this.setCarrierPage_(CarrierPageType.NOT_SET);
         $('portalFrame').hidden = false;
         $('systemStatus').hidden = true;
         this.stopSpinner_();
       }
     },
 
+    /**
+     * Updates the carrier page webview src, depending on the requested carrier
+     * page type. Note that the webview is expected to load only extension
+     * URLs - specifically, the mobile setup extension URLs.
+     * @param {CarrierPageType} type The requested carrier page type.
+     * @private
+     */
     setCarrierPage_: function(type) {
       // The page is already set, nothing to do.
       if (type == this.carrierPageType_)
@@ -85,21 +96,19 @@ cr.define('mobile', function() {
 
       switch (type) {
         case CarrierPageType.PORTAL_OFFLINE:
-          $('carrierPage').contentWindow.location.href =
-              PORTAL_OFFLINE_PAGE_URL;
+          $('carrierPage').src = PORTAL_OFFLINE_PAGE_URL;
           $('statusHeader').textContent =
               loadTimeData.getString('portal_unreachable_header');
           this.startSpinner_();
           break;
         case CarrierPageType.INVALID_DEVICE_INFO:
-          $('carrierPage').contentWindow.location.href =
-              INVALID_DEVICE_INFO_PAGE_URL;
+          $('carrierPage').src = INVALID_DEVICE_INFO_PAGE_URL;
           $('statusHeader').textContent =
               loadTimeData.getString('invalid_device_info_header');
           this.stopSpinner_();
           break;
         case CarrierPageType.NOT_SET:
-          $('carrierPage').contentWindow.location.href = 'about:blank';
+          $('carrierPage').src = 'about:blank';
           $('statusHeader').textContent = '';
           this.stopSpinner_();
           break;
@@ -110,17 +119,22 @@ cr.define('mobile', function() {
       this.carrierPageType_ = type;
     },
 
+    /**
+     * Initilizes payment portal webview using payment URL and post data
+     * provided by the cellular service associated with this web UI.
+     * The portal webview is initilized only once, and is expected to load only
+     * data and web URLs - it should never load mobile setup extension URLs.
+     * @param {!Object} deviceInfo Information about the cellular service for
+     *     which the portal should be loaded (the relevant information is the
+     *     network's payment URL and POST request data).
+     * @private
+     */
     setPortalFrameIfNeeded_: function(deviceInfo) {
       // The portal should be set only once.
       if (this.portalFrameSet_)
         return;
 
-      var postData = '';
-      if (deviceInfo.post_data && deviceInfo.post_data.length)
-        postData = '&post_data=' + encodeURIComponent(deviceInfo.post_data);
-
-      $('portalFrame').contentWindow.location.href = REDIRECT_POST_PAGE_URL +
-          postData + '&formUrl=' + encodeURIComponent(deviceInfo.payment_url);
+      mobile.util.postDeviceDataToWebview($('portalFrame'), deviceInfo);
 
       this.portalFrameSet_ = true;
     },

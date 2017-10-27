@@ -9,11 +9,12 @@
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://resources/js/cr/ui/dialogs.js"></script>
+<script src="mobile_setup_util.js"></script>
 <script src="mobile_setup.js"></script>
 </head>
 <body>
  <div id="mainDiv" class="dialog-body">
-  <iframe class="hidden" id="paymentForm" name="paymentForm" frameborder="0"></iframe>
+  <div id="portalFrame" class="hidden"></div>
   <div id="systemStatus" class="overlay opaque-overlay hidden">
     <div class="startup">
       <div id="banner">
@@ -28,7 +29,7 @@
           </tr>
         </tbody></table>
       </div>
-      <iframe id="carrierPage" name="carrierPage" frameborder="0"></iframe>
+      <webview id="carrierPage"></webview>
     </div>
   </div>
   <div id="finalStatus" class="overlay translucent-black-overlay hidden">

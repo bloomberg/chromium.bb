@@ -7,11 +7,12 @@
 <link rel="stylesheet" href="mobile_setup.css"></link>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/util.js"></script>
+<script src="mobile_setup_util.js"></script>
 <script src="mobile_setup_portal.js"></script>
 </head>
 <body>
   <div id="mainDiv" class="dialog-body">
-    <iframe id="portalFrame" name="portalFrame" frameborder="0" hidden></iframe>
+    <webview id="portalFrame" hidden></webview>
     <div id="systemStatus" class="overlay opaque-overlay" hidden>
       <div class="startup">
         <div id="banner">
@@ -28,7 +29,7 @@
             </tbody>
           </table>
         </div>
-        <iframe id="carrierPage" name="carrierPage" frameborder="0"></iframe>
+        <webview id="carrierPage"></webview>
       </div>
     </div>
   </div>
