@@ -39,14 +39,6 @@ def CommonChecks(input_api, output_api):
     r'.*isolateserver_load_test\.py$',
     r'.*swarming_smoke_test\.py$',
   ]
-  if not input_api.is_committing:
-    # Remove all slow tests, e.g. the ones that take >1s to complete.
-    blacklist.extend([
-      r'.*isolate_smoke_test\.py$',
-      r'.*trace_inputs_smoke_test\.py$',
-      r'.*url_open_timeout_test\.py$',
-    ])
-
   unit_tests = input_api.canned_checks.GetUnitTestsRecursively(
       input_api, output_api,
       input_api.os_path.join(input_api.PresubmitLocalPath()),
@@ -56,8 +48,9 @@ def CommonChecks(input_api, output_api):
   return output
 
 
+# pylint: disable=unused-argument
 def CheckChangeOnUpload(input_api, output_api):
-  return CommonChecks(input_api, output_api)
+  return []
 
 
 def CheckChangeOnCommit(input_api, output_api):
