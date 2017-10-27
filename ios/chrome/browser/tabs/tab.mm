@@ -264,7 +264,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     _iOSCaptivePortalBlockingPageDelegate;
 @synthesize useGreyImageCache = useGreyImageCache_;
 @synthesize isPrerenderTab = _isPrerenderTab;
-@synthesize isVoiceSearchResultsTab = _isVoiceSearchResultsTab;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
@@ -347,10 +346,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if ((item->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) != 0)
     return NO;
   // Check whether |item| has been marked as a voice search result navigation.
-  _isVoiceSearchResultsTab =
-      VoiceSearchNavigationTabHelper::FromWebState(self.webState)
-          ->IsNavigationFromVoiceSearch(item);
-  return _isVoiceSearchResultsTab;
+  return VoiceSearchNavigationTabHelper::FromWebState(self.webState)
+      ->IsNavigationFromVoiceSearch(item);
 }
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
