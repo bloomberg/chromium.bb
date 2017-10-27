@@ -139,6 +139,7 @@ void DomainReliabilityMonitor::MoveToNetworkThread() {
 
 void DomainReliabilityMonitor::InitURLRequestContext(
     net::URLRequestContext* url_request_context) {
+  DCHECK(url_request_context);
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 

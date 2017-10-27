@@ -379,15 +379,11 @@ ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(Profile::REGULAR_PROFILE),
-      domain_reliability_monitor_(nullptr),
       app_cache_max_size_(0),
       app_media_cache_max_size_(0) {
 }
 
 ProfileImplIOData::~ProfileImplIOData() {
-  if (domain_reliability_monitor_)
-    domain_reliability_monitor_->Shutdown();
-
   DestroyResourceContext();
 
   if (media_request_context_)
@@ -399,15 +395,6 @@ ProfileImplIOData::ConfigureNetworkDelegate(
     IOThread* io_thread,
     std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate) const {
   if (lazy_params_->domain_reliability_monitor) {
-    // Hold on to a raw pointer to call Shutdown() in ~ProfileImplIOData.
-    domain_reliability_monitor_ =
-        lazy_params_->domain_reliability_monitor.get();
-
-    domain_reliability_monitor_->InitURLRequestContext(main_request_context());
-    domain_reliability_monitor_->AddBakedInConfigs();
-    domain_reliability_monitor_->SetDiscardUploads(
-        !GetMetricsEnabledStateOnIOThread());
-
     chrome_network_delegate->set_domain_reliability_monitor(
         std::move(lazy_params_->domain_reliability_monitor));
   }
