@@ -2626,9 +2626,9 @@
       'tags': ['website-sharing'],
       'desc': '''Controls whether NTLMv2 is enabled.
 
-          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatability and reduces the security of authentication.
+          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
 
-          The default value when this policy is not defined is currently false for backwards compatability, but will change to true in the future.''',
+          The default value when this policy is not defined is currently false for backwards compatibility, but will change to true in the future.''',
     },
     {
       'name': 'ExtensionInstallBlacklist',
