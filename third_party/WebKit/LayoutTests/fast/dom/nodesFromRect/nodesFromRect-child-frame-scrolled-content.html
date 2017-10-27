@@ -51,11 +51,11 @@ window.addEventListener("message", function(evt) {
     var iframeCenterX = iframeBoundingRect.left + iframeBoundingRect.width / 2;
     var iframeCenterY = iframeBoundingRect.top + iframeBoundingRect.height / 2;
 
-   // Rect is totally within input box.
-   checkRect(inputCenterX, inputCenterY, 1, 1, "DIV#inner-editor");
+   // Rect is totally within input box. Inner editor div is found.
+   checkRect(inputCenterX, inputCenterY, 1, 1, "DIV");
    // Rect covers both input box and iframe.
    checkRect(inputCenterX, inputCenterY, inputHeight, inputHeight,
-             "DIV#content, IFRAME#iframe, DIV#inner-editor, INPUT#text-input, BODY#body");
+             "DIV#content, IFRAME#iframe, DIV, INPUT#text-input, BODY#body");
    // Rect is totally within iframe.
    checkRect(iframeCenterX, iframeCenterY, 1, 1, "DIV#content");
 

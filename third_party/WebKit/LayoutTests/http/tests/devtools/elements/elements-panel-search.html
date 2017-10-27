@@ -10,6 +10,12 @@ function initializeShadowDOM()
 
     // Avoid matching this function
     shadow.appendChild(template.content.cloneNode(true));
+
+    var uaShadow = internals.createUserAgentShadowRoot(
+        document.querySelector('#ua-shadow-host'));
+    var uaShadowContent = document.createElement('div');
+    uaShadowContent.id = 'ua-shadow-' + 'content';
+    uaShadow.appendChild(uaShadowContent);
 }
 
 function test() {
@@ -228,8 +234,8 @@ function test() {
       TestRunner.addResult('Searching UA shadow DOM with setting disabled:');
       TestRunner.domModel
           .performSearch(
-              'inne' +
-                  'r-editor',
+              'ua-shadow-' +
+                  'content',
               false)
           .then(searchCallback.bind(this, step2));
 
@@ -237,8 +243,8 @@ function test() {
         TestRunner.addResult('Searching UA shadow DOM with setting enabled:');
         TestRunner.domModel
             .performSearch(
-                'inne' +
-                    'r-editor',
+                'ua-shadow-' +
+                    'content',
                 true)
             .then(searchCallback.bind(this, next));
       }
@@ -280,6 +286,7 @@ Tests that elements panel search is returning proper results.
 </div>
 </template>
 <textarea></textarea>
+<div id="ua-shadow-host"></div>
 
 </body>
 </html>

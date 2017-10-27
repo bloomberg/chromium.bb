@@ -28,7 +28,7 @@ add_result_callback(testObj => {
 function findTextNode(node) {
   if (node.nodeName !== 'INPUT' && node.nodeName !== 'TEXTAREA')
     return node.firstChild;
-  return internals.shadowRoot(node).getElementById('inner-editor').firstChild;
+  return internals.innerEditorElement(node).firstChild;
 }
 
 function assertContextClickSelection(

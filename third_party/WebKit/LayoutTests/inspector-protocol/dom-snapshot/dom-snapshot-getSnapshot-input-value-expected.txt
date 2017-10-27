@@ -187,12 +187,6 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "childNodeIndexes": [
         15
       ],
-      "attributes": [
-        {
-          "name": "id",
-          "value": "inner-editor"
-        }
-      ],
       "layoutNodeIndex": 7,
       "isClickable": true
     },
@@ -403,12 +397,6 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "backendNodeId": "<number>",
       "childNodeIndexes": [
         30
-      ],
-      "attributes": [
-        {
-          "name": "id",
-          "value": "inner-editor"
-        }
       ],
       "layoutNodeIndex": 22,
       "isClickable": true

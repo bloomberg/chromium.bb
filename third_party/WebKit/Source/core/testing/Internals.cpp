@@ -415,6 +415,16 @@ void Internals::clearHitTestCache(Document* doc,
   doc->GetLayoutViewItem().ClearHitTestCache();
 }
 
+Element* Internals::innerEditorElement(Element* container,
+                                       ExceptionState& exception_state) const {
+  if (IsTextControlElement(container))
+    return ToTextControlElement(container)->InnerEditorElement();
+
+  exception_state.ThrowDOMException(kNotSupportedError,
+                                    "Not a text control element.");
+  return nullptr;
+}
+
 bool Internals::isPreloaded(const String& url) {
   return isPreloadedBy(url, document_);
 }

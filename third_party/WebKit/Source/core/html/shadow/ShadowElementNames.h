@@ -45,7 +45,6 @@ const AtomicString& DateTimeEdit();
 CORE_EXPORT const AtomicString& SpinButton();
 const AtomicString& ClearButton();
 const AtomicString& EditingViewPort();
-const AtomicString& InnerEditor();
 const AtomicString& PickerIndicator();
 const AtomicString& Placeholder();
 const AtomicString& SearchClearButton();

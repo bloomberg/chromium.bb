@@ -69,11 +69,6 @@ const AtomicString& EditingViewPort() {
   return name;
 }
 
-const AtomicString& InnerEditor() {
-  DEFINE_STATIC_LOCAL(AtomicString, name, ("inner-editor"));
-  return name;
-}
-
 const AtomicString& PickerIndicator() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("picker"));
   return name;

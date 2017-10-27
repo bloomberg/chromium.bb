@@ -285,8 +285,7 @@ void TextFieldInputType::CreateShadowSubtree() {
   bool creates_container = should_have_spin_button ||
                            should_have_data_list_indicator || NeedsContainer();
 
-  TextControlInnerEditorElement* inner_editor =
-      TextControlInnerEditorElement::Create(document);
+  HTMLElement* inner_editor = GetElement().CreateInnerEditorElement();
   if (!creates_container) {
     shadow_root->AppendChild(inner_editor);
     return;

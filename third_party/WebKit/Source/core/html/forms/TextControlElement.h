@@ -131,7 +131,9 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
       TextControlSetValueSelection =
           TextControlSetValueSelection::kSetSelectionToEnd) = 0;
 
-  HTMLElement* InnerEditorElement() const;
+  HTMLElement* InnerEditorElement() const { return inner_editor_; }
+  HTMLElement* CreateInnerEditorElement();
+  void DropInnerEditorElement() { inner_editor_ = nullptr; }
 
   void SelectionChanged(bool user_triggered);
   bool LastChangeWasUserEdit() const;
@@ -143,6 +145,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   virtual void SetSuggestedValue(const String& value);
   const String& SuggestedValue() const;
+
+  void Trace(Visitor*) override;
 
  protected:
   TextControlElement(const QualifiedName&, Document&);
@@ -195,6 +199,11 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   virtual void HandleBlurEvent() {}
 
   bool PlaceholderShouldBeVisible() const;
+
+  // Held directly instead of looked up by ID for speed.
+  // Not only is the lookup faster, but for simple text inputs it avoids
+  // creating a number of TreeScope data structures to track elements by ID.
+  Member<HTMLElement> inner_editor_;
 
   // In m_valueBeforeFirstUserEdit, we distinguish a null String and zero-length
   // String. Null String means the field doesn't have any data yet, and
