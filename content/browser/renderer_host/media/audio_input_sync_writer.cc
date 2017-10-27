@@ -145,19 +145,19 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
       media::ComputeAudioInputBufferSizeChecked(params,
                                                 shared_memory_segment_count);
 
-  auto shared_memory = base::MakeUnique<base::SharedMemory>();
+  auto shared_memory = std::make_unique<base::SharedMemory>();
   if (!requested_memory_size.IsValid() ||
       !shared_memory->CreateAndMapAnonymous(
           requested_memory_size.ValueOrDie())) {
     return nullptr;
   }
 
-  auto socket = base::MakeUnique<base::CancelableSyncSocket>();
+  auto socket = std::make_unique<base::CancelableSyncSocket>();
   if (!base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket)) {
     return nullptr;
   }
 
-  return base::MakeUnique<AudioInputSyncWriter>(
+  return std::make_unique<AudioInputSyncWriter>(
       std::move(shared_memory), std::move(socket), shared_memory_segment_count,
       params);
 }
@@ -176,7 +176,7 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
   // writing. We verify that each buffer index is in sequence.
   size_t number_of_indices_available = socket_->Peek() / sizeof(uint32_t);
   if (number_of_indices_available > 0) {
-    auto indices = base::MakeUnique<uint32_t[]>(number_of_indices_available);
+    auto indices = std::make_unique<uint32_t[]>(number_of_indices_available);
     size_t bytes_received = socket_->Receive(
         &indices[0],
         number_of_indices_available * sizeof(indices[0]));

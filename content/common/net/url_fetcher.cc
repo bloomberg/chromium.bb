@@ -16,7 +16,7 @@ namespace {
 std::unique_ptr<base::SupportsUserData::Data> CreateURLRequestUserData(
     int render_process_id,
     int render_frame_id) {
-  return base::MakeUnique<URLRequestUserData>(render_process_id,
+  return std::make_unique<URLRequestUserData>(render_process_id,
                                               render_frame_id);
 }
 

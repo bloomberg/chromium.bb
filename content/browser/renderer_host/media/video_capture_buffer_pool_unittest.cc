@@ -72,7 +72,7 @@ class VideoCaptureBufferPoolTest
   VideoCaptureBufferPoolTest()
       : expected_dropped_id_(0),
         pool_(new media::VideoCaptureBufferPoolImpl(
-            base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+            std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
             kTestBufferPoolSize)) {}
 
   void ExpectDroppedId(int expected_dropped_id) {

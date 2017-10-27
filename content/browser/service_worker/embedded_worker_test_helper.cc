@@ -136,7 +136,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
   ASSERT_GE(clients->size(), next_client_index);
   if (clients->size() == next_client_index) {
     clients->push_back(
-        base::MakeUnique<MockEmbeddedWorkerInstanceClient>(helper));
+        std::make_unique<MockEmbeddedWorkerInstanceClient>(helper));
   }
 
   std::unique_ptr<MockEmbeddedWorkerInstanceClient>& client =
@@ -153,7 +153,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
                      int thread_id,
                      mojom::ServiceWorkerEventDispatcherRequest request) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<MockServiceWorkerEventDispatcher>(helper, thread_id),
+        std::make_unique<MockServiceWorkerEventDispatcher>(helper, thread_id),
         std::move(request));
   }
 
@@ -377,11 +377,11 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
-    : browser_context_(base::MakeUnique<TestBrowserContext>()),
+    : browser_context_(std::make_unique<TestBrowserContext>()),
       render_process_host_(
-          base::MakeUnique<MockRenderProcessHost>(browser_context_.get())),
+          std::make_unique<MockRenderProcessHost>(browser_context_.get())),
       new_render_process_host_(
-          base::MakeUnique<MockRenderProcessHost>(browser_context_.get())),
+          std::make_unique<MockRenderProcessHost>(browser_context_.get())),
       wrapper_(base::MakeRefCounted<ServiceWorkerContextWrapper>(
           browser_context_.get())),
       mock_instance_clients_next_index_(0),
@@ -408,17 +408,17 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   // Install a mocked mojom::Renderer interface to catch requests to
   // establish Mojo connection for EWInstanceClient.
   mock_renderer_interface_ =
-      base::MakeUnique<MockRendererInterface>(AsWeakPtr());
+      std::make_unique<MockRendererInterface>(AsWeakPtr());
 
   auto renderer_interface_ptr =
-      base::MakeUnique<mojom::RendererAssociatedPtr>();
+      std::make_unique<mojom::RendererAssociatedPtr>();
   mock_renderer_interface_->AddBinding(
       mojo::MakeIsolatedRequest(renderer_interface_ptr.get()));
   render_process_host_->OverrideRendererInterfaceForTesting(
       std::move(renderer_interface_ptr));
 
   auto new_renderer_interface_ptr =
-      base::MakeUnique<mojom::RendererAssociatedPtr>();
+      std::make_unique<mojom::RendererAssociatedPtr>();
   mock_renderer_interface_->AddBinding(
       mojo::MakeIsolatedRequest(new_renderer_interface_ptr.get()));
   new_render_process_host_->OverrideRendererInterfaceForTesting(
@@ -622,13 +622,13 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
         finish_callback) {
   response_callback->OnResponse(
       ServiceWorkerResponse(
-          base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+          std::make_unique<std::vector<GURL>>(), 200, "OK",
           network::mojom::FetchResponseType::kDefault,
-          base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
+          std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
           nullptr /* blob */, blink::kWebServiceWorkerResponseErrorUnknown,
           base::Time(), false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
-          base::MakeUnique<
+          std::make_unique<
               ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
       base::Time::Now());
   std::move(finish_callback)

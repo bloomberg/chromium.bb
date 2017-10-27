@@ -43,7 +43,7 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   }
 
   std::unique_ptr<MockRenderProcessHost> CreateRenderProcessHost() {
-    return base::MakeUnique<MockRenderProcessHost>(browser_context_.get());
+    return std::make_unique<MockRenderProcessHost>(browser_context_.get());
   }
 
  protected:

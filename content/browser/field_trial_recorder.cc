@@ -17,7 +17,7 @@ FieldTrialRecorder::~FieldTrialRecorder() = default;
 // static
 void FieldTrialRecorder::Create(
     mojom::FieldTrialRecorderRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<FieldTrialRecorder>(),
+  mojo::MakeStrongBinding(std::make_unique<FieldTrialRecorder>(),
                           std::move(request));
 }
 

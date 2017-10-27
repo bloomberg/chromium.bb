@@ -311,7 +311,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 // is not modified.
 std::unique_ptr<const char* []> StringVectorToArgArray(
     const std::vector<std::string>& vector) {
-  auto array = base::MakeUnique<const char* []>(vector.size());
+  auto array = std::make_unique<const char* []>(vector.size());
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
   return array;
@@ -445,7 +445,7 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::DidFail(
   if (finished_loading_)
     return;
 
-  error_ = base::MakeUnique<WebURLError>(error);
+  error_ = std::make_unique<WebURLError>(error);
 }
 
 PepperPluginInstanceImpl::GamepadImpl::GamepadImpl()
@@ -525,7 +525,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
-      audio_controller_(base::MakeUnique<PepperAudioController>(this)),
+      audio_controller_(std::make_unique<PepperAudioController>(this)),
       view_change_weak_ptr_factory_(this),
       weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -892,7 +892,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
     // The external proxy isn't available, so save the response and record
     // document load notifications for later replay.
     external_document_response_ = response;
-    external_document_loader_ = base::MakeUnique<ExternalDocumentLoader>();
+    external_document_loader_ = std::make_unique<ExternalDocumentLoader>();
     document_loader_ = external_document_loader_.get();
     return true;
   }
@@ -911,7 +911,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
   // call into the instance and expect it to be valid.
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
   auto loader_host =
-      base::MakeUnique<PepperURLLoaderHost>(host_impl, true, pp_instance(), 0);
+      std::make_unique<PepperURLLoaderHost>(host_impl, true, pp_instance(), 0);
   // TODO(teravest): Remove set_document_loader() from instance and clean up
   // this relationship.
   set_document_loader(loader_host.get());
@@ -2177,7 +2177,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
       texture_layer_->SetFlipped(false);
     }
 
-    auto layer = base::MakeUnique<cc_blink::WebLayerImpl>(texture_layer_);
+    auto layer = std::make_unique<cc_blink::WebLayerImpl>(texture_layer_);
     // Ignore transparency in fullscreen, since that's what Flash always
     // wants to do, and that lets it not recreate a context if
     // wmode=transparent was specified.
@@ -2187,7 +2187,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     web_layer_ = std::move(layer);
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
-    web_layer_ = base::MakeUnique<cc_blink::WebLayerImpl>(compositor_layer_);
+    web_layer_ = std::make_unique<cc_blink::WebLayerImpl>(compositor_layer_);
   }
 
   if (web_layer_) {
@@ -2372,7 +2372,7 @@ PepperPluginInstanceImpl::GetContentDecryptorDelegate() {
   if (!plugin_decryption_interface)
     return nullptr;
 
-  content_decryptor_delegate_ = base::MakeUnique<ContentDecryptorDelegate>(
+  content_decryptor_delegate_ = std::make_unique<ContentDecryptorDelegate>(
       pp_instance_, plugin_decryption_interface);
   return content_decryptor_delegate_.get();
 }
@@ -2860,7 +2860,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   if (type != PP_MOUSECURSOR_TYPE_CUSTOM) {
-    DoSetCursor(base::MakeUnique<WebCursorInfo>(
+    DoSetCursor(std::make_unique<WebCursorInfo>(
         static_cast<WebCursorInfo::Type>(type)));
     return PP_TRUE;
   }
@@ -2876,7 +2876,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   auto custom_cursor =
-      base::MakeUnique<WebCursorInfo>(WebCursorInfo::kTypeCustom);
+      std::make_unique<WebCursorInfo>(WebCursorInfo::kTypeCustom);
   custom_cursor->hot_spot.x = hot_spot->x;
   custom_cursor->hot_spot.y = hot_spot->y;
 
@@ -3434,7 +3434,7 @@ bool PepperPluginInstanceImpl::LockMouse() {
 MouseLockDispatcher::LockTarget*
 PepperPluginInstanceImpl::GetOrCreateLockTargetAdapter() {
   if (!lock_target_)
-    lock_target_ = base::MakeUnique<PluginInstanceLockTarget>(this);
+    lock_target_ = std::make_unique<PluginInstanceLockTarget>(this);
   return lock_target_.get();
 }
 

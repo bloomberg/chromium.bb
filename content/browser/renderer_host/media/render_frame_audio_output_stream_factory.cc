@@ -119,7 +119,7 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
   // Since |context_| outlives |this| and |this| outlives |stream_providers_|,
   // unretained is safe.
   stream_providers_.insert(
-      base::MakeUnique<media::MojoAudioOutputStreamProvider>(
+      std::make_unique<media::MojoAudioOutputStreamProvider>(
           std::move(request),
           base::BindOnce(
               &RendererAudioOutputStreamFactoryContext::CreateDelegate,

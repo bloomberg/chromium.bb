@@ -258,7 +258,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       frame_deliverer_(
           new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
                                                     enabled)),
-      adapter_settings_(base::MakeUnique<VideoTrackAdapterSettings>(
+      adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
       source_(source->GetWeakPtr()) {
@@ -282,7 +282,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
                                                     enabled)),
       adapter_settings_(
-          base::MakeUnique<VideoTrackAdapterSettings>(adapter_settings)),
+          std::make_unique<VideoTrackAdapterSettings>(adapter_settings)),
       noise_reduction_(noise_reduction),
       is_screencast_(is_screen_cast),
       min_frame_rate_(min_frame_rate),

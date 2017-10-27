@@ -270,7 +270,7 @@ ClearSiteDataThrottle::MaybeCreateThrottleForRequest(net::URLRequest* request) {
     return nullptr;
 
   return base::WrapUnique(new ClearSiteDataThrottle(
-      request, base::MakeUnique<ConsoleMessagesDelegate>()));
+      request, std::make_unique<ConsoleMessagesDelegate>()));
 }
 
 ClearSiteDataThrottle::~ClearSiteDataThrottle() {

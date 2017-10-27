@@ -64,7 +64,7 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
   GURL test_url;
 #if defined(OS_ANDROID)
   if (GetTestUrlForAndroid(path_or_url, &test_url)) {
-    return base::MakeUnique<TestInfo>(test_url, enable_pixel_dumping,
+    return std::make_unique<TestInfo>(test_url, enable_pixel_dumping,
                                       expected_pixel_hash, base::FilePath());
   }
 #endif
@@ -99,7 +99,7 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
     current_working_directory = local_path.DirName();
   else
     base::GetCurrentDirectory(&current_working_directory);
-  return base::MakeUnique<TestInfo>(test_url, enable_pixel_dumping,
+  return std::make_unique<TestInfo>(test_url, enable_pixel_dumping,
                                     expected_pixel_hash,
                                     current_working_directory);
 }

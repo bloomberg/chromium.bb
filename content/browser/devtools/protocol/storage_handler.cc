@@ -248,7 +248,7 @@ StorageHandler::~StorageHandler() {
 }
 
 void StorageHandler::Wire(UberDispatcher* dispatcher) {
-  frontend_ = base::MakeUnique<Storage::Frontend>(dispatcher->channel());
+  frontend_ = std::make_unique<Storage::Frontend>(dispatcher->channel());
   Storage::Dispatcher::wire(dispatcher, this);
 }
 

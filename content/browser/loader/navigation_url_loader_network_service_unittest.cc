@@ -90,7 +90,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
     // GetNetworkService.
     service_manager::mojom::ServicePtr service;
     ServiceManagerConnection::SetForProcess(
-        base::MakeUnique<ServiceManagerConnectionImpl>(
+        std::make_unique<ServiceManagerConnectionImpl>(
             mojo::MakeRequest(&service),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
@@ -130,10 +130,10 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
 
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers;
     most_recent_resource_request_ = base::nullopt;
-    handlers.push_back(base::MakeUnique<TestURLLoaderRequestHandler>(
+    handlers.push_back(std::make_unique<TestURLLoaderRequestHandler>(
         &most_recent_resource_request_));
 
-    return base::MakeUnique<NavigationURLLoaderNetworkService>(
+    return std::make_unique<NavigationURLLoaderNetworkService>(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
         std::move(request_info), nullptr /* navigation_ui_data */,

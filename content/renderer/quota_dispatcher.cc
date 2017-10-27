@@ -146,7 +146,7 @@ void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
 std::unique_ptr<QuotaDispatcher::Callback>
 QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
     blink::WebStorageQuotaCallbacks callbacks) {
-  return base::MakeUnique<WebStorageQuotaDispatcherCallback>(callbacks);
+  return std::make_unique<WebStorageQuotaDispatcherCallback>(callbacks);
 }
 
 void QuotaDispatcher::DidGrantStorageQuota(int request_id,

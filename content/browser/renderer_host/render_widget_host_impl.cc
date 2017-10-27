@@ -813,7 +813,7 @@ void RenderWidgetHostImpl::SetInitialRenderSizeParams(
     const ResizeParams& resize_params) {
   resize_ack_pending_ = resize_params.needs_resize_ack;
 
-  old_resize_params_ = base::MakeUnique<ResizeParams>(resize_params);
+  old_resize_params_ = std::make_unique<ResizeParams>(resize_params);
 }
 
 void RenderWidgetHostImpl::WasResized() {
@@ -1396,7 +1396,7 @@ void RenderWidgetHostImpl::QueueSyntheticGesture(
     base::OnceCallback<void(SyntheticGesture::Result)> on_complete) {
   if (!synthetic_gesture_controller_ && view_) {
     synthetic_gesture_controller_ =
-        base::MakeUnique<SyntheticGestureController>(
+        std::make_unique<SyntheticGestureController>(
             this, view_->CreateSyntheticGestureTarget());
   }
   if (synthetic_gesture_controller_) {
@@ -2829,12 +2829,12 @@ void RenderWidgetHostImpl::SetupInputRouter() {
     // widget shutdown, so we present an UnboundWidgetInputHandler had
     // DLOGS the message calls.
     legacy_widget_input_handler_ =
-        base::MakeUnique<UnboundWidgetInputHandler>();
+        std::make_unique<UnboundWidgetInputHandler>();
   } else {
     input_router_.reset(new LegacyInputRouterImpl(
         process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
     legacy_widget_input_handler_ =
-        base::MakeUnique<LegacyIPCWidgetInputHandler>(
+        std::make_unique<LegacyIPCWidgetInputHandler>(
             static_cast<LegacyInputRouterImpl*>(input_router_.get()));
   }
 }

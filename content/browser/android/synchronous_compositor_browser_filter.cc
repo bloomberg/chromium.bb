@@ -84,7 +84,7 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
       future_map_.erase(itr);
   }
 
-  auto frame_ptr = base::MakeUnique<SynchronousCompositor::Frame>();
+  auto frame_ptr = std::make_unique<SynchronousCompositor::Frame>();
   frame_ptr->layer_tree_frame_sink_id = std::get<0>(param);
   base::Optional<viz::CompositorFrame>& compositor_frame = std::get<1>(param);
   if (compositor_frame) {

@@ -148,7 +148,7 @@ void CookieManagerImpl::SetCanonicalCookie(
     bool modify_http_only,
     SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
-      base::MakeUnique<net::CanonicalCookie>(cookie), secure_source,
+      std::make_unique<net::CanonicalCookie>(cookie), secure_source,
       modify_http_only, std::move(callback));
 }
 
@@ -167,7 +167,7 @@ void CookieManagerImpl::DeleteCookies(
   cookie_store_->DeleteAllCreatedBetweenWithPredicateAsync(
       start_time, end_time,
       base::Bind(&PredicateWrapper::Predicate,
-                 base::MakeUnique<PredicateWrapper>(std::move(filter))),
+                 std::make_unique<PredicateWrapper>(std::move(filter))),
       std::move(callback));
 }
 
@@ -176,7 +176,7 @@ void CookieManagerImpl::RequestNotification(
     const std::string& name,
     network::mojom::CookieChangeNotificationPtr notification_pointer) {
   std::unique_ptr<NotificationRegistration> notification_registration(
-      base::MakeUnique<NotificationRegistration>());
+      std::make_unique<NotificationRegistration>());
   notification_registration->notification_pointer =
       std::move(notification_pointer);
 

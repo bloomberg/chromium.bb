@@ -27,7 +27,7 @@ StreamContext* StreamContext::GetFor(BrowserContext* context) {
     scoped_refptr<StreamContext> stream = new StreamContext();
     context->SetUserData(
         kStreamContextKeyName,
-        base::MakeUnique<UserDataAdapter<StreamContext>>(stream.get()));
+        std::make_unique<UserDataAdapter<StreamContext>>(stream.get()));
     // Check first to avoid memory leak in unittests.
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(

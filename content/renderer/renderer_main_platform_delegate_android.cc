@@ -34,7 +34,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   sandbox::SeccompStarterAndroid starter(info->sdk_int(), info->device());
   // The policy compiler is only available if USE_SECCOMP_BPF is enabled.
 #if BUILDFLAG(USE_SECCOMP_BPF)
-  starter.set_policy(base::MakeUnique<sandbox::BaselinePolicyAndroid>());
+  starter.set_policy(std::make_unique<sandbox::BaselinePolicyAndroid>());
 #endif
   starter.StartSandbox();
 

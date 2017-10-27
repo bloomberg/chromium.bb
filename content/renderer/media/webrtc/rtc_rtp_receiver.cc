@@ -36,7 +36,7 @@ std::unique_ptr<RTCRtpReceiver> RTCRtpReceiver::ShallowCopy() const {
   for (size_t i = 0; i < stream_adapter_refs_.size(); ++i) {
     stream_adapter_ref_copies[i] = stream_adapter_refs_[i]->Copy();
   }
-  return base::MakeUnique<RTCRtpReceiver>(webrtc_rtp_receiver_,
+  return std::make_unique<RTCRtpReceiver>(webrtc_rtp_receiver_,
                                           track_adapter_->Copy(),
                                           std::move(stream_adapter_ref_copies));
 }
@@ -64,7 +64,7 @@ RTCRtpReceiver::GetSources() {
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>> sources(
       webrtc_sources.size());
   for (size_t i = 0; i < webrtc_sources.size(); ++i) {
-    sources[i] = base::MakeUnique<RTCRtpContributingSource>(webrtc_sources[i]);
+    sources[i] = std::make_unique<RTCRtpContributingSource>(webrtc_sources[i]);
   }
   return sources;
 }

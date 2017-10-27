@@ -153,7 +153,7 @@ void TestResourceHandler::OnWillRead(
   // nothing may be called synchronously in response to the OnWillRead call.
   std::unique_ptr<ScopedCallDepthTracker> call_depth_tracker;
   if (call_depth_ == 0)
-    call_depth_tracker = base::MakeUnique<ScopedCallDepthTracker>(&call_depth_);
+    call_depth_tracker = std::make_unique<ScopedCallDepthTracker>(&call_depth_);
 
   ++on_will_read_called_;
 

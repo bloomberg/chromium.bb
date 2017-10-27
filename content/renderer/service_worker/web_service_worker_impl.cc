@@ -105,7 +105,7 @@ WebServiceWorkerImpl::CreateHandle(
     const scoped_refptr<WebServiceWorkerImpl>& worker) {
   if (!worker)
     return nullptr;
-  return base::MakeUnique<HandleImpl>(worker);
+  return std::make_unique<HandleImpl>(worker);
 }
 
 WebServiceWorkerImpl::~WebServiceWorkerImpl() {

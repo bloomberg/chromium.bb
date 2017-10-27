@@ -326,7 +326,7 @@ void Affordance::Abort() {
 
   state_ = State::ABORTING;
 
-  animation_ = base::MakeUnique<gfx::LinearAnimation>(
+  animation_ = std::make_unique<gfx::LinearAnimation>(
       GetAffordanceProgress() * kAbortAnimationDuration,
       gfx::LinearAnimation::kDefaultFrameRate, this);
   animation_->Start();
@@ -338,7 +338,7 @@ void Affordance::Complete() {
 
   state_ = State::COMPLETING;
 
-  animation_ = base::MakeUnique<gfx::LinearAnimation>(
+  animation_ = std::make_unique<gfx::LinearAnimation>(
       kRippleBurstAnimationDuration, gfx::LinearAnimation::kDefaultFrameRate,
       this);
   animation_->Start();
@@ -646,7 +646,7 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   DCHECK_LE(0, max_delta_);
 
   aura::Window* window = web_contents_->GetNativeView();
-  affordance_ = base::MakeUnique<Affordance>(
+  affordance_ = std::make_unique<Affordance>(
       this, mode_, window->bounds(), max_delta_ / completion_threshold_);
 
   // Adding the affordance as a child of the content window is not sufficient,

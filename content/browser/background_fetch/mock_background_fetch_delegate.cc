@@ -20,7 +20,7 @@ MockBackgroundFetchDelegate::TestResponse::~TestResponse() = default;
 
 MockBackgroundFetchDelegate::TestResponseBuilder::TestResponseBuilder(
     int response_code)
-    : response_(base::MakeUnique<TestResponse>()) {
+    : response_(std::make_unique<TestResponse>()) {
   response_->succeeded_ = (response_code >= 200 && response_code < 300);
   response_->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       "HTTP/1.1 " + std::to_string(response_code));

@@ -64,7 +64,7 @@ void FrameConnectedBluetoothDevices::Insert(
   }
   device_address_to_id_map_[connection->GetDeviceAddress()] = device_id;
   auto gatt_connection_and_client =
-      base::MakeUnique<GATTConnectionAndServerClient>(std::move(connection),
+      std::make_unique<GATTConnectionAndServerClient>(std::move(connection),
                                                       std::move(client));
   device_id_to_connection_map_[device_id] =
       std::move(gatt_connection_and_client);

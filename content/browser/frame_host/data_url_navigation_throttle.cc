@@ -72,7 +72,7 @@ DataUrlNavigationThrottle::CreateThrottleForNavigation(
       !navigation_handle->IsSameDocument() &&
       !base::FeatureList::IsEnabled(
           features::kAllowContentInitiatedDataUrlNavigations)) {
-    return base::MakeUnique<DataUrlNavigationThrottle>(navigation_handle);
+    return std::make_unique<DataUrlNavigationThrottle>(navigation_handle);
   }
   return nullptr;
 }

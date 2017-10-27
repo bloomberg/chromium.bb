@@ -365,7 +365,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   }
 
   std::unique_ptr<base::CommandLine> cmd_line =
-      base::MakeUnique<base::CommandLine>(exe_path);
+      std::make_unique<base::CommandLine>(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               is_broker_ ? switches::kPpapiBrokerProcess
                                          : switches::kPpapiPluginProcess);
@@ -429,7 +429,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // we are not using a plugin launcher - having a plugin launcher means we need
   // to use another process instead of just forking the zygote.
   process_->Launch(
-      base::MakeUnique<PpapiPluginSandboxedProcessLauncherDelegate>(is_broker_),
+      std::make_unique<PpapiPluginSandboxedProcessLauncherDelegate>(is_broker_),
       std::move(cmd_line), true);
   return true;
 }

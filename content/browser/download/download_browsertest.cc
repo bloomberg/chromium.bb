@@ -778,7 +778,7 @@ class DownloadContentTest : public ContentBrowserTest {
   }
 
   void SetupErrorInjectionDownloads() {
-    auto factory = base::MakeUnique<ErrorInjectionDownloadFileFactory>();
+    auto factory = std::make_unique<ErrorInjectionDownloadFileFactory>();
     inject_error_callback_ = base::Bind(
         &ErrorInjectionDownloadFileFactory::InjectError, factory->GetWeakPtr());
 
@@ -889,8 +889,8 @@ class DownloadContentTest : public ContentBrowserTest {
 class ParallelDownloadTest : public DownloadContentTest {
  protected:
   void SetUp() override {
-    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
-        base::MakeUnique<base::MockEntropyProvider>());
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(
+        std::make_unique<base::MockEntropyProvider>());
     SetupConfig();
     DownloadContentTest::SetUp();
   }
@@ -913,7 +913,7 @@ class ParallelDownloadTest : public DownloadContentTest {
         base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
     base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         features::kParallelDownloading.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());

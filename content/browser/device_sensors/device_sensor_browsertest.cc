@@ -179,7 +179,7 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
     switch (type) {
       case device::mojom::SensorType::ACCELEROMETER:
         if (accelerometer_is_available_) {
-          sensor = base::MakeUnique<FakeSensor>(
+          sensor = std::make_unique<FakeSensor>(
               device::mojom::SensorType::ACCELEROMETER);
           reading.accel.x = 4;
           reading.accel.y = 5;
@@ -188,7 +188,7 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
         break;
       case device::mojom::SensorType::LINEAR_ACCELERATION:
         if (linear_acceleration_sensor_is_available_) {
-          sensor = base::MakeUnique<FakeSensor>(
+          sensor = std::make_unique<FakeSensor>(
               device::mojom::SensorType::LINEAR_ACCELERATION);
           reading.accel.x = 1;
           reading.accel.y = 2;
@@ -197,7 +197,7 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
         break;
       case device::mojom::SensorType::GYROSCOPE:
         if (gyroscope_is_available_) {
-          sensor = base::MakeUnique<FakeSensor>(
+          sensor = std::make_unique<FakeSensor>(
               device::mojom::SensorType::GYROSCOPE);
           reading.gyro.x = 7;
           reading.gyro.y = 8;
@@ -206,7 +206,7 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
         break;
       case device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
         if (relative_orientation_sensor_is_available_) {
-          sensor = base::MakeUnique<FakeSensor>(
+          sensor = std::make_unique<FakeSensor>(
               device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
           reading.orientation_euler.x = 2;  // beta
           reading.orientation_euler.y = 3;  // gamma
@@ -215,7 +215,7 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
         break;
       case device::mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
         if (absolute_orientation_sensor_is_available_) {
-          sensor = base::MakeUnique<FakeSensor>(
+          sensor = std::make_unique<FakeSensor>(
               device::mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
           reading.orientation_euler.x = 5;  // beta
           reading.orientation_euler.y = 6;  // gamma
@@ -261,7 +261,7 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void SetUpOnMainThread() override {
-    sensor_provider_ = base::MakeUnique<FakeSensorProvider>();
+    sensor_provider_ = std::make_unique<FakeSensorProvider>();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&DeviceSensorBrowserTest::SetUpOnIOThread,

@@ -591,7 +591,7 @@ void WebContentsAndroid::SetOverscrollRefreshHandler(
   WebContentsViewAndroid* view =
       static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
   view->SetOverscrollRefreshHandler(
-      base::MakeUnique<ui::OverscrollRefreshHandler>(
+      std::make_unique<ui::OverscrollRefreshHandler>(
           overscroll_refresh_handler));
 }
 

@@ -88,7 +88,7 @@ MemoryMonitorAndroid::MemoryMonitorAndroid(std::unique_ptr<Delegate> delegate)
   DCHECK(delegate_.get());
   RegisterComponentCallbacks();
   application_state_listener_ =
-      base::MakeUnique<base::android::ApplicationStatusListener>(
+      std::make_unique<base::android::ApplicationStatusListener>(
           base::Bind(&MemoryMonitorAndroid::OnApplicationStateChange,
                      base::Unretained(this)));
 }

@@ -131,7 +131,7 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
       !base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket)) {
     return nullptr;
   }
-  return base::MakeUnique<AudioSyncReader>(params, std::move(shared_memory),
+  return std::make_unique<AudioSyncReader>(params, std::move(shared_memory),
                                            std::move(socket));
 }
 

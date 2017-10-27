@@ -90,7 +90,7 @@ void HtmlVideoElementCapturerSource::StartCapture(
     running_callback_.Run(false);
     return;
   }
-  canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap_);
+  canvas_ = std::make_unique<cc::SkiaPaintCanvas>(bitmap_);
 
   new_frame_callback_ = new_frame_callback;
   // Force |capture_frame_rate_| to be in between k{Min,Max}FramesPerSecond.

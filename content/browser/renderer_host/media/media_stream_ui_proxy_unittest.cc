@@ -306,7 +306,7 @@ class MediaStreamUIProxyFeaturePolicyTest
   std::unique_ptr<MediaStreamRequest> CreateRequest(RenderFrameHost* rfh,
                                                     MediaStreamType mic_type,
                                                     MediaStreamType cam_type) {
-    return base::MakeUnique<MediaStreamRequest>(
+    return std::make_unique<MediaStreamRequest>(
         rfh->GetProcess()->GetID(), rfh->GetRoutingID(), 0,
         rfh->GetLastCommittedURL(), false, MEDIA_GENERATE_STREAM, std::string(),
         std::string(), mic_type, cam_type, false);

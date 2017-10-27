@@ -62,7 +62,7 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     // problem.
     options->environ.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
 
-    seatbelt_exec_client_ = base::MakeUnique<sandbox::SeatbeltExecClient>();
+    seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
     seatbelt_exec_client_->SetProfile(
         service_manager::kSeatbeltPolicyString_renderer_v2);
 

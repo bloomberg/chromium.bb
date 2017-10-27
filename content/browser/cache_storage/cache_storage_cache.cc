@@ -224,7 +224,7 @@ void ReadMetadataDidReadMetadata(disk_cache::Entry* entry,
 std::unique_ptr<ServiceWorkerFetchRequest> CreateRequest(
     const proto::CacheMetadata& metadata,
     const GURL& request_url) {
-  auto request = base::MakeUnique<ServiceWorkerFetchRequest>(
+  auto request = std::make_unique<ServiceWorkerFetchRequest>(
       request_url, metadata.request().method(), ServiceWorkerHeaderMap(),
       Referrer(), false);
 
@@ -241,7 +241,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
     const proto::CacheMetadata& metadata,
     const std::string& cache_name) {
   std::unique_ptr<std::vector<GURL>> url_list =
-      base::MakeUnique<std::vector<GURL>>();
+      std::make_unique<std::vector<GURL>>();
   // From Chrome 57, proto::CacheMetadata's url field was deprecated.
   UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.Response.HasDeprecatedURL",
                         metadata.response().has_url());
@@ -254,7 +254,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
   }
 
   std::unique_ptr<ServiceWorkerHeaderMap> headers =
-      base::MakeUnique<ServiceWorkerHeaderMap>();
+      std::make_unique<ServiceWorkerHeaderMap>();
   for (int i = 0; i < metadata.response().headers_size(); ++i) {
     const proto::CacheHeaderMap header = metadata.response().headers(i);
     DCHECK_EQ(std::string::npos, header.name().find('\0'));
@@ -262,7 +262,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
     headers->insert(std::make_pair(header.name(), header.value()));
   }
 
-  return base::MakeUnique<ServiceWorkerResponse>(
+  return std::make_unique<ServiceWorkerResponse>(
       std::move(url_list), metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
@@ -270,7 +270,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
       blink::kWebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       true /* is_in_cache_storage */, cache_name,
-      base::MakeUnique<ServiceWorkerHeaderList>(
+      std::make_unique<ServiceWorkerHeaderList>(
           metadata.response().cors_exposed_header_names().begin(),
           metadata.response().cors_exposed_header_names().end()));
 }
@@ -380,7 +380,7 @@ struct CacheStorageCache::QueryCacheContext {
         options(options),
         callback(std::move(callback)),
         query_types(query_types),
-        matches(base::MakeUnique<QueryCacheResults>()) {}
+        matches(std::make_unique<QueryCacheResults>()) {}
 
   ~QueryCacheContext() {
     // If the CacheStorageCache is deleted before a backend operation to open
@@ -734,7 +734,7 @@ void CacheStorageCache::QueryCache(
   if (!options.ignore_method && request && !request->method.empty() &&
       request->method != "GET") {
     std::move(callback).Run(CACHE_STORAGE_OK,
-                            base::MakeUnique<QueryCacheResults>());
+                            std::make_unique<QueryCacheResults>());
     return;
   }
 
@@ -984,7 +984,7 @@ void CacheStorageCache::MatchDidMatchAll(
   }
 
   std::unique_ptr<ServiceWorkerResponse> response =
-      base::MakeUnique<ServiceWorkerResponse>(match_all_responses->at(0));
+      std::make_unique<ServiceWorkerResponse>(match_all_responses->at(0));
 
   std::move(callback).Run(CACHE_STORAGE_OK, std::move(response),
                           std::move(match_all_handles->at(0)));
@@ -1019,9 +1019,9 @@ void CacheStorageCache::MatchAllDidQueryCache(
     return;
   }
 
-  std::unique_ptr<Responses> out_responses = base::MakeUnique<Responses>();
+  std::unique_ptr<Responses> out_responses = std::make_unique<Responses>();
   std::unique_ptr<BlobDataHandles> out_handles =
-      base::MakeUnique<BlobDataHandles>();
+      std::make_unique<BlobDataHandles>();
   out_responses->reserve(query_cache_results->size());
   out_handles->reserve(query_cache_results->size());
 
@@ -1179,7 +1179,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
           operation.request.is_reload));
 
   std::unique_ptr<ServiceWorkerResponse> response =
-      base::MakeUnique<ServiceWorkerResponse>(operation.response);
+      std::make_unique<ServiceWorkerResponse>(operation.response);
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
   if (!response->blob_uuid.empty()) {
@@ -1222,7 +1222,7 @@ void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
   // cache padding.
   // TODO(cmumford): Research alternatives to this explicit delete as it
   // seriously impacts put performance.
-  auto delete_request = base::MakeUnique<ServiceWorkerFetchRequest>(
+  auto delete_request = std::make_unique<ServiceWorkerFetchRequest>(
       put_context->request->url, "", ServiceWorkerHeaderMap(), Referrer(),
       false);
 
@@ -1371,7 +1371,7 @@ void CacheStorageCache::PutDidWriteHeaders(
   disk_cache::ScopedEntryPtr entry(std::move(put_context->cache_entry));
   put_context->cache_entry = NULL;
 
-  auto blob_to_cache = base::MakeUnique<CacheStorageBlobToDiskCache>();
+  auto blob_to_cache = std::make_unique<CacheStorageBlobToDiskCache>();
   CacheStorageBlobToDiskCache* blob_to_cache_raw = blob_to_cache.get();
   BlobToDiskCacheIDMap::KeyType blob_to_cache_key =
       active_blob_to_disk_cache_writers_.Add(std::move(blob_to_cache));
@@ -1584,7 +1584,7 @@ void CacheStorageCache::KeysDidQueryCache(
     return;
   }
 
-  std::unique_ptr<Requests> out_requests = base::MakeUnique<Requests>();
+  std::unique_ptr<Requests> out_requests = std::make_unique<Requests>();
   out_requests->reserve(query_cache_results->size());
   for (const auto& result : *query_cache_results)
     out_requests->push_back(*result.request);
@@ -1787,7 +1787,7 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
   if (features::IsMojoBlobsEnabled()) {
     blink::mojom::BlobPtr blob_ptr;
     storage::BlobImpl::Create(
-        base::MakeUnique<storage::BlobDataHandle>(*result),
+        std::make_unique<storage::BlobDataHandle>(*result),
         MakeRequest(&blob_ptr));
     response->blob =
         base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));

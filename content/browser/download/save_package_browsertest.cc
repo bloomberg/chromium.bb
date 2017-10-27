@@ -100,7 +100,7 @@ class SavePackageBrowserTest : public ContentBrowserTest {
         static_cast<DownloadManagerImpl*>(BrowserContext::GetDownloadManager(
             shell()->web_contents()->GetBrowserContext()));
     auto delegate =
-        base::MakeUnique<TestShellDownloadManagerDelegate>(save_page_type);
+        std::make_unique<TestShellDownloadManagerDelegate>(save_page_type);
     delegate->download_dir_ = save_dir_.GetPath();
     auto* old_delegate = download_manager->GetDelegate();
     download_manager->SetDelegate(delegate.get());

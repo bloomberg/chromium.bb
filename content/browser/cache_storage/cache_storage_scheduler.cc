@@ -28,7 +28,7 @@ void CacheStorageScheduler::ScheduleOperation(base::OnceClosure closure) {
   CACHE_STORAGE_SCHEDULER_UMA(COUNTS_10000, "QueueLength", client_type_,
                               pending_operations_.size());
 
-  pending_operations_.push_back(base::MakeUnique<CacheStorageOperation>(
+  pending_operations_.push_back(std::make_unique<CacheStorageOperation>(
       std::move(closure), client_type_, base::ThreadTaskRunnerHandle::Get()));
   RunOperationIfIdle();
 }

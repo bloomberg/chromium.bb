@@ -382,7 +382,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     return;
   }
 
-  std::unique_ptr<InputEvent> event = base::MakeUnique<InputEvent>(
+  std::unique_ptr<InputEvent> event = std::make_unique<InputEvent>(
       ScaleEvent(input_event, device_scale_factor_), latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(
           input_event, wheel_scroll_latching_enabled_)) {

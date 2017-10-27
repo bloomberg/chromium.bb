@@ -15,7 +15,7 @@ mojom::DownloadedTempFilePtr DownloadedTempFileImpl::Create(int child_id,
                                                             int request_id) {
   mojo::InterfacePtr<mojom::DownloadedTempFile> ptr;
   mojo::MakeStrongBinding(
-      base::MakeUnique<DownloadedTempFileImpl>(child_id, request_id),
+      std::make_unique<DownloadedTempFileImpl>(child_id, request_id),
       mojo::MakeRequest(&ptr));
   return ptr;
 }

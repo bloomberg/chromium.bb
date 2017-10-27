@@ -22,8 +22,8 @@ void ConcludeLaunchDeviceWithSuccess(
     VideoCaptureDeviceLauncher::Callbacks* callbacks,
     base::OnceClosure done_cb) {
   auto receiver_adapter =
-      base::MakeUnique<video_capture::ReceiverMediaToMojoAdapter>(
-          base::MakeUnique<media::VideoFrameReceiverOnTaskRunner>(
+      std::make_unique<video_capture::ReceiverMediaToMojoAdapter>(
+          std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
               std::move(receiver),
               BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   video_capture::mojom::ReceiverPtr receiver_proxy;
@@ -31,7 +31,7 @@ void ConcludeLaunchDeviceWithSuccess(
       std::move(receiver_adapter), mojo::MakeRequest(&receiver_proxy));
   device->Start(params, std::move(receiver_proxy));
   callbacks->OnDeviceLaunched(
-      base::MakeUnique<ServiceLaunchedVideoCaptureDevice>(
+      std::make_unique<ServiceLaunchedVideoCaptureDevice>(
           std::move(device), std::move(connection_lost_cb)));
   base::ResetAndReturn(&done_cb).Run();
 }

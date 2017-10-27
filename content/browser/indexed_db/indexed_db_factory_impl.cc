@@ -214,16 +214,16 @@ void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {
   IndexedDBTombstoneSweeper::Mode mode =
       tombstone_stats_enabled ? IndexedDBTombstoneSweeper::Mode::STATISTICS
                               : IndexedDBTombstoneSweeper::Mode::DELETION;
-  tasks.push_back(base::MakeUnique<IndexedDBTombstoneSweeper>(
+  tasks.push_back(std::make_unique<IndexedDBTombstoneSweeper>(
       mode, kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
       store->db()->db()));
   // TODO(dmurph): Add compaction task that compacts all indexes if we have
   // more than X deletions.
 
-  store->SetPreCloseTaskList(base::MakeUnique<IndexedDBPreCloseTaskQueue>(
+  store->SetPreCloseTaskList(std::make_unique<IndexedDBPreCloseTaskQueue>(
       std::move(tasks), maybe_close_backing_store_runner.Release(),
       base::TimeDelta::FromSeconds(kPreCloseTasksMaxRunPeriodSeconds),
-      base::MakeUnique<base::OneShotTimer>()));
+      std::make_unique<base::OneShotTimer>()));
   store->StartPreCloseTasks();
 }
 
@@ -442,7 +442,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   scoped_refptr<IndexedDBDatabase> database;
   std::tie(database, s) = IndexedDBDatabase::Create(
       name, backing_store.get(), this,
-      base::MakeUnique<IndexedDBMetadataCoding>(), unique_identifier);
+      std::make_unique<IndexedDBMetadataCoding>(), unique_identifier);
   if (!database.get()) {
     IndexedDBDatabaseError error(
         blink::kWebIDBDatabaseExceptionUnknownError,
@@ -667,7 +667,7 @@ void IndexedDBFactoryImpl::Open(
 
     std::tie(database, s) = IndexedDBDatabase::Create(
         name, backing_store.get(), this,
-        base::MakeUnique<IndexedDBMetadataCoding>(), unique_identifier);
+        std::make_unique<IndexedDBMetadataCoding>(), unique_identifier);
     if (!database.get()) {
       DLOG(ERROR) << "Unable to create the database";
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,

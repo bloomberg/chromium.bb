@@ -1930,12 +1930,12 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   // Tests may set |delegated_frame_host_client_|.
   if (!delegated_frame_host_client_) {
     delegated_frame_host_client_ =
-        base::MakeUnique<DelegatedFrameHostClientAura>(this);
+        std::make_unique<DelegatedFrameHostClientAura>(this);
   }
 
   const bool enable_viz =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
-  delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
+  delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(),
       enable_surface_synchronization_, enable_viz);
 

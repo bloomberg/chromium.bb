@@ -47,7 +47,7 @@ base::LazyInstance<WebRTCInternals>::Leaky g_webrtc_internals =
 base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
   base::ListValue* log = NULL;
   if (!dict->GetList("log", &log))
-    log = dict->SetList("log", base::MakeUnique<base::ListValue>());
+    log = dict->SetList("log", std::make_unique<base::ListValue>());
   return log;
 }
 
@@ -191,7 +191,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
   if (!observers_.might_have_observers())
     return;
 
-  auto log_entry = base::MakeUnique<base::DictionaryValue>();
+  auto log_entry = std::make_unique<base::DictionaryValue>();
 
   double epoch_time = base::Time::Now().ToJsTime();
   string time = base::DoubleToString(epoch_time);
@@ -199,7 +199,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
   log_entry->SetString("type", type);
   log_entry->SetString("value", value);
 
-  auto update = base::MakeUnique<base::DictionaryValue>();
+  auto update = std::make_unique<base::DictionaryValue>();
   update->SetInteger("pid", static_cast<int>(pid));
   update->SetInteger("lid", lid);
   update->MergeDictionary(log_entry.get());
@@ -215,7 +215,7 @@ void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
   if (!observers_.might_have_observers())
     return;
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
@@ -233,7 +233,7 @@ void WebRTCInternals::OnGetUserMedia(int rid,
                                      const std::string& video_constraints) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("rid", rid);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetString("origin", origin);

@@ -85,35 +85,35 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
                                     blink::WebInputEvent::kNoModifiers,
                                     blink::WebInputEvent::kTimeStampForTesting);
   key_event.native_key_code = 5;
-  events.push_back(base::MakeUnique<InputEvent>(key_event, latency));
+  events.push_back(std::make_unique<InputEvent>(key_event, latency));
 
   blink::WebMouseWheelEvent wheel_event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::kTimeStampForTesting);
   wheel_event.delta_x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
-  events.push_back(base::MakeUnique<InputEvent>(wheel_event, latency));
+  events.push_back(std::make_unique<InputEvent>(wheel_event, latency));
 
   blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
                                    blink::WebInputEvent::kNoModifiers,
                                    blink::WebInputEvent::kTimeStampForTesting);
   mouse_event.SetPositionInWidget(10, 0);
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
-  events.push_back(base::MakeUnique<InputEvent>(mouse_event, latency));
+  events.push_back(std::make_unique<InputEvent>(mouse_event, latency));
 
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::kTimeStampForTesting);
   gesture_event.x = -1;
-  events.push_back(base::MakeUnique<InputEvent>(gesture_event, latency));
+  events.push_back(std::make_unique<InputEvent>(gesture_event, latency));
 
   blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
                                    blink::WebInputEvent::kNoModifiers,
                                    blink::WebInputEvent::kTimeStampForTesting);
   touch_event.touches_length = 1;
   touch_event.touches[0].radius_x = 1;
-  events.push_back(base::MakeUnique<InputEvent>(touch_event, latency));
+  events.push_back(std::make_unique<InputEvent>(touch_event, latency));
 
   Verify(events);
 }

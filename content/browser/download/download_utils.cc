@@ -53,7 +53,7 @@ int GetLoadFlags(DownloadUrlParameters* params, bool has_upload_data) {
 
 std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
     DownloadUrlParameters* params) {
-  auto headers = base::MakeUnique<net::HttpRequestHeaders>();
+  auto headers = std::make_unique<net::HttpRequestHeaders>();
   if (params->offset() == 0 &&
       params->length() == DownloadSaveInfo::kLengthFullContent) {
     AppendExtraHeaders(headers.get(), params);
@@ -239,7 +239,7 @@ CreateURLRequestOnIOThread(DownloadUrlParameters* params) {
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
     std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
-    request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
+    request->set_upload(std::make_unique<net::ElementsUploadDataStream>(
         std::move(element_readers), params->post_id()));
   }
 

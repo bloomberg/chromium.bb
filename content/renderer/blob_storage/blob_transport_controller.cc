@@ -255,7 +255,7 @@ void BlobTransportController::OnMemoryRequest(
           SharedMemoryHandle& handle = (*memory_handles)[request.handle_index];
           size_t size = shared_memory_sizes[request.handle_index];
           DCHECK(SharedMemory::IsHandleValid(handle));
-          auto shared_memory = base::MakeUnique<SharedMemory>(handle, false);
+          auto shared_memory = std::make_unique<SharedMemory>(handle, false);
 
           if (!shared_memory->Map(size)) {
             // This would happen if the renderer process doesn't have enough

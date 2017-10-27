@@ -169,7 +169,7 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    helper_ = base::MakeUnique<EmbeddedWorkerTestHelper>(base::FilePath());
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     context()->storage()->LazyInitializeForTest(
         base::BindOnce(&base::DoNothing));
@@ -253,7 +253,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
   }
 
   auto sender =
-      base::MakeUnique<ServiceWorkerInstalledScriptsSender>(version());
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
 
   std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
   {
@@ -266,7 +266,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
       EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
     EXPECT_TRUE(scripts_info->manager_request.is_pending());
     renderer_manager =
-        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
   }
   ASSERT_TRUE(renderer_manager);
@@ -310,7 +310,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
   }
 
   auto sender =
-      base::MakeUnique<ServiceWorkerInstalledScriptsSender>(version());
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
 
   std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
   {
@@ -323,7 +323,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
       EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
     EXPECT_TRUE(scripts_info->manager_request.is_pending());
     renderer_manager =
-        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
   }
   ASSERT_TRUE(renderer_manager);
@@ -370,7 +370,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   }
 
   auto sender =
-      base::MakeUnique<ServiceWorkerInstalledScriptsSender>(version());
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
 
   std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
   {
@@ -383,7 +383,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
       EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
     EXPECT_TRUE(scripts_info->manager_request.is_pending());
     renderer_manager =
-        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
   }
   ASSERT_TRUE(renderer_manager);
@@ -441,7 +441,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
   }
 
   auto sender =
-      base::MakeUnique<ServiceWorkerInstalledScriptsSender>(version());
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
 
   std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
   {
@@ -454,7 +454,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
       EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
     EXPECT_TRUE(scripts_info->manager_request.is_pending());
     renderer_manager =
-        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
   }
   ASSERT_TRUE(renderer_manager);
@@ -522,7 +522,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
   }
 
   auto sender =
-      base::MakeUnique<ServiceWorkerInstalledScriptsSender>(version());
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
 
   std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
   mojom::ServiceWorkerInstalledScriptsManagerHostPtr manager_host_ptr;
@@ -536,7 +536,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
       EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
     EXPECT_TRUE(scripts_info->manager_request.is_pending());
     renderer_manager =
-        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
     manager_host_ptr = std::move(scripts_info->manager_host_ptr);
   }
@@ -609,7 +609,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
   }
 
   auto sender =
-      base::MakeUnique<ServiceWorkerInstalledScriptsSender>(version());
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
 
   std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
   mojom::ServiceWorkerInstalledScriptsManagerHostPtr manager_host_ptr;
@@ -623,7 +623,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
       EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
     EXPECT_TRUE(scripts_info->manager_request.is_pending());
     renderer_manager =
-        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
     manager_host_ptr = std::move(scripts_info->manager_host_ptr);
   }

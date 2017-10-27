@@ -150,7 +150,7 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
       scoped_refptr<ThreadSafeScriptContainer> script_container,
       mojom::ServiceWorkerInstalledScriptsManagerRequest request) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<Internal>(std::move(script_container)),
+        std::make_unique<Internal>(std::move(script_container)),
         std::move(request));
   }
 
@@ -172,7 +172,7 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
       mojom::ServiceWorkerScriptInfoPtr script_info) override {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     GURL script_url = script_info->script_url;
-    auto receivers = base::MakeUnique<BundledReceivers>(
+    auto receivers = std::make_unique<BundledReceivers>(
         std::move(script_info->meta_data), script_info->meta_data_size,
         std::move(script_info->body), script_info->body_size);
     receivers->Start(base::BindOnce(&Internal::OnScriptReceived,

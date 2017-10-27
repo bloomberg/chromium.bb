@@ -107,9 +107,9 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
       binding_(this, std::move(request)) {
   container_host_.Bind(std::move(host_ptr_info));
   if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
-    controller_state_ = base::MakeUnique<ControllerState>();
+    controller_state_ = std::make_unique<ControllerState>();
   } else {
-    controllee_state_ = base::MakeUnique<ControlleeState>(
+    controllee_state_ = std::make_unique<ControlleeState>(
         std::move(default_loader_factory_getter));
   }
 
@@ -284,7 +284,7 @@ void ServiceWorkerProviderContext::SetController(
         base::MakeRefCounted<ControllerServiceWorkerConnector>(
             container_host_.get());
     mojo::MakeStrongBinding(
-        base::MakeUnique<ServiceWorkerSubresourceLoaderFactory>(
+        std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
             state->controller_connector, state->default_loader_factory_getter,
             state->controller->url().GetOrigin(), std::move(blob_registry)),
         mojo::MakeRequest(&state->subresource_loader_factory));

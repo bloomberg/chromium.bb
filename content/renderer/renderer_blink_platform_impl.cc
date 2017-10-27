@@ -355,7 +355,7 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactory() {
 std::unique_ptr<blink::WebDataConsumerHandle>
 RendererBlinkPlatformImpl::CreateDataConsumerHandle(
     mojo::ScopedDataPipeConsumerHandle handle) {
-  return base::MakeUnique<WebDataConsumerHandleImpl>(std::move(handle));
+  return std::make_unique<WebDataConsumerHandleImpl>(std::move(handle));
 }
 
 scoped_refptr<ChildURLLoaderFactoryGetter>
@@ -557,11 +557,11 @@ RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
       local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
           RenderThreadImpl::current()->GetStoragePartitionService()));
     }
-    return base::MakeUnique<LocalStorageNamespace>(
+    return std::make_unique<LocalStorageNamespace>(
         local_storage_cached_areas_.get());
   }
 
-  return base::MakeUnique<WebStorageNamespaceImpl>();
+  return std::make_unique<WebStorageNamespaceImpl>();
 }
 
 
@@ -576,7 +576,7 @@ WebIDBFactory* RendererBlinkPlatformImpl::IdbFactory() {
 std::unique_ptr<blink::WebServiceWorkerCacheStorage>
 RendererBlinkPlatformImpl::CreateCacheStorage(
     const blink::WebSecurityOrigin& security_origin) {
-  return base::MakeUnique<WebServiceWorkerCacheStorageImpl>(
+  return std::make_unique<WebServiceWorkerCacheStorageImpl>(
       thread_safe_sender_.get(), security_origin);
 }
 
@@ -819,7 +819,7 @@ RendererBlinkPlatformImpl::CreateMIDIAccessor(
   if (accessor)
     return accessor;
 
-  return base::MakeUnique<RendererWebMIDIAccessorImpl>(client);
+  return std::make_unique<RendererWebMIDIAccessorImpl>(client);
 }
 
 void RendererBlinkPlatformImpl::GetPluginList(
@@ -885,7 +885,7 @@ void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
 std::unique_ptr<WebMediaRecorderHandler>
 RendererBlinkPlatformImpl::CreateMediaRecorderHandler() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<content::MediaRecorderHandler>();
+  return std::make_unique<content::MediaRecorderHandler>();
 #else
   return nullptr;
 #endif
@@ -915,7 +915,7 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
 std::unique_ptr<blink::WebRTCCertificateGenerator>
 RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<RTCCertificateGenerator>();
+  return std::make_unique<RTCCertificateGenerator>();
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
@@ -1004,7 +1004,7 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 std::unique_ptr<WebImageCaptureFrameGrabber>
 RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<ImageCaptureFrameGrabber>();
+  return std::make_unique<ImageCaptureFrameGrabber>();
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
@@ -1133,7 +1133,7 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
           GURL(top_document_web_url), automatic_flushes, support_locking,
           gpu::SharedMemoryLimits(), attributes, share_context,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
-  return base::MakeUnique<WebGraphicsContext3DProviderImpl>(
+  return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider), is_software_rendering);
 }
 
@@ -1160,7 +1160,7 @@ RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
 
   bool is_software_rendering = host->gpu_info().software_rendering;
 
-  return base::MakeUnique<WebGraphicsContext3DProviderImpl>(
+  return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider), is_software_rendering);
 }
 
@@ -1237,15 +1237,15 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
 
   switch (type) {
     case blink::kWebPlatformEventTypeDeviceMotion:
-      return base::MakeUnique<DeviceMotionEventPump>(thread);
+      return std::make_unique<DeviceMotionEventPump>(thread);
     case blink::kWebPlatformEventTypeDeviceOrientation:
-      return base::MakeUnique<DeviceOrientationEventPump>(thread,
+      return std::make_unique<DeviceOrientationEventPump>(thread,
                                                           false /* absolute */);
     case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
-      return base::MakeUnique<DeviceOrientationEventPump>(thread,
+      return std::make_unique<DeviceOrientationEventPump>(thread,
                                                           true /* absolute */);
     case blink::kWebPlatformEventTypeGamepad:
-      return base::MakeUnique<GamepadSharedMemoryReader>(thread);
+      return std::make_unique<GamepadSharedMemoryReader>(thread);
     default:
       // A default statement is required to prevent compilation errors when
       // Blink adds a new type.

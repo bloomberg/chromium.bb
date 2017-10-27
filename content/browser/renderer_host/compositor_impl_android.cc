@@ -732,7 +732,7 @@ void CompositorImpl::CreateVulkanOutputSurface() {
     return;
 
   // TODO(crbug.com/582558): Need to match GL and implement DidSwapBuffers.
-  auto vulkan_surface = base::MakeUnique<VulkanOutputSurface>(
+  auto vulkan_surface = std::make_unique<VulkanOutputSurface>(
       vulkan_context_provider, base::ThreadTaskRunnerHandle::Get());
   if (!vulkan_surface->Initialize(window_))
     return;
@@ -797,7 +797,7 @@ void CompositorImpl::OnGpuChannelEstablished(
   DidSuccessfullyInitializeContext();
 
   // Unretained is safe this owns viz::Display which owns OutputSurface.
-  auto display_output_surface = base::MakeUnique<AndroidOutputSurface>(
+  auto display_output_surface = std::make_unique<AndroidOutputSurface>(
       context_provider,
       base::Bind(&CompositorImpl::DidSwapBuffers, base::Unretained(this)));
   InitializeDisplay(std::move(display_output_surface), nullptr,
@@ -820,7 +820,7 @@ void CompositorImpl::InitializeDisplay(
 
   viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-  auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
+  auto scheduler = std::make_unique<viz::DisplayScheduler>(
       root_window_->GetBeginFrameSource(), task_runner,
       display_output_surface->capabilities().max_frames_pending);
 
@@ -830,18 +830,18 @@ void CompositorImpl::InitializeDisplay(
   auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                         ->gpu_channel_establish_factory()
                                         ->GetGpuMemoryBufferManager();
-  display_ = base::MakeUnique<viz::Display>(
+  display_ = std::make_unique<viz::Display>(
       viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
       renderer_settings, frame_sink_id_, std::move(display_output_surface),
       std::move(scheduler),
-      base::MakeUnique<viz::TextureMailboxDeleter>(task_runner));
+      std::make_unique<viz::TextureMailboxDeleter>(task_runner));
 
   auto layer_tree_frame_sink =
       vulkan_context_provider
-          ? base::MakeUnique<viz::DirectLayerTreeFrameSink>(
+          ? std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
                 display_.get(), vulkan_context_provider)
-          : base::MakeUnique<viz::DirectLayerTreeFrameSink>(
+          : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
                 display_.get(), context_provider,
                 nullptr /* worker_context_provider */,

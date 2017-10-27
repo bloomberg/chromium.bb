@@ -557,7 +557,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendUpgradeNeeded(
     return;
   }
 
-  auto database = base::MakeUnique<DatabaseImpl>(
+  auto database = std::make_unique<DatabaseImpl>(
       std::move(connection_wrapper.connection), origin_, dispatcher_host_.get(),
       idb_runner_);
 
@@ -581,7 +581,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessDatabase(
   }
   ::indexed_db::mojom::DatabaseAssociatedPtrInfo ptr_info;
   if (connection_wrapper.connection) {
-    auto database = base::MakeUnique<DatabaseImpl>(
+    auto database = std::make_unique<DatabaseImpl>(
         std::move(connection_wrapper.connection), origin_,
         dispatcher_host_.get(), idb_runner_);
 
@@ -605,7 +605,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursor(
     OnConnectionError();
     return;
   }
-  auto cursor_impl = base::MakeUnique<CursorImpl>(
+  auto cursor_impl = std::make_unique<CursorImpl>(
       std::move(cursor.cursor), origin_, dispatcher_host_.get(), idb_runner_);
 
   if (value && !CreateAllBlobs(blob_info, &value->blob_or_file_info))

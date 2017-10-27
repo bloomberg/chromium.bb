@@ -60,10 +60,10 @@ class InterceptingResourceHandlerTest : public testing::Test {
     std::unique_ptr<TestResourceHandler> old_handler(
         new TestResourceHandler(&old_handler_status_, &old_handler_body_));
     old_handler_ = old_handler->GetWeakPtr();
-    intercepting_handler_ = base::MakeUnique<InterceptingResourceHandler>(
+    intercepting_handler_ = std::make_unique<InterceptingResourceHandler>(
         std::move(old_handler), request_.get());
     mock_loader_ =
-        base::MakeUnique<MockResourceLoader>(intercepting_handler_.get());
+        std::make_unique<MockResourceLoader>(intercepting_handler_.get());
   }
 
  protected:

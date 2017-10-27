@@ -91,7 +91,7 @@ void MigrateStorageHelper(
   DOMStorageDatabase db(db_path);
   DOMStorageValuesMap map;
   db.ReadAllValues(&map);
-  auto values = base::MakeUnique<LevelDBWrapperImpl::ValueMap>();
+  auto values = std::make_unique<LevelDBWrapperImpl::ValueMap>();
   for (const auto& it : map) {
     (*values)[LocalStorageContextMojo::MigrateString(it.first)] =
         LocalStorageContextMojo::MigrateString(it.second.string());
@@ -178,7 +178,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
     const int kMaxBytesPerHour = kPerStorageAreaQuota;
     const int kMaxCommitsPerHour = 60;
 
-    level_db_wrapper_ = base::MakeUnique<LevelDBWrapperImpl>(
+    level_db_wrapper_ = std::make_unique<LevelDBWrapperImpl>(
         context_->database_.get(),
         kDataPrefix + origin_.Serialize() + kOriginSeparator,
         kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
@@ -863,7 +863,7 @@ LocalStorageContextMojo::GetOrCreateDBWrapper(const url::Origin& origin) {
 
   PurgeUnusedWrappersIfNeeded();
 
-  auto holder = base::MakeUnique<LevelDBWrapperHolder>(this, origin);
+  auto holder = std::make_unique<LevelDBWrapperHolder>(this, origin);
   LevelDBWrapperHolder* holder_ptr = holder.get();
   level_db_wrappers_[origin] = std::move(holder);
   return holder_ptr;

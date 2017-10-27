@@ -68,18 +68,18 @@ TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
 
 std::unique_ptr<WebMediaStreamCenter>
 WebTestInterfaces::CreateMediaStreamCenter(WebMediaStreamCenterClient* client) {
-  return base::MakeUnique<MockWebMediaStreamCenter>();
+  return std::make_unique<MockWebMediaStreamCenter>();
 }
 
 std::unique_ptr<WebMIDIAccessor> WebTestInterfaces::CreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
-  return base::MakeUnique<MockWebMIDIAccessor>(client, interfaces_.get());
+  return std::make_unique<MockWebMIDIAccessor>(client, interfaces_.get());
 }
 
 std::unique_ptr<WebAudioDevice> WebTestInterfaces::CreateAudioDevice(
     double sample_rate,
     int frames_per_buffer) {
-  return base::MakeUnique<MockWebAudioDevice>(sample_rate, frames_per_buffer);
+  return std::make_unique<MockWebAudioDevice>(sample_rate, frames_per_buffer);
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
@@ -87,20 +87,20 @@ std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
     WebFrameTestProxyBase* web_frame_test_proxy_base) {
   // TODO(lukasza): Do not pass the WebTestDelegate below - it's lifetime can
   // differ from the lifetime of WebFrameTestClient - https://crbug.com/606594.
-  return base::MakeUnique<WebFrameTestClient>(interfaces_->GetDelegate(),
+  return std::make_unique<WebFrameTestClient>(interfaces_->GetDelegate(),
                                               web_view_test_proxy_base,
                                               web_frame_test_proxy_base);
 }
 
 std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
     WebViewTestProxyBase* web_view_test_proxy_base) {
-  return base::MakeUnique<WebViewTestClient>(web_view_test_proxy_base);
+  return std::make_unique<WebViewTestClient>(web_view_test_proxy_base);
 }
 
 std::unique_ptr<WebWidgetTestClient>
 WebTestInterfaces::CreateWebWidgetTestClient(
     WebWidgetTestProxyBase* web_widget_test_proxy_base) {
-  return base::MakeUnique<WebWidgetTestClient>(web_widget_test_proxy_base);
+  return std::make_unique<WebWidgetTestClient>(web_widget_test_proxy_base);
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {

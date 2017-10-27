@@ -1506,7 +1506,7 @@ bool RenderProcessHostImpl::Init() {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
     std::unique_ptr<base::CommandLine> cmd_line =
-        base::MakeUnique<base::CommandLine>(renderer_path);
+        std::make_unique<base::CommandLine>(renderer_path);
     if (!renderer_prefix.empty())
       cmd_line->PrependWrapper(renderer_prefix);
     AppendRendererCommandLine(cmd_line.get());
@@ -1515,7 +1515,7 @@ bool RenderProcessHostImpl::Init() {
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
-        base::MakeUnique<RendererSandboxedProcessLauncherDelegate>(),
+        std::make_unique<RendererSandboxedProcessLauncherDelegate>(),
         std::move(cmd_line), GetID(), this,
         std::move(broker_client_invitation_),
         base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
@@ -1564,7 +1564,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 
   // Establish a ServiceManager connection for the new render service instance.
   broker_client_invitation_ =
-      base::MakeUnique<mojo::edk::OutgoingBrokerClientInvitation>();
+      std::make_unique<mojo::edk::OutgoingBrokerClientInvitation>();
   service_manager::Identity child_identity(
       mojom::kRendererServiceName,
       BrowserContext::GetServiceUserIdFor(GetBrowserContext()),
@@ -1778,7 +1778,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
 
   channel_->AddAssociatedInterfaceForIOThread(
       base::Bind(&IndexedDBDispatcherHost::AddBinding,
@@ -2002,7 +2002,7 @@ void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
   if (!offscreen_canvas_provider_) {
     // The client id gets converted to a uint32_t in FrameSinkId.
     uint32_t renderer_client_id = base::checked_cast<uint32_t>(id_);
-    offscreen_canvas_provider_ = base::MakeUnique<OffscreenCanvasProviderImpl>(
+    offscreen_canvas_provider_ = std::make_unique<OffscreenCanvasProviderImpl>(
         GetHostFrameSinkManager(), renderer_client_id);
   }
   offscreen_canvas_provider_->Add(std::move(request));
@@ -2128,12 +2128,12 @@ RenderProcessHostImpl::GetProcessResourceCoordinator() {
 
   if (!resource_coordinator::IsResourceCoordinatorEnabled()) {
     process_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
             nullptr, resource_coordinator::CoordinationUnitType::kProcess);
   } else {
     auto* connection = ServiceManagerConnection::GetForProcess();
     process_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
             connection ? connection->GetConnector() : nullptr,
             resource_coordinator::CoordinationUnitType::kProcess);
   }

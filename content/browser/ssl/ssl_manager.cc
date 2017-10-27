@@ -176,7 +176,7 @@ SSLManager::SSLManager(NavigationControllerImpl* controller)
   SSLManagerSet* managers = static_cast<SSLManagerSet*>(
       controller_->GetBrowserContext()->GetUserData(kSSLManagerKeyName));
   if (!managers) {
-    auto managers_owned = base::MakeUnique<SSLManagerSet>();
+    auto managers_owned = std::make_unique<SSLManagerSet>();
     managers = managers_owned.get();
     controller_->GetBrowserContext()->SetUserData(kSSLManagerKeyName,
                                                   std::move(managers_owned));

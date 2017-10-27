@@ -20,7 +20,7 @@ WebDatabaseImpl::WebDatabaseImpl() = default;
 WebDatabaseImpl::~WebDatabaseImpl() = default;
 
 void WebDatabaseImpl::Create(content::mojom::WebDatabaseRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<WebDatabaseImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<WebDatabaseImpl>(),
                           std::move(request));
 }
 

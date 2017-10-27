@@ -116,7 +116,7 @@ void MediaDevicesDispatcherHost::Create(
     ::mojom::MediaDevicesDispatcherHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::MakeStrongBinding(
-      base::MakeUnique<MediaDevicesDispatcherHost>(
+      std::make_unique<MediaDevicesDispatcherHost>(
           render_process_id, render_frame_id, media_stream_manager),
       std::move(request));
 }
@@ -129,7 +129,7 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
       render_frame_id_(render_frame_id),
       group_id_salt_base_(BrowserContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
-      permission_checker_(base::MakeUnique<MediaDevicesPermissionChecker>()),
+      permission_checker_(std::make_unique<MediaDevicesPermissionChecker>()),
       num_pending_audio_input_parameters_(0),
       salt_and_origin_callback_(
           base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),

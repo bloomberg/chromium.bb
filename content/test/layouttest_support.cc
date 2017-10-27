@@ -352,7 +352,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     constexpr bool disable_display_vsync = false;
     constexpr double refresh_rate = 60.0;
-    auto layer_tree_frame_sink = base::MakeUnique<viz::TestLayerTreeFrameSink>(
+    auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
         gpu_memory_buffer_manager, renderer_settings, task_runner,
@@ -369,7 +369,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     // may not have been created yet. Instead, we wait until OnCommit to find
     // the currently active LayerTreeFrameSink for the given RenderWidget
     // routing_id.
-    return base::MakeUnique<CopyRequestSwapPromise>(
+    return std::make_unique<CopyRequestSwapPromise>(
         std::move(request),
         base::Bind(
             &LayoutTestDependenciesImpl::FindLayerTreeFrameSink,
@@ -407,7 +407,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;
-    return base::MakeUnique<cc::PixelTestOutputSurface>(
+    return std::make_unique<cc::PixelTestOutputSurface>(
         std::move(context_provider), flipped_output_surface);
   }
   void DisplayReceivedLocalSurfaceId(
@@ -436,7 +436,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
 void EnableRendererLayoutTestMode() {
   RenderThreadImpl::current()->set_layout_test_dependencies(
-      base::MakeUnique<LayoutTestDependenciesImpl>());
+      std::make_unique<LayoutTestDependenciesImpl>());
 
 #if defined(OS_WIN)
   RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite().get());

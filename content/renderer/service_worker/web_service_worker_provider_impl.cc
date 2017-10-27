@@ -319,7 +319,7 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrations(
   using WebServiceWorkerRegistrationHandles =
       WebServiceWorkerProvider::WebServiceWorkerRegistrationHandles;
   std::unique_ptr<WebServiceWorkerRegistrationHandles> registrations =
-      base::MakeUnique<WebServiceWorkerRegistrationHandles>(infos->size());
+      std::make_unique<WebServiceWorkerRegistrationHandles>(infos->size());
   for (size_t i = 0; i < infos->size(); ++i) {
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
               (*infos)[i]->handle_id);

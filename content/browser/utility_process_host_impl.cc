@@ -252,7 +252,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       // As a workaround skip calling it here, since the executable name is
       // not needed on Android anyway. See crbug.com/500854.
     std::unique_ptr<base::CommandLine> cmd_line =
-        base::MakeUnique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
+        std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
     #else
       int child_flags = child_flags_;
 
@@ -271,7 +271,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       }
 
       std::unique_ptr<base::CommandLine> cmd_line =
-          base::MakeUnique<base::CommandLine>(exe_path);
+          std::make_unique<base::CommandLine>(exe_path);
     #endif
 
     cmd_line->AppendSwitchASCII(switches::kProcessType,
@@ -336,7 +336,7 @@ bool UtilityProcessHostImpl::StartProcess() {
           *service_identity_, cmd_line.get());
     }
 
-    process_->Launch(base::MakeUnique<UtilitySandboxedProcessLauncherDelegate>(
+    process_->Launch(std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
                          exposed_dir_, run_elevated_, sandbox_type_, env_),
                      std::move(cmd_line), true);
   }

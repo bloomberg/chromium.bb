@@ -126,7 +126,7 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
   // webKitRTCPeerConnection.
   UpdateWebRTCMethodCount(WEBKIT_RTC_PEER_CONNECTION);
 
-  return base::MakeUnique<RTCPeerConnectionHandler>(client, this);
+  return std::make_unique<RTCPeerConnectionHandler>(client, this);
 }
 
 const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&

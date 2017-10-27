@@ -72,7 +72,7 @@ void WebDatabaseHostImpl::Create(
     content::mojom::WebDatabaseHostRequest request) {
   DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
   mojo::MakeStrongBinding(
-      base::MakeUnique<WebDatabaseHostImpl>(process_id, std::move(db_tracker)),
+      std::make_unique<WebDatabaseHostImpl>(process_id, std::move(db_tracker)),
       std::move(request));
 }
 

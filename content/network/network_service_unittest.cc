@@ -155,7 +155,7 @@ class NetworkServiceTestWithService
 
  private:
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return base::MakeUnique<ServiceTestClient>(this);
+    return std::make_unique<ServiceTestClient>(this);
   }
 
   void SetUp() override {

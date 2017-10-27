@@ -34,7 +34,7 @@ Env::Env() {
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
-  adapter = base::MakeUnique<RenderViewTestAdapter>();
+  adapter = std::make_unique<RenderViewTestAdapter>();
   adapter->SetUp();
 }
 

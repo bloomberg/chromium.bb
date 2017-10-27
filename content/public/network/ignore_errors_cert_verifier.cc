@@ -44,7 +44,7 @@ std::unique_ptr<CertVerifier> IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
       base::SplitString(command_line.GetSwitchValueASCII(
                             switches::kIgnoreCertificateErrorsSPKIList),
                         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  return base::MakeUnique<IgnoreErrorsCertVerifier>(
+  return std::make_unique<IgnoreErrorsCertVerifier>(
       std::move(verifier), IgnoreErrorsCertVerifier::MakeWhitelist(spki_list));
 }
 

@@ -269,7 +269,7 @@ class TracingControllerTest : public ContentBrowserTest {
       scoped_refptr<TracingController::TraceDataEndpoint> trace_data_endpoint =
           TracingController::CreateStringEndpoint(callback);
 
-      metadata_ = base::MakeUnique<base::DictionaryValue>();
+      metadata_ = std::make_unique<base::DictionaryValue>();
       metadata_->SetString("not-whitelisted", "this_not_found");
 
       bool result = controller->StopTracing(trace_data_endpoint);

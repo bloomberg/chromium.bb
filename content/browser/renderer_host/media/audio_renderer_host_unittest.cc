@@ -68,7 +68,7 @@ class MockAudioMirroringManager : public AudioMirroringManager {
 class FakeAudioManagerWithAssociations : public media::FakeAudioManager {
  public:
   explicit FakeAudioManagerWithAssociations(media::AudioLogFactory* factory)
-      : FakeAudioManager(base::MakeUnique<media::TestAudioThread>(), factory) {}
+      : FakeAudioManager(std::make_unique<media::TestAudioThread>(), factory) {}
 
   void CreateDeviceAssociation(const std::string& input_device_id,
                                const std::string& output_device_id) {
@@ -205,12 +205,12 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
 
     RenderViewHostTestHarness::SetUp();
     audio_manager_ =
-        base::MakeUnique<FakeAudioManagerWithAssociations>(&log_factory_);
+        std::make_unique<FakeAudioManagerWithAssociations>(&log_factory_);
     audio_system_ =
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
-    auth_run_loop_ = base::MakeUnique<base::RunLoop>();
+    auth_run_loop_ = std::make_unique<base::RunLoop>();
     host_ = base::MakeRefCounted<MockAudioRendererHost>(
         auth_run_loop_.get(), process()->GetID(), audio_manager_.get(),
         audio_system_.get(), &mirroring_manager_, media_stream_manager_.get());

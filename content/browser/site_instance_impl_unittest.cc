@@ -600,7 +600,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i)
     hosts.push_back(
-        base::MakeUnique<MockRenderProcessHost>(browser_context.get()));
+        std::make_unique<MockRenderProcessHost>(browser_context.get()));
 
   // Create some extension instances and make sure they share a process.
   scoped_refptr<SiteInstanceImpl> extension1_instance(

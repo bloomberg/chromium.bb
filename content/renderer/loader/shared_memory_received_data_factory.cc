@@ -64,7 +64,7 @@ SharedMemoryReceivedDataFactory::Create(int offset, int length) {
   const char* payload = start + offset;
   TicketId id = id_++;
 
-  return base::MakeUnique<SharedMemoryReceivedData>(payload, length, this, id);
+  return std::make_unique<SharedMemoryReceivedData>(payload, length, this, id);
 }
 
 void SharedMemoryReceivedDataFactory::Stop() {

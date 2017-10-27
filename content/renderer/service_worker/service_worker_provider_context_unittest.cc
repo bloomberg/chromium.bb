@@ -254,9 +254,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
         std::move(container_request), std::move(host_ptr_info), dispatcher(),
         nullptr /* loader_factory_getter */);
-    auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
+    auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
         thread_safe_sender(), provider_context.get());
-    auto client = base::MakeUnique<MockWebServiceWorkerProviderClientImpl>();
+    auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
     provider_impl->SetClient(client.get());
     ASSERT_FALSE(client->was_set_controller_called());
 
@@ -290,9 +290,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
       kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       std::move(container_request), std::move(host_ptr_info), dispatcher(),
       nullptr /* loader_factory_getter */);
-  auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
+  auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
       thread_safe_sender(), provider_context.get());
-  auto client = base::MakeUnique<MockWebServiceWorkerProviderClientImpl>();
+  auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
   provider_impl->SetClient(client.get());
 
   container_ptr->SetController(blink::mojom::ServiceWorkerObjectInfo::New(),

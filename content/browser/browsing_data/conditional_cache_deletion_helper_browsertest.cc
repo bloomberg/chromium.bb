@@ -45,14 +45,14 @@ bool HasHttpsExampleOrigin(const GURL& url) {
 class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    cache_util_ = base::MakeUnique<CacheTestUtil>(
+    cache_util_ = std::make_unique<CacheTestUtil>(
         content::BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
     done_callback_ =
         base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
                    base::Unretained(this));
     // UI and IO thread synchronization.
-    waitable_event_ = base::MakeUnique<base::WaitableEvent>(
+    waitable_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
   }

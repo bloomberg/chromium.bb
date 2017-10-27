@@ -27,7 +27,7 @@
 namespace content {
 
 std::unique_ptr<NetworkService> NetworkService::Create(net::NetLog* net_log) {
-  return base::MakeUnique<NetworkServiceImpl>(nullptr, net_log);
+  return std::make_unique<NetworkServiceImpl>(nullptr, net_log);
 }
 
 class NetworkServiceImpl::MojoNetLog : public net::NetLog {
@@ -131,7 +131,7 @@ NetworkServiceImpl::CreateNetworkContextWithBuilder(
     std::unique_ptr<net::URLRequestContextBuilder> builder,
     net::URLRequestContext** url_request_context) {
   std::unique_ptr<NetworkContext> network_context =
-      base::MakeUnique<NetworkContext>(this, std::move(request),
+      std::make_unique<NetworkContext>(this, std::move(request),
                                        std::move(params), std::move(builder));
   *url_request_context = network_context->url_request_context();
   return network_context;
@@ -139,7 +139,7 @@ NetworkServiceImpl::CreateNetworkContextWithBuilder(
 
 std::unique_ptr<NetworkServiceImpl> NetworkServiceImpl::CreateForTesting() {
   return base::WrapUnique(new NetworkServiceImpl(
-      base::MakeUnique<service_manager::BinderRegistry>()));
+      std::make_unique<service_manager::BinderRegistry>()));
 }
 
 void NetworkServiceImpl::RegisterNetworkContext(

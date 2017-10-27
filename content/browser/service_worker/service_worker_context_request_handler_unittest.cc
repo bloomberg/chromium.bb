@@ -109,7 +109,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   // Creates a ServiceWorkerContextHandler directly.
   std::unique_ptr<ServiceWorkerContextRequestHandler> CreateHandler(
       ResourceType resource_type) {
-    return base::MakeUnique<ServiceWorkerContextRequestHandler>(
+    return std::make_unique<ServiceWorkerContextRequestHandler>(
         context()->AsWeakPtr(), provider_host_,
         base::WeakPtr<storage::BlobStorageContext>(), resource_type);
   }

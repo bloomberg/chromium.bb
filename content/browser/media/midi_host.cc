@@ -182,7 +182,7 @@ void MidiHost::ReceiveMidiData(uint32_t port,
   // Lazy initialization
   if (received_messages_queues_[port] == nullptr)
     received_messages_queues_[port] =
-        base::MakeUnique<midi::MidiMessageQueue>(true);
+        std::make_unique<midi::MidiMessageQueue>(true);
 
   received_messages_queues_[port]->Add(data, length);
   std::vector<uint8_t> message;

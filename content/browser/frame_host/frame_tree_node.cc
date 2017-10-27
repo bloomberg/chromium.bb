@@ -260,7 +260,7 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
   opener_ = opener;
 
   if (opener_) {
-    opener_observer_ = base::MakeUnique<OpenerDestroyedObserver>(this, false);
+    opener_observer_ = std::make_unique<OpenerDestroyedObserver>(this, false);
     opener_->AddObserver(opener_observer_.get());
   }
 }
@@ -278,7 +278,7 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
 
   if (original_opener_) {
     original_opener_observer_ =
-        base::MakeUnique<OpenerDestroyedObserver>(this, true);
+        std::make_unique<OpenerDestroyedObserver>(this, true);
     original_opener_->AddObserver(original_opener_observer_.get());
   }
 }

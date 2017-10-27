@@ -233,7 +233,7 @@ void PermissionServiceImpl::RequestPermissions(
     types[i] = PermissionDescriptorToPermissionType(permissions[i]);
 
   std::unique_ptr<PendingRequest> pending_request =
-      base::MakeUnique<PendingRequest>(types, std::move(callback));
+      std::make_unique<PendingRequest>(types, std::move(callback));
   std::vector<PermissionType> request_types;
   for (size_t i = 0; i < types.size(); ++i) {
     // Check feature policy.

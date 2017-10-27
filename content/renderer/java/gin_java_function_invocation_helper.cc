@@ -69,7 +69,7 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
       if (arg.get())
         arguments.Append(std::move(arg));
       else
-        arguments.Append(base::MakeUnique<base::Value>());
+        arguments.Append(std::make_unique<base::Value>());
     }
   }
 

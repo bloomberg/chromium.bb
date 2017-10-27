@@ -66,7 +66,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     const int kTestingSessionId = 1;
 
     audio_manager_.reset(new media::MockAudioManager(
-        base::MakeUnique<media::TestAudioThread>(true)));
+        std::make_unique<media::TestAudioThread>(true)));
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
     audio_system_ =

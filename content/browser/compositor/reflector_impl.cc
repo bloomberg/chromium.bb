@@ -74,7 +74,7 @@ void ReflectorImpl::AddMirroringLayer(ui::Layer* layer) {
   DCHECK(layer->GetCompositor());
   DCHECK(mirroring_layers_.end() == FindLayerData(layer));
 
-  mirroring_layers_.push_back(base::MakeUnique<LayerData>(layer));
+  mirroring_layers_.push_back(std::make_unique<LayerData>(layer));
   if (mailbox_)
     mirroring_layers_.back()->needs_set_mailbox = true;
   mirrored_compositor_->ScheduleFullRedraw();

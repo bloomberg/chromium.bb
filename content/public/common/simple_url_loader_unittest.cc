@@ -308,7 +308,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleResponseSize(
     return nullptr;
 
   std::unique_ptr<net::test_server::BasicHttpResponse> response =
-      base::MakeUnique<net::test_server::BasicHttpResponse>();
+      std::make_unique<net::test_server::BasicHttpResponse>();
 
   uint32_t length;
   if (!base::StringToUint(request.GetURL().query(), &length)) {
@@ -328,7 +328,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleInvalidGzip(
     return nullptr;
 
   std::unique_ptr<net::test_server::BasicHttpResponse> response =
-      base::MakeUnique<net::test_server::BasicHttpResponse>();
+      std::make_unique<net::test_server::BasicHttpResponse>();
   response->AddCustomHeader("Content-Encoding", "gzip");
   response->set_content("Not gzipped");
 
@@ -343,7 +343,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleTruncatedBody(
     return nullptr;
 
   std::unique_ptr<net::test_server::RawHttpResponse> response =
-      base::MakeUnique<net::test_server::RawHttpResponse>(
+      std::make_unique<net::test_server::RawHttpResponse>(
           base::StringPrintf("HTTP/1.1 200 OK\r\n"
                              "Content-Length: %" PRIuS "\r\n",
                              strlen(kTruncatedBody) + 4),
@@ -1017,7 +1017,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
                                 traffic_annotation) override {
     ASSERT_FALSE(test_events_.empty());
     requested_urls_.push_back(url_request.url);
-    url_loaders_.push_back(base::MakeUnique<MockURLLoader>(
+    url_loaders_.push_back(std::make_unique<MockURLLoader>(
         scoped_task_environment_, std::move(url_loader_request),
         std::move(client), test_events_.front()));
     test_events_.pop_front();

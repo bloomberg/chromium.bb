@@ -187,7 +187,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                             int32_t main_frame_routing_id,
                             bool swapped_out)
       : TestRenderViewHost(instance,
-                           base::MakeUnique<RenderWidgetHostImpl>(
+                           std::make_unique<RenderWidgetHostImpl>(
                                widget_delegate,
                                instance->GetProcess(),
                                routing_id,
@@ -240,7 +240,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
       : report_callback_(report_callback),
         error_callback_(error_callback) {
     buffer_pool_ = new media::VideoCaptureBufferPoolImpl(
-        base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(), 2);
+        std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(), 2);
   }
   ~StubClient() override {}
 

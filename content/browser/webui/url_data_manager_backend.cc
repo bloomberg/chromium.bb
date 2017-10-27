@@ -437,7 +437,7 @@ URLDataManagerBackend::CreateProtocolHandler(
     ResourceContext* resource_context,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
-  return base::MakeUnique<ChromeProtocolHandler>(resource_context,
+  return std::make_unique<ChromeProtocolHandler>(resource_context,
                                                  blob_storage_context);
 }
 

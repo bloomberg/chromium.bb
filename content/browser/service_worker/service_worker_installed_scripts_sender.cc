@@ -133,7 +133,7 @@ class ServiceWorkerInstalledScriptsSender::Sender {
         CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
         return;
       }
-      meta_data_sender_ = base::MakeUnique<MetaDataSender>(
+      meta_data_sender_ = std::make_unique<MetaDataSender>(
           http_info->http_info->metadata, std::move(meta_data_producer));
       meta_data_sender_->Start(
           base::BindOnce(&Sender::OnMetaDataSent, AsWeakPtr()));
@@ -339,7 +339,7 @@ void ServiceWorkerInstalledScriptsSender::StartSendingScript(
   auto reader = owner_->context()->storage()->CreateResponseReader(resource_id);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker", "SendingScript", this,
                                     "script_url", current_sending_url_.spec());
-  running_sender_ = base::MakeUnique<Sender>(std::move(reader), this);
+  running_sender_ = std::make_unique<Sender>(std::move(reader), this);
   running_sender_->Start();
 }
 

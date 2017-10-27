@@ -38,7 +38,7 @@ void BackgroundFetchServiceImpl::Create(
     blink::mojom::BackgroundFetchServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::MakeStrongBinding(
-      base::MakeUnique<BackgroundFetchServiceImpl>(
+      std::make_unique<BackgroundFetchServiceImpl>(
           render_process_id, std::move(background_fetch_context)),
       std::move(request));
 }

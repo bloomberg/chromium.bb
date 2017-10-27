@@ -59,7 +59,7 @@ MusEmbeddedFrame::MusEmbeddedFrame(
       delegate_(delegate),
       window_id_(window_id) {
   if (!window_tree()) {
-    pending_state_ = base::MakeUnique<PendingState>();
+    pending_state_ = std::make_unique<PendingState>();
     pending_state_->token = token;
     return;
   }

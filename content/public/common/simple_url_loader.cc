@@ -393,7 +393,7 @@ class SaveToStringBodyHandler : public BodyHandler,
     DCHECK(!body_);
     DCHECK(!body_reader_);
 
-    body_ = base::MakeUnique<std::string>();
+    body_ = std::make_unique<std::string>();
     body_reader_ = std::make_unique<BodyReader>(this, max_body_size_);
     body_reader_->Start(std::move(body_data_pipe));
   }
@@ -772,7 +772,7 @@ void SimpleURLLoaderImpl::DownloadToString(
     BodyAsStringCallback body_as_string_callback,
     size_t max_body_size) {
   DCHECK_LE(max_body_size, kMaxBoundedStringDownloadSize);
-  body_handler_ = base::MakeUnique<SaveToStringBodyHandler>(
+  body_handler_ = std::make_unique<SaveToStringBodyHandler>(
       this, std::move(body_as_string_callback), max_body_size);
   Start(resource_request, url_loader_factory, annotation_tag);
 }
@@ -782,7 +782,7 @@ void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
     mojom::URLLoaderFactory* url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     BodyAsStringCallback body_as_string_callback) {
-  body_handler_ = base::MakeUnique<SaveToStringBodyHandler>(
+  body_handler_ = std::make_unique<SaveToStringBodyHandler>(
       this, std::move(body_as_string_callback),
       // int64_t because ResourceRequestCompletionStatus::decoded_body_length is
       // an int64_t, not a size_t.
@@ -980,7 +980,7 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
   }
 
   request_state_->response_info =
-      base::MakeUnique<ResourceResponseHead>(response_head);
+      std::make_unique<ResourceResponseHead>(response_head);
   if (!allow_http_error_results_ && response_code / 100 != 2)
     FinishWithResult(net::ERR_FAILED);
 }
@@ -1125,7 +1125,7 @@ void SimpleURLLoaderImpl::MaybeComplete() {
 }  // namespace
 
 std::unique_ptr<SimpleURLLoader> SimpleURLLoader::Create() {
-  return base::MakeUnique<SimpleURLLoaderImpl>();
+  return std::make_unique<SimpleURLLoaderImpl>();
 }
 
 SimpleURLLoader::~SimpleURLLoader() {}

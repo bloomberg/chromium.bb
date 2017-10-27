@@ -106,7 +106,7 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
 
   std::unique_ptr<media::VideoCaptureDevice> CreateDevice(
       const media::VideoCaptureDeviceDescriptor& device_descriptor) final {
-    return base::MakeUnique<WrappedDevice>(
+    return std::make_unique<WrappedDevice>(
         FakeVideoCaptureDeviceFactory::CreateDevice(device_descriptor), this);
   }
 
@@ -201,12 +201,12 @@ class VideoCaptureManagerTest : public testing::Test {
   void SetUp() override {
     listener_.reset(new MockMediaStreamProviderListener());
     auto video_capture_device_factory =
-        base::MakeUnique<WrappedDeviceFactory>();
+        std::make_unique<WrappedDeviceFactory>();
     video_capture_device_factory_ = video_capture_device_factory.get();
-    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+    auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
         std::move(video_capture_device_factory));
     auto video_capture_provider =
-        base::MakeUnique<InProcessVideoCaptureProvider>(
+        std::make_unique<InProcessVideoCaptureProvider>(
             std::move(video_capture_system),
             base::ThreadTaskRunnerHandle::Get(), kIgnoreLogMessageCB);
     vcm_ =

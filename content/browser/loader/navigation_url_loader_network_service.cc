@@ -491,7 +491,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       request_info->frame_tree_node_id);
 
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
-  auto new_request = base::MakeUnique<ResourceRequest>();
+  auto new_request = std::make_unique<ResourceRequest>();
 
   new_request->method = request_info->common_params.method;
   new_request->url = request_info->common_params.url;
@@ -542,7 +542,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   g_next_request_id--;
 
   DCHECK(!request_controller_);
-  request_controller_ = base::MakeUnique<URLLoaderRequestController>(
+  request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_handlers), std::move(new_request), resource_context,
       static_cast<StoragePartitionImpl*>(storage_partition)
           ->url_loader_factory_getter(),

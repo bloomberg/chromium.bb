@@ -377,7 +377,7 @@ bool DecodeIDBKey(StringPiece* slice, std::unique_ptr<IndexedDBKey>* value) {
 
   switch (type) {
     case kIndexedDBKeyNullTypeByte:
-      *value = base::MakeUnique<IndexedDBKey>();
+      *value = std::make_unique<IndexedDBKey>();
       return true;
 
     case kIndexedDBKeyArrayTypeByte: {
@@ -391,35 +391,35 @@ bool DecodeIDBKey(StringPiece* slice, std::unique_ptr<IndexedDBKey>* value) {
           return false;
         array.push_back(*key);
       }
-      *value = base::MakeUnique<IndexedDBKey>(array);
+      *value = std::make_unique<IndexedDBKey>(array);
       return true;
     }
     case kIndexedDBKeyBinaryTypeByte: {
       std::string binary;
       if (!DecodeBinary(slice, &binary))
         return false;
-      *value = base::MakeUnique<IndexedDBKey>(binary);
+      *value = std::make_unique<IndexedDBKey>(binary);
       return true;
     }
     case kIndexedDBKeyStringTypeByte: {
       base::string16 s;
       if (!DecodeStringWithLength(slice, &s))
         return false;
-      *value = base::MakeUnique<IndexedDBKey>(s);
+      *value = std::make_unique<IndexedDBKey>(s);
       return true;
     }
     case kIndexedDBKeyDateTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = base::MakeUnique<IndexedDBKey>(d, kWebIDBKeyTypeDate);
+      *value = std::make_unique<IndexedDBKey>(d, kWebIDBKeyTypeDate);
       return true;
     }
     case kIndexedDBKeyNumberTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = base::MakeUnique<IndexedDBKey>(d, kWebIDBKeyTypeNumber);
+      *value = std::make_unique<IndexedDBKey>(d, kWebIDBKeyTypeNumber);
       return true;
     }
   }

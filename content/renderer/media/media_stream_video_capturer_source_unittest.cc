@@ -105,7 +105,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         child_process_(new ChildProcess()),
         source_stopped_(false) {
-    auto delegate = base::MakeUnique<MockVideoCapturerSource>();
+    auto delegate = std::make_unique<MockVideoCapturerSource>();
     delegate_ = delegate.get();
     EXPECT_CALL(*delegate_, GetPreferredFormats());
     source_ = new MediaStreamVideoCapturerSource(

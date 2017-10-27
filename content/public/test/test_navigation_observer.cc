@@ -117,7 +117,7 @@ void TestNavigationObserver::WatchExistingWebContents() {
 
 void TestNavigationObserver::RegisterAsObserver(WebContents* web_contents) {
   web_contents_observers_.insert(
-      base::MakeUnique<TestWebContentsObserver>(this, web_contents));
+      std::make_unique<TestWebContentsObserver>(this, web_contents));
 }
 
 TestNavigationObserver::TestNavigationObserver(

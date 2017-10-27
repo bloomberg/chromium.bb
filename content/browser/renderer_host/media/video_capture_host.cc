@@ -81,7 +81,7 @@ void VideoCaptureHost::Create(int render_process_id,
                               mojom::VideoCaptureHostRequest request) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(base::MakeUnique<VideoCaptureHost>(
+  mojo::MakeStrongBinding(std::make_unique<VideoCaptureHost>(
                               render_process_id, media_stream_manager),
                           std::move(request));
 }

@@ -293,9 +293,9 @@ void SharedMemoryDataConsumerHandle::Writer::AddData(
     std::unique_ptr<RequestPeer::ThreadSafeReceivedData> data_to_pass;
     if (mode_ == kApplyBackpressure) {
       data_to_pass =
-          base::MakeUnique<DelegateThreadSafeReceivedData>(std::move(data));
+          std::make_unique<DelegateThreadSafeReceivedData>(std::move(data));
     } else {
-      data_to_pass = base::MakeUnique<FixedReceivedData>(data.get());
+      data_to_pass = std::make_unique<FixedReceivedData>(data.get());
     }
     context_->Push(std::move(data_to_pass));
   }

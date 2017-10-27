@@ -223,7 +223,7 @@ std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
   // devices so performing a Dual scan will find devices that the API is not
   // able to interact with. To avoid wasting power and confusing users with
   // devices they are not able to interact with, we only perform an LE Scan.
-  auto discovery_filter = base::MakeUnique<device::BluetoothDiscoveryFilter>(
+  auto discovery_filter = std::make_unique<device::BluetoothDiscoveryFilter>(
       device::BLUETOOTH_TRANSPORT_LE);
   for (const BluetoothUUID& service : services) {
     discovery_filter->AddUUID(service);

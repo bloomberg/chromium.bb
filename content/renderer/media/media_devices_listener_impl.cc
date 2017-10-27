@@ -18,7 +18,7 @@ void MediaDevicesListenerImpl::Create(
     int render_frame_id,
     ::mojom::MediaDevicesListenerRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<MediaDevicesListenerImpl>(render_frame_id),
+      std::make_unique<MediaDevicesListenerImpl>(render_frame_id),
       std::move(request));
 }
 

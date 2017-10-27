@@ -93,10 +93,10 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
         element_readers.push_back(
-            base::MakeUnique<BytesElementReader>(body, element));
+            std::make_unique<BytesElementReader>(body, element));
         break;
       case ResourceRequestBody::Element::TYPE_FILE:
-        element_readers.push_back(base::MakeUnique<FileElementReader>(
+        element_readers.push_back(std::make_unique<FileElementReader>(
             body, file_task_runner, element));
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
@@ -104,7 +104,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         // supplied a FileSystemContext.
         DCHECK(file_system_context);
         element_readers.push_back(
-            base::MakeUnique<content::UploadFileSystemFileElementReader>(
+            std::make_unique<content::UploadFileSystemFileElementReader>(
                 file_system_context, element.filesystem_url(), element.offset(),
                 element.length(), element.expected_modification_time()));
         break;
@@ -114,7 +114,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         std::unique_ptr<storage::BlobDataHandle> handle =
             blob_context->GetBlobDataFromUUID(element.blob_uuid());
         element_readers.push_back(
-            base::MakeUnique<storage::UploadBlobElementReader>(
+            std::make_unique<storage::UploadBlobElementReader>(
                 std::move(handle), file_system_context));
         break;
       }
@@ -127,7 +127,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     }
   }
 
-  return base::MakeUnique<net::ElementsUploadDataStream>(
+  return std::make_unique<net::ElementsUploadDataStream>(
       std::move(element_readers), body->identifier());
 }
 

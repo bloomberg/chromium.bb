@@ -140,7 +140,7 @@ class InteractiveRenderWidget : public RenderWidget {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
 
     mojom::WidgetInputHandlerHostPtr widget_input_handler;
-    mock_input_handler_host_ = base::MakeUnique<MockWidgetInputHandlerHost>(
+    mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>(
         mojo::MakeRequest(&widget_input_handler));
 
     widget_input_handler_manager_->SetWidgetInputHandlerHost(

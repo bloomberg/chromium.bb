@@ -86,7 +86,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
 void CreateRenderWidgetWindowTreeClientFactory(
     ServiceManagerConnection* connection) {
   connection->AddConnectionFilter(
-      base::MakeUnique<RenderWidgetWindowTreeClientFactoryImpl>());
+      std::make_unique<RenderWidgetWindowTreeClientFactoryImpl>());
 }
 
 }  // namespace content

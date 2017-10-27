@@ -215,7 +215,7 @@ void AsyncResourceHandler::OnWillStart(
 
   if (GetRequestInfo()->is_upload_progress_enabled() &&
       request()->has_upload()) {
-    upload_progress_tracker_ = base::MakeUnique<UploadProgressTracker>(
+    upload_progress_tracker_ = std::make_unique<UploadProgressTracker>(
         FROM_HERE,
         base::BindRepeating(&AsyncResourceHandler::SendUploadProgress,
                             base::Unretained(this)),

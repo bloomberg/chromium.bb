@@ -322,7 +322,7 @@ void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   int render_frame_id;
   if (GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
     request->SetUserData(URLRequestUserData::kUserDataKey,
-                         base::MakeUnique<URLRequestUserData>(render_process_id,
+                         std::make_unique<URLRequestUserData>(render_process_id,
                                                               render_frame_id));
   }
 }

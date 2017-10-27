@@ -228,7 +228,7 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
   }
 
   void LoadIndex(CacheStorageIndexLoadCallback callback) override {
-    std::move(callback).Run(base::MakeUnique<CacheStorageIndex>());
+    std::move(callback).Run(std::make_unique<CacheStorageIndex>());
   }
 
   void NotifyCacheCreated(
@@ -420,7 +420,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     std::unique_ptr<std::set<std::string>> cache_dirs(
         new std::set<std::string>);
 
-    auto index = base::MakeUnique<CacheStorageIndex>();
+    auto index = std::make_unique<CacheStorageIndex>();
     for (int i = 0, max = protobuf_index.cache_size(); i < max; ++i) {
       const proto::CacheStorageIndex::Cache& cache = protobuf_index.cache(i);
       DCHECK(cache.has_cache_dir());
@@ -1036,7 +1036,7 @@ void CacheStorage::MatchAllCachesImpl(
 
     CacheStorageCache* cache_ptr = cache_handle->value();
     cache_ptr->Match(
-        base::MakeUnique<ServiceWorkerFetchRequest>(*request), match_params,
+        std::make_unique<ServiceWorkerFetchRequest>(*request), match_params,
         base::BindOnce(&CacheStorage::MatchAllCachesDidMatch,
                        weak_factory_.GetWeakPtr(),
                        base::Passed(std::move(cache_handle)),

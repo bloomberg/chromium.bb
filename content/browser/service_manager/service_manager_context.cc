@@ -266,8 +266,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::unique_ptr<BuiltinManifestProvider> manifest_provider,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
     manifest_provider_ = std::move(manifest_provider);
-    service_manager_ = base::MakeUnique<service_manager::ServiceManager>(
-        base::MakeUnique<NullServiceProcessLauncherFactory>(), nullptr,
+    service_manager_ = std::make_unique<service_manager::ServiceManager>(
+        std::make_unique<NullServiceProcessLauncherFactory>(), nullptr,
         manifest_provider_.get());
 
     service_manager::mojom::ServicePtr packaged_services_service;
@@ -317,7 +317,7 @@ ServiceManagerContext::ServiceManagerContext() {
         service_manager::GetServiceRequestFromCommandLine(invitation.get());
   } else {
     std::unique_ptr<BuiltinManifestProvider> manifest_provider =
-        base::MakeUnique<BuiltinManifestProvider>();
+        std::make_unique<BuiltinManifestProvider>();
 
     static const struct ManifestInfo {
       const char* name;

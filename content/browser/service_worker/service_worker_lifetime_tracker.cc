@@ -12,7 +12,7 @@
 namespace content {
 
 ServiceWorkerLifetimeTracker::ServiceWorkerLifetimeTracker()
-    : ServiceWorkerLifetimeTracker(base::MakeUnique<base::DefaultTickClock>()) {
+    : ServiceWorkerLifetimeTracker(std::make_unique<base::DefaultTickClock>()) {
 }
 
 ServiceWorkerLifetimeTracker::ServiceWorkerLifetimeTracker(

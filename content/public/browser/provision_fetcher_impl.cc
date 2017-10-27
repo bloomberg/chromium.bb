@@ -16,7 +16,7 @@ void ProvisionFetcherImpl::Create(
     net::URLRequestContextGetter* context_getter,
     media::mojom::ProvisionFetcherRequest request) {
   DCHECK(context_getter);
-  mojo::MakeStrongBinding(base::MakeUnique<ProvisionFetcherImpl>(
+  mojo::MakeStrongBinding(std::make_unique<ProvisionFetcherImpl>(
                               CreateProvisionFetcher(context_getter)),
                           std::move(request));
 }

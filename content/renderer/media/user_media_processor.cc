@@ -351,7 +351,7 @@ void UserMediaProcessor::ProcessRequest(
   DCHECK(!request_completed_cb_);
   DCHECK(!current_request_info_);
   request_completed_cb_ = std::move(callback);
-  current_request_info_ = base::MakeUnique<RequestInfo>(std::move(request));
+  current_request_info_ = std::make_unique<RequestInfo>(std::move(request));
   // TODO(guidou): Set up audio and video in parallel.
   if (current_request_info_->web_request().Audio()) {
     SetupAudioInput();

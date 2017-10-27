@@ -290,7 +290,7 @@ mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(FrameTreeNode* node) {
   int ftn_id = node->frame_tree_node_id();
   if (g_web_ui_url_loader_factories.Get()[ftn_id].get() == nullptr)
     g_web_ui_url_loader_factories.Get()[ftn_id] =
-        base::MakeUnique<WebUIURLLoaderFactory>(node);
+        std::make_unique<WebUIURLLoaderFactory>(node);
   return g_web_ui_url_loader_factories.Get()[ftn_id]->CreateBinding();
 }
 

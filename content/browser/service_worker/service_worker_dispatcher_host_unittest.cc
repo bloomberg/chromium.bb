@@ -81,7 +81,7 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           [](ServiceWorkerContextWrapper* wrapper) {
-            return base::MakeUnique<ServiceWorkerNavigationHandleCore>(nullptr,
+            return std::make_unique<ServiceWorkerNavigationHandleCore>(nullptr,
                                                                        wrapper);
           },
           base::RetainedRef(context_wrapper)),
@@ -150,7 +150,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    Initialize(base::MakeUnique<EmbeddedWorkerTestHelper>(base::FilePath()));
+    Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
   }
 
   void TearDown() override {

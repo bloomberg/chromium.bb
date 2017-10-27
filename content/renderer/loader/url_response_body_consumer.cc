@@ -158,7 +158,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
       request_info->site_isolation_metadata.reset();
     }
 
-    request_info->peer->OnReceivedData(base::MakeUnique<ReceivedData>(
+    request_info->peer->OnReceivedData(std::make_unique<ReceivedData>(
         static_cast<const char*>(buffer), available, this));
   }
 }

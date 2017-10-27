@@ -95,7 +95,7 @@ class RTCCertificateGeneratorRequest
         base::BindOnce(
             &RTCCertificateGeneratorRequest::DoCallbackOnMainThread, this,
             base::Passed(std::move(observer)),
-            base::Passed(base::MakeUnique<RTCCertificate>(certificate))));
+            base::Passed(std::make_unique<RTCCertificate>(certificate))));
   }
 
   void DoCallbackOnMainThread(
@@ -168,7 +168,7 @@ std::unique_ptr<blink::WebRTCCertificate> RTCCertificateGenerator::FromPEM(
           pem_private_key.Utf8(), pem_certificate.Utf8()));
   if (!certificate)
     return nullptr;
-  return base::MakeUnique<RTCCertificate>(certificate);
+  return std::make_unique<RTCCertificate>(certificate);
 }
 
 }  // namespace content

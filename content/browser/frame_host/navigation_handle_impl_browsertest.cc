@@ -1622,7 +1622,7 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   scoped_refptr<SiteInstance> site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
 
-  auto installer = base::MakeUnique<TestNavigationThrottleInstaller>(
+  auto installer = std::make_unique<TestNavigationThrottleInstaller>(
       shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
       NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
       NavigationThrottle::PROCEED);
@@ -1691,7 +1691,7 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
   }
 
-  installer = base::MakeUnique<TestNavigationThrottleInstaller>(
+  installer = std::make_unique<TestNavigationThrottleInstaller>(
       shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
       NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
       NavigationThrottle::PROCEED);

@@ -257,7 +257,7 @@ TestDownloadHttpResponse::Create(
       request.relative_url.c_str()));
   auto iter = g_parameters_map.Get().find(url);
   if (iter != g_parameters_map.Get().end()) {
-    return base::MakeUnique<TestDownloadHttpResponse>(
+    return std::make_unique<TestDownloadHttpResponse>(
         request, std::move(iter->second), on_response_sent_callback);
   }
   return nullptr;
@@ -317,7 +317,7 @@ std::string TestDownloadHttpResponse::GetResponseBody() {
 void TestDownloadHttpResponse::SendResponse(
     const net::test_server::SendBytesCallback& send,
     const net::test_server::SendCompleteCallback& done) {
-  auto completed_request = base::MakeUnique<CompletedRequest>(request_);
+  auto completed_request = std::make_unique<CompletedRequest>(request_);
 
   bool should_abort_immediately = !parameters_.injected_errors.empty() &&
                                   parameters_.injected_errors.front() == -1 &&

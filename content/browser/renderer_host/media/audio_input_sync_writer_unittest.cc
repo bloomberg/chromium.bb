@@ -125,12 +125,12 @@ class AudioInputSyncWriterTest : public testing::Test {
     const uint32_t data_size =
         media::ComputeAudioInputBufferSize(audio_params, kSegments);
 
-    auto shared_memory = base::MakeUnique<base::SharedMemory>();
+    auto shared_memory = std::make_unique<base::SharedMemory>();
     EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(data_size));
 
-    auto socket = base::MakeUnique<MockCancelableSyncSocket>(kSegments);
+    auto socket = std::make_unique<MockCancelableSyncSocket>(kSegments);
     socket_ = socket.get();
-    writer_ = base::MakeUnique<AudioInputSyncWriterUnderTest>(
+    writer_ = std::make_unique<AudioInputSyncWriterUnderTest>(
         std::move(shared_memory), std::move(socket), kSegments, audio_params);
     audio_bus_ = AudioBus::Create(audio_params);
   }

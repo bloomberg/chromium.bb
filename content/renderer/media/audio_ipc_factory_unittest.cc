@@ -28,7 +28,7 @@ namespace {
 const int kRenderFrameId = 0;
 
 std::unique_ptr<base::Thread> MakeIOThread() {
-  auto io_thread = base::MakeUnique<base::Thread>("test IO thread");
+  auto io_thread = std::make_unique<base::Thread>("test IO thread");
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   CHECK(io_thread->StartWithOptions(thread_options));
   return io_thread;

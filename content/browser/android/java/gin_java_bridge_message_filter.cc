@@ -96,7 +96,7 @@ scoped_refptr<GinJavaBridgeMessageFilter> GinJavaBridgeMessageFilter::FromHost(
     rph->AddFilter(filter.get());
     rph->SetUserData(
         kGinJavaBridgeMessageFilterKey,
-        base::MakeUnique<base::UserDataAdapter<GinJavaBridgeMessageFilter>>(
+        std::make_unique<base::UserDataAdapter<GinJavaBridgeMessageFilter>>(
             filter.get()));
   }
   return filter;
@@ -157,7 +157,7 @@ void GinJavaBridgeMessageFilter::OnInvokeMethod(
     host->OnInvokeMethod(current_routing_id_, object_id, method_name, arguments,
                          wrapped_result, error_code);
   } else {
-    wrapped_result->Append(base::MakeUnique<base::Value>());
+    wrapped_result->Append(std::make_unique<base::Value>());
     *error_code = kGinJavaBridgeRenderFrameDeleted;
   }
 }

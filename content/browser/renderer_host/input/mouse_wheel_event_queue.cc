@@ -68,7 +68,7 @@ void MouseWheelEventQueue::QueueEvent(
     }
   }
 
-  wheel_queue_.push_back(base::MakeUnique<QueuedWebMouseWheelEvent>(event));
+  wheel_queue_.push_back(std::make_unique<QueuedWebMouseWheelEvent>(event));
   TryForwardNextEventToRenderer();
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize", wheel_queue_.size());
 }

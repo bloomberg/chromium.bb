@@ -475,7 +475,7 @@ class UserMediaClientImplTest : public ::testing::Test {
         dependency_factory_.get(), base::WrapUnique(ms_dispatcher_),
         std::move(user_media_processor_host_proxy), &state_),
 
-    user_media_client_impl_ = base::MakeUnique<UserMediaClientImplUnderTest>(
+    user_media_client_impl_ = std::make_unique<UserMediaClientImplUnderTest>(
         user_media_processor_, &state_);
     ::mojom::MediaDevicesDispatcherHostPtr user_media_client_host_proxy;
     binding_user_media_client_.Bind(

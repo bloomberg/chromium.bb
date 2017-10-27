@@ -304,7 +304,7 @@ DOMStorageArea* DOMStorageArea::ShallowCopy(
   DCHECK_NE(kLocalStorageNamespaceId, destination_namespace_id);
 
   auto original_persistent_namespace_ids =
-      base::MakeUnique<std::vector<std::string>>();
+      std::make_unique<std::vector<std::string>>();
   original_persistent_namespace_ids->push_back(persistent_namespace_id_);
   if (original_persistent_namespace_ids_) {
     original_persistent_namespace_ids->insert(

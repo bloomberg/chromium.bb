@@ -201,7 +201,7 @@ class CompressedTraceDataEndpoint
       int bytes = kChunkSize - stream_->avail_out;
       if (bytes) {
         std::string compressed(buffer, bytes);
-        endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>(compressed));
+        endpoint_->ReceiveTraceChunk(std::make_unique<std::string>(compressed));
       }
     } while (stream_->avail_out == 0);
   }

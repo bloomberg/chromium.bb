@@ -26,7 +26,7 @@ InputInjectorImpl::~InputInjectorImpl() {}
 
 void InputInjectorImpl::Create(base::WeakPtr<RenderFrameHostImpl> frame_host,
                                mojom::InputInjectorRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<InputInjectorImpl>(frame_host),
+  mojo::MakeStrongBinding(std::make_unique<InputInjectorImpl>(frame_host),
                           std::move(request));
 }
 

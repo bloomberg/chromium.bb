@@ -81,7 +81,7 @@ static void StartOnUIThread(
 
   download_manager->StartDownload(
       std::move(info),
-      base::MakeUnique<DownloadManager::InputStream>(std::move(stream)),
+      std::make_unique<DownloadManager::InputStream>(std::move(stream)),
       started_cb);
 }
 

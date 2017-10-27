@@ -1376,7 +1376,7 @@ void RenderFrameImpl::Initialize() {
   new PepperBrowserConnection(this);
 #endif
   shared_worker_repository_ =
-      base::MakeUnique<SharedWorkerRepository>(GetInterfaceProvider());
+      std::make_unique<SharedWorkerRepository>(GetInterfaceProvider());
   GetWebFrame()->SetSharedWorkerRepositoryClient(
       shared_worker_repository_.get());
 
@@ -1416,7 +1416,7 @@ void RenderFrameImpl::Initialize() {
 
 void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
   DCHECK(!blame_context_);
-  blame_context_ = base::MakeUnique<FrameBlameContext>(this, parent_frame);
+  blame_context_ = std::make_unique<FrameBlameContext>(this, parent_frame);
   blame_context_->Initialize();
 }
 
@@ -2241,10 +2241,10 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
         std::unique_ptr<base::Value> result_value(
             converter.FromV8Value(value, context));
         list.Append(result_value ? std::move(result_value)
-                                 : base::MakeUnique<base::Value>());
+                                 : std::make_unique<base::Value>());
       }
     } else {
-      list.Set(0, base::MakeUnique<base::Value>());
+      list.Set(0, std::make_unique<base::Value>());
     }
     render_frame_impl_.get()->Send(
         new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id_, list));
@@ -2269,9 +2269,9 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
       std::unique_ptr<base::Value> result_value(
           converter.FromV8Value(result, context));
       list.Set(0, result_value ? std::move(result_value)
-                               : base::MakeUnique<base::Value>());
+                               : std::make_unique<base::Value>());
     } else {
-      list.Set(0, base::MakeUnique<base::Value>());
+      list.Set(0, std::make_unique<base::Value>());
     }
     Send(new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id, list));
   }
@@ -2555,7 +2555,7 @@ bool RenderFrameImpl::ScheduleFileChooser(
   }
 
   file_chooser_completions_.push_back(
-      base::MakeUnique<PendingFileChooser>(params, completion));
+      std::make_unique<PendingFileChooser>(params, completion));
   if (file_chooser_completions_.size() == 1) {
     // Actually show the browse dialog when this is the first request.
     Send(new FrameHostMsg_RunFileChooser(routing_id_, params));
@@ -3124,7 +3124,7 @@ RenderFrameImpl::CreateApplicationCacheHost(
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
 
-  return base::MakeUnique<RendererWebApplicationCacheHostImpl>(
+  return std::make_unique<RendererWebApplicationCacheHostImpl>(
       RenderViewImpl::FromWebView(frame_->View()), client,
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy(),
       navigation_state->request_params().appcache_host_id, routing_id_);
@@ -3168,7 +3168,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       GetDefaultURLLoaderFactoryGetter();
   DCHECK(url_loader_factory_getter);
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
-      base::MakeUnique<WorkerFetchContextImpl>(
+      std::make_unique<WorkerFetchContextImpl>(
           std::move(service_worker_client_request),
           std::move(container_host_ptr_info),
           url_loader_factory_getter->GetClonedInfo());
@@ -3235,7 +3235,7 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
     // The context can be null when the frame is sandboxed.
     return nullptr;
   }
-  return base::MakeUnique<WebServiceWorkerProviderImpl>(
+  return std::make_unique<WebServiceWorkerProviderImpl>(
       ChildThreadImpl::current()->thread_safe_sender(), provider->context());
 }
 
@@ -5083,7 +5083,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   }
 
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
-      base::MakeUnique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
+      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
   params->http_status_code = response.HttpStatusCode();
   params->url_is_unreachable = document_loader->HasUnreachableURL();
   params->method = "GET";
@@ -6482,7 +6482,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
-      base::MakeUnique<MediaStreamDispatcher>(this),
+      std::make_unique<MediaStreamDispatcher>(this),
       render_thread->GetWorkerTaskRunner());
   registry_.AddInterface(
       base::Bind(&MediaDevicesListenerImpl::Create, GetRoutingID()));

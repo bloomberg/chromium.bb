@@ -41,7 +41,7 @@ void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
       &OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface,
       base::Unretained(this), frame_sink_id);
 
-  canvas_map_[frame_sink_id] = base::MakeUnique<OffscreenCanvasSurfaceImpl>(
+  canvas_map_[frame_sink_id] = std::make_unique<OffscreenCanvasSurfaceImpl>(
       host_frame_sink_manager_, parent_frame_sink_id, frame_sink_id,
       std::move(client), std::move(request), std::move(destroy_callback));
 }

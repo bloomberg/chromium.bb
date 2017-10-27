@@ -41,7 +41,7 @@ AudioRepetitionDetector::AudioRepetitionDetector(
 
   max_look_back_ms_ = temp.back();
   for (int look_back : temp)
-    states_.push_back(base::MakeUnique<State>(look_back));
+    states_.push_back(std::make_unique<State>(look_back));
 }
 
 AudioRepetitionDetector::~AudioRepetitionDetector() {

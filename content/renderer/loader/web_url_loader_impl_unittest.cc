@@ -346,7 +346,7 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_EQ("", client()->received_data());
     auto size = strlen(kTestData);
     peer()->OnReceivedData(
-        base::MakeUnique<FixedReceivedData>(kTestData, size));
+        std::make_unique<FixedReceivedData>(kTestData, size));
     EXPECT_EQ(kTestData, client()->received_data());
   }
 
@@ -382,7 +382,7 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoReceiveDataFtp() {
     auto size = strlen(kFtpDirListing);
     peer()->OnReceivedData(
-        base::MakeUnique<FixedReceivedData>(kFtpDirListing, size));
+        std::make_unique<FixedReceivedData>(kFtpDirListing, size));
     // The FTP delegate should modify the data the client sees.
     EXPECT_NE(kFtpDirListing, client()->received_data());
   }

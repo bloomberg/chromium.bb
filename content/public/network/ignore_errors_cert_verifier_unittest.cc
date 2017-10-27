@@ -165,7 +165,7 @@ class IgnoreCertificateErrorsSPKIListFlagTest
     command_line.AppendSwitchASCII(switches::kIgnoreCertificateErrorsSPKIList,
                                    base::JoinString(MakeWhitelist(), ","));
 
-    auto mock_verifier = base::MakeUnique<MockCertVerifier>();
+    auto mock_verifier = std::make_unique<MockCertVerifier>();
     mock_verifier->set_default_result(ERR_CERT_INVALID);
     verifier_ = IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
         command_line, kTestUserDataDirSwitch, std::move(mock_verifier));

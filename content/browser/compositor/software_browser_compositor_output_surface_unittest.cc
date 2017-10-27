@@ -65,7 +65,7 @@ class FakeSoftwareOutputDevice : public viz::SoftwareOutputDevice {
 class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
  public:
   SoftwareBrowserCompositorOutputSurfaceTest()
-      : begin_frame_source_(base::MakeUnique<viz::DelayBasedTimeSource>(
+      : begin_frame_source_(std::make_unique<viz::DelayBasedTimeSource>(
             message_loop_.task_runner().get())) {}
   ~SoftwareBrowserCompositorOutputSurfaceTest() override = default;
 
@@ -118,7 +118,7 @@ void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
 std::unique_ptr<content::BrowserCompositorOutputSurface>
 SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> device) {
-  return base::MakeUnique<content::SoftwareBrowserCompositorOutputSurface>(
+  return std::make_unique<content::SoftwareBrowserCompositorOutputSurface>(
       std::move(device),
       base::Bind(
           &SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters,

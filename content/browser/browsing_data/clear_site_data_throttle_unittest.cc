@@ -234,7 +234,7 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
     std::unique_ptr<net::URLRequest> request(context.CreateRequest(
         url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
     TestThrottle throttle(request.get(),
-                          base::MakeUnique<ConsoleMessagesDelegate>());
+                          std::make_unique<ConsoleMessagesDelegate>());
     MockResourceThrottleDelegate delegate;
     throttle.set_delegate_for_testing(&delegate);
     throttle.SetResponseHeaders(std::string(kClearSiteDataHeaderPrefix) +
@@ -473,7 +473,7 @@ TEST_F(ClearSiteDataThrottleTest, DeferAndResume) {
           context.CreateRequest(GURL(test_origin.origin), net::DEFAULT_PRIORITY,
                                 nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
       TestThrottle throttle(request.get(),
-                            base::MakeUnique<ConsoleMessagesDelegate>());
+                            std::make_unique<ConsoleMessagesDelegate>());
       throttle.SetResponseHeaders(test_case.response_headers);
 
       MockResourceThrottleDelegate delegate;
@@ -586,9 +586,9 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
 
     std::string output_buffer;
     std::unique_ptr<RedirectableTestThrottle> throttle =
-        base::MakeUnique<RedirectableTestThrottle>(
+        std::make_unique<RedirectableTestThrottle>(
             request.get(),
-            base::MakeUnique<StringConsoleMessagesDelegate>(&output_buffer));
+            std::make_unique<StringConsoleMessagesDelegate>(&output_buffer));
 
     MockResourceThrottleDelegate delegate;
     throttle->set_delegate_for_testing(&delegate);

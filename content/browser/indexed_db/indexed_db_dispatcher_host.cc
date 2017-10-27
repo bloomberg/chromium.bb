@@ -359,7 +359,7 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::OpenOnIDBThread(
   // created) if this origin is already over quota.
   callbacks->SetConnectionOpenStartTime(begin_time);
   std::unique_ptr<IndexedDBPendingConnection> connection =
-      base::MakeUnique<IndexedDBPendingConnection>(
+      std::make_unique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, transaction_id,
           version);
   DCHECK(request_context_getter_);

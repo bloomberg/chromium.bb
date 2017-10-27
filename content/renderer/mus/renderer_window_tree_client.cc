@@ -133,9 +133,9 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.local_surface_id_provider =
-      base::MakeUnique<viz::DefaultLocalSurfaceIdProvider>();
+      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
-  auto frame_sink = base::MakeUnique<viz::ClientLayerTreeFrameSink>(
+  auto frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), nullptr /* worker_context_provider */,
       &params);
   tree_->AttachCompositorFrameSink(root_window_id_, std::move(sink_request),

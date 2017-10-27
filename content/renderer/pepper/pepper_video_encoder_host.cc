@@ -404,7 +404,7 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
       break;
     }
 
-    shm_buffers_.push_back(base::MakeUnique<ShmBuffer>(i, std::move(shm)));
+    shm_buffers_.push_back(std::make_unique<ShmBuffer>(i, std::move(shm)));
   }
 
   // Feed buffers to the encoder.

@@ -166,7 +166,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
           credentials_mode_, redirect_mode_, integrity_, resource_type_,
           request_context_type_, frame_type_, body_,
           ServiceWorkerFetchType::FETCH, base::nullopt, this));
-  url_job_ = base::MakeUnique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
+  url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
 
   resource_context_ = resource_context;
 
@@ -219,8 +219,8 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  url_job_ = base::MakeUnique<ServiceWorkerURLJobWrapper>(
-      base::MakeUnique<ServiceWorkerURLLoaderJob>(
+  url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
+      std::make_unique<ServiceWorkerURLLoaderJob>(
           std::move(callback), this, resource_request,
           base::WrapRefCounted(context_->loader_factory_getter()),
           blob_storage_context_));

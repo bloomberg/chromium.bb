@@ -89,7 +89,7 @@ bool ImageDownloaderBase::FetchImage(const GURL& image_url,
 
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(
-      base::MakeUnique<MultiResolutionImageResourceFetcher>(
+      std::make_unique<MultiResolutionImageResourceFetcher>(
           image_url, frame, 0,
           is_favicon ? WebURLRequest::kRequestContextFavicon
                      : WebURLRequest::kRequestContextImage,

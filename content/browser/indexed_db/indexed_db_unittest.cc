@@ -181,14 +181,14 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                 idb_context->GetFilePathForTesting(origin);
 
             factory->Open(base::ASCIIToUTF16("opendb"),
-                          base::MakeUnique<IndexedDBPendingConnection>(
+                          std::make_unique<IndexedDBPendingConnection>(
                               open_callbacks, open_db_callbacks,
                               child_process_id, host_transaction_id, version),
                           request_context, origin, idb_context->data_path());
             EXPECT_TRUE(base::DirectoryExists(test_path));
 
             factory->Open(base::ASCIIToUTF16("closeddb"),
-                          base::MakeUnique<IndexedDBPendingConnection>(
+                          std::make_unique<IndexedDBPendingConnection>(
                               closed_callbacks, closed_db_callbacks,
                               child_process_id, host_transaction_id, version),
                           request_context, origin, idb_context->data_path());
@@ -263,7 +263,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
             const scoped_refptr<net::URLRequestContextGetter> request_context;
 
             std::unique_ptr<IndexedDBPendingConnection> connection(
-                base::MakeUnique<IndexedDBPendingConnection>(
+                std::make_unique<IndexedDBPendingConnection>(
                     callbacks, db_callbacks, child_process_id, transaction_id,
                     IndexedDBDatabaseMetadata::DEFAULT_VERSION));
             factory->Open(base::ASCIIToUTF16("db"), std::move(connection),

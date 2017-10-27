@@ -104,8 +104,8 @@ int PreresolveUrl(net::URLRequestContextGetter* getter,
   if (!request_context)
     return net::ERR_CONTEXT_SHUT_DOWN;
 
-  auto request_holder = base::MakeUnique<RequestHolder>();
-  auto addresses = base::MakeUnique<net::AddressList>();
+  auto request_holder = std::make_unique<RequestHolder>();
+  auto addresses = std::make_unique<net::AddressList>();
 
   // Save raw pointers before the unique_ptr is invalidated by base::Passed.
   net::AddressList* raw_addresses = addresses.get();

@@ -19,7 +19,7 @@ MimeRegistryImpl::~MimeRegistryImpl() = default;
 // static
 void MimeRegistryImpl::Create(
     blink::mojom::MimeRegistryRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<MimeRegistryImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<MimeRegistryImpl>(),
                           std::move(request));
 }
 

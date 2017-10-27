@@ -403,7 +403,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
     base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
 
     auto put_callbacks =
-        base::MakeUnique<StrictMock<MockMojoIndexedDBCallbacks>>();
+        std::make_unique<StrictMock<MockMojoIndexedDBCallbacks>>();
 
     EXPECT_CALL(*put_callbacks,
                 Error(blink::kWebIDBDatabaseExceptionUnknownError, _))
@@ -1043,7 +1043,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
     base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
 
     auto put_callbacks =
-        base::MakeUnique<StrictMock<MockMojoIndexedDBCallbacks>>();
+        std::make_unique<StrictMock<MockMojoIndexedDBCallbacks>>();
 
     EXPECT_CALL(*put_callbacks, SuccessKey(_))
         .Times(1)
@@ -1109,7 +1109,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
     base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
 
     auto clear_callbacks =
-        base::MakeUnique<StrictMock<MockMojoIndexedDBCallbacks>>();
+        std::make_unique<StrictMock<MockMojoIndexedDBCallbacks>>();
 
     EXPECT_CALL(*clear_callbacks, Success())
         .Times(1)

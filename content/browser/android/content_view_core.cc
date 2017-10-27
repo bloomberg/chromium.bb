@@ -269,7 +269,7 @@ void ContentViewCore::InitWebContents() {
       ->SetContentViewCore(this);
   DCHECK(!web_contents_->GetUserData(kContentViewUserDataKey));
   web_contents_->SetUserData(kContentViewUserDataKey,
-                             base::MakeUnique<ContentViewUserData>(this));
+                             std::make_unique<ContentViewUserData>(this));
 }
 
 void ContentViewCore::RenderViewReady() {

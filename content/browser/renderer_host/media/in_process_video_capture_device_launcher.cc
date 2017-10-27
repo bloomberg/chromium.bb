@@ -37,7 +37,7 @@ namespace {
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::Callback<void(const std::string&)> send_log_message_cb) {
-  return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(
+  return std::make_unique<content::VideoCaptureGpuJpegDecoder>(
       std::move(decode_done_cb), std::move(send_log_message_cb));
 }
 
@@ -157,11 +157,11 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
 
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
       new media::VideoCaptureBufferPoolImpl(
-          base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+          std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
           buffer_pool_max_buffer_count);
 
-  return base::MakeUnique<media::VideoCaptureDeviceClient>(
-      base::MakeUnique<media::VideoFrameReceiverOnTaskRunner>(
+  return std::make_unique<media::VideoCaptureDeviceClient>(
+      std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
           receiver, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       std::move(buffer_pool),
       base::Bind(&CreateGpuJpegDecoder,
@@ -193,7 +193,7 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
     }
   }
 
-  auto launched_device = base::MakeUnique<InProcessLaunchedVideoCaptureDevice>(
+  auto launched_device = std::make_unique<InProcessLaunchedVideoCaptureDevice>(
       std::move(device), device_task_runner_);
 
   switch (state_copy) {
@@ -284,7 +284,7 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
 #endif
   } else {
 #if defined(OS_ANDROID)
-    video_capture_device = base::MakeUnique<ScreenCaptureDeviceAndroid>();
+    video_capture_device = std::make_unique<ScreenCaptureDeviceAndroid>();
 #else
 #if defined(USE_AURA)
     video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);

@@ -103,7 +103,7 @@ void DetachableResourceHandler::Detach() {
     // TODO(mmenke): Get rid of NullResourceController and do something more
     // reasonable.
     next_handler_->OnResponseCompleted(
-        status, base::MakeUnique<NullResourceController>(&was_resumed));
+        status, std::make_unique<NullResourceController>(&was_resumed));
     DCHECK(was_resumed);
     // If |next_handler_| were to defer its shutdown in OnResponseCompleted,
     // this would destroy it anyway. Fortunately, AsyncResourceHandler never
@@ -166,7 +166,7 @@ void DetachableResourceHandler::OnRequestRedirected(
 
   HoldController(std::move(controller));
   next_handler_->OnRequestRedirected(redirect_info, response,
-                                     base::MakeUnique<Controller>(this));
+                                     std::make_unique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnResponseStarted(
@@ -181,7 +181,7 @@ void DetachableResourceHandler::OnResponseStarted(
 
   HoldController(std::move(controller));
   next_handler_->OnResponseStarted(response,
-                                   base::MakeUnique<Controller>(this));
+                                   std::make_unique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnWillStart(
@@ -195,7 +195,7 @@ void DetachableResourceHandler::OnWillStart(
   }
 
   HoldController(std::move(controller));
-  next_handler_->OnWillStart(url, base::MakeUnique<Controller>(this));
+  next_handler_->OnWillStart(url, std::make_unique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnWillRead(
@@ -215,7 +215,7 @@ void DetachableResourceHandler::OnWillRead(
   parent_read_buffer_size_ = buf_size;
 
   HoldController(std::move(controller));
-  next_handler_->OnWillRead(buf, buf_size, base::MakeUnique<Controller>(this));
+  next_handler_->OnWillRead(buf, buf_size, std::make_unique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnReadCompleted(
@@ -230,7 +230,7 @@ void DetachableResourceHandler::OnReadCompleted(
 
   HoldController(std::move(controller));
   next_handler_->OnReadCompleted(bytes_read,
-                                 base::MakeUnique<Controller>(this));
+                                 std::make_unique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnResponseCompleted(
@@ -252,7 +252,7 @@ void DetachableResourceHandler::OnResponseCompleted(
 
   HoldController(std::move(controller));
   next_handler_->OnResponseCompleted(status,
-                                     base::MakeUnique<Controller>(this));
+                                     std::make_unique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnDataDownloaded(int bytes_downloaded) {

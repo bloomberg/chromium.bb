@@ -125,14 +125,14 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       case ResponseMode::kStream:
         response_callback->OnResponseStream(
             ServiceWorkerResponse(
-                base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+                std::make_unique<std::vector<GURL>>(), 200, "OK",
                 network::mojom::FetchResponseType::kDefault,
-                base::MakeUnique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
                 0 /* blob_size */, nullptr /* blob */,
                 blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
                 false /* response_is_in_cache_storage */,
                 std::string() /* response_cache_storage_cache_name */,
-                base::MakeUnique<
+                std::make_unique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
             std::move(stream_handle_), base::Time::Now());
         std::move(callback).Run(
@@ -147,15 +147,15 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       case ResponseMode::kErrorResponse:
         response_callback->OnResponse(
             ServiceWorkerResponse(
-                base::MakeUnique<std::vector<GURL>>(), 0 /* status_code */,
+                std::make_unique<std::vector<GURL>>(), 0 /* status_code */,
                 "" /* status_text */,
                 network::mojom::FetchResponseType::kDefault,
-                base::MakeUnique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
                 0 /* blob_size */, nullptr /* blob */,
                 blink::kWebServiceWorkerResponseErrorPromiseRejected,
                 base::Time(), false /* response_is_in_cache_storage */,
                 std::string() /* response_cache_storage_cache_name */,
-                base::MakeUnique<
+                std::make_unique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
             base::Time::Now());
         std::move(callback).Run(
@@ -163,17 +163,17 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
             base::Time::Now());
         break;
       case ResponseMode::kRedirectResponse: {
-        auto headers = base::MakeUnique<ServiceWorkerHeaderMap>();
+        auto headers = std::make_unique<ServiceWorkerHeaderMap>();
         (*headers)["Location"] = redirect_location_header_;
         response_callback->OnResponse(
             ServiceWorkerResponse(
-                base::MakeUnique<std::vector<GURL>>(), 302, "Found",
+                std::make_unique<std::vector<GURL>>(), 302, "Found",
                 network::mojom::FetchResponseType::kDefault, std::move(headers),
                 "" /* blob_uuid */, 0 /* blob_size */, nullptr /* blob */,
                 blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
                 false /* response_is_in_cache_storage */,
                 std::string() /* response_cache_storage_cache_name */,
-                base::MakeUnique<
+                std::make_unique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
             base::Time::Now());
         std::move(callback).Run(
@@ -290,7 +290,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     feature_list_.InitAndEnableFeature(features::kNetworkService);
 
     mojom::URLLoaderFactoryPtr fake_loader_factory;
-    mojo::MakeStrongBinding(base::MakeUnique<FakeNetworkURLLoaderFactory>(),
+    mojo::MakeStrongBinding(std::make_unique<FakeNetworkURLLoaderFactory>(),
                             MakeRequest(&fake_loader_factory));
     loader_factory_getter_ =
         base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(

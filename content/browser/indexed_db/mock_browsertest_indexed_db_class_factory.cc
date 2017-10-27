@@ -318,14 +318,14 @@ MockBrowserTestIndexedDBClassFactory::CreateIteratorImpl(
   instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] =
       instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] + 1;
   if (only_trace_calls_) {
-    return base::MakeUnique<LevelDBTraceIteratorImpl>(
+    return std::make_unique<LevelDBTraceIteratorImpl>(
         std::move(iterator), db, snapshot,
         instance_count_[FAIL_CLASS_LEVELDB_ITERATOR]);
   } else {
     if (failure_class_ == FAIL_CLASS_LEVELDB_ITERATOR &&
         instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] ==
             fail_on_instance_num_[FAIL_CLASS_LEVELDB_ITERATOR]) {
-      return base::MakeUnique<LevelDBTestIteratorImpl>(
+      return std::make_unique<LevelDBTestIteratorImpl>(
           std::move(iterator), db, snapshot, failure_method_,
           fail_on_call_num_[FAIL_CLASS_LEVELDB_ITERATOR]);
     } else {

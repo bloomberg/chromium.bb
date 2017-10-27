@@ -22,7 +22,7 @@ PaymentAppInfoFetcher::PaymentAppInfo::~PaymentAppInfo() {}
 PaymentAppInfoFetcher::PaymentAppInfoFetcher()
     : context_process_id_(-1),
       context_frame_id_(-1),
-      fetched_payment_app_info_(base::MakeUnique<PaymentAppInfo>()) {}
+      fetched_payment_app_info_(std::make_unique<PaymentAppInfo>()) {}
 PaymentAppInfoFetcher::~PaymentAppInfoFetcher() {}
 
 void PaymentAppInfoFetcher::Start(

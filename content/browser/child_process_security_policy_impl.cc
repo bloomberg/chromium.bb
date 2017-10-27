@@ -1026,7 +1026,7 @@ void ChildProcessSecurityPolicyImpl::AddChild(int child_id) {
     return;
   }
 
-  security_state_[child_id] = base::MakeUnique<SecurityState>();
+  security_state_[child_id] = std::make_unique<SecurityState>();
 }
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(

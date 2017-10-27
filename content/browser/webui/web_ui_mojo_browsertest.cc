@@ -141,7 +141,7 @@ class PingTestWebUIController : public TestWebUIController,
 
   void CreateHandler(mojom::BrowserTargetRequest request) {
     browser_target_ =
-        base::MakeUnique<BrowserTargetImpl>(run_loop_, std::move(request));
+        std::make_unique<BrowserTargetImpl>(run_loop_, std::move(request));
   }
 
  private:

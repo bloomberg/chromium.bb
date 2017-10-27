@@ -47,7 +47,7 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
   static std::unique_ptr<LevelDBDatabase> Open(
       const base::FilePath& file_name,
       const LevelDBComparator* /*comparator*/) {
-    return base::MakeUnique<BustedLevelDBDatabase>();
+    return std::make_unique<BustedLevelDBDatabase>();
   }
   leveldb::Status Get(const base::StringPiece& key,
                       std::string* value,

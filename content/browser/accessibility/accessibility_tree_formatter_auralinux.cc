@@ -67,7 +67,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
     dict->SetString("description", std::string(description));
 
   AtkStateSet* state_set = atk_object_ref_state_set(atk_object);
-  auto states = base::MakeUnique<base::ListValue>();
+  auto states = std::make_unique<base::ListValue>();
   for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
     AtkStateType state_type = static_cast<AtkStateType>(i);
     if (atk_state_set_contains_state(state_set, state_type))

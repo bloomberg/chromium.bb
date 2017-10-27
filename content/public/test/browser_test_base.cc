@@ -122,7 +122,7 @@ BrowserTestBase::BrowserTestBase()
   // called more than once
   base::i18n::AllowMultipleInitializeCallsForTesting();
 
-  embedded_test_server_ = base::MakeUnique<net::EmbeddedTestServer>();
+  embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
 
   // SequencedWorkerPool is enabled by default in tests (see
   // base::TestSuite::Initialize). In browser tests, disable it and expect it
@@ -232,7 +232,7 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
 
-  test_host_resolver_ = base::MakeUnique<TestHostResolver>();
+  test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
@@ -260,7 +260,7 @@ void BrowserTestBase::SetUp() {
   // FeatureList::SetInstance, which expects no instance to exist.
   base::FeatureList::ClearInstanceForTesting();
 
-  auto ui_task = base::MakeUnique<base::Closure>(base::Bind(
+  auto ui_task = std::make_unique<base::Closure>(base::Bind(
       &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
@@ -343,7 +343,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
   CHECK(!spawned_test_server_.get());
-  spawned_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
+  spawned_test_server_ = std::make_unique<net::SpawnedTestServer>(
       net::SpawnedTestServer::TYPE_HTTP, test_server_base);
   embedded_test_server()->AddDefaultHandlers(test_server_base);
 }

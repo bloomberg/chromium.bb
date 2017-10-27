@@ -289,7 +289,7 @@ void WidgetInputHandlerManager::DispatchEvent(
 void WidgetInputHandlerManager::InitOnCompositorThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
     bool smooth_scroll_enabled) {
-  input_handler_proxy_ = base::MakeUnique<ui::InputHandlerProxy>(
+  input_handler_proxy_ = std::make_unique<ui::InputHandlerProxy>(
       input_handler.get(), this,
       base::FeatureList::IsEnabled(features::kTouchpadAndWheelScrollLatching));
   input_handler_proxy_->set_smooth_scroll_enabled(smooth_scroll_enabled);

@@ -185,7 +185,7 @@ class TestPresentationDispatcher : public PresentationDispatcher {
  private:
   void ConnectToPresentationServiceIfNeeded() override {
     if (!mock_binding_) {
-      mock_binding_ = base::MakeUnique<mojo::Binding<PresentationService>>(
+      mock_binding_ = std::make_unique<mojo::Binding<PresentationService>>(
           mock_presentation_service_,
           mojo::MakeRequest(&presentation_service_));
     }
@@ -319,7 +319,7 @@ TEST_F(PresentationDispatcherTest, TestStartPresentation) {
 
     EXPECT_CALL(connection, Init()).Times(1);
     dispatcher_.StartPresentation(
-        urls_, base::MakeUnique<TestWebPresentationConnectionCallback>(
+        urls_, std::make_unique<TestWebPresentationConnectionCallback>(
                    url1_, presentation_id_, &connection));
     run_loop.RunUntilIdle();
   }
@@ -342,7 +342,7 @@ TEST_F(PresentationDispatcherTest, TestStartPresentationError) {
           }));
   dispatcher_.StartPresentation(
       urls_,
-      base::MakeUnique<TestWebPresentationConnectionErrorCallback>(
+      std::make_unique<TestWebPresentationConnectionErrorCallback>(
           WebPresentationError::kErrorTypeNoAvailableScreens, error_message));
   run_loop.RunUntilIdle();
 }
@@ -368,7 +368,7 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentationError) {
           }));
   dispatcher_.ReconnectPresentation(
       urls_, presentation_id_,
-      base::MakeUnique<TestWebPresentationConnectionErrorCallback>(
+      std::make_unique<TestWebPresentationConnectionErrorCallback>(
           WebPresentationError::kErrorTypeNoAvailableScreens, error_message));
   run_loop.RunUntilIdle();
 }
@@ -394,7 +394,7 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentation) {
     EXPECT_CALL(connection, Init()).Times(1);
     dispatcher_.ReconnectPresentation(
         urls_, presentation_id_,
-        base::MakeUnique<TestWebPresentationConnectionCallback>(
+        std::make_unique<TestWebPresentationConnectionCallback>(
             url1_, presentation_id_, &connection));
     run_loop.RunUntilIdle();
   }
@@ -421,7 +421,7 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentationNoConnection) {
     EXPECT_CALL(connection, Init()).Times(0);
     dispatcher_.ReconnectPresentation(
         urls_, presentation_id_,
-        base::MakeUnique<TestWebPresentationConnectionCallback>(
+        std::make_unique<TestWebPresentationConnectionCallback>(
             url1_, presentation_id_, nullptr));
     run_loop.RunUntilIdle();
   }
@@ -436,7 +436,7 @@ TEST_F(PresentationDispatcherTest, TestListenForScreenAvailability) {
   }
 
   dispatcher_.GetAvailability(
-      urls_, base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+      urls_, std::make_unique<WebPresentationAvailabilityCallbacks>());
   dispatcher_.OnScreenAvailabilityUpdated(url1_, ScreenAvailability::AVAILABLE);
   run_loop1.RunUntilIdle();
 
@@ -602,7 +602,7 @@ TEST_F(PresentationDispatcherTest, StartListeningListenToEachURLOnce) {
   for (auto* mock_observer : mock_observers_) {
     client()->GetAvailability(
         mock_observer->Urls(),
-        base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+        std::make_unique<WebPresentationAvailabilityCallbacks>());
     client()->StartListening(mock_observer);
   }
   run_loop.RunUntilIdle();
@@ -628,7 +628,7 @@ TEST_F(PresentationDispatcherTest, StopListeningListenToEachURLOnce) {
   for (auto* mock_observer : mock_observers_) {
     client()->GetAvailability(
         mock_observer->Urls(),
-        base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+        std::make_unique<WebPresentationAvailabilityCallbacks>());
 
     client()->StartListening(mock_observer);
   }
@@ -660,7 +660,7 @@ TEST_F(PresentationDispatcherTest,
   for (auto* mock_observer : mock_observers_) {
     client()->GetAvailability(
         mock_observer->Urls(),
-        base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+        std::make_unique<WebPresentationAvailabilityCallbacks>());
   }
 
   for (auto* mock_observer : mock_observers_)
@@ -692,7 +692,7 @@ TEST_F(PresentationDispatcherTest,
   for (auto* mock_observer : mock_observers_) {
     client()->GetAvailability(
         mock_observer->Urls(),
-        base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+        std::make_unique<WebPresentationAvailabilityCallbacks>());
     client()->StartListening(mock_observer);
   }
 
@@ -729,7 +729,7 @@ TEST_F(PresentationDispatcherTest,
   for (auto* mock_observer : mock_observers_) {
     client()->GetAvailability(
         mock_observer->Urls(),
-        base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+        std::make_unique<WebPresentationAvailabilityCallbacks>());
     client()->StartListening(mock_observer);
   }
 

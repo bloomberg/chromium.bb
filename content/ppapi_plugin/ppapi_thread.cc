@@ -138,7 +138,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
       ChildThread::Get()->GetConnector()->BindInterface(
           mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
     }
-    discardable_shared_memory_manager_ = base::MakeUnique<
+    discardable_shared_memory_manager_ = std::make_unique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(
         std::move(manager_ptr), GetIOTaskRunner());
     base::DiscardableMemoryAllocator::SetInstance(

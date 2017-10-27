@@ -82,14 +82,14 @@ class ScreenCaptureDeviceAndroidTest : public testing::Test {
 
 TEST_F(ScreenCaptureDeviceAndroidTest, ConstructionDestruction) {
   std::unique_ptr<media::VideoCaptureDevice> capture_device =
-      base::MakeUnique<ScreenCaptureDeviceAndroid>();
+      std::make_unique<ScreenCaptureDeviceAndroid>();
 }
 
 // Place holder. Currently user input result is required to start
 // MediaProjection, so we can't start a unittest that really starts capture.
 TEST_F(ScreenCaptureDeviceAndroidTest, DISABLED_StartAndStop) {
   std::unique_ptr<media::VideoCaptureDevice> capture_device =
-      base::MakeUnique<ScreenCaptureDeviceAndroid>();
+      std::make_unique<ScreenCaptureDeviceAndroid>();
   ASSERT_TRUE(capture_device);
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());

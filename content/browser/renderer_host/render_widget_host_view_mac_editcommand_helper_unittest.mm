@@ -143,7 +143,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
   int32_t routing_id = process_host->GetNextRoutingID();
   mojom::WidgetPtr widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
 
   RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
       &delegate, process_host, routing_id, std::move(widget), false);

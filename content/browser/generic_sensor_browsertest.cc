@@ -143,7 +143,7 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
                  GetSensorCallback callback) override {
     switch (type) {
       case device::mojom::SensorType::AMBIENT_LIGHT: {
-        auto sensor = base::MakeUnique<FakeAmbientLightSensor>();
+        auto sensor = std::make_unique<FakeAmbientLightSensor>();
 
         auto init_params = device::mojom::SensorInitParams::New();
         init_params->memory = sensor->GetSharedBufferHandle();
@@ -180,7 +180,7 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
   ~GenericSensorBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    fake_sensor_provider_ = base::MakeUnique<FakeSensorProvider>();
+    fake_sensor_provider_ = std::make_unique<FakeSensorProvider>();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&GenericSensorBrowserTest::SetBinderOnIOThread,

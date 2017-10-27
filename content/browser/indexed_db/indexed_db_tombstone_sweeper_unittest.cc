@@ -131,7 +131,7 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   }
 
   void SetupMockDB() {
-    sweeper_ = base::MakeUnique<IndexedDBTombstoneSweeper>(
+    sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         GetParam(), kRoundIterations, kMaxIterations, &mock_db_);
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
   }
@@ -139,7 +139,7 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   void SetupRealDB() {
     comparator_.reset(new Comparator());
     in_memory_db_ = LevelDBDatabase::OpenInMemory(comparator_.get());
-    sweeper_ = base::MakeUnique<IndexedDBTombstoneSweeper>(
+    sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         GetParam(), kRoundIterations, kMaxIterations, in_memory_db_->db());
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
   }

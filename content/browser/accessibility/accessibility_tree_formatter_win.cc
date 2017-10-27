@@ -274,7 +274,7 @@ void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
     LONG root_y) {
   AddProperties(node, dict, root_x, root_y);
 
-  auto children = base::MakeUnique<base::ListValue>();
+  auto children = std::make_unique<base::ListValue>();
 
   LONG child_count;
   if (S_OK != node->get_accChildCount(&child_count))
@@ -460,12 +460,12 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
 
   LONG x, y, width, height;
   if (SUCCEEDED(node->accLocation(&x, &y, &width, &height, variant_self))) {
-    auto location = base::MakeUnique<base::DictionaryValue>();
+    auto location = std::make_unique<base::DictionaryValue>();
     location->SetInteger("x", x - root_x);
     location->SetInteger("y", y - root_y);
     dict->Set("location", std::move(location));
 
-    auto size = base::MakeUnique<base::DictionaryValue>();
+    auto size = std::make_unique<base::DictionaryValue>();
     size->SetInteger("width", width);
     size->SetInteger("height", height);
     dict->Set("size", std::move(size));

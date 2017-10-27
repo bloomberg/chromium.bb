@@ -103,7 +103,7 @@ void InputEventFilter::DidOverscroll(int routing_id,
 }
 
 void InputEventFilter::DidStopFlinging(int routing_id) {
-  SendMessage(base::MakeUnique<InputHostMsg_DidStopFlinging>(routing_id));
+  SendMessage(std::make_unique<InputHostMsg_DidStopFlinging>(routing_id));
 }
 
 void InputEventFilter::QueueClosureForMainThreadEventQueue(
@@ -139,7 +139,7 @@ void InputEventFilter::SetWhiteListedTouchAction(int routing_id,
                                                  cc::TouchAction touch_action,
                                                  uint32_t unique_touch_event_id,
                                                  InputEventAckState ack_state) {
-  SendMessage(base::MakeUnique<InputHostMsg_SetWhiteListedTouchAction>(
+  SendMessage(std::make_unique<InputHostMsg_SetWhiteListedTouchAction>(
       routing_id, touch_action, unique_touch_event_id, ack_state));
 }
 

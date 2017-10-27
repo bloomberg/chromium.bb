@@ -86,7 +86,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
 
     // Fix the time for testing to kNowTimestamp
     std::unique_ptr<base::SimpleTestClock> clock =
-        base::MakeUnique<base::SimpleTestClock>();
+        std::make_unique<base::SimpleTestClock>();
     clock->SetNow(base::Time::FromDoubleT(kNowTimestamp));
     version_->SetClockForTesting(std::move(clock));
 
@@ -139,7 +139,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
 
   static std::unique_ptr<net::HttpResponseInfo> CreateTestHttpResponseInfo() {
     std::unique_ptr<net::HttpResponseInfo> http_info(
-        base::MakeUnique<net::HttpResponseInfo>());
+        std::make_unique<net::HttpResponseInfo>());
     http_info->ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     DCHECK(http_info->ssl_info.is_valid());

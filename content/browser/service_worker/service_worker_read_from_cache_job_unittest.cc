@@ -199,7 +199,7 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
                                           net::DEFAULT_PRIORITY, &delegate_,
                                           TRAFFIC_ANNOTATION_FOR_TESTS);
   test_job_interceptor_->set_main_intercept_job(
-      base::MakeUnique<ServiceWorkerReadFromCacheJob>(
+      std::make_unique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */,
           RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
           main_script_.resource_id));
@@ -218,7 +218,7 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
                                           net::DEFAULT_PRIORITY, &delegate_,
                                           TRAFFIC_ANNOTATION_FOR_TESTS);
   test_job_interceptor_->set_main_intercept_job(
-      base::MakeUnique<ServiceWorkerReadFromCacheJob>(
+      std::make_unique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */, RESOURCE_TYPE_SCRIPT,
           context()->AsWeakPtr(), version_, imported_script_.resource_id));
   StartAndWaitForRequest(request.get());
@@ -249,7 +249,7 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
                                           TRAFFIC_ANNOTATION_FOR_TESTS);
   const int64_t kNonexistentResourceId = 100;
   test_job_interceptor_->set_main_intercept_job(
-      base::MakeUnique<ServiceWorkerReadFromCacheJob>(
+      std::make_unique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */,
           RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
           kNonexistentResourceId));

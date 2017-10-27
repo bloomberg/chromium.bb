@@ -321,7 +321,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       }
       ScopedJavaLocalRef<jobject> scoped_java_object(env, java_object);
       if (!scoped_java_object.obj()) {
-        result_wrapper.Append(base::MakeUnique<base::Value>());
+        result_wrapper.Append(std::make_unique<base::Value>());
         break;
       }
       SetObjectResult(scoped_java_object, object_->GetSafeAnnotationClass());

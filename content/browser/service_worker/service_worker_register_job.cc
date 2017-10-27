@@ -467,7 +467,7 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent() {
                  weak_factory_.GetWeakPtr()));
 
   std::unique_ptr<InstallEventMethodsReceiver> install_methods_receiver =
-      base::MakeUnique<InstallEventMethodsReceiver>(new_version());
+      std::make_unique<InstallEventMethodsReceiver>(new_version());
   mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo ptr_info;
   install_methods_receiver->BindInterface(&ptr_info);
   new_version()->event_dispatcher()->DispatchInstallEvent(

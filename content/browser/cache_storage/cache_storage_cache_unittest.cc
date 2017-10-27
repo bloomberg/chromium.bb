@@ -390,7 +390,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     CreateRequests(blob_storage_context);
 
-    cache_ = base::MakeUnique<TestCacheStorageCache>(
+    cache_ = std::make_unique<TestCacheStorageCache>(
         GURL(kOrigin), kCacheName, temp_dir_path, nullptr /* CacheStorage */,
         BrowserContext::GetDefaultStoragePartition(&browser_context_)
             ->GetURLRequestContext(),
@@ -443,22 +443,22 @@ class CacheStorageCacheTest : public testing::Test {
 
     body_response_ = CreateResponse(
         "http://example.com/body.html",
-        base::MakeUnique<ServiceWorkerHeaderMap>(headers), blob_handle_->uuid(),
+        std::make_unique<ServiceWorkerHeaderMap>(headers), blob_handle_->uuid(),
         expected_blob_data_.size(), blob,
-        base::MakeUnique<
+        std::make_unique<
             ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
 
     body_response_with_query_ =
         CreateResponse("http://example.com/body.html?query=test",
-                       base::MakeUnique<ServiceWorkerHeaderMap>(headers),
+                       std::make_unique<ServiceWorkerHeaderMap>(headers),
                        blob_handle_->uuid(), expected_blob_data_.size(), blob,
-                       base::MakeUnique<ServiceWorkerHeaderList>(
+                       std::make_unique<ServiceWorkerHeaderList>(
                            1, "a") /* cors_exposed_header_names */);
 
     no_body_response_ = CreateResponse(
         "http://example.com/no_body.html",
-        base::MakeUnique<ServiceWorkerHeaderMap>(headers), "", 0, nullptr,
-        base::MakeUnique<
+        std::make_unique<ServiceWorkerHeaderMap>(headers), "", 0, nullptr,
+        std::make_unique<
             ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
   }
 
@@ -470,7 +470,7 @@ class CacheStorageCacheTest : public testing::Test {
       scoped_refptr<storage::BlobHandle> blob_handle,
       std::unique_ptr<ServiceWorkerHeaderList> cors_exposed_header_names) {
     return ServiceWorkerResponse(
-        base::MakeUnique<std::vector<GURL>>(1, GURL(url)), 200, "OK",
+        std::make_unique<std::vector<GURL>>(1, GURL(url)), 200, "OK",
         network::mojom::FetchResponseType::kDefault, std::move(headers),
         blob_uuid, blob_size, std::move(blob_handle),
         blink::kWebServiceWorkerResponseErrorUnknown, base::Time::Now(),
@@ -481,7 +481,7 @@ class CacheStorageCacheTest : public testing::Test {
 
   std::unique_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
       const ServiceWorkerFetchRequest& request) {
-    return base::MakeUnique<ServiceWorkerFetchRequest>(
+    return std::make_unique<ServiceWorkerFetchRequest>(
         request.url, request.method, request.headers, request.referrer,
         request.is_reload);
   }
@@ -1547,13 +1547,13 @@ TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
   // CacheStorageCache depends on ServiceWorkerResponse having caseless
   // headers so that it can quickly lookup vary headers.
   ServiceWorkerResponse response(
-      base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+      std::make_unique<std::vector<GURL>>(), 200, "OK",
       network::mojom::FetchResponseType::kDefault,
-      base::MakeUnique<ServiceWorkerHeaderMap>(), "", 0, nullptr /* blob */,
+      std::make_unique<ServiceWorkerHeaderMap>(), "", 0, nullptr /* blob */,
       blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
       false /* is_in_cache_storage */,
       std::string() /* cache_storage_cache_name */,
-      base::MakeUnique<
+      std::make_unique<
           ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";

@@ -29,7 +29,7 @@ class DownloadRequestCoreTest : public testing::Test {
   std::unique_ptr<DownloadUrlParameters> BuildDownloadParameters(
       const std::string& url) const {
     GURL gurl(url);
-    return base::MakeUnique<DownloadUrlParameters>(
+    return std::make_unique<DownloadUrlParameters>(
         gurl, request_context_getter_.get(), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 

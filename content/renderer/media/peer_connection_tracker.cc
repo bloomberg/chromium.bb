@@ -256,7 +256,7 @@ static std::unique_ptr<base::DictionaryValue> GetDictValueStats(
   if (report.values().empty())
     return NULL;
 
-  auto values = base::MakeUnique<base::ListValue>();
+  auto values = std::make_unique<base::ListValue>();
 
   for (const auto& v : report.values()) {
     const StatsReport::ValuePtr& value = v.second;
@@ -286,7 +286,7 @@ static std::unique_ptr<base::DictionaryValue> GetDictValueStats(
     }
   }
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetDouble("timestamp", report.timestamp());
   dict->Set("values", std::move(values));
 
@@ -304,7 +304,7 @@ static std::unique_ptr<base::DictionaryValue> GetDictValue(
   // Note:
   // The format must be consistent with what webrtc_internals.js expects.
   // If you change it here, you must change webrtc_internals.js as well.
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->Set("stats", std::move(stats));
   result->SetString("id", report.id()->ToString());
   result->SetString("type", report.TypeToString());

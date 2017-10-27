@@ -763,10 +763,10 @@ class TestResourceDispatcherHostDelegate
     }
 
     if (flags_ != NONE) {
-      throttles->push_back(base::MakeUnique<GenericResourceThrottle>(
+      throttles->push_back(std::make_unique<GenericResourceThrottle>(
           flags_, error_code_for_cancellation_));
       if (create_two_throttles_)
-        throttles->push_back(base::MakeUnique<GenericResourceThrottle>(
+        throttles->push_back(std::make_unique<GenericResourceThrottle>(
             flags_, error_code_for_cancellation_));
     }
   }

@@ -59,7 +59,7 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
     // with the request for |DedicatedWorkerFactory|, enforce that the worker's
     // origin either matches the creating document's origin, or is unique.
     mojo::MakeStrongBinding(
-        base::MakeUnique<DedicatedWorkerHost>(process_id_, origin),
+        std::make_unique<DedicatedWorkerHost>(process_id_, origin),
         FilterRendererExposedInterfaces(
             blink::mojom::kNavigation_DedicatedWorkerSpec, process_id_,
             std::move(request)));
@@ -78,7 +78,7 @@ void CreateDedicatedWorkerHostFactory(
     int process_id,
     RenderFrameHost* frame,
     blink::mojom::DedicatedWorkerFactoryRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<DedicatedWorkerFactoryImpl>(
+  mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerFactoryImpl>(
                               process_id, frame->GetLastCommittedOrigin()),
                           std::move(request));
 }

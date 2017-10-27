@@ -128,12 +128,12 @@ MemoryCoordinatorImpl::MemoryCoordinatorImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<MemoryMonitor> memory_monitor)
     : task_runner_(task_runner),
-      policy_(base::MakeUnique<MemoryCoordinatorDefaultPolicy>(this)),
+      policy_(std::make_unique<MemoryCoordinatorDefaultPolicy>(this)),
       delegate_(GetContentClient()->browser()->GetMemoryCoordinatorDelegate()),
       memory_monitor_(std::move(memory_monitor)),
       condition_observer_(
-          base::MakeUnique<MemoryConditionObserver>(this, task_runner)),
-      tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
+          std::make_unique<MemoryConditionObserver>(this, task_runner)),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
       minimum_state_transition_period_(base::TimeDelta::FromSeconds(
           kDefaultMinimumTransitionPeriodSeconds)) {
   DCHECK(memory_monitor_.get());

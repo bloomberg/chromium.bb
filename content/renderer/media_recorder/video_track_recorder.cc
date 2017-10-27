@@ -285,7 +285,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     if (!canvas_ || canvas_->imageInfo().width() != info.width() ||
         canvas_->imageInfo().height() != info.height()) {
       bitmap_.allocPixels(info);
-      canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap_);
+      canvas_ = std::make_unique<cc::SkiaPaintCanvas>(bitmap_);
     }
     if (!video_renderer_)
       video_renderer_.reset(new media::PaintCanvasVideoRenderer);

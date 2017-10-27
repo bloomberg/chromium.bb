@@ -55,7 +55,7 @@ DevToolsURLRequestInterceptor::DevToolsURLRequestInterceptor(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_context_->SetUserData(
       kDevToolsURLRequestInterceptorKeyName,
-      base::MakeUnique<DevToolsURLRequestInterceptorUserData>(this));
+      std::make_unique<DevToolsURLRequestInterceptorUserData>(this));
 }
 
 DevToolsURLRequestInterceptor::~DevToolsURLRequestInterceptor() {

@@ -279,7 +279,7 @@ void MediaStreamTrackMetrics::AddStream(StreamType type,
                                         MediaStreamInterface* stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.push_back(
-      base::MakeUnique<MediaStreamTrackMetricsObserver>(type, stream, this));
+      std::make_unique<MediaStreamTrackMetricsObserver>(type, stream, this));
   SendLifeTimeMessageDependingOnIceState(observers_.back().get());
 }
 

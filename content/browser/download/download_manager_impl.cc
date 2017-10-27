@@ -112,7 +112,7 @@ void CreateInterruptedDownload(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DownloadManager::StartDownload, download_manager,
                      std::move(failed_created_info),
-                     base::MakeUnique<DownloadManager::InputStream>(
+                     std::make_unique<DownloadManager::InputStream>(
                          std::move(empty_byte_stream)),
                      params->callback()));
 }

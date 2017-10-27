@@ -552,9 +552,9 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() {
   if (!IsAllowedFinalization())
     return nullptr;
 
-  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
+  auto metadata_dict = std::make_unique<base::DictionaryValue>();
   if (config_) {
-    auto config_dict = base::MakeUnique<base::DictionaryValue>();
+    auto config_dict = std::make_unique<base::DictionaryValue>();
     config_->IntoDict(config_dict.get());
     metadata_dict->Set("config", std::move(config_dict));
   }

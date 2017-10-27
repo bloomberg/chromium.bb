@@ -480,7 +480,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int child_process_id) {
   std::unique_ptr<IndexedDBConnection> connection(
-      base::MakeUnique<IndexedDBConnection>(child_process_id, this,
+      std::make_unique<IndexedDBConnection>(child_process_id, this,
                                             database_callbacks));
   connections_.insert(connection.get());
   backing_store_->GrantChildProcessPermissions(child_process_id);
@@ -1187,12 +1187,12 @@ static std::unique_ptr<IndexedDBKey> GenerateKey(
       &current_number);
   if (!s.ok()) {
     LOG(ERROR) << "Failed to GetKeyGeneratorCurrentNumber";
-    return base::MakeUnique<IndexedDBKey>();
+    return std::make_unique<IndexedDBKey>();
   }
   if (current_number < 0 || current_number > max_generator_value)
-    return base::MakeUnique<IndexedDBKey>();
+    return std::make_unique<IndexedDBKey>();
 
-  return base::MakeUnique<IndexedDBKey>(current_number, kWebIDBKeyTypeNumber);
+  return std::make_unique<IndexedDBKey>(current_number, kWebIDBKeyTypeNumber);
 }
 
 // Called at the end of a "put" operation. The key is a number that was either
@@ -1248,7 +1248,7 @@ void IndexedDBDatabase::Put(
   DCHECK(key);
   DCHECK(value);
   std::unique_ptr<PutOperationParams> params(
-      base::MakeUnique<PutOperationParams>());
+      std::make_unique<PutOperationParams>());
   params->object_store_id = object_store_id;
   params->value.swap(*value);
   params->handles.swap(*handles);
@@ -1492,7 +1492,7 @@ void IndexedDBDatabase::OpenCursor(
     return;
 
   std::unique_ptr<OpenCursorOperationParams> params(
-      base::MakeUnique<OpenCursorOperationParams>());
+      std::make_unique<OpenCursorOperationParams>());
   params->object_store_id = object_store_id;
   params->index_id = index_id;
   params->key_range = std::move(key_range);
@@ -1573,7 +1573,7 @@ Status IndexedDBDatabase::OpenCursorOperation(
     return s;
   }
 
-  std::unique_ptr<IndexedDBCursor> cursor = base::MakeUnique<IndexedDBCursor>(
+  std::unique_ptr<IndexedDBCursor> cursor = std::make_unique<IndexedDBCursor>(
       std::move(backing_store_cursor), params->cursor_type, params->task_type,
       transaction);
   IndexedDBCursor* cursor_ptr = cursor.get();
@@ -1841,13 +1841,13 @@ void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {
 
 void IndexedDBDatabase::OpenConnection(
     std::unique_ptr<IndexedDBPendingConnection> connection) {
-  AppendRequest(base::MakeUnique<OpenRequest>(this, std::move(connection)));
+  AppendRequest(std::make_unique<OpenRequest>(this, std::move(connection)));
 }
 
 void IndexedDBDatabase::DeleteDatabase(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     bool force_close) {
-  AppendRequest(base::MakeUnique<DeleteRequest>(this, callbacks));
+  AppendRequest(std::make_unique<DeleteRequest>(this, callbacks));
   // Close the connections only after the request is queued to make sure
   // the store is still open.
   if (force_close)

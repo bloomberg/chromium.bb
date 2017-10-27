@@ -425,7 +425,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 
   URLRequestInterceptorScopedVector request_interceptors;
   request_interceptors.push_back(
-      base::MakeUnique<DevToolsURLRequestInterceptor>(browser_context_));
+      std::make_unique<DevToolsURLRequestInterceptor>(browser_context_));
   request_interceptors.push_back(ServiceWorkerRequestHandler::CreateInterceptor(
       browser_context_->GetResourceContext()));
   if (ForeignFetchRequestHandler::IsForeignFetchEnabled()) {
@@ -433,7 +433,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
         ForeignFetchRequestHandler::CreateInterceptor(
             browser_context_->GetResourceContext()));
   }
-  request_interceptors.push_back(base::MakeUnique<AppCacheInterceptor>());
+  request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
 
   // These calls must happen after StoragePartitionImpl::Create().
   if (partition_domain.empty()) {

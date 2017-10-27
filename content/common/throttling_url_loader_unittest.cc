@@ -259,7 +259,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
  protected:
   // testing::Test implementation.
   void SetUp() override {
-    auto throttle = base::MakeUnique<TestURLLoaderThrottle>(
+    auto throttle = std::make_unique<TestURLLoaderThrottle>(
         base::Bind(&ThrottlingURLLoaderTest::ResetThrottleRawPointer,
                    weak_factory_.GetWeakPtr()));
 
@@ -701,7 +701,7 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfAlreadyCanceled) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesBasicSupport) {
-  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  throttles_.emplace_back(std::make_unique<TestURLLoaderThrottle>());
   auto* throttle2 =
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
   CreateLoaderAndStart();
@@ -712,7 +712,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesBasicSupport) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, BlockWithOneOfMultipleThrottles) {
-  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  throttles_.emplace_back(std::make_unique<TestURLLoaderThrottle>());
   auto* throttle2 =
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
   throttle2->set_will_start_request_callback(
@@ -771,7 +771,7 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithOneOfMultipleThrottles) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, BlockWithMultipleThrottles) {
-  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  throttles_.emplace_back(std::make_unique<TestURLLoaderThrottle>());
   auto* throttle2 =
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
 
@@ -844,7 +844,7 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithMultipleThrottles) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
-  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  throttles_.emplace_back(std::make_unique<TestURLLoaderThrottle>());
   auto* throttle2 =
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
 

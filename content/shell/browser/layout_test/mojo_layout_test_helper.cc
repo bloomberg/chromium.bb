@@ -14,7 +14,7 @@ MojoLayoutTestHelper::~MojoLayoutTestHelper() {}
 
 // static
 void MojoLayoutTestHelper::Create(mojom::MojoLayoutTestHelperRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<MojoLayoutTestHelper>(),
+  mojo::MakeStrongBinding(std::make_unique<MojoLayoutTestHelper>(),
                           std::move(request));
 }
 

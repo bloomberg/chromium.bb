@@ -3418,7 +3418,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
   AppCacheHost* MakeHost(int host_id, AppCacheFrontend* frontend) {
     hosts_.push_back(
-        base::MakeUnique<AppCacheHost>(host_id, frontend, service_.get()));
+        std::make_unique<AppCacheHost>(host_id, frontend, service_.get()));
     return hosts_.back().get();
   }
 
@@ -3436,7 +3436,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   }
 
   MockFrontend* MakeMockFrontend() {
-    frontends_.push_back(base::MakeUnique<MockFrontend>());
+    frontends_.push_back(std::make_unique<MockFrontend>());
     return frontends_.back().get();
   }
 

@@ -255,7 +255,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
         host_port_pair_(net::HostPortPair::FromURL(request->url())),
         weak_ptr_factory_(this) {
     DCHECK(!request_->GetUserData(kUserDataKey));
-    request_->SetUserData(kUserDataKey, base::MakeUnique<UnownedPointer>(this));
+    request_->SetUserData(kUserDataKey, std::make_unique<UnownedPointer>(this));
   }
 
   ~ScheduledResourceRequest() override {

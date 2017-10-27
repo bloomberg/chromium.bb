@@ -98,7 +98,7 @@ KeepAliveHandleFactory::~KeepAliveHandleFactory() {
 }
 
 void KeepAliveHandleFactory::Create(mojom::KeepAliveHandleRequest request) {
-  context_->AddBinding(base::MakeUnique<KeepAliveHandleImpl>(context_),
+  context_->AddBinding(std::make_unique<KeepAliveHandleImpl>(context_),
                        std::move(request));
 }
 

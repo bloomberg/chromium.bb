@@ -197,10 +197,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
 
   std::unique_ptr<InputEventAckWaiter> gesture_scroll_begin_ack_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollBegin);
   std::unique_ptr<InputEventAckWaiter> gesture_scroll_end_ack_observer =
-      base::MakeUnique<InputEventAckWaiter>(
+      std::make_unique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureScrollEnd);
   child_rwh->AddInputEventObserver(gesture_scroll_begin_ack_observer.get());
   child_rwh->AddInputEventObserver(gesture_scroll_end_ack_observer.get());

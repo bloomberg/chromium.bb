@@ -130,7 +130,7 @@ class VideoCaptureTest : public testing::Test,
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
     media_stream_manager_->UseFakeUIFactoryForTests(
         base::Bind(&VideoCaptureTest::CreateFakeUI, base::Unretained(this)));

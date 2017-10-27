@@ -118,7 +118,7 @@ struct StoragePartitionRemovalData {
 
 net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
   std::unique_ptr<net::CanonicalCookie> cookie(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           "A", "1", source.host(), "/", base::Time::Now(), base::Time::Now(),
           base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_MEDIUM));
@@ -345,7 +345,7 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   void AddChannelIDWithTimes(const std::string& server_identifier,
                              base::Time creation_time) {
     GetChannelIDStore()->SetChannelID(
-        base::MakeUnique<net::ChannelIDStore::ChannelID>(
+        std::make_unique<net::ChannelIDStore::ChannelID>(
             server_identifier, creation_time, crypto::ECPrivateKey::Create()));
   }
 

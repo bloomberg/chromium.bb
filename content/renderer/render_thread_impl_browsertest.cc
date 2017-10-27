@@ -230,7 +230,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
         std::move(renderer_scheduler), test_task_counter);
     cmd->InitFromArgv(old_argv);
 
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     test_msg_filter_ = base::MakeRefCounted<QuitOnTestMsgFilter>(
         run_loop_->QuitWhenIdleClosure());
     thread_->AddFilter(test_msg_filter_.get());

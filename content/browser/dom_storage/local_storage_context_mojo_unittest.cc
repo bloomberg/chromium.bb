@@ -952,7 +952,7 @@ class LocalStorageContextMojoTestWithService
   }
 
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return base::MakeUnique<ServiceTestClient>(this);
+    return std::make_unique<ServiceTestClient>(this);
   }
 
   const base::FilePath& temp_path() { return temp_path_.GetPath(); }
@@ -1323,7 +1323,7 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   ASSERT_EQ(1u, mock_leveldb_service.open_requests_.size());
   auto& open_request = mock_leveldb_service.open_requests_[0];
   auto mock_db = mojo::MakeStrongAssociatedBinding(
-      base::MakeUnique<MockLevelDBDatabaseErrorOnWrite>(&test_data),
+      std::make_unique<MockLevelDBDatabaseErrorOnWrite>(&test_data),
       std::move(open_request.request));
   std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests_.clear();
@@ -1393,7 +1393,7 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   ASSERT_EQ(1u, mock_leveldb_service.open_requests_.size());
   auto& reopen_request = mock_leveldb_service.open_requests_[0];
   mock_db = mojo::MakeStrongAssociatedBinding(
-      base::MakeUnique<MockLevelDBDatabase>(&test_data),
+      std::make_unique<MockLevelDBDatabase>(&test_data),
       std::move(reopen_request.request));
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests_.clear();
@@ -1457,7 +1457,7 @@ TEST_F(LocalStorageContextMojoTestWithService,
   ASSERT_EQ(1u, mock_leveldb_service.open_requests_.size());
   auto& open_request = mock_leveldb_service.open_requests_[0];
   auto mock_db = mojo::MakeStrongAssociatedBinding(
-      base::MakeUnique<MockLevelDBDatabaseErrorOnWrite>(&test_data),
+      std::make_unique<MockLevelDBDatabaseErrorOnWrite>(&test_data),
       std::move(open_request.request));
   std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests_.clear();
@@ -1504,7 +1504,7 @@ TEST_F(LocalStorageContextMojoTestWithService,
   ASSERT_EQ(1u, mock_leveldb_service.open_requests_.size());
   auto& reopen_request = mock_leveldb_service.open_requests_[0];
   mock_db = mojo::MakeStrongAssociatedBinding(
-      base::MakeUnique<MockLevelDBDatabaseErrorOnWrite>(&test_data),
+      std::make_unique<MockLevelDBDatabaseErrorOnWrite>(&test_data),
       std::move(reopen_request.request));
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests_.clear();

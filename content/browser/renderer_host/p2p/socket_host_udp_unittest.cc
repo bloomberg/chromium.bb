@@ -194,7 +194,7 @@ std::unique_ptr<net::DatagramServerSocket> CreateFakeDatagramServerSocket(
     base::circular_deque<FakeDatagramServerSocket::UDPPacket>* sent_packets,
     std::vector<uint16_t>* used_ports,
     net::NetLog* net_log) {
-  return base::MakeUnique<FakeDatagramServerSocket>(sent_packets, used_ports);
+  return std::make_unique<FakeDatagramServerSocket>(sent_packets, used_ports);
 }
 
 }  // namespace

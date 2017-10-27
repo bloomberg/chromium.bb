@@ -240,7 +240,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
                                         bool enumerate_video_input,
                                         bool enumerate_audio_output,
                                         bool permission_override_value = true) {
-    host_->SetPermissionChecker(base::MakeUnique<MediaDevicesPermissionChecker>(
+    host_->SetPermissionChecker(std::make_unique<MediaDevicesPermissionChecker>(
         permission_override_value));
     base::RunLoop run_loop;
     host_->EnumerateDevices(
@@ -500,7 +500,7 @@ TEST_P(MediaDevicesDispatcherHostTest, Salt) {
 
   // Reset the salt and expect different device IDs in a new enumeration, except
   // for default audio devices, which are always hashed to the same constant.
-  browser_context_ = base::MakeUnique<TestBrowserContext>();
+  browser_context_ = std::make_unique<TestBrowserContext>();
   EnumerateDevicesAndWaitForResult(true, true, true);
   EXPECT_EQ(devices.size(), enumerated_devices_.size());
   for (size_t i = 0; i < enumerated_devices_.size(); ++i) {

@@ -280,7 +280,7 @@ std::unique_ptr<LevelDBLock> LevelDBDatabase::LockForTesting(
   if (!status.ok())
     return std::unique_ptr<LevelDBLock>();
   DCHECK(lock);
-  return base::MakeUnique<LockImpl>(env, lock);
+  return std::make_unique<LockImpl>(env, lock);
 }
 
 // static
@@ -293,7 +293,7 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   std::unique_ptr<ComparatorAdapter> comparator_adapter(
-      base::MakeUnique<ComparatorAdapter>(comparator));
+      std::make_unique<ComparatorAdapter>(comparator));
 
   std::unique_ptr<leveldb::DB> db;
   std::unique_ptr<const leveldb::FilterPolicy> filter_policy;
@@ -332,7 +332,7 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
 std::unique_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
     const LevelDBComparator* comparator) {
   std::unique_ptr<ComparatorAdapter> comparator_adapter(
-      base::MakeUnique<ComparatorAdapter>(comparator));
+      std::make_unique<ComparatorAdapter>(comparator));
   std::unique_ptr<leveldb::Env> in_memory_env(
       leveldb_chrome::NewMemEnv(LevelDBEnv::Get()));
 

@@ -182,7 +182,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
       input_router_.reset(new LegacyInputRouterImpl(
           process_, this, this, routing_id_, InputRouter::Config()));
       legacy_widget_input_handler_ =
-          base::MakeUnique<LegacyIPCWidgetInputHandler>(
+          std::make_unique<LegacyIPCWidgetInputHandler>(
               static_cast<LegacyInputRouterImpl*>(input_router_.get()));
     }
   }
@@ -209,7 +209,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
                                       int32_t routing_id) {
     mojom::WidgetPtr widget;
     std::unique_ptr<MockWidgetImpl> widget_impl =
-        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
 
     return new MockRenderWidgetHost(delegate, process, routing_id,
                                     std::move(widget_impl), std::move(widget));
@@ -641,7 +641,7 @@ class RenderWidgetHostTest : public testing::Test {
     viz::mojom::CompositorFrameSinkClientRequest client_request =
         mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
     renderer_compositor_frame_sink_ =
-        base::MakeUnique<FakeRendererCompositorFrameSink>(
+        std::make_unique<FakeRendererCompositorFrameSink>(
             std::move(sink), std::move(client_request));
     host_->RequestCompositorFrameSink(
         std::move(sink_request),

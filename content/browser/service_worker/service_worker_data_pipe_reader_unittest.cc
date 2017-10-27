@@ -77,9 +77,9 @@ class ServiceWorkerDataPipeReaderTest
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_ = base::MakeUnique<EmbeddedWorkerTestHelper>(base::FilePath());
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     mock_url_request_job_ =
-        base::MakeUnique<MockServiceWorkerURLRequestJob>(this);
+        std::make_unique<MockServiceWorkerURLRequestJob>(this);
     blink::mojom::ServiceWorkerRegistrationOptions options(
         GURL("https://example.com/"));
     registration_ = new ServiceWorkerRegistration(
@@ -102,7 +102,7 @@ class ServiceWorkerDataPipeReaderTest
         blink::mojom::ServiceWorkerStreamHandle::New();
     stream_handle->stream = std::move(data_pipe->consumer_handle);
     stream_handle->callback_request = mojo::MakeRequest(stream_callback);
-    return base::MakeUnique<ServiceWorkerDataPipeReader>(
+    return std::make_unique<ServiceWorkerDataPipeReader>(
         mock_url_request_job_.get(), version_, std::move(stream_handle));
   }
 

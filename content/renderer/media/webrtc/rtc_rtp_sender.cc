@@ -60,7 +60,7 @@ std::unique_ptr<RTCRtpSender> RTCRtpSender::ShallowCopy() const {
   for (size_t i = 0; i < stream_adapters_.size(); ++i) {
     stream_adapter_copies[i] = stream_adapters_[i]->Copy();
   }
-  return base::MakeUnique<RTCRtpSender>(webrtc_rtp_sender_,
+  return std::make_unique<RTCRtpSender>(webrtc_rtp_sender_,
                                         track_adapter_->Copy(),
                                         std::move(stream_adapter_copies));
 }

@@ -187,7 +187,7 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
     if (!loader_cancelled_) {
       DCHECK_EQ(DEFERRED_START, deferred_stage_);
       priority_info_ =
-          base::MakeUnique<PriorityInfo>(priority, intra_priority_value);
+          std::make_unique<PriorityInfo>(priority, intra_priority_value);
     }
     return;
   }
@@ -241,7 +241,7 @@ void ThrottlingURLLoader::Start(
     if (deferred) {
       deferred_stage_ = DEFERRED_START;
       start_info_ =
-          base::MakeUnique<StartInfo>(factory, routing_id, request_id, options,
+          std::make_unique<StartInfo>(factory, routing_id, request_id, options,
                                       std::move(start_loader_callback),
                                       url_request, std::move(task_runner));
       return;
@@ -334,7 +334,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
-      response_info_ = base::MakeUnique<ResponseInfo>(
+      response_info_ = std::make_unique<ResponseInfo>(
           response_head, ssl_info, std::move(downloaded_file));
       client_binding_.PauseIncomingMethodCallProcessing();
       return;
@@ -365,7 +365,7 @@ void ThrottlingURLLoader::OnReceiveRedirect(
     if (deferred) {
       deferred_stage_ = DEFERRED_REDIRECT;
       redirect_info_ =
-          base::MakeUnique<RedirectInfo>(redirect_info, response_head);
+          std::make_unique<RedirectInfo>(redirect_info, response_head);
       client_binding_.PauseIncomingMethodCallProcessing();
       return;
     }
@@ -512,7 +512,7 @@ ThrottlingURLLoader::ThrottleEntry::ThrottleEntry(
     ThrottlingURLLoader* loader,
     std::unique_ptr<URLLoaderThrottle> the_throttle)
     : delegate(
-          base::MakeUnique<ForwardingThrottleDelegate>(loader,
+          std::make_unique<ForwardingThrottleDelegate>(loader,
                                                        the_throttle.get())),
       throttle(std::move(the_throttle)) {
   throttle->set_delegate(delegate.get());

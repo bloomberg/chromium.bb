@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
   WebContentsBindingSet::GetForWebContents<
       mojom::BrowserAssociatedInterfaceTestDriver>(web_contents)
       ->SetBinderForTesting(
-          base::MakeUnique<TestInterfaceBinder>(run_loop.QuitClosure()));
+          std::make_unique<TestInterfaceBinder>(run_loop.QuitClosure()));
 
   // Simulate an inbound request for the test interface. This should get routed
   // to the overriding binder and allow the test to complete.

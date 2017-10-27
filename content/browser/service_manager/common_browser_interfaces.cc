@@ -83,7 +83,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
 }  // namespace
 
 void RegisterCommonBrowserInterfaces(ServiceManagerConnection* connection) {
-  connection->AddConnectionFilter(base::MakeUnique<ConnectionFilterImpl>());
+  connection->AddConnectionFilter(std::make_unique<ConnectionFilterImpl>());
 }
 
 }  // namespace content

@@ -121,7 +121,7 @@ class WebServiceWorkerNetworkProviderImpl
     if (render_thread && provider_->script_loader_factory() &&
         ServiceWorkerUtils::IsServicificationEnabled() &&
         IsScriptRequest(request)) {
-      return base::MakeUnique<WebURLLoaderImpl>(
+      return std::make_unique<WebURLLoaderImpl>(
           render_thread->resource_dispatcher(), std::move(task_runner),
           provider_->script_loader_factory());
     }
@@ -463,7 +463,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
       mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(!response_);
     DCHECK(!downloaded_file);
-    response_ = base::MakeUnique<blink::WebURLResponse>();
+    response_ = std::make_unique<blink::WebURLResponse>();
     // TODO(horo): Set report_security_info to true when DevTools is attached.
     const bool report_security_info = false;
     WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
@@ -481,7 +481,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         ServiceWorkerContextClient::ThreadSpecificInstance();
     if (!client)
       return;
-    response_ = base::MakeUnique<blink::WebURLResponse>();
+    response_ = std::make_unique<blink::WebURLResponse>();
     WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
                                           false /* report_security_info */);
     client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
@@ -569,7 +569,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
     client->OnNavigationPreloadResponse(
         fetch_event_id_, std::move(response_),
-        base::MakeUnique<WebDataConsumerHandleImpl>(std::move(body_)));
+        std::make_unique<WebDataConsumerHandleImpl>(std::move(body_)));
   }
 
   void ReportErrorToClient(const std::string& message,
@@ -580,7 +580,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
       return;
     // This will delete |this|.
     client->OnNavigationPreloadError(
-        fetch_event_id_, base::MakeUnique<blink::WebServiceWorkerError>(
+        fetch_event_id_, std::make_unique<blink::WebServiceWorkerError>(
                              blink::mojom::ServiceWorkerErrorType::kNetwork,
                              blink::WebString::FromUTF8(message),
                              blink::WebString::FromUTF8(unsanitized_message)));
@@ -1052,7 +1052,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
   DCHECK(body_as_stream->stream.is_valid());
 
   web_body_as_stream->SetListener(
-      base::MakeUnique<StreamHandleListener>(std::move(callback_ptr)));
+      std::make_unique<StreamHandleListener>(std::move(callback_ptr)));
 
   response_callback->OnResponseStream(
       response, std::move(body_as_stream),
@@ -1204,7 +1204,7 @@ std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   // Blink is responsible for deleting the returned object.
-  return base::MakeUnique<WebServiceWorkerNetworkProviderImpl>(
+  return std::make_unique<WebServiceWorkerNetworkProviderImpl>(
       std::move(pending_network_provider_));
 }
 
@@ -1219,7 +1219,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
           ->CreateDefaultURLLoaderFactoryGetter();
   DCHECK(url_loader_factory_getter);
   // Blink is responsible for deleting the returned object.
-  return base::MakeUnique<ServiceWorkerFetchContextImpl>(
+  return std::make_unique<ServiceWorkerFetchContextImpl>(
       script_url_, url_loader_factory_getter->GetClonedInfo(),
       provider_context_->provider_id());
 }
@@ -1230,7 +1230,7 @@ ServiceWorkerContextClient::CreateServiceWorkerProvider() {
   DCHECK(provider_context_);
 
   // Blink is responsible for deleting the returned object.
-  return base::MakeUnique<WebServiceWorkerProviderImpl>(
+  return std::make_unique<WebServiceWorkerProviderImpl>(
       sender_.get(), provider_context_.get());
 }
 
@@ -1292,7 +1292,7 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
   int request_id = context_->sync_event_callbacks.Add(
-      base::MakeUnique<DispatchSyncEventCallback>(std::move(callback)));
+      std::make_unique<DispatchSyncEventCallback>(std::move(callback)));
 
   // TODO(shimazu): Use typemap when this is moved to blink-side.
   blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
@@ -1386,7 +1386,7 @@ void ServiceWorkerContextClient::DispatchActivateEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchActivateEvent");
   int request_id = context_->activate_event_callbacks.Add(
-      base::MakeUnique<DispatchActivateEventCallback>(std::move(callback)));
+      std::make_unique<DispatchActivateEventCallback>(std::move(callback)));
   proxy_->DispatchActivateEvent(request_id);
 }
 
@@ -1396,7 +1396,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent");
   int request_id = context_->background_fetch_abort_event_callbacks.Add(
-      base::MakeUnique<DispatchBackgroundFetchAbortEventCallback>(
+      std::make_unique<DispatchBackgroundFetchAbortEventCallback>(
           std::move(callback)));
 
   proxy_->DispatchBackgroundFetchAbortEvent(
@@ -1410,7 +1410,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent");
   int request_id = context_->background_fetch_click_event_callbacks.Add(
-      base::MakeUnique<DispatchBackgroundFetchClickEventCallback>(
+      std::make_unique<DispatchBackgroundFetchClickEventCallback>(
           std::move(callback)));
 
   // TODO(peter): Use typemap when this is moved to blink-side.
@@ -1429,7 +1429,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent");
   int request_id = context_->background_fetch_fail_event_callbacks.Add(
-      base::MakeUnique<DispatchBackgroundFetchFailEventCallback>(
+      std::make_unique<DispatchBackgroundFetchFailEventCallback>(
           std::move(callback)));
 
   blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
@@ -1451,7 +1451,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchedEvent");
   int request_id = context_->background_fetched_event_callbacks.Add(
-      base::MakeUnique<DispatchBackgroundFetchedEventCallback>(
+      std::make_unique<DispatchBackgroundFetchedEventCallback>(
           std::move(callback)));
 
   blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
@@ -1473,7 +1473,7 @@ void ServiceWorkerContextClient::DispatchInstallEvent(
                "ServiceWorkerContextClient::DispatchInstallEvent");
 
   int event_id = context_->install_event_callbacks.Add(
-      base::MakeUnique<DispatchInstallEventCallback>(std::move(callback)));
+      std::make_unique<DispatchInstallEventCallback>(std::move(callback)));
 
   DCHECK(!context_->install_methods_map.count(event_id));
   mojom::ServiceWorkerInstallEventMethodsAssociatedPtr install_methods;
@@ -1489,7 +1489,7 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchExtendableMessageEvent");
   int request_id = context_->message_event_callbacks.Add(
-      base::MakeUnique<DispatchExtendableMessageEventCallback>(
+      std::make_unique<DispatchExtendableMessageEventCallback>(
           std::move(callback)));
 
   if (event->source.client_info.IsValid()) {
@@ -1529,7 +1529,7 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     DispatchFetchEventCallback callback) {
   // Register callbacks for notifying about event completion and the response.
   int fetch_event_id = context_->fetch_event_callbacks.Add(
-      base::MakeUnique<DispatchFetchEventCallback>(std::move(callback)));
+      std::make_unique<DispatchFetchEventCallback>(std::move(callback)));
   context_->fetch_response_callbacks.insert(
       std::make_pair(fetch_event_id, std::move(response_callback)));
 
@@ -1542,7 +1542,7 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   std::unique_ptr<NavigationPreloadRequest> preload_request =
       preload_handle
-          ? base::MakeUnique<NavigationPreloadRequest>(
+          ? std::make_unique<NavigationPreloadRequest>(
                 fetch_event_id, request.url, std::move(preload_handle))
           : nullptr;
   const bool navigation_preload_sent = !!preload_request;
@@ -1572,7 +1572,7 @@ void ServiceWorkerContextClient::DispatchNotificationClickEvent(
                "ServiceWorkerContextClient::DispatchNotificationClickEvent");
 
   int request_id = context_->notification_click_event_callbacks.Add(
-      base::MakeUnique<DispatchNotificationClickEventCallback>(
+      std::make_unique<DispatchNotificationClickEventCallback>(
           std::move(callback)));
 
   blink::WebString web_reply;
@@ -1592,7 +1592,7 @@ void ServiceWorkerContextClient::DispatchNotificationCloseEvent(
                "ServiceWorkerContextClient::DispatchNotificationCloseEvent");
 
   int request_id = context_->notification_close_event_callbacks.Add(
-      base::MakeUnique<DispatchNotificationCloseEventCallback>(
+      std::make_unique<DispatchNotificationCloseEventCallback>(
           std::move(callback)));
 
   proxy_->DispatchNotificationCloseEvent(
@@ -1606,7 +1606,7 @@ void ServiceWorkerContextClient::DispatchPushEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchPushEvent");
   int request_id = context_->push_event_callbacks.Add(
-      base::MakeUnique<DispatchPushEventCallback>(std::move(callback)));
+      std::make_unique<DispatchPushEventCallback>(std::move(callback)));
 
   // Only set data to be a valid string if the payload had decrypted data.
   blink::WebString data;

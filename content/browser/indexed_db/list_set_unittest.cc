@@ -166,9 +166,9 @@ TEST(ListSetTest, ListSetObject) {
 }
 
 TEST(ListSetTest, ListSetPointer) {
-  std::unique_ptr<Wrapped<int>> w0 = base::MakeUnique<Wrapped<int>>(0);
-  std::unique_ptr<Wrapped<int>> w1 = base::MakeUnique<Wrapped<int>>(1);
-  std::unique_ptr<Wrapped<int>> w2 = base::MakeUnique<Wrapped<int>>(2);
+  std::unique_ptr<Wrapped<int>> w0 = std::make_unique<Wrapped<int>>(0);
+  std::unique_ptr<Wrapped<int>> w1 = std::make_unique<Wrapped<int>>(1);
+  std::unique_ptr<Wrapped<int>> w2 = std::make_unique<Wrapped<int>>(2);
 
   list_set<Wrapped<int>*> set;
   EXPECT_EQ(0u, set.size());
