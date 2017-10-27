@@ -201,3 +201,58 @@ function vr_session_test(func, vrDevice, sessionOptions, name, properties) {
     t.done();
   });
 }
+
+// Gets the corresponding transform matrix for a WebVR 1.1 pose
+function matrixFrom11Pose(pose) {
+  let x = pose.orientation[0];
+  let y = pose.orientation[1];
+  let z = pose.orientation[2];
+  let w = pose.orientation[3];
+  let x2 = x + x;
+  let y2 = y + y;
+  let z2 = z + z;
+  let xx = x * x2;
+  let xy = x * y2;
+  let xz = x * z2;
+  let yy = y * y2;
+  let yz = y * z2;
+  let zz = z * z2;
+  let wx = w * x2;
+  let wy = w * y2;
+  let wz = w * z2;
+
+  let out = new Float32Array(16);
+  out[0] = 1 - (yy + zz);
+  out[1] = xy + wz;
+  out[2] = xz - wy;
+  out[3] = 0;
+  out[4] = xy - wz;
+  out[5] = 1 - (xx + zz);
+  out[6] = yz + wx;
+  out[7] = 0;
+  out[8] = xz + wy;
+  out[9] = yz - wx;
+  out[10] = 1 - (xx + yy);
+  out[11] = 0;
+  out[12] = pose.position[0];
+  out[13] = pose.position[1];
+  out[14] = pose.position[2];
+  out[15] = 1;
+
+  return out;
+}
+
+function assert_matrices_approx_equal(matA, matB, epsilon = FLOAT_EPSILON) {
+  if (matA == null && matB == null) {
+    return;
+  }
+
+  assert_not_equals(matA, null);
+  assert_not_equals(matB, null);
+
+  assert_equals(matA.length, 16);
+  assert_equals(matB.length, 16);
+  for (let i = 0; i < 16; ++i) {
+    assert_approx_equals(matA[i], matB[i], epsilon);
+  }
+}

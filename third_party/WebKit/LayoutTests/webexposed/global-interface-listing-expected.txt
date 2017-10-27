@@ -7163,6 +7163,10 @@ interface VRDeviceEvent : Event
     attribute @@toStringTag
     getter device
     method constructor
+interface VRDevicePose
+    attribute @@toStringTag
+    getter poseModelMatrix
+    method constructor
 interface VRDisplay : EventTarget
     attribute @@toStringTag
     getter capabilities
@@ -7223,6 +7227,11 @@ interface VRPose
     getter orientation
     getter position
     method constructor
+interface VRPresentationFrame
+    attribute @@toStringTag
+    getter session
+    method constructor
+    method getDevicePose
 interface VRSession : EventTarget
     attribute @@toStringTag
     getter depthFar

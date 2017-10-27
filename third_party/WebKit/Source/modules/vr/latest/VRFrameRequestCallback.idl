@@ -3,4 +3,4 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/webvr/spec/latest/#vrframerequestcallback
-callback VRFrameRequestCallback = void ();
+callback VRFrameRequestCallback = void (VRPresentationFrame frame);

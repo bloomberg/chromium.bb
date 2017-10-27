@@ -7,6 +7,8 @@
 #include "bindings/modules/v8/v8_vr_frame_request_callback.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
+#include "modules/vr/latest/VRPresentationFrame.h"
+#include "modules/vr/latest/VRSession.h"
 
 namespace blink {
 
@@ -31,7 +33,9 @@ void VRFrameRequestCallbackCollection::CancelCallback(CallbackId id) {
   }
 }
 
-void VRFrameRequestCallbackCollection::ExecuteCallbacks() {
+void VRFrameRequestCallbackCollection::ExecuteCallbacks(
+    VRSession* session,
+    VRPresentationFrame* frame) {
   // First, generate a list of callbacks to consider.  Callbacks registered from
   // this point on are considered only for the "next" frame, not this one.
   DCHECK(callbacks_to_invoke_.IsEmpty());
@@ -46,7 +50,7 @@ void VRFrameRequestCallbackCollection::ExecuteCallbacks() {
 
     probe::AsyncTask async_task(context_, callback);
     probe::UserCallback probe(context_, "VRRequestFrame", AtomicString(), true);
-    callback->call(nullptr);
+    callback->call(session, frame);
   }
 
   callbacks_to_invoke_.clear();
