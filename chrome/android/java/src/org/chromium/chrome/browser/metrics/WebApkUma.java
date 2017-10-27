@@ -28,10 +28,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class WebApkUma {
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
-    public static final int UPDATE_REQUEST_SENT_FIRST_TRY = 0;
-    public static final int UPDATE_REQUEST_SENT_ONSTOP = 1;
-    public static final int UPDATE_REQUEST_SENT_WHILE_WEBAPK_IN_FOREGROUND = 2;
-    public static final int UPDATE_REQUEST_SENT_MAX = 3;
+    // Deprecated: UPDATE_REQUEST_SENT_FIRST_TRY = 0;
+    // Deprecated: UPDATE_REQUEST_SENT_ONSTOP = 1;
+    // Deprecated: UPDATE_REQUEST_SENT_WHILE_WEBAPK_IN_FOREGROUND = 2;
+    public static final int UPDATE_REQUEST_SENT_WHILE_WEBAPK_CLOSED = 3;
+    public static final int UPDATE_REQUEST_SENT_MAX = 4;
 
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
     // The queued request times shouldn't exceed three.

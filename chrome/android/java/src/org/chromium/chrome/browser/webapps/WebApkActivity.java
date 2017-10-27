@@ -218,9 +218,6 @@ public class WebApkActivity extends WebappActivity {
             WebApkDisclosureNotificationManager.dismissNotification(mWebappInfo);
             mNotificationShowing = false;
         }
-        if (mUpdateManager != null && mUpdateManager.requestPendingUpdate()) {
-            WebApkUma.recordUpdateRequestSent(WebApkUma.UPDATE_REQUEST_SENT_ONSTOP);
-        }
     }
 
     /**
@@ -262,7 +259,7 @@ public class WebApkActivity extends WebappActivity {
         WebApkInfo info = (WebApkInfo) mWebappInfo;
         WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.webApkPackageName());
 
-        mUpdateManager = new WebApkUpdateManager(WebApkActivity.this, storage);
+        mUpdateManager = new WebApkUpdateManager(storage);
         mUpdateManager.updateIfNeeded(getActivityTab(), info);
 
         maybeShowDisclosure(storage);
