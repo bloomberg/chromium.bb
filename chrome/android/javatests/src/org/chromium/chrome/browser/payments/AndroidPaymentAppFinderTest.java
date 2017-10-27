@@ -25,7 +25,6 @@ import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.net.URI;
@@ -60,12 +59,6 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         /* package */ void setTestServerUri(URI uri) {
             assert mTestServerUri == null : "Test server URI should be set only once";
             mTestServerUri = uri;
-        }
-
-        @Override
-        public void initialize(WebContents webContents) {
-            super.initialize(webContents);
-            allowHttpForTest();
         }
 
         @Override

@@ -89,6 +89,11 @@ TEST(PaymentManifestParserTest, ListOfEmptyDefaultApplicationsIsMalformed) {
       "{\"default_applications\": [\"\"]}");
 }
 
+TEST(PaymentManifestParserTest, RelativeURLDefaultApplicationIsMalformed) {
+  ExpectUnableToParsePaymentMethodManifest(
+      "{\"default_applications\": [\"manifest.json\"]}");
+}
+
 TEST(PaymentManifestParserTest, DefaultApplicationsShouldNotHaveNulCharacters) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"default_applications\": [\"https://bobpay.com/app\0json\"]}");
@@ -184,6 +189,17 @@ TEST(PaymentManifestParserTest, WellFormedPaymentMethodManifestWithApps) {
 }
 
 TEST(PaymentManifestParserTest,
+     WellFormedPaymentMethodManifestWithHttpLocalhostApps) {
+  ExpectParsedPaymentMethodManifest(
+      "{\"default_applications\": ["
+      "\"http://127.0.0.1:8080/app.json\","
+      "\"http://localhost:8081/app.json\"]}",
+      {GURL("http://127.0.0.1:8080/app.json"),
+       GURL("http://localhost:8081/app.json")},
+      std::vector<url::Origin>(), false);
+}
+
+TEST(PaymentManifestParserTest,
      WellFormedPaymentMethodManifestWithAppsAndAllSupportedOrigins) {
   ExpectParsedPaymentMethodManifest(
       "{\"default_applications\": [\"https://bobpay.com/app.json\", "
@@ -223,6 +239,17 @@ TEST(PaymentManifestParserTest,
        GURL("https://alicepay.com/app.json")},
       {url::Origin::Create(GURL("https://charliepay.com")),
        url::Origin::Create(GURL("https://evepay.com"))},
+      false);
+}
+
+TEST(PaymentManifestParserTest,
+     WellFormedPaymentMethodManifestWithHttpLocalhostSupportedOrigins) {
+  ExpectParsedPaymentMethodManifest(
+      "{\"supported_origins\": [\"http://localhost:8080\", "
+      "\"http://127.0.0.1:8081\"]}",
+      std::vector<GURL>(),
+      {url::Origin::Create(GURL("http://localhost:8080")),
+       url::Origin::Create(GURL("http://127.0.0.1:8081"))},
       false);
 }
 

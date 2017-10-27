@@ -95,7 +95,6 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
         mRule.runOnUiThread((Runnable) () -> {
             mDownloader.initialize(
                     mRule.getActivity().getCurrentContentViewCore().getWebContents());
-            mDownloader.allowHttpForTest();
         });
         mDownloadComplete = false;
         mDownloadPaymentMethodManifestSuccess = false;

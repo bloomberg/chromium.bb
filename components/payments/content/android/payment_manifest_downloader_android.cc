@@ -19,7 +19,8 @@ namespace {
 
 class DownloadCallback {
  public:
-  DownloadCallback(const base::android::JavaParamRef<jobject>& jcallback)
+  explicit DownloadCallback(
+      const base::android::JavaParamRef<jobject>& jcallback)
       : jcallback_(jcallback) {}
 
   ~DownloadCallback() {}
@@ -90,12 +91,6 @@ void PaymentManifestDownloaderAndroid::Destroy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   delete this;
-}
-
-void PaymentManifestDownloaderAndroid::AllowHttpForTest(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  downloader_.AllowHttpForTest();
 }
 
 // Static free function declared and called directly from java.

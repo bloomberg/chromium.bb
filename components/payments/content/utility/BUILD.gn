@@ -15,6 +15,7 @@ static_library("utility") {
     "//base",
     "//components/payments/content:content_common",
     "//content/public/common",
+    "//net",
     "//services/data_decoder/public/cpp",
     "//url",
   ]
