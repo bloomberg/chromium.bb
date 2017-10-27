@@ -269,7 +269,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params,
       BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
-                            false,  // has_user_gestures
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION,
                             blink::WebMixedContentContextType::kBlockable,
@@ -317,8 +316,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
               // history-navigations do not use this path. See comments above.
       current_history_list_offset, current_history_list_length,
       false,  // is_view_source
-      false,  // should_clear_history_list
-      begin_params.has_user_gesture);
+      false /*should_clear_history_list*/);
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params, begin_params, request_params,
       false,  // browser_initiated
@@ -439,7 +437,7 @@ void NavigationRequest::BeginNavigation() {
       GetContentClient()->browser()->ShouldOverrideUrlLoading(
           frame_tree_node_->frame_tree_node_id(), browser_initiated_,
           request_params_.original_url, request_params_.original_method,
-          request_params_.has_user_gesture, false,
+          common_params_.has_user_gesture, false,
           frame_tree_node_->IsMainFrame(), common_params_.transition);
 
   // The content/ embedder might cause |this| to be deleted while
@@ -503,7 +501,7 @@ void NavigationRequest::BeginNavigation() {
         common_params_.method, common_params_.post_data,
         Referrer::SanitizeForRequest(common_params_.url,
                                      common_params_.referrer),
-        begin_params_.has_user_gesture, common_params_.transition,
+        common_params_.has_user_gesture, common_params_.transition,
         is_external_protocol, begin_params_.request_context_type,
         begin_params_.mixed_content_context_type,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
@@ -1190,8 +1188,6 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->speculative_frame_host());
 
   TransferNavigationHandleOwnership(render_frame_host);
-
-  DCHECK_EQ(request_params_.has_user_gesture, begin_params_.has_user_gesture);
 
   render_frame_host->CommitNavigation(
       response_.get(), std::move(body_), std::move(handle_), common_params_,

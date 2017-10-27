@@ -536,7 +536,8 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<PreviewsState>(info.url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
-      should_check_main_world_csp, false /* started_from_context_menu */);
+      should_check_main_world_csp, false /* started_from_context_menu */,
+      info.url_request.HasUserGesture());
 }
 
 WebFrameLoadType ReloadFrameLoadTypeFor(
@@ -3030,8 +3031,8 @@ void RenderFrameImpl::CommitNavigation(
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
   std::unique_ptr<blink::WebScopedUserGesture> gesture(
-      request_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
-                                      : nullptr);
+      common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
+                                     : nullptr);
 
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
@@ -6216,7 +6217,7 @@ void RenderFrameImpl::NavigateInternal(
   bool has_history_navigation_in_frame = false;
 
 #if defined(OS_ANDROID)
-  request.SetHasUserGesture(request_params.has_user_gesture);
+  request.SetHasUserGesture(common_params.has_user_gesture);
 #endif
 
   if (browser_side_navigation) {
@@ -6585,7 +6586,6 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 
   BeginNavigationParams begin_navigation_params(
       GetWebURLRequestHeadersAsString(info.url_request), load_flags,
-      info.url_request.HasUserGesture(),
       info.url_request.GetServiceWorkerMode() !=
           blink::WebURLRequest::ServiceWorkerMode::kAll,
       GetRequestContextTypeForWebURLRequest(info.url_request),

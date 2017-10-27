@@ -529,7 +529,7 @@ void RenderViewTest::Reload(const GURL& url) {
       PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
-      false /* started_from_context_menu */);
+      false /* started_from_context_menu */, false /* has_user_gesture */);
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -670,7 +670,7 @@ void RenderViewTest::GoToOffset(int offset,
       GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
-      false /* started_from_context_menu */);
+      false /* started_from_context_menu */, false /* has_user_gesture */);
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.nav_entry_id = pending_offset + 1;
