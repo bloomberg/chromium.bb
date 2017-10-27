@@ -201,6 +201,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // whitespace) output.
   bool HasTextBoxes() const { return FirstTextBox(); }
 
+  // Returns the Position in DOM that corresponds to the given offset in the
+  // |text_| string.
+  // TODO(layout-dev): Fix it when text-transform changes text length.
+  virtual Position PositionForCaretOffset(unsigned) const;
+
   // Returns true if the offset (0-based in the |text_| string) is next to a
   // non-collapsed non-linebreak character, or before a forced linebreak (<br>,
   // or segment break in node with style white-space: pre/pre-line/pre-wrap).
@@ -215,7 +220,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
-  virtual unsigned ResolvedTextLength() const;
+  unsigned ResolvedTextLength() const;
 
   // True if any character remains after CSS white-space collapsing.
   bool HasNonCollapsedText() const;
