@@ -3,9 +3,6 @@ haraken@chromium.org
 # For Blink API usage
 dglazkov@chromium.org
 
-# For Android
-aelias@chromium.org
-
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
 per-file *.sb=rsesek@chromium.org
