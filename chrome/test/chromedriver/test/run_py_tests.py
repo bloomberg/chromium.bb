@@ -165,6 +165,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCanClickAlertInIframes',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2081
         'ChromeDriverTest.testCloseWindowUsingJavascript',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2106
+        'ChromeDriverTest.testShadowDomFindElementFailsBetweenShadowRoots'
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
