@@ -29,6 +29,15 @@ WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
   return nullptr;
 }
 
+scoped_refptr<WebTaskRunner> MainThreadWorkletGlobalScope::GetTaskRunner(
+    TaskType type) {
+  DCHECK(IsContextThread());
+  // MainThreadWorkletGlobalScope lives on the main thread and its GetThread()
+  // doesn't return a valid worker thread. Instead, retrieve a task runner
+  // from the frame.
+  return GetFrame()->FrameScheduler()->GetTaskRunner(type);
+}
+
 // TODO(nhiroki): Add tests for termination.
 void MainThreadWorkletGlobalScope::Terminate() {
   Dispose();

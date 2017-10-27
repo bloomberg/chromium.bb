@@ -243,15 +243,6 @@ void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
   GetMemoryCache()->RemoveURLFromCache(url);
 }
 
-scoped_refptr<WebTaskRunner> ExecutionContext::GetTaskRunner(TaskType type) {
-  if (IsDocument())
-    return ToDocument(this)->GetTaskRunner(type);
-  if (IsWorkerOrWorkletGlobalScope())
-    return ToWorkerOrWorkletGlobalScope(this)->GetTaskRunner(type);
-  // This should only happen for a NullExecutionContext in a unit test.
-  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
-}
-
 void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(public_url_manager_);
   visitor->Trace(pending_exceptions_);

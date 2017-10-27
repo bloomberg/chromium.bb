@@ -7163,6 +7163,10 @@ service_manager::InterfaceProvider* Document::GetInterfaceProvider() {
 }
 
 scoped_refptr<WebTaskRunner> Document::GetTaskRunner(TaskType type) {
+  // TODO(hajimehoshi): This function should be called only from the main thread
+  // but there are some cases that this is called from non main thread. Such
+  // callers should be fixed. See also crbug/696905.
+
   if (ContextDocument() && ContextDocument()->GetFrame())
     return ContextDocument()->GetFrame()->GetTaskRunner(type);
   // In most cases, ContextDocument() will get us to a relevant Frame. In some

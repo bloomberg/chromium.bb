@@ -1392,7 +1392,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ukm::UkmRecorder* UkmRecorder();
   int64_t UkmSourceID() const;
 
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType);
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
 
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);

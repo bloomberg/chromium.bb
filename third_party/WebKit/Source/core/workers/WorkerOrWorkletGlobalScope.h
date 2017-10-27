@@ -77,7 +77,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
 
   void Trace(blink::Visitor*) override;
 
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType);
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
 
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;

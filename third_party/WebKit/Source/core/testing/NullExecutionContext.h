@@ -54,6 +54,8 @@ class NullExecutionContext
 
   ResourceFetcher* Fetcher() const override { return nullptr; }
 
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
+
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
