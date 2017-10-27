@@ -24699,6 +24699,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Favicons.LargeIconService.BlacklistedURLMismatch"
+    units="BooleanError">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Records the number of large icons that were fetched from the local cache
+    (e.g. during NTP impression), where the URL (of the page or the icon)
+    matches a hardcoded blacklist. Suspicious mismatches are reported as errors.
+  </summary>
+</histogram>
+
 <histogram name="Favicons.LargeIconService.DownloadedSize" units="pixels">
   <owner>jkrcal@chromium.org</owner>
   <summary>
