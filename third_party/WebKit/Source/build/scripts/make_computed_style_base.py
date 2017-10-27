@@ -383,12 +383,13 @@ def _reorder_fields(fields):
         non_bit_fields) + _reorder_bit_fields(bit_fields)
 
 
-def _get_properties_ranking(properties_ranking_file, partition_rule):
-    """Read the properties ranking file and produce a dictionary of css
-    properties with their group number based on the partition_rule
+def _get_properties_ranking_using_partition_rule(
+        properties_ranking, partition_rule):
+    """Take the contents of the properties ranking file and produce a dictionary
+    of css properties with their group number based on the partition_rule
 
     Args:
-        properties_ranking_file: file path to the ranking file
+        properties_ranking: rankings map as read from CSSPropertyRanking.json5
         partition_rule: cumulative distribution over properties_ranking
 
     Returns:
@@ -396,10 +397,6 @@ def _get_properties_ranking(properties_ranking_file, partition_rule):
         that each css properties belong to. Smaller group number is higher
         popularity in the ranking.
     """
-    properties_ranking = [
-        x["name"] for x in json5_generator.Json5File.load_from_files(
-            [properties_ranking_file]).name_dictionaries
-    ]
     return dict(
         zip(properties_ranking, [
             bisect.bisect_left(
@@ -407,14 +404,14 @@ def _get_properties_ranking(properties_ranking_file, partition_rule):
             for i in range(len(properties_ranking))]))
 
 
-def _evaluate_rare_non_inherited_group(properties, properties_ranking_file,
+def _evaluate_rare_non_inherited_group(properties, properties_ranking,
                                        num_layers, partition_rule=None):
     """Re-evaluate the grouping of RareNonInherited groups based on each
     property's popularity.
 
     Args:
         properties: list of all css properties
-        properties_ranking_file: file path to the ranking file
+        properties_ranking: map of property rankings
         num_layers: the number of group to split
         partition_rule: cumulative distribution over properties_ranking
                         Ex: [0.3, 0.6, 1]
@@ -431,8 +428,8 @@ def _evaluate_rare_non_inherited_group(properties, properties_ranking_file,
             str(int(round(partition_rule[i] * 100))) + "-percent")
         for i in range(num_layers)
     ]
-    properties_ranking = _get_properties_ranking(
-        properties_ranking_file, partition_rule)
+    properties_ranking = _get_properties_ranking_using_partition_rule(
+        properties_ranking, partition_rule)
 
     for property_ in properties:
         if (property_["field_group"] is not None and
@@ -455,14 +452,14 @@ def _evaluate_rare_non_inherited_group(properties, properties_ranking_file,
             property_["field_group"] = "->".join(group_tree)
 
 
-def _evaluate_rare_inherit_group(properties, properties_ranking_file,
+def _evaluate_rare_inherit_group(properties, properties_ranking,
                                  num_layers, partition_rule=None):
     """Re-evaluate the grouping of RareInherited groups based on each property's
     popularity.
 
     Args:
         properties: list of all css properties
-        properties_ranking_file: file path to the ranking file
+        properties_ranking: map of property rankings
         num_layers: the number of group to split
         partition_rule: cumulative distribution over properties_ranking
                         Ex: [0.4, 1]
@@ -480,8 +477,8 @@ def _evaluate_rare_inherit_group(properties, properties_ranking_file,
             str(int(round(partition_rule[i] * 100))) for i in range(num_layers))
     ]
 
-    properties_ranking = _get_properties_ranking(
-        properties_ranking_file, partition_rule)
+    properties_ranking = _get_properties_ranking_using_partition_rule(
+        properties_ranking, partition_rule)
 
     for property_ in properties:
         if property_["field_group"] is not None and \
@@ -532,12 +529,18 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
             json5_generator.Json5File.load_from_files(
                 [json5_file_paths[6]]).name_dictionaries])
 
+        properties_ranking = [
+            x["name"] for x in json5_generator.Json5File.load_from_files(
+                [json5_file_paths[5]]).name_dictionaries
+        ]
         _evaluate_rare_non_inherited_group(
-            self._properties, json5_file_paths[5],
+            self._properties,
+            properties_ranking,
             len(group_parameters["rare_non_inherited_properties_rule"]),
             group_parameters["rare_non_inherited_properties_rule"])
         _evaluate_rare_inherit_group(
-            self._properties, json5_file_paths[5],
+            self._properties,
+            properties_ranking,
             len(group_parameters["rare_inherited_properties_rule"]),
             group_parameters["rare_inherited_properties_rule"])
         self._root_group = _create_groups(self._properties)
