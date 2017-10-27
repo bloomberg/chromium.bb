@@ -10,6 +10,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,15 +38,12 @@ constexpr SkColor kHighlightBackgroundAlpha = 0x80;
 constexpr SkColor kLabelBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kLabelEnabledColor = SK_ColorWHITE;
 
-// Height of the labels.
-constexpr int kLabelHeightDp = 40;
-
 // The size of the warning icon in the when a window incompatible with
 // splitscreen is dragged.
 constexpr int kWarningIconSizeDp = 24;
 
-// The amount of vertical inset to be applied on a rotated image label view.
-constexpr int kRotatedViewVerticalInsetDp = 6;
+// The amount of inset to be applied on a rotated image label view.
+constexpr int kRotatedViewInsetDp = 8;
 
 // The amount of round applied to the corners of a rotated image label view.
 constexpr int kRotatedViewVerticalRoundRectRadius = 20;
@@ -111,8 +109,8 @@ class SplitViewOverviewOverlay::RotatedImageLabelView : public views::View {
     AddChildView(icon_);
     AddChildView(label_);
     layout->SetFlexForView(label_, 1);
-    SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kRotatedViewVerticalInsetDp, 0)));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kRotatedViewInsetDp, kRotatedViewInsetDp)));
   }
 
   ~RotatedImageLabelView() override = default;
@@ -232,18 +230,22 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
-    const int rotated_bounds_height =
-        kLabelHeightDp +
-        (left_rotated_view_->icon_visible() ? kWarningIconSizeDp : 0);
-    const int rotated_x =
-        landscape ? 0 : width() / 2 - kHighlightScreenWidth / 2;
-    const gfx::Rect rotated_bounds(
-        rotated_x, highlight_height / 2 - rotated_bounds_height / 2,
-        kHighlightScreenWidth, rotated_bounds_height);
+    const gfx::Size size = left_rotated_view_->GetPreferredSize();
+    const gfx::Rect rotated_bounds(highlight_width / 2 - size.width() / 2,
+                                   highlight_height / 2 - size.height() / 2,
+                                   size.width(), size.height());
+
+    // In portrait mode, there is no need to rotate the text and warning icon.
+    // In landscape mode, rotate the left text 90 degrees clockwise in rtl and
+    // 90 degress anti clockwise in ltr. The right text is rotated 90 degrees in
+    // the opposite direction of the left text.
+    double left_rotation_angle = 0.0;
+    if (landscape)
+      left_rotation_angle = 90.0 * (base::i18n::IsRTL() ? 1 : -1);
     left_rotated_view_->OnBoundsUpdated(rotated_bounds,
-                                        landscape ? -90.0 : 0.0 /* angle */);
+                                        left_rotation_angle /* angle */);
     right_rotated_view_->OnBoundsUpdated(rotated_bounds,
-                                         landscape ? 90.0 : 0.0 /* angle */);
+                                         -left_rotation_angle /* angle */);
   }
 
  private:
@@ -255,6 +257,7 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   void SetLabelsText(const base::string16& text) {
     left_rotated_view_->SetLabelText(text);
     right_rotated_view_->SetLabelText(text);
+    Layout();
   }
 
   void SetIconsVisible(bool visible) {
