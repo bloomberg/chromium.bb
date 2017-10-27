@@ -1922,6 +1922,24 @@ const NGOffsetMapping& LayoutText::GetNGOffsetMapping() const {
   return NGInlineNode(EnclosingNGBlockFlow()).ComputeOffsetMappingIfNeeded();
 }
 
+Position LayoutText::PositionForCaretOffset(unsigned offset) const {
+  // ::first-letter handling should be done by LayoutTextFragment override.
+  DCHECK(!IsTextFragment());
+  DCHECK_LE(offset, TextLength());
+  const Node* node = GetNode();
+  if (!node)
+    return Position();
+  if (node->IsTextNode())
+    return Position(node, offset);
+  if (IsBR()) {
+    DCHECK(IsHTMLBRElement(node));
+    DCHECK_LE(offset, 1u);
+    return offset ? Position::AfterNode(*node) : Position::BeforeNode(*node);
+  }
+  NOTREACHED();
+  return Position();
+}
+
 int LayoutText::CaretMinOffset() const {
   if (ShouldUseNGAlternatives()) {
     // ::first-letter handling should be done by LayoutTextFragment override.
@@ -1970,14 +1988,16 @@ int LayoutText::CaretMaxOffset() const {
 
 unsigned LayoutText::ResolvedTextLength() const {
   if (ShouldUseNGAlternatives()) {
-    // ::first-letter handling should be done by LayoutTextFragment override.
-    DCHECK(!IsTextFragment());
-    if (!GetNode())
+    const Position start_position = PositionForCaretOffset(0);
+    const Position end_position = PositionForCaretOffset(TextLength());
+    if (start_position.IsNull()) {
+      DCHECK(end_position.IsNull()) << end_position;
       return 0;
+    }
+    DCHECK(end_position.IsNotNull()) << start_position;
     const NGOffsetMapping& mapping = GetNGOffsetMapping();
-    Optional<unsigned> start = mapping.GetTextContentOffset(*GetNode(), 0);
-    Optional<unsigned> end =
-        mapping.GetTextContentOffset(*GetNode(), TextLength());
+    Optional<unsigned> start = mapping.GetTextContentOffset(start_position);
+    Optional<unsigned> end = mapping.GetTextContentOffset(end_position);
     DCHECK(start);
     DCHECK(end);
     DCHECK_LE(*start, *end);

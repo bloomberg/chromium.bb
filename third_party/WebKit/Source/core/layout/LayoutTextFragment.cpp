@@ -174,6 +174,14 @@ void LayoutTextFragment::UpdateHitTestResult(HitTestResult& result,
   result.SetInnerNode(GetFirstLetterPseudoElement());
 }
 
+Position LayoutTextFragment::PositionForCaretOffset(unsigned offset) const {
+  DCHECK_LE(offset, FragmentLength());
+  const Text* node = AssociatedTextNode();
+  if (!node)
+    return Position();
+  return Position(node, Start() + offset);
+}
+
 int LayoutTextFragment::CaretMinOffset() const {
   if (!ShouldUseNGAlternatives())
     return LayoutText::CaretMinOffset();
@@ -207,23 +215,6 @@ int LayoutTextFragment::CaretMaxOffset() const {
   // entire layout object contains only collapsed whitespaces.
   const bool fully_collapsed = !candidate || *candidate <= Start();
   return fully_collapsed ? FragmentLength() : *candidate - Start();
-}
-
-unsigned LayoutTextFragment::ResolvedTextLength() const {
-  if (!ShouldUseNGAlternatives())
-    return LayoutText::ResolvedTextLength();
-
-  const Node* node = AssociatedTextNode();
-  if (!node)
-    return 0;
-  const NGOffsetMapping& mapping = GetNGOffsetMapping();
-  Optional<unsigned> start = mapping.GetTextContentOffset(*node, Start());
-  Optional<unsigned> end =
-      mapping.GetTextContentOffset(*node, Start() + FragmentLength());
-  DCHECK(start);
-  DCHECK(end);
-  DCHECK_LE(*start, *end);
-  return *end - *start;
 }
 
 bool LayoutTextFragment::ContainsCaretOffset(int text_offset) const {
