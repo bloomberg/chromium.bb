@@ -265,7 +265,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   ASSERT_TRUE(new_version_dir.CreateUniqueTempDir());
 
   installer->Install(
-      new_version_dir.GetPath(),
+      new_version_dir.GetPath(), std::string(),
       base::Bind([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(0, result.error);
         EXPECT_EQ(0, result.extended_error);

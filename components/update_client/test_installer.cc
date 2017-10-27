@@ -33,6 +33,7 @@ void TestInstaller::OnUpdateError(int error) {
 }
 
 void TestInstaller::Install(const base::FilePath& unpack_path,
+                            const std::string& /*public_key*/,
                             const Callback& callback) {
   ++install_count_;
   unpack_path_ = unpack_path;
@@ -76,9 +77,9 @@ VersionedTestInstaller::~VersionedTestInstaller() {
   base::DeleteFile(install_directory_, true);
 }
 
-void VersionedTestInstaller::Install(
-    const base::FilePath& unpack_path,
-    const Callback& callback) {
+void VersionedTestInstaller::Install(const base::FilePath& unpack_path,
+                                     const std::string& public_key,
+                                     const Callback& callback) {
   const auto manifest = update_client::ReadManifest(unpack_path);
   std::string version_string;
   manifest->GetStringASCII("version", &version_string);

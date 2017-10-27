@@ -3888,8 +3888,9 @@ update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
     MockInstaller() {}
 
     MOCK_METHOD1(OnUpdateError, void(int error));
-    MOCK_METHOD2(Install,
+    MOCK_METHOD3(Install,
                  void(const base::FilePath& unpack_path,
+                      const std::string& public_key,
                       const Callback& callback));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));

@@ -40,8 +40,10 @@ class UpdateInstallShim : public update_client::CrxInstaller {
   void OnUpdateError(int error) override;
 
   // This is called when a new version of an extension is unpacked at
-  // |unpack_path| and is ready for install.
+  // |unpack_path| and is ready for install. |public_key| contains the
+  // CRX public_key in PEM format, without the header and the footer.
   void Install(const base::FilePath& unpack_path,
+               const std::string& public_key,
                const Callback& callback) override;
 
   // This is called by the generic differential update code in the

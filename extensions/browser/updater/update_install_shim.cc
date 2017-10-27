@@ -33,6 +33,7 @@ void UpdateInstallShim::OnUpdateError(int error) {
 }
 
 void UpdateInstallShim::Install(const base::FilePath& unpack_path,
+                                const std::string& /*public_key*/,
                                 const Callback& callback) {
   base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir()) {

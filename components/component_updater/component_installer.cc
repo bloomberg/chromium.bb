@@ -155,9 +155,9 @@ Result ComponentInstaller::InstallHelper(
   return Result(InstallError::NONE);
 }
 
-void ComponentInstaller::Install(
-    const base::FilePath& unpack_path,
-    const Callback& callback) {
+void ComponentInstaller::Install(const base::FilePath& unpack_path,
+                                 const std::string& /*public_key*/,
+                                 const Callback& callback) {
   std::unique_ptr<base::DictionaryValue> manifest;
   base::Version version;
   base::FilePath install_path;

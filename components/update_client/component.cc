@@ -117,7 +117,7 @@ void InstallOnBlockingTaskRunner(
     return;
   }
 
-  installer->Install(unpack_path,
+  installer->Install(unpack_path, public_key,
                      base::Bind(&InstallComplete, main_task_runner, callback,
                                 unpack_path_owner.Take()));
 }
