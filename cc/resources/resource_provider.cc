@@ -383,14 +383,15 @@ ResourceProvider::ResourceProvider(
     viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool delegated_sync_points_required,
-    const viz::ResourceSettings& resource_settings)
+    const viz::ResourceSettings& resource_settings,
+    viz::ResourceId next_id)
     : settings_(compositor_context_provider,
                 delegated_sync_points_required,
                 resource_settings),
       compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      next_id_(1),
+      next_id_(next_id),
       next_child_(1),
       lost_context_provider_(false),
       buffer_to_texture_target_map_(

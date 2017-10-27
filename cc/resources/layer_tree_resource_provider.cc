@@ -15,6 +15,12 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
+namespace {
+// The Resouce id in LayerTreeResourceProvider starts from 1 to avoid conflicts
+// with id from DisplayResourceProvider.
+const unsigned int kInitialResourceId = 1;
+}  // namespace
+
 LayerTreeResourceProvider::LayerTreeResourceProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::SharedBitmapManager* shared_bitmap_manager,
@@ -25,7 +31,8 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
                        shared_bitmap_manager,
                        gpu_memory_buffer_manager,
                        delegated_sync_points_required,
-                       resource_settings) {}
+                       resource_settings,
+                       kInitialResourceId) {}
 
 LayerTreeResourceProvider::~LayerTreeResourceProvider() {}
 

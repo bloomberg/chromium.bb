@@ -368,6 +368,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
       resource_provider->GetChildToParentMap(child_id);
   viz::ResourceId mapped_resource1 = resource_map[resource1];
   viz::ResourceId mapped_resource2 = resource_map[resource2];
+  viz::ResourceId mapped_resource3 = resource_map[resource3];
   viz::ResourceId mapped_resource4 = resource_map[resource4];
   viz::ResourceId mapped_resource5 = resource_map[resource5];
   viz::ResourceId mapped_resource6 = resource_map[resource6];
@@ -385,7 +386,6 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::DebugBorderDrawQuad* debug_border_quad =
       to_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();
   debug_border_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED, 1);
-
   if (child_pass_id) {
     viz::RenderPassDrawQuad* render_pass_quad =
         to_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
@@ -435,7 +435,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::TileDrawQuad* transformed_tile_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
   transformed_tile_quad->SetNew(
-      transformed_state, rect, visible_rect, needs_blending, resource3,
+      transformed_state, rect, visible_rect, needs_blending, mapped_resource3,
       gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false, false);
 
   viz::SharedQuadState* shared_state2 =

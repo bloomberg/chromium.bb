@@ -84,7 +84,8 @@ class FakeResourceProvider : public ResourceProvider {
                          shared_bitmap_manager,
                          gpu_memory_buffer_manager,
                          delegated_sync_points_required,
-                         resource_settings) {}
+                         resource_settings,
+                         1) {}
 };
 
 }  // namespace cc

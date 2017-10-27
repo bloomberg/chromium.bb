@@ -97,7 +97,8 @@ class CC_EXPORT ResourceProvider
                    viz::SharedBitmapManager* shared_bitmap_manager,
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    bool delegated_sync_points_required,
-                   const viz::ResourceSettings& resource_settings);
+                   const viz::ResourceSettings& resource_settings,
+                   viz::ResourceId next_id);
   ~ResourceProvider() override;
 
   static bool IsGpuResourceType(ResourceProvider::ResourceType type) {
