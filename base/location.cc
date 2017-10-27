@@ -48,18 +48,6 @@ std::string Location::ToString() const {
   return StringPrintf("pc:%p", program_counter_);
 }
 
-LocationSnapshot::LocationSnapshot() = default;
-
-LocationSnapshot::LocationSnapshot(const Location& location)
-    : line_number(location.line_number()) {
-  if (location.file_name())
-    file_name = location.file_name();
-  if (location.function_name())
-    function_name = location.function_name();
-}
-
-LocationSnapshot::~LocationSnapshot() = default;
-
 #if defined(COMPILER_MSVC)
 #define RETURN_ADDRESS() _ReturnAddress()
 #elif defined(COMPILER_GCC) && !defined(OS_NACL)
