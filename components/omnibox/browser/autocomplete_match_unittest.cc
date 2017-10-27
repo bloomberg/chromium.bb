@@ -125,64 +125,6 @@ TEST(AutocompleteMatchTest, MergeClassifications) {
                   "0,2," "1,0," "5,7," "6,1," "17,0"))));
 }
 
-TEST(AutocompleteMatchTest, InlineNontailPrefix) {
-  struct TestData {
-    std::string contents;
-    ACMatchClassifications before_contents_class, after_contents_class;
-  } cases[] = {
-      {"1234567890123456",
-       // should just shift the NONE
-       {{0, ACMatchClassification::NONE}},
-       {{0, ACMatchClassification::DIM}, {8, ACMatchClassification::NONE}}},
-      {"1234567890123456",
-       // should just shift the NONE
-       {{0, ACMatchClassification::NONE}, {10, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::DIM},
-        {8, ACMatchClassification::NONE},
-        {10, ACMatchClassification::MATCH}}},
-      {"1234567890123456",
-       // should nuke NONE
-       {{0, ACMatchClassification::NONE}, {8, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::DIM}, {8, ACMatchClassification::MATCH}}},
-      {"1234567890123456",
-       // should nuke NONE and shift MATCH
-       {{0, ACMatchClassification::NONE}, {4, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::DIM}, {8, ACMatchClassification::MATCH}}},
-      {"1234567890123456",
-       // should nuke NONE, shift MATCH and preserve NONE
-       {{0, ACMatchClassification::NONE},
-        {4, ACMatchClassification::MATCH},
-        {12, ACMatchClassification::NONE}},
-       {{0, ACMatchClassification::DIM},
-        {8, ACMatchClassification::MATCH},
-        {12, ACMatchClassification::NONE}}},
-      {"12345678",
-       // should have only DIM when done
-       {{0, ACMatchClassification::NONE}, {4, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::DIM}}},
-      {"1234567890123456",
-       // should nuke several classifications and shift MATCH
-       {{0, ACMatchClassification::NONE},
-        {1, ACMatchClassification::NONE},
-        {2, ACMatchClassification::NONE},
-        {4, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::DIM}, {8, ACMatchClassification::MATCH}}},
-      {"1234567190123456",
-       // should do nothing since prefix doesn't match
-       {{0, ACMatchClassification::NONE}, {4, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::NONE}, {4, ACMatchClassification::MATCH}}},
-  };
-  for (const auto& test_case : cases) {
-    AutocompleteMatch match;
-    match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
-    match.contents = base::UTF8ToUTF16(test_case.contents);
-    match.contents_class = test_case.before_contents_class;
-    match.InlineTailPrefix(base::UTF8ToUTF16("12345678"));
-    EXPECT_TRUE(EqualClassifications(match.contents_class,
-                                     test_case.after_contents_class));
-  }
-}
-
 TEST(AutocompleteMatchTest, InlineTailPrefix) {
   struct TestData {
     std::string before_contents, after_contents;
@@ -190,9 +132,9 @@ TEST(AutocompleteMatchTest, InlineTailPrefix) {
   } cases[] = {
       {"90123456",
        "1234567890123456",
-       // should prepend DIM and offset rest
+       // should prepend INVISIBLE and offset rest
        {{0, ACMatchClassification::NONE}, {2, ACMatchClassification::MATCH}},
-       {{0, ACMatchClassification::DIM},
+       {{0, ACMatchClassification::INVISIBLE},
         {8, ACMatchClassification::NONE},
         {10, ACMatchClassification::MATCH}}},
   };
