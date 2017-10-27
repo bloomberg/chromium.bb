@@ -2343,6 +2343,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'wooten', # contact:icoolidge@
   ])
 
+  assert not (_paladin_experimental_boards & _paladin_important_boards), (
+      'Experimental and important paladin board sets must be disjoint.')
+
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
 
   _paladin_simple_vmtest_boards = frozenset([
