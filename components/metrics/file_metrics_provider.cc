@@ -342,7 +342,8 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
     }
 
     // Record the result. Success will be recorded by the caller.
-    RecordAccessResult(result);
+    if (result != ACCESS_RESULT_THIS_PID)
+      RecordAccessResult(result);
     found_files.erase(found_files.begin());
   }
 
@@ -387,7 +388,8 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
 
     // Some results are not reported in order to keep the dashboard clean.
     if (result != ACCESS_RESULT_DOESNT_EXIST &&
-        result != ACCESS_RESULT_NOT_MODIFIED) {
+        result != ACCESS_RESULT_NOT_MODIFIED &&
+        result != ACCESS_RESULT_THIS_PID) {
       RecordAccessResult(result);
     }
 
@@ -540,16 +542,24 @@ FileMetricsProvider::AccessResult FileMetricsProvider::HandleFilterSource(
   // Alternatively, pass a Params object to the filter like what was originally
   // used to configure the source.
   // Params params(path, source->type, source->association, source->prefs_key);
-  switch (source->filter.Run(path)) {
+  FilterAction action = source->filter.Run(path);
+  switch (action) {
     case FILTER_PROCESS_FILE:
       // Process the file.
       return ACCESS_RESULT_SUCCESS;
 
+    case FILTER_ACTIVE_THIS_PID:
+    // Even the file for the current process has to be touched or its stamp
+    // will be less than "last processed" and thus skipped on future runs,
+    // even those done by new instances of the browser if a pref key is
+    // provided so that the last-uploaded stamp is recorded.
     case FILTER_TRY_LATER: {
       // Touch the file with the current timestamp making it (presumably) the
       // newest file in the directory.
       base::Time now = base::Time::Now();
       base::TouchFile(path, /*accessed=*/now, /*modified=*/now);
+      if (action == FILTER_ACTIVE_THIS_PID)
+        return ACCESS_RESULT_THIS_PID;
       return ACCESS_RESULT_FILTER_TRY_LATER;
     }
 

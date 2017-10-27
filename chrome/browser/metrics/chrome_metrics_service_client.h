@@ -18,6 +18,7 @@
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
+#include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
@@ -91,6 +92,12 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   // ukm::SyncDisableObserver:
   void OnSyncPrefsChanged(bool must_purge) override;
+
+  // Determine what to do with a file based on filename. Visible for testing.
+  using IsProcessRunningFunction = bool (*)(base::ProcessId);
+  static metrics::FileMetricsProvider::FilterAction FilterBrowserMetricsFiles(
+      const base::FilePath& path);
+  static void SetIsProcessRunningForTesting(IsProcessRunningFunction func);
 
   // Persistent browser metrics need to be persisted somewhere. This constant
   // provides a known string to be used for both the allocator's internal name
