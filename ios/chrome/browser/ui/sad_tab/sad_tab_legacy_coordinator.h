@@ -11,10 +11,6 @@
 
 @protocol ApplicationCommands;
 
-namespace web {
-class WebState;
-}
-
 // Coordinator that displays a SadTab view.
 @interface SadTabLegacyCoordinator : NSObject<SadTabTabHelperDelegate>
 
@@ -23,10 +19,6 @@ class WebState;
 
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
-
-// The web state this SadTabLegacyCoordinator is handling. This might change
-// during the life of the Coordinator and might be null.
-@property(nonatomic, assign) web::WebState* webState;
 
 @end
 

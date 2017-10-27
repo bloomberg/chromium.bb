@@ -7,11 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
+class SadTabTabHelper;
+
 // Delegate for SadTabTabHelper.
 @protocol SadTabTabHelperDelegate<NSObject>
 
 // Asks the delegate to present a SadTabView.
-- (void)presentSadTabForRepeatedFailure:(BOOL)repeatedFailure;
+- (void)sadTabTabHelper:(SadTabTabHelper*)tabHelper
+    presentSadTabForRepeatedFailure:(BOOL)repeatedFailure;
 
 @end
 
