@@ -1980,8 +1980,13 @@ static void read_tile_info(AV1Decoder *const pbi,
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
 
-    // Figure out single_tile_decoding by loopfilter_level.
-    cm->single_tile_decoding = (!lf->filter_level) ? 1 : 0;
+// Figure out single_tile_decoding by loopfilter_level.
+#if CONFIG_LOOPFILTER_LEVEL
+    const int no_loopfilter = !(lf->filter_level[0] || lf->filter_level[1]);
+#else
+    const int no_loopfilter = !lf->filter_level;
+#endif
+    cm->single_tile_decoding = no_loopfilter ? 1 : 0;
 // Read the tile width/height
 #if CONFIG_EXT_PARTITION
     if (cm->sb_size == BLOCK_128X128) {
