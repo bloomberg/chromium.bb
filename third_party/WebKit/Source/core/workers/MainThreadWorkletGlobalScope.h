@@ -31,6 +31,7 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
 
   // WorkerOrWorkletGlobalScope
   WorkerThread* GetThread() const final;
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
 
   void Terminate();
 

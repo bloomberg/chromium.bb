@@ -7,6 +7,7 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -43,6 +44,10 @@ void NullExecutionContext::SetUpSecurityContext() {
   SecurityContext::SetSecurityOrigin(SecurityOrigin::Create(url_));
   policy->BindToExecutionContext(this);
   SecurityContext::SetContentSecurityPolicy(policy);
+}
+
+scoped_refptr<WebTaskRunner> NullExecutionContext::GetTaskRunner(TaskType) {
+  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
 }
 
 }  // namespace blink

@@ -105,15 +105,6 @@ void WorkerOrWorkletGlobalScope::Dispose() {
 scoped_refptr<WebTaskRunner> WorkerOrWorkletGlobalScope::GetTaskRunner(
     TaskType type) {
   DCHECK(IsContextThread());
-  if (IsMainThreadWorkletGlobalScope()) {
-    // MainThreadWorkletGlobalScope lives on the main thread and its GetThread()
-    // doesn't return a valid worker thread. Instead, retrieve a task runner
-    // from the frame.
-    return ToMainThreadWorkletGlobalScope(this)
-        ->GetFrame()
-        ->FrameScheduler()
-        ->GetTaskRunner(type);
-  }
   return TaskRunnerHelper::Get(type, GetThread());
 }
 
