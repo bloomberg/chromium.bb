@@ -3680,6 +3680,9 @@ static void write_superres_scale(const AV1_COMMON *const cm,
     aom_wb_write_bit(wb, 0);  // no scaling
   } else {
     aom_wb_write_bit(wb, 1);  // scaling, write scale factor
+    assert(cm->superres_scale_denominator >= SUPERRES_SCALE_DENOMINATOR_MIN);
+    assert(cm->superres_scale_denominator <
+           SUPERRES_SCALE_DENOMINATOR_MIN + (1 << SUPERRES_SCALE_BITS));
     aom_wb_write_literal(
         wb, cm->superres_scale_denominator - SUPERRES_SCALE_DENOMINATOR_MIN,
         SUPERRES_SCALE_BITS);
