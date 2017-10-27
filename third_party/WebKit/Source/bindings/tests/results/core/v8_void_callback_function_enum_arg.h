@@ -34,11 +34,6 @@ class CORE_EXPORT V8VoidCallbackFunctionEnumArg final : public CallbackFunctionB
   V8VoidCallbackFunctionEnumArg(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8VoidCallbackFunctionEnumArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionEnumArg> {
-  CORE_EXPORT static V8VoidCallbackFunctionEnumArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8VoidCallbackFunctionEnumArg_h

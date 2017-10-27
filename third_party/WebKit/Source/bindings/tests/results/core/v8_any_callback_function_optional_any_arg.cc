@@ -76,13 +76,4 @@ bool V8AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable,
   return true;
 }
 
-V8AnyCallbackFunctionOptionalAnyArg* NativeValueTraits<V8AnyCallbackFunctionOptionalAnyArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  V8AnyCallbackFunctionOptionalAnyArg* nativeValue = V8AnyCallbackFunctionOptionalAnyArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "AnyCallbackFunctionOptionalAnyArg"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink

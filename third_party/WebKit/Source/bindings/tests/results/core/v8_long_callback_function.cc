@@ -79,13 +79,4 @@ bool V8LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1
   return true;
 }
 
-V8LongCallbackFunction* NativeValueTraits<V8LongCallbackFunction>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  V8LongCallbackFunction* nativeValue = V8LongCallbackFunction::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "LongCallbackFunction"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink

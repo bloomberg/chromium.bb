@@ -34,11 +34,6 @@ class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public
   V8StringSequenceCallbackFunctionLongSequenceArg(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8StringSequenceCallbackFunctionLongSequenceArg> : public NativeValueTraitsBase<V8StringSequenceCallbackFunctionLongSequenceArg> {
-  CORE_EXPORT static V8StringSequenceCallbackFunctionLongSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8StringSequenceCallbackFunctionLongSequenceArg_h

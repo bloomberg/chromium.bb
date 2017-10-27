@@ -72,13 +72,4 @@ bool V8VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
   return true;
 }
 
-V8VoidCallbackFunctionModules* NativeValueTraits<V8VoidCallbackFunctionModules>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  V8VoidCallbackFunctionModules* nativeValue = V8VoidCallbackFunctionModules::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "VoidCallbackFunctionModules"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink

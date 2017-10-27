@@ -74,13 +74,4 @@ bool V8VoidCallbackFunctionDictionaryArg::call(ScriptWrappable* scriptWrappable,
   return true;
 }
 
-V8VoidCallbackFunctionDictionaryArg* NativeValueTraits<V8VoidCallbackFunctionDictionaryArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  V8VoidCallbackFunctionDictionaryArg* nativeValue = V8VoidCallbackFunctionDictionaryArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "VoidCallbackFunctionDictionaryArg"));
-  }
-  return nativeValue;
-}
-
 }  // namespace blink

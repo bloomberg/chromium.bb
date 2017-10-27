@@ -57,7 +57,7 @@ struct NativeValueTraitsBase<
 // which T actually represents the final C++ type that a JavaScript value
 // should be converted to. Introducing new specializations of this kind is
 // discouraged.
-template <typename T>
+template <typename T, typename SFINAEHelper = void>
 struct NativeValueTraits : public NativeValueTraitsBase<T> {
   // This declaration serves only as a blueprint for specializations: the
   // return type can change, but all specializations are expected to provide a

@@ -36,11 +36,6 @@ class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public 
   V8VoidCallbackFunctionTestInterfaceSequenceArg(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8VoidCallbackFunctionTestInterfaceSequenceArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionTestInterfaceSequenceArg> {
-  CORE_EXPORT static V8VoidCallbackFunctionTestInterfaceSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8VoidCallbackFunctionTestInterfaceSequenceArg_h

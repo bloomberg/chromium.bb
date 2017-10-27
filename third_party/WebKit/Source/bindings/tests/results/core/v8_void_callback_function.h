@@ -34,11 +34,6 @@ class CORE_EXPORT V8VoidCallbackFunction final : public CallbackFunctionBase {
   V8VoidCallbackFunction(ScriptState*, v8::Local<v8::Function>);
 };
 
-template <>
-struct NativeValueTraits<V8VoidCallbackFunction> : public NativeValueTraitsBase<V8VoidCallbackFunction> {
-  CORE_EXPORT static V8VoidCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 }  // namespace blink
 
 #endif  // V8VoidCallbackFunction_h
