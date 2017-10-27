@@ -6,6 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -21,6 +22,10 @@ constexpr int kFullWidthKeyboardAnimationDurationMs = 100;
 constexpr float kAnimationStartOrAfterHideOpacity = 0.01f;
 
 ContainerFullWidthBehavior::~ContainerFullWidthBehavior() {}
+
+ContainerType ContainerFullWidthBehavior::GetType() const {
+  return ContainerType::FULL_WIDTH;
+}
 
 void ContainerFullWidthBehavior::DoHidingAnimation(
     aura::Window* container,
@@ -45,6 +50,8 @@ void ContainerFullWidthBehavior::DoShowingAnimation(
 
 void ContainerFullWidthBehavior::InitializeShowAnimationStartingState(
     aura::Window* container) {
+  SetCanonicalBounds(container, container->GetRootWindow()->bounds());
+
   gfx::Transform transform;
   transform.Translate(0, kFullWidthKeyboardAnimationDistance);
   container->SetTransform(transform);
@@ -92,6 +99,14 @@ void ContainerFullWidthBehavior::HandlePointerEvent(
     bool isMouseButtonPressed,
     const gfx::Vector2d& kb_offset) {
   // No-op. Nothing special to do for pointer events.
+}
+
+void ContainerFullWidthBehavior::SetCanonicalBounds(
+    aura::Window* container,
+    const gfx::Rect& display_bounds) {
+  const gfx::Rect new_keyboard_bounds =
+      AdjustSetBoundsRequest(display_bounds, container->bounds());
+  container->SetBounds(new_keyboard_bounds);
 }
 
 }  //  namespace keyboard

@@ -8,6 +8,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/keyboard/container_behavior.h"
+#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -38,6 +39,9 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   void SavePosition(const gfx::Point& position) override;
   void HandlePointerEvent(bool isMouseButtonPressed,
                           const gfx::Vector2d& kb_offset) override;
+  void SetCanonicalBounds(aura::Window* container,
+                          const gfx::Rect& display_bounds) override;
+  ContainerType GetType() const override;
 };
 
 }  // namespace keyboard
