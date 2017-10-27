@@ -36,6 +36,7 @@
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "content/public/common/screen_info.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -73,6 +74,7 @@ class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SiteInstance;
 struct DropData;
+struct ScreenInfo;
 struct TextInputState;
 
 // A browser plugin guest provides functionality for WebContents to operate in
@@ -150,6 +152,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
+
+  // Returns the ScreenInfo used by the guest to render.
+  const ScreenInfo& screen_info() const { return screen_info_; }
+
+  // Returns the current rect used by the guest to render.
+  const gfx::Rect& frame_rect() const { return frame_rect_; }
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
@@ -339,9 +347,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnSetVisibility(int instance_id, bool visible);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
-  void OnUpdateGeometry(int instance_id,
-                        const gfx::Rect& view_rect,
-                        const viz::LocalSurfaceId& local_surface_id);
+  void OnUpdateResizeParams(int instance_id,
+                            const gfx::Rect& frame_rect,
+                            const ScreenInfo& screen_info,
+                            const viz::LocalSurfaceId& local_surface_id);
 
   void OnTextInputStateChanged(const TextInputState& params);
   void OnImeSetComposition(
@@ -409,7 +418,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // An identifier that uniquely identifies a browser plugin within an embedder.
   int browser_plugin_instance_id_;
-  gfx::Rect guest_window_rect_;
+  gfx::Rect frame_rect_;
   bool focused_;
   bool mouse_locked_;
   bool pending_lock_request_;
@@ -463,6 +472,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool can_use_cross_process_frames_;
 
   viz::LocalSurfaceId local_surface_id_;
+  ScreenInfo screen_info_;
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.

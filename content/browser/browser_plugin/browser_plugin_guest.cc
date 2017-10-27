@@ -309,7 +309,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateResizeParams,
+                        OnUpdateResizeParams)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SatisfySequence, OnSatisfySequence)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -328,7 +329,7 @@ void BrowserPluginGuest::InitInternal(
   UpdateVisibility();
 
   is_full_page_plugin_ = params.is_full_page_plugin;
-  guest_window_rect_ = params.view_rect;
+  frame_rect_ = params.frame_rect;
 
   if (owner_web_contents_ != owner_web_contents) {
     WebContentsViewGuest* new_view = nullptr;
@@ -460,7 +461,7 @@ void BrowserPluginGuest::ResendEventToEmbedder(
   RenderWidgetHostViewBase* view =
       static_cast<RenderWidgetHostViewBase*>(GetOwnerRenderWidgetHostView());
 
-  gfx::Vector2d offset_from_embedder = guest_window_rect_.OffsetFromOrigin();
+  gfx::Vector2d offset_from_embedder = frame_rect_.OffsetFromOrigin();
   if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
     blink::WebGestureEvent resent_gesture_event;
     memcpy(&resent_gesture_event, &event, sizeof(blink::WebGestureEvent));
@@ -498,9 +499,8 @@ gfx::Point BrowserPluginGuest::GetCoordinatesInEmbedderWebContents(
   gfx::Point point(relative_point);
 
   // Add the offset form the embedder web contents view.
-  point +=
-      owner_rwhv->TransformPointToRootCoordSpace(guest_window_rect_.origin())
-          .OffsetFromOrigin();
+  point += owner_rwhv->TransformPointToRootCoordSpace(frame_rect_.origin())
+               .OffsetFromOrigin();
   if (embedder_web_contents()->GetBrowserPluginGuest()) {
     // |point| is currently with respect to the top-most view (outermost
     // WebContents). We should subtract a displacement to find the point with
@@ -522,7 +522,7 @@ gfx::Point BrowserPluginGuest::GetScreenCoordinates(
     return relative_position;
 
   gfx::Point screen_pos(relative_position);
-  screen_pos += guest_window_rect_.OffsetFromOrigin();
+  screen_pos += frame_rect_.OffsetFromOrigin();
   return screen_pos;
 }
 
@@ -1064,13 +1064,23 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   mouse_locked_ = false;
 }
 
-void BrowserPluginGuest::OnUpdateGeometry(
+void BrowserPluginGuest::OnUpdateResizeParams(
     int browser_plugin_instance_id,
-    const gfx::Rect& view_rect,
+    const gfx::Rect& frame_rect,
+    const ScreenInfo& screen_info,
     const viz::LocalSurfaceId& local_surface_id) {
-  // The plugin has moved within the embedder without resizing or the
-  // embedder/container's view rect changing.
-  guest_window_rect_ = view_rect;
+  if ((frame_rect_.size() != frame_rect.size() ||
+       screen_info_ != screen_info) &&
+      local_surface_id_ == local_surface_id) {
+    SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
+    bad_message::ReceivedBadMessage(
+        owner_site_instance->GetProcess(),
+        bad_message::BPG_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED);
+    return;
+  }
+
+  screen_info_ = screen_info;
+  frame_rect_ = frame_rect;
   GetWebContents()->SendScreenRects();
   if (local_surface_id_ != local_surface_id) {
     local_surface_id_ = local_surface_id;
@@ -1097,7 +1107,7 @@ void BrowserPluginGuest::OnShowPopup(
         guest->GetRenderWidgetHostView()->TransformPointToRootCoordSpace(
             translated_bounds.origin()));
   } else {
-    translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
+    translated_bounds.Offset(frame_rect_.OffsetFromOrigin());
   }
   BrowserPluginPopupMenuHelper popup_menu_helper(
       owner_web_contents_->GetMainFrame(), render_frame_host);

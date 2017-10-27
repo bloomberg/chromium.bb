@@ -146,7 +146,6 @@ void RenderWidgetHostViewGuest::Hide() {
 }
 
 void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
-  size_ = size;
   host_->WasResized();
 }
 
@@ -226,8 +225,8 @@ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
   gfx::Rect embedder_bounds;
   if (rwhv)
     embedder_bounds = rwhv->GetViewBounds();
-  return gfx::Rect(
-      guest_->GetScreenCoordinates(embedder_bounds.origin()), size_);
+  return gfx::Rect(guest_->GetScreenCoordinates(embedder_bounds.origin()),
+                   guest_->frame_rect().size());
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
@@ -339,13 +338,12 @@ void RenderWidgetHostViewGuest::Destroy() {
 }
 
 gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
-  // We obtain the reference to native view from the owner RenderWidgetHostView.
-  // If the guest is embedded inside a cross-process frame, it is possible to
-  // reach here after the frame is detached in which case there will be no owner
-  // view.
-  if (!GetOwnerRenderWidgetHostView())
-    return gfx::Size();
-  return RenderWidgetHostViewBase::GetPhysicalBackingSize();
+  gfx::Size size;
+  if (guest_) {
+    size = gfx::ScaleToCeiledSize(guest_->frame_rect().size(),
+                                  guest_->screen_info().device_scale_factor);
+  }
+  return size;
 }
 
 base::string16 RenderWidgetHostViewGuest::GetSelectedText() {
@@ -699,6 +697,15 @@ InputEventAckState RenderWidgetHostViewGuest::FilterInputEvent(
   }
 
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
+void RenderWidgetHostViewGuest::GetScreenInfo(ScreenInfo* screen_info) {
+  DCHECK(screen_info);
+  if (!guest_) {
+    *screen_info = ScreenInfo();
+    return;
+  }
+  *screen_info = guest_->screen_info();
 }
 
 bool RenderWidgetHostViewGuest::IsRenderWidgetHostViewGuest() {

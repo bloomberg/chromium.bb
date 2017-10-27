@@ -2787,6 +2787,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="179" label="BFSI_INVALID_UNIQUE_ID"/>
   <int value="180" label="BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION"/>
   <int value="181" label="WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS"/>
+  <int value="182"
+      label="CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED"/>
+  <int value="183"
+      label="BPG_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
