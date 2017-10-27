@@ -220,6 +220,7 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkDelegate delegate =
                 ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).getDelegateForTesting();
+
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         Assert.assertEquals("chrome-native://bookmarks/folder/3",
                 BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
@@ -227,31 +228,43 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    public void testTopLevelFolders() throws InterruptedException {
+    public void testFolderNavigation() throws InterruptedException, ExecutionException {
+        BookmarkId testFolder = addFolder(TEST_FOLDER_TITLE);
         openBookmarkManager();
         final BookmarkDelegate delegate =
                 ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).getDelegateForTesting();
         final BookmarkActionBar toolbar = ((BookmarkManager) delegate).getToolbarForTests();
 
         // Open the "Mobile bookmarks" folder.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                delegate.openFolder(mBookmarkModel.getMobileFolderId());
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { delegate.openFolder(mBookmarkModel.getMobileFolderId()); });
 
+        // Check that we are in the mobile bookmarks folder.
+        Assert.assertEquals("Mobile bookmarks", toolbar.getTitle());
+        Assert.assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_BACK,
+                toolbar.getNavigationButtonForTests());
+        Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
+
+        // Open the new test folder.
+        ThreadUtils.runOnUiThreadBlocking(() -> { delegate.openFolder(testFolder); });
+
+        // Check that we are in the editable test folder.
+        Assert.assertEquals(TEST_FOLDER_TITLE, toolbar.getTitle());
+        Assert.assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_BACK,
+                toolbar.getNavigationButtonForTests());
+        Assert.assertTrue(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
+
+        // Call BookmarkActionBar#onClick() to activate the navigation button.
+        ThreadUtils.runOnUiThreadBlocking(() -> { toolbar.onClick(toolbar); });
+
+        // Check that we are back in the mobile folder
+        Assert.assertEquals("Mobile bookmarks", toolbar.getTitle());
         Assert.assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_BACK,
                 toolbar.getNavigationButtonForTests());
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Call BookmarkActionBar#onClick() to activate the navigation button.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                toolbar.onClick(toolbar);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> { toolbar.onClick(toolbar); });
 
         // Check that we are in the root folder.
         Assert.assertEquals("Bookmarks", toolbar.getTitle());
@@ -366,6 +379,20 @@ public class BookmarkTest {
                 () -> { toolbar.onMenuItemClick(toolbar.getMenu().findItem(R.id.close_menu_id)); });
 
         activityDestroyedCallback.waitForCallback(0);
+
+        BookmarkManager.preventLoadingForTesting(false);
+    }
+
+    @Test
+    @MediumTest
+    public void testEditHiddenWhileStillLoading() throws Exception {
+        BookmarkManager.preventLoadingForTesting(true);
+
+        openBookmarkManager();
+
+        final BookmarkActionBar toolbar =
+                mBookmarkActivity.getManagerForTesting().getToolbarForTests();
+        Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         BookmarkManager.preventLoadingForTesting(false);
     }
