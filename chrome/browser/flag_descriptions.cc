@@ -2493,10 +2493,6 @@ const char kFirstRunUiTransitionsName[] =
 const char kFirstRunUiTransitionsDescription[] =
     "Transitions during first-run tutorial are animated.";
 
-const char kFloatingVirtualKeyboardName[] = "Floating virtual keyboard.";
-const char kFloatingVirtualKeyboardDescription[] =
-    "Enable/Disable floating virtual keyboard.";
-
 const char kForceEnableStylusToolsName[] = "Force enable stylus features";
 const char kForceEnableStylusToolsDescription[] =
     "Forces display of the stylus tools menu in the shelf and the stylus "
