@@ -791,8 +791,22 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     }
   }
   [self.view addSubview:_scrollView];
-  [_scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
-                                    UIViewAutoresizingFlexibleWidth)];
+
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    [_scrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [NSLayoutConstraint activateConstraints:@[
+      [_scrollView.topAnchor
+          constraintEqualToAnchor:[_toolbarController view].bottomAnchor],
+      [_scrollView.leadingAnchor
+          constraintEqualToAnchor:self.view.leadingAnchor],
+      [_scrollView.trailingAnchor
+          constraintEqualToAnchor:self.view.trailingAnchor],
+      [_scrollView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+    ]];
+  } else {
+    [_scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
+                                      UIViewAutoresizingFlexibleWidth)];
+  }
   [_scrollView setBounces:NO];
   [_scrollView setScrollsToTop:NO];
   [_scrollView setClipsToBounds:NO];
