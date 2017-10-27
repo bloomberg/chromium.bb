@@ -35,6 +35,9 @@ class RunningSamples {
   // 0 if no sample available
   int64_t Max() const;
 
+  // Whether there is at least one record.
+  bool IsEmpty() const;
+
  private:
   // Stores the desired window size, as size_t to avoid casting when comparing
   // with the size of |data_points_|.

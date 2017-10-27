@@ -128,7 +128,6 @@ void WebrtcFrameSchedulerSimple::EncoderBitrateFilter::UpdateTargetBitrate() {
 
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
     : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
-      frame_processing_delay_us_(kStatsWindow),
       updated_region_area_(kStatsWindow),
       weak_factory_(this) {}
 
@@ -140,7 +139,7 @@ void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
   DCHECK(thread_checker_.CalledOnValidThread());
   encoder_ready_ = true;
   key_frame_request_ = true;
-  ScheduleNextFrame(base::TimeTicks::Now());
+  ScheduleNextFrame();
 }
 
 void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
@@ -153,9 +152,10 @@ void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
 void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::TimeTicks now = base::TimeTicks::Now();
+  processing_time_estimator_.SetBandwidthKbps(bandwidth_kbps);
   pacing_bucket_.UpdateRate(bandwidth_kbps * 1000 / 8, now);
   encoder_bitrate_.SetBandwidthEstimate(bandwidth_kbps, now);
-  ScheduleNextFrame(now);
+  ScheduleNextFrame();
 }
 
 void WebrtcFrameSchedulerSimple::Start(
@@ -174,7 +174,7 @@ void WebrtcFrameSchedulerSimple::Pause(bool pause) {
   if (paused_) {
     capture_timer_.Stop();
   } else {
-    ScheduleNextFrame(base::TimeTicks::Now());
+    ScheduleNextFrame();
   }
 }
 
@@ -188,7 +188,7 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
   // Null |frame| indicates a capturer error.
   if (!frame) {
     frame_pending_ = false;
-    ScheduleNextFrame(now);
+    ScheduleNextFrame();
     return false;
   }
 
@@ -206,7 +206,7 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
         (now - latest_frame_encode_start_time_ > kKeepAliveInterval);
     if (!send_frame) {
       frame_pending_ = false;
-      ScheduleNextFrame(now);
+      ScheduleNextFrame();
       return false;
     }
   }
@@ -226,6 +226,8 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
                              ? frame->size().width() * frame->size().height()
                              : GetRegionArea(frame->updated_region());
 
+  // TODO(zijiehe): This logic should be removed if a codec without top-off
+  // supported is used.
   // If bandwidth is being underutilized then libvpx is likely to choose the
   // minimum allowed quantizer value, which means that encoded frame size may
   // be significantly bigger than the bandwidth allows. Detect this case and set
@@ -265,20 +267,21 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
         std::max(base::TimeDelta(), pacing_bucket_.GetEmptyTime() - now);
   }
 
+  // TODO(zijiehe): |encoded_frame|->data.empty() is unreasonable, we should try
+  // to get rid of it in WebrtcVideoEncoder layer.
   if (!encoded_frame || encoded_frame->data.empty()) {
     top_off_is_active_ = false;
   } else {
     pacing_bucket_.RefillOrSpill(encoded_frame->data.size(), now);
 
-    frame_processing_delay_us_.Record(
-        (now - last_capture_started_time_).InMicroseconds());
+    processing_time_estimator_.FinishFrame(*encoded_frame);
 
     // Top-off until the target quantizer value is reached.
     top_off_is_active_ =
         encoded_frame->quantizer > kTargetQuantizerForVp8TopOff;
   }
 
-  ScheduleNextFrame(now);
+  ScheduleNextFrame();
 
   if (frame_stats) {
     frame_stats->rtt_estimate = rtt_estimate_;
@@ -286,30 +289,40 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
   }
 }
 
-void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
+void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  base::TimeTicks now = base::TimeTicks::Now();
 
   if (!encoder_ready_ || paused_ || pacing_bucket_.rate() == 0 ||
       capture_callback_.is_null() || frame_pending_) {
     return;
   }
 
-  // If this is not the first frame then capture next frame after the previous
-  // one has finished sending.
-  base::TimeDelta expected_processing_time =
-      base::TimeDelta::FromMicroseconds(frame_processing_delay_us_.Max());
-  base::TimeTicks target_capture_time =
-      pacing_bucket_.GetEmptyTime() - expected_processing_time;
-
-  // Cap interval between frames to kTargetFrameInterval.
+  base::TimeTicks target_capture_time;
   if (!last_capture_started_time_.is_null()) {
-    target_capture_time = std::max(
-        target_capture_time, last_capture_started_time_ + kTargetFrameInterval);
+    // We won't start sending the frame until last one has been sent.
+    target_capture_time = pacing_bucket_.GetEmptyTime() -
+        processing_time_estimator_.EstimatedProcessingTime(key_frame_request_);
+
+    // We also try to ensure the next frame will reach the client
+    // |kTargetFrameInterval| after last frame reached.
+
+    // The estimated time when last frame reached or will reach the client.
+    base::TimeTicks estimated_last_frame_reach_time =
+        pacing_bucket_.GetEmptyTime();
+    // The cost of next frame, including both the processing time and transit
+    // time.
+    base::TimeDelta estimated_next_frame_cost =
+        processing_time_estimator_.EstimatedProcessingTime(key_frame_request_) +
+        processing_time_estimator_.EstimatedTransitTime(key_frame_request_);
+    base::TimeTicks ideal_capture_time =
+        estimated_last_frame_reach_time +
+        kTargetFrameInterval -
+        estimated_next_frame_cost;
+    target_capture_time = std::max(target_capture_time, ideal_capture_time);
   }
 
-  if (target_capture_time < now) {
-    target_capture_time = now;
-  }
+  target_capture_time = std::max(target_capture_time, now);
 
   capture_timer_.Start(FROM_HERE, target_capture_time - now,
                        base::Bind(&WebrtcFrameSchedulerSimple::CaptureNextFrame,
@@ -320,6 +333,7 @@ void WebrtcFrameSchedulerSimple::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!frame_pending_);
   last_capture_started_time_ = base::TimeTicks::Now();
+  processing_time_estimator_.StartFrame();
   frame_pending_ = true;
   capture_callback_.Run();
 }

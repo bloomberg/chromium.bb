@@ -48,4 +48,8 @@ int64_t RunningSamples::Max() const {
   return *std::max_element(data_points_.begin(), data_points_.end());
 }
 
+bool RunningSamples::IsEmpty() const {
+  return data_points_.empty();
+}
+
 }  // namespace remoting
