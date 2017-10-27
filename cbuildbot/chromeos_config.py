@@ -2292,8 +2292,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'peppy',
       'poppy',
       'quawks',
-      'reef',
-      'reef-uni',
       'samus',
       'scarlet',
       'sentry',
@@ -2310,7 +2308,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_tiger',
       'whirlwind',
       'winky',
-      'wizpig',
       'wolf',
       'zoombini',
   ])
@@ -2326,6 +2323,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'grunt',
+      'reef',
+      'reef-uni',
+      'wizpig',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
