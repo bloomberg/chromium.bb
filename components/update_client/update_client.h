@@ -181,10 +181,12 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
 
   // Called by the update service when a CRX has been unpacked
   // and it is ready to be installed. |unpack_path| contains the
-  // temporary directory with all the unpacked CRX files. The caller must
-  // invoke the |callback| when the install flow has completed.
+  // temporary directory with all the unpacked CRX files. |pubkey| contains the
+  // public key of the CRX in the PEM format, without the header and the footer.
+  // The caller must invoke the |callback| when the install flow has completed.
   // This method may be called from a thread other than the main thread.
   virtual void Install(const base::FilePath& unpack_path,
+                       const std::string& public_key,
                        const Callback& callback) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is
