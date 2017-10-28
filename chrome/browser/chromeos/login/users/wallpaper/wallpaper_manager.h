@@ -257,30 +257,21 @@ class WallpaperManager : public ash::mojom::WallpaperPicker,
                           const gfx::ImageSkia& image,
                           bool update_wallpaper);
 
-  // Updates wallpaper info for |account_id| to default. If |update_wallpaper|
-  // is false, don't change wallpaper but only update cache.
+  // Sets default wallpaper. |update_wallpaper| indicates whether to actually
+  // change the wallpaper, or only update cache.
   void SetDefaultWallpaper(const AccountId& account_id, bool update_wallpaper);
 
-  // Sets wallpaper to default wallpaper (asynchronously with zero delay).
-  void SetDefaultWallpaperNow(const AccountId& account_id);
+  // Sets |account_id|'s wallpaper.
+  void SetUserWallpaper(const AccountId& account_id);
 
-  // Sets wallpaper to default wallpaper (asynchronously with default delay).
-  void SetDefaultWallpaperDelayed(const AccountId& account_id);
-
-  // Sets |account_id|'s wallpaper (asynchronously with zero delay).
-  void SetUserWallpaperNow(const AccountId& account_id);
-
-  // Sets |account_id|'s wallpaper (asynchronously with default delay).
-  void SetUserWallpaperDelayed(const AccountId& account_id);
-
-  // Sets selected wallpaper information for |account_id| and saves it to Local
-  // State if |is_persistent| is true.
+  // Sets wallpaper info for |account_id| and saves it to local state if
+  // |is_persistent| is true.
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
                             bool is_persistent);
 
-  // Sets wallpaper to |image| (asynchronously with zero delay). If
-  // |update_wallpaper| is false, skip change wallpaper but only update cache.
+  // Sets wallpaper to |image|. If |update_wallpaper| is false, skip change
+  // wallpaper but only update cache.
   void SetWallpaperFromImageSkia(const AccountId& account_id,
                                  const gfx::ImageSkia& image,
                                  wallpaper::WallpaperLayout layout,
@@ -292,7 +283,7 @@ class WallpaperManager : public ash::mojom::WallpaperPicker,
   void InitializeWallpaper();
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
-  // current display's resolution. (asynchronously with zero delay)
+  // current display's resolution.
   void UpdateWallpaper(bool clear_cache);
 
   // Returns if the image is in the pending list. |image_id| can be obtained
@@ -515,9 +506,6 @@ class WallpaperManager : public ash::mojom::WallpaperPicker,
                           MovableOnDestroyCallbackHolder on_finish,
                           std::unique_ptr<user_manager::UserImage> user_image);
 
-  // Creates new PendingWallpaper request (or updates currently pending).
-  void ScheduleSetUserWallpaper(const AccountId& account_id, bool delayed);
-
   // Sets wallpaper to default if |update_wallpaper| is true. Otherwise just
   // load defaut wallpaper to cache.
   void DoSetDefaultWallpaper(const AccountId& account_id,
@@ -538,11 +526,9 @@ class WallpaperManager : public ash::mojom::WallpaperPicker,
   // Notify all registered observers.
   void NotifyAnimationFinished();
 
-  // Calculate delay for next wallpaper load.
-  // It is usually average wallpaper load time.
-  // If last wallpaper load happened long ago, timeout should be reduced by
-  // the time passed after last wallpaper load. So usual user experience results
-  // in zero delay.
+  // Calculates delay for the next wallpaper load. In most cases it is zero. It
+  // starts with the average wallpaper load time, and is reduced by the time
+  // passed after the last wallpaper load.
   base::TimeDelta GetWallpaperLoadDelay() const;
 
   // This is called after we check that supplied default wallpaper files exist.
@@ -606,10 +592,9 @@ class WallpaperManager : public ash::mojom::WallpaperPicker,
                                      bool update_wallpaper,
                                      MovableOnDestroyCallbackHolder on_finish);
 
-  // Returns modifiable PendingWallpaper.
-  // Returns pending_inactive_ or creates new PendingWallpaper if necessary.
-  PendingWallpaper* GetPendingWallpaper(const AccountId& account_id,
-                                        bool delayed);
+  // Returns modifiable PendingWallpaper. (Either |pending_inactive_| or a new
+  // |PendingWallpaper| object.)
+  PendingWallpaper* GetPendingWallpaper();
 
   // This is called by PendingWallpaper when load is finished.
   void RemovePendingWallpaperFromList(PendingWallpaper* pending);
