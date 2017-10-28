@@ -42,6 +42,7 @@
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
+#include "chrome/browser/memory/swap_thrashing_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
@@ -546,6 +547,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       FROM_HERE,
       base::Bind(&DetectFaultTolerantHeap),
       base::TimeDelta::FromMinutes(1));
+
+  // Start the swap thrashing monitor.
+  memory::SwapThrashingMonitor::Initialize();
 }
 
 // static

@@ -35717,6 +35717,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Experimental.SwapThrashingLevel"
+    enum="SwapThrashingLevel">
+  <owner>sebmarchand@chromium.org</owner>
+  <summary>
+    The swap thrashing level, which is recorded periodically. This shows the
+    cumulative number of seconds that systems spend in each of the swap
+    thrashing states. Only available on Windows.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Experimental.SwapThrashingLevelChanges"
+    enum="SwapThrashingLevelChanges">
+  <owner>sebmarchand@chromium.org</owner>
+  <summary>
+    The number of swap-thrashing level state changes for each possible pairwise
+    state change. Only available on Windows.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Experimental.Total2.PrivateMemoryFootprint" units="MB">
   <owner>erikchen@chromium.org</owner>
   <summary>

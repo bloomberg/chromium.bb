@@ -38613,6 +38613,19 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Swap was unsuccessful (activation fails)"/>
 </enum>
 
+<enum name="SwapThrashingLevel">
+  <int value="0" label="No swap thrashing"/>
+  <int value="1" label="Suspiscion of swap thrashing"/>
+  <int value="2" label="Confirmed swap thrashing"/>
+</enum>
+
+<enum name="SwapThrashingLevelChanges">
+  <int value="0" label="None to Suspected"/>
+  <int value="1" label="Suspected to Confirmed"/>
+  <int value="2" label="Confirmed to Suspected"/>
+  <int value="3" label="Suspected to None"/>
+</enum>
+
 <enum name="SwReporterRunningTimeRegistryError">
   <int value="0" label="No error"/>
   <int value="1" label="Registry key invalid"/>
