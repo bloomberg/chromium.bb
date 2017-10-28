@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_track.h"
@@ -120,11 +121,11 @@ SourceBufferState::SourceBufferState(
     std::unique_ptr<FrameProcessor> frame_processor,
     const CreateDemuxerStreamCB& create_demuxer_stream_cb,
     MediaLog* media_log)
-    : create_demuxer_stream_cb_(create_demuxer_stream_cb),
-      timestamp_offset_during_append_(NULL),
+    : timestamp_offset_during_append_(NULL),
       parsing_media_segment_(false),
       stream_parser_(stream_parser.release()),
       frame_processor_(frame_processor.release()),
+      create_demuxer_stream_cb_(create_demuxer_stream_cb),
       media_log_(media_log),
       state_(UNINITIALIZED),
       auto_update_timestamp_offset_(false) {
@@ -142,8 +143,9 @@ void SourceBufferState::Init(
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewTextTrackCB& new_text_track_cb) {
   DCHECK_EQ(state_, UNINITIALIZED);
-  new_text_track_cb_ = new_text_track_cb;
   init_cb_ = init_cb;
+  encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
+  new_text_track_cb_ = new_text_track_cb;
 
   std::vector<std::string> expected_codecs_parsed;
   SplitCodecsToVector(expected_codecs, &expected_codecs_parsed, false);
@@ -170,7 +172,9 @@ void SourceBufferState::Init(
       base::Bind(&SourceBufferState::OnNewConfigs, base::Unretained(this),
                  expected_codecs),
       base::Bind(&SourceBufferState::OnNewBuffers, base::Unretained(this)),
-      new_text_track_cb_.is_null(), encrypted_media_init_data_cb,
+      new_text_track_cb_.is_null(),
+      base::Bind(&SourceBufferState::OnEncryptedMediaInitData,
+                 base::Unretained(this)),
       base::Bind(&SourceBufferState::OnNewMediaSegment, base::Unretained(this)),
       base::Bind(&SourceBufferState::OnEndOfMediaSegment,
                  base::Unretained(this)),
@@ -224,7 +228,25 @@ bool SourceBufferState::Append(const uint8_t* data,
         << __func__ << ": stream parsing failed. Data size=" << length
         << " append_window_start=" << append_window_start.InSecondsF()
         << " append_window_end=" << append_window_end.InSecondsF();
+
+    // Crash with a 1/10 chance to investigate https://crbug.com/778363.
+    // CHECK on different conditions so we can more easily distinguish between
+    // different cases.
+    // TODO(crbug.com/778363): Remove after investigation is done.
+    int n = base::RandInt(1, 10);
+    if (state_ == PARSER_INITIALIZED) {
+      if (encrypted_media_init_data_reported_)
+        CHECK(n != 1);
+      else
+        CHECK(n != 2);
+    } else {
+      if (encrypted_media_init_data_reported_)
+        CHECK(n != 3);
+      else
+        CHECK(n != 4);
+    }
   }
+
   timestamp_offset_during_append_ = NULL;
   append_in_progress_ = false;
   return result;
@@ -913,6 +935,14 @@ bool SourceBufferState::OnNewBuffers(
 
   return true;
 }
+
+void SourceBufferState::OnEncryptedMediaInitData(
+    EmeInitDataType type,
+    const std::vector<uint8_t>& init_data) {
+  encrypted_media_init_data_reported_ = true;
+  encrypted_media_init_data_cb_.Run(type, init_data);
+}
+
 void SourceBufferState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
   DCHECK_EQ(state_, PENDING_PARSER_INIT);
