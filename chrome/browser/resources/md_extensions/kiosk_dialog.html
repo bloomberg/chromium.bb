@@ -12,6 +12,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="item_behavior.html">
 <link rel="import" href="kiosk_browser_proxy.html">
 
 <dom-module id="extensions-kiosk-dialog">
@@ -82,7 +83,11 @@
           <template is="dom-repeat" items="[[apps_]]">
             <div class="list-item">
               <div class="item-name">
-                <img class="item-icon" src="[[item.iconURL]]">
+                <img class="item-icon" src="[[item.iconURL]]"
+                    alt$="[[appOrExtension(
+                        data.type,
+                        '$i18nPolymer{appIcon}',
+                        '$i18nPolymer{extensionIcon}')]]">
                 [[item.name]]
                 <span hidden="[[!item.autoLaunch]]">
                   $i18n{kioskAutoLaunch}

@@ -55,6 +55,12 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_DETAILS" desc="The text on the button to show more details for a given extension.">
     Details
   </message>
+  <message name="IDS_MD_EXTENSIONS_APP_ICON" desc="The alt text for the app's icon. Used for accessibility.">
+    App Icon
+  </message>
+  <message name="IDS_MD_EXTENSIONS_EXTENSION_ICON" desc="The alt text for the extension's icon. Used for accessibility.">
+    Extension Icon
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_ID_HEADING" desc="The heading above the ID of the extension.">
     ID
   </message>

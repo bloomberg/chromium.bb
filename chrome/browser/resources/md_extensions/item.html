@@ -191,7 +191,11 @@
           </div>
         </template>
         <div id="icon-wrapper">
-          <img alt="" id="icon" src="[[data.iconUrl]]">
+          <img id="icon" src="[[data.iconUrl]]"
+              alt$="[[appOrExtension(
+                  data.type,
+                  '$i18nPolymer{appIcon}',
+                  '$i18nPolymer{extensionIcon}')]]">
         </div>
         <div id="content">
           <div id="name-and-version" class="layout horizontal center">

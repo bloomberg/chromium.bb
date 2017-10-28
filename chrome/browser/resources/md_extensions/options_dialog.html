@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="item_behavior.html">
 <link rel="import" href="navigation_helper.html">
 
 <dom-module id="extensions-options-dialog">
@@ -32,7 +33,11 @@
         on-close="onClose_">
       <div slot="title">
         <div id="icon-and-name-wrapper">
-          <img id="icon" src="[[data_.iconUrl]]">
+          <img id="icon" src="[[data_.iconUrl]]"
+              alt$="[[appOrExtension(
+                  data.type,
+                  '$i18nPolymer{appIcon}',
+                  '$i18nPolymer{extensionIcon}')]]">
           <span>[[data_.name]]</span>
         </div>
       </div>

@@ -8,7 +8,11 @@ cr.define('extensions', function() {
   const DetailView = Polymer({
     is: 'extensions-detail-view',
 
-    behaviors: [I18nBehavior, CrContainerShadowBehavior],
+    behaviors: [
+      I18nBehavior,
+      CrContainerShadowBehavior,
+      extensions.ItemBehavior,
+    ],
 
     properties: {
       /**
