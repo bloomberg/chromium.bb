@@ -626,6 +626,7 @@ Time spent in the CQ was <b>{cq_time_50:.2f} hours</b> 50%ile <b>{cq_time_90:.2f
 Time spent waiting was <b>{wait_time_50:.2f} hours</b> 50%ile <b>{wait_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_e9vKXdSOjH">history</a>.<br>
 CQ run time was <b>{cq_run_time_50:.2f} hours</b> 50%ile <b>{cq_run_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_STokpvKTaS">history</a>.<br>
 Pre-cq times available on <a href="http://shortn/_ZP8ivoYPUZ">monarch history</a>.<br>
+(New!) Wall-clock times times available on <a href="http://shortn/_qXixBiSDUA">monarch history</a>.<br>
 </p>
 
 <h2>Slowest Passing Slaves</h2>
