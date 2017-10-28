@@ -1563,8 +1563,5 @@
         "gpu_rasterization"
       ]
     }
-  ],
-  "comment": [
-    "Please update the version number on top whenever you change this file"
   ]
 }
