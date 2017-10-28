@@ -64,15 +64,18 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
   EXPECT_EQ(nullptr, root_transform->ScrollNode());
 
   // The container's background chunk should not scroll and therefore should use
-  // the root transform.
+  // the root transform. Its local transform is actually a paint offset
+  // transform.
   auto* container_transform =
-      container_chunk.properties.property_tree_state.Transform();
+      container_chunk.properties.property_tree_state.Transform()->Parent();
   EXPECT_EQ(root_transform, container_transform);
   EXPECT_EQ(nullptr, container_transform->ScrollNode());
 
   // The scroll hit test should not be scrolled and should not be clipped.
+  // Its local transform is actually a paint offset transform.
   auto* scroll_hit_test_transform =
-      scroll_hit_test_chunk.properties.property_tree_state.Transform();
+      scroll_hit_test_chunk.properties.property_tree_state.Transform()
+          ->Parent();
   EXPECT_EQ(nullptr, scroll_hit_test_transform->ScrollNode());
   EXPECT_EQ(root_transform, scroll_hit_test_transform);
   auto* scroll_hit_test_clip =

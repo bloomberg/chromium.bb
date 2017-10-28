@@ -316,13 +316,7 @@ Optional<IntPoint> PaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
     const LayoutObject& object,
     PaintPropertyTreeBuilderFragmentContext& context) {
   Optional<IntPoint> paint_offset_translation;
-  if (NeedsPaintOffsetTranslation(object) &&
-      // As an optimization, skip these paint offset translation nodes when
-      // the offset is an identity. An exception is the layout view because root
-      // layer scrolling needs a transform node to ensure fixed and absolute
-      // descendants use the correct transform space.
-      (object.IsLayoutView() ||
-       context.current.paint_offset != LayoutPoint())) {
+  if (NeedsPaintOffsetTranslation(object)) {
     paint_offset_translation =
         ApplyPaintOffsetTranslation(object, context.current.paint_offset);
 
