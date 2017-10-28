@@ -41,6 +41,10 @@ namespace storage {
 class ExternalMountPoints;
 }
 
+namespace media {
+class VideoDecodePerfHistory;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -299,6 +303,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // 1) The embedder needs to use a new salt, and
   // 2) The embedder saves its salt across restarts.
   static std::string CreateRandomMediaDeviceIDSalt();
+
+  // Media service for storing/retrieving video decoding performance stats.
+  // Exposed here rather than StoragePartition because all SiteInstances should
+  // have similar decode performance and stats are not exposed to the web
+  // directly, so privacy is not compromised.
+  virtual media::VideoDecodePerfHistory* GetVideoDecodePerfHistory();
 
  private:
   const std::string media_device_id_salt_;

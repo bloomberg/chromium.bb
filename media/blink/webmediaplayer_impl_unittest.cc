@@ -31,6 +31,7 @@
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -74,9 +75,19 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
                                   std::string(new_rate_string));
 }
 
+class FakeVideoDecodeStatsRecorder : public mojom::VideoDecodeStatsRecorder {
+ public:
+  void StartNewRecord(VideoCodecProfile profile,
+                      const gfx::Size& natural_size,
+                      int frames_per_sec) override {}
+  void UpdateRecord(uint32_t frames_decoded, uint32_t frames_dropped) override {
+  }
+};
+
 mojom::VideoDecodeStatsRecorderPtr CreateCapabilitiesRecorder() {
   mojom::VideoDecodeStatsRecorderPtr recorder;
-  VideoDecodeStatsRecorder::Create(mojo::MakeRequest(&recorder));
+  mojo::MakeStrongBinding(std::make_unique<FakeVideoDecodeStatsRecorder>(),
+                          mojo::MakeRequest(&recorder));
   return recorder;
 }
 

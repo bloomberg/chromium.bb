@@ -43,30 +43,62 @@ std::string EntryToString(const VideoDecodeStatsDB::DecodeStatsEntry& entry) {
 
 };  // namespace
 
-VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl() : weak_ptr_factory_(this) {}
+VideoDecodeStatsDBImplFactory::VideoDecodeStatsDBImplFactory(
+    base::FilePath db_dir)
+    : db_dir_(db_dir) {
+  DVLOG(2) << __func__ << " db_dir:" << db_dir_;
+}
+
+VideoDecodeStatsDBImplFactory::~VideoDecodeStatsDBImplFactory() = default;
+
+std::unique_ptr<VideoDecodeStatsDB> VideoDecodeStatsDBImplFactory::CreateDB() {
+  std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db_;
+
+  auto inner_db =
+      std::make_unique<leveldb_proto::ProtoDatabaseImpl<DecodeStatsProto>>(
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+
+  // Temporarily disallow writing to the DB until we've enabled clearing via
+  // chrome://settings/clearBrowserData
+  bool allow_writes = false;
+
+  return std::make_unique<VideoDecodeStatsDBImpl>(std::move(inner_db), db_dir_,
+                                                  allow_writes);
+}
+
+VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl(
+    std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
+    const base::FilePath& db_dir,
+    bool allow_writes)
+    : db_(std::move(db)),
+      db_dir_(db_dir),
+      allow_writes_(allow_writes),
+      weak_ptr_factory_(this) {
+  DCHECK(db_);
+  DCHECK(!db_dir_.empty());
+}
 
 VideoDecodeStatsDBImpl::~VideoDecodeStatsDBImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void VideoDecodeStatsDBImpl::Initialize(
-    std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
-    const base::FilePath& dir) {
-  DCHECK(db.get());
+    base::OnceCallback<void(bool)> init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  db_ = std::move(db);
-
+  DCHECK(init_cb);
   // "Simple options" will use the default global cache of 8MB. In the worst
   // case our whole DB will be less than 35K, so we aren't worried about
   // spamming the cache.
   // TODO(chcunningham): Keep an eye on the size as the table evolves.
-  db_->Init(kDatabaseClientName, dir, leveldb_proto::CreateSimpleOptions(),
+  db_->Init(kDatabaseClientName, db_dir_, leveldb_proto::CreateSimpleOptions(),
             base::BindOnce(&VideoDecodeStatsDBImpl::OnInit,
-                           weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));
 }
 
-void VideoDecodeStatsDBImpl::OnInit(bool success) {
+void VideoDecodeStatsDBImpl::OnInit(base::OnceCallback<void(bool)> init_cb,
+                                    bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
 
@@ -76,25 +108,19 @@ void VideoDecodeStatsDBImpl::OnInit(bool success) {
   // TODO(chcunningham): Record UMA.
   if (!success)
     db_.reset();
+
+  std::move(init_cb).Run(success);
 }
 
-bool VideoDecodeStatsDBImpl::IsDatabaseReady(const std::string& operation) {
-  if (!db_init_ || !db_) {
-    DVLOG_IF(2, !operation.empty()) << __func__ << " DB is not initialized; "
-                                    << "ignoring operation: " << operation;
-    return false;
-  }
-
-  return true;
+bool VideoDecodeStatsDBImpl::IsInitialized() {
+  // |db_| will be null if Initialization failed.
+  return db_init_ && db_;
 }
 
 void VideoDecodeStatsDBImpl::AppendDecodeStats(const VideoDescKey& key,
                                                const DecodeStatsEntry& entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!IsDatabaseReady("AppendDecodeStats")) {
-    return;
-  }
+  DCHECK(IsInitialized());
 
   DVLOG(3) << __func__ << " Reading key " << KeyToString(key)
            << " from DB with intent to update with " << EntryToString(entry);
@@ -107,11 +133,7 @@ void VideoDecodeStatsDBImpl::AppendDecodeStats(const VideoDescKey& key,
 void VideoDecodeStatsDBImpl::GetDecodeStats(const VideoDescKey& key,
                                             GetDecodeStatsCB callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!IsDatabaseReady("GetDecodeStats")) {
-    std::move(callback).Run(false, nullptr);
-    return;
-  }
+  DCHECK(IsInitialized());
 
   db_->GetEntry(
       SerializeKey(key),
@@ -125,6 +147,13 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     bool read_success,
     std::unique_ptr<DecodeStatsProto> prev_stats_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsInitialized());
+
+  // TODO(chcunningham): Always allow writes once the DB can be cleared.
+  if (!allow_writes_) {
+    DVLOG(3) << __func__ << " IGNORING WRITE - writes not allowed";
+    return;
+  }
 
   // TODO(chcunningham): Record UMA.
   if (!read_success) {
@@ -132,8 +161,6 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
              << "; ignoring update!";
     return;
   }
-
-  DCHECK(IsDatabaseReady("WriteUpdatedEntry"));
 
   if (!prev_stats_proto) {
     prev_stats_proto.reset(new DecodeStatsProto());

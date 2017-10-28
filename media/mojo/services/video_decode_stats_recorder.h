@@ -16,14 +16,21 @@
 
 namespace media {
 
+class VideoDecodePerfHistory;
+
 // See mojom::VideoDecodeStatsRecorder for documentation.
 class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
     : public mojom::VideoDecodeStatsRecorder {
  public:
-  VideoDecodeStatsRecorder() = default;
+  // See Create().
+  explicit VideoDecodeStatsRecorder(VideoDecodePerfHistory* perf_history);
+
   ~VideoDecodeStatsRecorder() override;
 
-  static void Create(mojom::VideoDecodeStatsRecorderRequest request);
+  // |perf_history| required to save decode stats to local database and report
+  // metrics. Callers must ensure that |perf_history| outlives this object.
+  static void Create(VideoDecodePerfHistory* perf_history,
+                     mojom::VideoDecodeStatsRecorderRequest request);
 
   // mojom::VideoDecodeStatsRecorder implementation:
   void StartNewRecord(VideoCodecProfile profile,
@@ -36,6 +43,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   // starting a new record.
   void FinalizeRecord();
 
+  VideoDecodePerfHistory* perf_history_;
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   gfx::Size natural_size_;
   int frames_per_sec_ = 0;

@@ -4,11 +4,18 @@
 
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "base/memory/ptr_util.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #include "base/logging.h"
 
 namespace media {
+
+VideoDecodeStatsRecorder::VideoDecodeStatsRecorder(
+    VideoDecodePerfHistory* perf_history)
+    : perf_history_(perf_history) {
+  DCHECK(perf_history_);
+}
 
 VideoDecodeStatsRecorder::~VideoDecodeStatsRecorder() {
   DVLOG(2) << __func__ << " Finalize for IPC disconnect";
@@ -17,9 +24,11 @@ VideoDecodeStatsRecorder::~VideoDecodeStatsRecorder() {
 
 // static
 void VideoDecodeStatsRecorder::Create(
+    VideoDecodePerfHistory* perf_history,
     mojom::VideoDecodeStatsRecorderRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<VideoDecodeStatsRecorder>(),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<VideoDecodeStatsRecorder>(perf_history),
+      std::move(request));
 }
 
 void VideoDecodeStatsRecorder::StartNewRecord(VideoCodecProfile profile,
@@ -64,7 +73,8 @@ void VideoDecodeStatsRecorder::FinalizeRecord() {
            << " size:" << natural_size_.ToString() << " fps:" << frames_per_sec_
            << " decoded:" << frames_decoded_ << " dropped:" << frames_dropped_;
 
-  // TODO(chcunningham): Save everything to DB.
+  perf_history_->SavePerfRecord(profile_, natural_size_, frames_per_sec_,
+                                frames_decoded_, frames_dropped_);
 }
 
 }  // namespace media

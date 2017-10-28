@@ -15,6 +15,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -41,6 +42,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "media/mojo/services/video_decode_perf_history.h"
+#include "media/mojo/services/video_decode_stats_db_impl.h"
 #include "net/cookies/cookie_store.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -84,6 +87,7 @@ const char kMojoWasInitialized[] = "mojo-was-initialized";
 const char kServiceManagerConnection[] = "service-manager-connection";
 const char kServiceUserId[] = "service-user-id";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
+const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
@@ -578,6 +582,24 @@ std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
   base::Base64Encode(base::RandBytesAsString(16), &salt);
   DCHECK(!salt.empty());
   return salt;
+}
+
+media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
+  media::VideoDecodePerfHistory* decode_history =
+      static_cast<media::VideoDecodePerfHistory*>(
+          GetUserData(kVideoDecodePerfHistoryId));
+
+  // Lazily created. Note, this does not trigger loading the DB from disk. That
+  // occurs later upon first VideoDecodePerfHistory API request that requires DB
+  // access. DB operations will not block the UI thread.
+  if (!decode_history) {
+    auto db_factory = std::make_unique<media::VideoDecodeStatsDBImplFactory>(
+        GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
+    decode_history = new media::VideoDecodePerfHistory(std::move(db_factory));
+    SetUserData(kVideoDecodePerfHistoryId, base::WrapUnique(decode_history));
+  }
+
+  return decode_history;
 }
 
 }  // namespace content
