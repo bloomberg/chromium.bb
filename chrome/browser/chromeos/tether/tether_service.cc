@@ -489,9 +489,6 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
   if (!GetIsBleAdvertisingSupportedPref())
     return BLE_ADVERTISING_NOT_SUPPORTED;
 
-  if (session_manager_client_->IsScreenLocked())
-    return SCREEN_LOCKED;
-
   if (!HasSyncedTetherHosts())
     return NO_AVAILABLE_HOSTS;
 
