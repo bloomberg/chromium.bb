@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/passwords/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
@@ -86,16 +85,8 @@ class PasswordManagerPresenter
   // undo action to |undo_manager_|.
   void RemoveLogin(const autofill::PasswordForm& form);
 
-  // Use this in tests to mock the OS-level reauthentication.
-  void SetOsReauthCallForTesting(
-      base::RepeatingCallback<bool()> os_reauth_call);
-
  private:
   friend class PasswordManagerPresenterTest;
-
-  // Triggers an OS-dependent UI to present OS account login challenge and
-  // returns true if the user is passed that challenge.
-  bool OsReauthCall();
 
   // Sets the password and exception list of the UI view.
   void SetPasswordList();
@@ -170,8 +161,6 @@ class PasswordManagerPresenter
 
   // UI view that owns this presenter.
   PasswordUIView* password_view_;
-
-  PasswordAccessAuthenticator password_access_authenticator_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenter);
 };

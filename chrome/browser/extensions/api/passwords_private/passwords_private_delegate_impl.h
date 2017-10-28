@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
+#include "chrome/browser/ui/passwords/password_access_authenticator.h"
 #include "chrome/browser/ui/passwords/password_manager_porter.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
@@ -70,6 +71,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // KeyedService overrides:
   void Shutdown() override;
 
+  // Use this in tests to mock the OS-level reauthentication.
+  void SetOsReauthCallForTesting(
+      base::RepeatingCallback<bool()> os_reauth_call);
+
  private:
   // Called after the lists are fetched. Once both lists have been set, the
   // class is considered initialized and any queued functions (which could
@@ -86,6 +91,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RequestShowPasswordInternal(size_t index,
                                    content::WebContents* web_contents);
 
+  // Triggers an OS-dependent UI to present OS account login challenge and
+  // returns true if the user passed that challenge.
+  bool OsReauthCall();
+
   // Not owned by this class.
   Profile* profile_;
 
@@ -94,6 +103,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // Used to control the export and import flows.
   std::unique_ptr<PasswordManagerPorter> password_manager_porter_;
+
+  PasswordAccessAuthenticator password_access_authenticator_;
 
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without
