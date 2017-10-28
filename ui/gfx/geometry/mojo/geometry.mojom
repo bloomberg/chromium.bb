@@ -4,11 +4,18 @@
 
 module gfx.mojom;
 
+// Don't make backwards-incompatible changes to this definition!
+// It's used in PageState serialization, so backwards incompatible changes
+// would cause stored PageState objects to be un-parseable.
 struct Point {
   int32 x;
   int32 y;
 };
 
+// Don't make backwards-incompatible changes to this definition!
+// It's used in PageState serialization, so backwards incompatible changes
+// would cause stored PageState objects to be un-parseable. Please contact the
+// page state serialization owners before making such a change.
 struct PointF {
   float x;
   float y;

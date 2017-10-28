@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/referrer.h"
+#include "third_party/WebKit/public/platform/ReferrerPolicyEnumTraits.h"
 #include "third_party/WebKit/public/platform/referrer.mojom.h"
 
 namespace mojo {

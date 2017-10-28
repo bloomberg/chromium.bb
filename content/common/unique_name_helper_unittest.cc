@@ -163,7 +163,7 @@ void VerifyPageStateForTargetUpdate(const TestFrameAdapter& main_frame) {
 
   // Version 24 is the last version with unlimited size unique names.
   std::string encoded_state;
-  EncodePageStateForTesting(in_state, 24, &encoded_state);
+  LegacyEncodePageStateForTesting(in_state, 24, &encoded_state);
 
   ExplodedPageState out_state;
   DecodePageState(encoded_state, &out_state);
