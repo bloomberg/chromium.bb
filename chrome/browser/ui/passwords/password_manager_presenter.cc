@@ -44,12 +44,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/password_manager/password_manager_util_mac.h"
-#endif
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #endif
@@ -215,10 +209,7 @@ PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
     : populater_(this),
       exception_populater_(this),
-      password_view_(password_view),
-      password_access_authenticator_(
-          base::BindRepeating(&PasswordManagerPresenter::OsReauthCall,
-                              base::Unretained(this))) {
+      password_view_(password_view) {
   DCHECK(password_view_);
 }
 
@@ -309,10 +300,6 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     // (http://crbug.com/362054), or the user requested to show a password while
     // a request to the store is in progress (i.e. |password_list_|
     // is empty). Don't let it crash the browser.
-    return;
-  }
-
-  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
     return;
   }
 
@@ -427,26 +414,6 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
   undo_manager_.AddUndoOperation(
       std::make_unique<RemovePasswordOperation>(this, form));
   store->RemoveLogin(form);
-}
-
-void PasswordManagerPresenter::SetOsReauthCallForTesting(
-    base::RepeatingCallback<bool()> os_reauth_call) {
-  password_access_authenticator_.SetOsReauthCallForTesting(
-      std::move(os_reauth_call));
-}
-
-bool PasswordManagerPresenter::OsReauthCall() {
-#if defined(OS_ANDROID)
-  NOTREACHED();
-  return true;
-#elif defined(OS_WIN)
-  return password_manager_util_win::AuthenticateUser(
-      password_view_->GetNativeWindow());
-#elif defined(OS_MACOSX)
-  return password_manager_util_mac::AuthenticateUser();
-#else
-  return true;
-#endif
 }
 
 PasswordManagerPresenter::ListPopulater::ListPopulater(

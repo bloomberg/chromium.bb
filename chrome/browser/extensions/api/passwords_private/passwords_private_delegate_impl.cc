@@ -25,6 +25,12 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/password_manager/password_manager_util_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/password_manager/password_manager_util_mac.h"
+#endif
+
 namespace extensions {
 
 PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
@@ -33,6 +39,9 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
           std::make_unique<PasswordManagerPresenter>(this)),
       password_manager_porter_(std::make_unique<PasswordManagerPorter>(
           password_manager_presenter_.get())),
+      password_access_authenticator_(
+          base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthCall,
+                              base::Unretained(this))),
       current_entries_initialized_(false),
       current_exceptions_initialized_(false),
       is_initialized_(false),
@@ -123,9 +132,22 @@ void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
   // TODO(stevenjb): Pass this directly to RequestShowPassword(); see
   // crbug.com/495290.
   web_contents_ = web_contents;
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
+    return;
+  }
 
   // Request the password. When it is retrieved, ShowPassword() will be called.
   password_manager_presenter_->RequestShowPassword(index);
+}
+
+bool PasswordsPrivateDelegateImpl::OsReauthCall() {
+#if defined(OS_WIN)
+  return password_manager_util_win::AuthenticateUser(GetNativeWindow());
+#elif defined(OS_MACOSX)
+  return password_manager_util_mac::AuthenticateUser();
+#else
+  return true;
+#endif
 }
 
 Profile* PasswordsPrivateDelegateImpl::GetProfile() {
@@ -233,6 +255,12 @@ gfx::NativeWindow PasswordsPrivateDelegateImpl::GetNativeWindow() const {
 void PasswordsPrivateDelegateImpl::Shutdown() {
   password_manager_presenter_.reset();
   password_manager_porter_.reset();
+}
+
+void PasswordsPrivateDelegateImpl::SetOsReauthCallForTesting(
+    base::RepeatingCallback<bool()> os_reauth_call) {
+  password_access_authenticator_.SetOsReauthCallForTesting(
+      std::move(os_reauth_call));
 }
 
 void PasswordsPrivateDelegateImpl::ExecuteFunction(
