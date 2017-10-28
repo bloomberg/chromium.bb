@@ -300,6 +300,7 @@ component("gpu") {
 
   if (use_vaapi) {
     sources += [
+                 "va_surface.cc",
                  "va_surface.h",
                  "vaapi_jpeg_decode_accelerator.cc",
                  "vaapi_jpeg_decode_accelerator.h",
