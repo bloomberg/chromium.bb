@@ -7046,6 +7046,34 @@
       }
     ]
   },
+  "WebKit Linux root_layer_scrolls Dummy Builder": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag=--root-layer-scrolls"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "shards": 15
+        }
+      }
+    ]
+  },
   "WebKit Linux slimming_paint_v2 Dummy Builder": {
     "isolated_scripts": [
       {
