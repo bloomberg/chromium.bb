@@ -1,4 +1,7 @@
-table: [tables/unicode.dis, tables/el.ctb]
+display: unicode.dis
+table:
+  locale: el
+  __match: el.tbl # el.ctb
 flags: {testmode: forward}
 tests:
 

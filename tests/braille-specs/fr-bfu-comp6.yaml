@@ -1,14 +1,15 @@
 # test data was provided by Kevin Derome in a mail to the mailing list
 # (https://www.freelists.org/post/liblouis-liblouisxml/error--backtranslate-frbfucomp6utb)
 
-table: [tables/unicode.dis, tables/fr-bfu-comp6.utb]
+display: unicode.dis
+table: [fr-bfu-comp6.utb]
 flags: {testmode: forward}
 tests:
   -
     - château
     - ⠉⠓⠡⠞⠑⠁⠥
 
-table: [tables/unicode.dis, tables/fr-bfu-comp6.utb]
+table: [fr-bfu-comp6.utb]
 flags: {testmode: backward}
 tests:
   -

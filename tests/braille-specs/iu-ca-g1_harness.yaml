@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/iu-ca-g1.ctb]
+display: unicode.dis
+table:
+  locale: iu
+  grade: 1
+  __match: iu-ca-g1.ctb
 tests:
   - [ᐁ ᐃ ᐅ ᐊ, ⠸⠰⠁ ⠸⠘⠁ ⠸⠕⠁ ⠸⠪⠁]
   - [ᐯ ᐱ ᐳ ᐸ ᑉ, ⠸⠰⠏ ⠸⠘⠏ ⠸⠕⠏ ⠸⠪⠏ ⠸⠏]

@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/lv.tbl]
+display: unicode.dis
+table:
+  locale: lv
+  grade: 1
+  __match: lv.tbl
 tests:
   - - Pangram
     - Glāžšķūņa rūķīši dzērumā čiepj Baha koncertflīģeļu vākus.

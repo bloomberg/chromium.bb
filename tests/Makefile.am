@@ -222,7 +222,7 @@ dist_yaml_TESTS =			  \
 	yaml/syllable.yaml
 
 TEST_EXTENSIONS = .yaml
-YAML_LOG_COMPILER =  $(WINE) $(top_builddir)/tools/lou_checkyaml$(EXEEXT)
+YAML_LOG_COMPILER = ./yaml-log-compiler.sh
 LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS) $(dist_braille_specs_TESTS)
@@ -239,5 +239,6 @@ AM_TESTS_ENVIRONMENT =								\
 	LOUIS_TABLEPATH=$(abs_top_srcdir)					\
 	UEB_TEST_DATA_PATH=$(top_srcdir)/tests/ueb_test_data			\
 	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
-	PATH=$(top_builddir)/tools:$$PATH
-
+	PATH=$(top_builddir)/tools:$$PATH					\
+	WINE=$(WINE)								\
+	EXEEXT=$(EXEEXT)

@@ -1,4 +1,7 @@
-table: [tables/unicode.dis, tables/lt.ctb]
+display: unicode.dis
+table:
+  locale: lt
+  __match: lt.tbl # lt.ctb
 tests:
   - - Pangram
     - Įlinkdama fechtuotojo špaga sublykčiojusi pragręžė apvalų arbūzą.

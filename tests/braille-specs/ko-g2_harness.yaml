@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/ko-g2.ctb]
+display: unicode.dis
+table:
+  locale: ko
+  grade: 2
+  __match: ko-g2.ctb
 tests:
   - # Numbers followed by Korean words.
     - 2000년

@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/fr-fr-g1.utb]
+display: unicode.dis
+table:
+  locale: fr
+  grade: 1
+  __match: fr-fr-g1.utb
 flags: {testmode: forward}
 tests:
 # Forward translations
@@ -20,7 +24,10 @@ tests:
   - [100, ⠼⠡⠼⠼]
   - [1000, ⠼⠡⠼⠼⠼]
 
-table: [tables/unicode.dis, tables/fr-fr-g1.utb]
+table:
+  locale: fr
+  grade: 1
+  __match: fr-fr-g1.utb
 flags: {testmode: backward}
 tests:
 # Backward translations

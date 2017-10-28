@@ -1,4 +1,9 @@
-table: [tables/unicode.dis, tables/hu-hu-comp8.ctb]
+display: unicode.dis
+table:
+  locale: hu
+  type: computer
+  dots: 8
+  __match: hu-hu-comp8.ctb
 flags: {testmode: backward}
 tests:
   - [⠁⠙⢈⠎⠎⠵⠑⠗⢾, adásszerű]

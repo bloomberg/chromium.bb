@@ -1,4 +1,10 @@
-table: [tables/unicode.dis, tables/da-dk-g26.ctb]
+display: unicode.dis
+table:
+  locale: da
+  grade: 2
+  dots: 6
+  direction: both
+  __match: da-dk-g26.ctb
 tests:
 # Test characters
   - [" ", " "]
@@ -444,7 +450,12 @@ tests:
   - ["5É", "⠼⠑⠨⠐⠑"]
 
 
-table: [tables/unicode.dis, tables/da-dk-g26.ctb]
+table:
+  locale: da
+  grade: 2
+  dots: 6
+  direction: both
+  __match: da-dk-g26.ctb
 flags: {testmode: backward}
 tests:
 # Test characters

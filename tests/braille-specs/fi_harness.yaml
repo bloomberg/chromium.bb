@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/fi.utb]
+display: unicode.dis
+table:
+  locale: fi
+  type: literary
+  __match: fi.utb
 tests:
   - # Pangram
     - törkylempijävongahdus bcfqwxzå

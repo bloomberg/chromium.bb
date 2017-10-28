@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/ar-fa.utb]
+display: unicode.dis
+table:
+  locale: fa
+  grade: 1
+  __match: ar-fa.utb
 tests:
   - ['=', ⠰⠶]
   - [===, ⠰⠶⠰⠶⠰⠶]

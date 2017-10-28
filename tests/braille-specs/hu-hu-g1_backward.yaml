@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/hu-hu-g1.ctb]
+display: unicode.dis
+table:
+  locale: hu
+  grade: 1
+  __match: hu.tbl # hu-hu-g1.ctb
 flags: {testmode: backward}
 tests:
   - [⠁⠉⠉⠑⠎⠎⠊⠃⠊⠇⠊⠞⠽, accessibility]

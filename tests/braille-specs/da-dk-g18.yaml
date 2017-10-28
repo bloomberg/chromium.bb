@@ -1,4 +1,9 @@
-table: [tables/unicode.dis, tables/da-dk-g18.ctb]
+display: unicode.dis
+table:
+  locale: da
+  grade: 1
+  dots: 8
+  __match: da-dk-g18.ctb
 tests:
 # Test all characters from 0x21 to 0xff
   - [' ', ' ']
@@ -221,7 +226,11 @@ tests:
 # Pangram
   - ['Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Walther spillede på xylofon.', '⡟⠥⠊⠵⠙⠑⠇⠞⠁⠛⠑⠗⠝⠑ ⠎⠏⠊⠎⠞⠑ ⠚⠕⠗⠙⠃⠜⠗ ⠍⠑⠙ ⠋⠇⠪⠙⠑⠂ ⠍⠑⠝⠎ ⠉⠊⠗⠅⠥⠎⠅⠇⠕⠧⠝⠑⠝ ⡺⠁⠇⠞⠓⠑⠗ ⠎⠏⠊⠇⠇⠑⠙⠑ ⠏⠡ ⠭⠽⠇⠕⠋⠕⠝⠄']
 
-table: [tables/unicode.dis, tables/da-dk-g18.ctb]
+table:
+  locale: da
+  grade: 1
+  dots: 8
+  __match: da-dk-g18.ctb
 flags: {testmode: backward}
 tests:
 # Test all characters from 0x21 to 0xff

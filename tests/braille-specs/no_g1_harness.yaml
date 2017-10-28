@@ -1,4 +1,8 @@
-table: [tables/unicode.dis, tables/no-no-g1.ctb]
+display: unicode.dis
+table:
+  locale: no
+  grade: 1
+  __match: no-no-g1.ctb
 tests:
   - [Det tyngste regnet, ⠠⠙⠬ ⠞⠽⠝⠛⠎⠞⠑ ⠗⠑⠛⠝⠬]
   - [faller på huset, ⠋⠁⠇⠇⠱ ⠏ ⠓⠥⠎⠬]

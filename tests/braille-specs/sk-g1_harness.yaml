@@ -1,4 +1,8 @@
-table: ["tables/unicode.dis", "tables/sk-g1.ctb"]
+display: unicode.dis
+table:
+  locale: sk
+  grade: 1
+  __match: sk.tbl # sk-g1.ctb
 tests:
   -
     - "Ä Ö Ü Ô Ĺ Ľ ä ö ü ô ĺ ľ"

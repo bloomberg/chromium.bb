@@ -1,4 +1,9 @@
-table: [tables/unicode.dis, tables/en-ueb-g2.ctb]
+display: unicode.dis
+table:
+  locale: en
+  grade: 2
+  system: ueb
+  __match: en-ueb-g2.ctb
 flags: {testmode: backward}
 tests:
   # Patterns used for both punctuation and contractions.

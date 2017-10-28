@@ -1,4 +1,9 @@
-table: [tables/unicode.dis, tables/da-dk-g28.ctb]
+display: unicode.dis
+table:
+  locale: da
+  grade: 2
+  dots: 8
+  __match: da-dk-g28.ctb
 tests:
   # Test all characters from 0x21 to 0xff
   - [' ', ' ']
@@ -408,7 +413,11 @@ tests:
   - ['2B', '⢃⠠⡃']
   - ['2b', '⢃⠠⠃']
 
-table: [tables/unicode.dis, tables/da-dk-g28.ctb]
+table:
+  locale: da
+  grade: 2
+  dots: 8
+  __match: da-dk-g28.ctb
 flags: {testmode: backward}
 tests:
   # Test all characters from 0x21 to 0xff']

@@ -117,7 +117,7 @@ yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
 }
 
 char *
-read_table_query(yaml_parser_t *parser) {
+read_table_query(yaml_parser_t *parser, const char **table_file_name_check) {
 	yaml_event_t event;
 	int parse_error = 1;
 	char *query_as_string = malloc(sizeof(char) * MAXSTRING);
@@ -126,16 +126,26 @@ read_table_query(yaml_parser_t *parser) {
 	while (1) {
 		if (!yaml_parser_parse(parser, &event)) yaml_error(YAML_SCALAR_EVENT, &event);
 		if (event.type == YAML_SCALAR_EVENT) {
-			if (query_as_string != p) strcat(p++, " ");
-			strcat(p, (const char *)event.data.scalar.value);
-			p += event.data.scalar.length;
-			strcat(p++, ":");
-			yaml_event_delete(&event);
-			if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
-				yaml_error(YAML_SCALAR_EVENT, &event);
-			strcat(p, (const char *)event.data.scalar.value);
-			p += event.data.scalar.length;
-			yaml_event_delete(&event);
+			
+			// (temporary) feature to check whether the table query matches an expected table
+			if (!strcmp((const char *)event.data.scalar.value, "__match")) {
+				yaml_event_delete(&event);
+				if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+					yaml_error(YAML_SCALAR_EVENT, &event);
+				*table_file_name_check = strdup((const char *)event.data.scalar.value);
+				yaml_event_delete(&event);
+			} else {
+				if (query_as_string != p) strcat(p++, " ");
+				strcat(p, (const char *)event.data.scalar.value);
+				p += event.data.scalar.length;
+				strcat(p++, ":");
+				yaml_event_delete(&event);
+				if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+					yaml_error(YAML_SCALAR_EVENT, &event);
+				strcat(p, (const char *)event.data.scalar.value);
+				p += event.data.scalar.length;
+				yaml_event_delete(&event);
+			}
 		} else if (event.type == YAML_MAPPING_END_EVENT) {
 			yaml_event_delete(&event);
 			break;
@@ -213,11 +223,22 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser, const char *display
 		yaml_event_delete(&event);
 	} else {  // event.type == YAML_MAPPING_START_EVENT
 		char *query;
+		const char *table_file_name_check = NULL;
 		yaml_event_delete(&event);
-		query = read_table_query(parser);
+		query = read_table_query(parser, &table_file_name_check);
 		table = lou_findTable(query);
 		free(query);
 		if (!table) exit(EXIT_FAILURE);
+		if (table_file_name_check) {
+			const char *table_file_name = table;
+			do { table_file_name++; } while (*table_file_name);
+			while (table_file_name >= table && *table_file_name != '/' && *table_file_name != '\\')
+				table_file_name--;
+			if(strcmp(table_file_name_check, table_file_name + 1))
+				error_at_line(EXIT_FAILURE, 0, file_name, start_event->start_mark.line + 1,
+						"Table query did not match expected table: expected '%s' but got '%s'",
+						table_file_name_check, table_file_name + 1);
+		}
 	}
 	if (display_table) {
 		char *t = table;

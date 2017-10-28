@@ -1,4 +1,10 @@
-table: [tables/unicode.dis, tables/da-dk-g26l-lit.ctb]
+display: unicode.dis
+table:
+  locale: da
+  grade: 1.5
+  dots: 6
+  direction: forward
+  __match: da-dk-g26l-lit.ctb
 tests:
 # Test characters
   - [" ", " "]
