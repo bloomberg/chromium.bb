@@ -150,21 +150,6 @@ static std::vector<VAConfigAttrib> GetRequiredAttribs(
   return required_attribs;
 }
 
-VASurface::VASurface(VASurfaceID va_surface_id,
-                     const gfx::Size& size,
-                     unsigned int format,
-                     const ReleaseCB& release_cb)
-    : va_surface_id_(va_surface_id),
-      size_(size),
-      format_(format),
-      release_cb_(release_cb) {
-  DCHECK(!release_cb_.is_null());
-}
-
-VASurface::~VASurface() {
-  release_cb_.Run(va_surface_id_);
-}
-
 VaapiWrapper::VaapiWrapper()
     : va_surface_format_(0),
       va_display_(NULL),
