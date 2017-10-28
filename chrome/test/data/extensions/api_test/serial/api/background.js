@@ -35,44 +35,46 @@ var testSerial = function() {
   var doNextOperation = function() {
     switch (operation++) {
       case 0:
-      serial.getDevices(onGetDevices);
-      break;
+        serial.getDevices(onGetDevices);
+        break;
       case 1:
-      serial.getConnections(onGetConnectionsEmpty);
-      break;
+        serial.getConnections(onGetConnectionsEmpty);
+        break;
       case 2:
-      var bitrate = 57600;
-      console.log('Connecting to serial device ' + serialPort + ' at ' +
-                  bitrate + ' bps.');
-      serial.connect(serialPort, {bitrate: bitrate}, onConnect);
-      break;
+        var bitrate = 57600;
+        console.log(
+            'Connecting to serial device ' + serialPort + ' at ' + bitrate +
+            ' bps.');
+        serial.connect(serialPort, {bitrate: bitrate}, onConnect);
+        break;
       case 3:
-      serial.getConnections(onGetConnectionsOne);
-      break;
+        serial.getConnections(onGetConnectionsOne);
+        break;
       case 4:
-      serial.setControlSignals(connectionId, {dtr: true}, onSetControlSignals);
-      break;
+        serial.setControlSignals(
+            connectionId, {dtr: true}, onSetControlSignals);
+        break;
       case 5:
-      serial.getControlSignals(connectionId,onGetControlSignals);
-      break;
+        serial.getControlSignals(connectionId, onGetControlSignals);
+        break;
       case 6:
-      serial.onReceive.addListener(onReceive);
-      serial.onReceiveError.addListener(onReceiveError);
-      serial.send(connectionId, sendBuffer, onSend);
-      break;
+        serial.onReceive.addListener(onReceive);
+        serial.onReceiveError.addListener(onReceiveError);
+        serial.send(connectionId, sendBuffer, onSend);
+        break;
       case 7:
-      serial.disconnect(connectionId, onDisconnect);
-      break;
+        serial.disconnect(connectionId, onDisconnect);
+        break;
       case 8:
-      serial.getConnections(onGetConnectionsEmpty);
-      break;
+        serial.getConnections(onGetConnectionsEmpty);
+        break;
       default:
-      // Beware! If you forget to assign a case for your next test, the whole
-      // test suite will appear to succeed!
-      chrome.test.succeed();
-      break;
+        // Beware! If you forget to assign a case for your next test, the whole
+        // test suite will appear to succeed!
+        chrome.test.succeed();
+        break;
     }
-  }
+  };
 
   var skipToTearDown = function() {
     operation = 50;
@@ -82,7 +84,7 @@ var testSerial = function() {
   var repeatOperation = function() {
     operation--;
     doNextOperation();
-  }
+  };
 
   var onGetConnectionsEmpty = function(connectionInfos) {
     chrome.test.assertEq(0, connectionInfos.length);
