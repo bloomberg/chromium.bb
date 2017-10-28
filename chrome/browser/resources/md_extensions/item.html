@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="item_behavior.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="item_util.html">
 <link rel="import" href="strings.html">
@@ -268,6 +269,11 @@
           $i18n{itemReload}
         </paper-button>
         <cr-toggle id="enable-toggle" class="action-button"
+            aria-label$="[[appOrExtension(
+                data.type,
+                '$i18nPolymer{appEnabled}',
+                '$i18nPolymer{extensionEnabled}')]]"
+            aria-describedby="name"
             checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_"
             disabled="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">

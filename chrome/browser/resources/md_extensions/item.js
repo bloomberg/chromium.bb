@@ -57,7 +57,7 @@ cr.define('extensions', function() {
   const Item = Polymer({
     is: 'extensions-item',
 
-    behaviors: [I18nBehavior],
+    behaviors: [I18nBehavior, extensions.ItemBehavior],
 
     properties: {
       // The item's delegate, or null.

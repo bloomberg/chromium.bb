@@ -75,8 +75,17 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(EXTERNS_GYP):developer_private',
+        'item_behavior',
         'item_util',
         'navigation_helper',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'item_behavior',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):developer_private',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

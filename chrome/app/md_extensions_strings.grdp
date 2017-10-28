@@ -58,6 +58,12 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_ID_HEADING" desc="The heading above the ID of the extension.">
     ID
   </message>
+  <message name="IDS_MD_EXTENSIONS_EXTENSION_ENABLED" desc="The label for the toggle that enables an extension.">
+    Extension Enabled
+  </message>
+  <message name="IDS_MD_EXTENSIONS_APP_ENABLED" desc="The label for the toggle that enables an app.">
+    App Enabled
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_OFF" desc="The label to indicate that a specific extension is not currently enabled.">
     Off
   </message>
