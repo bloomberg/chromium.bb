@@ -32677,6 +32677,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.CdmLoadErrorCode" units="code">
+  <owner>media-dev@chromium.org</owner>
+  <summary>The error code of a library CDM load failure.</summary>
+</histogram>
+
+<histogram name="Media.EME.CdmLoadResult" enum="CdmLoadResult">
+  <owner>media-dev@chromium.org</owner>
+  <summary>The result from an attempt to load a library CDM.</summary>
+</histogram>
+
+<histogram name="Media.EME.CdmLoadTime" units="ms">
+  <owner>media-dev@chromium.org</owner>
+  <summary>The time spent to load a library CDM.</summary>
+</histogram>
+
 <histogram name="Media.EME.ClearKey" enum="CdmPromiseResult">
   <owner>sandersd@chromium.org</owner>
   <summary>

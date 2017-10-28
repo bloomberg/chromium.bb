@@ -4377,6 +4377,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Init Verification Failed"/>
 </enum>
 
+<enum name="CdmLoadResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="CDM file missing"/>
+  <int value="2" label="CDM file exists but load failed"/>
+  <int value="3" label="CDM loaded but entry point missing"/>
+</enum>
+
 <enum name="CdmPromiseResult">
   <int value="0" label="Success"/>
   <int value="1" label="NotSupportedError"/>
