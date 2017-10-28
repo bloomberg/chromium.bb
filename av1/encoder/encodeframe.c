@@ -4626,8 +4626,8 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-    const int bs = tx_size_wide_unit[sub_txs];
-    int i;
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
 
     ++counts->txfm_partition[ctx][1];
 #if CONFIG_NEW_MULTISYMBOL
@@ -4644,11 +4644,14 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
       return;
     }
 
-    for (i = 0; i < 4; ++i) {
-      int offsetr = (i >> 1) * bs;
-      int offsetc = (i & 0x01) * bs;
-      update_txfm_count(x, xd, counts, sub_txs, depth + 1, blk_row + offsetr,
-                        blk_col + offsetc, allow_update_cdf);
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        int offsetr = row;
+        int offsetc = col;
+
+        update_txfm_count(x, xd, counts, sub_txs, depth + 1, blk_row + offsetr,
+                          blk_col + offsetc, allow_update_cdf);
+      }
     }
   }
 }
@@ -4936,14 +4939,15 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts,
                                   tile_data->allow_update_cdf);
       } else {
-        if (tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
+        if (tx_size != get_max_rect_tx_size(bsize, 0)) ++x->txb_split_count;
       }
 
 #if CONFIG_RECT_TX_EXT
       if (is_quarter_tx_allowed(xd, mbmi, is_inter) &&
-          quarter_txsize_lookup[bsize] != max_txsize_rect_lookup[bsize] &&
+          quarter_txsize_lookup[bsize] !=
+              get_max_rect_tx_size(bsize, is_inter) &&
           (mbmi->tx_size == quarter_txsize_lookup[bsize] ||
-           mbmi->tx_size == max_txsize_rect_lookup[bsize])) {
+           mbmi->tx_size == get_max_rect_tx_size(bsize, is_inter))) {
         const int use_qttx = mbmi->tx_size == quarter_txsize_lookup[bsize];
         ++td->counts->quarter_tx_size[use_qttx];
 #if CONFIG_NEW_MULTISYMBOL
@@ -4975,7 +4979,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
             mi_8x8[mis * j + i]->mbmi.tx_size = intra_tx_size;
 
       mbmi->min_tx_size = get_min_tx_size(intra_tx_size);
-      if (intra_tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
+      if (intra_tx_size != get_max_rect_tx_size(bsize, is_inter))
+        ++x->txb_split_count;
     }
 
 #if !CONFIG_TXK_SEL

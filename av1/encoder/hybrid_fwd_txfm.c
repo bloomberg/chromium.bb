@@ -145,7 +145,7 @@ static void fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_RECT_TX_EXT
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
 static void fwd_txfm_16x4(const int16_t *src_diff, tran_low_t *coeff,
                           int diff_stride, TxfmParam *txfm_param) {
   av1_fht16x4(src_diff, coeff, diff_stride, txfm_param);
@@ -503,7 +503,7 @@ void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
       fwd_txfm_32x16(src_diff, coeff, diff_stride, txfm_param);
       break;
     case TX_4X4: fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param); break;
-#if CONFIG_RECT_TX_EXT
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
     case TX_4X16:
       fwd_txfm_4x16(src_diff, coeff, diff_stride, txfm_param);
       break;

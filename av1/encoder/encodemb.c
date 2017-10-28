@@ -670,30 +670,22 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
 #endif
     // This is the square transform block partition entry point.
-    int bsl = tx_size_wide_unit[sub_txs];
-    int i;
-    assert(bsl > 0);
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
+    const int step = bsh * bsw;
+    assert(bsw > 0 && bsh > 0);
 
-    for (i = 0; i < 4; ++i) {
-#if CONFIG_RECT_TX_EXT
-      int is_wide_tx = tx_size_wide_unit[sub_txs] > tx_size_high_unit[sub_txs];
-      const int offsetr =
-          is_qttx ? (is_wide_tx ? i * tx_size_high_unit[sub_txs] : 0)
-                  : blk_row + ((i >> 1) * bsl);
-      const int offsetc =
-          is_qttx ? (is_wide_tx ? 0 : i * tx_size_wide_unit[sub_txs])
-                  : blk_col + ((i & 0x01) * bsl);
-#else
-      const int offsetr = blk_row + ((i >> 1) * bsl);
-      const int offsetc = blk_col + ((i & 0x01) * bsl);
-#endif
-      int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        const int offsetr = blk_row + row;
+        const int offsetc = blk_col + col;
 
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      encode_block_inter(plane, block, offsetr, offsetc, plane_bsize, sub_txs,
-                         arg);
-      block += step;
+        encode_block_inter(plane, block, offsetr, offsetc, plane_bsize, sub_txs,
+                           arg);
+        block += step;
+      }
     }
   }
 }

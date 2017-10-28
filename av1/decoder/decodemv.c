@@ -469,8 +469,8 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (is_split) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-    const int bsl = tx_size_wide_unit[sub_txs];
-    int i;
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
 
     if (counts) ++counts->txfm_partition[ctx][1];
 
@@ -487,12 +487,14 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
       return;
     }
 
-    assert(bsl > 0);
-    for (i = 0; i < 4; ++i) {
-      int offsetr = blk_row + (i >> 1) * bsl;
-      int offsetc = blk_col + (i & 0x01) * bsl;
-      read_tx_size_vartx(cm, xd, mbmi, counts, sub_txs, depth + 1, offsetr,
-                         offsetc, r);
+    assert(bsw > 0 && bsh > 0);
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        int offsetr = blk_row + row;
+        int offsetc = blk_col + col;
+        read_tx_size_vartx(cm, xd, mbmi, counts, sub_txs, depth + 1, offsetr,
+                           offsetc, r);
+      }
     }
   } else {
     int idx, idy;
@@ -554,11 +556,11 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
             quarter_tx = 1;
           }
           return quarter_tx ? quarter_txsize_lookup[bsize]
-                            : max_txsize_rect_lookup[bsize];
+                            : get_max_rect_tx_size(bsize, is_inter);
         }
 #endif  // CONFIG_RECT_TX_EXT
 
-        return max_txsize_rect_lookup[bsize];
+        return get_max_rect_tx_size(bsize, is_inter);
       }
       return coded_tx_size;
     } else {
@@ -566,7 +568,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
     }
   } else {
     assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
-    return max_txsize_rect_lookup[bsize];
+    return get_max_rect_tx_size(bsize, is_inter);
   }
 }
 
@@ -1086,7 +1088,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     int idx, idy;
     if ((cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
          !xd->lossless[mbmi->segment_id] && !mbmi->skip)) {
-      const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
+      const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, 0);
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
       mbmi->min_tx_size = TX_SIZES_ALL;
@@ -2690,7 +2692,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
-    const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
+    const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, inter_block);
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];

@@ -279,8 +279,8 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     // TODO(yuec): set correct txfm partition update for qttx
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-    const int bsl = tx_size_wide_unit[sub_txs];
-    int i;
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
 
 #if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, 1, ec_ctx->txfm_partition_cdf[ctx], 2);
@@ -294,13 +294,14 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
       return;
     }
 
-    assert(bsl > 0);
-    for (i = 0; i < 4; ++i) {
-      int offsetr = blk_row + (i >> 1) * bsl;
-      int offsetc = blk_col + (i & 0x01) * bsl;
-      write_tx_size_vartx(cm, xd, mbmi, sub_txs, depth + 1, offsetr, offsetc,
-                          w);
-    }
+    assert(bsw > 0 && bsh > 0);
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh)
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        int offsetr = blk_row + row;
+        int offsetc = blk_col + col;
+        write_tx_size_vartx(cm, xd, mbmi, sub_txs, depth + 1, offsetr, offsetc,
+                            w);
+      }
   }
 }
 
@@ -654,21 +655,24 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
 #endif
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-    const int bsl = tx_size_wide_unit[sub_txs];
-    int i;
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
 
-    assert(bsl > 0);
+    assert(bsw > 0 && bsh > 0);
 
-    for (i = 0; i < 4; ++i) {
-      const int offsetr = blk_row + (i >> 1) * bsl;
-      const int offsetc = blk_col + (i & 0x01) * bsl;
-      const int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
+    for (int r = 0; r < tx_size_high_unit[tx_size]; r += bsh) {
+      for (int c = 0; c < tx_size_wide_unit[tx_size]; c += bsw) {
+        const int offsetr = blk_row + r;
+        const int offsetc = blk_col + c;
+        const int step = bsh * bsw;
 
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      pack_txb_tokens(w, cm, x, tp, tok_end, xd, mbmi, plane, plane_bsize,
-                      bit_depth, block, offsetr, offsetc, sub_txs, token_stats);
-      block += step;
+        pack_txb_tokens(w, cm, x, tp, tok_end, xd, mbmi, plane, plane_bsize,
+                        bit_depth, block, offsetr, offsetc, sub_txs,
+                        token_stats);
+        block += step;
+      }
     }
   }
 }
@@ -716,31 +720,23 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 #else
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
 #endif
-    const int bsl = tx_size_wide_unit[sub_txs];
-    int i;
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
 
-    assert(bsl > 0);
+    assert(bsw > 0 && bsh > 0);
 
-    for (i = 0; i < 4; ++i) {
-#if CONFIG_RECT_TX_EXT
-      int is_wide_tx = tx_size_wide_unit[sub_txs] > tx_size_high_unit[sub_txs];
-      const int offsetr =
-          is_qttx ? (is_wide_tx ? i * tx_size_high_unit[sub_txs] : 0)
-                  : blk_row + (i >> 1) * bsl;
-      const int offsetc =
-          is_qttx ? (is_wide_tx ? 0 : i * tx_size_wide_unit[sub_txs])
-                  : blk_col + (i & 0x01) * bsl;
-#else
-      const int offsetr = blk_row + (i >> 1) * bsl;
-      const int offsetc = blk_col + (i & 0x01) * bsl;
-#endif
-      const int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
+    for (int r = 0; r < tx_size_high_unit[tx_size]; r += bsh) {
+      for (int c = 0; c < tx_size_wide_unit[tx_size]; c += bsw) {
+        const int offsetr = blk_row + r;
+        const int offsetc = blk_col + c;
+        const int step = bsh * bsw;
 
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      pack_txb_tokens(w, tp, tok_end, xd, mbmi, plane, plane_bsize, bit_depth,
-                      block, offsetr, offsetc, sub_txs, token_stats);
-      block += step;
+        pack_txb_tokens(w, tp, tok_end, xd, mbmi, plane, plane_bsize, bit_depth,
+                        block, offsetr, offsetc, sub_txs, token_stats);
+        block += step;
+      }
     }
   }
 }

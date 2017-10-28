@@ -1047,10 +1047,17 @@ static INLINE int is_quarter_tx_allowed(const MACROBLOCKD *xd,
 }
 #endif
 
+static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize, int is_inter) {
+  if (is_inter)
+    return max_txsize_rect_lookup[bsize];
+  else
+    return max_txsize_rect_intra_lookup[bsize];
+}
+
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-  const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
+  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bsize, is_inter);
   (void)is_inter;
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
@@ -1293,7 +1300,7 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
                                        BLOCK_SIZE bsize, int subsampled) {
   (void)mbmi;
-  TX_SIZE max_txsize = max_txsize_rect_lookup[bsize];
+  TX_SIZE max_txsize = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
 
 #if CONFIG_EXT_PARTITION && CONFIG_TX64X64
   // The decoder is designed so that it can process 64x64 luma pixels at a

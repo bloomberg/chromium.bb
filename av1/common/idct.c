@@ -1866,7 +1866,7 @@ static void inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 // These will be used by the masked-tx experiment in the future.
-#if CONFIG_RECT_TX_EXT
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
 static void inv_txfm_add_4x16(const tran_low_t *input, uint8_t *dest,
                               int stride, const TxfmParam *txfm_param) {
   av1_iht4x16_64_add(input, dest, stride, txfm_param);
@@ -2375,7 +2375,7 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       inv_txfm_add_4x4(input, dest, stride, txfm_param);
       break;
-#if CONFIG_RECT_TX_EXT
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
     case TX_32X8: inv_txfm_add_32x8(input, dest, stride, txfm_param); break;
     case TX_8X32: inv_txfm_add_8x32(input, dest, stride, txfm_param); break;
     case TX_16X4: inv_txfm_add_16x4(input, dest, stride, txfm_param); break;

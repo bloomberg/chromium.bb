@@ -612,32 +612,23 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
     // Half the block size in transform block unit.
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
 #endif
-    const int bsl = tx_size_wide_unit[sub_txs];
-    int i;
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
+    const int step = bsw * bsh;
 
-    assert(bsl > 0);
+    assert(bsw > 0 && bsh > 0);
 
-    for (i = 0; i < 4; ++i) {
-#if CONFIG_RECT_TX_EXT
-      int is_wide_tx = tx_size_wide_unit[sub_txs] > tx_size_high_unit[sub_txs];
-      const int offsetr =
-          is_qttx ? (is_wide_tx ? i * tx_size_high_unit[sub_txs] : 0)
-                  : blk_row + ((i >> 1) * bsl);
-      const int offsetc =
-          is_qttx ? (is_wide_tx ? 0 : i * tx_size_wide_unit[sub_txs])
-                  : blk_col + ((i & 0x01) * bsl);
-#else
-      const int offsetr = blk_row + ((i >> 1) * bsl);
-      const int offsetc = blk_col + ((i & 0x01) * bsl);
-#endif
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        const int offsetr = blk_row + row;
+        const int offsetc = blk_col + col;
 
-      int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
+        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
-
-      tokenize_vartx(td, t, dry_run, sub_txs, plane_bsize, offsetr, offsetc,
-                     block, plane, arg);
-      block += step;
+        tokenize_vartx(td, t, dry_run, sub_txs, plane_bsize, offsetr, offsetc,
+                       block, plane, arg);
+        block += step;
+      }
     }
   }
 }
