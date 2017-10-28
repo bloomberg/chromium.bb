@@ -84,10 +84,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "<style>"
       " #t1 { color: red !important }"
       " #t2 { color: black }"
+      " #t4 { animation-name: dummy-animation }"
       "</style>"
       "<div id='t1'>Green</div>"
       "<div id='t2'>White</div>"
       "<div id='t3' style='color: black !important'>White</div>"
+      "<div id='t4'>I animate!</div>"
       "<div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -187,6 +189,59 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
             t2->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
   EXPECT_EQ(MakeRGB(0, 0, 0),
             t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+
+  // @keyframes rules
+
+  Element* t4 = GetDocument().getElementById("t4");
+  ASSERT_TRUE(t4);
+
+  // There's no @keyframes rule named dummy-animation
+  ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
+      t4, AtomicString("dummy-animation")));
+
+  StyleSheetContents* keyframes_parsed_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  keyframes_parsed_sheet->ParseString("@keyframes dummy-animation { from {} }");
+  WebStyleSheetId keyframes_id =
+      GetStyleEngine().AddUserSheet(keyframes_parsed_sheet);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // After injecting the style sheet, a @keyframes rule named dummy-animation
+  // is found with one keyframe.
+  StyleRuleKeyframes* keyframes =
+      GetStyleEngine().Resolver()->FindKeyframesRule(
+          t4, AtomicString("dummy-animation"));
+  ASSERT_TRUE(keyframes);
+  EXPECT_EQ(1u, keyframes->Keyframes().size());
+
+  HTMLStyleElement* style_element = HTMLStyleElement::Create(
+      GetDocument(), false);
+  style_element->SetInnerHTMLFromString(
+      "@keyframes dummy-animation { from {} to {} }");
+  GetDocument().body()->AppendChild(style_element);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Author @keyframes rules take precedence; now there are two keyframes (from
+  // and to).
+  keyframes = GetStyleEngine().Resolver()->FindKeyframesRule(
+      t4, AtomicString("dummy-animation"));
+  ASSERT_TRUE(keyframes);
+  EXPECT_EQ(2u, keyframes->Keyframes().size());
+
+  GetDocument().body()->RemoveChild(style_element);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  keyframes = GetStyleEngine().Resolver()->FindKeyframesRule(
+      t4, AtomicString("dummy-animation"));
+  ASSERT_TRUE(keyframes);
+  EXPECT_EQ(1u, keyframes->Keyframes().size());
+
+  GetStyleEngine().RemoveUserSheet(keyframes_id);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Injected @keyframes rules are no longer available once removed.
+  ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
+      t4, AtomicString("dummy-animation")));
 }
 
 TEST_F(StyleEngineTest, TextToSheetCache) {

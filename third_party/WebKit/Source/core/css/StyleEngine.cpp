@@ -1199,8 +1199,20 @@ void StyleEngine::ApplyRuleSetChanges(
   if (changed_rule_sets.IsEmpty())
     return;
 
-  if (changed_rule_flags & kKeyframesRules)
+  if (changed_rule_flags & kKeyframesRules) {
+    if (invalidation_scope == kInvalidateAllScopes) {
+      if (change == kActiveSheetsChanged)
+        ClearKeyframeRules();
+
+      for (auto it = new_style_sheets.begin();
+           it != new_style_sheets.end(); it++) {
+        DCHECK(it->second);
+        AddKeyframeRules(*it->second);
+      }
+    }
+
     ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
+  }
 
   Node& invalidation_root =
       ScopedStyleResolver::InvalidationRootForTreeScope(tree_scope);
@@ -1328,10 +1340,44 @@ void StyleEngine::CollectMatchingUserRules(
   }
 }
 
+void StyleEngine::AddKeyframeRules(const RuleSet& rule_set) {
+  const HeapVector<Member<StyleRuleKeyframes>> keyframes_rules =
+      rule_set.KeyframesRules();
+  for (unsigned i = 0; i < keyframes_rules.size(); ++i)
+    AddKeyframeStyle(keyframes_rules[i]);
+}
+
+void StyleEngine::AddKeyframeStyle(StyleRuleKeyframes* rule) {
+  AtomicString animation_name(rule->GetName());
+
+  if (rule->IsVendorPrefixed()) {
+    KeyframesRuleMap::iterator it = keyframes_rule_map_.find(animation_name);
+    if (it == keyframes_rule_map_.end())
+      keyframes_rule_map_.Set(animation_name, rule);
+    else if (it->value->IsVendorPrefixed())
+      keyframes_rule_map_.Set(animation_name, rule);
+  } else {
+    keyframes_rule_map_.Set(animation_name, rule);
+  }
+}
+
+StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
+    const AtomicString& animation_name) {
+  if (keyframes_rule_map_.IsEmpty())
+    return nullptr;
+
+  KeyframesRuleMap::iterator it = keyframes_rule_map_.find(animation_name);
+  if (it == keyframes_rule_map_.end())
+    return nullptr;
+
+  return it->value.Get();
+}
+
 void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(user_style_sheets_);
   visitor->Trace(active_user_style_sheets_);
+  visitor->Trace(keyframes_rule_map_);
   visitor->Trace(inspector_style_sheet_);
   visitor->Trace(document_style_sheet_collection_);
   visitor->Trace(style_sheet_collection_map_);
