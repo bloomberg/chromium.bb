@@ -7,6 +7,10 @@ module mojo.common.mojom;
 // Corresponds to |base::string16| in base/strings/string16.h
 // Corresponds to |WTF::String| in
 // third_party/WebKit/Source/platform/wtf/text/WTFString.h.
+// Don't make backwards-incompatible changes to this definition!
+// It's used in PageState serialization, so backwards incompatible changes
+// would cause stored PageState objects to be un-parseable. Please contact the
+// page state serialization owners before making such a change.
 struct String16 {
   array<uint16> data;
 };

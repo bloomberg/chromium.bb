@@ -4,7 +4,6 @@
 
 #include "content/public/common/referrer_struct_traits.h"
 
-#include "third_party/WebKit/public/platform/ReferrerPolicyEnumTraits.h"
 #include "url/mojo/url_gurl_struct_traits.h"
 
 namespace mojo {

@@ -11,6 +11,10 @@ import "url/mojo/url.mojom";
 //
 // TODO(rockot): Update all WebReferrerPolicy consumers to use this type
 // instead, and remove the typemap.
+// Don't make backwards-incompatible changes to this definition!
+// It's used in PageState serialization, so backwards incompatible changes
+// would cause stored PageState objects to be un-parseable. Please contact the
+// page state serialization owners before making such a change.
 enum ReferrerPolicy {
     ALWAYS,
     DEFAULT,
