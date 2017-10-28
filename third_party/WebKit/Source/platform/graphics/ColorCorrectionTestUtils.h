@@ -5,39 +5,46 @@
 #ifndef ColorCorrectionTestUtils_h
 #define ColorCorrectionTestUtils_h
 
+#include "platform/graphics/CanvasColorParams.h"
+
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/runtime_enabled_features.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 
 namespace blink {
 
+enum PixelsAlphaMultiply {
+  kAlphaMultiplied,
+  kAlphaUnmultiplied,
+};
+
+enum UnpremulRoundTripTolerance {
+  kNoUnpremulRoundTripTolerance,
+  kUnpremulRoundTripTolerance,
+};
+
 class ColorCorrectionTestUtils {
  public:
-  static bool IsNearlyTheSame(
-      float expected,
-      float actual,
-      float tolerance = wide_gamut_color_correction_tolerance_);
   static void CompareColorCorrectedPixels(
-      std::unique_ptr<uint8_t[]>& converted_pixel,
-      std::unique_ptr<uint8_t[]>& transformed_pixel,
-      int bytes_per_pixel = 4,
-      float color_correction_tolerance =
-          wide_gamut_color_correction_tolerance_);
-  static void CompareColorCorrectedPixels(uint8_t* color_components_1,
-                                          uint8_t* color_components_2,
-                                          int,
-                                          int);
-  static void CompareColorCorrectedPixels(
-      float* color_components_1,
-      float* color_components_2,
-      int num_components,
-      float color_correction_tolerance =
-          wide_gamut_color_correction_tolerance_);
+      const void* actual_pixels,
+      const void* expected_pixels,
+      int num_pixels,
+      ImageDataStorageFormat src_storage_format,
+      PixelsAlphaMultiply alpha_multiplied,
+      UnpremulRoundTripTolerance premul_unpremul_tolerance);
+
+  static bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
+      void* src_data,
+      int num_elements,
+      CanvasColorSpace src_color_space,
+      ImageDataStorageFormat src_storage_format,
+      CanvasColorSpace dst_color_space,
+      CanvasPixelFormat dst_pixel_format,
+      std::unique_ptr<uint8_t[]>& converted_pixels,
+      SkColorSpaceXform::ColorFormat color_format_for_f16_canvas);
 
  private:
-  static constexpr float wide_gamut_color_correction_tolerance_ = 0.01;
-  // This function is a compact version of SkHalfToFloat from Skia. If many
-  // color correction tests fail at the same time, please check if SkHalf format
-  // has changed.
-  static float Float16ToFloat(const uint16_t& f16);
+  static bool IsNearlyTheSame(float expected, float actual, float tolerance);
 };
 
 }  // namespace blink

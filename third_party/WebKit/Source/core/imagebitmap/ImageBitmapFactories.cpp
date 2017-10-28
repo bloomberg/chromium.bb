@@ -324,8 +324,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
       SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
           array_buffer->Data(), array_buffer->ByteLength())),
       true, alpha_op,
-      ignore_color_space ? ColorBehavior::Ignore()
-                         : ColorBehavior::TransformToSRGB()));
+      ignore_color_space ? ColorBehavior::Ignore() : ColorBehavior::Tag()));
   sk_sp<SkImage> frame;
   if (decoder) {
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));

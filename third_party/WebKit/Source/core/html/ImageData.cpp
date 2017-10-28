@@ -406,6 +406,10 @@ ImageData* ImageData::CreateForTest(
 // intersection is empty or it cannot create the cropped ImageData it returns
 // nullptr. This function leaves the source ImageData intact. When crop_rect
 // covers all the ImageData, a copy of the ImageData is returned.
+// TODO (zakerinasab): crbug.com/774484: As a rule of thumb ImageData belongs to
+// the user and its state should not change unless directly modified by the
+// user. Therefore, we should be able to remove the extra copy and return a
+// "cropped view" on the source ImageData object.
 ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
   IntRect src_rect(IntPoint(), size_);
   const IntRect dst_rect = Intersection(src_rect, crop_rect);
@@ -694,6 +698,13 @@ CanvasColorParams ImageData::GetCanvasColorParams() {
   return CanvasColorParams(color_space, pixel_format, kNonOpaque);
 }
 
+void ImageData::SwapU16EndiannessForSkColorSpaceXform() {
+  DCHECK(data_u16_);
+  uint16_t* buffer = static_cast<uint16_t*>(data_u16_->BufferBase()->Data());
+  for (unsigned i = 0; i < size_.Area() * 4; i++)
+    *(buffer + i) = WTF::Bswap16(*(buffer + i));
+};
+
 bool ImageData::ImageDataInCanvasColorSettings(
     CanvasColorSpace canvas_color_space,
     CanvasPixelFormat canvas_pixel_format,
@@ -701,70 +712,49 @@ bool ImageData::ImageDataInCanvasColorSettings(
   if (!data_ && !data_u16_ && !data_f32_)
     return false;
 
-  // If canvas and image data are both in the same color space and pixel format
-  // is 8-8-8-8, no conversion is needed.
-  CanvasColorSpace image_data_color_space =
-      ImageData::GetCanvasColorSpace(color_settings_.colorSpace());
-  if (canvas_pixel_format == kRGBA8CanvasPixelFormat &&
-      color_settings_.storageFormat() == kUint8ClampedArrayStorageFormatName) {
-    if (canvas_color_space == image_data_color_space ||
-        ((canvas_color_space == kLegacyCanvasColorSpace ||
-         canvas_color_space == kSRGBCanvasColorSpace) &&
-            (image_data_color_space == kLegacyCanvasColorSpace ||
-             image_data_color_space == kSRGBCanvasColorSpace))) {
-      memcpy(converted_pixels.get(), data_->Data(), data_->length());
-      return true;
-    }
-  }
+  CanvasColorParams dst_color_params =
+      CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque);
 
-  // Otherwise, color convert the pixels.
   unsigned num_pixels = size_.Width() * size_.Height();
   void* src_data = this->BufferBase()->Data();
   SkColorSpaceXform::ColorFormat src_color_format =
       SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (data_u16_) {
-    // SkColorSpaceXform::apply expects U16 data to be in Big Endian byte
-    // order, while image data is always Little Endian.
-    uint16_t* src_data_u16 = static_cast<uint16_t*>(src_data);
-    for (unsigned i = 0; i < num_pixels * 4; i++)
-      *(src_data_u16 + i) = WTF::Bswap16(*(src_data_u16 + i));
+  if (data_u16_)
     src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
-  } else if (data_f32_) {
+  else if (data_f32_)
     src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-  }
 
   sk_sp<SkColorSpace> src_color_space =
-      CanvasColorParams(image_data_color_space,
-                        data_ ? kRGBA8CanvasPixelFormat : kF16CanvasPixelFormat,
-                        kNonOpaque)
-          .GetSkColorSpaceForSkSurfaces();
+      GetCanvasColorParams().GetSkColorSpaceForSkSurfaces();
   sk_sp<SkColorSpace> dst_color_space =
-      CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque)
-          .GetSkColorSpaceForSkSurfaces();
+      dst_color_params.GetSkColorSpaceForSkSurfaces();
   SkColorSpaceXform::ColorFormat dst_color_format =
       SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
   if (canvas_pixel_format == kF16CanvasPixelFormat)
     dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+
+  if (!src_color_space.get() && !dst_color_space.get()) {
+    memcpy(converted_pixels.get(), data_->Data(), data_->length());
+    return true;
+  }
+  bool conversion_result = false;
+  if (!src_color_space.get())
+    src_color_space = SkColorSpace::MakeSRGB();
+  if (!dst_color_space.get())
+    dst_color_space = SkColorSpace::MakeSRGB();
   std::unique_ptr<SkColorSpaceXform> xform =
       SkColorSpaceXform::New(src_color_space.get(), dst_color_space.get());
-
-  bool conversion_result =
+  // SkColorSpaceXform only accepts big-endian integers when source data is
+  // uint16. Since ImageData is always little-endian, we need to convert back
+  // and forth before passing uint16 data to SkColorSpaceXform::apply().
+  if (data_u16_)
+    this->SwapU16EndiannessForSkColorSpaceXform();
+  conversion_result =
       xform->apply(dst_color_format, converted_pixels.get(), src_color_format,
                    src_data, num_pixels, SkAlphaType::kUnpremul_SkAlphaType);
-  if (data_u16_) {
-    uint16_t* src_data_u16 = static_cast<uint16_t*>(src_data);
-    for (unsigned i = 0; i < num_pixels * 4; i++)
-      *(src_data_u16 + i) = WTF::Bswap16(*(src_data_u16 + i));
-  };
+  if (data_u16_)
+    this->SwapU16EndiannessForSkColorSpaceXform();
   return conversion_result;
-}
-
-bool ImageData::ImageDataInCanvasColorSettings(
-    const CanvasColorParams& canvas_color_params,
-    std::unique_ptr<uint8_t[]>& converted_pixels) {
-  return ImageDataInCanvasColorSettings(canvas_color_params.ColorSpace(),
-                                        canvas_color_params.PixelFormat(),
-                                        converted_pixels);
 }
 
 void ImageData::Trace(blink::Visitor* visitor) {

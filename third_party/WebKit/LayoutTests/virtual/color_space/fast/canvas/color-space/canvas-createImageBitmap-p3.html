@@ -31,7 +31,7 @@ function testPixels(ctx, tests, sourceType)
 {
     var actual, expected, tolerance = 0.01;
     if (sourceType == 'video')
-        tolerance = 0.02;
+        tolerance = 0.03;
     for (var i = 0; i < tests.length; i++) {
         actual = ctx.getImageData(tests[i][0], tests[i][1], 1, 1).dataUnion;
         expected = tests[i][2];

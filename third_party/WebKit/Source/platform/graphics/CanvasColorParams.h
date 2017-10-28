@@ -54,6 +54,10 @@ class PLATFORM_EXPORT CanvasColorParams {
   // in order to enforce non-gamma-aware pixel math behaviour.
   bool NeedsSkColorSpaceXformCanvas() const;
 
+  // Indicates if pixels in this canvas color settings require any color
+  // conversion to be used in the passed canvas color settings.
+  bool NeedsColorConversion(const CanvasColorParams&) const;
+
   // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
   // is nullptr in legacy rendering mode.
   sk_sp<SkColorSpace> GetSkColorSpaceForSkSurfaces() const;
