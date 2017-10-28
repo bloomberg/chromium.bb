@@ -8,9 +8,12 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
+#include "chrome/common/chrome_paths.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 
@@ -56,6 +59,11 @@ class PDFToPWGRasterBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<PWGRasterConverter> converter_;
 };
 
+std::string HashFile(const std::string& file_data) {
+  std::string sha1 = base::SHA1HashString(file_data);
+  return base::HexEncode(sha1.c_str(), sha1.length());
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(PDFToPWGRasterBrowserTest, TestFailure) {
@@ -70,9 +78,10 @@ IN_PROC_BROWSER_TEST_F(PDFToPWGRasterBrowserTest, TestSuccess) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-  base::FilePath pdf_file = test_data_dir.AppendASCII(
-      "chrome/test/data/printing/pdf_to_pwg_raster_test.pdf");
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  test_data_dir = test_data_dir.AppendASCII("printing");
+  base::FilePath pdf_file =
+      test_data_dir.AppendASCII("pdf_to_pwg_raster_test.pdf");
   std::string pdf_data_str;
   ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data_str));
   ASSERT_GT(pdf_data_str.length(), 0U);
@@ -96,16 +105,17 @@ IN_PROC_BROWSER_TEST_F(PDFToPWGRasterBrowserTest, TestSuccess) {
   // platform (32 or 64 bits) on Linux.
   base::FilePath pwg_file = test_data_dir.AppendASCII(
 #if defined(OS_LINUX) && defined(ARCH_CPU_32_BITS)
-      "chrome/test/data/printing/pdf_to_pwg_raster_test_32.pwg");
+      "pdf_to_pwg_raster_test_32.pwg");
 #else
-      "chrome/test/data/printing/pdf_to_pwg_raster_test.pwg");
+      "pdf_to_pwg_raster_test.pwg");
 #endif
 
   std::string pwg_expected_data_str;
   ASSERT_TRUE(base::ReadFileToString(pwg_file, &pwg_expected_data_str));
   std::string pwg_actual_data_str;
   ASSERT_TRUE(base::ReadFileToString(temp_file, &pwg_actual_data_str));
-  ASSERT_EQ(pwg_expected_data_str, pwg_actual_data_str);
+  EXPECT_EQ(pwg_expected_data_str.length(), pwg_actual_data_str.length());
+  EXPECT_EQ(HashFile(pwg_expected_data_str), HashFile(pwg_actual_data_str));
 }
 
 }  // namespace printing
