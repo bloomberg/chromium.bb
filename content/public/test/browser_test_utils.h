@@ -994,6 +994,8 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ContextMenuFilter);
 };
 
+WebContents* GetEmbedderForGuest(content::WebContents* guest);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
