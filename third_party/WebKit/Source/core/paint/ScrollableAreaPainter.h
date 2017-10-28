@@ -36,9 +36,11 @@ class ScrollableAreaPainter {
   void PaintScrollCorner(GraphicsContext&,
                          const IntPoint& paint_offset,
                          const CullRect&);
-  static void PaintScrollbar(const Scrollbar&,
-                             GraphicsContext&,
-                             const IntRect& clip);
+
+  // GraphicsContext and CullRect are in the local space of the scrollbar.
+  static void PaintCompositedScrollbar(const Scrollbar&,
+                                       GraphicsContext&,
+                                       const CullRect&);
 
  private:
   void DrawPlatformResizerImage(GraphicsContext&, IntRect resizer_corner_rect);

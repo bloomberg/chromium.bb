@@ -962,7 +962,8 @@ void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
     return;
 
   if (scrollbar) {
-    ScrollableAreaPainter::PaintScrollbar(*scrollbar, context, interest_rect);
+    ScrollableAreaPainter::PaintCompositedScrollbar(*scrollbar, context,
+                                                    CullRect(interest_rect));
   } else {
     FramePainter(*layout_view_.GetFrameView())
         .PaintScrollCorner(context, interest_rect);
