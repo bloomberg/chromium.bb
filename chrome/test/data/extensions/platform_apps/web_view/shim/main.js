@@ -3119,6 +3119,39 @@ function testRendererNavigationRedirectWhileUnattached() {
   webview.src = 'about:blank';
 };
 
+function testWebViewAndEmbedderInNewWindow() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('newwindow', function(e) {
+    e.preventDefault();
+    var url = 'new_window_main.html';
+    chrome.app.window.create(url, {}, function (app_new_window) {
+      if (chrome.runtime.lastError) {
+        console.log('Error:' + chrome.runtime.lastError.message);
+        embedder.test.fail();
+        return;
+      }
+
+      var new_window = app_new_window.contentWindow;
+      new_window.onload = function(evt) {
+        var newwebview = new_window.document.createElement('webview');
+        // We could use e.targetUrl here I suppose, but it's about:blank so
+        // it doesn't seem to trigger a loadstop.
+        newwebview.setAttribute('src', embedder.emptyGuestURL);
+        newwebview.addEventListener('loadstop', function (evt2) {
+          // After this test exits, we'll still need to compare embedders in the
+          // C++ part of this test.
+          embedder.test.succeed();
+        });
+        // Be sure to do the attach before appending to document.
+        e.window.attach(newwebview);
+        new_window.document.body.appendChild(newwebview);
+      };
+    });
+  });
+  webview.setAttribute('src', embedder.windowOpenGuestURL);
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -3239,7 +3272,8 @@ embedder.test.testList = {
   'testMailtoLink': testMailtoLink,
   'testRendererNavigationRedirectWhileUnattached':
        testRendererNavigationRedirectWhileUnattached,
-  'testBlobURL': testBlobURL
+  'testBlobURL': testBlobURL,
+  'testWebViewAndEmbedderInNewWindow': testWebViewAndEmbedderInNewWindow
 };
 
 onload = function() {

@@ -2305,4 +2305,9 @@ void ContextMenuFilter::OnContextMenu(
   message_loop_runner_->Quit();
 }
 
+WebContents* GetEmbedderForGuest(content::WebContents* guest) {
+  CHECK(guest);
+  return static_cast<content::WebContentsImpl*>(guest)->GetOuterWebContents();
+}
+
 }  // namespace content

@@ -146,6 +146,11 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   DCHECK(owner_web_contents);
   auto* embedder_frame = RenderFrameHost::FromID(
       render_process_id_, embedder_local_render_frame_id);
+  // If we're creating a new guest through window.open /
+  // RenderViewImpl::CreateView, the embedder may not be the same as
+  // the original creator/owner, so update embedder_web_contents here.
+  content::WebContents* embedder_web_contents =
+      WebContents::FromRenderFrameHost(embedder_frame);
 
   // Update the guest manager about the attachment.
   // This sets up the embedder and guest pairing information inside
@@ -153,20 +158,20 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   manager->AttachGuest(render_process_id_, element_instance_id,
                        guest_instance_id, params);
 
-  owner_web_contents->GetMainFrame()->Send(
+  embedder_web_contents->GetMainFrame()->Send(
       new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
 
   guest->WillAttach(
-      owner_web_contents, element_instance_id, false,
+      embedder_web_contents, element_instance_id, false,
       base::Bind(&GuestViewBase::DidAttach,
                  guest->weak_ptr_factory_.GetWeakPtr(), MSG_ROUTING_NONE));
 
   // Attach this inner WebContents |guest_web_contents| to the outer
-  // WebContents |owner_web_contents|. The outer WebContents's
+  // WebContents |embedder_web_contents|. The outer WebContents's
   // frame |embedder_frame| hosts the inner WebContents.
   // NOTE: this must be called last, because it could unblock pending requests
   // which depend on the WebViewGuest being initialized which happens above.
-  guest_web_contents->AttachToOuterWebContentsFrame(owner_web_contents,
+  guest_web_contents->AttachToOuterWebContentsFrame(embedder_web_contents,
                                                     embedder_frame);
 }
 
