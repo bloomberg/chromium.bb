@@ -91,6 +91,12 @@ check_full(const char *tableList, const char *str, const formtype *typeform,
 		const char *expected, int mode, const int *cursorPos, int direction,
 		int diagnostics);
 
+/* Check if a string is hyphenated as expected, by passing the
+ * expected hyphenation position array. Return 0 if the hyphenation is
+ * as expected and 1 otherwise. */
+int
+check_hyphenation_pos(const char *tableList, const char *str, const char *expected);
+
 /* Check if a string is hyphenated as expected. Return 0 if the
  * hyphenation is as expected and 1 otherwise. */
 int

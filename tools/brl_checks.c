@@ -373,10 +373,11 @@ fail:
 	return retval;
 }
 
-/* Check if a string is hyphenated as expected. Return 0 if the
- * hyphenation is as expected and 1 otherwise. */
+/* Check if a string is hyphenated as expected, by passing the
+ * expected hyphenation position array. Return 0 if the hyphenation is
+ * as expected and 1 otherwise. */
 int
-check_hyphenation(const char *tableList, const char *str, const char *expected) {
+check_hyphenation_pos(const char *tableList, const char *str, const char *expected) {
 	widechar *inbuf;
 	char *hyphens = NULL;
 	int inlen = strlen(str);
@@ -403,6 +404,77 @@ check_hyphenation(const char *tableList, const char *str, const char *expected) 
 		fprintf(stderr, "Received: '%s'\n", hyphens);
 		retval = 1;
 	}
+
+fail:
+	free(inbuf);
+	free(hyphens);
+	return retval;
+}
+
+/* Check if a string is hyphenated as expected. Return 0 if the
+   hyphenation is as expected and 1 otherwise. */
+int
+check_hyphenation(const char *tableList, const char *str, const char *expected) {
+	widechar *inbuf;
+	widechar *hyphenatedbuf = NULL;
+	uint8_t *hyphenated = NULL;
+	char *hyphens = NULL;
+	int inlen = strlen(str);
+	size_t hyphenatedlen = inlen * 2;
+	int retval = 0;
+
+	inbuf = malloc(sizeof(widechar) * inlen);
+	inlen = _lou_extParseChars(str, inbuf);
+	if (!inlen) {
+		fprintf(stderr, "Cannot parse input string.\n");
+		retval = 1;
+		goto fail;
+	}
+	hyphens = calloc(inlen + 1, sizeof(char));
+
+	if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, 0)) {
+		fprintf(stderr, "Hyphenation failed.\n");
+		retval = 1;
+		goto fail;
+	}
+	if (hyphens[0] != '0') {
+		fprintf(stderr, "Unexpected output from lou_hyphenate.\n");
+		retval = 1;
+		goto fail;
+	}
+
+	hyphenatedbuf = malloc(sizeof(widechar) * hyphenatedlen);
+	int i = 0;
+	int j = 0;
+	hyphenatedbuf[i++] = inbuf[j++];
+	for (; j < inlen; j++) {
+		if (hyphens[j] != '0') hyphenatedbuf[i++] = (widechar)'-';
+		hyphenatedbuf[i++] = inbuf[j];
+	}
+
+#ifdef WIDECHARS_ARE_UCS4
+	hyphenated = u32_to_u8(hyphenatedbuf, i, NULL, &hyphenatedlen);
+#else
+	hyphenated = u16_to_u8(hyphenatedbuf, i, NULL, &hyphenatedlen);
+#endif
+
+	if (!hyphenated) {
+		fprintf(stderr, "Unexpected error during UTF-8 encoding\n");
+		free(hyphenatedbuf);
+		retval = 2;
+		goto fail;
+	}
+
+	if (strlen(expected) != (int)hyphenatedlen ||
+			strncmp(expected, (const char *)hyphenated, hyphenatedlen)) {
+		fprintf(stderr, "Input:    '%s'\n", str);
+		fprintf(stderr, "Expected: '%s'\n", expected);
+		fprintf(stderr, "Received: '%.*s'\n", (int)hyphenatedlen, hyphenated);
+		retval = 1;
+	}
+
+	free(hyphenatedbuf);
+	free(hyphenated);
 
 fail:
 	free(inbuf);
