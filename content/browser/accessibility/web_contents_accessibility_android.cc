@@ -866,7 +866,8 @@ void WebContentsAccessibilityAndroid::SetSelection(
     jint unique_id,
     jint start,
     jint end) {
-  using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
+  using AXPlatformPositionInstance =
+      BrowserAccessibilityPosition::AXPositionInstance;
   using AXPlatformRange = ui::AXRange<AXPlatformPositionInstance::element_type>;
 
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);

@@ -38,8 +38,10 @@ const uint32_t kScreenReaderAndHTMLAccessibilityModes =
 
 namespace content {
 
-using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
-using AXPlatformRange = ui::AXRange<AXPlatformPositionInstance::element_type>;
+using BrowserAccessibilityPositionInstance =
+    BrowserAccessibilityPosition::AXPositionInstance;
+using AXPlatformRange =
+    ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
 
 // These nonstandard GUIDs are taken directly from the Mozilla sources
 // (accessible/src/msaa/nsAccessNodeWrap.cpp); some documentation is here:
@@ -1760,9 +1762,9 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
 // tree positions.
 // TODO(nektar): Remove this function once selection fixes in Blink are
 // thoroughly tested and convert to tree positions.
-AXPlatformPosition::AXPositionInstance
+BrowserAccessibilityPosition::AXPositionInstance
 BrowserAccessibilityComWin::CreatePositionForSelectionAt(int offset) const {
-  AXPlatformPositionInstance position =
+  BrowserAccessibilityPositionInstance position =
       owner()->CreatePositionAt(offset)->AsLeafTextPosition();
   if (position->GetAnchor() &&
       position->GetAnchor()->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX) {
@@ -2247,9 +2249,9 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
                                                           LONG end_offset) {
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
-  AXPlatformPositionInstance start_position =
+  BrowserAccessibilityPositionInstance start_position =
       CreatePositionForSelectionAt(static_cast<int>(start_offset));
-  AXPlatformPositionInstance end_position =
+  BrowserAccessibilityPositionInstance end_position =
       CreatePositionForSelectionAt(static_cast<int>(end_offset));
   Manager()->SetSelection(
       AXPlatformRange(std::move(start_position), std::move(end_position)));
@@ -2270,17 +2272,17 @@ LONG BrowserAccessibilityComWin::FindBoundary(
   if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD) {
     switch (direction) {
       case ui::FORWARDS_DIRECTION: {
-        AXPlatformPositionInstance position =
+        BrowserAccessibilityPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        AXPlatformPositionInstance next_word =
+        BrowserAccessibilityPositionInstance next_word =
             position->CreateNextWordStartPosition(
                 ui::AXBoundaryBehavior::StopAtAnchorBoundary);
         return next_word->text_offset();
       }
       case ui::BACKWARDS_DIRECTION: {
-        AXPlatformPositionInstance position =
+        BrowserAccessibilityPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        AXPlatformPositionInstance previous_word =
+        BrowserAccessibilityPositionInstance previous_word =
             position->CreatePreviousWordStartPosition(
                 ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
         return previous_word->text_offset();
@@ -2291,17 +2293,17 @@ LONG BrowserAccessibilityComWin::FindBoundary(
   if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE) {
     switch (direction) {
       case ui::FORWARDS_DIRECTION: {
-        AXPlatformPositionInstance position =
+        BrowserAccessibilityPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        AXPlatformPositionInstance next_line =
+        BrowserAccessibilityPositionInstance next_line =
             position->CreateNextLineStartPosition(
                 ui::AXBoundaryBehavior::StopAtAnchorBoundary);
         return next_line->text_offset();
       }
       case ui::BACKWARDS_DIRECTION: {
-        AXPlatformPositionInstance position =
+        BrowserAccessibilityPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        AXPlatformPositionInstance previous_line =
+        BrowserAccessibilityPositionInstance previous_line =
             position->CreatePreviousLineStartPosition(
                 ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
         return previous_line->text_offset();

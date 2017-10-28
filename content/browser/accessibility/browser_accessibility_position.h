@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_AX_PLATFORM_POSITION_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_AX_PLATFORM_POSITION_H_
+#ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_POSITION_H_
+#define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_POSITION_H_
 
 #include <stdint.h>
 
@@ -19,18 +19,20 @@ class BrowserAccessibility;
 
 using AXTreeID = ui::AXTreeIDRegistry::AXTreeID;
 
-class AXPlatformPosition
-    : public ui::AXPosition<AXPlatformPosition, BrowserAccessibility> {
+class BrowserAccessibilityPosition
+    : public ui::AXPosition<BrowserAccessibilityPosition,
+                            BrowserAccessibility> {
  public:
-  AXPlatformPosition();
-  ~AXPlatformPosition() override;
+  BrowserAccessibilityPosition();
+  ~BrowserAccessibilityPosition() override;
 
   AXPositionInstance Clone() const override;
 
   base::string16 GetInnerText() const override;
 
  protected:
-  AXPlatformPosition(const AXPlatformPosition& other) = default;
+  BrowserAccessibilityPosition(const BrowserAccessibilityPosition& other) =
+      default;
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
                    int32_t* child_id) const override;
@@ -50,4 +52,4 @@ class AXPlatformPosition
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_AX_PLATFORM_POSITION_H_
+#endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_POSITION_H_
