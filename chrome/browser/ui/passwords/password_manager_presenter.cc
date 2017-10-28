@@ -216,7 +216,6 @@ PasswordManagerPresenter::PasswordManagerPresenter(
     : populater_(this),
       exception_populater_(this),
       password_view_(password_view),
-      password_manager_porter_(this),
       password_access_authenticator_(
           base::BindRepeating(&PasswordManagerPresenter::OsReauthCall,
                               base::Unretained(this))) {
@@ -408,18 +407,6 @@ void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
       duplicates->insert(std::make_pair(previous_key, std::move(pair.second)));
     }
   }
-}
-
-void PasswordManagerPresenter::ImportPasswords(
-    content::WebContents* web_contents) {
-  password_manager_porter_.set_web_contents(web_contents);
-  password_manager_porter_.Load();
-}
-
-void PasswordManagerPresenter::ExportPasswords(
-    content::WebContents* web_contents) {
-  password_manager_porter_.set_web_contents(web_contents);
-  password_manager_porter_.Store();
 }
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {

@@ -29,7 +29,10 @@ namespace extensions {
 
 PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
     : profile_(profile),
-      password_manager_presenter_(new PasswordManagerPresenter(this)),
+      password_manager_presenter_(
+          std::make_unique<PasswordManagerPresenter>(this)),
+      password_manager_porter_(std::make_unique<PasswordManagerPorter>(
+          password_manager_presenter_.get())),
       current_entries_initialized_(false),
       current_exceptions_initialized_(false),
       is_initialized_(false),
@@ -210,12 +213,14 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 
 void PasswordsPrivateDelegateImpl::ImportPasswords(
     content::WebContents* web_contents) {
-  password_manager_presenter_->ImportPasswords(web_contents);
+  password_manager_porter_->set_web_contents(web_contents);
+  password_manager_porter_->Load();
 }
 
 void PasswordsPrivateDelegateImpl::ExportPasswords(
     content::WebContents* web_contents) {
-  password_manager_presenter_->ExportPasswords(web_contents);
+  password_manager_porter_->set_web_contents(web_contents);
+  password_manager_porter_->Store();
 }
 
 #if !defined(OS_ANDROID)
@@ -227,6 +232,7 @@ gfx::NativeWindow PasswordsPrivateDelegateImpl::GetNativeWindow() const {
 
 void PasswordsPrivateDelegateImpl::Shutdown() {
   password_manager_presenter_.reset();
+  password_manager_porter_.reset();
 }
 
 void PasswordsPrivateDelegateImpl::ExecuteFunction(
