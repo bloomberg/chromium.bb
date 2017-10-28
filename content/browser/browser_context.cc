@@ -204,9 +204,7 @@ DownloadManager* BrowserContext::GetDownloadManager(
     BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context->GetUserData(kDownloadManagerKeyName)) {
-    DownloadManager* download_manager =
-        new DownloadManagerImpl(
-            GetContentClient()->browser()->GetNetLog(), context);
+    DownloadManager* download_manager = new DownloadManagerImpl(context);
 
     SetDownloadManager(context, base::WrapUnique(download_manager));
     download_manager->SetDelegate(context->GetDownloadManagerDelegate());
