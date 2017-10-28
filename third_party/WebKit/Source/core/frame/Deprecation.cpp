@@ -22,6 +22,20 @@
 
 namespace {
 
+const char chromeLoadTimesNavigationTiming[] =
+    "chrome.loadTimes() is deprecated, instead use standardized API: "
+    "Navigation Timing 2. "
+    "https://www.chromestatus.com/features/5637885046816768.";
+const char chromeLoadTimesNextHopProtocol[] =
+    "chrome.loadTimes() is deprecated, instead use standardized API: "
+    "nextHopProtocol in Navigation Timing 2. "
+    "https://www.chromestatus.com/features/5637885046816768.";
+
+const char chromeLoadTimesPaintTiming[] =
+    "chrome.loadTimes() is deprecated, instead use standardized API: "
+    "Paint Timing. "
+    "https://www.chromestatus.com/features/5637885046816768.";
+
 enum Milestone {
   M60,
   M61,
@@ -615,9 +629,35 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
       return DeprecatedWebAudioDezippering("BiquadFilterNode.Q");
     case WebFeature::kWebAudioDezipperBiquadFilterNodeGain:
       return DeprecatedWebAudioDezippering("BiquadFilterNode.gain");
-
     case WebFeature::kWebAudioValueSetterIsSetValue:
       return DeprecatedWebAudioValueSetterBehavior();
+
+    case WebFeature::kChromeLoadTimesRequestTime:
+      return chromeLoadTimesNavigationTiming;
+    case WebFeature::kChromeLoadTimesStartLoadTime:
+      return chromeLoadTimesNavigationTiming;
+    case WebFeature::kChromeLoadTimesCommitLoadTime:
+      return chromeLoadTimesNavigationTiming;
+    case WebFeature::kChromeLoadTimesFinishDocumentLoadTime:
+      return chromeLoadTimesNavigationTiming;
+    case WebFeature::kChromeLoadTimesFinishLoadTime:
+      return chromeLoadTimesNavigationTiming;
+    case WebFeature::kChromeLoadTimesFirstPaintTime:
+      return chromeLoadTimesPaintTiming;
+    case WebFeature::kChromeLoadTimesFirstPaintAfterLoadTime:
+      return chromeLoadTimesPaintTiming;
+    case WebFeature::kChromeLoadTimesNavigationType:
+      return chromeLoadTimesNavigationTiming;
+    case WebFeature::kChromeLoadTimesWasFetchedViaSpdy:
+      return chromeLoadTimesNextHopProtocol;
+    case WebFeature::kChromeLoadTimesWasNpnNegotiated:
+      return chromeLoadTimesNextHopProtocol;
+    case WebFeature::kChromeLoadTimesNpnNegotiatedProtocol:
+      return chromeLoadTimesNextHopProtocol;
+    case WebFeature::kChromeLoadTimesWasAlternateProtocolAvailable:
+      return chromeLoadTimesNextHopProtocol;
+    case WebFeature::kChromeLoadTimesConnectionInfo:
+      return chromeLoadTimesNavigationTiming;
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

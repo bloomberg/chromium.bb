@@ -135,6 +135,7 @@
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewImpl.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
@@ -2479,7 +2480,7 @@ void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {
   } else if (metric == "connectionInfo") {
     feature = WebFeature::kChromeLoadTimesConnectionInfo;
   }
-  UseCounter::Count(GetFrame(), feature);
+  Deprecation::CountDeprecation(GetFrame(), feature);
 }
 
 WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
