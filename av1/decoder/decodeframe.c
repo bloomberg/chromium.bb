@@ -396,7 +396,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif
 
-#if CONFIG_COEF_INTERLEAVE || (!CONFIG_EXT_TX && CONFIG_RECT_TX)
+#if CONFIG_COEF_INTERLEAVE
 static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                    aom_reader *const r, int segment_id,
                                    int plane, int row, int col,
@@ -436,7 +436,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
   return eob;
 }
-#endif  // CONFIG_COEF_INTERLEAVE || (!CONFIG_EXT_TX && CONFIG_RECT_TX)
+#endif  // CONFIG_COEF_INTERLEAVE
 
 static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
