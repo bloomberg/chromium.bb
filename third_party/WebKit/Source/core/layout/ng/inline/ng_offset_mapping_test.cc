@@ -37,7 +37,10 @@ class NGOffsetMappingTest : public RenderingTest {
   }
 
   const NGOffsetMapping& GetOffsetMapping() const {
-    return NGInlineNode(layout_block_flow_).ComputeOffsetMappingIfNeeded();
+    const NGOffsetMapping* map =
+        NGInlineNode(layout_block_flow_).ComputeOffsetMappingIfNeeded();
+    CHECK(map);
+    return *map;
   }
 
   bool IsOffsetMappingStored() const {

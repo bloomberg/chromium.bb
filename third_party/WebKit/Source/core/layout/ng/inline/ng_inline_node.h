@@ -69,7 +69,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
   // This funciton must be called with clean layout.
-  const NGOffsetMapping& ComputeOffsetMappingIfNeeded();
+  const NGOffsetMapping* ComputeOffsetMappingIfNeeded();
 
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
   TextDirection BaseDirection() const { return Data().BaseDirection(); }
