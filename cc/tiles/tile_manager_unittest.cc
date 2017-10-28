@@ -1934,7 +1934,6 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   host_impl->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl->pending_tree();
 
-  // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
                                                    pending_raster_source);
@@ -1964,10 +1963,111 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   host_impl = nullptr;
 }
 
+void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
+                               bool partial_raster_enabled) {
+  // Pick arbitrary IDs - they don't really matter as long as they're constant.
+  const int kLayerId = 7;
+  const uint64_t kInvalidatedId = 43;
+  const uint64_t kExpectedId = partial_raster_enabled ? kInvalidatedId : 0u;
+  const gfx::Size kTileSize(400, 400);
+
+  host_impl->tile_manager()->SetTileTaskManagerForTesting(
+      std::make_unique<FakeTileTaskManagerImpl>());
+
+  // Create a VerifyResourceContentIdTileTaskManager to ensure that the
+  // raster task we see is created with |kExpectedId|.
+  VerifyResourceContentIdRasterBufferProvider raster_buffer_provider(
+      kExpectedId);
+  host_impl->tile_manager()->SetRasterBufferProviderForTesting(
+      &raster_buffer_provider);
+
+  // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
+  auto* resource = host_impl->resource_pool()->AcquireResource(
+      kTileSize, viz::RGBA_8888, gfx::ColorSpace());
+  host_impl->resource_pool()->OnContentReplaced(resource->id(), kInvalidatedId);
+  host_impl->resource_pool()->ReleaseResource(resource);
+  host_impl->resource_pool()->CheckBusyResources();
+
+  const gfx::Size layer_bounds(500, 500);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_fill_with_nonsolid_color(true);
+
+  int dimension = 250;
+  PaintImage image1 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image2 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image3 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image4 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  recording_source->add_draw_image(image1, gfx::Point(0, 0));
+  recording_source->add_draw_image(image2, gfx::Point(300, 0));
+  recording_source->add_draw_image(image3, gfx::Point(0, 300));
+  recording_source->add_draw_image(image4, gfx::Point(300, 300));
+
+  recording_source->Rerecord();
+
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFromRecordingSource(recording_source.get());
+
+  host_impl->CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl->pending_tree();
+
+  // Steal from the recycled tree.
+  std::unique_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
+                                                   pending_raster_source);
+  pending_layer->SetDrawsContent(true);
+
+  // The bounds() just mirror the raster source size.
+  pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
+  pending_tree->SetRootLayerForTesting(std::move(pending_layer));
+
+  // Add tilings/tiles for the layer.
+  host_impl->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl->pending_tree()->UpdateDrawProperties();
+
+  // Build the raster queue and invalidate the top tile if partial raster is
+  // enabled.
+  std::unique_ptr<RasterTilePriorityQueue> queue(host_impl->BuildRasterQueue(
+      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
+  ASSERT_FALSE(queue->IsEmpty());
+  Tile* tile = queue->Top().tile();
+  if (partial_raster_enabled)
+    tile->SetInvalidated(gfx::Rect(200, 200), kInvalidatedId);
+
+  // PrepareTiles to schedule tasks. Due to the
+  // VerifyPreviousContentRasterBufferProvider, these tasks will verified and
+  // cancelled.
+  host_impl->tile_manager()->PrepareTiles(host_impl->global_tile_state());
+
+  // Tile will have 1 dependent decode task if we decode images only in the
+  // invalidated rect. Otherwise it will have 4.
+  EXPECT_EQ(
+      host_impl->tile_manager()->decode_tasks_for_testing(tile->id()).size(),
+      partial_raster_enabled ? 1u : 4u);
+
+  // Free our host_impl before the verifying_task_manager we passed it, as it
+  // will use that class in clean up.
+  host_impl = nullptr;
+}
+
 // Ensures that the tile manager successfully reuses tiles when partial
 // raster is enabled.
 TEST_F(PartialRasterTileManagerTest, PartialRasterSuccessfullyEnabled) {
   RunPartialRasterCheck(TakeHostImpl(), true /* partial_raster_enabled */);
+}
+
+TEST_F(PartialRasterTileManagerTest, PartialTileImageDecode) {
+  RunPartialTileDecodeCheck(TakeHostImpl(), true /* partial_raster_enabled */);
+}
+
+TEST_F(PartialRasterTileManagerTest, CompleteTileImageDecode) {
+  RunPartialTileDecodeCheck(TakeHostImpl(),
+                            false /* partial_raster_disabled */);
 }
 
 // Ensures that the tile manager does not attempt to reuse tiles when partial
