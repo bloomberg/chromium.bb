@@ -422,7 +422,7 @@ const NGInlineNodeData& NGInlineNode::EnsureData() {
   return Data();
 }
 
-const NGOffsetMapping& NGInlineNode::ComputeOffsetMappingIfNeeded() {
+const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate());
 
   if (!Data().offset_mapping_) {
@@ -443,7 +443,7 @@ const NGOffsetMapping& NGInlineNode::ComputeOffsetMappingIfNeeded() {
         WTF::MakeUnique<NGOffsetMapping>(mapping_builder.Build());
   }
 
-  return *Data().offset_mapping_;
+  return Data().offset_mapping_.get();
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
