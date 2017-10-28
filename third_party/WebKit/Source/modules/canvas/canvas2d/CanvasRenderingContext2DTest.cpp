@@ -32,6 +32,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/ByteSwap.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1072,17 +1073,16 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
   // Set the color space conversion in ImageBitmapOptions
   ImageBitmapOptions options;
   static const Vector<String> kConversions = {
-      "none", "default", "default", "srgb", "linear-rgb", "p3", "rec2020"};
+      "none", "default", "srgb", "linear-rgb", "p3", "rec2020"};
   options.setColorSpaceConversion(
       kConversions[static_cast<uint8_t>(color_space_conversion)]);
 
   return options;
 }
 
-constexpr int kSRGBColorCorrectionTolerance = 1;
-constexpr float kWideGamutColorCorrectionTolerance = 0.01;
-
 TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+
   Persistent<HTMLCanvasElement> canvas =
       Persistent<HTMLCanvasElement>(CanvasElement());
   CanvasContextCreationAttributes attributes;
@@ -1091,24 +1091,19 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
       canvas->GetCanvasRenderingContext("2d", attributes));
   StringOrCanvasGradientOrCanvasPattern fill_style;
-  fill_style.SetString("#FF0000");
+  fill_style.SetString("#FFC08040");  // 255,192,128,64
   context->setFillStyle(fill_style);
-  context->fillRect(0, 0, 10, 10);
+  context->fillRect(0, 0, 4, 4);
   NonThrowableExceptionState exception_state;
   uint8_t* src_pixel =
-      context->getImageData(5, 5, 1, 1, exception_state)->data()->Data();
-  // Swizzle if needed
-  if (kN32_SkColorType == kBGRA_8888_SkColorType)
-    std::swap(src_pixel[0], src_pixel[2]);
+      context->getImageData(2, 2, 1, 1, exception_state)->data()->Data();
 
   // Create and test the ImageBitmap objects.
-  Optional<IntRect> crop_rect = IntRect(0, 0, 10, 10);
+  Optional<IntRect> crop_rect = IntRect(0, 0, 4, 4);
   sk_sp<SkColorSpace> color_space = nullptr;
-  SkColorType color_type = SkColorType::kN32_SkColorType;
+  SkColorType color_type = SkColorType::kRGBA_8888_SkColorType;
   SkColorSpaceXform::ColorFormat color_format32 =
-      (color_type == kBGRA_8888_SkColorType)
-          ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
-          : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
   SkColorSpaceXform::ColorFormat color_format = color_format32;
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
 
@@ -1117,11 +1112,6 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
        i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
     ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
-    ImageBitmapOptions options =
-        PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
-    ImageBitmap* image_bitmap = ImageBitmap::Create(canvas, crop_rect, options);
-    sk_sp<SkImage> converted_image =
-        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
 
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
@@ -1155,13 +1145,19 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
         NOTREACHED();
     }
 
-    SkImageInfo image_info = SkImageInfo::Make(
-        1, 1, color_type, SkAlphaType::kPremul_SkAlphaType, color_space);
+    // Color convert using ImageBitmap
+    ImageBitmapOptions options =
+        PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
+    ImageBitmap* image_bitmap = ImageBitmap::Create(canvas, crop_rect, options);
+    sk_sp<SkImage> converted_image =
+        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+    SkImageInfo image_info =
+        SkImageInfo::Make(1, 1, color_type, SkAlphaType::kUnpremul_SkAlphaType,
+                          converted_image->refColorSpace());
     std::unique_ptr<uint8_t[]> converted_pixel(
         new uint8_t[image_info.bytesPerPixel()]());
-    converted_image->readPixels(
-        image_info, converted_pixel.get(),
-        converted_image->width() * image_info.bytesPerPixel(), 5, 5);
+    converted_image->readPixels(image_info, converted_pixel.get(),
+                                image_info.minRowBytes(), 2, 2);
 
     // Transform the source pixel and check if the image bitmap color conversion
     // is done correctly.
@@ -1171,90 +1167,14 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
         new uint8_t[image_info.bytesPerPixel()]());
     color_space_xform->apply(color_format, transformed_pixel.get(),
                              color_format32, src_pixel, 1,
-                             SkAlphaType::kPremul_SkAlphaType);
+                             SkAlphaType::kUnpremul_SkAlphaType);
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-        converted_pixel, transformed_pixel, image_info.bytesPerPixel(),
-        kWideGamutColorCorrectionTolerance);
+        converted_pixel.get(), transformed_pixel.get(), 1,
+        (color_type == kRGBA_8888_SkColorType) ? kUint8ClampedArrayStorageFormat
+                                               : kUint16ArrayStorageFormat,
+        kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
   }
-}
-
-bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
-    DOMArrayBufferView* data_array,
-    CanvasColorSpace src_color_space,
-    CanvasColorSpace dst_color_space,
-    CanvasPixelFormat dst_pixel_format,
-    std::unique_ptr<uint8_t[]>& converted_pixels) {
-  // Setting SkColorSpaceXform::apply parameters
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::kRGBA_8888_ColorFormat;
-
-  unsigned data_length = data_array->byteLength() / data_array->TypeSize();
-  unsigned num_pixels = data_length / 4;
-  DOMUint8ClampedArray* u8_array = nullptr;
-  DOMUint16Array* u16_array = nullptr;
-  DOMFloat32Array* f32_array = nullptr;
-  void* src_data = nullptr;
-
-  switch (data_array->GetType()) {
-    case ArrayBufferView::ViewType::kTypeUint8Clamped:
-      u8_array = const_cast<DOMUint8ClampedArray*>(
-          static_cast<const DOMUint8ClampedArray*>(data_array));
-      src_data = static_cast<void*>(u8_array->Data());
-      break;
-
-    case ArrayBufferView::ViewType::kTypeUint16:
-      u16_array = const_cast<DOMUint16Array*>(
-          static_cast<const DOMUint16Array*>(data_array));
-      src_color_format =
-          SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
-      src_data = static_cast<void*>(u16_array->Data());
-      break;
-
-    case ArrayBufferView::ViewType::kTypeFloat32:
-      f32_array = const_cast<DOMFloat32Array*>(
-          static_cast<const DOMFloat32Array*>(data_array));
-      src_color_format = SkColorSpaceXform::kRGBA_F32_ColorFormat;
-      src_data = static_cast<void*>(f32_array->Data());
-      break;
-    default:
-      NOTREACHED();
-      return false;
-  }
-
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (dst_pixel_format == kF16CanvasPixelFormat)
-    dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-
-  sk_sp<SkColorSpace> src_sk_color_space = nullptr;
-  if (u8_array) {
-    src_sk_color_space =
-        CanvasColorParams(src_color_space, kRGBA8CanvasPixelFormat, kNonOpaque)
-            .GetSkColorSpaceForSkSurfaces();
-  } else {
-    src_sk_color_space =
-        CanvasColorParams(src_color_space, kF16CanvasPixelFormat, kNonOpaque)
-            .GetSkColorSpaceForSkSurfaces();
-  }
-
-  sk_sp<SkColorSpace> dst_sk_color_space =
-      CanvasColorParams(dst_color_space, dst_pixel_format, kNonOpaque)
-          .GetSkColorSpaceForSkSurfaces();
-
-  // When the input dataArray is in Uint16, we normally should convert the
-  // values from Little Endian to Big Endian before passing the buffer to
-  // SkColorSpaceXform::apply. However, in this test scenario we are creating
-  // the Uin16 dataArray by multiplying a Uint8Clamped array members by 257,
-  // hence the Big Endian and Little Endian representations are the same.
-
-  std::unique_ptr<SkColorSpaceXform> xform = SkColorSpaceXform::New(
-      src_sk_color_space.get(), dst_sk_color_space.get());
-
-  if (!xform->apply(dst_color_format, converted_pixels.get(), src_color_format,
-                    src_data, num_pixels, kUnpremul_SkAlphaType))
-    return false;
-  return true;
 }
 
 // The color settings of the surface of the canvas always remaines loyal to the
@@ -1334,6 +1254,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
 
   ImageData* image_data = nullptr;
   ImageDataColorSettings color_settings;
+  int num_pixels = data_length / 4;
 
   // At most four bytes are needed for Float32 output per color component.
   std::unique_ptr<uint8_t[]> pixels_converted_manually(
@@ -1369,9 +1290,14 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       unsigned k = (unsigned)(canvas_colorspace_setting);
       // Convert the original data used to create ImageData to the
       // canvas color space and canvas pixel format.
-      EXPECT_TRUE(ConvertPixelsToColorSpaceAndPixelFormatForTest(
-          data_array, image_data_color_spaces[i], canvas_color_spaces[k],
-          canvas_pixel_formats[k], pixels_converted_manually));
+      EXPECT_TRUE(
+          ColorCorrectionTestUtils::
+              ConvertPixelsToColorSpaceAndPixelFormatForTest(
+                  data_array->BaseAddress(), data_length,
+                  image_data_color_spaces[i], image_data_storage_formats[j],
+                  canvas_color_spaces[k], canvas_pixel_formats[k],
+                  pixels_converted_manually,
+                  SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat));
 
       // Create a canvas and call putImageData and getImageData to make sure
       // the conversion is done correctly.
@@ -1385,26 +1311,17 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       NonThrowableExceptionState exception_state;
       context->putImageData(image_data, 0, 0, exception_state);
 
-      void* pixels_from_get_image_data = nullptr;
-      if (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat) {
-        pixels_from_get_image_data =
-            context->getImageData(0, 0, 2, 2, exception_state)->data()->Data();
-        ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-            static_cast<uint8_t*>((void*)(pixels_converted_manually.get())),
-            static_cast<uint8_t*>(pixels_from_get_image_data), data_length,
-            kSRGBColorCorrectionTolerance);
-      } else {
-        pixels_from_get_image_data =
-            context->getImageData(0, 0, 2, 2, exception_state)
-                ->dataUnion()
-                .GetAsFloat32Array()
-                .View()
-                ->Data();
-        ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-            static_cast<float*>((void*)(pixels_converted_manually.get())),
-            static_cast<float*>(pixels_from_get_image_data), data_length,
-            kWideGamutColorCorrectionTolerance);
-      }
+      void* pixels_from_get_image_data =
+          context->getImageData(0, 0, 2, 2, exception_state)
+              ->BufferBase()
+              ->Data();
+      ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+          pixels_from_get_image_data, pixels_converted_manually.get(),
+          num_pixels,
+          (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat)
+              ? kUint8ClampedArrayStorageFormat
+              : kFloat32ArrayStorageFormat,
+          kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
     }
   }
   delete[] u16_pixels;
@@ -1416,10 +1333,8 @@ TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnSRGBCanvas) {
       CanvasElement(), CanvasColorSpaceSettings::CANVAS_SRGB);
 }
 
-// This test crashes when canvas color parameters are set correctly.
-// http://crbug.com/772189
 TEST_F(CanvasRenderingContext2DTest,
-       DISABLED_ColorManagedPutImageDataOnLinearSRGBCanvas) {
+       ColorManagedPutImageDataOnLinearSRGBCanvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
       CanvasElement(), CanvasColorSpaceSettings::CANVAS_LINEARSRGB);
 }

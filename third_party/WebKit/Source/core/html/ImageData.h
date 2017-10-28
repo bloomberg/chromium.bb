@@ -60,12 +60,6 @@ enum ConstructorParams {
   kParamData = 1 << 3,
 };
 
-enum ImageDataStorageFormat {
-  kUint8ClampedArrayStorageFormat,
-  kUint16ArrayStorageFormat,
-  kFloat32ArrayStorageFormat,
-};
-
 constexpr const char* kUint8ClampedArrayStorageFormatName = "uint8";
 constexpr const char* kUint16ArrayStorageFormatName = "uint16";
 constexpr const char* kFloat32ArrayStorageFormatName = "float32";
@@ -141,8 +135,6 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   bool ImageDataInCanvasColorSettings(CanvasColorSpace,
                                       CanvasPixelFormat,
                                       std::unique_ptr<uint8_t[]>&);
-  bool ImageDataInCanvasColorSettings(const CanvasColorParams&,
-                                      std::unique_ptr<uint8_t[]>&);
 
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override { return size_; }
@@ -198,6 +190,8 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
 
   static DOMFloat32Array* ConvertFloat16ArrayToFloat32Array(const uint16_t*,
                                                             unsigned);
+
+  void SwapU16EndiannessForSkColorSpaceXform();
 };
 
 }  // namespace blink

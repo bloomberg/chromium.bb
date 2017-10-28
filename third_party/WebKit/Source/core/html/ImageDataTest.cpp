@@ -7,6 +7,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ColorCorrectionTestUtils.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/wtf/ByteSwap.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 
@@ -43,12 +45,19 @@ TEST_F(ImageDataTest, MAYBE_CreateImageDataTooBig) {
 // format. This function is used in BaseRenderingContext2D::getImageData.
 TEST_F(ImageDataTest,
        TestConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat) {
+  // Enable experimental canvas features for this test.
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+
   // Source pixels in RGBA32
   unsigned char rgba32_pixels[] = {255, 0,   0,   255,  // Red
                                    0,   0,   0,   0,    // Transparent
                                    255, 192, 128, 64,   // Decreasing values
                                    93,  117, 205, 11};  // Random values
   const unsigned kNumColorComponents = 16;
+  float f32_pixels[kNumColorComponents];
+  for (unsigned i = 0; i < kNumColorComponents; i++)
+    f32_pixels[i] = rgba32_pixels[i] / 255.0;
+  const unsigned kNumPixels = kNumColorComponents / 4;
   // Source pixels in F16
   unsigned char f16_pixels[kNumColorComponents * 2];
 
@@ -81,158 +90,51 @@ TEST_F(ImageDataTest,
 
   // Uint16 is not supported as the storage format for ImageData created from a
   // canvas, so this conversion is neither implemented nor tested here.
-  bool test_passed = true;
-  DOMArrayBufferView* data = nullptr;
-  DOMUint8ClampedArray* data_u8 = nullptr;
-  DOMFloat32Array* data_f32 = nullptr;
 
   // Testing kRGBA8CanvasPixelFormat -> kUint8ClampedArrayStorageFormat
-  data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
-      contents_rgba32, kRGBA8CanvasPixelFormat,
-      kUint8ClampedArrayStorageFormat);
+  DOMArrayBufferView* data =
+      ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
+          contents_rgba32, kRGBA8CanvasPixelFormat,
+          kUint8ClampedArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint8Clamped);
-  data_u8 = const_cast<DOMUint8ClampedArray*>(
-      static_cast<const DOMUint8ClampedArray*>(data));
-  DCHECK(data_u8);
-  for (unsigned i = 0; i < kNumColorComponents; i++) {
-    if (data_u8->Item(i) != rgba32_pixels[i]) {
-      test_passed = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(test_passed);
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      data->BaseAddress(), rgba32_pixels, kNumPixels,
+      kUint8ClampedArrayStorageFormat, kAlphaUnmultiplied,
+      kNoUnpremulRoundTripTolerance);
 
   // Testing kRGBA8CanvasPixelFormat -> kFloat32ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents2rgba32, kRGBA8CanvasPixelFormat, kFloat32ArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeFloat32);
-  data_f32 =
-      const_cast<DOMFloat32Array*>(static_cast<const DOMFloat32Array*>(data));
-  DCHECK(data_f32);
-  for (unsigned i = 0; i < kNumColorComponents; i++) {
-    if (!ColorCorrectionTestUtils::IsNearlyTheSame(data_f32->Item(i),
-                                                   rgba32_pixels[i] / 255.0)) {
-      test_passed = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(test_passed);
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      data->BaseAddress(), f32_pixels, kNumPixels, kFloat32ArrayStorageFormat,
+      kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
 
   // Testing kF16CanvasPixelFormat -> kUint8ClampedArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_f16, kF16CanvasPixelFormat, kUint8ClampedArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint8Clamped);
-  data_u8 = const_cast<DOMUint8ClampedArray*>(
-      static_cast<const DOMUint8ClampedArray*>(data));
-  DCHECK(data_u8);
-  for (unsigned i = 0; i < kNumColorComponents; i++) {
-    if (!ColorCorrectionTestUtils::IsNearlyTheSame(data_u8->Item(i),
-                                                   rgba32_pixels[i])) {
-      test_passed = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(test_passed);
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      data->BaseAddress(), rgba32_pixels, kNumPixels,
+      kUint8ClampedArrayStorageFormat, kAlphaUnmultiplied,
+      kNoUnpremulRoundTripTolerance);
 
   // Testing kF16CanvasPixelFormat -> kFloat32ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_f16, kF16CanvasPixelFormat, kFloat32ArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeFloat32);
-  data_f32 =
-      const_cast<DOMFloat32Array*>(static_cast<const DOMFloat32Array*>(data));
-  DCHECK(data_f32);
-  for (unsigned i = 0; i < kNumColorComponents; i++) {
-    if (!ColorCorrectionTestUtils::IsNearlyTheSame(data_f32->Item(i),
-                                                   rgba32_pixels[i] / 255.0)) {
-      test_passed = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(test_passed);
-}
-
-bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
-    DOMArrayBufferView* data_array,
-    CanvasColorSpace src_color_space,
-    CanvasColorSpace dst_color_space,
-    CanvasPixelFormat dst_pixel_format,
-    std::unique_ptr<uint8_t[]>& converted_pixels) {
-  // Setting SkColorSpaceXform::apply parameters
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::kRGBA_8888_ColorFormat;
-
-  unsigned data_length = data_array->byteLength() / data_array->TypeSize();
-  unsigned num_pixels = data_length / 4;
-  DOMUint8ClampedArray* u8_array = nullptr;
-  DOMUint16Array* u16_array = nullptr;
-  DOMFloat32Array* f32_array = nullptr;
-  void* src_data = nullptr;
-
-  switch (data_array->GetType()) {
-    case ArrayBufferView::ViewType::kTypeUint8Clamped:
-      u8_array = const_cast<DOMUint8ClampedArray*>(
-          static_cast<const DOMUint8ClampedArray*>(data_array));
-      src_data = static_cast<void*>(u8_array->Data());
-      break;
-
-    case ArrayBufferView::ViewType::kTypeUint16:
-      u16_array = const_cast<DOMUint16Array*>(
-          static_cast<const DOMUint16Array*>(data_array));
-      src_color_format =
-          SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
-      src_data = static_cast<void*>(u16_array->Data());
-      break;
-
-    case ArrayBufferView::ViewType::kTypeFloat32:
-      f32_array = const_cast<DOMFloat32Array*>(
-          static_cast<const DOMFloat32Array*>(data_array));
-      src_color_format = SkColorSpaceXform::kRGBA_F32_ColorFormat;
-      src_data = static_cast<void*>(f32_array->Data());
-      break;
-    default:
-      NOTREACHED();
-      return false;
-  }
-
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (dst_pixel_format == kF16CanvasPixelFormat)
-    dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-
-  sk_sp<SkColorSpace> src_sk_color_space = nullptr;
-  if (u8_array) {
-    src_sk_color_space =
-        CanvasColorParams(src_color_space, kRGBA8CanvasPixelFormat, kNonOpaque)
-            .GetSkColorSpaceForSkSurfaces();
-  } else {
-    src_sk_color_space =
-        CanvasColorParams(src_color_space, kF16CanvasPixelFormat, kNonOpaque)
-            .GetSkColorSpaceForSkSurfaces();
-  }
-
-  sk_sp<SkColorSpace> dst_sk_color_space =
-      CanvasColorParams(dst_color_space, dst_pixel_format, kNonOpaque)
-          .GetSkColorSpaceForSkSurfaces();
-
-  // When the input dataArray is in Uint16, we normally should convert the
-  // values from Little Endian to Big Endian before passing the buffer to
-  // SkColorSpaceXform::apply. However, in this test scenario we are creating
-  // the Uin16 dataArray by multiplying a Uint8Clamped array members by 257,
-  // hence the Big Endian and Little Endian representations are the same.
-
-  std::unique_ptr<SkColorSpaceXform> xform = SkColorSpaceXform::New(
-      src_sk_color_space.get(), dst_sk_color_space.get());
-
-  if (!xform->apply(dst_color_format, converted_pixels.get(), src_color_format,
-                    src_data, num_pixels, kUnpremul_SkAlphaType))
-    return false;
-  return true;
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      data->BaseAddress(), f32_pixels, kNumPixels, kFloat32ArrayStorageFormat,
+      kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
 }
 
 // This test verifies the correct behavior of ImageData member function used
 // to convert image data from image data storage format to canvas pixel format.
 // This function is used in BaseRenderingContext2D::putImageData.
 TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
+  // Enable experimental canvas features for this test.
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+
   unsigned num_image_data_color_spaces = 3;
   CanvasColorSpace image_data_color_spaces[] = {
       kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
@@ -249,6 +151,7 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
       kSRGBCanvasColorSpace, kSRGBCanvasColorSpace, kRec2020CanvasColorSpace,
       kP3CanvasColorSpace,
   };
+
   CanvasPixelFormat canvas_pixel_formats[] = {
       kRGBA8CanvasPixelFormat, kF16CanvasPixelFormat, kF16CanvasPixelFormat,
       kF16CanvasPixelFormat,
@@ -263,7 +166,7 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   // ImageData::convertPixelsFromCanvasPixelFormatToImageDataStorageFormat().
   // We expect to get the same image data as we started with.
 
-  // Source pixels in RGBA32
+  // Source pixels in RGBA32, unpremul
   uint8_t u8_pixels[] = {255, 0,   0,   255,  // Red
                          0,   0,   0,   0,    // Transparent
                          255, 192, 128, 64,   // Decreasing values
@@ -328,15 +231,16 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
           ImageData::CreateForTest(IntSize(2, 2), data_array, &color_settings);
 
       for (unsigned k = 0; k < num_canvas_color_settings; k++) {
-        unsigned output_length =
-            (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat)
-                ? data_length
-                : data_length * 2;
         // Convert the original data used to create ImageData to the
         // canvas color space and canvas pixel format.
-        EXPECT_TRUE(ConvertPixelsToColorSpaceAndPixelFormatForTest(
-            data_array, image_data_color_spaces[i], canvas_color_spaces[k],
-            canvas_pixel_formats[k], pixels_converted_manually));
+        EXPECT_TRUE(
+            ColorCorrectionTestUtils::
+                ConvertPixelsToColorSpaceAndPixelFormatForTest(
+                    data_array->BaseAddress(), data_length,
+                    image_data_color_spaces[i], image_data_storage_formats[j],
+                    canvas_color_spaces[k], canvas_pixel_formats[k],
+                    pixels_converted_manually,
+                    SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat));
 
         // Convert the image data to the color settings of the canvas.
         EXPECT_TRUE(image_data->ImageDataInCanvasColorSettings(
@@ -344,9 +248,13 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
             pixels_converted_in_image_data));
 
         // Compare the converted pixels
-        EXPECT_EQ(0,
-                  memcmp(pixels_converted_manually.get(),
-                         pixels_converted_in_image_data.get(), output_length));
+        ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+            pixels_converted_manually.get(),
+            pixels_converted_in_image_data.get(), image_data->Size().Area(),
+            (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat)
+                ? kUint8ClampedArrayStorageFormat
+                : kUint16ArrayStorageFormat,
+            kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
       }
     }
   }
@@ -356,6 +264,9 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
 
 // This test examines ImageData::CropRect()
 TEST_F(ImageDataTest, TestCropRect) {
+  // Enable experimental canvas features for this test.
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+
   const int num_image_data_storage_formats = 3;
   ImageDataStorageFormat image_data_storage_formats[] = {
       kUint8ClampedArrayStorageFormat, kUint16ArrayStorageFormat,

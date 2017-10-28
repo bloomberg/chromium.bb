@@ -2,8 +2,7 @@
   {
     "prefix": "color_space",
     "base": "fast/canvas/color-space",
-    "args": ["--enable-blink-features=ColorCanvasExtensions",
-             "--force-color-profile=srgb"]
+    "args": ["--force-color-profile=srgb"]
   },
   {
     "prefix": "gpu",

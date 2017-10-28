@@ -63,7 +63,6 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   if (!surface_)
     return;
 
-  sk_sp<SkColorSpace> xform_canvas_color_space = nullptr;
   canvas_ = color_params.WrapCanvas(surface_->getCanvas());
   Clear();
 

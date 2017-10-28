@@ -35,6 +35,12 @@
 
 namespace blink {
 
+enum ImageDataStorageFormat {
+  kUint8ClampedArrayStorageFormat,
+  kUint16ArrayStorageFormat,
+  kFloat32ArrayStorageFormat,
+};
+
 enum StrokeStyle {
   kNoStroke,
   kSolidStroke,
