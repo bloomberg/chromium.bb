@@ -10,8 +10,9 @@
 
 namespace base {
 
-template <typename T>
-T ClampToRange(T value, T min, T max) {
+// To be replaced with std::clamp() from C++17, someday.
+template <class T>
+constexpr const T& ClampToRange(const T& value, const T& min, const T& max) {
   return std::min(std::max(value, min), max);
 }
 
