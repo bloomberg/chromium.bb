@@ -19,6 +19,7 @@
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/shell_delegate_mus.h"
+#include "ash/mus/shell_port_mus.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_properties.h"
 #include "ash/public/cpp/config.h"
@@ -141,6 +142,7 @@ void WindowManager::Init(
   DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
   ash::Shell::set_window_tree_client(window_tree_client_.get());
 
+  // TODO(jamescook): Maybe not needed in Config::MUS?
   pointer_watcher_event_router_ =
       std::make_unique<views::PointerWatcherEventRouter>(
           window_tree_client_.get());
@@ -194,12 +196,15 @@ void WindowManager::CreateShell() {
   DCHECK(!created_shell_);
   created_shell_ = true;
   ShellInitParams init_params;
-  ShellPortMash* shell_port =
-      new ShellPortMash(this, pointer_watcher_event_router_.get());
   // Shell::CreateInstance() takes ownership of ShellDelegate.
   init_params.delegate = shell_delegate_ ? shell_delegate_.release()
                                          : new ShellDelegateMus(connector_);
-  init_params.shell_port = shell_port;
+  if (config_ == Config::MUS) {
+    init_params.shell_port = new ShellPortMus(this);
+  } else {
+    init_params.shell_port =
+        new ShellPortMash(this, pointer_watcher_event_router_.get());
+  }
   Shell::CreateInstance(init_params);
 }
 

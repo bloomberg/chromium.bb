@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"  // mash-ok
-#include "ash/mus/bridge/shell_port_mash.h"  // mash-ok
+#include "ash/mus/shell_port_mus.h"  // mash-ok
 #include "ash/public/cpp/config.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell_port_classic.h"  // mash-ok
@@ -24,7 +24,7 @@ void TakeScreenshot() {
         ash::ShellPortClassic::Get()->accelerator_controller_delegate();
   } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
     accelerator_controller_delegate =
-        ash::mus::ShellPortMash::Get()->accelerator_controller_delegate_mus();
+        ash::mus::ShellPortMus::Get()->accelerator_controller_delegate();
   } else {
     // TODO(mash): Screenshot support. http://crbug.com/557397
     NOTIMPLEMENTED();

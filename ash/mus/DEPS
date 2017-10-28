@@ -29,4 +29,8 @@ specific_include_rules = {
     # compositor. So this needs to explicitly depend on cc.
     "+cc",
   ],
+
+  "shell_port_mus\.cc": [
+    "+ash/host/ash_window_tree_host_init_params.h"
+  ],
 }

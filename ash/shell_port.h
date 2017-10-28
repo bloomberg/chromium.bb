@@ -170,9 +170,12 @@ class ASH_EXPORT ShellPort {
   virtual void ToggleIgnoreExternalKeyboard() = 0;
 
   // Enable or disable the laser pointer.
+  // TODO(jamescook): Remove. LaserPointerController exists in all configs.
   virtual void SetLaserPointerEnabled(bool enabled) = 0;
 
   // Enable or disable the partial magnifier.
+  // TODO(jamescook): Remove. PartialMagnificationController exists in all
+  // configs.
   virtual void SetPartialMagnifierEnabled(bool enabled) = 0;
 
   virtual void CreatePointerWatcherAdapter() = 0;
