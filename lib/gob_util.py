@@ -30,12 +30,31 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.lib import cros_build_lib
 
 
-try:
-  NETRC = netrc.netrc()
-except (IOError, netrc.NetrcParseError):
-  NETRC = netrc.netrc(os.devnull)
+@cros_build_lib.Memoize
+def _GetNetRC():
+  try:
+    return netrc.netrc()
+  except (IOError, netrc.NetrcParseError):
+    try:
+      return netrc.netrc(os.devnull)
+    except IOError:
+      return None
+
+
+def _NetRCAuthenticators(host):
+  """Returns the authenticators, if any, for the given |host|.
+
+  Args:
+    host: A hostname
+  """
+  net_rc = _GetNetRC()
+  if net_rc:
+    return net_rc.authenticators(host)
+
+
 TRY_LIMIT = 10
 SLEEP = 0.5
 REQUEST_TIMEOUT_SECONDS = 120  # 2 minutes.
@@ -118,7 +137,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   path = '/a/' + path.lstrip('/')
   headers = headers or {}
   bare_host = host.partition(':')[0]
-  auth = NETRC.authenticators(bare_host)
+  auth = _NetRCAuthenticators(bare_host)
   if auth:
     headers.setdefault('Authorization', 'Basic %s' % (
         base64.b64encode('%s:%s' % (auth[0], auth[2]))))

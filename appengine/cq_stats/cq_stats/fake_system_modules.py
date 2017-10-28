@@ -26,16 +26,20 @@ class Fake(object):
 _FORBIDDEN_MODULES = (
     'ctypes',
     'ctypes.util',
+    'multiprocessing',
+    'multiprocessing.managers',
     'pwd',
+    'ssl',
+    'subprocess',
 )
 
 for m in _FORBIDDEN_MODULES:
   sys.modules[m] = Fake()
 
-fake_subprocess = Fake()
-# pylint: disable=attribute-defined-outside-init
-fake_subprocess.Popen = Fake
-sys.modules['subprocess'] = fake_subprocess
+sys.modules['subprocess'].Popen = Fake
+sys.modules['multiprocessing'].Process = Fake
+sys.modules['multiprocessing.managers'].SyncManager = Fake
+
 
 # We can't avoid importing os.path, but we still need to make sure that calls to
 # os.path.expanduser don't blow up.
@@ -55,6 +59,8 @@ def _expanduser(_):
 os.path.expanduser = _expanduser
 
 fake_signal = Fake()
+# pylint: disable=attribute-defined-outside-init
 fake_signal.signal = Fake()
-fake_signal.SIGUSR1 = Fake()
+fake_signal.SIGUSR1 = 30
+fake_signal.SIGHUP = 1
 sys.modules['signal'] = fake_signal
