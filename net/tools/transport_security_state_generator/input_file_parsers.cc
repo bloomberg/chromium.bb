@@ -4,6 +4,7 @@
 
 #include "net/tools/transport_security_state_generator/input_file_parsers.h"
 
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -164,6 +165,20 @@ enum class CertificateParserState {
   IN_PUBLIC_KEY
 };
 
+// Valid JSON keys.
+static const char kNameJSONKey[] = "name";
+static const char kIncludeSubdomainsJSONKey[] = "include_subdomains";
+static const char kIncludeSubdomainsForPinningJSONKey[] =
+    "include_subdomains_for_pinning";
+static const char kModeJSONKey[] = "mode";
+static const char kPinsJSONKey[] = "pins";
+static const char kExpectCTJSONKey[] = "expect_ct";
+static const char kExpectCTReportURIJSONKey[] = "expect_ct_report_uri";
+static const char kExpectStapleJSONKey[] = "expect_staple";
+static const char kExpectStapleReportURIJSONKey[] = "expect_staple_report_uri";
+static const char kIncludeSubdomainsForExpectStapleJSONKey[] =
+    "include_subdomains_for_expect_staple";
+
 }  // namespace
 
 bool ParseCertificatesFile(base::StringPiece certs_input, Pinsets* pinsets) {
@@ -279,6 +294,17 @@ bool ParseCertificatesFile(base::StringPiece certs_input, Pinsets* pinsets) {
 bool ParseJSON(base::StringPiece json,
                TransportSecurityStateEntries* entries,
                Pinsets* pinsets) {
+  std::set<std::string> valid_keys = {kNameJSONKey,
+                                      kIncludeSubdomainsJSONKey,
+                                      kIncludeSubdomainsForPinningJSONKey,
+                                      kModeJSONKey,
+                                      kPinsJSONKey,
+                                      kExpectCTJSONKey,
+                                      kExpectCTReportURIJSONKey,
+                                      kExpectStapleJSONKey,
+                                      kExpectStapleReportURIJSONKey,
+                                      kIncludeSubdomainsForExpectStapleJSONKey};
+
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   base::DictionaryValue* dict_value = nullptr;
   if (!value.get() || !value->GetAsDictionary(&dict_value)) {
@@ -303,7 +329,7 @@ bool ParseJSON(base::StringPiece json,
     std::unique_ptr<TransportSecurityStateEntry> entry(
         new TransportSecurityStateEntry());
 
-    if (!parsed->GetString("name", &entry->hostname)) {
+    if (!parsed->GetString(kNameJSONKey, &entry->hostname)) {
       LOG(ERROR) << "Could not extract the hostname for entry "
                  << base::SizeTToString(i) << " from the input JSON";
       return false;
@@ -315,19 +341,34 @@ bool ParseJSON(base::StringPiece json,
       return false;
     }
 
-    parsed->GetBoolean("include_subdomains", &entry->include_subdomains);
+    for (const auto& entry_value : *parsed) {
+      if (valid_keys.find(entry_value.first) == valid_keys.cend()) {
+        LOG(ERROR) << "The entry for " << entry->hostname
+                   << " contains an unknown " << entry_value.first << " field";
+        return false;
+      }
+    }
+
     std::string mode;
-    parsed->GetString("mode", &mode);
-    entry->force_https = (mode == "force-https");
-    parsed->GetBoolean("include_subdomains_for_pinning",
+    parsed->GetString(kModeJSONKey, &mode);
+    entry->force_https = false;
+    if (mode == "force-https") {
+      entry->force_https = true;
+    } else if (!mode.empty()) {
+      LOG(ERROR) << "An unknown mode is set for entry " << entry->hostname;
+      return false;
+    }
+
+    parsed->GetBoolean(kIncludeSubdomainsJSONKey, &entry->include_subdomains);
+    parsed->GetBoolean(kIncludeSubdomainsForPinningJSONKey,
                        &entry->hpkp_include_subdomains);
-    parsed->GetString("pins", &entry->pinset);
-    parsed->GetBoolean("expect_ct", &entry->expect_ct);
-    parsed->GetString("expect_ct_report_uri", &entry->expect_ct_report_uri);
-    parsed->GetBoolean("expect_staple", &entry->expect_staple);
-    parsed->GetBoolean("include_subdomains_for_expect_staple",
+    parsed->GetString(kPinsJSONKey, &entry->pinset);
+    parsed->GetBoolean(kExpectCTJSONKey, &entry->expect_ct);
+    parsed->GetString(kExpectCTReportURIJSONKey, &entry->expect_ct_report_uri);
+    parsed->GetBoolean(kExpectStapleJSONKey, &entry->expect_staple);
+    parsed->GetBoolean(kIncludeSubdomainsForExpectStapleJSONKey,
                        &entry->expect_staple_include_subdomains);
-    parsed->GetString("expect_staple_report_uri",
+    parsed->GetString(kExpectStapleReportURIJSONKey,
                       &entry->expect_staple_report_uri);
 
     entries->push_back(std::move(entry));
