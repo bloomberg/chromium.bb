@@ -44,6 +44,7 @@
 
 # Flaky: https://crbug.com/776424.
 -RenderWidgetHostViewAuraOverscrollTest.*
+-RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest.*
 -RenderWidgetHostViewGuestSurfaceTest.TestGuestSurface
 
 # Flaky: https://crbug.com/777916.
