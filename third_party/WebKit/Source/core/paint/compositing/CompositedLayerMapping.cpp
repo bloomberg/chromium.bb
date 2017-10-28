@@ -3492,11 +3492,15 @@ void CompositedLayerMapping::PaintScrollableArea(
 
   PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
   if (graphics_layer == LayerForHorizontalScrollbar()) {
-    if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar())
-      ScrollableAreaPainter::PaintScrollbar(*scrollbar, context, interest_rect);
+    if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar()) {
+      ScrollableAreaPainter::PaintCompositedScrollbar(*scrollbar, context,
+                                                      CullRect(interest_rect));
+    }
   } else if (graphics_layer == LayerForVerticalScrollbar()) {
-    if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar())
-      ScrollableAreaPainter::PaintScrollbar(*scrollbar, context, interest_rect);
+    if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar()) {
+      ScrollableAreaPainter::PaintCompositedScrollbar(*scrollbar, context,
+                                                      CullRect(interest_rect));
+    }
   } else if (graphics_layer == LayerForScrollCorner()) {
     // Note that scroll corners always paint into local space, whereas
     // scrollbars paint in the space of their containing frame.
