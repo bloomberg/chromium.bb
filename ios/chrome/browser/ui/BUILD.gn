@@ -310,6 +310,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/find_bar",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:legacy_fullscreen",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/history_popup:coordinator",
     "//ios/chrome/browser/ui/history_popup/requirements",

@@ -187,6 +187,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/downloads",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:legacy_fullscreen",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/promos",

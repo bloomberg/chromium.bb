@@ -4,6 +4,19 @@
 
 source_set("fullscreen") {
   sources = [
+    "fullscreen_features.h",
+    "fullscreen_features.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("legacy_fullscreen") {
+  sources = [
     "fullscreen_controller.h",
     "fullscreen_controller.mm",
   ]
@@ -24,7 +37,7 @@ source_set("fullscreen") {
   ]
 }
 
-source_set("unit_tests") {
+source_set("legacy_unit_tests") {
   testonly = true
   sources = [
     "fullscreen_controller_unittest.mm",
@@ -33,7 +46,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":fullscreen",
+    ":legacy_fullscreen",
     "//ios/web",
     "//ios/web/public",
     "//ios/web/public/test/fakes",
