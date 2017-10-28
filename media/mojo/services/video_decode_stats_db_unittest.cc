@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -39,10 +38,14 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     fake_db_ = new FakeDB<DecodeStatsProto>(fake_db_map_.get());
 
     // Make our DB wrapper and kick off Initialize. Each test should start
-    // by completing initialize, calling fake_db_->InitCallback(...).
-    stats_db_ = std::make_unique<VideoDecodeStatsDBImpl>();
-    stats_db_->Initialize(std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_),
-                          base::FilePath(FILE_PATH_LITERAL("/fake/path")));
+    // by completing initialize, calling fake_db_->InitCallback(...) and
+    // verifying the callback argument.
+    stats_db_ = std::make_unique<VideoDecodeStatsDBImpl>(
+        std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_),
+        base::FilePath(FILE_PATH_LITERAL("/fake/path")),
+        true /* allow_writes */);
+    stats_db_->Initialize(base::BindOnce(
+        &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -56,6 +59,8 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
       std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> entry) {
     MockGetDecodeStatsCb(success, entry.get());
   }
+
+  MOCK_METHOD1(OnInitialize, void(bool success));
 
   MOCK_METHOD2(MockGetDecodeStatsCb,
                void(bool success, VideoDecodeStatsDB::DecodeStatsEntry* entry));
@@ -86,6 +91,7 @@ MATCHER_P(EntryEq, other_entry, "") {
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
+  EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
   VideoDescKey entry(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
@@ -100,6 +106,7 @@ TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
+  EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
   VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
@@ -126,20 +133,6 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
       key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
                           base::Unretained(this)));
   fake_db_->GetCallback(true);
-}
-
-TEST_F(VideoDecodeStatsDBImplTest, GetDecodeStatsDbNotInitialized) {
-  // Simulate failed/forgotten initialization.
-  fake_db_->InitCallback(false);
-
-  VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
-  EXPECT_CALL(*this, MockGetDecodeStatsCb(false, nullptr));
-  // Note that no |fake_db_| is not instructed to execute the GetCallback(...).
-  // The DB is not initialized, so the callback is executed (failed) early
-  // without consulting the DB.
-  stats_db_->GetDecodeStats(
-      key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
-                          base::Unretained(this)));
 }
 
 }  // namespace media

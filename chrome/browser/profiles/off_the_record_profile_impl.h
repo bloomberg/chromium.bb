@@ -111,6 +111,7 @@ class OffTheRecordProfileImpl : public Profile {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
+  media::VideoDecodePerfHistory* GetVideoDecodePerfHistory() override;
 
  private:
   void InitIoData();

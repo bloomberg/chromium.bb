@@ -315,6 +315,9 @@ bool VideoDecodeStatsReporter::UpdateFrameRateStability(
 void VideoDecodeStatsReporter::UpdateStats() {
   DCHECK(ShouldBeReporting());
 
+  DVLOG(2) << __func__ << " error encountered? "
+           << recorder_ptr_.encountered_error();
+
   PipelineStatistics stats = get_pipeline_stats_cb_.Run();
   DVLOG(2) << __func__ << " Raw stats -- dropped:" << stats.video_frames_dropped
            << "/" << stats.video_frames_decoded

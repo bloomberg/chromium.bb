@@ -467,6 +467,15 @@ OffTheRecordProfileImpl::GetBrowsingDataRemoverDelegate() {
   return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
 }
 
+media::VideoDecodePerfHistory*
+OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
+  // Defer to the original profile for VideoDecodePerfHistory. The incognito
+  // profile will have no history of its own (we don't save it for incognito)
+  // and the two profiles should have the same video performance. The history is
+  // not exposed directly to the web, so privacy is not compromised.
+  return GetOriginalProfile()->GetVideoDecodePerfHistory();
+}
+
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }

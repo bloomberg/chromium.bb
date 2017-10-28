@@ -21,6 +21,7 @@
 namespace media {
 
 void BindToHistoryService(mojom::VideoDecodePerfHistoryPtr* history_ptr) {
+  DVLOG(2) << __func__;
   blink::Platform* platform = blink::Platform::Current();
   service_manager::Connector* connector = platform->GetConnector();
 

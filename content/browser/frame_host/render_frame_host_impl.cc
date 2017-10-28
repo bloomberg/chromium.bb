@@ -3100,10 +3100,16 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
   }
 
-  registry_->AddInterface(base::Bind(&media::VideoDecodeStatsRecorder::Create));
-
   registry_->AddInterface(
       base::BindRepeating(GetRestrictedCookieManager, base::Unretained(this)));
+
+  // Only save decode stats when on-the-record.
+  if (!GetSiteInstance()->GetBrowserContext()->IsOffTheRecord()) {
+    media::VideoDecodePerfHistory* video_perf_history =
+        GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory();
+    registry_->AddInterface(base::BindRepeating(
+        &media::VideoDecodeStatsRecorder::Create, video_perf_history));
+  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
