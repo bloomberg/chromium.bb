@@ -214,6 +214,44 @@ TEST(InputFileParsersTest, ParseJSONInvalidPinset) {
   EXPECT_FALSE(ParseJSON(missing_pinset_name, &entries, &pinsets));
 }
 
+// Test that parsing valid JSON containing an entry with an invalid mode fails.
+TEST(InputFileParsersTest, ParseJSONInvalidMode) {
+  TransportSecurityStateEntries entries;
+  Pinsets pinsets;
+
+  std::string invalid_mode =
+      "{"
+      "  \"pinsets\": [],"
+      "  \"entries\": ["
+      "    {"
+      "      \"name\": \"preloaded.test\","
+      "      \"mode\": \"something-invalid\""
+      "    }"
+      "  ]"
+      "}";
+
+  EXPECT_FALSE(ParseJSON(invalid_mode, &entries, &pinsets));
+}
+
+// Test that parsing valid JSON containing an entry with an unknown field fails.
+TEST(InputFileParsersTest, ParseJSONUnkownField) {
+  TransportSecurityStateEntries entries;
+  Pinsets pinsets;
+
+  std::string unknown_field =
+      "{"
+      "  \"pinsets\": [],"
+      "  \"entries\": ["
+      "    {"
+      "      \"name\": \"preloaded.test\","
+      "      \"unknown_key\": \"value\""
+      "    }"
+      "  ]"
+      "}";
+
+  EXPECT_FALSE(ParseJSON(unknown_field, &entries, &pinsets));
+}
+
 // Test parsing of all 3 SPKI formats.
 TEST(InputFileParsersTest, ParseCertificatesFile) {
   std::string valid =
