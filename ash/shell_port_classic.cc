@@ -122,6 +122,7 @@ ShellPortClassic::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
 
 std::unique_ptr<ImmersiveFullscreenController>
 ShellPortClassic::CreateImmersiveFullscreenController() {
+  // TODO: Move this to Shell.
   return std::make_unique<ImmersiveFullscreenController>();
 }
 

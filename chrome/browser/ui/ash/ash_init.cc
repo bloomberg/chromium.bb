@@ -9,7 +9,7 @@
 #include "ash/accessibility_types.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/mus/bridge/shell_port_mash.h"
+#include "ash/mus/shell_port_mus.h"  // mash-ok
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -104,7 +104,10 @@ AshInit::AshInit() {
         ash::ShellPortClassic::Get()->accelerator_controller_delegate();
   } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
     accelerator_controller_delegate =
-        ash::mus::ShellPortMash::Get()->accelerator_controller_delegate_mus();
+        ash::mus::ShellPortMus::Get()->accelerator_controller_delegate();
+  } else {
+    // TODO(mash): Screenshot accelerator support. http://crbug.com/557397
+    NOTIMPLEMENTED();
   }
   if (accelerator_controller_delegate) {
     std::unique_ptr<ChromeScreenshotGrabber> screenshot_delegate =

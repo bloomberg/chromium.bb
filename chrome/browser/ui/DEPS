@@ -19,7 +19,7 @@ specific_include_rules = {
   ],
   "browser_commands_chromeos\.cc": [
     "+ash/accelerators/accelerator_controller_delegate_classic.h",
-    "+ash/mus/bridge/shell_port_mash.h",
+    "+ash/mus/shell_port_mus.h",
     # TODO(mash): Screenshot support. http://crbug.com/557397
     "+ash/screenshot_delegate.h",
     "+ash/shell_port_classic.h",

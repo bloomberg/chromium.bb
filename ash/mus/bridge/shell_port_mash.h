@@ -10,34 +10,25 @@
 #include <memory>
 #include <vector>
 
-#include "ash/shell_port.h"
+#include "ash/mus/shell_port_mus.h"
 #include "base/macros.h"
-
-namespace aura {
-class WindowTreeClient;
-}
 
 namespace views {
 class PointerWatcherEventRouter;
 }
 
 namespace ash {
-
-class AcceleratorControllerDelegateClassic;
-class DisplaySynchronizer;
-class PointerWatcherAdapterClassic;
-class RootWindowController;
-
 namespace mus {
 
 class AcceleratorControllerDelegateMus;
 class AcceleratorControllerRegistrar;
 class ImmersiveHandlerFactoryMus;
 class WindowManager;
-class ShellPortMashTestApi;
 
-// ShellPort implementation for mash/mus. See ash/README.md for more.
-class ShellPortMash : public ShellPort {
+// ShellPort implementation for mash. See ash/README.md for more. Subclass of
+// ShellPortMus because both configurations talk to the same UI service for
+// things like display management.
+class ShellPortMash : public ShellPortMus {
  public:
   ShellPortMash(WindowManager* window_manager,
                 views::PointerWatcherEventRouter* pointer_watcher_event_router);
@@ -45,24 +36,11 @@ class ShellPortMash : public ShellPort {
 
   static ShellPortMash* Get();
 
-  ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
-
-  AcceleratorControllerDelegateClassic* accelerator_controller_delegate_mus() {
-    return mus_state_->accelerator_controller_delegate.get();
-  }
-
-  aura::WindowTreeClient* window_tree_client();
-
-  WindowManager* window_manager() { return window_manager_; }
-
   // Called when the window server has changed the mouse enabled state.
   void OnCursorTouchVisibleChanged(bool enabled);
 
   // ShellPort:
-  void Shutdown() override;
   Config GetAshConfig() const override;
-  std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
-      override;
   void LockCursor() override;
   void UnlockCursor() override;
   void ShowCursor() override;
@@ -91,19 +69,9 @@ class ShellPortMash : public ShellPort {
   void SetLaserPointerEnabled(bool enabled) override;
   void SetPartialMagnifierEnabled(bool enabled) override;
   void CreatePointerWatcherAdapter() override;
-  std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
-      const AshWindowTreeHostInitParams& init_params) override;
-  void OnCreatedRootWindowContainers(
-      RootWindowController* root_window_controller) override;
-  void UpdateSystemModalAndBlockingContainers() override;
-  void OnHostsInitialized() override;
-  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
-  friend class ShellPortMashTestApi;
-
   struct MashSpecificState {
     MashSpecificState();
     ~MashSpecificState();
@@ -116,23 +84,8 @@ class ShellPortMash : public ShellPort {
     std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory;
   };
 
-  struct MusSpecificState {
-    MusSpecificState();
-    ~MusSpecificState();
-
-    std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter;
-    std::unique_ptr<AcceleratorControllerDelegateClassic>
-        accelerator_controller_delegate;
-  };
-
-  WindowManager* window_manager_;
-
-  // Only one of |mash_state_| or |mus_state_| is created, depending upon
-  // Config.
+  // TODO(jamescook): Inline the members.
   std::unique_ptr<MashSpecificState> mash_state_;
-  std::unique_ptr<MusSpecificState> mus_state_;
-
-  std::unique_ptr<DisplaySynchronizer> display_synchronizer_;
 
   bool cursor_touch_visible_ = true;
 
