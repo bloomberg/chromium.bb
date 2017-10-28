@@ -9265,7 +9265,6 @@ interface webkitURL
     method gc
     method getComputedStyle
     method getComputedStyleMap
-    method getMatchedCSSRules
     method getSelection
     method matchMedia
     method moveBy

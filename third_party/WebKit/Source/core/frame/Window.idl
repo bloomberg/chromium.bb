@@ -190,8 +190,8 @@
     [MeasureAs=WindowDefaultStatus] attribute DOMString defaultStatus;
     [MeasureAs=WindowDefaultstatus, ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
-    [DeprecateAs=GetMatchedCSSRules, LegacyInterfaceTypeChecking] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
-                                                                                                 [Default=Undefined] optional DOMString? pseudoElement);
+    [RuntimeEnabled=GetMatchedCSSRules, DeprecateAs=GetMatchedCSSRules, LegacyInterfaceTypeChecking] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
+                                                                                                                                    [Default=Undefined] optional DOMString? pseudoElement);
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(FrameRequestCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
     [MeasureAs=PrefixedTransitionEventConstructor] attribute TransitionEventConstructor WebKitTransitionEvent;
