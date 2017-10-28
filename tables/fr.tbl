@@ -2,6 +2,7 @@
 #+type:literary
 #+contraction:full
 #+grade:2
+#+system:bfu
 #+hyphenation:yes
 
 # TODO: Please correct the metadata above. It is not meant to be
@@ -13,6 +14,6 @@
 # the implemented braille code. Preferably submit the documents
 # to https://github.com/liblouis/braille-specs.
 
-include Fr-Fr-g2.ctb
+include fr-bfu-g2.ctb
 include hyph_fr_FR.dic
 include braille-patterns.cti
