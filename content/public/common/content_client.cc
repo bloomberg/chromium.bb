@@ -38,11 +38,6 @@ class InternalTestInitializer {
 
 void SetContentClient(ContentClient* client) {
   g_client = client;
-
-  // TODO(jam): find out which static on Windows is causing this to have to be
-  // called on startup.
-  if (client)
-    client->GetUserAgent();
 }
 
 ContentClient* GetContentClient() {
