@@ -12,6 +12,12 @@
   </outputs>
   <release seq="1">
     <structures>
+      <structure name="IDR_MD_EXTENSIONS_ITEM_BEHAVIOR_HTML"
+                 file="item_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_ITEM_BEHAVIOR_JS"
+                 file="item_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_EXTENSIONS_HTML"
                  file="extensions.html"
                  flattenhtml="true"
