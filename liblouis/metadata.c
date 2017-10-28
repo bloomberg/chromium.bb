@@ -267,12 +267,12 @@ matchFeatureLists(const List *query, const List *tableFeatures, int fuzzy) {
 }
 
 /**
- * Return true if a character matches [0-9A-Za-z_-]
+ * Return true if a character matches [0-9A-Za-z_-\.]
  */
 static int
-isIdentChar(char c) {
+isValidChar(char c) {
 	return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-			c == '-' || c == '_';
+			c == '-' || c == '.' || c == '_';
 }
 
 /**
@@ -325,13 +325,13 @@ parseQuery(const char *query) {
 				goto compile_error;
 			else {
 				c = &query[pos++];
-				if (isIdentChar(*c)) {
+				if (isValidChar(*c)) {
 					val = c;
 					valSize = 1;
 				} else
 					goto compile_error;
 			}
-		} else if (isIdentChar(*c)) {
+		} else if (isValidChar(*c)) {
 			if (val)
 				valSize++;
 			else if (key)
@@ -409,12 +409,12 @@ analyzeTable(const char *table, int activeOnly) {
 					size_t valSize = 0;
 					info.linepos = 2;
 					if (info.linepos < info.linelen &&
-							isIdentChar((char)info.line[info.linepos])) {
+							isValidChar((char)info.line[info.linepos])) {
 						key = &info.line[info.linepos];
 						keySize = 1;
 						info.linepos++;
 						while (info.linepos < info.linelen &&
-								isIdentChar((char)info.line[info.linepos])) {
+								isValidChar((char)info.line[info.linepos])) {
 							keySize++;
 							info.linepos++;
 						}
@@ -426,13 +426,13 @@ analyzeTable(const char *table, int activeOnly) {
 								info.linepos++;
 							if (info.linepos < info.linelen &&
 									(!active ||
-											isIdentChar((char)info.line[info.linepos]))) {
+											isValidChar((char)info.line[info.linepos]))) {
 								val = &info.line[info.linepos];
 								valSize = 1;
 								info.linepos++;
 								while (info.linepos < info.linelen &&
 										(!active ||
-												isIdentChar(
+												isValidChar(
 														(char)info.line[info.linepos]))) {
 									valSize++;
 									info.linepos++;
