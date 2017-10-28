@@ -51,7 +51,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
-  DownloadManagerImpl(net::NetLog* net_log, BrowserContext* browser_context);
+  explicit DownloadManagerImpl(BrowserContext* browser_context);
   ~DownloadManagerImpl() override;
 
   // Implementation functions (not part of the DownloadManager interface).

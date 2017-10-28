@@ -284,15 +284,14 @@ base::FilePath GetTemporaryDownloadDirectory() {
 
 }  // namespace
 
-DownloadManagerImpl::DownloadManagerImpl(net::NetLog* net_log,
-                                         BrowserContext* browser_context)
+DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
       file_factory_(new DownloadFileFactory()),
       shutdown_needed_(true),
       initialized_(false),
       browser_context_(browser_context),
       delegate_(nullptr),
-      net_log_(net_log),
+      net_log_(nullptr),
       weak_factory_(this) {
   DCHECK(browser_context);
 }

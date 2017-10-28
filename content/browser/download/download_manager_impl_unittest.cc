@@ -410,8 +410,8 @@ class DownloadManagerTest : public testing::Test {
     EXPECT_CALL(*mock_browser_context_.get(), IsOffTheRecord())
         .WillRepeatedly(Return(false));
 
-    download_manager_.reset(new DownloadManagerImpl(
-                                NULL, mock_browser_context_.get()));
+    download_manager_.reset(
+        new DownloadManagerImpl(mock_browser_context_.get()));
     download_manager_->SetDownloadItemFactoryForTesting(
         std::unique_ptr<DownloadItemFactory>(
             mock_download_item_factory_.get()));
