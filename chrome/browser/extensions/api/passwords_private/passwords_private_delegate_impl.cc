@@ -241,6 +241,15 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
 
 void PasswordsPrivateDelegateImpl::ExportPasswords(
     content::WebContents* web_contents) {
+  // Save |web_contents| so that it can be used later when GetNativeWindow() is
+  // called. Note: This is safe because the |web_contents| is used before
+  // exiting this method. TODO(crbug.com/495290): Pass the native window
+  // directly to the reauth-handling code.
+  web_contents_ = web_contents;
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
+    return;
+  }
+
   password_manager_porter_->set_web_contents(web_contents);
   password_manager_porter_->Store();
 }

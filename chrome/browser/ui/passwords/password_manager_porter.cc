@@ -87,7 +87,9 @@ PasswordManagerPorter::PasswordManagerPorter(
 PasswordManagerPorter::~PasswordManagerPorter() {}
 
 void PasswordManagerPorter::Store() {
-  DCHECK(web_contents_);
+  // In unittests a null WebContents means: "Abort creating the file Selector."
+  if (!web_contents_)
+    return;
   PresentFileSelector(web_contents_,
                       PasswordManagerPorter::Type::PASSWORD_EXPORT);
 }

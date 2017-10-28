@@ -254,4 +254,24 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
   EXPECT_EQ(base::Value::Type::NONE, captured_args.type()) << captured_args;
 }
 
+TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {
+  SetUpPasswordStore({CreateSampleForm()});
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  bool reauth_called = false;
+  delegate.SetOsReauthCallForTesting(base::BindRepeating(
+      &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
+
+  delegate.ExportPasswords(nullptr);
+  EXPECT_TRUE(reauth_called);
+
+  // TODO(crbug.com/341477): Once the export flow has defined messages to UI,
+  // such as progress indication, intercept them with PasswordEventObserver and
+  // check that exporting is aborted if the authentication failed.
+}
+
 }  // namespace extensions
