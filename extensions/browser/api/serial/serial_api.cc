@@ -394,9 +394,11 @@ void SerialGetConnectionsFunction::AsyncWorkStart() {
             &SerialGetConnectionsFunction::OnGotOne, this, connection_id));
       }
     }
-  } else {
-    OnGotAll();
   }
+  if (count_ > 0)
+    return;
+
+  OnGotAll();
 }
 
 void SerialGetConnectionsFunction::OnGotOne(

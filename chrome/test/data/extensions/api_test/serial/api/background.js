@@ -38,24 +38,33 @@ var testSerial = function() {
       serial.getDevices(onGetDevices);
       break;
       case 1:
+      serial.getConnections(onGetConnectionsEmpty);
+      break;
+      case 2:
       var bitrate = 57600;
       console.log('Connecting to serial device ' + serialPort + ' at ' +
                   bitrate + ' bps.');
       serial.connect(serialPort, {bitrate: bitrate}, onConnect);
       break;
-      case 2:
-      serial.setControlSignals(connectionId, {dtr: true}, onSetControlSignals);
-      break;
       case 3:
-      serial.getControlSignals(connectionId,onGetControlSignals);
+      serial.getConnections(onGetConnectionsOne);
       break;
       case 4:
+      serial.setControlSignals(connectionId, {dtr: true}, onSetControlSignals);
+      break;
+      case 5:
+      serial.getControlSignals(connectionId,onGetControlSignals);
+      break;
+      case 6:
       serial.onReceive.addListener(onReceive);
       serial.onReceiveError.addListener(onReceiveError);
       serial.send(connectionId, sendBuffer, onSend);
       break;
-      case 50:  // GOTO 4 EVER
+      case 7:
       serial.disconnect(connectionId, onDisconnect);
+      break;
+      case 8:
+      serial.getConnections(onGetConnectionsEmpty);
       break;
       default:
       // Beware! If you forget to assign a case for your next test, the whole
@@ -74,6 +83,17 @@ var testSerial = function() {
     operation--;
     doNextOperation();
   }
+
+  var onGetConnectionsEmpty = function(connectionInfos) {
+    chrome.test.assertEq(0, connectionInfos.length);
+    doNextOperation();
+  };
+
+  var onGetConnectionsOne = function(connectionInfos) {
+    chrome.test.assertEq(1, connectionInfos.length);
+    chrome.test.assertEq(connectionId, connectionInfos[0].connectionId);
+    doNextOperation();
+  };
 
   var onDisconnect = function(result) {
     chrome.test.assertTrue(result);
