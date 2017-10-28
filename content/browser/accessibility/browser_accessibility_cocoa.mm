@@ -20,10 +20,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/app/strings/grit/content_strings.h"
-#include "content/browser/accessibility/ax_platform_position.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -32,13 +32,14 @@
 
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
-using AXPlatformPositionInstance =
-    content::AXPlatformPosition::AXPositionInstance;
-using AXPlatformRange = ui::AXRange<AXPlatformPositionInstance::element_type>;
+using BrowserAccessibilityPositionInstance =
+    content::BrowserAccessibilityPosition::AXPositionInstance;
+using AXPlatformRange =
+    ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
 using AXTextMarkerRangeRef = CFTypeRef;
 using AXTextMarkerRef = CFTypeRef;
 using StringAttribute = ui::AXStringAttribute;
-using content::AXPlatformPosition;
+using content::BrowserAccessibilityPosition;
 using content::AccessibilityMatchPredicate;
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityDelegate;
@@ -148,10 +149,10 @@ AXTextMarkerRef AXTextMarkerRangeCopyEndMarker(
 }  // extern "C"
 
 // AXTextMarkerCreate copies from data buffer given to it.
-id CreateTextMarker(AXPlatformPositionInstance position) {
+id CreateTextMarker(BrowserAccessibilityPositionInstance position) {
   AXTextMarkerRef text_marker = AXTextMarkerCreate(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(position.get()),
-      sizeof(AXPlatformPosition));
+      sizeof(BrowserAccessibilityPosition));
   return static_cast<id>(
       base::mac::CFTypeRefToNSObjectAutorelease(text_marker));
 }
@@ -161,31 +162,34 @@ id CreateTextMarker(AXPlatformPositionInstance position) {
 id CreateTextMarkerRange(const AXPlatformRange range) {
   base::ScopedCFTypeRef<AXTextMarkerRef> start_marker(AXTextMarkerCreate(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(range.anchor()),
-      sizeof(AXPlatformPosition)));
+      sizeof(BrowserAccessibilityPosition)));
   base::ScopedCFTypeRef<AXTextMarkerRef> end_marker(AXTextMarkerCreate(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(range.focus()),
-      sizeof(AXPlatformPosition)));
+      sizeof(BrowserAccessibilityPosition)));
   AXTextMarkerRangeRef marker_range =
       AXTextMarkerRangeCreate(kCFAllocatorDefault, start_marker, end_marker);
   return static_cast<id>(
       base::mac::CFTypeRefToNSObjectAutorelease(marker_range));
 }
 
-AXPlatformPositionInstance CreatePositionFromTextMarker(
+BrowserAccessibilityPositionInstance CreatePositionFromTextMarker(
     AXTextMarkerRef text_marker) {
   DCHECK(text_marker);
-  if (AXTextMarkerGetLength(text_marker) != sizeof(AXPlatformPosition))
-    return AXPlatformPosition::CreateNullPosition();
+  if (AXTextMarkerGetLength(text_marker) !=
+      sizeof(BrowserAccessibilityPosition))
+    return BrowserAccessibilityPosition::CreateNullPosition();
   const UInt8* source_buffer = AXTextMarkerGetBytePtr(text_marker);
   if (!source_buffer)
-    return AXPlatformPosition::CreateNullPosition();
-  UInt8* destination_buffer = new UInt8[sizeof(AXPlatformPosition)];
-  std::memcpy(destination_buffer, source_buffer, sizeof(AXPlatformPosition));
-  AXPlatformPosition::AXPositionInstance position(
-      reinterpret_cast<AXPlatformPosition::AXPositionInstance::pointer>(
+    return BrowserAccessibilityPosition::CreateNullPosition();
+  UInt8* destination_buffer = new UInt8[sizeof(BrowserAccessibilityPosition)];
+  std::memcpy(destination_buffer, source_buffer,
+              sizeof(BrowserAccessibilityPosition));
+  BrowserAccessibilityPosition::AXPositionInstance position(
+      reinterpret_cast<
+          BrowserAccessibilityPosition::AXPositionInstance::pointer>(
           destination_buffer));
   if (!position)
-    return AXPlatformPosition::CreateNullPosition();
+    return BrowserAccessibilityPosition::CreateNullPosition();
   return position;
 }
 
@@ -199,24 +203,24 @@ AXPlatformRange CreateRangeFromTextMarkerRange(
   if (!start_marker.get() || !end_marker.get())
     return AXPlatformRange();
 
-  AXPlatformPositionInstance anchor =
+  BrowserAccessibilityPositionInstance anchor =
       CreatePositionFromTextMarker(start_marker.get());
-  AXPlatformPositionInstance focus =
+  BrowserAccessibilityPositionInstance focus =
       CreatePositionFromTextMarker(end_marker.get());
   // |AXPlatformRange| takes ownership of its anchor and focus.
   return AXPlatformRange(std::move(anchor), std::move(focus));
 }
 
-AXPlatformPositionInstance CreateTextPosition(
+BrowserAccessibilityPositionInstance CreateTextPosition(
     const BrowserAccessibility& object,
     int offset,
     ui::AXTextAffinity affinity) {
   if (!object.instance_active())
-    return AXPlatformPosition::CreateNullPosition();
+    return BrowserAccessibilityPosition::CreateNullPosition();
 
   const BrowserAccessibilityManager* manager = object.manager();
   DCHECK(manager);
-  return AXPlatformPosition::CreateTextPosition(
+  return BrowserAccessibilityPosition::CreateTextPosition(
       manager->ax_tree_id(), object.GetId(), offset, affinity);
 }
 
@@ -226,9 +230,9 @@ AXPlatformRange CreateTextRange(const BrowserAccessibility& start_object,
                                 const BrowserAccessibility& end_object,
                                 int end_offset,
                                 ui::AXTextAffinity end_affinity) {
-  AXPlatformPositionInstance anchor =
+  BrowserAccessibilityPositionInstance anchor =
       CreateTextPosition(start_object, start_offset, start_affinity);
-  AXPlatformPositionInstance focus =
+  BrowserAccessibilityPositionInstance focus =
       CreateTextPosition(end_object, end_offset, end_affinity);
   // |AXPlatformRange| takes ownership of its anchor and focus.
   return AXPlatformRange(std::move(anchor), std::move(focus));
@@ -1024,7 +1028,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!root)
     return nil;
 
-  AXPlatformPositionInstance position = root->CreatePositionAt(0);
+  BrowserAccessibilityPositionInstance position = root->CreatePositionAt(0);
   return CreateTextMarker(position->CreatePositionAtEndOfAnchor());
 }
 
@@ -1852,7 +1856,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!root)
     return nil;
 
-  AXPlatformPositionInstance position = root->CreatePositionAt(0);
+  BrowserAccessibilityPositionInstance position = root->CreatePositionAt(0);
   return CreateTextMarker(position->CreatePositionAtStartOfAnchor());
 }
 
@@ -2255,7 +2259,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXUIElementForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (!position->IsNullPosition())
       return ToBrowserAccessibilityCocoa(position->GetAnchor());
@@ -2264,9 +2268,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXTextMarkerRangeForUIElement"]) {
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         browserAccessibility_->CreatePositionAt(0);
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         startPosition->CreatePositionAtEndOfAnchor();
     AXPlatformRange range =
         AXPlatformRange(std::move(startPosition), std::move(endPosition));
@@ -2280,7 +2284,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return GetAttributedTextForTextMarkerRange(parameter);
 
   if ([attribute isEqualToString:@"AXNextTextMarkerForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2289,7 +2293,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXPreviousTextMarkerForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2298,18 +2302,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXLeftWordTextMarkerRangeForTextMarker"]) {
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         CreatePositionFromTextMarker(parameter);
     if (endPosition->IsNullPosition())
       return nil;
 
-    AXPlatformPositionInstance startWordPosition =
+    BrowserAccessibilityPositionInstance startWordPosition =
         endPosition->CreatePreviousWordStartPosition(
             ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-    AXPlatformPositionInstance endWordPosition =
+    BrowserAccessibilityPositionInstance endWordPosition =
         endPosition->CreatePreviousWordEndPosition(
             ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         *startWordPosition <= *endWordPosition ? std::move(endWordPosition)
                                                : std::move(startWordPosition);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
@@ -2317,18 +2321,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXRightWordTextMarkerRangeForTextMarker"]) {
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         CreatePositionFromTextMarker(parameter);
     if (startPosition->IsNullPosition())
       return nil;
 
-    AXPlatformPositionInstance endWordPosition =
+    BrowserAccessibilityPositionInstance endWordPosition =
         startPosition->CreateNextWordEndPosition(
             ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-    AXPlatformPositionInstance startWordPosition =
+    BrowserAccessibilityPositionInstance startWordPosition =
         startPosition->CreateNextWordStartPosition(
             ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         *startWordPosition <= *endWordPosition ? std::move(startWordPosition)
                                                : std::move(endWordPosition);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
@@ -2336,7 +2340,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXNextWordEndTextMarkerForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2346,7 +2350,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   if ([attribute
           isEqualToString:@"AXPreviousWordStartTextMarkerForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2355,15 +2359,15 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXTextMarkerRangeForLine"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
 
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         position->CreatePreviousLineStartPosition(
             ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         position->CreateNextLineEndPosition(
             ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
@@ -2371,18 +2375,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXLeftLineTextMarkerRangeForTextMarker"]) {
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         CreatePositionFromTextMarker(parameter);
     if (endPosition->IsNullPosition())
       return nil;
 
-    AXPlatformPositionInstance startLinePosition =
+    BrowserAccessibilityPositionInstance startLinePosition =
         endPosition->CreatePreviousLineStartPosition(
             ui::AXBoundaryBehavior::CrossBoundary);
-    AXPlatformPositionInstance endLinePosition =
+    BrowserAccessibilityPositionInstance endLinePosition =
         endPosition->CreatePreviousLineEndPosition(
             ui::AXBoundaryBehavior::CrossBoundary);
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         *startLinePosition <= *endLinePosition ? std::move(endLinePosition)
                                                : std::move(startLinePosition);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
@@ -2390,18 +2394,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXRightLineTextMarkerRangeForTextMarker"]) {
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         CreatePositionFromTextMarker(parameter);
     if (startPosition->IsNullPosition())
       return nil;
 
-    AXPlatformPositionInstance startLinePosition =
+    BrowserAccessibilityPositionInstance startLinePosition =
         startPosition->CreateNextLineStartPosition(
             ui::AXBoundaryBehavior::CrossBoundary);
-    AXPlatformPositionInstance endLinePosition =
+    BrowserAccessibilityPositionInstance endLinePosition =
         startPosition->CreateNextLineEndPosition(
             ui::AXBoundaryBehavior::CrossBoundary);
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         *startLinePosition <= *endLinePosition ? std::move(startLinePosition)
                                                : std::move(endLinePosition);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
@@ -2409,7 +2413,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXNextLineEndTextMarkerForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2419,7 +2423,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   if ([attribute
           isEqualToString:@"AXPreviousLineStartTextMarkerForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2470,7 +2474,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   if ([attribute isEqualToString:
            NSAccessibilityLineTextMarkerRangeForTextMarkerParameterizedAttribute]) {
-    AXPlatformPositionInstance position =
+    BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
@@ -2518,9 +2522,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     if ([text_marker_array count] != 2)
       return nil;
 
-    AXPlatformPositionInstance startPosition =
+    BrowserAccessibilityPositionInstance startPosition =
         CreatePositionFromTextMarker([text_marker_array objectAtIndex:0]);
-    AXPlatformPositionInstance endPosition =
+    BrowserAccessibilityPositionInstance endPosition =
         CreatePositionFromTextMarker([text_marker_array objectAtIndex:1]);
     if (*startPosition <= *endPosition) {
       return CreateTextMarkerRange(

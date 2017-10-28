@@ -413,7 +413,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   // |offset| could either be a text character or a child index in case of
   // non-text objects.
-  AXPlatformPosition::AXPositionInstance CreatePositionForSelectionAt(
+  BrowserAccessibilityPosition::AXPositionInstance CreatePositionForSelectionAt(
       int offset) const;
 
   // Public accessors (these do not have COM accessible accessors)

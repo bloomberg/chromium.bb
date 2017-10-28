@@ -829,12 +829,12 @@ std::vector<int> BrowserAccessibility::GetLineStartOffsets() const {
   return node()->GetOrComputeLineStartOffsets();
 }
 
-BrowserAccessibility::AXPlatformPositionInstance
+BrowserAccessibilityPosition::AXPositionInstance
 BrowserAccessibility::CreatePositionAt(int offset,
                                        ui::AXTextAffinity affinity) const {
   DCHECK(manager_);
-  return AXPlatformPosition::CreateTextPosition(manager_->ax_tree_id(), GetId(),
-                                                offset, affinity);
+  return BrowserAccessibilityPosition::CreateTextPosition(
+      manager_->ax_tree_id(), GetId(), offset, affinity);
 }
 
 base::string16 BrowserAccessibility::GetInnerText() const {
