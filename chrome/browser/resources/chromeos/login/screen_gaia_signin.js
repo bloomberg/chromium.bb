@@ -1017,7 +1017,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }
 
       this.loading = true;
+      // Hide the back button and the border line as they are not useful
+      // when the loading screen is shown.
       $('signin-back-button').hidden = true;
+      $('signin-frame-dialog').setAttribute('hide-shadow', true);
 
       // Now that we're in logged in state header should be hidden.
       Oobe.getInstance().headerHidden = true;
