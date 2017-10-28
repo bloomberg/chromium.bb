@@ -284,6 +284,9 @@ class CORE_EXPORT StyleEngine final
   void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
   void MarkForWhitespaceReattachment();
 
+  StyleRuleKeyframes* KeyframeStylesForAnimation(
+      const AtomicString& animation_name);
+
   virtual void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 
@@ -361,6 +364,11 @@ class CORE_EXPORT StyleEngine final
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
   void UpdateStyleSheetList(TreeScope&);
 
+  void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
+
+  void AddKeyframeRules(const RuleSet&);
+  void AddKeyframeStyle(StyleRuleKeyframes*);
+
   Member<Document> document_;
   bool is_master_;
 
@@ -371,10 +379,6 @@ class CORE_EXPORT StyleEngine final
   int pending_script_blocking_stylesheets_ = 0;
   int pending_render_blocking_stylesheets_ = 0;
   int pending_body_stylesheets_ = 0;
-
-  HeapVector<std::pair<WebStyleSheetId, TraceWrapperMember<CSSStyleSheet>>>
-      user_style_sheets_;
-  ActiveStyleSheetVector active_user_style_sheets_;
 
   Member<CSSStyleSheet> inspector_style_sheet_;
 
@@ -424,7 +428,15 @@ class CORE_EXPORT StyleEngine final
   std::unique_ptr<StyleResolverStats> style_resolver_stats_;
   unsigned style_for_element_count_ = 0;
 
+  HeapVector<std::pair<WebStyleSheetId, TraceWrapperMember<CSSStyleSheet>>>
+      user_style_sheets_;
+  ActiveStyleSheetVector active_user_style_sheets_;
+
   WebStyleSheetId user_sheets_id_count_ = 0;
+
+  using KeyframesRuleMap =
+      HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
+  KeyframesRuleMap keyframes_rule_map_;
 
   friend class StyleEngineTest;
 };

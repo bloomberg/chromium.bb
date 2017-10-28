@@ -1241,6 +1241,11 @@ StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
       return keyframes_rule;
   }
 
+  if (StyleRuleKeyframes* keyframes_rule =
+          GetDocument().GetStyleEngine().KeyframeStylesForAnimation(
+              animation_name))
+    return keyframes_rule;
+
   for (auto& resolver : resolvers)
     resolver->SetHasUnresolvedKeyframesRule();
   return nullptr;
