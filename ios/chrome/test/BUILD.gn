@@ -189,7 +189,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/external_search:unit_tests",
     "//ios/chrome/browser/ui/fancy_ui:unit_tests",
     "//ios/chrome/browser/ui/first_run:unit_tests",
-    "//ios/chrome/browser/ui/fullscreen:unit_tests",
+    "//ios/chrome/browser/ui/fullscreen:legacy_unit_tests",
     "//ios/chrome/browser/ui/history:unit_tests",
     "//ios/chrome/browser/ui/history_popup:unit_tests",
     "//ios/chrome/browser/ui/icons:unit_tests",

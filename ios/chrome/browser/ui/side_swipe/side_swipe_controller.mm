@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/infobars/infobar_container_view.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe/history_side_swipe_provider.h"
@@ -307,7 +309,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     // If the toolbar is hidden, move it to visible.
-    [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
+      [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    }
     [[model_ currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kSideSwipeWillStartNotification
@@ -390,8 +394,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Show swipe to navigate.
 - (void)handleSwipeToNavigate:(SideSwipeGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    // If the toolbar is hidden, move it to visible.
-    [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
+      // If the toolbar is hidden, move it to visible.
+      [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    }
 
     inSwipe_ = YES;
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
@@ -451,8 +457,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Show horizontal swipe stack view for iPhone.
 - (void)handleiPhoneTabSwipe:(SideSwipeGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    // If the toolbar is hidden, move it to visible.
-    [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
+      // If the toolbar is hidden, move it to visible.
+      [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    }
 
     inSwipe_ = YES;
 

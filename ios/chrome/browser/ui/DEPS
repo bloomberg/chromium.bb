@@ -14,23 +14,6 @@ specific_include_rules = {
     "+ios/web/web_state/web_state_impl.h",
   ],
 
-  # TODO(crbug.com/620139): Remove this exception.
-  "^fullscreen_controller\.mm$": [
-    "+ios/web/web_state/ui/crw_web_controller.h",
-  ],
-
-  # TODO(crbug.com/620143): Remove these exceptions.
-  "^fullscreen_controller_unittest\.mm$": [
-    "+ios/web/web_state/ui/crw_web_view_proxy_impl.h",
-    "+ios/web/web_state/ui/crw_web_controller.h",
-  ],
-
-  # TODO(crbug.com/620139): Remove these exceptions.
-  "^fullscreen_controller_unittest\.mm$": [
-    "+ios/web/web_state/ui/crw_web_view_proxy_impl.h",
-    "+ios/web/web_state/ui/crw_web_controller.h",
-  ],
-
   # TODO(crbug.com/620147): Remove these exceptions.
   "^open_in_controller\.mm$": [
     "+ios/web/web_state/ui/crw_web_controller.h",

@@ -116,8 +116,13 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 @property(nonatomic, weak) id<IOSCaptivePortalBlockingPageDelegate>
     iOSCaptivePortalBlockingPageDelegate;
+
+// The delegate to use for the legacy fullscreen controller.  It should not be
+// set if the new fullscreen is enabled.
+// TODO(crbug.com/778823): Remove this property.
 @property(nonatomic, weak) id<FullScreenControllerDelegate>
     fullScreenControllerDelegate;
+
 @property(nonatomic, readonly)
     OverscrollActionsController* overscrollActionsController;
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
@@ -188,6 +193,7 @@ extern NSString* const kProxyPassthroughHeaderValue;
 - (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType;
 
 // Ensures the toolbar visibility matches |visible|.
+// TODO(crbug.com/778823): Remove this code.
 - (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
 
 // Returns a snapshot of the current page, backed by disk so it can be purged

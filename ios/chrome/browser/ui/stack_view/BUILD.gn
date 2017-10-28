@@ -135,6 +135,7 @@ source_set("perf_tests") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:legacy_fullscreen",
     "//ios/web",
     "//net",
   ]
