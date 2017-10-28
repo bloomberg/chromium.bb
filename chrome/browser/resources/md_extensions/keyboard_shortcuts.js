@@ -9,7 +9,7 @@ cr.define('extensions', function() {
   const KeyboardShortcuts = Polymer({
     is: 'extensions-keyboard-shortcuts',
 
-    behaviors: [CrContainerShadowBehavior],
+    behaviors: [CrContainerShadowBehavior, extensions.ItemBehavior],
 
     properties: {
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */

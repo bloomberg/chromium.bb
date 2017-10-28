@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
+<link rel="import" href="item_behavior.html">
 <link rel="import" href="shortcut_input.html">
 
 <dom-module id="extensions-keyboard-shortcuts">
@@ -84,7 +85,11 @@
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
         <div class="shortcut-card">
           <div class="card-title">
-            <img class="icon" src="[[item.iconUrl]]">
+            <img class="icon" src="[[item.iconUrl]]"
+                alt$="[[appOrExtension(
+                    data.type,
+                    '$i18nPolymer{appIcon}',
+                    '$i18nPolymer{extensionIcon}')]]">
             <span>[[item.name]]</span>
           </div>
           <div class="card-controls">

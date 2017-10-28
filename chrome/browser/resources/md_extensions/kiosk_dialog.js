@@ -7,7 +7,7 @@ cr.define('extensions', function() {
 
   const KioskDialog = Polymer({
     is: 'extensions-kiosk-dialog',
-    behaviors: [WebUIListenerBehavior],
+    behaviors: [WebUIListenerBehavior, extensions.ItemBehavior],
     properties: {
       /** @private {?string} */
       addAppInput_: {

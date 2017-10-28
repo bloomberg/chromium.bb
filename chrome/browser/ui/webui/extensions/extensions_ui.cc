@@ -166,6 +166,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_DEPENDENT_ENTRY);
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemErrors", IDS_MD_EXTENSIONS_ITEM_ERRORS);
+  source->AddLocalizedString("appIcon", IDS_MD_EXTENSIONS_APP_ICON);
+  source->AddLocalizedString("extensionIcon", IDS_MD_EXTENSIONS_EXTENSION_ICON);
   source->AddLocalizedString("itemIdHeading",
                              IDS_MD_EXTENSIONS_ITEM_ID_HEADING);
   source->AddLocalizedString("extensionEnabled",

@@ -14,6 +14,9 @@ cr.define('extensions', function() {
 
   const OptionsDialog = Polymer({
     is: 'extensions-options-dialog',
+
+    behaviors: [extensions.ItemBehavior],
+
     properties: {
       /** @private {Object} */
       extensionOptions_: Object,
