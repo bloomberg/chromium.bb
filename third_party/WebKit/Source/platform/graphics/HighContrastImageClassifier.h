@@ -12,9 +12,11 @@
 
 namespace blink {
 
+class IntRect;
+
 class PLATFORM_EXPORT HighContrastImageClassifier {
  public:
-  HighContrastImageClassifier() = default;
+  HighContrastImageClassifier();
   ~HighContrastImageClassifier() = default;
 
   // Decides if a high contrast filter should be applied to the image or not.
@@ -25,26 +27,57 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
     return ComputeImageFeatures(image, features);
   }
 
+  void SetRandomGeneratorForTesting() { use_testing_random_generator_ = true; }
+
  private:
+  enum class ColorMode { kColor = 0, kGrayscale = 1 };
+
   // Computes the features vector for a given image.
   bool ComputeImageFeatures(Image&, std::vector<float>*);
 
   // Converts image to SkBitmap and returns true if successful.
   bool GetBitmap(Image&, SkBitmap*);
 
-  // Extracts sample pixels and transparency ratio from the given bitmap.
-  void GetSamples(const SkBitmap&, std::vector<SkColor>*, float*);
+  // Given a SkBitmap, extracts a sample set of pixels (|sampled_pixels|),
+  // |transparency_ratio|, and |background_ratio|.
+  void GetSamples(const SkBitmap&,
+                  std::vector<SkColor>* sampled_pixels,
+                  float* transparency_ratio,
+                  float* background_ratio);
 
-  // Computes the features, given sampled pixels and transparency ratio.
-  void GetFeatures(const std::vector<SkColor>&,
-                   const float,
-                   std::vector<float>*);
+  // Given |sampled_pixels|, |transparency_ratio|, and |background_ratio| for an
+  // image, computes the required |features| for classification.
+  void GetFeatures(const std::vector<SkColor>& sampled_pixels,
+                   const float transparency_ratio,
+                   const float background_ratio,
+                   std::vector<float>* features);
 
-  // Makes a decision about image given its features.
+  // Makes a decision about the image given its features.
   HighContrastClassification ClassifyImage(const std::vector<float>&);
 
-  // Receives sampled pixels, and returns the number of color buckets.
-  int CountColorBuckets(const std::vector<SkColor>&);
+  // Receives sampled pixels and color mode, and returns the ratio of color
+  // buckets count to all possible color buckets. If image is in color, a color
+  // bucket is a 4 bit per channel representation of each RGB color, and if it
+  // is grayscale, each bucket is a 4 bit representation of luminance.
+  float ComputeColorBucketsRatio(const std::vector<SkColor>&, const ColorMode);
+
+  // Gets the |required_samples_count| for a specific |block| of the given
+  // SkBitmap, and returns |sampled_pixels| and |transparent_pixels_count|.
+  void GetBlockSamples(const SkBitmap&,
+                       const IntRect& block,
+                       const int required_samples_count,
+                       std::vector<SkColor>* sampled_pixels,
+                       int* transparent_pixels_count);
+
+  // Given sampled pixels from a block of image and the number of transparent
+  // pixels, decides if a block is part of background or or not.
+  bool IsBlockBackground(const std::vector<SkColor>&, const int);
+
+  // Returns a random number in range [min, max).
+  int GetRandomInt(const int min, const int max);
+
+  bool use_testing_random_generator_;
+  int testing_random_generator_seed_;
 };
 
 }  // namespace blink
