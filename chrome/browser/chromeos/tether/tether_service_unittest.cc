@@ -541,31 +541,6 @@ TEST_F(TetherServiceTest, TestBleAdvertisingSupportedButIncorrectlyRecorded) {
                                    1 /* expected_count */);
 }
 
-TEST_F(TetherServiceTest, TestScreenLock) {
-  CreateTetherService();
-  VerifyTetherActiveStatus(true /* expected_active */);
-
-  SetIsScreenLocked(true);
-
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(false /* expected_active */);
-
-  SetIsScreenLocked(false);
-
-  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
-            network_state_handler()->GetTechnologyState(
-                chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(true /* expected_active */);
-
-  SetIsScreenLocked(true);
-
-  VerifyTetherFeatureStateRecorded(
-      TetherService::TetherFeatureState::SCREEN_LOCKED, 2 /* expected_count */);
-}
-
 TEST_F(TetherServiceTest, TestFeatureFlagDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kInstantTethering);
