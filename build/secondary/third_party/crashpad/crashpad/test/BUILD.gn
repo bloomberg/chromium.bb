@@ -10,6 +10,8 @@ static_library("crashpad_test") {
     "file.cc",
     "file.h",
     "gtest_death_check.h",
+    "gtest_disabled.cc",
+    "gtest_disabled.h",
     "hex_string.cc",
     "hex_string.h",
     "mac/dyld.cc",
@@ -58,30 +60,38 @@ static_library("crashpad_test") {
   }
 }
 
-static_library("crashpad_gtest_main") {
+static_library("crashpad_gmock_main") {
   testonly = true
-  defines = [ "CRASHPAD_IN_CHROMIUM" ]
+  defines = [
+    "CRASHPAD_IN_CHROMIUM",
+    "CRASHPAD_TEST_LAUNCHER_GMOCK",
+  ]
   sources = [
     "gtest_main.cc",
   ]
   deps = [
     ":crashpad_test",
+    "//base",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
   include_dirs = [ ".." ]
 }
 
-static_library("crashpad_gmock_main") {
+static_library("crashpad_gtest_main") {
   testonly = true
-  defines = [ "CRASHPAD_IN_CHROMIUM" ]
+  defines = [
+    "CRASHPAD_IN_CHROMIUM",
+    "CRASHPAD_TEST_LAUNCHER_GTEST",
+  ]
   sources = [
-    "gmock_main.cc",
+    "gtest_main.cc",
   ]
   deps = [
     ":crashpad_test",
+    "//base",
     "//base/test:test_support",
-    "//testing/gmock",
     "//testing/gtest",
   ]
   include_dirs = [ ".." ]
