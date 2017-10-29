@@ -2611,36 +2611,28 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       ) {
     if (is_any_masked_compound_used(bsize)) {
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #if CONFIG_JNT_COMP
       if (cm->allow_masked_compound && mbmi->compound_idx)
 #else
       if (cm->allow_masked_compound)
 #endif  // CONFIG_JNT_COMP
       {
-#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
         if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))
           mbmi->interinter_compound_type =
               aom_read_bit(r, ACCT_STR) ? COMPOUND_AVERAGE : COMPOUND_SEG;
         else
-#endif  // CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
           mbmi->interinter_compound_type = aom_read_symbol(
               r, ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES, ACCT_STR);
-#if CONFIG_WEDGE
         if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
           mbmi->wedge_index =
               aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
           mbmi->wedge_sign = aom_read_bit(r, ACCT_STR);
         }
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
         if (mbmi->interinter_compound_type == COMPOUND_SEG) {
           mbmi->mask_type = aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
         }
-#endif  // CONFIG_COMPOUND_SEGMENT
       }
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     } else {
       mbmi->interinter_compound_type = COMPOUND_AVERAGE;
     }

@@ -317,7 +317,6 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
-#if CONFIG_WEDGE
   { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
     wedge_masks[BLOCK_8X8] },
   { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
@@ -332,22 +331,6 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
     wedge_masks[BLOCK_32X16] },
   { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
     wedge_masks[BLOCK_32X32] },
-#else
-  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
-    wedge_masks[BLOCK_8X8] },
-  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
-    wedge_masks[BLOCK_8X16] },
-  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X8], 0,
-    wedge_masks[BLOCK_16X8] },
-  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_16X16], 0,
-    wedge_masks[BLOCK_16X16] },
-  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_16X32], 0,
-    wedge_masks[BLOCK_16X32] },
-  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X16], 0,
-    wedge_masks[BLOCK_32X16] },
-  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
-    wedge_masks[BLOCK_32X32] },
-#endif  // CONFIG_WEDGE
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
@@ -356,7 +339,6 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
 #endif  // CONFIG_EXT_PARTITION
-#if CONFIG_WEDGE
   { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_4X16], 0,
     wedge_masks[BLOCK_4X16] },
   { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X4], 0,
@@ -365,16 +347,6 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
     wedge_masks[BLOCK_8X32] },
   { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8], 0,
     wedge_masks[BLOCK_32X8] },
-#else
-  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_4X16], 0,
-    wedge_masks[BLOCK_4X16] },
-  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X4], 0,
-    wedge_masks[BLOCK_16X4] },
-  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X32], 0,
-    wedge_masks[BLOCK_8X32] },
-  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8], 0,
-    wedge_masks[BLOCK_32X8] },
-#endif  // CONFIG_WEDGE
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
 #if CONFIG_EXT_PARTITION
@@ -413,7 +385,6 @@ const uint8_t *av1_get_soft_mask(int wedge_index, int wedge_sign,
   return mask;
 }
 
-#if CONFIG_COMPOUND_SEGMENT
 static uint8_t *invert_mask(uint8_t *mask_inv_buffer, const uint8_t *const mask,
                             int h, int w, int stride) {
   int i, j;
@@ -425,26 +396,18 @@ static uint8_t *invert_mask(uint8_t *mask_inv_buffer, const uint8_t *const mask,
     }
   return mask_inv_buffer;
 }
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 const uint8_t *av1_get_compound_type_mask_inverse(
-    const INTERINTER_COMPOUND_DATA *const comp_data,
-#if CONFIG_COMPOUND_SEGMENT
-    uint8_t *mask_buffer, int h, int w, int stride,
-#endif
-    BLOCK_SIZE sb_type) {
+    const INTERINTER_COMPOUND_DATA *const comp_data, uint8_t *mask_buffer,
+    int h, int w, int stride, BLOCK_SIZE sb_type) {
   assert(is_masked_compound_type(comp_data->interinter_compound_type));
   (void)sb_type;
   switch (comp_data->interinter_compound_type) {
-#if CONFIG_WEDGE
     case COMPOUND_WEDGE:
       return av1_get_contiguous_soft_mask(comp_data->wedge_index,
                                           !comp_data->wedge_sign, sb_type);
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
     case COMPOUND_SEG:
       return invert_mask(mask_buffer, comp_data->seg_mask, h, w, stride);
-#endif  // CONFIG_COMPOUND_SEGMENT
     default: assert(0); return NULL;
   }
 }
@@ -454,19 +417,14 @@ const uint8_t *av1_get_compound_type_mask(
   assert(is_masked_compound_type(comp_data->interinter_compound_type));
   (void)sb_type;
   switch (comp_data->interinter_compound_type) {
-#if CONFIG_WEDGE
     case COMPOUND_WEDGE:
       return av1_get_contiguous_soft_mask(comp_data->wedge_index,
                                           comp_data->wedge_sign, sb_type);
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
     case COMPOUND_SEG: return comp_data->seg_mask;
-#endif  // CONFIG_COMPOUND_SEGMENT
     default: assert(0); return NULL;
   }
 }
 
-#if CONFIG_COMPOUND_SEGMENT
 #if COMPOUND_SEGMENT_TYPE == 0
 static void uniform_mask(uint8_t *mask, int which_inverse, BLOCK_SIZE sb_type,
                          int h, int w, int mask_val) {
@@ -553,7 +511,7 @@ static void build_compound_seg_mask_d32(uint8_t *mask, SEG_MASK_TYPE mask_type,
     default: assert(0);
   }
 }
-#endif
+#endif  // CONFIG_CONVOLVE_ROUND
 
 static void diffwtd_mask(uint8_t *mask, int which_inverse, int mask_base,
                          const uint8_t *src0, int src0_stride,
@@ -628,7 +586,6 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
 }
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // COMPOUND_SEGMENT_TYPE
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 #if MASK_MASTER_SIZE == 64
 static const uint8_t wedge_master_oblique_odd[NSMOOTHERS][MASK_MASTER_SIZE] = {
@@ -861,14 +818,7 @@ void av1_make_masked_inter_predictor(
   const MODE_INFO *mi = xd->mi[0];
 
   const INTERINTER_COMPOUND_DATA comp_data = {
-#if CONFIG_WEDGE
-    mi->mbmi.wedge_index,
-    mi->mbmi.wedge_sign,
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
-    mi->mbmi.mask_type,
-    xd->seg_mask,
-#endif  // CONFIG_COMPOUND_SEGMENT
+    mi->mbmi.wedge_index, mi->mbmi.wedge_sign, mi->mbmi.mask_type, xd->seg_mask,
     mi->mbmi.interinter_compound_type
   };
 
@@ -921,7 +871,6 @@ void av1_make_masked_inter_predictor(
 #endif
                            xs, ys, xd);
 
-#if CONFIG_COMPOUND_SEGMENT
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_CONVOLVE_ROUND
     if (is_conv_no_round) {
@@ -948,7 +897,6 @@ void av1_make_masked_inter_predictor(
     }
 #endif
   }
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_CONVOLVE_ROUND
   if (is_conv_no_round) {
@@ -2867,17 +2815,10 @@ static void build_wedge_inter_predictor_from_buf(
   MACROBLOCKD_PLANE *const pd = &xd->plane[plane];
   struct buf_2d *const dst_buf = &pd->dst;
   uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
-  const INTERINTER_COMPOUND_DATA comp_data = {
-#if CONFIG_WEDGE
-    mbmi->wedge_index,
-    mbmi->wedge_sign,
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
-    mbmi->mask_type,
-    xd->seg_mask,
-#endif  // CONFIG_COMPOUND_SEGMENT
-    mbmi->interinter_compound_type
-  };
+  const INTERINTER_COMPOUND_DATA comp_data = { mbmi->wedge_index,
+                                               mbmi->wedge_sign,
+                                               mbmi->mask_type, xd->seg_mask,
+                                               mbmi->interinter_compound_type };
 
 #if CONFIG_COMPOUND_SINGLEREF
   if ((is_compound || is_inter_singleref_comp_mode(mbmi->mode)) &&
@@ -2886,7 +2827,6 @@ static void build_wedge_inter_predictor_from_buf(
   if (is_compound && is_masked_compound_type(mbmi->interinter_compound_type))
 #endif  // CONFIG_COMPOUND_SINGLEREF
   {
-#if CONFIG_COMPOUND_SEGMENT
     if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
@@ -2901,7 +2841,6 @@ static void build_wedge_inter_predictor_from_buf(
                                 ext_dst0, ext_dst_stride0, ext_dst1,
                                 ext_dst_stride1, mbmi->sb_type, h, w);
     }
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)

@@ -2740,7 +2740,6 @@ static void read_compound_tools(AV1_COMMON *cm,
     cm->allow_interintra_compound = 0;
   }
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_COMPOUND_SINGLEREF
   if (!frame_is_intra_only(cm)) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
@@ -2750,7 +2749,6 @@ static void read_compound_tools(AV1_COMMON *cm,
   } else {
     cm->allow_masked_compound = 0;
   }
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 }
 
 #if CONFIG_VAR_REFS
@@ -3548,7 +3546,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         }
       }
 #endif
-#if CONFIG_WEDGE && !CONFIG_NEW_MULTISYMBOL
+#if !CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_PARTITION_TYPES
       int block_sizes_to_update = BLOCK_SIZES_ALL;
 #else
@@ -3559,7 +3557,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
           av1_diff_update_prob(&r, &fc->wedge_interintra_prob[i], ACCT_STR);
         }
       }
-#endif  // CONFIG_WEDGE
+#endif  // !CONFIG_NEW_MULTISYMBOL
     }
 #endif  // CONFIG_INTERINTRA
 
@@ -3613,10 +3611,8 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
 #if CONFIG_INTERINTRA
   assert(!memcmp(cm->counts.interintra, zero_counts.interintra,
                  sizeof(cm->counts.interintra)));
-#if CONFIG_WEDGE
   assert(!memcmp(cm->counts.wedge_interintra, zero_counts.wedge_interintra,
                  sizeof(cm->counts.wedge_interintra)));
-#endif  // CONFIG_WEDGE
 #endif  // CONFIG_INTERINTRA
   assert(!memcmp(cm->counts.compound_interinter,
                  zero_counts.compound_interinter,

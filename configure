@@ -263,8 +263,6 @@ EXPERIMENT_LIST="
     ext_intra_mod
     intrabc
     interintra
-    wedge
-    compound_segment
     new_quant
     ans
     loop_restoration
@@ -510,8 +508,6 @@ post_process_cmdline() {
       soft_enable dual_filter
       soft_enable motion_var
       soft_enable warped_motion
-      soft_enable wedge
-      soft_enable compound_segment
       soft_enable interintra
       soft_enable one_sided_compound
       soft_enable convolve_round

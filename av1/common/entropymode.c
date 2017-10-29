@@ -744,7 +744,6 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1] = {
       { 128, 128 }, { 128, 128 }, { 128, 128 }, { 128, 128 },
@@ -760,38 +759,7 @@ static const aom_prob
       { 208, 1 },   { 208, 1 }
 #endif  // CONFIG_EXT_PARTITION
     };
-#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
-static const aom_prob
-    default_compound_type_probs[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1] = {
-      { 255 }, { 255 }, { 255 }, { 208 }, { 208 }, { 208 }, { 208 }, { 208 },
-      { 208 }, { 216 }, { 216 }, { 216 }, { 224 }, { 224 }, { 240 }, { 240 },
-#if CONFIG_EXT_PARTITION
-      { 255 }, { 255 }, { 255 },
-#endif  // CONFIG_EXT_PARTITION
-      { 208 }, { 208 }, { 208 }, { 208 }, { 255 }, { 255 },
-#if CONFIG_EXT_PARTITION
-      { 255 }, { 255 }
-#endif  // CONFIG_EXT_PARTITION
-    };
-#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
-static const aom_prob
-    default_compound_type_probs[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1] = {
-      { 255 }, { 255 }, { 255 }, { 208 }, { 208 }, { 208 }, { 208 }, { 208 },
-      { 208 }, { 216 }, { 216 }, { 216 }, { 224 }, { 224 }, { 240 }, { 240 },
-#if CONFIG_EXT_PARTITION
-      { 255 }, { 255 }, { 255 },
-#endif  // CONFIG_EXT_PARTITION
-      { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 208 },
-#if CONFIG_EXT_PARTITION
-      { 208 }, { 208 }
-#endif  // CONFIG_EXT_PARTITION
-    };
-#else
-static const aom_prob default_compound_type_probs[BLOCK_SIZES_ALL]
-                                                 [COMPOUND_TYPES - 1];
-#endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 
-#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 static const aom_cdf_prob
     default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)] = {
       { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
@@ -826,77 +794,6 @@ static const aom_cdf_prob
       { AOM_ICDF(26624), AOM_ICDF(26648), AOM_ICDF(32768), 0 },
 #endif
     };
-#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
-static const aom_cdf_prob
-    default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)] = {
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },  // 208
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },  // 216
-      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },  // 224
-      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },  // 240
-      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-#endif  // CONFIG_EXT_PARTITION
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-#endif  // CONFIG_EXT_PARTITION
-    };
-#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
-static const aom_cdf_prob
-    default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)] = {
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },  // 208
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },  // 216
-      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },  // 224
-      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },  // 240
-      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
-#endif  // CONFIG_EXT_PARTITION
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },  // 208
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
-#endif  // CONFIG_EXT_PARTITION
-    };
-#endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 
 #if CONFIG_INTERINTRA
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
@@ -1482,21 +1379,9 @@ const aom_tree_index av1_inter_singleref_comp_mode_tree
 };
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
   -COMPOUND_AVERAGE, 2, -COMPOUND_WEDGE, -COMPOUND_SEG
 };
-#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
-const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
-  -COMPOUND_AVERAGE, -COMPOUND_WEDGE
-};
-#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
-const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
-  -COMPOUND_AVERAGE, -COMPOUND_SEG
-};
-#else
-const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {};
-#endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 /* clang-format on */
 
 const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
@@ -6301,9 +6186,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
            default_inter_singleref_comp_mode_cdf);
 #endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
@@ -6476,17 +6359,14 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           av1_interintra_mode_tree, pre_fc->interintra_mode_prob[i],
           counts->interintra_mode[i], fc->interintra_mode_prob[i]);
     }
-#if CONFIG_WEDGE
     for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
       if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
         fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(
             pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
     }
-#endif  // CONFIG_WEDGE
   }
 #endif  // CONFIG_INTERINTRA
 
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
   if (cm->allow_masked_compound) {
     for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
       aom_tree_merge_probs(
@@ -6494,7 +6374,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           counts->compound_interinter[i], fc->compound_type_prob[i]);
     }
   }
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 
 #if CONFIG_JNT_COMP
   for (i = 0; i < COMP_INDEX_CONTEXTS; ++i)

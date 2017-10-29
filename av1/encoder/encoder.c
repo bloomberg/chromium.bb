@@ -2435,9 +2435,7 @@ void set_compound_tools(AV1_COMMON *cm) {
 #if CONFIG_INTERINTRA
   cm->allow_interintra_compound = 1;
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   cm->allow_masked_compound = 1;
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 }
 
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {

@@ -33,7 +33,6 @@ extern "C" {
 
 #define MAX_MB_PLANE 3
 
-#if CONFIG_COMPOUND_SEGMENT
 // Set COMPOUND_SEGMENT_TYPE to one of the three
 // 0: Uniform
 // 1: Difference weighted
@@ -51,8 +50,6 @@ typedef enum {
 #endif  // COMPOUND_SEGMENT_TYPE
   SEG_MASK_TYPES,
 } SEG_MASK_TYPE;
-
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 typedef enum {
   KEY_FRAME = 0,
@@ -214,24 +211,11 @@ static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
 }
 
 static INLINE int use_masked_motion_search(COMPOUND_TYPE type) {
-#if CONFIG_WEDGE
   return (type == COMPOUND_WEDGE);
-#else
-  (void)type;
-  return 0;
-#endif
 }
 
 static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
-#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
   return (type == COMPOUND_WEDGE || type == COMPOUND_SEG);
-#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
-  return (type == COMPOUND_WEDGE);
-#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
-  return (type == COMPOUND_SEG);
-#endif  // CONFIG_COMPOUND_SEGMENT
-  (void)type;
-  return 0;
 }
 
 /* For keyframes, intra block modes are predicted by the (already decoded)
@@ -295,14 +279,10 @@ typedef struct RD_STATS {
 // This struct is used to group function args that are commonly
 // sent together in functions related to interinter compound modes
 typedef struct {
-#if CONFIG_WEDGE
   int wedge_index;
   int wedge_sign;
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
   SEG_MASK_TYPE mask_type;
   uint8_t *seg_mask;
-#endif  // CONFIG_COMPOUND_SEGMENT
   COMPOUND_TYPE interinter_compound_type;
 } INTERINTER_COMPOUND_DATA;
 
@@ -361,13 +341,9 @@ typedef struct MB_MODE_INFO {
   int interintra_wedge_sign;
   // interinter members
   COMPOUND_TYPE interinter_compound_type;
-#if CONFIG_WEDGE
   int wedge_index;
   int wedge_sign;
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
   SEG_MASK_TYPE mask_type;
-#endif  // CONFIG_COMPOUND_SEGMENT
   MOTION_MODE motion_mode;
 #if CONFIG_MOTION_VAR
   int overlappable_neighbors[2];
@@ -766,9 +742,7 @@ typedef struct macroblockd {
   const EobThresholdMD *eob_threshold_md;
 #endif
 
-#if CONFIG_COMPOUND_SEGMENT
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_MRC_TX
   uint8_t *mrc_mask;

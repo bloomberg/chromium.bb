@@ -2360,9 +2360,7 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 
   AVERAGE_TILE_CDFS(inter_compound_mode_cdf)
 
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   AVERAGE_TILE_CDFS(compound_type_cdf)
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_COMPOUND_SINGLEREF
   AVERAGE_TILE_CDFS(inter_singleref_comp_mode_cdf)
 #endif

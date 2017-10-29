@@ -231,13 +231,9 @@ static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
   (void)sb_type;
   switch (type) {
     case COMPOUND_AVERAGE: return sb_type >= BLOCK_4X4;
-#if CONFIG_WEDGE
     case COMPOUND_WEDGE: return wedge_params_lookup[sb_type].bits > 0;
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
     case COMPOUND_SEG:
       return AOMMIN(block_size_wide[sb_type], block_size_high[sb_type]) >= 8;
-#endif  // CONFIG_COMPOUND_SEGMENT
     default: assert(0); return 0;
   }
 }
@@ -271,7 +267,6 @@ static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
   return wedge_params_lookup[sb_type].bits;
 }
 
-#if CONFIG_COMPOUND_SEGMENT
 void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
                              const uint8_t *src0, int src0_stride,
                              const uint8_t *src1, int src1_stride,
@@ -282,7 +277,6 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
                                     const uint8_t *src1, int src1_stride,
                                     BLOCK_SIZE sb_type, int h, int w, int bd);
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_COMPOUND_SEGMENT
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
@@ -527,11 +521,8 @@ const uint8_t *av1_get_soft_mask(int wedge_index, int wedge_sign,
                                  int wedge_offset_y);
 
 const uint8_t *av1_get_compound_type_mask_inverse(
-    const INTERINTER_COMPOUND_DATA *const comp_data,
-#if CONFIG_COMPOUND_SEGMENT
-    uint8_t *mask_buffer, int h, int w, int stride,
-#endif
-    BLOCK_SIZE sb_type);
+    const INTERINTER_COMPOUND_DATA *const comp_data, uint8_t *mask_buffer,
+    int h, int w, int stride, BLOCK_SIZE sb_type);
 
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type);

@@ -270,9 +270,7 @@ typedef struct AV1Common {
 #if CONFIG_INTERINTRA
   int allow_interintra_compound;
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   int allow_masked_compound;
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   // Flag signaling which frame contexts should be reset to default values.

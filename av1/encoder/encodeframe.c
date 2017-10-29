@@ -1261,18 +1261,12 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             && mbmi->motion_mode == SIMPLE_TRANSLATION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
             ) {
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
-#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
-#endif
             counts
                 ->compound_interinter[bsize][mbmi->interinter_compound_type]++;
             update_cdf(fc->compound_type_cdf[bsize],
                        mbmi->interinter_compound_type, COMPOUND_TYPES);
-#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
           }
-#endif
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
         }
       }
     }
@@ -4026,14 +4020,12 @@ static void make_consistent_compound_tools(AV1_COMMON *cm) {
   if (frame_is_intra_only(cm) || cm->reference_mode == COMPOUND_REFERENCE)
     cm->allow_interintra_compound = 0;
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #if CONFIG_COMPOUND_SINGLEREF
   if (frame_is_intra_only(cm))
 #else   // !CONFIG_COMPOUND_SINGLEREF
   if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
 #endif  // CONFIG_COMPOUND_SINGLEREF
     cm->allow_masked_compound = 0;
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 }
 
 void av1_encode_frame(AV1_COMP *cpi) {

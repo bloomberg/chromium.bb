@@ -76,9 +76,7 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
 #if CONFIG_INTERINTRA
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
 #endif
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 static struct av1_token compound_type_encodings[COMPOUND_TYPES];
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #if CONFIG_LOOP_RESTORATION
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
@@ -110,9 +108,7 @@ void av1_encode_token_init(void) {
   av1_tokens_from_tree(inter_singleref_comp_mode_encodings,
                        av1_inter_singleref_comp_mode_tree);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
   av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 }
 
 static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
@@ -1757,34 +1753,26 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         mbmi->motion_mode == SIMPLE_TRANSLATION &&
 #endif  // CONFIG_MOTION_VAR
         is_any_masked_compound_used(bsize)) {
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #if CONFIG_JNT_COMP
       if (cm->allow_masked_compound && mbmi->compound_idx)
 #else
       if (cm->allow_masked_compound)
 #endif  // CONFIG_JNT_COMP
       {
-#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
         if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))
           aom_write_bit(w, mbmi->interinter_compound_type == COMPOUND_AVERAGE);
         else
-#endif  // CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
           aom_write_symbol(w, mbmi->interinter_compound_type,
                            ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
-#if CONFIG_WEDGE
         if (is_interinter_compound_used(COMPOUND_WEDGE, bsize) &&
             mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
           aom_write_bit(w, mbmi->wedge_sign);
         }
-#endif  // CONFIG_WEDGE
-#if CONFIG_COMPOUND_SEGMENT
         if (mbmi->interinter_compound_type == COMPOUND_SEG) {
           aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
         }
-#endif  // CONFIG_COMPOUND_SEGMENT
       }
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     }
 
     write_mb_interp_filter(cpi, xd, w);
@@ -3824,7 +3812,6 @@ static void write_compound_tools(const AV1_COMMON *cm,
     assert(cm->allow_interintra_compound == 0);
   }
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_COMPOUND_SINGLEREF
   if (!frame_is_intra_only(cm)) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
@@ -3834,7 +3821,6 @@ static void write_compound_tools(const AV1_COMMON *cm,
   } else {
     assert(cm->allow_masked_compound == 0);
   }
-#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 }
 
 static void write_global_motion_params(const WarpedMotionParams *params,
@@ -4615,7 +4601,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
         }
       }
 #endif
-#if CONFIG_WEDGE && !CONFIG_NEW_MULTISYMBOL
+#if !CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_PARTITION_TYPES
       int block_sizes_to_update = BLOCK_SIZES_ALL;
 #else
@@ -4626,7 +4612,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
           av1_cond_prob_diff_update(header_bc, &fc->wedge_interintra_prob[i],
                                     cm->counts.wedge_interintra[i], probwt);
       }
-#endif  // CONFIG_WEDGE && CONFIG_NEW_MULTISYMBOL
+#endif  // !CONFIG_NEW_MULTISYMBOL
     }
 #endif  // CONFIG_INTERINTRA
 
