@@ -975,7 +975,10 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kCapsLockKey);
 
+  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+  rewriter_->set_ime_keyboard_for_testing(&ime_keyboard);
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(
@@ -984,6 +987,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_COMMAND_DOWN, ui::DomKey::META));
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
@@ -992,6 +996,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_NONE, ui::DomKey::META));
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(
@@ -1001,6 +1006,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_ON,
                                       ui::DomKey::META));
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
@@ -1009,6 +1015,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_NONE, ui::DomKey::META));
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Caps Lock (on an external keyboard).
   EXPECT_EQ(GetExpectedResultAsString(
@@ -1018,6 +1025,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::CAPS_LOCK));
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Release Caps Lock (on an external keyboard).
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
@@ -1026,6 +1034,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_NONE, ui::DomKey::CAPS_LOCK));
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLock) {
@@ -1043,6 +1052,15 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
                                       ui::VKEY_F16, ui::DomCode::F16,
                                       ui::EF_MOD3_DOWN, ui::DomKey::F16));
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
+                                      ui::DomCode::CAPS_LOCK, ui::EF_NONE,
+                                      ui::DomKey::CAPS_LOCK),
+            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
+                                      ui::VKEY_F16, ui::DomCode::F16,
+                                      ui::EF_MOD3_DOWN, ui::DomKey::F16));
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 }
 
 TEST_F(EventRewriterTest, TestRewriteDiamondKey) {

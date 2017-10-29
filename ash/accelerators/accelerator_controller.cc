@@ -684,7 +684,7 @@ bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
                              const ui::Accelerator& previous_accelerator) {
   chromeos::input_method::InputMethodManager* ime =
       chromeos::input_method::InputMethodManager::Get();
-  if (!ime)
+  if (!ime || !ime->GetImeKeyboard())
     return false;
 
   // This shortcust is set to be trigger on release. Either the current
@@ -698,7 +698,7 @@ bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
             ui::Accelerator::KeyState::PRESSED &&
         (previous_accelerator.key_code() == ui::VKEY_LWIN ||
          previous_accelerator.key_code() == ui::VKEY_MENU)) {
-      return ime->GetImeKeyboard();
+      return true;
     }
   }
 
@@ -712,14 +712,8 @@ bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
             ui::Accelerator::KeyState::PRESSED &&
         (previous_accelerator.key_code() == ui::VKEY_LWIN ||
          previous_accelerator.key_code() == ui::VKEY_MENU)) {
-      return ime->GetImeKeyboard();
+      return true;
     }
-  }
-
-  // Caps Lock release
-  if (accelerator.key_code() == ui::VKEY_CAPITAL &&
-      accelerator.key_state() == ui::Accelerator::KeyState::RELEASED) {
-    return ime->GetImeKeyboard();
   }
 
   return false;

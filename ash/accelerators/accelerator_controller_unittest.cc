@@ -968,7 +968,7 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 
 namespace {
 
-// Tests the five combinations of the TOGGLE_CAPS_LOCK accelerator.
+// Tests the four combinations of the TOGGLE_CAPS_LOCK accelerator.
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   chromeos::input_method::InputMethodManager* input_method_manager =
       chromeos::input_method::InputMethodManager::Get();
@@ -1009,15 +1009,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   EXPECT_TRUE(ProcessInController(release_alt_before_search));
   EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
   input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
-
-  // 5. Press Caps Lock, Release Caps Lock.
-  const ui::Accelerator press_caps_lock(ui::VKEY_CAPITAL, ui::EF_NONE);
-  EXPECT_FALSE(ProcessInController(press_caps_lock));
-  EXPECT_FALSE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
-  const ui::Accelerator release_caps_lock(
-      CreateReleaseAccelerator(ui::VKEY_CAPITAL, ui::EF_NONE));
-  EXPECT_TRUE(ProcessInController(release_caps_lock));
-  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
 }
 
 class PreferredReservedAcceleratorsTest : public AshTestBase {
