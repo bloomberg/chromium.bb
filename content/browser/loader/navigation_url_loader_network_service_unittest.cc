@@ -57,10 +57,6 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                       std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
-  mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory() override {
-    return nullptr;
-  }
-
   bool MaybeCreateLoaderForResponse(
       const ResourceResponseHead& response,
       mojom::URLLoaderPtr* loader,

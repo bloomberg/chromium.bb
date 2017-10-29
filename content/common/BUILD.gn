@@ -236,6 +236,8 @@ source_set("common") {
     "navigation_gesture.h",
     "navigation_params.cc",
     "navigation_params.h",
+    "navigation_subresource_loader_params.cc",
+    "navigation_subresource_loader_params.h",
     "net/url_fetcher.cc",
     "net/url_request_service_worker_data.cc",
     "net/url_request_service_worker_data.h",

@@ -26,6 +26,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -138,6 +139,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
       mojom::URLLoaderFactoryPtrInfo factory_for_webui,
+      mojom::URLLoaderFactoryPtrInfo subresource_factory_for_webui,
       const base::Callback<WebContents*(void)>& web_contents_getter,
       std::unique_ptr<service_manager::Connector> connector) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -163,6 +165,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               web_contents_getter_),
           0 /* routing_id? */, 0 /* request_id? */, mojom::kURLLoadOptionNone,
           *resource_request_, this, kTrafficAnnotation);
+      SubresourceLoaderParams params;
+      params.loader_factory_info = std::move(subresource_factory_for_webui);
+      subresource_loader_params_ = std::move(params);
       return;
     }
 
@@ -208,11 +213,18 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       url_loader_.reset();
     handler_index_ = 0;
     received_response_ = false;
-    MaybeStartLoader(StartLoaderCallback());
+    MaybeStartLoader(nullptr /* handler */, StartLoaderCallback());
   }
 
-  void MaybeStartLoader(StartLoaderCallback start_loader_callback) {
+  // |handler| is the one who called this method (as a LoaderCallback), nullptr
+  // if this method is not called by a handler.
+  // |start_loader_callback| is the callback given by the |handler|, non-null
+  // if the |handler| wants to handle the request.
+  void MaybeStartLoader(URLLoaderRequestHandler* handler,
+                        StartLoaderCallback start_loader_callback) {
     if (start_loader_callback) {
+      // |handler| wants to handle the request.
+      DCHECK(handler);
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(start_loader_callback),
@@ -220,22 +232,18 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               web_contents_getter_),
           *resource_request_, this, kTrafficAnnotation);
 
-      DCHECK_GT(handler_index_, 0U);
-
-      mojom::URLLoaderFactoryPtr subresource_loader_factory =
-          handlers_[handler_index_ - 1]->MaybeCreateSubresourceFactory();
-      if (subresource_loader_factory.get()) {
-        subresource_url_loader_factory_ptr_info_ =
-            subresource_loader_factory.PassInterface();
-      }
+      subresource_loader_params_ =
+          handler->MaybeCreateSubresourceLoaderParams();
       return;
     }
 
+    // See if the next handler wants to handle the request.
     if (handler_index_ < handlers_.size()) {
-      handlers_[handler_index_++]->MaybeCreateLoader(
+      auto* next_handler = handlers_[handler_index_++].get();
+      next_handler->MaybeCreateLoader(
           *resource_request_, resource_context_,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
-                         base::Unretained(this)));
+                         base::Unretained(this), next_handler));
       return;
     }
 
@@ -312,10 +320,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
                             std::move(completion_status_));
   }
 
-  // Ownership of the URLLoaderFactoryPtrInfo instance is transferred to the
-  // caller.
-  mojom::URLLoaderFactoryPtrInfo GetSubresourceURLLoaderFactory() {
-    return std::move(subresource_url_loader_factory_ptr_info_);
+  base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams() {
+    return std::move(subresource_loader_params_);
   }
 
  private:
@@ -439,7 +445,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // Currently used by the AppCache loader to pass its factory to the
   // renderer which enables it to handle subresources.
-  mojom::URLLoaderFactoryPtrInfo subresource_url_loader_factory_ptr_info_;
+  base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   // This is referenced only on the UI thread.
   base::WeakPtr<NavigationURLLoaderNetworkService> owner_;
@@ -531,12 +537,15 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   // Check if a web UI scheme wants to handle this request.
   mojom::URLLoaderFactoryPtrInfo factory_for_webui;
+  mojom::URLLoaderFactoryPtrInfo subresource_factory_for_webui;
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   if (std::find(schemes.begin(), schemes.end(), new_request->url.scheme()) !=
       schemes.end()) {
     FrameTreeNode* frame_tree_node =
         FrameTreeNode::GloballyFindByID(frame_tree_node_id);
     factory_for_webui = CreateWebUIURLLoader(frame_tree_node).PassInterface();
+    subresource_factory_for_webui =
+        CreateWebUIURLLoader(frame_tree_node).PassInterface();
   }
 
   g_next_request_id--;
@@ -558,6 +567,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           appcache_handle ? appcache_handle->core() : nullptr,
           base::Passed(std::move(request_info)),
           base::Passed(std::move(factory_for_webui)),
+          base::Passed(std::move(subresource_factory_for_webui)),
           base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id),
           base::Passed(ServiceManagerConnection::GetForProcess()
                            ->GetConnector()
@@ -622,7 +632,7 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
       response_, nullptr, std::move(body), ssl_status_,
       std::unique_ptr<NavigationData>(), GlobalRequestID(-1, g_next_request_id),
       IsDownload(), false /* is_stream */,
-      request_controller_->GetSubresourceURLLoaderFactory());
+      request_controller_->TakeSubresourceLoaderParams());
 }
 
 void NavigationURLLoaderNetworkService::OnComplete(

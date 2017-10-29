@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace net {
@@ -25,6 +25,7 @@ class StreamHandle;
 struct GlobalRequestID;
 struct ResourceResponse;
 struct SSLStatus;
+struct SubresourceLoaderParams;
 
 // PlzNavigate: The delegate interface to NavigationURLLoader.
 class CONTENT_EXPORT NavigationURLLoaderDelegate {
@@ -40,9 +41,10 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // |body_stream|. |navigation_data| is passed to the NavigationHandle.
   // If --enable-network-service, then |consumer_handle| will be used,
   // otherwise |body_stream|. Only one of these will ever be non-null.
-  // |subresource_url_loader_factory_info| is used in the network service only
-  // for passing factories which are interested in handling subresource
-  // requests like AppCache.
+  // |subresource_loader_params| is used in the network service only
+  // for passing necessary info to create a custom subresource loader in
+  // the renderer process if the navigated context is controlled by a request
+  // interceptor like AppCache or ServiceWorker.
   virtual void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
       std::unique_ptr<StreamHandle> body_stream,
@@ -52,7 +54,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       const GlobalRequestID& request_id,
       bool is_download,
       bool is_stream,
-      mojom::URLLoaderFactoryPtrInfo subresource_url_loader_factory_info) = 0;
+      base::Optional<SubresourceLoaderParams> subresource_loader_params) = 0;
 
   // Called if the request fails before receving a response. |net_error| is a
   // network error code for the failure. |has_stale_copy_in_cache| is true if

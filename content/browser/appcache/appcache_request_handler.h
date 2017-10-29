@@ -90,7 +90,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const ResourceResponseHead& response,
       mojom::URLLoaderPtr* loader,
       mojom::URLLoaderClientRequest* client_request) override;
-  mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory() override;
+  base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
+      override;
 
   // These methods are used for subresource loading by the
   // AppCacheSubresourceURLFactory::SubresourceLoader class.

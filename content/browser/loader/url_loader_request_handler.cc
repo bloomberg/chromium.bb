@@ -4,11 +4,13 @@
 
 #include "content/browser/loader/url_loader_request_handler.h"
 
+#include "content/common/navigation_subresource_loader_params.h"
+
 namespace content {
 
-mojom::URLLoaderFactoryPtr
-URLLoaderRequestHandler::MaybeCreateSubresourceFactory() {
-  return nullptr;
+base::Optional<SubresourceLoaderParams>
+URLLoaderRequestHandler::MaybeCreateSubresourceLoaderParams() {
+  return base::nullopt;
 }
 
 bool URLLoaderRequestHandler::MaybeCreateLoaderForResponse(

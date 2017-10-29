@@ -1185,7 +1185,7 @@ void NavigatorImpl::RequestNavigation(
         nullptr,  // body
         mojo::ScopedDataPipeConsumerHandle(), scoped_request->common_params(),
         scoped_request->request_params(), scoped_request->is_view_source(),
-        mojom::URLLoaderFactoryPtrInfo());
+        base::nullopt);
     return;
   }
 

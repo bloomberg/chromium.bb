@@ -187,7 +187,7 @@ void ServiceWorkerSubresourceLoader::DeleteSoon() {
 void ServiceWorkerSubresourceLoader::StartRequest(
     const ResourceRequest& resource_request) {
   // TODO(kinuko): Implement request.request_body handling.
-  DCHECK(!resource_request.request_body);
+  DCHECK(!resource_request_.request_body);
   DCHECK(!inflight_fetch_request_);
   inflight_fetch_request_ =
       ServiceWorkerLoaderHelpers::CreateFetchRequest(resource_request);
