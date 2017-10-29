@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/render_frame_host.h"
@@ -75,10 +76,10 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           ->GetProcess()
           ->GetID();
   GlobalRequestID global_id(child_id, ++request_id);
-  delegate_->OnResponseStarted(
-      response, std::move(body), mojo::ScopedDataPipeConsumerHandle(),
-      SSLStatus(), std::move(navigation_data), global_id, false, false,
-      mojom::URLLoaderFactoryPtrInfo());
+  delegate_->OnResponseStarted(response, std::move(body),
+                               mojo::ScopedDataPipeConsumerHandle(),
+                               SSLStatus(), std::move(navigation_data),
+                               global_id, false, false, base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

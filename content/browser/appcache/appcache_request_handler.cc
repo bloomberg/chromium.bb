@@ -19,6 +19,7 @@
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -610,13 +611,16 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
   return true;
 }
 
-mojom::URLLoaderFactoryPtr
-AppCacheRequestHandler::MaybeCreateSubresourceFactory() {
+base::Optional<SubresourceLoaderParams>
+AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // The factory is destroyed when the renderer drops the connection.
   mojom::URLLoaderFactoryPtr factory_ptr;
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
       network_url_loader_factory_getter_.get(), appcache_host_, &factory_ptr);
-  return factory_ptr;
+
+  SubresourceLoaderParams params;
+  params.loader_factory_info = factory_ptr.PassInterface();
+  return params;
 }
 
 void AppCacheRequestHandler::MaybeCreateSubresourceLoader(

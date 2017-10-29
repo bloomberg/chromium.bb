@@ -11,11 +11,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -31,6 +33,7 @@ class NavigationData;
 class ResourceRequestBody;
 class SiteInstanceImpl;
 class StreamHandle;
+struct SubresourceLoaderParams;
 
 // PlzNavigate
 // A UI thread object that owns a navigation request until it commits. It
@@ -208,8 +211,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                          const GlobalRequestID& request_id,
                          bool is_download,
                          bool is_stream,
-                         mojom::URLLoaderFactoryPtrInfo
-                             subresource_url_loader_factory_info) override;
+                         base::Optional<SubresourceLoaderParams>
+                             subresource_loader_params) override;
   void OnRequestFailed(bool has_stale_copy_in_cache,
                        int net_error,
                        const base::Optional<net::SSLInfo>& ssl_info,
@@ -340,9 +343,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   base::Closure on_start_checks_complete_closure_;
 
-  // Used in the network service world to pass the subressource loader factory
-  // to the renderer. Currently only used by AppCache.
-  mojom::URLLoaderFactoryPtrInfo subresource_loader_factory_info_;
+  // Used in the network service world to pass the subressource loader params
+  // to the renderer. Used by AppCache and ServiceWorker.
+  base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

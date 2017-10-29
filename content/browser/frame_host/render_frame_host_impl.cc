@@ -90,6 +90,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
@@ -3220,7 +3221,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, mojo::ScopedDataPipeConsumerHandle(),
                      common_params, RequestNavigationParams(), false,
-                     mojom::URLLoaderFactoryPtrInfo());
+                     base::nullopt);
   } else {
     Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
   }
@@ -3371,7 +3372,7 @@ void RenderFrameHostImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool is_view_source,
-    mojom::URLLoaderFactoryPtrInfo subresource_url_loader_factory_info) {
+    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params.url.possibly_invalid_spec());
@@ -3411,18 +3412,11 @@ void RenderFrameHostImpl::CommitNavigation(
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
   mojom::URLLoaderFactoryPtr default_subresource_url_loader_factory;
-  // TODO(scottmg): Pass a factory for SW, etc. once we have one.
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    if (!subresource_url_loader_factory_info.is_valid()) {
-      const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
-      if (std::find(schemes.begin(), schemes.end(),
-                    common_params.url.scheme()) != schemes.end()) {
-        default_subresource_url_loader_factory =
-            CreateWebUIURLLoader(frame_tree_node_);
-      }
-    } else {
+    if (subresource_loader_params &&
+        subresource_loader_params->loader_factory_info.is_valid()) {
       default_subresource_url_loader_factory.Bind(
-          std::move(subresource_url_loader_factory_info));
+          std::move(subresource_loader_params->loader_factory_info));
     }
   }
   GetNavigationControl()->CommitNavigation(

@@ -46,7 +46,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -127,6 +126,7 @@ struct FrameOwnerProperties;
 struct FramePolicy;
 struct FileChooserParams;
 struct ResourceResponse;
+struct SubresourceLoaderParams;
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
@@ -547,9 +547,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // PlzNavigate: Indicates that a navigation is ready to commit and can be
   // handled by this RenderFrame.
-  // |subresource_url_loader_factory_info| is used in network service land to
-  // allow factories interested in handling subresource requests to the
-  // renderer. E.g. AppCache.
+  // |subresource_loader_params| is used in network service land to pass
+  // the parameters to create a custom subresource loader in the renderer
+  // process, e.g. by AppCache etc.
   void CommitNavigation(
       ResourceResponse* response,
       std::unique_ptr<StreamHandle> body,
@@ -557,7 +557,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       bool is_view_source,
-      mojom::URLLoaderFactoryPtrInfo subresource_url_loader_factory_info);
+      base::Optional<SubresourceLoaderParams> subresource_loader_params);
 
   // PlzNavigate
   // Indicates that a navigation failed and that this RenderFrame should display

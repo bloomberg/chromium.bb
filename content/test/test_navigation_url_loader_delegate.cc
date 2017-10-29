@@ -5,6 +5,7 @@
 #include "content/test/test_navigation_url_loader_delegate.h"
 
 #include "base/run_loop.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
@@ -65,7 +66,7 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream,
-    mojom::URLLoaderFactoryPtrInfo loader_factory_ptr_info) {
+    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   response_ = response;
   body_ = std::move(body);
   handle_ = std::move(consumer_handle);

@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/url_request/redirect_info.h"
@@ -16,6 +17,7 @@ namespace content {
 
 class ResourceContext;
 struct ResourceRequest;
+struct SubresourceLoaderParams;
 
 using StartLoaderCallback =
     base::OnceCallback<void(mojom::URLLoaderRequest request,
@@ -36,10 +38,12 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
                                  ResourceContext* resource_context,
                                  LoaderCallback callback) = 0;
 
-  // Returns the URLLoaderFactory if any to be used for subsequent URL requests
-  // going forward. Subclasses who want to handle subresource requests etc may
-  // want to override this to return a custom factory.
-  virtual mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory();
+  // Returns a SubresourceLoaderParams if any to be used for subsequent URL
+  // requests going forward. Subclasses who want to set-up custom loader for
+  // subresource requests may want to override this.
+  // Called only when MaybeCreateLoader has returned a non-null LoaderCallback.
+  virtual base::Optional<SubresourceLoaderParams>
+  MaybeCreateSubresourceLoaderParams();
 
   // Returns true if the handler creates a loader for the |response| passed.
   // An example of where this is used is AppCache, where the handler returns

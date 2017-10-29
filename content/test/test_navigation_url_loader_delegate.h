@@ -61,16 +61,16 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
       const scoped_refptr<ResourceResponse>& response) override;
-  void OnResponseStarted(
-      const scoped_refptr<ResourceResponse>& response,
-      std::unique_ptr<StreamHandle> body,
-      mojo::ScopedDataPipeConsumerHandle consumer_handle,
-      const SSLStatus& ssl_status,
-      std::unique_ptr<NavigationData> navigation_data,
-      const GlobalRequestID& request_id,
-      bool is_download,
-      bool is_stream,
-      mojom::URLLoaderFactoryPtrInfo loader_factory_ptr_info) override;
+  void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
+                         std::unique_ptr<StreamHandle> body,
+                         mojo::ScopedDataPipeConsumerHandle consumer_handle,
+                         const SSLStatus& ssl_status,
+                         std::unique_ptr<NavigationData> navigation_data,
+                         const GlobalRequestID& request_id,
+                         bool is_download,
+                         bool is_stream,
+                         base::Optional<SubresourceLoaderParams>
+                             subresource_loader_params) override;
   void OnRequestFailed(bool in_cache,
                        int net_error,
                        const base::Optional<net::SSLInfo>& ssl_info,
