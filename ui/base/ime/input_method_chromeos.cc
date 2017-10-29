@@ -66,9 +66,22 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
   DCHECK(event->IsKeyEvent());
   DCHECK(!(event->flags() & ui::EF_IS_SYNTHESIZED));
 
-  // The Caps Lock toggling has been removed from here, because now it is
-  // handled in accelerator controller.
-  // (see https://bugs.chromium.org/p/chromium/issues/detail?id=700705).
+  // For OS_CHROMEOS build of Chrome running on Linux, the IME keyboard cannot
+  // track the Caps Lock state by itself, so need to call SetCapsLockEnabled()
+  // method to reflect the Caps Lock state by the key event.
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  if (manager) {
+    chromeos::input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
+    if (keyboard && event->type() == ET_KEY_PRESSED &&
+        event->key_code() != ui::VKEY_CAPITAL &&
+        keyboard->CapsLockIsEnabled() != event->IsCapsLockOn()) {
+      // Synchronize the keyboard state with event's state if they do not
+      // match. Do not synchronize for Caps Lock key because it is already
+      // handled in event rewriter.
+      keyboard->SetCapsLockEnabled(event->IsCapsLockOn());
+    }
+  }
 
   // If |context_| is not usable, then we can only dispatch the key event as is.
   // We only dispatch the key event to input method when the |context_| is an
