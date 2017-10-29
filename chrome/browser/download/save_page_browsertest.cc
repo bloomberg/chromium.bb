@@ -30,7 +30,6 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/save_package_file_picker.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -61,7 +60,6 @@
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +70,6 @@ using content::DownloadManager;
 using content::RenderFrameHost;
 using content::RenderProcessHost;
 using content::WebContents;
-using net::URLRequestMockHTTPJob;
 using testing::ContainsRegex;
 using testing::HasSubstr;
 
@@ -88,6 +85,15 @@ std::string ReadFileAndCollapseWhitespace(const base::FilePath& file_path) {
   }
 
   return base::CollapseWhitespaceASCII(file_contents, false);
+}
+
+// Takes a string with "url=(%04d)%s", and replaces that with the length and
+// contents of the path the response was saved from, |url|, to match output by
+// the SavePageAs logic.
+std::string WriteSavedFromPath(const std::string& file_contents,
+                               const GURL& url) {
+  return base::StringPrintf(file_contents.c_str(), url.spec().length(),
+                            url.spec().c_str());
 }
 
 // Waits for an item record in the downloads database to match |filter|. See
@@ -280,6 +286,10 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
  protected:
   void SetUp() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    embedded_test_server()->StartAcceptingConnections();
+
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
     ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
     InProcessBrowserTest::SetUp();
@@ -290,14 +300,10 @@ class SavePageBrowserTest : public InProcessBrowserTest {
         prefs::kDownloadDefaultDirectory, save_dir_.GetPath());
     browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kSaveFileDefaultDirectory, save_dir_.GetPath());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   GURL NavigateToMockURL(const std::string& prefix) {
-    GURL url = URLRequestMockHTTPJob::GetMockUrl(
-        "save_page/" + prefix + ".htm");
+    GURL url = embedded_test_server()->GetURL("/save_page/" + prefix + ".htm");
     ui_test_utils::NavigateToURL(browser(), url);
     return url;
   }
@@ -505,11 +511,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
-  GURL mock_url = URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
+  GURL mock_url = embedded_test_server()->GetURL("/save_page/a.htm");
   GURL view_source_url =
       GURL(content::kViewSourceScheme + std::string(":") + mock_url.spec());
-  GURL actual_page_url = URLRequestMockHTTPJob::GetMockUrl(
-      "save_page/a.htm");
+  GURL actual_page_url = embedded_test_server()->GetURL("/save_page/a.htm");
   ui_test_utils::NavigateToURL(browser(), view_source_url);
 
   base::FilePath full_file_name, dir;
@@ -535,8 +540,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
 
-  EXPECT_EQ(ReadFileAndCollapseWhitespace(full_file_name),
-            ReadFileAndCollapseWhitespace(GetTestDirFile("b.saved1.htm")));
+  EXPECT_EQ(
+      ReadFileAndCollapseWhitespace(full_file_name),
+      WriteSavedFromPath(
+          ReadFileAndCollapseWhitespace(GetTestDirFile("b.saved1.htm")), url));
   EXPECT_TRUE(
       base::ContentsEqual(GetTestDirFile("1.png"), dir.AppendASCII("1.png")));
   EXPECT_EQ(ReadFileAndCollapseWhitespace(dir.AppendASCII("1.css")),
@@ -554,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
       BrowserContext::GetDownloadManager(incognito->profile()));
 
   // Navigate, unblocking with new tab.
-  GURL url = URLRequestMockHTTPJob::GetMockUrl("save_page/b.htm");
+  GURL url = embedded_test_server()->GetURL("/save_page/b.htm");
   NavigateToURLWithDisposition(incognito, url,
                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
@@ -611,8 +618,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
 
-  EXPECT_EQ(ReadFileAndCollapseWhitespace(full_file_name),
-            ReadFileAndCollapseWhitespace(GetTestDirFile("b.saved2.htm")));
+  EXPECT_EQ(
+      ReadFileAndCollapseWhitespace(full_file_name),
+      WriteSavedFromPath(
+          ReadFileAndCollapseWhitespace(GetTestDirFile("b.saved2.htm")), url));
   EXPECT_TRUE(
       base::ContentsEqual(GetTestDirFile("1.png"), dir.AppendASCII("1.png")));
   EXPECT_EQ(ReadFileAndCollapseWhitespace(dir.AppendASCII("1.css")),
@@ -656,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_FALSE(base::PathExists(full_file_name));
-  GURL url = URLRequestMockHTTPJob::GetMockUrl("save_page/c.htm");
+  GURL url = embedded_test_server()->GetURL("/save_page/c.htm");
   ui_test_utils::NavigateToURL(browser(), url);
 
   SavePackageFilePicker::SetShouldPromptUser(false);
@@ -749,7 +758,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
 // extension appended so that they won't be accidentally executed by the user.
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DangerousSubresources) {
   GURL url =
-      URLRequestMockHTTPJob::GetMockUrl("/save_page/dubious-subresources.html");
+      embedded_test_server()->GetURL("/save_page/dubious-subresources.html");
 
   ui_test_utils::NavigateToURL(browser(), url);
   base::FilePath full_file_name, dir;
@@ -765,13 +774,14 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DangerousSubresources) {
 // Test that we don't crash when the page contains an iframe that
 // was handled as a download (http://crbug.com/42212).
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      "downloads/iframe-src-is-a-download.htm");
+  GURL url =
+      embedded_test_server()->GetURL("/downloads/iframe-src-is-a-download.htm");
 
   // Wait for and then dismiss the non-save-page-as-related download item
   // (the one associated with downloading of "thisdayinhistory.xls" file).
   {
-    GURL download_url("http://mock.http/downloads/thisdayinhistory.xls");
+    GURL download_url =
+        embedded_test_server()->GetURL("/downloads/thisdayinhistory.xls");
     DownloadPersistedObserver persisted(
         browser()->profile(),
         base::Bind(&DownloadStoredProperly, download_url, base::FilePath(), -1,
@@ -855,9 +865,6 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
     // resolving to 127.0.0.1
     host_resolver()->AddRule("no.such.host", "128.0.0.1");
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-    content::SetupCrossSiteRedirector(embedded_test_server());
-    embedded_test_server()->StartAcceptingConnections();
   }
 
  private:
