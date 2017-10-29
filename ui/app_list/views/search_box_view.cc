@@ -557,7 +557,9 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
   UpdateSearchIcon();
   UpdateBackgroundColor(background_color_);
   search_box_->set_placeholder_text_draw_flags(
-      active ? gfx::Canvas::TEXT_ALIGN_LEFT : gfx::Canvas::TEXT_ALIGN_CENTER);
+      active ? (base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_RIGHT
+                                    : gfx::Canvas::TEXT_ALIGN_LEFT)
+             : gfx::Canvas::TEXT_ALIGN_CENTER);
   search_box_->set_placeholder_text_color(active ? kZeroQuerySearchboxColor
                                                  : search_box_color_);
   search_box_->SetCursorEnabled(active);
