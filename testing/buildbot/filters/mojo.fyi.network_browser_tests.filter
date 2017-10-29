@@ -48,6 +48,7 @@
 -SSLUITestWithExtendedReporting.TestBadClockReportingWithNoOptIn
 -SSLUITestWithExtendedReporting.TestBadClockReportingWithOptIn
 -SavePageBrowserTest.SavePageBrowserTest_NonMHTML
+-SavePageBrowserTest.SaveUnauthorizedResource
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
 -SpellingMenuObserverTest.SuggestionsForceTopSeparator
@@ -2453,12 +2454,6 @@
 -SSLUIWorkerFetchTest.MixedContentSettingsWithBlockingCSP/1
 -SSLUIWorkerFetchTest.MixedContentSubFrame/0
 -SSLUIWorkerFetchTest.MixedContentSubFrame/1
--SavePageAsMHTMLBrowserTest.SavePageAsMHTML
--SavePageBrowserTest.DangerousSubresources
--SavePageBrowserTest.FileNameFromPageTitle
--SavePageBrowserTest.SaveCompleteHTML
--SavePageBrowserTest.SaveDownloadableIFrame
--SavePageBrowserTest.SaveUnauthorizedResource
 -UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
 -UnloadTest.CrossSiteInfiniteUnloadAsync
 -UnloadTest.CrossSiteInfiniteUnloadSync
