@@ -8,6 +8,10 @@ config("client_config") {
 
 static_library("client") {
   sources = [
+    "annotation.cc",
+    "annotation.h",
+    "annotation_list.cc",
+    "annotation_list.h",
     "crash_report_database.cc",
     "crash_report_database.h",
     "crash_report_database_mac.mm",
