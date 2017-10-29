@@ -335,9 +335,9 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                          : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
     assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
 
     aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
                      tx_size_cat + 2);

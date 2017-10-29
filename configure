@@ -249,7 +249,6 @@ EXPERIMENT_LIST="
     fp_mb_stats
     cdef
     cdef_singlepass
-    rect_tx
     rect_tx_ext
     tpl_mv
     short_filter
@@ -504,7 +503,6 @@ post_process_cmdline() {
     # Enable adopted experiments by default
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
-      soft_enable rect_tx
       soft_enable global_motion
       soft_enable ext_tx
       soft_enable cdef
@@ -560,7 +558,6 @@ post_process_cmdline() {
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature one_sided_compound
-    enabled rect_tx_ext && enable_feature rect_tx
     enabled lgt_from_pred && enable_feature ext_tx
     enabled lgt_from_pred && disable_feature mrc_tx
     enabled cfl && enable_feature smooth_hv
@@ -601,11 +598,6 @@ post_process_cmdline() {
         log_echo "ext_partition_types not compatible with fp_mb_stats;"
         log_echo "disabling fp_mb_stats"
         disable_feature fp_mb_stats
-      fi
-      if ! enabled rect_tx; then
-        log_echo "ext_partition_types requires rect_tx;"
-        log_echo "enabling rect_tx;"
-        enable_feature rect_tx
       fi
     fi
     # Enable accounting and inspection when building the analyzer

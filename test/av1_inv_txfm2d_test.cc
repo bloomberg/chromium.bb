@@ -102,7 +102,6 @@ TEST_P(AV1InvTxfm2d, RunRoundtripCheck) { RunRoundtripCheck(); }
 
 const AV1InvTxfm2dParam av1_inv_txfm2d_param[] = {
 #if CONFIG_EXT_TX
-#if CONFIG_RECT_TX
   AV1InvTxfm2dParam(DCT_DCT, TX_4X8, 2, 0.007),
   AV1InvTxfm2dParam(ADST_DCT, TX_4X8, 2, 0.012),
   AV1InvTxfm2dParam(DCT_ADST, TX_4X8, 2, 0.012),
@@ -142,7 +141,7 @@ const AV1InvTxfm2dParam av1_inv_txfm2d_param[] = {
   AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_16X8, 2, 0.032),
   AV1InvTxfm2dParam(ADST_FLIPADST, TX_16X8, 2, 0.033),
   AV1InvTxfm2dParam(FLIPADST_ADST, TX_16X8, 2, 0.032),
-#endif
+
   AV1InvTxfm2dParam(FLIPADST_DCT, TX_4X4, 2, 0.002),
   AV1InvTxfm2dParam(DCT_FLIPADST, TX_4X4, 2, 0.002),
   AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_4X4, 2, 0.002),

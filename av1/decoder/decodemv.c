@@ -481,9 +481,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     tx_size_cat + 2, ACCT_STR);
   const TX_SIZE tx_size = depth_to_tx_size(depth);
-#if CONFIG_RECT_TX
   assert(!is_rect_tx(tx_size));
-#endif  // CONFIG_RECT_TX
   return tx_size;
 }
 
@@ -499,7 +497,6 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
                                            : intra_tx_size_cat_lookup[bsize];
       const TX_SIZE coded_tx_size =
           read_selected_tx_size(cm, xd, tx_size_cat, r);
-#if CONFIG_RECT_TX
       if (coded_tx_size > max_txsize_lookup[bsize]) {
         assert(coded_tx_size == max_txsize_lookup[bsize] + 1);
 #if CONFIG_RECT_TX_EXT
@@ -525,20 +522,17 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 
         return max_txsize_rect_lookup[bsize];
       }
-#else
-      assert(coded_tx_size <= max_txsize_lookup[bsize]);
-#endif  // CONFIG_RECT_TX
       return coded_tx_size;
     } else {
       return tx_size_from_tx_mode(bsize, tx_mode, is_inter);
     }
   } else {
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
     assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
     return max_txsize_rect_lookup[bsize];
 #else
     return TX_4X4;
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
   }
 }
 

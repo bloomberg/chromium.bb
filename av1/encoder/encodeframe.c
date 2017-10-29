@@ -4758,12 +4758,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     TX_SIZE tx_size =
         is_inter && !mbmi->skip ? mbmi->min_tx_size : mbmi->tx_size;
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
-#if CONFIG_RECT_TX
-        mbmi->sb_type > BLOCK_4X4 &&
-#else
-        mbmi->sb_type >= BLOCK_8X8 &&
-#endif  // CONFIG_RECT_TX
-        !(is_inter && (mbmi->skip || seg_skip))) {
+        mbmi->sb_type > BLOCK_4X4 && !(is_inter && (mbmi->skip || seg_skip))) {
       if (is_inter) {
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
       } else {
@@ -4782,9 +4777,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif
       }
 #endif
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
     } else {
       int i, j;
       TX_SIZE intra_tx_size;
@@ -4796,16 +4791,16 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
           intra_tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, 1);
         }
       } else {
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
         intra_tx_size = tx_size;
 #else
         intra_tx_size = (bsize >= BLOCK_8X8) ? tx_size : TX_4X4;
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
       }
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
       ++td->counts->tx_size_implied[max_txsize_lookup[bsize]]
                                    [txsize_sqr_up_map[tx_size]];
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
 
       for (j = 0; j < mi_height; j++)
         for (i = 0; i < mi_width; i++)

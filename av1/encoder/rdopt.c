@@ -2404,9 +2404,9 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int r_tx_size = tx_size_cost(cm, x, bs, tx_size);
 
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
   assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed_bsize(bs)));
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
 
   s0 = x->skip_cost[skip_ctx][0];
   s1 = x->skip_cost[skip_ctx][1];
@@ -2729,7 +2729,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   av1_invalid_rd_stats(rd_stats);
 
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
   int evaluate_rect_tx = 0;
   if (tx_select) {
     evaluate_rect_tx = is_rect_tx_allowed(xd, mbmi);
@@ -2856,7 +2856,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #endif  // CONFIG_LGT_FROM_PRED
   }
 #endif  // CONFIG_RECT_TX_EXT
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
 
   if (tx_select) {
     start_tx = max_tx_size;
@@ -2880,9 +2880,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   last_rd = INT64_MAX;
   for (n = start_tx; n >= end_tx; --n) {
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
     if (is_rect_tx(n)) break;
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
     TX_TYPE tx_start = DCT_DCT;
     TX_TYPE tx_end = TX_TYPES;
 #if CONFIG_TXK_SEL
@@ -4709,11 +4709,7 @@ static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
   DECLARE_ALIGNED(32, tran_low_t, DCT_coefs[32 * 32]);
   TxfmParam param;
   param.tx_type = DCT_DCT;
-#if CONFIG_RECT_TX
   param.tx_size = max_txsize_rect_lookup[bsize];
-#else
-  param.tx_size = max_txsize_lookup[bsize];
-#endif
   param.bd = 8;
   param.lossless = 0;
 
@@ -4741,11 +4737,7 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int n4 = bsize_to_num_blk(bsize);
-#if CONFIG_RECT_TX
   const TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
-#else
-  const TX_SIZE tx_size = max_txsize_lookup[bsize];
-#endif
   mbmi->tx_type = DCT_DCT;
   for (int idy = 0; idy < xd->n8_h; ++idy)
     for (int idx = 0; idx < xd->n8_w; ++idx)
@@ -5053,11 +5045,11 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
   bsize = scale_chroma_bsize(mbmi->sb_type, xd->plane[1].subsampling_x,
                              xd->plane[1].subsampling_y);
 
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_EXT_TX
   if (is_rect_tx(mbmi->tx_size)) {
     return super_block_uvrd(cpi, x, rd_stats, bsize, ref_best_rd);
   }
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
 
   if (is_inter_block(mbmi) && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)

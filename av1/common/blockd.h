@@ -819,16 +819,10 @@ static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
 
 #define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 
-#if CONFIG_RECT_TX
 static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
-#endif  // CONFIG_RECT_TX
 
 static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
-#if CONFIG_RECT_TX
   return bsize > BLOCK_4X4;
-#else
-  return bsize >= BLOCK_8X8;
-#endif
 }
 
 #if CONFIG_MRC_TX
@@ -1024,7 +1018,6 @@ static INLINE int is_lgt_allowed(PREDICTION_MODE mode, TX_SIZE tx_size) {
 }
 #endif  // CONFIG_LGT_FROM_PRED
 
-#if CONFIG_RECT_TX
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT[BLOCK_SIZES_ALL] = {
     0,  // BLOCK_2X2
@@ -1068,7 +1061,6 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
   return is_rect_tx_allowed_bsize(mbmi->sb_type) &&
          !xd->lossless[mbmi->segment_id];
 }
-#endif  // CONFIG_RECT_TX
 #endif  // CONFIG_EXT_TX
 
 #if CONFIG_RECT_TX_EXT
@@ -1121,28 +1113,14 @@ static INLINE int is_quarter_tx_allowed(const MACROBLOCKD *xd,
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-#if CONFIG_RECT_TX
   const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
-#else
-  const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
-#endif  // CONFIG_RECT_TX
   (void)is_inter;
-#if CONFIG_RECT_TX
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
   if (txsize_sqr_map[max_rect_tx_size] <= largest_tx_size)
     return max_rect_tx_size;
   else
     return largest_tx_size;
-#elif CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (txsize_sqr_up_map[max_rect_tx_size] <= largest_tx_size) {
-    return max_rect_tx_size;
-  } else {
-    return largest_tx_size;
-  }
-#else
-  return AOMMIN(max_tx_size, largest_tx_size);
-#endif  // CONFIG_RECT_TX
 }
 
 #if CONFIG_EXT_INTRA

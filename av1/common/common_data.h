@@ -697,7 +697,6 @@ static const TX_SIZE max_txsize_lookup[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_RECT_TX
 static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   // 2X2,    2X4,      4X2,
   TX_4X4,    TX_4X4,   TX_4X4,
@@ -738,7 +737,7 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   TX_4X8,    TX_8X4,   TX_8X16,
   // 32x8
   TX_16X8,
-#endif
+#endif  // CONFIG_RECT_TX_EXT
   // 16x64,  64x16
   TX_16X32,  TX_32X16,
 #if CONFIG_EXT_PARTITION
@@ -774,10 +773,7 @@ static const TX_SIZE quarter_txsize_lookup[BLOCK_SIZES_ALL] = {
   TX_INVALID, TX_INVALID
 #endif  // CONFIG_EXT_PARTITION
 };
-#endif
-#else
-#define max_txsize_rect_lookup max_txsize_lookup
-#endif  // CONFIG_RECT_TX
+#endif  // CONFIG_RECT_TX_EXT
 
 static const TX_TYPE_1D vtx_tab[TX_TYPES] = {
   DCT_1D,      ADST_1D, DCT_1D,      ADST_1D,
@@ -795,7 +791,6 @@ static const TX_TYPE_1D htx_tab[TX_TYPES] = {
 #endif  // CONFIG_EXT_TX
 };
 
-#if CONFIG_RECT_TX
 // Same as "max_txsize_lookup[bsize] - TX_8X8", except for rectangular
 // block which may use a rectangular transform, in which  case it is
 // "(max_txsize_lookup[bsize] + 1) - TX_8X8", invalid for bsize < 8X8
@@ -840,48 +835,6 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
   TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8
 #endif  // CONFIG_EXT_PARTITION
 };
-#else
-// Same as "max_txsize_lookup[bsize] - TX_8X8", invalid for bsize < 8X8
-static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
-  // 2X2,             2X4,                4X2,
-  INT32_MIN,          INT32_MIN,          INT32_MIN,
-  //                                      4X4
-                                          INT32_MIN,
-  // 4X8,             8X4,                8X8
-  INT32_MIN,          INT32_MIN,          TX_8X8 - TX_8X8,
-  // 8X16,            16X8,               16X16
-  TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8,
-  // 16X32,           32X16,              32X32
-  TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,  TX_32X32 - TX_8X8,
-#if CONFIG_TX64X64
-  // 32X64,           64X32,
-  TX_64X64 - TX_8X8,  TX_64X64 - TX_8X8,
-  // 64X64
-  TX_64X64 - TX_8X8,
-#if CONFIG_EXT_PARTITION
-  // 64x128,          128x64,             128x128
-  TX_64X64 - TX_8X8,  TX_64X64 - TX_8X8,  TX_64X64 - TX_8X8,
-#endif  // CONFIG_EXT_PARTITION
-#else
-  // 32X64,           64X32,
-  TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8,
-  // 64X64
-  TX_32X32 - TX_8X8,
-#if CONFIG_EXT_PARTITION
-  // 64x128,          128x64,             128x128
-  TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8,
-#endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_TX64X64
-  // 4x16,            16x4,               8x32
-  TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
-  // 32x8             16x64,              64x16
-  TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,
-#if CONFIG_EXT_PARTITION
-  // 32x128,          128x32
-  TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8
-#endif  // CONFIG_EXT_PARTITION
-};
-#endif  // CONFIG_RECT_TX
 
 #define inter_tx_size_cat_lookup intra_tx_size_cat_lookup
 
