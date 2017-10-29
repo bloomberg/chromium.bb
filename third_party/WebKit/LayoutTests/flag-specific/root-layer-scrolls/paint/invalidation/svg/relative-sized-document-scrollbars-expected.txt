@@ -3,7 +3,14 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "style change"
+        }
+      ]
     },
     {
       "name": "Scrolling Layer",
@@ -30,6 +37,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
     {
       "object": "LayoutSVGRoot svg",
       "reason": "style change"

@@ -458,12 +458,12 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [41, 525, 102, 10],
+          "rect": [41, 525, 102, 9],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [41, 525, 102, 10],
+          "rect": [41, 525, 102, 9],
           "reason": "appeared"
         },
         {
@@ -498,12 +498,12 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [80, 197, 67, 13],
+          "rect": [80, 197, 67, 12],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [80, 197, 67, 13],
+          "rect": [80, 197, 67, 12],
           "reason": "appeared"
         },
         {
@@ -559,6 +559,16 @@
         {
           "object": "LayoutSVGPath line",
           "rect": [235, 197, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [616, 153, 11, 81],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [616, 153, 11, 81],
           "reason": "appeared"
         },
         {
@@ -729,16 +739,6 @@
         {
           "object": "LayoutSVGPath line",
           "rect": [209, 206, 11, 2],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [617, 153, 10, 81],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [617, 153, 10, 81],
           "reason": "appeared"
         },
         {
