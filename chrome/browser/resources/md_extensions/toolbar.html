@@ -40,6 +40,8 @@
 
       #button-strip {
         margin-bottom: 4px;
+        /* Prevent selection of the blank space between buttons. */
+        user-select: none;
         /* We left-align the text of the left button with the left edge of the
            search field. Since the buttons have 12px padding, add 24px to the
            width of the button strip (12px each side) to make centering easy. */
