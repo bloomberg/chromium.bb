@@ -193,7 +193,3 @@ void ChromeWebClient::AllowCertificateError(
   IOSSSLErrorHandler::HandleSSLError(web_state, cert_error, info, request_url,
                                      overridable, callback);
 }
-
-bool ChromeWebClient::IsSlimNavigationManagerEnabled() const {
-  return experimental_flags::IsSlimNavigationManagerEnabled();
-}

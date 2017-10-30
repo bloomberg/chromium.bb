@@ -45,7 +45,6 @@ class ChromeWebClient : public web::WebClient {
       const GURL& request_url,
       bool overridable,
       const base::Callback<void(bool)>& callback) override;
-  bool IsSlimNavigationManagerEnabled() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebClient);

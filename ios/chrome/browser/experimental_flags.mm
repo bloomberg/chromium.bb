@@ -38,8 +38,6 @@ NSString* const kGaiaEnvironment = @"GAIAEnvironment";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 NSString* const kClearApplicationGroup = @"ClearApplicationGroup";
-const base::Feature kEnableSlimNavigationManager{
-    "EnableSlimNavigationManager", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableThirdPartyKeyboardWorkaround{
     "EnableThirdPartyKeyboardWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIOSNTPSuggestions{"IOSNTPSuggestions",
@@ -168,19 +166,6 @@ bool IsSuggestionsUIEnabled() {
 bool IsNewFeedbackKitEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:@"NewFeedbackKitEnabled"];
-}
-
-bool IsSlimNavigationManagerEnabled() {
-  // Check if the experimental flag is forced on or off.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSlimNavigationManager)) {
-    return true;
-  } else if (command_line->HasSwitch(switches::kDisableSlimNavigationManager)) {
-    return false;
-  }
-
-  // Check if the Finch experiment is turned on.
-  return base::FeatureList::IsEnabled(kEnableSlimNavigationManager);
 }
 
 bool IsThirdPartyKeyboardWorkaroundEnabled() {

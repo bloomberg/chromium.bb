@@ -69,9 +69,6 @@ bool IsSuggestionsUIEnabled();
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 
-// Whether the WKBackForwardList based navigation manager is enabled.
-bool IsSlimNavigationManagerEnabled();
-
 // Whether the 3rd party keyboard omnibox workaround is enabled.
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 

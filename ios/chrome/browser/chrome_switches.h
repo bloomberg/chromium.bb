@@ -14,7 +14,6 @@ extern const char kDisableIOSFeatures[];
 extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableNTPFavicons[];
 extern const char kDisableSuggestionsUI[];
-extern const char kDisableSlimNavigationManager[];
 extern const char kDisableThirdPartyKeyboardWorkaround[];
 
 extern const char kEnableContextualSearch[];
@@ -23,7 +22,6 @@ extern const char kEnableIOSHandoffToOtherDevices[];
 extern const char kEnableNTPFavicons[];
 extern const char kEnableSpotlightActions[];
 extern const char kEnableSuggestionsUI[];
-extern const char kEnableSlimNavigationManager[];
 extern const char kEnableThirdPartyKeyboardWorkaround[];
 
 extern const char kIOSForceVariationIds[];

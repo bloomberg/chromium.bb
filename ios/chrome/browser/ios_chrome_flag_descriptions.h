@@ -70,6 +70,11 @@ extern const char kPhysicalWebDescription[];
 extern const char kSafeAreaCompatibleToolbarName[];
 extern const char kSafeAreaCompatibleToolbarDescription[];
 
+// Title and description for the flag to enable WKBackForwardList based
+// navigation manager.
+extern const char kSlimNavigationManagerName[];
+extern const char kSlimNavigationManagerDescription[];
+
 // Title and description for the flag to enable the TabSwitcher to present the
 // BVC.
 extern const char kTabSwitcherPresentsBVCName[];
