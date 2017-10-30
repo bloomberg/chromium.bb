@@ -1739,6 +1739,7 @@ enum WebFeature {
   kGamepadVibrationActuator = 2207,
   kMicrophoneDisabledByFeaturePolicyEstimate = 2208,
   kCameraDisabledByFeaturePolicyEstimate = 2209,
+  kMidiDisabledByFeaturePolicy = 2210,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

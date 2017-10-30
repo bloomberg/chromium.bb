@@ -16854,6 +16854,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2207" label="GamepadVibrationActuator"/>
   <int value="2208" label="MicrophoneDisabledByFeaturePolicyEstimate"/>
   <int value="2209" label="CameraDisabledByFeaturePolicyEstimate"/>
+  <int value="2210" label="MidiDisabledByFeaturePolicy"/>
 </enum>
 
 <enum name="FeedbackSource">
