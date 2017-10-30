@@ -15,7 +15,6 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
-#import "ios/web/public/web_state/web_state_observer.h"
 #include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -73,67 +72,18 @@ const char kRendererTerminationStateHistogram[] =
 // specifies x.
 const int kSecondsBeforeRendererTermination = 2;
 
-class TabUsageRecorder::WebStateObserver : public web::WebStateObserver {
- public:
-  WebStateObserver(web::WebState* web_state,
-                   TabUsageRecorder* tab_usage_recorder);
-  ~WebStateObserver() override;
-
- private:
-  // web::WebStateObserver implementation.
-  void DidStartNavigation(web::WebState* web_state,
-                          web::NavigationContext* navigation_context) override;
-  void PageLoaded(
-      web::WebState* web_state,
-      web::PageLoadCompletionStatus load_completion_status) override;
-  void RenderProcessGone(web::WebState* web_state) override;
-
-  TabUsageRecorder* tab_usage_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebStateObserver);
-};
-
-TabUsageRecorder::WebStateObserver::WebStateObserver(
-    web::WebState* web_state,
-    TabUsageRecorder* tab_usage_recorder)
-    : web::WebStateObserver(web_state),
-      tab_usage_recorder_(tab_usage_recorder) {
-  DCHECK(tab_usage_recorder_);
-}
-
-TabUsageRecorder::WebStateObserver::~WebStateObserver() = default;
-
-void TabUsageRecorder::WebStateObserver::DidStartNavigation(
-    web::WebState* web_state,
-    web::NavigationContext* navigation_context) {
-  if (PageTransitionCoreTypeIs(navigation_context->GetPageTransition(),
-                               ui::PAGE_TRANSITION_RELOAD)) {
-    tab_usage_recorder_->RecordReload(web_state);
-  }
-}
-
-void TabUsageRecorder::WebStateObserver::PageLoaded(
-    web::WebState* web_state,
-    web::PageLoadCompletionStatus load_completion_status) {
-  tab_usage_recorder_->RecordPageLoadDone(
-      web_state,
-      load_completion_status == web::PageLoadCompletionStatus::SUCCESS);
-}
-
-void TabUsageRecorder::WebStateObserver::RenderProcessGone(
-    web::WebState* web_state) {
-  tab_usage_recorder_->RendererTerminated(
-      web_state, web_state->IsVisible(),
-      [UIApplication sharedApplication].applicationState);
-}
-
 TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
                                    PrerenderService* prerender_service)
     : restore_start_time_(base::TimeTicks::Now()),
       web_state_list_(web_state_list),
       prerender_service_(prerender_service) {
   DCHECK(web_state_list_);
+
   web_state_list_->AddObserver(this);
+  for (int index = 0; index < web_state_list_->count(); ++index) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(index);
+    web_state->AddObserver(this);
+  }
 
   // Register for backgrounding and foregrounding notifications. It is safe for
   // the block to capture a pointer to |this| as they are unregistered in the
@@ -156,6 +106,12 @@ TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
 }
 
 TabUsageRecorder::~TabUsageRecorder() {
+  DCHECK(web_state_list_);
+
+  for (int index = 0; index < web_state_list_->count(); ++index) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(index);
+    web_state->RemoveObserver(this);
+  }
   web_state_list_->RemoveObserver(this);
 
   if (application_backgrounding_observer_) {
@@ -461,13 +417,6 @@ int TabUsageRecorder::GetLiveWebStatesCount() const {
   return count;
 }
 
-void TabUsageRecorder::OnWebStateInserted(web::WebState* web_state) {
-  DCHECK(web_state_observers_.find(web_state) == web_state_observers_.end());
-  web_state_observers_.insert(std::make_pair(
-      web_state,
-      std::make_unique<TabUsageRecorder::WebStateObserver>(web_state, this)));
-}
-
 void TabUsageRecorder::OnWebStateDestroyed(web::WebState* web_state) {
   if (web_state == web_state_created_selected_)
     web_state_created_selected_ = nullptr;
@@ -482,9 +431,37 @@ void TabUsageRecorder::OnWebStateDestroyed(web::WebState* web_state) {
   if (evicted_web_states_iter != evicted_web_states_.end())
     evicted_web_states_.erase(evicted_web_states_iter);
 
-  auto web_state_observers_iter = web_state_observers_.find(web_state);
-  if (web_state_observers_iter != web_state_observers_.end())
-    web_state_observers_.erase(web_state_observers_iter);
+  web_state->RemoveObserver(this);
+}
+
+void TabUsageRecorder::DidStartNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  if (PageTransitionCoreTypeIs(navigation_context->GetPageTransition(),
+                               ui::PAGE_TRANSITION_RELOAD)) {
+    RecordReload(web_state);
+  }
+}
+
+void TabUsageRecorder::PageLoaded(
+    web::WebState* web_state,
+    web::PageLoadCompletionStatus load_completion_status) {
+  RecordPageLoadDone(web_state, load_completion_status ==
+                                    web::PageLoadCompletionStatus::SUCCESS);
+}
+
+void TabUsageRecorder::RenderProcessGone(web::WebState* web_state) {
+  RendererTerminated(web_state, web_state->IsVisible(),
+                     [UIApplication sharedApplication].applicationState);
+}
+
+void TabUsageRecorder::WebStateDestroyed(web::WebState* web_state) {
+  // TabUsageRecorder only watches WebState inserted in a WebStateList. The
+  // WebStateList owns the WebStates it manages. TabUsageRecorder removes
+  // itself from WebStates' WebStateObservers when notified by WebStateList
+  // that a WebState is removed, so it should never notice WebStateDestroyed
+  // event. Thus the implementation enforces this with NOTREACHED().
+  NOTREACHED();
 }
 
 void TabUsageRecorder::WebStateInsertedAt(WebStateList* web_state_list,
@@ -494,7 +471,7 @@ void TabUsageRecorder::WebStateInsertedAt(WebStateList* web_state_list,
   if (activating)
     web_state_created_selected_ = web_state;
 
-  OnWebStateInserted(web_state);
+  web_state->AddObserver(this);
 }
 
 void TabUsageRecorder::WebStateReplacedAt(WebStateList* web_state_list,
@@ -502,7 +479,9 @@ void TabUsageRecorder::WebStateReplacedAt(WebStateList* web_state_list,
                                           web::WebState* new_web_state,
                                           int index) {
   OnWebStateDestroyed(old_web_state);
-  OnWebStateInserted(new_web_state);
+
+  if (new_web_state)
+    new_web_state->AddObserver(this);
 }
 
 void TabUsageRecorder::WebStateDetachedAt(WebStateList* web_state_list,

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+#import "ios/web/public/web_state/web_state_observer.h"
 
 class PrerenderService;
 class WebStateList;
@@ -75,7 +76,8 @@ extern const char kRendererTerminationStateHistogram[];
 extern const int kSecondsBeforeRendererTermination;
 
 // Reports usage about the lifecycle of a single TabModel's tabs.
-class TabUsageRecorder : public WebStateListObserver {
+class TabUsageRecorder : public web::WebStateObserver,
+                         public WebStateListObserver {
  public:
   enum TabStateWhenSelected {
     IN_MEMORY = 0,
@@ -181,11 +183,6 @@ class TabUsageRecorder : public WebStateListObserver {
   // to depends on injecting values in |termination_timestamps_|.
   friend class TabUsageRecorderTest;
 
-  // Sub-class of web::WebStateObserver to allow track events from multiple
-  // web::WebState (needs to be forward-declared here because the destructor
-  // of web::WebStateObserver is protected).
-  class WebStateObserver;
-
   // Clear out all state regarding a current evicted tab.
   void ResetEvictedTab();
 
@@ -205,14 +202,19 @@ class TabUsageRecorder : public WebStateListObserver {
   // Returns the number of WebState that are still alive (in-memory).
   int GetLiveWebStatesCount() const;
 
-  // Called after a WebState is added to the WebStateList; will create the
-  // observer used to track the WebState's events.
-  void OnWebStateInserted(web::WebState* web_state);
-
   // Called before one of the tracked WebState is destroyed. The WebState is
   // still valid but will become invalid afterwards, so any reference to it
   // should be removed.
   void OnWebStateDestroyed(web::WebState* web_state);
+
+  // web::WebStateObserver implementation.
+  void DidStartNavigation(web::WebState* web_state,
+                          web::NavigationContext* navigation_context) override;
+  void PageLoaded(
+      web::WebState* web_state,
+      web::PageLoadCompletionStatus load_completion_status) override;
+  void RenderProcessGone(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -265,10 +267,6 @@ class TabUsageRecorder : public WebStateListObserver {
 
   // Keep track of the tabs that have a known eviction cause.
   std::map<web::WebState*, TabStateWhenSelected> evicted_web_states_;
-
-  // Maps WebStates to the WebStateObserver used to track its events.
-  std::map<web::WebState*, std::unique_ptr<WebStateObserver>>
-      web_state_observers_;
 
   // The WebStateList containing all the monitored tabs.
   WebStateList* web_state_list_;  // weak
