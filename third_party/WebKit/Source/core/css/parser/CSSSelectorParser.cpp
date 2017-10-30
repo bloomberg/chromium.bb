@@ -8,7 +8,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserObserverWrapper.h"
+#include "core/css/parser/CSSParserObserver.h"
 #include "core/css/parser/CSSParserScopedTokenBuffer.h"
 #include "core/css/parser/CSSParserTokenStream.h"
 #include "core/frame/Deprecation.h"
@@ -38,10 +38,10 @@ CSSSelectorList CSSSelectorParser::ConsumeSelector(
     CSSParserTokenStream& stream,
     const CSSParserContext* context,
     StyleSheetContents* style_sheet,
-    CSSParserObserverWrapper* wrapper) {
+    CSSParserObserver* observer) {
   CSSSelectorParser parser(context, style_sheet);
   stream.ConsumeWhitespace();
-  CSSSelectorList result = parser.ConsumeComplexSelectorList(stream, wrapper);
+  CSSSelectorList result = parser.ConsumeComplexSelectorList(stream, observer);
   parser.RecordUsageAndDeprecations(result);
   return result;
 }
@@ -73,7 +73,7 @@ CSSSelectorList CSSSelectorParser::ConsumeComplexSelectorList(
 
 CSSSelectorList CSSSelectorParser::ConsumeComplexSelectorList(
     CSSParserTokenStream& stream,
-    CSSParserObserverWrapper* wrapper) {
+    CSSParserObserver* observer) {
   Vector<std::unique_ptr<CSSParserSelector>> selector_list;
 
   while (true) {
@@ -96,10 +96,8 @@ CSSSelectorList CSSSelectorParser::ConsumeComplexSelectorList(
     if (!selector || failed_parsing_ || !complex_selector.AtEnd())
       return CSSSelectorList();
 
-    if (wrapper) {
-      wrapper->Observer().ObserveSelector(selector_offset_start,
-                                          selector_offset_end);
-    }
+    if (observer)
+      observer->ObserveSelector(selector_offset_start, selector_offset_end);
 
     selector_list.push_back(std::move(selector));
     if (stream.Peek().GetType() == kLeftBraceToken)

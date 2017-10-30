@@ -20,7 +20,6 @@ namespace blink {
 class CSSLazyParsingState;
 class CSSParserContext;
 class CSSParserObserver;
-class CSSParserObserverWrapper;
 class CSSParserScopedTokenBuffer;
 class CSSParserTokenStream;
 class StyleRule;
@@ -197,7 +196,7 @@ class CSSParserImpl {
   Member<StyleSheetContents> style_sheet_;
 
   // For the inspector
-  CSSParserObserverWrapper* observer_wrapper_;
+  CSSParserObserver* observer_;
 
   Member<CSSLazyParsingState> lazy_state_;
 };
