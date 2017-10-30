@@ -36,6 +36,9 @@
 // Dismisses the error dialog.
 - (void)dismissError;
 
+// Shows the accounts settings UI.
+- (void)showAccountsSettings;
+
 // Indicates whether the object is currently presenting.
 @property(nonatomic, assign, readonly, getter=isPresenting) BOOL presenting;
 

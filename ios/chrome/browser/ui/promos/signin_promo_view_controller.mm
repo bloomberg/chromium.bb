@@ -93,12 +93,16 @@ enum PromoAction {
 - (void)dismissWithSignedIn:(BOOL)signedIn
        showAccountsSettings:(BOOL)showAccountsSettings {
   DCHECK(self.presentingViewController);
-  UIViewController* presentingViewController = self.presentingViewController;
+  __weak UIViewController* presentingViewController =
+      self.presentingViewController;
+  __weak id<ApplicationCommands> weakDispatcher = self.dispatcher;
   [presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
                            if (showAccountsSettings) {
-                             [self.dispatcher showAccountsSettings];
+                             [weakDispatcher
+                                 showAccountsSettingsFromViewController:
+                                     presentingViewController];
                            }
                          }];
 }

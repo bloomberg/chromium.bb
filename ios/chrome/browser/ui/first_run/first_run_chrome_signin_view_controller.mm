@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 
+#import "base/ios/block_types.h"
 #include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -95,13 +96,15 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
   return IsIPadIdiom() ? [super shouldAutorotate] : NO;
 }
 
-- (void)finishFirstRunAndDismiss {
+- (void)finishFirstRunAndDismissWithCompletion:(ProceduralBlock)completion {
   DCHECK(self.presentingViewController);
   FinishFirstRun(self.browserState, [_tabModel currentTab], _firstRunConfig,
                  self.dispatcher);
   [self.presentingViewController dismissViewControllerAnimated:YES
                                                     completion:^{
                                                       FirstRunDismissed();
+                                                      if (completion)
+                                                        completion();
                                                     }];
 }
 
@@ -121,7 +124,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (void)didSkipSignIn:(ChromeSigninViewController*)controller {
   DCHECK_EQ(self, controller);
   // User is done with First Run after explicit skip.
-  [self finishFirstRunAndDismiss];
+  [self finishFirstRunAndDismissWithCompletion:nil];
 }
 
 - (void)didFailSignIn:(ChromeSigninViewController*)controller {
@@ -157,10 +160,16 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
   DCHECK_EQ(self, controller);
 
   // User is done with First Run after explicit sign-in accept.
-  [self finishFirstRunAndDismiss];
-  if (showAccountsSettings) {
-    [self.dispatcher showAccountsSettings];
-  }
+  // Save a reference to the presentingViewController since this view controller
+  // will be dismissed.
+  __weak UIViewController* baseViewController = self.presentingViewController;
+  __weak id<ApplicationCommands> weakDispatcher = self.dispatcher;
+  [self finishFirstRunAndDismissWithCompletion:^{
+    if (showAccountsSettings) {
+      [weakDispatcher
+          showAccountsSettingsFromViewController:baseViewController];
+    }
+  }];
 }
 
 #pragma mark ChromeSigninViewController

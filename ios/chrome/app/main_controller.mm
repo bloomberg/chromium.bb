@@ -1491,22 +1491,28 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 
 #pragma mark - ApplicationSettingsCommands
 
-- (void)showAccountsSettings {
+// TODO(crbug.com/779791) : Remove show settings from MainController.
+- (void)showAccountsSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (!baseViewController) {
+    DCHECK_EQ(self.currentBVC, self.mainViewController.activeViewController);
+    baseViewController = self.currentBVC;
+  }
+  DCHECK(![baseViewController presentedViewController]);
   if ([self currentBrowserState]->IsOffTheRecord()) {
     NOTREACHED();
     return;
   }
   if (_settingsNavigationController) {
-    [_settingsNavigationController showAccountsSettings];
+    [_settingsNavigationController showAccountsSettingsFromViewController:nil];
     return;
   }
   _settingsNavigationController = [SettingsNavigationController
       newAccountsController:self.currentBrowserState
                    delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:_settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 - (void)showSyncSettings {
