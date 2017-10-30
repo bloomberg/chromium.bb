@@ -167,9 +167,9 @@ class PresentationServiceDelegateImpl
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            DefaultPresentationUrlCallback);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
-                           TestCloseConnectionForOffscreenPresentation);
+                           TestCloseConnectionForLocalPresentation);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
-                           ConnectToOffscreenPresentation);
+                           ConnectToLocalPresentation);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            ConnectToPresentation);
 

@@ -169,12 +169,12 @@ class MockPresentationServiceDelegate
       const PresentationInfo& presentation_info,
       PresentationConnectionPtr controller_conn_ptr,
       PresentationConnectionRequest receiver_conn_request) override {
-    RegisterOffscreenPresentationConnectionRaw(
-        render_process_id, render_frame_id, presentation_info,
-        controller_conn_ptr.get());
+    RegisterLocalPresentationConnectionRaw(render_process_id, render_frame_id,
+                                           presentation_info,
+                                           controller_conn_ptr.get());
   }
 
-  MOCK_METHOD4(RegisterOffscreenPresentationConnectionRaw,
+  MOCK_METHOD4(RegisterLocalPresentationConnectionRaw,
                void(int render_process_id,
                     int render_frame_id,
                     const PresentationInfo& presentation_info,
@@ -619,7 +619,7 @@ TEST_F(PresentationServiceImplTest, SetPresentationConnection) {
   auto request = mojo::MakeRequest(&receiver_connection);
 
   PresentationInfo expected(presentation_url1_, kPresentationId);
-  EXPECT_CALL(mock_delegate_, RegisterOffscreenPresentationConnectionRaw(
+  EXPECT_CALL(mock_delegate_, RegisterLocalPresentationConnectionRaw(
                                   _, _, InfoEquals(expected), _));
 
   service_impl_->SetPresentationConnection(

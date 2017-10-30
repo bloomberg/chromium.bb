@@ -14,12 +14,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/router/browser_presentation_connection_proxy.h"
+#include "chrome/browser/media/router/local_presentation_manager.h"
+#include "chrome/browser/media/router/local_presentation_manager_factory.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
-#include "chrome/browser/media/router/offscreen_presentation_manager.h"
-#include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -198,11 +198,11 @@ bool PresentationFrame::HasScreenAvailabilityListenerForTest(
 
 void PresentationFrame::Reset() {
   for (const auto& pid_route : presentation_id_to_route_) {
-    if (pid_route.second.is_offscreen_presentation()) {
-      auto* offscreen_presentation_manager =
-          OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
+    if (pid_route.second.is_local_presentation()) {
+      auto* local_presentation_manager =
+          LocalPresentationManagerFactory::GetOrCreateForWebContents(
               web_contents_);
-      offscreen_presentation_manager->UnregisterOffscreenPresentationController(
+      local_presentation_manager->UnregisterLocalPresentationController(
           pid_route.first, render_frame_host_id_);
     } else {
       router_->DetachRoute(pid_route.second.media_route_id());
@@ -234,11 +234,11 @@ void PresentationFrame::ConnectToPresentation(
     return;
   }
 
-  if (pid_route_it->second.is_offscreen_presentation()) {
-    auto* offscreen_presentation_manager =
-        OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
+  if (pid_route_it->second.is_local_presentation()) {
+    auto* local_presentation_manager =
+        LocalPresentationManagerFactory::GetOrCreateForWebContents(
             web_contents_);
-    offscreen_presentation_manager->RegisterOffscreenPresentationController(
+    local_presentation_manager->RegisterLocalPresentationController(
         presentation_info, render_frame_host_id_,
         std::move(controller_connection_ptr),
         std::move(receiver_connection_request), pid_route_it->second);
@@ -507,13 +507,11 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
   }
 #endif  // !defined(OS_ANDROID)
 
-  auto* offscreen_presentation_manager =
-      OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
-          web_contents_);
-  // Check offscreen presentation across frames.
-  if (offscreen_presentation_manager->IsOffscreenPresentation(
-          presentation_id)) {
-    auto* route = offscreen_presentation_manager->GetRoute(presentation_id);
+  auto* local_presentation_manager =
+      LocalPresentationManagerFactory::GetOrCreateForWebContents(web_contents_);
+  // Check local presentation across frames.
+  if (local_presentation_manager->IsLocalPresentation(presentation_id)) {
+    auto* route = local_presentation_manager->GetRoute(presentation_id);
 
     if (!route) {
       LOG(WARNING) << "No route found for [presentation_id]: "
@@ -558,13 +556,11 @@ void PresentationServiceDelegateImpl::CloseConnection(
     return;
   }
 
-  auto* offscreen_presentation_manager =
-      OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
-          web_contents_);
+  auto* local_presentation_manager =
+      LocalPresentationManagerFactory::GetOrCreateForWebContents(web_contents_);
 
-  if (offscreen_presentation_manager->IsOffscreenPresentation(
-          presentation_id)) {
-    offscreen_presentation_manager->UnregisterOffscreenPresentationController(
+  if (local_presentation_manager->IsLocalPresentation(presentation_id)) {
+    local_presentation_manager->UnregisterLocalPresentationController(
         presentation_id, rfh_id);
   } else {
     router_->DetachRoute(route_id);

@@ -24,7 +24,7 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
       custom_controller_path_(custom_controller_path),
       for_display_(for_display),
       is_incognito_(false),
-      is_offscreen_presentation_(false) {}
+      is_local_presentation_(false) {}
 
 MediaRoute::MediaRoute(const MediaRoute& other) = default;
 

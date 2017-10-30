@@ -17,13 +17,15 @@ class WebContents;
 
 namespace media_router {
 
-class OffscreenPresentationManager;
+class LocalPresentationManager;
 
-// Implements the receiver side of Presentation API for offscreen presentation.
-// Created with offscreen WebContents for an offscreen presentation. Each
-// instance is tied to a single offscreen presentation whose ID is given during
-// construction. As such, the receiver APIs are contextual with the offscreen
-// presentation. Only the main frame of the offscreen WebContents is allowed to
+// Implements the receiver side of Presentation API for local presentation
+// (an offscreen presentation that is mirrored to a wireless display, or a
+// presentation on a wired display).
+// Created with the WebContents for a local presentation. Each
+// instance is tied to a single local presentation whose ID is given during
+// construction. As such, the receiver APIs are contextual with the local
+// presentation. Only the main frame of the WebContents is allowed to
 // make receiver Presentation API requests; requests made from any other frame
 // will be rejected.
 class ReceiverPresentationServiceDelegateImpl
@@ -32,8 +34,8 @@ class ReceiverPresentationServiceDelegateImpl
       public content::ReceiverPresentationServiceDelegate {
  public:
   // Creates an instance of ReceiverPresentationServiceDelegateImpl under
-  // |web_contents| and registers it as the receiver of the offscreen
-  // presentation |presentation_id| with OffscreenPresentationManager.
+  // |web_contents| and registers it as the receiver of the local
+  // presentation |presentation_id| with LocalPresentationManager.
   // No-op if a ReceiverPresentationServiceDelegateImpl instance already
   // exists under |web_contents|. This class does not take ownership of
   // |web_contents|.
@@ -63,8 +65,8 @@ class ReceiverPresentationServiceDelegateImpl
 
   const std::string presentation_id_;
 
-  // This is an unowned pointer to the OffscreenPresentationManager.
-  OffscreenPresentationManager* const offscreen_presentation_manager_;
+  // This is an unowned pointer to the LocalPresentationManager.
+  LocalPresentationManager* const local_presentation_manager_;
 
   PresentationServiceDelegateObservers observers_;
 

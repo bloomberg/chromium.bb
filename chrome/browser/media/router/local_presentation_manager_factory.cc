@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
+#include "chrome/browser/media/router/local_presentation_manager_factory.h"
 
 #include "base/lazy_instance.h"
 
-#include "chrome/browser/media/router/offscreen_presentation_manager.h"
+#include "chrome/browser/media/router/local_presentation_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -16,50 +16,50 @@ namespace media_router {
 
 namespace {
 
-base::LazyInstance<OffscreenPresentationManagerFactory>::DestructorAtExit
+base::LazyInstance<LocalPresentationManagerFactory>::DestructorAtExit
     service_factory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
-OffscreenPresentationManager*
-OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
+LocalPresentationManager*
+LocalPresentationManagerFactory::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  return OffscreenPresentationManagerFactory::GetOrCreateForBrowserContext(
+  return LocalPresentationManagerFactory::GetOrCreateForBrowserContext(
       web_contents->GetBrowserContext());
 }
 
 // static
-OffscreenPresentationManager*
-OffscreenPresentationManagerFactory::GetOrCreateForBrowserContext(
+LocalPresentationManager*
+LocalPresentationManagerFactory::GetOrCreateForBrowserContext(
     content::BrowserContext* context) {
   DCHECK(context);
-  return static_cast<OffscreenPresentationManager*>(
+  return static_cast<LocalPresentationManager*>(
       service_factory.Get().GetServiceForBrowserContext(context, true));
 }
 
 // static
-OffscreenPresentationManagerFactory*
-OffscreenPresentationManagerFactory::GetInstanceForTest() {
+LocalPresentationManagerFactory*
+LocalPresentationManagerFactory::GetInstanceForTest() {
   return &service_factory.Get();
 }
 
-OffscreenPresentationManagerFactory::OffscreenPresentationManagerFactory()
+LocalPresentationManagerFactory::LocalPresentationManagerFactory()
     : BrowserContextKeyedServiceFactory(
-          "OffscreenPresentationManager",
+          "LocalPresentationManager",
           BrowserContextDependencyManager::GetInstance()) {}
 
-OffscreenPresentationManagerFactory::~OffscreenPresentationManagerFactory() {}
+LocalPresentationManagerFactory::~LocalPresentationManagerFactory() {}
 
 content::BrowserContext*
-OffscreenPresentationManagerFactory::GetBrowserContextToUse(
+LocalPresentationManagerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
-KeyedService* OffscreenPresentationManagerFactory::BuildServiceInstanceFor(
+KeyedService* LocalPresentationManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new OffscreenPresentationManager;
+  return new LocalPresentationManager;
 }
 
 }  // namespace media_router
