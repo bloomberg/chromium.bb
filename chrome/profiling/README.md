@@ -51,8 +51,8 @@ client processes to communicate memory events to the profiling process.
 
 Code Locations
 --------------
-`//chrome/common/profiling` - Logic for MemlogClient.
+`//chrome/common/profiling` - Logic for ProfilingClient.
 `//chrome/browser/profiling_host` - Logic in browser process for starting
-profiling service, and connecting MemlogClients to the profiling service.
+profiling service, and connecting ProfilingClients to the profiling service.
 `//chrome/profiling` - Profiling service.
 
