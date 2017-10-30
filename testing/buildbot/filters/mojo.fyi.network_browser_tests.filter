@@ -60,6 +60,8 @@
 -DevToolsExtensionTest.HttpIframeInDevToolsExtensionPanel
 -DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnNetwork
 -DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnTimeline
+-DiceMigrationBrowserTest.Signin
+-DiceMigrationBrowserTest.Signout
 -DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
 -DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
 -DomDistillerViewerSourceBrowserTest.DistillerJavaScriptNotInMainWorld
@@ -89,6 +91,9 @@
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.Playback_AudioClearVideo_WebM/0
 -Mojo/ECKEncryptedMediaTest.CDMCrashDuringDecode/0
 -Mojo/ECKEncryptedMediaTest.DecryptOnly_VideoAudio_WebM/0
+-Mojo/ECKEncryptedMediaTest.FileIOTest/0
+-Mojo/ECKEncryptedMediaTest.LoadUnknownSession/0
+-Mojo/ECKEncryptedMediaTest.LoadLoadableSession/0
 -Mojo/ECKEncryptedMediaTest.MultipleCdmTypes/0
 -Mojo/ECKEncryptedMediaTest.OutputProtectionTest/0
 -Mojo/ECKEncryptedMediaTest.PlatformVerificationTest/0
@@ -1709,6 +1714,8 @@
 -WebViewTests/WebViewNewWindowTest.Shim_TestNewWindowNoReferrerLink/1
 -WebViewTests/WebViewNewWindowTest.Shim_TestNewWindowTwoListeners/0
 -WebViewTests/WebViewNewWindowTest.Shim_TestNewWindowTwoListeners/1
+-WebViewTests/WebViewNewWindowTest.Shim_TestWebViewAndEmbedderInNewWindow/0
+-WebViewTests/WebViewNewWindowTest.Shim_TestWebViewAndEmbedderInNewWindow/1
 -WebViewTests/WebViewNewWindowTest.UserAgent_NewWindow/0
 -WebViewTests/WebViewNewWindowTest.UserAgent_NewWindow/1
 -WebViewTests/WebViewPluginTest.TestLoadPluginEvent/0
