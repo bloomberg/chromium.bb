@@ -318,7 +318,7 @@ class TestImporterTest(LoggingTestCase):
     def test_tbr_reviewer_no_response_uses_backup(self):
         host = MockHost()
         importer = TestImporter(host)
-        self.assertEqual('qyearsley@chromium.org', importer.tbr_reviewer())
+        self.assertEqual('qyearsley', importer.tbr_reviewer())
         self.assertLog([
             'ERROR: Exception while fetching current sheriff: '
             'No JSON object could be decoded\n'
@@ -341,7 +341,7 @@ class TestImporterTest(LoggingTestCase):
             'rotations': ['other-rotation', 'ecosystem_infra']
         })
         importer = TestImporter(host)
-        self.assertEqual('current-sheriff@chromium.org', importer.tbr_reviewer())
+        self.assertEqual('current-sheriff', importer.tbr_reviewer())
         self.assertLog([])
 
     def test_tbr_reviewer_with_full_email_address(self):
