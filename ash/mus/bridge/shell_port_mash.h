@@ -66,8 +66,6 @@ class ShellPortMash : public ShellPortMus {
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
-  void SetLaserPointerEnabled(bool enabled) override;
-  void SetPartialMagnifierEnabled(bool enabled) override;
   void CreatePointerWatcherAdapter() override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 

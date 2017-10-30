@@ -12,8 +12,6 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/keyboard/keyboard_ui.h"
-#include "ash/laser/laser_pointer_controller.h"
-#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/pointer_watcher_adapter_classic.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
@@ -146,14 +144,6 @@ bool ShellPortClassic::IsTouchDown() {
 
 void ShellPortClassic::ToggleIgnoreExternalKeyboard() {
   Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
-}
-
-void ShellPortClassic::SetLaserPointerEnabled(bool enabled) {
-  Shell::Get()->laser_pointer_controller()->SetEnabled(enabled);
-}
-
-void ShellPortClassic::SetPartialMagnifierEnabled(bool enabled) {
-  Shell::Get()->partial_magnification_controller()->SetEnabled(enabled);
 }
 
 void ShellPortClassic::CreatePointerWatcherAdapter() {

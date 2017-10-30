@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -67,7 +68,7 @@ void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     AddModalWindow(window);
   } else {
     if (RemoveModalWindow(window))
-      ShellPort::Get()->OnModalWindowRemoved(window);
+      OnModalWindowRemoved(window);
   }
 }
 
@@ -126,7 +127,7 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     AddModalWindow(window);
   } else {
     if (RemoveModalWindow(window))
-      ShellPort::Get()->OnModalWindowRemoved(window);
+      OnModalWindowRemoved(window);
   }
 }
 
@@ -204,7 +205,12 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   DCHECK(!base::ContainsValue(modal_windows_, window));
 
   modal_windows_.push_back(window);
-  ShellPort::Get()->CreateModalBackground(window);
+  // Create the modal background on all displays for |window|.
+  for (aura::Window* root_window : Shell::GetAllRootWindows()) {
+    RootWindowController::ForWindow(root_window)
+        ->GetSystemModalLayoutManager(window)
+        ->CreateModalBackground();
+  }
   window->parent()->StackChildAtTop(window);
 
   gfx::Rect target_bounds = window->bounds();
@@ -219,6 +225,23 @@ bool SystemModalContainerLayoutManager::RemoveModalWindow(
     return false;
   modal_windows_.erase(it);
   return true;
+}
+
+void SystemModalContainerLayoutManager::OnModalWindowRemoved(
+    aura::Window* removed) {
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  for (aura::Window* root_window : root_windows) {
+    if (RootWindowController::ForWindow(root_window)
+            ->GetSystemModalLayoutManager(removed)
+            ->ActivateNextModalWindow()) {
+      return;
+    }
+  }
+  for (aura::Window* root_window : root_windows) {
+    RootWindowController::ForWindow(root_window)
+        ->GetSystemModalLayoutManager(removed)
+        ->DestroyModalBackground();
+  }
 }
 
 void SystemModalContainerLayoutManager::PositionDialogsAfterWorkAreaResize() {

@@ -72,11 +72,6 @@ class ASH_EXPORT ShellPort {
 
   virtual Config GetAshConfig() const = 0;
 
-  // Returns true if the first window shown on first run should be
-  // unconditionally maximized, overriding the heuristic that normally chooses
-  // the window size.
-  bool IsForceMaximizeOnFirstRun();
-
   // If a system-modal dialog window is currently open, returns the ID of the
   // system modal window container that contains the window.
   // If no system-modal dialogs are open it returns -1.
@@ -84,14 +79,6 @@ class ASH_EXPORT ShellPort {
 
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen();
-
-  // Creates a modal background (a partially-opaque fullscreen window) on all
-  // displays for |window|.
-  void CreateModalBackground(aura::Window* window);
-
-  // Called when a modal window is removed. It will activate another modal
-  // window if any, or remove modal screens on all displays.
-  void OnModalWindowRemoved(aura::Window* removed);
 
   // The return value from this is supplied to AshTouchTransformController; see
   // it and TouchTransformSetter for details.
@@ -168,15 +155,6 @@ class ASH_EXPORT ShellPort {
 
   // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.
   virtual void ToggleIgnoreExternalKeyboard() = 0;
-
-  // Enable or disable the laser pointer.
-  // TODO(jamescook): Remove. LaserPointerController exists in all configs.
-  virtual void SetLaserPointerEnabled(bool enabled) = 0;
-
-  // Enable or disable the partial magnifier.
-  // TODO(jamescook): Remove. PartialMagnificationController exists in all
-  // configs.
-  virtual void SetPartialMagnifierEnabled(bool enabled) = 0;
 
   virtual void CreatePointerWatcherAdapter() = 0;
 

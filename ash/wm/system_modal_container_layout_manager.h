@@ -78,6 +78,10 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   // |modal_windows_|.
   bool RemoveModalWindow(aura::Window* window);
 
+  // Called when a modal window is removed. It will activate another modal
+  // window if any, or remove modal screens on all displays.
+  void OnModalWindowRemoved(aura::Window* removed);
+
   // Reposition the dialogs to become visible after the work area changes.
   void PositionDialogsAfterWorkAreaResize();
 

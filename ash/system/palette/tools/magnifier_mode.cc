@@ -4,8 +4,9 @@
 
 #include "ash/system/palette/tools/magnifier_mode.h"
 
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,13 +32,13 @@ const gfx::VectorIcon& MagnifierMode::GetActiveTrayIcon() const {
 
 void MagnifierMode::OnEnable() {
   CommonPaletteTool::OnEnable();
-  ShellPort::Get()->SetPartialMagnifierEnabled(true);
+  Shell::Get()->partial_magnification_controller()->SetEnabled(true);
   delegate()->HidePalette();
 }
 
 void MagnifierMode::OnDisable() {
   CommonPaletteTool::OnDisable();
-  ShellPort::Get()->SetPartialMagnifierEnabled(false);
+  Shell::Get()->partial_magnification_controller()->SetEnabled(false);
 }
 
 views::View* MagnifierMode::CreateView() {

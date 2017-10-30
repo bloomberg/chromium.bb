@@ -10,8 +10,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
-#include "ash/laser/laser_pointer_controller.h"
-#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/mus/ash_window_tree_host_mus.h"
 #include "ash/mus/display_synchronizer.h"
 #include "ash/mus/keyboard_ui_mus.h"
@@ -181,16 +179,6 @@ bool ShellPortMus::IsTouchDown() {
 
 void ShellPortMus::ToggleIgnoreExternalKeyboard() {
   Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
-}
-
-void ShellPortMus::SetLaserPointerEnabled(bool enabled) {
-  // TODO: Eliminate this, just use Shell.
-  Shell::Get()->laser_pointer_controller()->SetEnabled(enabled);
-}
-
-void ShellPortMus::SetPartialMagnifierEnabled(bool enabled) {
-  // TODO: Eliminate this, just use Shell.
-  Shell::Get()->partial_magnification_controller()->SetEnabled(enabled);
 }
 
 void ShellPortMus::CreatePointerWatcherAdapter() {
