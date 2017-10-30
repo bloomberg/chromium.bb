@@ -12,9 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/fake_host_frame_sink_client.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,10 +122,6 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
 
  protected:
   void SetUp() override {
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::SetFactory(
-        std::make_unique<NoTransportImageTransportFactory>());
-#endif
     host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
 
     // The FrameSinkManagerImpl implementation is in-process here for tests.
@@ -133,20 +131,21 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
 
     provider_ = std::make_unique<OffscreenCanvasProviderImpl>(
         host_frame_sink_manager_.get(), kRendererClientId);
+
+    host_frame_sink_manager_->RegisterFrameSinkId(kFrameSinkParent,
+                                                  &host_frame_sink_client_);
   }
   void TearDown() override {
     provider_.reset();
     frame_sink_manager_.reset();
     host_frame_sink_manager_.reset();
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::Terminate();
-#endif
   }
 
  private:
   // A MessageLoop is required for mojo bindings which are used to
   // connect to graphics services.
   base::MessageLoop message_loop_;
+  viz::FakeHostFrameSinkClient host_frame_sink_client_;
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<OffscreenCanvasProviderImpl> provider_;

@@ -16,6 +16,7 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/test/fake_host_frame_sink_client.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,19 +46,6 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
 SurfaceInfo MakeSurfaceInfo(const SurfaceId& surface_id) {
   return SurfaceInfo(surface_id, 1.f, gfx::Size(1, 1));
 }
-
-// A fake (do-nothing) implementation of HostFrameSinkClient.
-class FakeHostFrameSinkClient : public HostFrameSinkClient {
- public:
-  FakeHostFrameSinkClient() = default;
-  ~FakeHostFrameSinkClient() override = default;
-
-  // HostFrameSinkClient implementation.
-  void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeHostFrameSinkClient);
-};
 
 // A mock implementation of mojom::FrameSinkManager.
 class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
