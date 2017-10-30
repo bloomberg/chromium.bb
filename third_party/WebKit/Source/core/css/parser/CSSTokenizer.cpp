@@ -9,7 +9,6 @@ namespace blink {
 }
 
 #include "core/css/parser/CSSParserIdioms.h"
-#include "core/css/parser/CSSParserObserverWrapper.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/text/CharacterNames.h"

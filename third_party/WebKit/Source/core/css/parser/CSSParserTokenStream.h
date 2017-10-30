@@ -13,7 +13,6 @@
 namespace blink {
 
 class CSSParserScopedTokenBuffer;
-class CSSParserObserverWrapper;
 
 // A streaming interface to CSSTokenizer that tokenizes on demand.
 // Abstractly, the stream ends at either EOF or the beginning/end of a block.
@@ -122,8 +121,7 @@ class CORE_EXPORT CSSParserTokenStream {
   CSSParserToken ConsumeIncludingWhitespace();
   void UncheckedConsumeComponentValue();
   void UncheckedConsumeComponentValue(CSSParserScopedTokenBuffer&);
-  void UncheckedConsumeComponentValueWithOffsets(CSSParserObserverWrapper&,
-                                                 CSSParserScopedTokenBuffer&);
+
   // Either consumes a comment token and returns true, or peeks at the next
   // token and return false.
   bool ConsumeCommentOrNothing();
