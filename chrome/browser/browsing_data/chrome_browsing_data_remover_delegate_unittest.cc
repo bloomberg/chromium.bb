@@ -2249,8 +2249,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        LanguageHistogramClearedOnClearingCompleteHistory) {
   language::UrlLanguageHistogram* language_histogram =
-      UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(
-          GetProfile());
+      UrlLanguageHistogramFactory::GetForBrowserContext(GetProfile());
 
   // Simulate browsing.
   for (int i = 0; i < 100; i++) {
