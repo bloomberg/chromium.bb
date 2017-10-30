@@ -271,7 +271,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";
     return nullptr;
   }
-  buffer->SetColorSpaceForScanout(color_space_);
+  buffer->SetColorSpace(color_space_);
 
   uint32_t id =
       gl_->CreateImageCHROMIUM(buffer->AsClientBuffer(), size_.width(),

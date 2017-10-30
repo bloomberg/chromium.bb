@@ -46,7 +46,7 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   gfx::GpuMemoryBufferId GetId() const override {
     return gfx::GpuMemoryBufferId(0);
   }
-  void SetColorSpaceForScanout(const gfx::ColorSpace& color_space) override {
+  void SetColorSpace(const gfx::ColorSpace& color_space) override {
     *set_color_space_count_ += 1;
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
