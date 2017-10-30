@@ -2469,7 +2469,7 @@ cr.define('login', function() {
 
     /** @override */
     get mainInput() {
-      if (this.user.needsSignin)
+      if (this.user.needsSignin && this.user.hasLocalCreds)
         return this.passwordElement;
       else
         return this.nameElement;
