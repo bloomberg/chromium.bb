@@ -1298,8 +1298,7 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
 
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
 #if CONFIG_INTERINTRA
-  // TODO(debargha): Should this be bsize < BLOCK_LARGEST?
-  return (bsize >= BLOCK_8X8) && (bsize < BLOCK_64X64);
+  return (bsize >= BLOCK_8X8) && (bsize <= BLOCK_32X32);
 #else
   (void)bsize;
   return 0;
