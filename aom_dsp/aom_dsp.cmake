@@ -59,7 +59,8 @@ set(AOM_DSP_COMMON_ASM_SSSE3
 set(AOM_DSP_COMMON_INTRIN_SSSE3
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
     "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c"
-    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_ssse3.c")
+    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_ssse3.c"
+    "${AOM_ROOT}/aom_dsp/x86/variance_ssse3.c")
 
 set(AOM_DSP_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"

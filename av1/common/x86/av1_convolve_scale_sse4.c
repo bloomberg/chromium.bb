@@ -260,6 +260,12 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
                          (1 << (offset_bits - conv_params->round_1 - 1)));
   const __m128i sub = _mm_set1_epi32(sub32);
 
+#if CONFIG_JNT_COMP
+  const __m128i fwd_offset = _mm_set1_epi32(conv_params->fwd_offset);
+  const __m128i bck_offset = _mm_set1_epi32(conv_params->bck_offset);
+  const __m128i jnt_round = _mm_set1_epi32(1 << (DIST_PRECISION_BITS - 2));
+#endif  // CONFIG_JNT_COMP
+
   int y_qn = subpel_y_qn;
   for (int y = 0; y < h; ++y, y_qn += y_step_qn) {
     const int32_t *src_y = src + (y_qn >> SCALE_SUBPEL_BITS);
@@ -305,10 +311,29 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
       const __m128i subbed = _mm_sub_epi32(shifted, sub);
 
       int32_t *dst_x = dst + y * dst_stride + x;
+#if CONFIG_JNT_COMP
+      __m128i result;
+      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+        if (conv_params->do_average) {
+          result = _mm_srai_epi32(
+              _mm_add_epi32(_mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
+                                          _mm_mullo_epi32(subbed, bck_offset)),
+                            jnt_round),
+              DIST_PRECISION_BITS - 1);
+        } else {
+          result = _mm_mullo_epi32(subbed, fwd_offset);
+        }
+      } else {
+        result = (conv_params->do_average)
+                     ? _mm_add_epi32(subbed, _mm_loadu_si128((__m128i *)dst_x))
+                     : subbed;
+      }
+#else
       const __m128i result =
           (conv_params->do_average)
               ? _mm_add_epi32(subbed, _mm_loadu_si128((__m128i *)dst_x))
               : subbed;
+#endif  // CONFIG_JNT_COMP
 
       _mm_storeu_si128((__m128i *)dst_x, result);
     }
@@ -317,10 +342,24 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < ntaps; ++k) sum += filter[k] * src_x[k];
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) - sub32;
-      if (conv_params->do_average)
-        dst[y * dst_stride + x] += res;
-      else
-        dst[y * dst_stride + x] = res;
+#if CONFIG_JNT_COMP
+      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+        if (conv_params->do_average) {
+          dst[y * dst_stride + x] += res * conv_params->bck_offset;
+
+          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+        } else {
+          dst[y * dst_stride + x] = res * conv_params->fwd_offset;
+        }
+      } else {
+#endif  // CONFIG_JNT_COMP
+        if (conv_params->do_average)
+          dst[y * dst_stride + x] += res;
+        else
+          dst[y * dst_stride + x] = res;
+#if CONFIG_JNT_COMP
+      }
+#endif  // CONFIG_JNT_COMP
     }
   }
 }
@@ -341,6 +380,12 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
   const int32_t sub32 = ((1 << (offset_bits - conv_params->round_1)) +
                          (1 << (offset_bits - conv_params->round_1 - 1)));
   const __m128i sub = _mm_set1_epi32(sub32);
+
+#if CONFIG_JNT_COMP
+  const __m128i fwd_offset = _mm_set1_epi32(conv_params->fwd_offset);
+  const __m128i bck_offset = _mm_set1_epi32(conv_params->bck_offset);
+  const __m128i jnt_round = _mm_set1_epi32(1 << (DIST_PRECISION_BITS - 2));
+#endif  // CONFIG_JNT_COMP
 
   int y_qn = subpel_y_qn;
   for (int y = 0; y < h; ++y, y_qn += y_step_qn) {
@@ -384,10 +429,29 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
       const __m128i subbed = _mm_sub_epi32(shifted, sub);
 
       int32_t *dst_x = dst + y * dst_stride + x;
+#if CONFIG_JNT_COMP
+      __m128i result;
+      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+        if (conv_params->do_average) {
+          result = _mm_srai_epi32(
+              _mm_add_epi32(_mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
+                                          _mm_mullo_epi32(subbed, bck_offset)),
+                            jnt_round),
+              DIST_PRECISION_BITS - 1);
+        } else {
+          result = _mm_mullo_epi32(subbed, fwd_offset);
+        }
+      } else {
+        result = (conv_params->do_average)
+                     ? _mm_add_epi32(subbed, _mm_loadu_si128((__m128i *)dst_x))
+                     : subbed;
+      }
+#else
       const __m128i result =
           (conv_params->do_average)
               ? _mm_add_epi32(subbed, _mm_loadu_si128((__m128i *)dst_x))
               : subbed;
+#endif  // CONFIG_JNT_COMP
 
       _mm_storeu_si128((__m128i *)dst_x, result);
     }
@@ -396,10 +460,24 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < ntaps; ++k) sum += filter[k] * src_x[k];
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) - sub32;
-      if (conv_params->do_average)
-        dst[y * dst_stride + x] += res;
-      else
-        dst[y * dst_stride + x] = res;
+#if CONFIG_JNT_COMP
+      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+        if (conv_params->do_average) {
+          dst[y * dst_stride + x] += res * conv_params->bck_offset;
+
+          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+        } else {
+          dst[y * dst_stride + x] = res * conv_params->fwd_offset;
+        }
+      } else {
+#endif  // CONFIG_JNT_COMP
+        if (conv_params->do_average)
+          dst[y * dst_stride + x] += res;
+        else
+          dst[y * dst_stride + x] = res;
+#if CONFIG_JNT_COMP
+      }
+#endif  // CONFIG_JNT_COMP
     }
   }
 }

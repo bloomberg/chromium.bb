@@ -1110,6 +1110,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   if (aom_config("CONFIG_JNT_COMP") eq "yes") {
     add_proto qw/void aom_jnt_comp_avg_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride, const JNT_COMP_PARAMS *jcp_param";
+    specialize qw/aom_jnt_comp_avg_upsampled_pred ssse3/;
   }
 
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
@@ -1339,6 +1340,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/void aom_comp_avg_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride";
   if (aom_config("CONFIG_JNT_COMP") eq "yes") {
     add_proto qw/void aom_jnt_comp_avg_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride, const JNT_COMP_PARAMS *jcp_param";
+    specialize qw/aom_jnt_comp_avg_pred ssse3/;
   }
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/unsigned int aom_highbd_12_variance64x64/, "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
