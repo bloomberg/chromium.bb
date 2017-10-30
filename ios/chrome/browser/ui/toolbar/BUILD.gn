@@ -13,8 +13,6 @@ source_set("toolbar") {
     "toolbar_controller+protected.h",
     "toolbar_controller.h",
     "toolbar_controller.mm",
-    "toolbar_controller_constants.h",
-    "toolbar_controller_constants.mm",
     "toolbar_coordinator.h",
     "toolbar_coordinator.mm",
     "toolbar_frame_delegate.h",
@@ -27,21 +25,18 @@ source_set("toolbar") {
     "toolbar_snapshot_providing.h",
     "toolbar_tools_menu_button.h",
     "toolbar_tools_menu_button.mm",
-    "toolbar_utils.h",
-    "toolbar_utils.mm",
     "toolbar_view.h",
     "toolbar_view.mm",
     "tools_menu_button_observer_bridge.h",
     "tools_menu_button_observer_bridge.mm",
     "web_toolbar_controller.h",
     "web_toolbar_controller.mm",
-    "web_toolbar_controller_constants.h",
-    "web_toolbar_controller_constants.mm",
     "web_toolbar_delegate.h",
   ]
   deps = [
     ":resource_macros",
-    ":toolbar_base_feature",
+    "public",
+    "public:toolbar_base_feature",
     "resources:collapse",
     "resources:collapse_incognito",
     "resources:collapse_pressed",
@@ -101,7 +96,6 @@ source_set("toolbar") {
     "//ios/web",
     "//net",
     "//ui/base",
-    "//ui/gfx",
 
     # Fake dependencies to break cycles
     "//ios/chrome/browser/ui/ntp",
@@ -126,16 +120,6 @@ source_set("resource_macros") {
   ]
   deps = [
     "//ios/chrome/app/theme",
-  ]
-}
-
-source_set("toolbar_base_feature") {
-  sources = [
-    "toolbar_controller_base_feature.h",
-    "toolbar_controller_base_feature.mm",
-  ]
-  deps = [
-    "//base",
   ]
 }
 

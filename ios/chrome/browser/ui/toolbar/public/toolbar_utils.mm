@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -5,8 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_PROTECTED_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_PROTECTED_H_
 
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 
 @interface ToolbarController (Protected)
 

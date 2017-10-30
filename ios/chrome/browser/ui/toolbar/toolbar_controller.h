@@ -10,7 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 

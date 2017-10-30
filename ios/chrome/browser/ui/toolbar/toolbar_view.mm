@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_frame_delegate.h"
 
 @implementation ToolbarView
