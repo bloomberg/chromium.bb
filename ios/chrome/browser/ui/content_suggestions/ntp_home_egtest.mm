@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -178,7 +179,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  CGFloat collectionWidth = CollectionView().bounds.size.width;
+  UIEdgeInsets safeArea = SafeAreaInsetsForView(CollectionView());
+  CGFloat collectionWidth =
+      CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
   CGFloat fakeOmniboxWidth = searchFieldWidth(collectionWidth);
 
@@ -190,7 +193,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                            errorOrNil:nil];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  CGFloat collectionWidthAfterRotation = CollectionView().bounds.size.width;
+  safeArea = SafeAreaInsetsForView(CollectionView());
+  CGFloat collectionWidthAfterRotation =
+      CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
                      @"The collection width has not changed.");
   fakeOmniboxWidth = searchFieldWidth(collectionWidthAfterRotation);
@@ -209,7 +214,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  CGFloat collectionWidth = CollectionView().bounds.size.width;
+  UIEdgeInsets safeArea = SafeAreaInsetsForView(CollectionView());
+  CGFloat collectionWidth =
+      CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
   CGFloat fakeOmniboxWidth = searchFieldWidth(collectionWidth);
 
@@ -228,7 +235,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                    IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
       performAction:grey_tap()];
 
-  CGFloat collectionWidthAfterRotation = CollectionView().bounds.size.width;
+  safeArea = SafeAreaInsetsForView(CollectionView());
+  CGFloat collectionWidthAfterRotation =
+      CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
                      @"The collection width has not changed.");
   fakeOmniboxWidth = searchFieldWidth(collectionWidthAfterRotation);
