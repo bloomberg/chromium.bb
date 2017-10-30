@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import static org.chromium.chrome.test.BottomSheetTestRule.waitForWindowUpdates;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
@@ -106,5 +108,19 @@ public class HomeSheetUiCaptureTest {
         mActivityRule.scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
 
         mScreenShooter.shoot("All_dismissed");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"UiCatalogue"})
+    @CommandLineFlags.Add(ChromeHome.ENABLE_FLAGS)
+    @ScreenShooter.Directory("NewTab")
+    public void testNewTab() {
+        // Select "New tab" from the menu.
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
+        waitForWindowUpdates();
+
+        mScreenShooter.shoot("NewTab");
     }
 }
