@@ -1445,6 +1445,7 @@ jumbo_source_set("unit_tests") {
     "dom/events/EventPathTest.cpp",
     "dom/events/EventTargetTest.cpp",
     "dom/events/ListenerLeakTest.cpp",
+    "dom/ng/flat_tree_traversal_ng_test.cc",
     "editing/CaretDisplayItemClientTest.cpp",
     "editing/KeyboardTest.cpp",
     "editing/LinkSelectionTest.cpp",
