@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 

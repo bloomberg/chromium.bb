@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 // The brightness of the omnibox placeholder text in regular mode,

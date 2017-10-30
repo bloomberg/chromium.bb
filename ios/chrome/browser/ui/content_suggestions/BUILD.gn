@@ -72,7 +72,7 @@ source_set("content_suggestions_util") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/ntp",
-    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/third_party/material_components_ios",
     "//mojo/common:common_custom_types",
     "//ui/base",
