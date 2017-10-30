@@ -3773,6 +3773,25 @@
             ]
         }
     ],
+    "UseMojoAudioOutputStreamFactory": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "UseMojoAudioOutputStreamFactory",
+                    "enable_features": [
+                        "UseMojoAudioOutputStreamFactory"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8AsmJSToWasm": [
         {
             "platforms": [
