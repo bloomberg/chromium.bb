@@ -28,7 +28,7 @@
     <neon-animated-pages id="animatedPages" attr-for-selected="id"
         selected="[[selectedPage_]]" entry-animation="fade-in-animation"
         exit-animation="fade-out-animation">
-      <neon-animatable id="create-user-page">
+      <neon-animatable id="create-user-page" on-keydown="stopPropagation_">
         <!-- Keep the page alive while visiting the Learn More page. -->
         <template is="dom-if"
             if="[[isPresentIn_(selectedPage_,
@@ -40,13 +40,15 @@
       <neon-animatable id="user-pods-page">
           <slot></slot>
       </neon-animatable>
-      <neon-animatable id="supervised-learn-more-page">
+      <neon-animatable id="supervised-learn-more-page"
+          on-keydown="stopPropagation_">
         <template is="dom-if"
             if="[[isPresentIn_(selectedPage_, 'supervised-learn-more-page')]]">
           <supervised-user-learn-more></supervised-user-learn-more>
         </template>
       </neon-animatable>
-      <neon-animatable id="supervised-create-confirm-page">
+      <neon-animatable id="supervised-create-confirm-page"
+          on-keydown="stopPropagation_">
         <template is="dom-if"
             if="[[isPresentIn_(selectedPage_,
                                'supervised-create-confirm-page')]]">
