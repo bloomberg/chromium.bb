@@ -30,6 +30,9 @@
 
 #include "core/page/ContextMenuClient.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSStyleDeclaration.h"
@@ -361,13 +364,8 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
         UrlFromFrame(ToLocalFrame(web_view_->GetPage()->MainFrame()));
   }
 
-  if (selected_frame != web_view_->GetPage()->MainFrame()) {
+  if (selected_frame != web_view_->GetPage()->MainFrame())
     data.frame_url = UrlFromFrame(selected_frame);
-    HistoryItem* history_item =
-        selected_frame->Loader().GetDocumentLoader()->GetHistoryItem();
-    if (history_item)
-      data.frame_history_item = WebHistoryItem(history_item);
-  }
 
   // HitTestResult::isSelected() ensures clean layout by performing a hit test.
   if (r.IsSelected())

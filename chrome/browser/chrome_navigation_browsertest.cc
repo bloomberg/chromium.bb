@@ -186,7 +186,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, TestViewFrameSource) {
   content::ContextMenuParams params;
   params.page_url = local_page_with_iframe_url;
   params.frame_url = frame->GetLastCommittedURL();
-  params.frame_page_state = content::PageState::CreateFromURL(params.frame_url);
   TestRenderViewContextMenu menu(frame, params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE, 0);

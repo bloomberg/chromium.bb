@@ -55,11 +55,6 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   for (size_t i = 0; i < data.custom_items.size(); ++i)
     params.custom_items.push_back(MenuItemBuilder::Build(data.custom_items[i]));
 
-  if (!data.frame_history_item.IsNull()) {
-    params.frame_page_state =
-        SingleHistoryItemToPageState(data.frame_history_item);
-  }
-
   params.link_text = data.link_text.Utf16();
   params.source_type = static_cast<ui::MenuSourceType>(data.source_type);
 

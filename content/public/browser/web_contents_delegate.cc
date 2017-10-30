@@ -4,6 +4,8 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -86,29 +88,6 @@ void WebContentsDelegate::CanDownload(
 bool WebContentsDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return false;
-}
-
-void WebContentsDelegate::ViewSourceForTab(WebContents* source,
-                                           const GURL& page_url) {
-  // Fall back implementation based entirely on the view-source scheme.
-  // It suffers from http://crbug.com/523 and that is why browser overrides
-  // it with proper implementation.
-  GURL url = GURL(kViewSourceScheme + std::string(":") + page_url.spec());
-  OpenURLFromTab(
-      source,
-      OpenURLParams(url, Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                    ui::PAGE_TRANSITION_LINK, false));
-}
-
-void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
-                                             const GURL& frame_url,
-                                             const PageState& page_state) {
-  // Same as ViewSourceForTab, but for given subframe.
-  GURL url = GURL(kViewSourceScheme + std::string(":") + frame_url.spec());
-  OpenURLFromTab(
-      source,
-      OpenURLParams(url, Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                    ui::PAGE_TRANSITION_LINK, false));
 }
 
 KeyboardEventProcessingResult WebContentsDelegate::PreHandleKeyboardEvent(
@@ -247,7 +226,7 @@ void WebContentsDelegate::Detach(WebContents* web_contents) {
 }
 
 gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
-   WebContents* web_contents) const {
+    WebContents* web_contents) const {
   return gfx::Size();
 }
 

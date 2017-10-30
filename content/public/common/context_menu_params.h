@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/menu_item.h"
-#include "content/public/common/page_state.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/base/ui_base_types.h"
@@ -93,9 +92,6 @@ struct CONTENT_EXPORT ContextMenuParams {
 
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;
-
-  // This is the page state of the frame on which the context menu was invoked.
-  PageState frame_page_state;
 
   // These are the parameters for the media element that the context menu
   // was invoked on.

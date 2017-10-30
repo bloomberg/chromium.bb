@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "build/build_config.h"
@@ -298,6 +299,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost and is allowed to be used by it. Use this in the browser
   // process to determine whether access to a feature is allowed.
   virtual bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) = 0;
+
+  // Opens view-source tab for the document last committed in this
+  // RenderFrameHost.
+  virtual void ViewSource() = 0;
 
  private:
   // This interface should only be implemented inside content.

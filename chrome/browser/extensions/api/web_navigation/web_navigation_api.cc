@@ -388,6 +388,8 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 
   WebNavigationAPI* api = WebNavigationAPI::GetFactoryInstance()->Get(
       web_contents()->GetBrowserContext());
+  if (!api)
+    return;  // Possible in unit tests.
   WebNavigationEventRouter* router = api->web_navigation_event_router_.get();
   if (!router)
     return;
