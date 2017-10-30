@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.base.MenuSourceType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,13 +53,15 @@ public class TabularContextMenuUiTest {
         private MockMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
                 String unfilteredLinkUrl, String srcUrl, String titleText,
                 boolean imageWasFetchedLoFi, Referrer referrer, boolean canSavemedia,
-                int touchPointXDp, int touchPointYDp) {
+                int touchPointXDp, int touchPointYDp, @MenuSourceType int sourceType) {
             super(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl, srcUrl, titleText,
-                    imageWasFetchedLoFi, referrer, canSavemedia, touchPointXDp, touchPointYDp);
+                    imageWasFetchedLoFi, referrer, canSavemedia, touchPointXDp, touchPointYDp,
+                    sourceType);
         }
 
         private MockMenuParams(String url) {
-            this(0, "", "", "", "", "", "", false, null, true, 0, 0);
+            this(0, "", "", "", "", "", "", false, null, true, 0, 0,
+                    MenuSourceType.MENU_SOURCE_TOUCH);
             mUrl = url;
         }
 

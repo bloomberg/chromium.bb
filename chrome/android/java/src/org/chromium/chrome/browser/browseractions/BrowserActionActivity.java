@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.base.MenuSourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +133,8 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
 
         return new ContextMenuParams(mType, mUri.toString(), mUri.toString(), mUri.toString(),
                 mUri.toString(), mUri.toString(), mUri.toString(), false /* imageWasFetchedLoFi */,
-                referrer, false /* canSaveMedia */, touchX, touchY);
+                referrer, false /* canSaveMedia */, touchX, touchY,
+                MenuSourceType.MENU_SOURCE_TOUCH);
     }
 
     @Override

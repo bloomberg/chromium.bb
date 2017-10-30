@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.ui.base.MenuSourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,17 +148,19 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private static ContextMenuParams createLinkContextParams() {
-        return new ContextMenuParams(
-                0, PAGE_URL, LINK_URL, LINK_TEXT, "", "", "", false, null, false, 0, 0);
+        return new ContextMenuParams(0, PAGE_URL, LINK_URL, LINK_TEXT, "", "", "", false, null,
+                false, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
     }
 
     private static ContextMenuParams createImageContextParams() {
         return new ContextMenuParams(WebContextMenuMediaType.MEDIA_TYPE_IMAGE, PAGE_URL, "", "",
-                IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0);
+                IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0,
+                MenuSourceType.MENU_SOURCE_TOUCH);
     }
 
     private static ContextMenuParams createImageLinkContextParams() {
         return new ContextMenuParams(WebContextMenuMediaType.MEDIA_TYPE_IMAGE, PAGE_URL, PAGE_URL,
-                LINK_URL, IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0);
+                LINK_URL, IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0,
+                MenuSourceType.MENU_SOURCE_TOUCH);
     }
 }
