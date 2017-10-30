@@ -2153,11 +2153,6 @@ TEST_F(SplitViewWindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
   EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
   window_selector()->Drag(selector_item, center);
   EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
-
-  // TODO(sammiequon|xdai): Exit overview as a stop gap solution to avoid memory
-  // leak during shutdown. Fix and remove the ToggleOverview. See
-  // crbug.com/766725
-  ToggleOverview();
 }
 
 // Tests dragging a unsnappable window.
@@ -2557,11 +2552,6 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewBothActiveTest) {
   EXPECT_NE(window1_bounds, window1_bounds_after_resize);
   EXPECT_NE(overview_grid_bounds, overview_grid_bounds_after_resize);
   EXPECT_NE(divider_bounds, divider_bounds_after_resize);
-
-  // TODO(sammiequon|xdai): Exit overview as a stop gap solution to avoid memory
-  // leak during shutdown. Fix and remove the ToggleOverview. See
-  // crbug.com/766725
-  ToggleOverview();
 }
 
 // Verify that selecting an unsnappable window while in split view works as
