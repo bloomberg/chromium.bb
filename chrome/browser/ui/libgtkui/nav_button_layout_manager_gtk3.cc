@@ -44,7 +44,7 @@ std::string GetDecorationLayoutFromGtkWindow() {
 }  // namespace
 
 NavButtonLayoutManagerGtk3::NavButtonLayoutManagerGtk3(GtkUi* delegate)
-    : delegate_(delegate), signal_id_(0) {
+    : delegate_(delegate), signal_id_(0), signal_id_middle_click_(0) {
   DCHECK(delegate_);
   GtkSettings* settings = gtk_settings_get_default();
   if (GtkVersionCheck(3, 14)) {
@@ -53,6 +53,12 @@ NavButtonLayoutManagerGtk3::NavButtonLayoutManagerGtk3(GtkUi* delegate)
         G_CALLBACK(OnDecorationButtonLayoutChangedThunk), this);
     DCHECK(signal_id_);
     OnDecorationButtonLayoutChanged(settings, nullptr);
+
+    signal_id_middle_click_ =
+        g_signal_connect(settings, "notify::gtk-titlebar-middle-click",
+                         G_CALLBACK(OnMiddleClickActionChangedThunk), this);
+    DCHECK(signal_id_middle_click_);
+    OnMiddleClickActionChanged(settings, nullptr);
   } else if (GtkVersionCheck(3, 10, 3)) {
     signal_id_ = g_signal_connect_after(settings, "notify::gtk-theme-name",
                                         G_CALLBACK(OnThemeChangedThunk), this);
@@ -67,6 +73,9 @@ NavButtonLayoutManagerGtk3::NavButtonLayoutManagerGtk3(GtkUi* delegate)
 NavButtonLayoutManagerGtk3::~NavButtonLayoutManagerGtk3() {
   if (signal_id_)
     g_signal_handler_disconnect(gtk_settings_get_default(), signal_id_);
+  if (signal_id_middle_click_)
+    g_signal_handler_disconnect(gtk_settings_get_default(),
+                                signal_id_middle_click_);
 }
 
 void NavButtonLayoutManagerGtk3::SetWindowButtonOrderingFromGtkLayout(
@@ -82,6 +91,28 @@ void NavButtonLayoutManagerGtk3::OnDecorationButtonLayoutChanged(
     GParamSpec* param) {
   SetWindowButtonOrderingFromGtkLayout(
       GetGtkSettingsStringProperty(settings, "gtk-decoration-layout"));
+}
+
+void NavButtonLayoutManagerGtk3::OnMiddleClickActionChanged(
+    GtkSettings* settings,
+    GParamSpec* param) {
+  std::string value =
+      GetGtkSettingsStringProperty(settings, "gtk-titlebar-middle-click");
+  GtkUi::NonClientMiddleClickAction action;
+  if (value == "none") {
+    action = views::LinuxUI::MIDDLE_CLICK_ACTION_NONE;
+  } else if (value == "lower") {
+    action = views::LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
+  } else if (value == "minimize") {
+    action = views::LinuxUI::MIDDLE_CLICK_ACTION_MINIMIZE;
+  } else if (value == "toggle-maximize") {
+    action = views::LinuxUI::MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE;
+  } else {
+    // Default to no action if the user has explicitly
+    // chosen an action that we don't implement.
+    action = views::LinuxUI::MIDDLE_CLICK_ACTION_NONE;
+  }
+  delegate_->SetNonClientMiddleClickAction(action);
 }
 
 void NavButtonLayoutManagerGtk3::OnThemeChanged(GtkSettings* settings,

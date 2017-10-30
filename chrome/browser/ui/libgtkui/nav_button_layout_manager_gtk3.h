@@ -34,6 +34,12 @@ class NavButtonLayoutManagerGtk3 : public NavButtonLayoutManager {
 
   CHROMEG_CALLBACK_1(NavButtonLayoutManagerGtk3,
                      void,
+                     OnMiddleClickActionChanged,
+                     GtkSettings*,
+                     GParamSpec*);
+
+  CHROMEG_CALLBACK_1(NavButtonLayoutManagerGtk3,
+                     void,
                      OnThemeChanged,
                      GtkSettings*,
                      GParamSpec*);
@@ -41,6 +47,8 @@ class NavButtonLayoutManagerGtk3 : public NavButtonLayoutManager {
   GtkUi* delegate_;
 
   unsigned long signal_id_;
+
+  unsigned long signal_id_middle_click_;
 
   DISALLOW_COPY_AND_ASSIGN(NavButtonLayoutManagerGtk3);
 };
