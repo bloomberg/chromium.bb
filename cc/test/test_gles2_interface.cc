@@ -222,6 +222,15 @@ void TestGLES2Interface::TexStorage2DEXT(GLenum target,
   test_context_->texStorage2DEXT(target, levels, internalformat, width, height);
 }
 
+void TestGLES2Interface::TexStorage2DImageCHROMIUM(GLenum target,
+                                                   GLenum internalformat,
+                                                   GLenum bufferusage,
+                                                   GLsizei width,
+                                                   GLsizei height) {
+  test_context_->texStorage2DImageCHROMIUM(target, internalformat, bufferusage,
+                                           width, height);
+}
+
 void TestGLES2Interface::TexParameteri(GLenum target,
                                        GLenum pname,
                                        GLint param) {

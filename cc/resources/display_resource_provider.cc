@@ -212,7 +212,7 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
     viz::ReturnedResource returned;
     returned.id = child_id;
-    returned.sync_token = resource.mailbox().sync_token();
+    returned.sync_token = resource.sync_token();
     returned.count = resource.imported_count;
     returned.lost = is_lost;
     to_return.push_back(returned);
@@ -294,19 +294,24 @@ void DisplayResourceProvider::ReceiveFromChild(
     viz::ResourceId local_id = next_id_++;
     Resource* resource = nullptr;
     if (it->is_software) {
-      resource = InsertResource(local_id,
-                                Resource(it->mailbox_holder.mailbox, it->size,
-                                         Resource::DELEGATED, GL_LINEAR));
+      resource = InsertResource(
+          local_id,
+          Resource(it->size, Resource::DELEGATED, TEXTURE_HINT_DEFAULT,
+                   RESOURCE_TYPE_BITMAP, viz::RGBA_8888, it->color_space));
+      resource->has_shared_bitmap_id = true;
+      resource->shared_bitmap_id = it->mailbox_holder.mailbox;
     } else {
       resource = InsertResource(
           local_id,
-          Resource(0, it->size, Resource::DELEGATED,
-                   it->mailbox_holder.texture_target, it->filter,
-                   TEXTURE_HINT_DEFAULT, RESOURCE_TYPE_GL_TEXTURE, it->format));
+          Resource(it->size, Resource::DELEGATED, TEXTURE_HINT_DEFAULT,
+                   RESOURCE_TYPE_GL_TEXTURE, it->format, it->color_space));
+      resource->target = it->mailbox_holder.texture_target;
+      resource->filter = it->filter;
+      resource->original_filter = it->filter;
+      resource->min_filter = it->filter;
       resource->buffer_format = it->buffer_format;
-      resource->SetMailbox(viz::TextureMailbox(
-          it->mailbox_holder.mailbox, it->mailbox_holder.sync_token,
-          it->mailbox_holder.texture_target));
+      resource->mailbox = it->mailbox_holder.mailbox;
+      resource->UpdateSyncToken(it->mailbox_holder.sync_token);
       resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
       resource->is_overlay_candidate = it->is_overlay_candidate;
 #if defined(OS_ANDROID)
@@ -315,7 +320,6 @@ void DisplayResourceProvider::ReceiveFromChild(
       if (resource->wants_promotion_hint)
         wants_promotion_hints_set_.insert(local_id);
 #endif
-      resource->color_space = it->color_space;
     }
     resource->child_id = child;
     // Don't allocate a texture for a child.
@@ -382,12 +386,12 @@ const ResourceProvider::Resource* DisplayResourceProvider::LockForRead(
 
   if (IsGpuResourceType(resource->type) && !resource->gl_id) {
     DCHECK(resource->origin != Resource::INTERNAL);
-    DCHECK(resource->mailbox().IsTexture());
+    DCHECK(!resource->mailbox.IsZero());
 
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     resource->gl_id = gl->CreateAndConsumeTextureCHROMIUM(
-        resource->mailbox().target(), resource->mailbox().name());
+        resource->target, resource->mailbox.name);
     resource->SetLocallyUsed();
   }
 
@@ -397,8 +401,8 @@ const ResourceProvider::Resource* DisplayResourceProvider::LockForRead(
         shared_bitmap_manager_->GetSharedBitmapFromId(
             resource->size, resource->shared_bitmap_id);
     if (bitmap) {
-      resource->shared_bitmap = bitmap.release();
-      resource->pixels = resource->shared_bitmap->pixels();
+      resource->SetSharedBitmap(bitmap.get());
+      resource->owned_shared_bitmap = std::move(bitmap);
     }
   }
 

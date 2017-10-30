@@ -81,11 +81,12 @@ class CC_EXPORT ResourceProvider
   using ResourceIdArray = std::vector<viz::ResourceId>;
   using ResourceIdMap = std::unordered_map<viz::ResourceId, viz::ResourceId>;
   enum TextureHint {
-    TEXTURE_HINT_DEFAULT = 0x0,
-    TEXTURE_HINT_MIPMAP = 0x1,
-    TEXTURE_HINT_FRAMEBUFFER = 0x2,
+    TEXTURE_HINT_DEFAULT = 0,
+    TEXTURE_HINT_MIPMAP = 1 << 0,
+    TEXTURE_HINT_FRAMEBUFFER = 1 << 2,
     TEXTURE_HINT_MIPMAP_FRAMEBUFFER =
-        TEXTURE_HINT_MIPMAP | TEXTURE_HINT_FRAMEBUFFER
+        TEXTURE_HINT_MIPMAP | TEXTURE_HINT_FRAMEBUFFER,
+    TEXTURE_HINT_OVERLAY = 1 << 3,
   };
   enum ResourceType {
     RESOURCE_TYPE_GPU_MEMORY_BUFFER,
@@ -106,6 +107,8 @@ class CC_EXPORT ResourceProvider
   }
 
   void Initialize();
+
+  bool IsSoftware() const { return !compositor_context_provider_; }
 
   void DidLoseVulkanContextProvider() { lost_context_provider_ = true; }
 
@@ -129,6 +132,9 @@ class CC_EXPORT ResourceProvider
   // Note that render buffer support implies texture support.
   bool IsRenderBufferFormatSupported(viz::ResourceFormat format) const;
 
+  bool IsGpuMemoryBufferFormatSupported(viz::ResourceFormat format,
+                                        gfx::BufferUsage usage) const;
+
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(viz::ResourceId id);
 
@@ -138,10 +144,6 @@ class CC_EXPORT ResourceProvider
   void EnableReadLockFencesForTesting(viz::ResourceId id);
 
   // Producer interface.
-
-  ResourceType default_resource_type() const {
-    return settings_.default_resource_type;
-  }
   ResourceType GetResourceType(viz::ResourceId id);
   GLenum GetResourceTextureTarget(viz::ResourceId id);
   TextureHint GetTextureHint(viz::ResourceId id);
@@ -191,12 +193,14 @@ class CC_EXPORT ResourceProvider
       return color_space_;
     }
 
+    GrPixelConfig PixelConfig() const;
+
+    void set_allocated() { allocated_ = true; }
+
     void set_sync_token(const gpu::SyncToken& sync_token) {
       sync_token_ = sync_token;
       has_sync_token_ = true;
     }
-
-    GrPixelConfig PixelConfig() const;
 
     void set_synchronized() { synchronized_ = true; }
 
@@ -215,26 +219,18 @@ class CC_EXPORT ResourceProvider
    private:
     void LazyAllocate(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
 
-    void AllocateGpuMemoryBuffer(gpu::gles2::GLES2Interface* gl,
-                                 GLuint texture_id);
-
-    void AllocateTexture(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
-
     ResourceProvider* const resource_provider_;
     const viz::ResourceId resource_id_;
 
     // The following are copied from the resource.
-    ResourceProvider::ResourceType type_;
     gfx::Size size_;
     viz::ResourceFormat format_;
-    gfx::BufferUsage usage_;
     gfx::ColorSpace color_space_;
     GLuint texture_id_;
     GLenum target_;
     ResourceProvider::TextureHint hint_;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-    GLuint image_id_;
     gpu::Mailbox mailbox_;
+    bool is_overlay_;
     bool allocated_;
 
     // Set by the user.
@@ -364,7 +360,7 @@ class CC_EXPORT ResourceProvider
   void ValidateResource(viz::ResourceId id) const;
 
   GLenum GetImageTextureTarget(gfx::BufferUsage usage,
-                               viz::ResourceFormat format);
+                               viz::ResourceFormat format) const;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -406,23 +402,12 @@ class CC_EXPORT ResourceProvider
     };
     enum MipmapState { INVALID, GENERATE, VALID };
 
-    Resource(GLuint texture_id,
-             const gfx::Size& size,
+    Resource(const gfx::Size& size,
              Origin origin,
-             GLenum target,
-             GLenum filter,
              TextureHint hint,
              ResourceType type,
-             viz::ResourceFormat format);
-    Resource(uint8_t* pixels,
-             viz::SharedBitmap* bitmap,
-             const gfx::Size& size,
-             Origin origin,
-             GLenum filter);
-    Resource(const viz::SharedBitmapId& bitmap_id,
-             const gfx::Size& size,
-             Origin origin,
-             GLenum filter);
+             viz::ResourceFormat format,
+             const gfx::ColorSpace& color_space);
     Resource(Resource&& other);
     ~Resource();
 
@@ -431,28 +416,22 @@ class CC_EXPORT ResourceProvider
              synchronization_state_ == LOCALLY_USED;
     }
 
+    const gpu::SyncToken& sync_token() const { return sync_token_; }
+
     SynchronizationState synchronization_state() const {
       return synchronization_state_;
     }
 
-    const viz::TextureMailbox& mailbox() const { return mailbox_; }
-    void SetMailbox(const viz::TextureMailbox& mailbox);
+    void SetSharedBitmap(viz::SharedBitmap* bitmap);
 
     void SetLocallyUsed();
     void SetSynchronized();
     void UpdateSyncToken(const gpu::SyncToken& sync_token);
+    void WaitSyncToken(gpu::gles2::GLES2Interface* gl);
     int8_t* GetSyncTokenData();
-    void WaitSyncToken(gpu::gles2::GLES2Interface* sync_token);
     void SetGenerateMipmap();
 
-    int child_id;
-    viz::ResourceId id_in_child;
-    GLuint gl_id;
-    viz::ReleaseCallback release_callback;
-    uint8_t* pixels;
-    int lock_for_read_count;
-    int imported_count;
-    int exported_count;
+    // Bitfield flags
     bool locked_for_write : 1;
     bool lost : 1;
     bool marked_for_deletion : 1;
@@ -474,44 +453,57 @@ class CC_EXPORT ResourceProvider
     // Indicates that this resource would like a promotion hint.
     bool wants_promotion_hint : 1;
 #endif
+
+    int child_id = 0;
+    viz::ResourceId id_in_child = 0;
+    GLuint gl_id = 0;
+    gpu::Mailbox mailbox;
+    viz::ReleaseCallback release_callback;
+    uint8_t* pixels = nullptr;
+    int lock_for_read_count = 0;
+    int imported_count = 0;
+    int exported_count = 0;
     scoped_refptr<Fence> read_lock_fence;
     gfx::Size size;
-    Origin origin;
-    GLenum target;
+    Origin origin = INTERNAL;
+    GLenum target = GL_TEXTURE_2D;
     // TODO(skyostil): Use a separate sampler object for filter state.
-    GLenum original_filter;
-    GLenum filter;
-    GLenum min_filter;
-    GLuint image_id;
-    TextureHint hint;
-    ResourceType type;
+    GLenum original_filter = GL_LINEAR;
+    GLenum filter = GL_LINEAR;
+    GLenum min_filter = GL_LINEAR;
+    GLuint image_id = 0;
+    TextureHint hint = TEXTURE_HINT_DEFAULT;
+    ResourceType type = RESOURCE_TYPE_BITMAP;
     // GpuMemoryBuffer resource allocation needs to know how the resource will
     // be used.
-    gfx::BufferUsage usage;
+    gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
     // This is the the actual format of the underlaying GpuMemoryBuffer, if any,
     // and might not correspond to viz::ResourceFormat. This format is needed to
     // scanout the buffer as HW overlay.
-    gfx::BufferFormat buffer_format;
+    gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
     // Resource format is the format as seen from the compositor and might not
     // correspond to buffer_format (e.g: A resouce that was created from a YUV
     // buffer could be seen as RGB from the compositor/GL.)
-    viz::ResourceFormat format;
+    viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
     viz::SharedBitmapId shared_bitmap_id;
-    viz::SharedBitmap* shared_bitmap;
+    viz::SharedBitmap* shared_bitmap = nullptr;
+    std::unique_ptr<viz::SharedBitmap> owned_shared_bitmap;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
     gfx::ColorSpace color_space;
     MipmapState mipmap_state = INVALID;
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;
-    viz::TextureMailbox mailbox_;
+    gpu::SyncToken sync_token_;
 
     DISALLOW_COPY_AND_ASSIGN(Resource);
   };
   using ResourceMap = std::unordered_map<viz::ResourceId, Resource>;
 
   Resource* InsertResource(viz::ResourceId id, Resource resource);
+
   Resource* GetResource(viz::ResourceId id);
+
   Resource* LockForWrite(viz::ResourceId id);
   void UnlockForWrite(Resource* resource);
 
@@ -534,6 +526,7 @@ class CC_EXPORT ResourceProvider
     NORMAL,
     FOR_SHUTDOWN,
   };
+
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
 
   void CreateMailbox(Resource* resource);
@@ -553,16 +546,18 @@ class CC_EXPORT ResourceProvider
              const viz::ResourceSettings& resource_settings);
 
     int max_texture_size = 0;
-    bool use_texture_storage_ext = false;
+    bool use_texture_storage = false;
     bool use_texture_format_bgra = false;
     bool use_texture_usage_hint = false;
     bool use_texture_npot = false;
     bool use_sync_query = false;
+    bool use_texture_storage_image = false;
     ResourceType default_resource_type = RESOURCE_TYPE_GL_TEXTURE;
     viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat best_texture_format = viz::RGBA_8888;
     viz::ResourceFormat best_render_buffer_format = viz::RGBA_8888;
+    bool use_gpu_memory_buffer_resources = false;
     bool delegated_sync_points_required = false;
   } const settings_;
 
@@ -590,12 +585,11 @@ class CC_EXPORT ResourceProvider
 #endif
 
  private:
-  viz::ResourceId CreateGpuResource(const gfx::Size& size,
-                                    TextureHint hint,
-                                    ResourceType type,
-                                    viz::ResourceFormat format,
-                                    gfx::BufferUsage usage,
-                                    const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
+                                           TextureHint hint,
+                                           viz::ResourceFormat format,
+                                           const gfx::ColorSpace& color_space);
+
   viz::ResourceId CreateBitmapResource(const gfx::Size& size,
                                        const gfx::ColorSpace& color_space);
 

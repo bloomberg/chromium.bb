@@ -3400,11 +3400,11 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   DCHECK(ca_layer_overlay->rpdq);
 
   if (!overlay_resource_pool_) {
-    overlay_resource_pool_ =
-        cc::ResourcePool::CreateForGpuMemoryBufferResources(
-            resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
-            gfx::BufferUsage::SCANOUT, base::TimeDelta::FromSeconds(3),
-            settings_->disallow_non_exact_resource_reuse);
+    overlay_resource_pool_ = cc::ResourcePool::Create(
+        resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
+        cc::ResourceProvider::TEXTURE_HINT_OVERLAY,
+        base::TimeDelta::FromSeconds(3),
+        settings_->disallow_non_exact_resource_reuse);
   }
 
   cc::Resource* resource = nullptr;

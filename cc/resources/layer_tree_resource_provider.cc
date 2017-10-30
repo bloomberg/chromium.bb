@@ -46,26 +46,25 @@ viz::ResourceId LayerTreeResourceProvider::CreateResourceFromTextureMailbox(
   // DisplayResourceProvider::LockForRead().
   viz::ResourceId id = next_id_++;
   DCHECK(mailbox.IsValid());
-  Resource* resource = nullptr;
+  Resource* resource = resource =
+      InsertResource(id, Resource(mailbox.size_in_pixels(), Resource::EXTERNAL,
+                                  TEXTURE_HINT_DEFAULT,
+                                  mailbox.IsTexture() ? RESOURCE_TYPE_GL_TEXTURE
+                                                      : RESOURCE_TYPE_BITMAP,
+                                  viz::RGBA_8888, mailbox.color_space()));
   if (mailbox.IsTexture()) {
-    resource = InsertResource(
-        id, Resource(0, mailbox.size_in_pixels(), Resource::EXTERNAL,
-                     mailbox.target(),
-                     mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
-                     TEXTURE_HINT_DEFAULT, RESOURCE_TYPE_GL_TEXTURE,
-                     viz::RGBA_8888));
+    GLenum filter = mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
+    resource->filter = filter;
+    resource->original_filter = filter;
+    resource->min_filter = filter;
+    resource->target = mailbox.target();
+    resource->UpdateSyncToken(mailbox.sync_token());
   } else {
     DCHECK(mailbox.IsSharedMemory());
-    viz::SharedBitmap* shared_bitmap = mailbox.shared_bitmap();
-    uint8_t* pixels = shared_bitmap->pixels();
-    DCHECK(pixels);
-    resource = InsertResource(
-        id, Resource(pixels, shared_bitmap, mailbox.size_in_pixels(),
-                     Resource::EXTERNAL, GL_LINEAR));
+    resource->SetSharedBitmap(mailbox.shared_bitmap());
   }
   resource->allocated = true;
-  resource->SetMailbox(mailbox);
-  resource->color_space = mailbox.color_space();
+  resource->mailbox = mailbox.mailbox();
   resource->release_callback =
       base::Bind(&viz::SingleReleaseCallback::Run,
                  base::Owned(release_callback.release()));
@@ -104,7 +103,7 @@ gpu::SyncToken LayerTreeResourceProvider::GetSyncTokenForResources(
     const ResourceIdArray& resource_ids) {
   gpu::SyncToken latest_sync_token;
   for (viz::ResourceId id : resource_ids) {
-    const gpu::SyncToken& sync_token = GetResource(id)->mailbox().sync_token();
+    const gpu::SyncToken& sync_token = GetResource(id)->sync_token();
     if (sync_token.release_count() > latest_sync_token.release_count())
       latest_sync_token = sync_token;
   }
@@ -136,7 +135,7 @@ void LayerTreeResourceProvider::PrepareSendToParent(
     if (settings_.delegated_sync_points_required) {
       if (resource->needs_sync_token()) {
         need_synchronization_resources.push_back(resource);
-      } else if (!resource->mailbox().sync_token().verified_flush()) {
+      } else if (!resource->sync_token().verified_flush()) {
         unverified_sync_tokens.push_back(resource->GetSyncTokenData());
       }
     }
@@ -237,7 +236,6 @@ void LayerTreeResourceProvider::TransferResource(
     viz::TransferableResource* resource) {
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
-  DCHECK(source->origin != Resource::EXTERNAL || source->mailbox().IsValid());
   DCHECK(source->allocated);
   resource->id = id;
   resource->format = source->format;
@@ -254,22 +252,18 @@ void LayerTreeResourceProvider::TransferResource(
   resource->color_space = source->color_space;
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
+    DCHECK(source->shared_bitmap);
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;
     resource->is_software = true;
-    if (source->shared_bitmap) {
-      resource->shared_bitmap_sequence_number =
-          source->shared_bitmap->sequence_number();
-    } else {
-      resource->shared_bitmap_sequence_number = 0;
-    }
+    resource->shared_bitmap_sequence_number =
+        source->shared_bitmap->sequence_number();
   } else {
-    DCHECK(source->mailbox().IsValid());
-    DCHECK(source->mailbox().IsTexture());
+    DCHECK(!source->mailbox.IsZero());
     // This is either an external resource, or a compositor resource that we
     // already exported. Make sure to forward the sync point that we were given.
-    resource->mailbox_holder.mailbox = source->mailbox().mailbox();
-    resource->mailbox_holder.texture_target = source->mailbox().target();
-    resource->mailbox_holder.sync_token = source->mailbox().sync_token();
+    resource->mailbox_holder.mailbox = source->mailbox;
+    resource->mailbox_holder.texture_target = source->target;
+    resource->mailbox_holder.sync_token = source->sync_token();
   }
 }
 
@@ -278,7 +272,7 @@ LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer ::
                                    viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   Resource* resource = resource_provider->LockForWrite(resource_id);
-  DCHECK(IsGpuResourceType(resource->type));
+  DCHECK_EQ(resource->type, ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER);
   size_ = resource->size;
   format_ = resource->format;
   usage_ = resource->usage;
@@ -294,12 +288,6 @@ LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   if (gpu_memory_buffer_) {
     resource->gpu_memory_buffer = std::move(gpu_memory_buffer_);
     resource->allocated = true;
-    resource->is_overlay_candidate = true;
-    resource->buffer_format = resource->gpu_memory_buffer->GetFormat();
-    // GpuMemoryBuffer provides direct access to the memory used by the GPU.
-    // Read lock fences are required to ensure that we're not trying to map a
-    // buffer that is currently in-use by the GPU.
-    resource->read_lock_fences_enabled = true;
     resource_provider_->CreateAndBindImage(resource);
   }
   resource_provider_->UnlockForWrite(resource);
