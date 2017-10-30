@@ -181,7 +181,10 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
   if (@available(macOS 10.10, *)) {
     activity_.reset([[NSUserActivity alloc]
         initWithActivityType:NSUserActivityTypeBrowsingWeb]);
-    [activity_ setWebpageURL:url];
+    // webpageURL must be http or https or an exception is thrown.
+    if ([url.scheme hasPrefix:@"http"]) {
+      [activity_ setWebpageURL:url];
+    }
     [activity_ setTitle:title];
     [activity_ becomeCurrent];
   }
