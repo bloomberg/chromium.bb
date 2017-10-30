@@ -83,8 +83,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       single_character_buffer_(0),
       have_passed_start_node_(false),
       should_handle_first_letter_(false),
-      should_stop_(false),
-      emits_original_text_(false) {
+      should_stop_(false) {
   Node* start_node = range.StartPosition().AnchorNode();
   if (!start_node)
     return;
@@ -331,7 +330,7 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
   // We can use a linefeed in place of a tab because this simple iterator is
   // only used to find boundaries, not actual content. A linefeed breaks words,
   // sentences, and paragraphs.
-  if (TextIterator::ShouldEmitNewlineForNode(node_, emits_original_text_) ||
+  if (TextIterator::ShouldEmitNewlineForNode(node_, false) ||
       TextIterator::ShouldEmitNewlineAfterNode(*node_) ||
       TextIterator::ShouldEmitTabBeforeNode(node_)) {
     unsigned index = Strategy::Index(*node_);
@@ -345,7 +344,7 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
 
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::ExitNode() {
-  if (TextIterator::ShouldEmitNewlineForNode(node_, emits_original_text_) ||
+  if (TextIterator::ShouldEmitNewlineForNode(node_, false) ||
       TextIterator::ShouldEmitNewlineBeforeNode(*node_) ||
       TextIterator::ShouldEmitTabBeforeNode(node_)) {
     // The start of this emitted range is wrong. Ensuring correctness would

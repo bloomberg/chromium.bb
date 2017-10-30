@@ -139,9 +139,6 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   // Used when m_stopsOnFormControls is set to determine if the iterator should
   // keep advancing.
   bool should_stop_;
-
-  // Used in pasting inside password field.
-  bool emits_original_text_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
