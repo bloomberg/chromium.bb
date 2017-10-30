@@ -4,16 +4,7 @@
 cd355b553ce7660283c52675232e9227
 # ARM - MediaTek
 5acb8209d79c02ed9bc12048e07908e4
-# Intel - BDW
-bea8039e6921d930bb1c86185f62b1b0
 # Intel - VA_FILTER_SCALING_DEFAULT
-32a3c4257dac03df92a5c7593ee7e31f
+66f40a833b8b23dc52bbdfc0ef0e268f
 # Intel - go2001
-5e06153339e8f83f4d8f76331f54423d
-
-# TODO(llandwerlin): Remove the following hash when the libva-intel-driver
-# is updated.
-# Intel - BDW
-4da7ec5484a99195c2c05b5e591940f9
-#Intel -SKL
-205a4000b3fbde1f2f927c8791c2afe9
+f9c98d3808b3ca06d3375d005ab31537
