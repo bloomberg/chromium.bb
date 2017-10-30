@@ -112,7 +112,7 @@ fi
 
 distro_codename=$(lsb_release --codename --short)
 distro_id=$(lsb_release --id --short)
-supported_codenames="(trusty|xenial|yakkety|zesty)"
+supported_codenames="(trusty|xenial|zesty|artful)"
 supported_ids="(Debian)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $distro_codename =~ $supported_codenames &&
@@ -120,8 +120,8 @@ if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
     echo -e "ERROR: The only supported distros are\n" \
       "\tUbuntu 14.04 (trusty)\n" \
       "\tUbuntu 16.04 (xenial)\n" \
-      "\tUbuntu 16.10 (yakkety)\n" \
       "\tUbuntu 17.04 (zesty)\n" \
+      "\tUbuntu 17.10 (artful)\n" \
       "\tDebian 8 (jessie) or later" >&2
     exit 1
   fi
@@ -292,6 +292,7 @@ dbg_list="\
   libxdamage1-dbg
   libxdmcp6-dbg
   libxext6-dbg
+  libxfixes3-dbg
   libxi6-dbg
   libxinerama1-dbg
   libxrandr2-dbg
@@ -299,10 +300,6 @@ dbg_list="\
   libxtst6-dbg
   zlib1g-dbg
 "
-
-if [[ ! $distro_codename =~ "yakkety" ]]; then
-  dbg_list="${dbg_list} libxfixes3-dbg"
-fi
 
 # Find the proper version of libstdc++6-4.x-dbg.
 if [ "x$distro_codename" = "xtrusty" ]; then
@@ -364,7 +361,7 @@ case $distro_codename in
     arm_list+=" g++-4.8-multilib-arm-linux-gnueabihf
                 gcc-4.8-multilib-arm-linux-gnueabihf"
     ;;
-  xenial|yakkety|zesty)
+  xenial|zesty|artful)
     arm_list+=" g++-5-multilib-arm-linux-gnueabihf
                 gcc-5-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
@@ -479,7 +476,9 @@ if package_exists fonts-indic; then
 else
   dev_list="${dev_list} ttf-indic-fonts"
 fi
-if package_exists php7.0-cgi; then
+if package_exists php7.1-cgi; then
+  dev_list="${dev_list} php7.1-cgi libapache2-mod-php7.1"
+elif package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
 else
   dev_list="${dev_list} php5-cgi libapache2-mod-php5"
