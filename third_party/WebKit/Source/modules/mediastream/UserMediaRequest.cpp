@@ -403,13 +403,31 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
                       WebFeature::kGetUserMediaSecureOrigin);
     UseCounter::CountCrossOriginIframe(
         *document, WebFeature::kGetUserMediaSecureOriginIframe);
+
+    // Feature policy deprecation messages.
     if (Audio()) {
-      Deprecation::CountDeprecationFeaturePolicy(
-          *document, WebFeaturePolicyFeature::kMicrophone);
+      if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
+        if (!document->GetFrame()->IsFeatureEnabled(
+                WebFeaturePolicyFeature::kMicrophone)) {
+          UseCounter::Count(
+              document, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
+        }
+      } else {
+        Deprecation::CountDeprecationFeaturePolicy(
+            *document, WebFeaturePolicyFeature::kMicrophone);
+      }
     }
     if (Video()) {
-      Deprecation::CountDeprecationFeaturePolicy(
-          *document, WebFeaturePolicyFeature::kCamera);
+      if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
+        if (!document->GetFrame()->IsFeatureEnabled(
+                WebFeaturePolicyFeature::kCamera)) {
+          UseCounter::Count(document,
+                            WebFeature::kCameraDisabledByFeaturePolicyEstimate);
+        }
+      } else {
+        Deprecation::CountDeprecationFeaturePolicy(
+            *document, WebFeaturePolicyFeature::kCamera);
+      }
     }
 
     HostsUsingFeatures::CountAnyWorld(
