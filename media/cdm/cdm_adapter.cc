@@ -447,8 +447,6 @@ CdmAdapter::CdmAdapter(
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
-      audio_samples_per_second_(0),
-      audio_channel_layout_(CHANNEL_LAYOUT_NONE),
       helper_(std::move(helper)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       pool_(new AudioBufferMemoryPool()),
