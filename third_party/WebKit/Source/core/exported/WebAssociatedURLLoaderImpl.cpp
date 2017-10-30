@@ -34,7 +34,6 @@
 #include <memory>
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -49,6 +48,8 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
@@ -386,9 +387,13 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
   }
 
-  scoped_refptr<WebTaskRunner> task_runner = TaskRunnerHelper::Get(
-      TaskType::kUnspecedLoading,
-      observer_ ? ToDocument(observer_->LifecycleContext()) : nullptr);
+  scoped_refptr<WebTaskRunner> task_runner;
+  if (observer_) {
+    task_runner = ToDocument(observer_->LifecycleContext())
+                      ->GetTaskRunner(TaskType::kUnspecedLoading);
+  } else {
+    task_runner = Platform::Current()->CurrentThread()->GetWebTaskRunner();
+  }
   client_ = client;
   client_adapter_ = ClientAdapter::Create(this, client, options_,
                                           request.GetFetchRequestMode(),
