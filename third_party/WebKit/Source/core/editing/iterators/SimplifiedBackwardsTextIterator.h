@@ -97,6 +97,8 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
                        int position,
                        int copy_length) const;
 
+  TextIteratorBehavior behavior_;
+
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
   Member<Node> node_;
@@ -133,9 +135,6 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
 
   // Should handle first-letter layoutObject in the next call to handleTextNode.
   bool should_handle_first_letter_;
-
-  // Used when the iteration should stop if form controls are reached.
-  bool stops_on_form_controls_;
 
   // Used when m_stopsOnFormControls is set to determine if the iterator should
   // keep advancing.

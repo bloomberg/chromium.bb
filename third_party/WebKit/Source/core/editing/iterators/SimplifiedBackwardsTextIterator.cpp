@@ -66,7 +66,8 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
     SimplifiedBackwardsTextIteratorAlgorithm(
         const EphemeralRangeTemplate<Strategy>& range,
         const TextIteratorBehavior& behavior)
-    : node_(nullptr),
+    : behavior_(behavior),
+      node_(nullptr),
       offset_(0),
       handled_node_(false),
       handled_children_(false),
@@ -82,7 +83,6 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       single_character_buffer_(0),
       have_passed_start_node_(false),
       should_handle_first_letter_(false),
-      stops_on_form_controls_(behavior.StopsOnFormControls()),
       should_stop_(false),
       emits_original_text_(false) {
   Node* start_node = range.StartPosition().AnchorNode();
@@ -147,7 +147,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
   if (should_stop_)
     return;
 
-  if (stops_on_form_controls_ &&
+  if (behavior_.StopsOnFormControls() &&
       HTMLFormControlElement::EnclosingFormControlElement(node_)) {
     should_stop_ = true;
     return;
