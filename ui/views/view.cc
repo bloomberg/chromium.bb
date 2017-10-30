@@ -2064,6 +2064,13 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
   gfx::Canvas* canvas = recorder.canvas();
   const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF outline_rect(ScaleToEnclosedRect(GetLocalBounds(), scale));
+  gfx::RectF content_outline_rect(
+      ScaleToEnclosedRect(GetContentsBounds(), scale));
+  if (content_outline_rect != outline_rect) {
+    content_outline_rect.Inset(0.5f, 0.5f);
+    const SkColor content_color = SkColorSetARGB(0x30, 0, 0, 0xff);
+    canvas->DrawRect(content_outline_rect, content_color);
+  }
   outline_rect.Inset(0.5f, 0.5f);
   const SkColor color = SkColorSetARGB(0x30, 0xff, 0, 0);
   canvas->DrawRect(outline_rect, color);
