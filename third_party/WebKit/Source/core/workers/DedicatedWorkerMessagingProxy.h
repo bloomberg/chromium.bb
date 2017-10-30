@@ -11,6 +11,7 @@
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefPtr.h"
@@ -39,7 +40,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   void StartWorkerGlobalScope(const KURL& script_url,
                               const String& user_agent,
                               const String& source_code,
-                              const String& referrer_policy);
+                              ReferrerPolicy);
   void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,
                                       Vector<MessagePortChannel>);
 

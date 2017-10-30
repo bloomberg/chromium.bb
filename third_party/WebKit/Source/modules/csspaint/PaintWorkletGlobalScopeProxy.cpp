@@ -26,16 +26,15 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
     size_t global_scope_number) {
   DCHECK(IsMainThread());
   Document* document = frame->GetDocument();
-  reporting_proxy_ = WTF::MakeUnique<MainThreadWorkletReportingProxy>(document);
+  reporting_proxy_ =
+      std::make_unique<MainThreadWorkletReportingProxy>(document);
 
   // TODO(nhiroki): Set CSP headers (https://crbug.com/773786).
-  // TODO(nhiroki): Inherit a referrer policy from owner's document.
-  // (https://crbug.com/773921)
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       document->Url(), document->UserAgent(), String() /* source_code */,
       nullptr /* cached_meta_data */,
       nullptr /* content_security_policy_parsed_headers */,
-      String() /* referrer_policy */, document->GetSecurityOrigin(),
+      document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       nullptr /* worker_clients */, document->AddressSpace(),
       OriginTrialContext::GetTokens(document).get(),
       nullptr /* worker_settings */, kV8CacheOptionsDefault);

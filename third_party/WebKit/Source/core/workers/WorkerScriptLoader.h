@@ -100,7 +100,7 @@ class CORE_EXPORT WorkerScriptLoader final
     return content_security_policy_.Release();
   }
 
-  String GetReferrerPolicy() { return referrer_policy_; }
+  const String& GetReferrerPolicy() const { return referrer_policy_; }
 
   WebAddressSpace ResponseAddressSpace() const {
     return response_address_space_;

@@ -20,6 +20,7 @@
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
@@ -146,9 +147,15 @@ void DedicatedWorker::OnFinished() {
   } else if (script_loader_->Failed()) {
     DispatchEvent(Event::CreateCancelable(EventTypeNames::error));
   } else {
+    ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+    if (!script_loader_->GetReferrerPolicy().IsNull()) {
+      SecurityPolicy::ReferrerPolicyFromHeaderValue(
+          script_loader_->GetReferrerPolicy(),
+          kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
+    }
     context_proxy_->StartWorkerGlobalScope(
         script_loader_->Url(), GetExecutionContext()->UserAgent(),
-        script_loader_->SourceText(), script_loader_->GetReferrerPolicy());
+        script_loader_->SourceText(), referrer_policy);
     probe::scriptImported(GetExecutionContext(), script_loader_->Identifier(),
                           script_loader_->SourceText());
   }

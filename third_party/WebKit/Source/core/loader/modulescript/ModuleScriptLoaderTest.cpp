@@ -182,7 +182,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       GetDocument().Url(), GetDocument().UserAgent(),
       String() /* source_code */, nullptr /* cached_meta_data */,
       nullptr /* content_security_policy_parsed_headers */,
-      String() /* referrer_policy */, GetDocument().GetSecurityOrigin(),
+      GetDocument().GetReferrerPolicy(), GetDocument().GetSecurityOrigin(),
       nullptr /* worker_clients */, GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       nullptr /* worker_settings */, kV8CacheOptionsDefault);

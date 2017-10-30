@@ -390,8 +390,7 @@ WorkerGlobalScope::WorkerGlobalScope(
   ApplyContentSecurityPolicyFromVector(
       *creation_params->content_security_policy_parsed_headers);
   SetWorkerSettings(std::move(creation_params->worker_settings));
-  if (!creation_params->referrer_policy.IsNull())
-    ParseAndSetReferrerPolicy(creation_params->referrer_policy);
+  SetReferrerPolicy(creation_params->referrer_policy);
   SetAddressSpace(creation_params->address_space);
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());

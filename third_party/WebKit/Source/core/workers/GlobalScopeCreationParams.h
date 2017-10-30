@@ -14,6 +14,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
@@ -38,7 +39,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const String& source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
       const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
-      const String& referrer_policy,
+      ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       WorkerClients*,
       WebAddressSpace,
@@ -63,7 +64,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   WTF::Optional<ContentSecurityPolicyResponseHeaders>
       content_security_policy_raw_headers;
 
-  String referrer_policy;
+  ReferrerPolicy referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
 
   // The SecurityOrigin of the Document creating a Worker/Worklet.
