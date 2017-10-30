@@ -734,12 +734,12 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-static int GetInsertionIndex(TabStripModel* tabstrip) {
+static int GetInsertionIndex(TabStripModelImpl* tabstrip) {
   return tabstrip->order_controller()->DetermineInsertionIndex(
       ui::PAGE_TRANSITION_LINK, false);
 }
 
-static void InsertWebContentses(TabStripModel* tabstrip,
+static void InsertWebContentses(TabStripModelImpl* tabstrip,
                                 WebContents* contents1,
                                 WebContents* contents2,
                                 WebContents* contents3) {
