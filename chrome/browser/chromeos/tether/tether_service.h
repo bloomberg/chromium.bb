@@ -69,7 +69,7 @@ class TetherService : public KeyedService,
   void Shutdown() override;
 
   // chromeos::PowerManagerClient::Observer:
-  void SuspendImminent() override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // chromeos::SessionManagerClient::Observer:

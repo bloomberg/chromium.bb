@@ -139,7 +139,8 @@ void DeviceEventRouter::OnRenameCompleted(const std::string& device_path,
                 device_path);
 }
 
-void DeviceEventRouter::SuspendImminent() {
+void DeviceEventRouter::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   is_resuming_ = true;
 }

@@ -122,7 +122,7 @@ class ASH_EXPORT TabletModeController
                         const base::TimeTicks& time) override;
   void TabletModeEventReceived(chromeos::PowerManagerClient::TabletMode mode,
                                const base::TimeTicks& time) override;
-  void SuspendImminent() override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
  private:

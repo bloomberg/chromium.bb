@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/disks/suspend_unmount_manager.h"
@@ -86,7 +87,8 @@ TEST_F(SuspendUnmountManagerTest, Basic) {
       false /* on_boot_device */, true /* on_removable_device */,
       kFileSystemType);
   disk_mount_manager_.SetupDefaultReplies();
-  fake_power_client_.SendSuspendImminent();
+  fake_power_client_.SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
 
   EXPECT_EQ(1, fake_power_client_.GetNumPendingSuspendReadinessCallbacks());
   EXPECT_EQ(2u, disk_mount_manager_.unmounting_mount_paths().size());
@@ -114,7 +116,8 @@ TEST_F(SuspendUnmountManagerTest, CancelAndSuspendAgain) {
       false /* on_boot_device */, true /* on_removable_device */,
       kFileSystemType);
   disk_mount_manager_.SetupDefaultReplies();
-  fake_power_client_.SendSuspendImminent();
+  fake_power_client_.SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, fake_power_client_.GetNumPendingSuspendReadinessCallbacks());
   ASSERT_EQ(1u, disk_mount_manager_.unmounting_mount_paths().size());
   EXPECT_EQ(kDummyMountPath,
@@ -124,12 +127,13 @@ TEST_F(SuspendUnmountManagerTest, CancelAndSuspendAgain) {
   fake_power_client_.SendSuspendDone();
 
   // Suspend again.
-  fake_power_client_.SendSuspendImminent();
+  fake_power_client_.SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   ASSERT_EQ(2u, disk_mount_manager_.unmounting_mount_paths().size());
   EXPECT_EQ(kDummyMountPath,
             disk_mount_manager_.unmounting_mount_paths().front());
 }
 
 }  // namespace
-}  // namespace chromeos
 }  // namespace disks
+}  // namespace chromeos

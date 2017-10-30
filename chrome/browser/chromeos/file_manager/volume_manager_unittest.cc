@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_info.h"
@@ -588,7 +589,8 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
 
   // Emulate system suspend and then resume.
   {
-    power_manager_client_->SendSuspendImminent();
+    power_manager_client_->SendSuspendImminent(
+        power_manager::SuspendImminent_Reason_OTHER);
     power_manager_client_->SendSuspendDone();
 
     // After resume, the device is unmounted and then mounted.

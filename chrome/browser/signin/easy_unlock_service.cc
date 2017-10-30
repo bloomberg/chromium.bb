@@ -206,7 +206,9 @@ class EasyUnlockService::PowerMonitor
 
  private:
   // chromeos::PowerManagerClient::Observer:
-  void SuspendImminent() override { service_->PrepareForSuspend(); }
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override {
+    service_->PrepareForSuspend();
+  }
 
   void SuspendDone(const base::TimeDelta& sleep_duration) override {
     waking_up_ = true;

@@ -290,7 +290,8 @@ void TabletModeController::TabletModeEventReceived(
   }
 }
 
-void TabletModeController::SuspendImminent() {
+void TabletModeController::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   // The system is about to suspend, so record TabletMode usage interval metrics
   // based on whether TabletMode mode is currently active.
   RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());

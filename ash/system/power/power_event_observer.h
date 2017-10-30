@@ -30,7 +30,7 @@ class ASH_EXPORT PowerEventObserver
   void OnLockAnimationsComplete();
 
   // chromeos::PowerManagerClient::Observer overrides:
-  void SuspendImminent() override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // chromeos::SessionManagerClient::Observer overrides.

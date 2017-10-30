@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -168,7 +169,8 @@ class RendererFreezerTest : public testing::Test {
 TEST_F(RendererFreezerTest, SuspendResume) {
   Init();
 
-  power_manager_client_->SendSuspendImminent();
+  power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(kFreezeRenderers, test_delegate_->GetActions());
 
   // The renderers should be thawed when we resume.
@@ -183,7 +185,8 @@ TEST_F(RendererFreezerTest, DelegateCannotFreezeRenderers) {
   Init();
 
   // Nothing happens on suspend.
-  power_manager_client_->SendSuspendImminent();
+  power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(kNoActions, test_delegate_->GetActions());
 
   // Nothing happens on resume.
@@ -202,7 +205,8 @@ TEST_F(RendererFreezerTest, ErrorThawingRenderers) {
   Init();
   test_delegate_->set_thaw_renderers_result(false);
 
-  power_manager_client_->SendSuspendImminent();
+  power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(kFreezeRenderers, test_delegate_->GetActions());
 
   EXPECT_DEATH(power_manager_client_->SendSuspendDone(), "Unable to thaw");

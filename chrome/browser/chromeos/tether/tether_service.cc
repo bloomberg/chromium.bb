@@ -210,7 +210,8 @@ void TetherService::Shutdown() {
   notification_presenter_.reset();
 }
 
-void TetherService::SuspendImminent() {
+void TetherService::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   suspended_ = true;
   UpdateTetherTechnologyState();
 }

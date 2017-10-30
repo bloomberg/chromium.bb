@@ -401,7 +401,8 @@ void WebUIScreenLocker::LidEventReceived(PowerManagerClient::LidState state,
   }
 }
 
-void WebUIScreenLocker::SuspendImminent() {
+void WebUIScreenLocker::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WebUIScreenLocker::ResetAndFocusUserPod,

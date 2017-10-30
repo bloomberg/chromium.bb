@@ -26,6 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -360,7 +361,8 @@ TEST_F(EasyUnlockServiceTest, DisabledOnSuspend) {
   EXPECT_TRUE(
       EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_LOADED));
 
-  power_manager_client()->SendSuspendImminent();
+  power_manager_client()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_TRUE(
       EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_DISABLED));
 

@@ -205,7 +205,8 @@ void ExtensionEventObserver::OnNetworkRequestDone(
   }
 }
 
-void ExtensionEventObserver::SuspendImminent() {
+void ExtensionEventObserver::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   if (should_delay_suspend_)
     OnSuspendImminent(false);
 }

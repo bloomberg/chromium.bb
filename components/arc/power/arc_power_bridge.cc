@@ -92,7 +92,8 @@ void ArcPowerBridge::OnInstanceClosed() {
   ReleaseAllDisplayWakeLocks();
 }
 
-void ArcPowerBridge::SuspendImminent() {
+void ArcPowerBridge::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   mojom::PowerInstance* power_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Suspend);
   if (!power_instance)

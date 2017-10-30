@@ -41,6 +41,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session.h"
 #include "components/session_manager/core/session_manager.h"
@@ -1505,7 +1506,8 @@ TEST_F(LockScreenAppStateTest, CloseAppWindowOnSuspend) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
                                       true /* enable_app_launch */));
 
-  GetPowerManagerClient()->SendSuspendImminent();
+  GetPowerManagerClient()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(TrayActionState::kAvailable,
             state_controller()->GetLockScreenNoteState());
 

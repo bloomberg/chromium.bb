@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
@@ -167,7 +168,8 @@ TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenScreenIsIdleOff) {
 // off.
 TEST_F(TabletPowerButtonControllerTest,
        TappingPowerButtonWhenSuspendedWithoutBacklightsForcedOff) {
-  power_manager_client_->SendSuspendImminent();
+  power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   power_manager_client_->SendBrightnessChanged(0, true);
   // There is a power button pressed here, but PowerButtonEvent is sent later.
   power_manager_client_->SendSuspendDone();
@@ -201,7 +203,8 @@ TEST_F(TabletPowerButtonControllerTest,
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  power_manager_client_->SendSuspendImminent();
+  power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
   // There is a power button pressed here, but PowerButtonEvent is sent later.
   // Because of backlights forced off, resuming system will not restore
   // brightness.

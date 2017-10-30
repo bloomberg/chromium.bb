@@ -149,7 +149,7 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // chromeos::PowerManagerClient::Observer
   void BrightnessChanged(int level, bool user_initiated) override;
-  void SuspendImminent() override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
   // Creates and registers an app window as action handler for the action on
   // Chrome OS lock screen. The ownership of the returned app window is passed

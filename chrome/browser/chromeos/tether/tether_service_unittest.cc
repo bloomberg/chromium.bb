@@ -27,6 +27,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -417,7 +418,8 @@ TEST_F(TetherServiceTest, TestSuspend) {
   CreateTetherService();
   VerifyTetherActiveStatus(true /* expected_active */);
 
-  fake_power_manager_client_->SendSuspendImminent();
+  fake_power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
 
   EXPECT_EQ(
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
@@ -432,7 +434,8 @@ TEST_F(TetherServiceTest, TestSuspend) {
                 chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(true /* expected_active */);
 
-  fake_power_manager_client_->SendSuspendImminent();
+  fake_power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
 
   VerifyTetherFeatureStateRecorded(
       TetherService::TetherFeatureState::OTHER_OR_UNKNOWN,

@@ -167,9 +167,10 @@ bool FakePowerManagerClient::PopVideoActivityReport() {
   return fullscreen;
 }
 
-void FakePowerManagerClient::SendSuspendImminent() {
+void FakePowerManagerClient::SendSuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   for (auto& observer : observers_)
-    observer.SuspendImminent();
+    observer.SuspendImminent(reason);
   if (render_process_manager_delegate_)
     render_process_manager_delegate_->SuspendImminent();
 }

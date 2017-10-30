@@ -30,7 +30,8 @@ SuspendUnmountManager::~SuspendUnmountManager() {
     suspend_readiness_callback_.Run();
 }
 
-void SuspendUnmountManager::SuspendImminent() {
+void SuspendUnmountManager::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   DCHECK(unmounting_paths_.empty());
   if (!unmounting_paths_.empty())
     return;
