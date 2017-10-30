@@ -101,7 +101,6 @@ vs-chromium-project.txt
 /chrome/chrome_version_resources.xml
 /chrome/common/extensions/api/api.xml
 /chrome/common/extensions/api/ledger/
-/chrome/Hammer
 /chrome/installer/linux/internal
 /chrome/installer/mac/internal
 /chrome/installer/mac/third_party/xz/xz
@@ -115,7 +114,6 @@ vs-chromium-project.txt
 /chrome/interactive_ui_tests_run.xml
 /chrome/setup.xml
 /chrome/setup_unittests.xml
-/chrome/supplement.gypi
 /chrome/sync_integration_tests_run.xml
 /chrome/test/android/telemetry_tests/browser_tests/*.wpr
 /chrome/test/chromeos/autotest/files/client/deps/chrome_test/test_src/
@@ -177,7 +175,6 @@ vs-chromium-project.txt
 /googleurl
 /gpu/gles2_conform_test
 /infra/.recipe_deps
-/internal_gyp
 /ios/third_party/earl_grey/src
 /ios/third_party/fishhook/src
 /ios/third_party/gcdwebserver/src
