@@ -27,6 +27,13 @@ source_set("lib") {
       "text_detection_impl_mac.mm",
     ]
     libs = [ "QuartzCore.framework" ]
+  } else if (is_win) {
+    sources += [
+      "barcode_detection_impl.cc",
+      "face_detection_impl_win.cc",
+      "face_detection_impl_win.h",
+      "text_detection_impl.cc",
+    ]
   } else {
     sources += [
       "barcode_detection_impl.cc",
@@ -110,18 +117,20 @@ source_set("tests") {
       "CoreGraphics.framework",
       "QuartzCore.framework",
     ]
-
-    deps = [
-      ":lib",
-      "//base",
-      "//skia",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gfx",
-      "//ui/gl",
-    ]
-    data = [
-      "//services/test/data/mona_lisa.jpg",
-    ]
+  } else if (is_win) {
+    sources += [ "face_detection_impl_win_unittest.cc" ]
   }
+
+  deps = [
+    ":lib",
+    "//base",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//ui/gl",
+  ]
+  data = [
+    "//services/test/data/mona_lisa.jpg",
+  ]
 }
