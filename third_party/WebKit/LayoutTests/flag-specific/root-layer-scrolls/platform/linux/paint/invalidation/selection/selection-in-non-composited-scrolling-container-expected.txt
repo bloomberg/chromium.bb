@@ -22,7 +22,7 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [10, 11, 60, 16],
           "reason": "subtree"
         },
@@ -36,19 +36,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutTextControl INPUT id='target'",
       "reason": "subtree"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "subtree"
     },
     {

@@ -17,21 +17,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [773, 43, 19, 77],
-          "reason": "selection"
+          "object": "LayoutBlockFlow DIV class='target'",
+          "rect": [8, 8, 100, 100],
+          "reason": "full"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'Testing both hit testing'",
-      "reason": "selection"
+      "object": "LayoutBlockFlow DIV class='target'",
+      "reason": "full"
     }
   ]
 }
