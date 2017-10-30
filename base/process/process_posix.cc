@@ -16,6 +16,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -366,6 +367,9 @@ bool Process::WaitForExit(int* exit_code) const {
 }
 
 bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
+  if (!timeout.is_zero())
+    internal::AssertBaseSyncPrimitivesAllowed();
+
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedProcessWaitActivity process_activity(this);
 

@@ -96,6 +96,10 @@ namespace resource_coordinator {
 class TabManagerDelegate;
 }
 
+namespace shell_integration {
+class LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
+}
+
 namespace ui {
 class WindowResizeHelperMac;
 }
@@ -118,6 +122,7 @@ namespace internal {
 class TaskTracker;
 }
 
+class GetAppOutputScopedAllowBaseSyncPrimitives;
 class SequencedWorkerPool;
 class SimpleThread;
 class StackSamplingProfiler;
@@ -218,8 +223,10 @@ class ScopedAllowBlockingForTesting {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowBlockingForTesting);
 };
 
-// "Waiting on a //base sync primitive" refers to calling
-// base::WaitableEvent::*Wait* or base::ConditionVariable::*Wait*.
+// "Waiting on a //base sync primitive" refers to calling one of these methods:
+// - base::WaitableEvent::*Wait*
+// - base::ConditionVariable::*Wait*
+// - base::Process::WaitForExit*
 
 // Disallows waiting on a //base sync primitive on the current thread.
 INLINE_IF_DCHECK_IS_OFF void DisallowBaseSyncPrimitives()
@@ -228,11 +235,15 @@ INLINE_IF_DCHECK_IS_OFF void DisallowBaseSyncPrimitives()
 // ScopedAllowBaseSyncPrimitives(ForTesting)(OutsideBlockingScope) allow waiting
 // on a //base sync primitive within a scope where this is normally disallowed.
 //
-// Avoid using this. Instead of waiting on a WaitableEvent or a
-// ConditionVariable, put the work that should happen after the wait in a
-// callback and post that callback from where the WaitableEvent or
-// ConditionVariable would have been signaled. If something needs to be
-// scheduled after many tasks have executed, use base::BarrierClosure.
+// Avoid using this.
+//
+// Instead of waiting on a WaitableEvent or a ConditionVariable, put the work
+// that should happen after the wait in a callback and post that callback from
+// where the WaitableEvent or ConditionVariable would have been signaled. If
+// something needs to be scheduled after many tasks have executed, use
+// base::BarrierClosure.
+//
+// On Windows, join processes asynchronously using base::win::ObjectWatcher.
 
 // This can only be used in a scope where blocking is allowed.
 class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
@@ -246,9 +257,11 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
                            ScopedAllowBaseSyncPrimitivesResetsState);
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
                            ScopedAllowBaseSyncPrimitivesWithBlockingDisallowed);
+  friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class leveldb::LevelDBMojoProxy;
   friend class media::BlockingUrlProtocol;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
+  friend class shell_integration::LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
