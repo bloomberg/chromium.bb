@@ -687,8 +687,7 @@ void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
 
   DCHECK(error_message.str().empty())
       << "State: " << StateToStr(prev) << " -> " << StateToStr(next) << " "
-      << error_message.str()
-      << "  stack trace: " << base::debug::StackTrace(10).ToString();
+      << error_message.str();
 }
 
 void KeyboardController::ChangeState(KeyboardControllerState state) {
