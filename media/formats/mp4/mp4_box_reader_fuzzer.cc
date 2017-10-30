@@ -7,8 +7,10 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "media/formats/mp2t/es_parser_mpeg1audio.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "media/base/media_log.h"
+#include "media/formats/mp4/box_reader.h"
 
 class NullMediaLog : public media::MediaLog {
  public:
@@ -21,17 +23,14 @@ class NullMediaLog : public media::MediaLog {
   DISALLOW_COPY_AND_ASSIGN(NullMediaLog);
 };
 
-static void NewAudioConfig(const media::AudioDecoderConfig& config) {}
-static void EmitBuffer(scoped_refptr<media::StreamParserBuffer> buffer) {}
-
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   NullMediaLog media_log;
-  media::mp2t::EsParserMpeg1Audio es_parser(
-      base::Bind(&NewAudioConfig), base::Bind(&EmitBuffer), &media_log);
-  if (es_parser.Parse(data, size, media::kNoTimestamp,
-                      media::kNoDecodeTimestamp())) {
-    es_parser.Flush();
+  std::unique_ptr<media::mp4::BoxReader> reader;
+  if (media::mp4::BoxReader::ReadTopLevelBox(data, size, &media_log, &reader) ==
+      media::mp4::ParseResult::kOk) {
+    CHECK(reader);
+    ignore_result(reader->ScanChildren());
   }
   return 0;
 }

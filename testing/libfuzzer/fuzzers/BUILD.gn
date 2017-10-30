@@ -5,7 +5,6 @@
 # Individual libfuzzer tests that didn't find their home yet.
 
 import("//build/config/features.gni")
-import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -39,52 +38,6 @@ fuzzer_test("language_detection_fuzzer") {
     "//base",
     "//components/translate/core/language_detection:language_detection",
   ]
-}
-
-if (proprietary_codecs) {
-  fuzzer_test("mp4_box_reader_fuzzer") {
-    sources = [
-      "mp4_box_reader_fuzzer.cc",
-    ]
-    deps = [
-      "//base",
-      "//media",
-    ]
-    libfuzzer_options = [ "max_len=500" ]
-    dict = "dicts/mp4.dict"
-  }
-}
-
-if (enable_mse_mpeg2ts_stream_parser) {
-  fuzzer_test("es_parser_adts_fuzzer") {
-    sources = [
-      "es_parser_adts_fuzzer.cc",
-    ]
-    deps = [
-      "//base",
-      "//media",
-    ]
-  }
-
-  fuzzer_test("es_parser_h264_fuzzer") {
-    sources = [
-      "es_parser_h264_fuzzer.cc",
-    ]
-    deps = [
-      "//base",
-      "//media",
-    ]
-  }
-
-  fuzzer_test("es_parser_mpeg1audio_fuzzer") {
-    sources = [
-      "es_parser_mpeg1audio_fuzzer.cc",
-    ]
-    deps = [
-      "//base",
-      "//media",
-    ]
-  }
 }
 
 fuzzer_test("snappy_fuzzer") {

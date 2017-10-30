@@ -376,4 +376,48 @@ if (proprietary_codecs) {
       "//base",
     ]
   }
+
+  fuzzer_test("media_mp4_box_reader_fuzzer") {
+    sources = [
+      "formats/mp4/mp4_box_reader_fuzzer.cc",
+    ]
+    deps = [
+      ":media",
+      "//base",
+    ]
+    libfuzzer_options = [ "max_len=500" ]
+    dict = "test/mp4.dict"
+  }
+}
+
+if (enable_mse_mpeg2ts_stream_parser) {
+  fuzzer_test("media_es_parser_adts_fuzzer") {
+    sources = [
+      "formats/mp2t/es_parser_adts_fuzzer.cc",
+    ]
+    deps = [
+      ":media",
+      "//base",
+    ]
+  }
+
+  fuzzer_test("media_es_parser_h264_fuzzer") {
+    sources = [
+      "formats/mp2t/es_parser_h264_fuzzer.cc",
+    ]
+    deps = [
+      ":media",
+      "//base",
+    ]
+  }
+
+  fuzzer_test("media_es_parser_mpeg1audio_fuzzer") {
+    sources = [
+      "formats/mp2t/es_parser_mpeg1audio_fuzzer.cc",
+    ]
+    deps = [
+      ":media",
+      "//base",
+    ]
+  }
 }
