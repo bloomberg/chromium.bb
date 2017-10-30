@@ -8,6 +8,31 @@ option optimize_for = LITE_RUNTIME;
 
 package smbprovider;
 
+// ErrorType matches 1:1 to FileSystemProvider#ProviderError in Chromium.
+enum ErrorType {
+  ERROR_NONE = 0;
+  ERROR_OK = 1;
+  ERROR_FAILED = 2;
+  ERROR_IN_USE = 3;
+  ERROR_EXISTS = 4;
+  ERROR_NOT_FOUND = 5;
+  ERROR_ACCESS_DENIED = 6;
+  ERROR_TOO_MANY_OPENED = 7;
+  ERROR_NO_MEMORY = 8;
+  ERROR_NO_SPACE = 9;
+  ERROR_NOT_A_DIRECTORY = 10;
+  ERROR_INVALID_OPERATION = 11;
+  ERROR_SECURITY = 12;
+  ERROR_ABORT = 13;
+  ERROR_NOT_A_FILE = 14;
+  ERROR_NOT_EMPTY = 15;
+  ERROR_INVALID_URL = 16;
+  ERROR_IO = 17;
+  // Count of ProviderError.
+  ERROR_PROVIDER_ERROR_COUNT = 18;
+  ERROR_DBUS_PARSE_FAILED = 1000;
+}
+
 message DirectoryEntry {
   optional bool is_directory = 1;
   optional string name = 2;
