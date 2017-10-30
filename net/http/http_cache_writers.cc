@@ -117,10 +117,10 @@ void HttpCache::Writers::AddTransaction(Transaction* transaction,
   should_keep_entry_ =
       IsValidResponseForWriter(info.partial != nullptr, &(info.response_info));
 
-  if (info.partial && !info.truncated)
+  if (info.partial && !info.truncated) {
+    DCHECK(!partial_do_not_truncate_);
     partial_do_not_truncate_ = true;
-  else
-    partial_do_not_truncate_ = false;
+  }
 
   std::pair<Transaction*, TransactionInfo> writer(transaction, info);
   all_writers_.insert(writer);
@@ -553,11 +553,9 @@ void HttpCache::Writers::OnDataReceived(int result) {
     // Invoke entry processing.
     DCHECK(ContainsOnlyIdleWriters());
     TransactionSet make_readers;
-    for (auto& writer : all_writers_) {
+    for (auto& writer : all_writers_)
       make_readers.insert(writer.first);
-    }
     all_writers_.clear();
-    network_transaction_.reset();
     SetCacheCallback(true, make_readers);
     return;
   }
@@ -607,7 +605,7 @@ void HttpCache::Writers::ProcessWaitingForReadTransactions(int result) {
     it = waiting_for_read_.erase(it);
 
     // If its response completion or failure, this transaction needs to be
-    // removed.
+    // removed from writers.
     if (result <= 0)
       EraseTransaction(transaction, result);
   }
