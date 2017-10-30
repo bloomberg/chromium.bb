@@ -45,6 +45,15 @@ CSSNumericValue* CSSNumericValue::FromCSSValue(const CSSPrimitiveValue& value) {
   return CSSUnitValue::FromCSSValue(value);
 }
 
+/* static */
+CSSNumericValue* CSSNumericValue::FromNumberish(const CSSNumberish& value) {
+  if (value.IsDouble()) {
+    return CSSUnitValue::Create(value.GetAsDouble(),
+                                CSSPrimitiveValue::UnitType::kNumber);
+  }
+  return value.GetAsCSSNumericValue();
+}
+
 CSSNumericValue* CSSNumericValue::to(const String& unit_string,
                                      ExceptionState& exception_state) {
   CSSPrimitiveValue::UnitType unit = UnitFromName(unit_string);

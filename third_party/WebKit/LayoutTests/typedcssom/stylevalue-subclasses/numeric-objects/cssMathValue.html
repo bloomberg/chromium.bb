@@ -8,14 +8,14 @@
 <script>
 'use strict';
 
-const gMathValueSubclasses = [
+const gVariadicMathValueSubclasses = [
   { subclass: CSSMathSum, operator: 'sum' },
   { subclass: CSSMathProduct, operator: 'product' },
   { subclass: CSSMathMin, operator: 'min' },
   { subclass: CSSMathMax, operator: 'max' },
 ];
 
-for (const {subclass, operator} of gMathValueSubclasses) {
+for (const {subclass, operator} of gVariadicMathValueSubclasses) {
   test(() => {
     assert_throws(new SyntaxError(), () => new subclass());
   }, 'Constructing a ' + subclass.name + ' with no arguments throws a SyntaxError');
@@ -34,6 +34,37 @@ for (const {subclass, operator} of gMathValueSubclasses) {
     let result = new subclass(CSS.number(1), CSS.number(2));
     assert_throws(new TypeError(), () => result.operator = 'foo');
   }, subclass.name + '.operator is readonly');
+}
+
+const gUnaryMathValueSubclasses = [
+  { subclass: CSSMathNegate, operator: 'negate' },
+  { subclass: CSSMathInvert, operator: 'invert' },
+]
+
+for (const {subclass, operator} of gUnaryMathValueSubclasses) {
+  test(() => {
+    const result1 = new subclass(CSS.number(0));
+    assert_equals(result1.operator, operator);
+    assert_style_value_equals(result1.value, CSS.number(0));
+
+    const result2 = new subclass(0);
+    assert_equals(result2.operator, operator);
+    assert_style_value_equals(result2.value, CSS.number(0));
+  }, subclass.name + ' can be constructed from a single numberish value');
+
+  test(() => {
+    let result = new subclass(CSS.number(1));
+    assert_throws(new TypeError(), () => result.operator = 'foo');
+  }, subclass.name + '.operator is readonly');
+
+  test(() => {
+    let result = new subclass(0);
+    result.value = CSS.number(1);
+    assert_style_value_equals(result.value, CSS.number(1));
+
+    result.value = 2;
+    assert_style_value_equals(result.value, CSS.number(2));
+  }, subclass.name + '.value can be updated with a numberish value');
 }
 
 </script>

@@ -11,10 +11,18 @@ CONSOLE MESSAGE: line 147: interface CSSKeywordValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter value
+CONSOLE MESSAGE: line 147: interface CSSMathInvert : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter value
+CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathMax : CSSMathValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSMathMin : CSSMathValue
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147: interface CSSMathNegate : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter value
+CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathProduct : CSSMathValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSMathSum : CSSMathValue
@@ -278,10 +286,18 @@ CONSOLE MESSAGE: line 147: interface CSSKeywordValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter value
+CONSOLE MESSAGE: line 147: interface CSSMathInvert : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter value
+CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathMax : CSSMathValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSMathMin : CSSMathValue
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147: interface CSSMathNegate : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter value
+CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathProduct : CSSMathValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSMathSum : CSSMathValue
