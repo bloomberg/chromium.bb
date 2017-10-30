@@ -77,8 +77,6 @@ class ShellPortMus : public ShellPort {
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
-  void SetLaserPointerEnabled(bool enabled) override;
-  void SetPartialMagnifierEnabled(bool enabled) override;
   void CreatePointerWatcherAdapter() override;
   std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
       const AshWindowTreeHostInitParams& init_params) override;

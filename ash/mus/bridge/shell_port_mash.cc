@@ -157,14 +157,6 @@ void ShellPortMash::ToggleIgnoreExternalKeyboard() {
   NOTIMPLEMENTED();
 }
 
-void ShellPortMash::SetLaserPointerEnabled(bool enabled) {
-  NOTIMPLEMENTED();
-}
-
-void ShellPortMash::SetPartialMagnifierEnabled(bool enabled) {
-  NOTIMPLEMENTED();
-}
-
 void ShellPortMash::CreatePointerWatcherAdapter() {
   // In Config::MUS PointerWatcherAdapterClassic must be created when this
   // function is called (it is order dependent), that is not the case with
