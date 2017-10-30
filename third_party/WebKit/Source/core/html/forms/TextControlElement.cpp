@@ -998,9 +998,9 @@ void TextControlElement::SetSuggestedValue(const String& value) {
 
   // Change the pseudo-id to set the style for suggested values or reset the
   // placeholder style depending on if there is a suggested value.
-  placeholder->SetShadowPseudoId(AtomicString(suggested_value_.IsEmpty()
-                                                  ? "-webkit-input-placeholder"
-                                                  : "-webkit-input-suggested"));
+  placeholder->SetShadowPseudoId(
+      AtomicString(suggested_value_.IsEmpty() ? "-webkit-input-placeholder"
+                                              : "-internal-input-suggested"));
 }
 
 HTMLElement* TextControlElement::CreateInnerEditorElement() {
