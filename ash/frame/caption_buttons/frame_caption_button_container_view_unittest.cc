@@ -72,6 +72,7 @@ class FrameCaptionButtonContainerViewTest : public AshTestBase {
       container->SetButtonImage(static_cast<CaptionButtonIcon>(icon),
                                 ash::kWindowControlCloseIcon);
     }
+    container->SizeToPreferredSize();
   }
 
   // Tests that |leftmost| and |rightmost| are at |container|'s edges.
@@ -148,7 +149,6 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   FrameCaptionButtonContainerView container(
       CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
   InitContainer(&container);
-  container.SetBoundsRect(gfx::Rect(container.GetPreferredSize()));
   container.Layout();
 
   FrameCaptionButtonContainerView::TestApi test(&container);
