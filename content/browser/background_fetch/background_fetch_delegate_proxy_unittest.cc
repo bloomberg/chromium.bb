@@ -119,6 +119,15 @@ class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {
   BackgroundFetchDelegateProxy delegate_proxy_;
 };
 
+scoped_refptr<BackgroundFetchRequestInfo> CreateRequestInfo(
+    int request_index,
+    const ServiceWorkerFetchRequest& fetch_request) {
+  auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
+      request_index, fetch_request);
+  request->InitializeDownloadGuid();
+  return request;
+}
+
 }  // namespace
 
 TEST_F(BackgroundFetchDelegateProxyTest, SetDelegate) {
@@ -128,8 +137,7 @@ TEST_F(BackgroundFetchDelegateProxyTest, SetDelegate) {
 TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   FakeController controller;
   ServiceWorkerFetchRequest fetch_request;
-  auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      0 /* request_index */, fetch_request);
+  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -148,8 +156,7 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
 TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   FakeController controller;
   ServiceWorkerFetchRequest fetch_request;
-  auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      0 /* request_index */, fetch_request);
+  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -171,10 +178,8 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   FakeController controller2;
   ServiceWorkerFetchRequest fetch_request;
   ServiceWorkerFetchRequest fetch_request2;
-  auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      0 /* request_index */, fetch_request);
-  auto request2 = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      1 /* request_index */, fetch_request2);
+  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto request2 = CreateRequestInfo(1 /* request_index */, fetch_request2);
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
