@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/strings/grit/ui_strings.h"  // Accessibility names
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -115,6 +116,11 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
       minimize_button_(NULL),
       size_button_(NULL),
       close_button_(NULL) {
+  auto layout =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  SetLayoutManager(layout.release());
   bool size_button_visibility = ShouldSizeButtonBeVisible();
   tablet_mode_animation_.reset(new gfx::SlideAnimation(this));
   tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
@@ -211,27 +217,8 @@ void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
   close_button_->SetPreferredSize(size);
 }
 
-gfx::Size FrameCaptionButtonContainerView::CalculatePreferredSize() const {
-  int width = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    const views::View* child = child_at(i);
-    if (child->visible())
-      width += child_at(i)->GetPreferredSize().width();
-  }
-  return gfx::Size(width, close_button_->GetPreferredSize().height());
-}
-
 void FrameCaptionButtonContainerView::Layout() {
-  int x = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    if (!child->visible())
-      continue;
-
-    gfx::Size size = child->GetPreferredSize();
-    child->SetBounds(x, 0, size.width(), size.height());
-    x += size.width();
-  }
+  views::View::Layout();
   if (tablet_mode_animation_->is_animating()) {
     AnimationProgressed(tablet_mode_animation_.get());
   }
