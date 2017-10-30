@@ -213,18 +213,15 @@ bool WindowState::HasRestoreBounds() const {
 }
 
 void WindowState::Maximize() {
-  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  ::wm::SetWindowState(window_, ui::SHOW_STATE_MAXIMIZED);
 }
 
 void WindowState::Minimize() {
-  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  ::wm::SetWindowState(window_, ui::SHOW_STATE_MINIMIZED);
 }
 
 void WindowState::Unminimize() {
-  window_->SetProperty(
-      aura::client::kShowStateKey,
-      window_->GetProperty(aura::client::kPreMinimizedShowStateKey));
-  window_->ClearProperty(aura::client::kPreMinimizedShowStateKey);
+  ::wm::Unminimize(window_);
 }
 
 void WindowState::Activate() {

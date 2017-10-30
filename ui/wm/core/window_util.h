@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/wm/core/wm_core_export.h"
 
 namespace aura {
@@ -30,6 +31,17 @@ WM_CORE_EXPORT void DeactivateWindow(aura::Window* window);
 WM_CORE_EXPORT bool IsActiveWindow(const aura::Window* window);
 WM_CORE_EXPORT bool CanActivateWindow(aura::Window* window);
 WM_CORE_EXPORT void SetWindowFullscreen(aura::Window* window, bool fullscreen);
+
+// Returns true if |window|'s show state is |state|.
+WM_CORE_EXPORT bool WindowStateIs(aura::Window* window,
+                                  ui::WindowShowState state);
+
+// Sets the window state to |state|.
+WM_CORE_EXPORT void SetWindowState(aura::Window* window,
+                                   ui::WindowShowState state);
+
+// Changes a window's state to its pre-minimized state.
+WM_CORE_EXPORT void Unminimize(aura::Window* window);
 
 // Retrieves the activatable window for |window|. The ActivationClient makes
 // this determination.
