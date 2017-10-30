@@ -18,6 +18,11 @@ int GetCloseButtonSize() {
   return image->width();
 }
 
+SkColor GetBackgroundColor() {
+  return ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_CONTROL_BACKGROUND, false);
+}
+
 SkColor GetLinkColor() {
   return SkColorSetRGB(0x11, 0x55, 0xCC);
 }
