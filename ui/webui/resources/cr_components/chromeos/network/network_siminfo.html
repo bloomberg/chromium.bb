@@ -2,20 +2,21 @@
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../icons.html">
-<link rel="import" href="internet_shared_css.html">
+<link rel="import" href="network_shared_css.html">
 
 <dom-module id="network-siminfo">
   <template>
-    <style include="settings-shared internet-shared iron-flex">
+    <style include="network-shared iron-flex">
       iron-icon {
        -webkit-margin-end: 10px;
       }
@@ -40,51 +41,42 @@
         min-width: 200px;
       }
 
-      /* Siminfo is embedded; remove the padding. */
-      .settings-box {
-        padding: 0;
-      }
-
-      .settings-box:first-of-type {
-        border-top: none;
-      }
-
       paper-toggle-button {
-        -webkit-margin-start: var(--settings-control-label-spacing);
+        -webkit-margin-start: var(--cr-button-edge-spacing);
       }
     </style>
 
     <!-- SIM missing UI -->
-    <div class="settings-box two-line"
+    <div class="property-box two-line"
         hidden$="[[networkProperties.Cellular.SIMPresent]]">
       <div class="start layout horizontal center">
-        <iron-icon icon="settings:sim-card-alert"></iron-icon>
-        <div class="error">$i18n{networkSimCardMissing}</div>
+        <iron-icon icon="cr:sim-card-alert"></iron-icon>
+        <div class="error">[[i18n('networkSimCardMissing')]]</div>
       </div>
     </div>
 
     <!-- SIM locked -->
-    <div class="settings-box two-line"
+    <div class="property-box two-line"
         hidden$="[[!showSimLocked_(networkProperties)]]">
       <div class="start layout horizontal center">
-        <iron-icon icon="settings:lock"></iron-icon>
-        <div class="error">$i18n{networkSimCardLocked}</div>
+        <iron-icon icon="cr:sim-lock"></iron-icon>
+        <div class="error">[[i18n('networkSimCardLocked')]]</div>
       </div>
       <div class="separator"></div>
       <paper-button id="unlockPinButton" on-tap="onUnlockPinTap_">
-        $i18n{networkSimUnlock}
+        [[i18n('networkSimUnlock')]]
       </paper-button>
     </div>
 
     <!-- SIM unlocked -->
-    <div class="settings-box two-line"
+    <div class="property-box two-line"
         hidden$="[[!showSimUnlocked_(networkProperties)]]">
       <div id="simLockToggleLabel" class="start">
-        $i18n{networkSimLockEnable}
+        [[i18n('networkSimLockEnable')]]
       </div>
       <paper-button id="changePinButton" on-tap="onChangePinTap_"
           hidden$="[[!networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
-        $i18n{networkSimChangePin}
+        [[i18n('networkSimChangePin')]]
       </paper-button>
       <paper-toggle-button id="simLockButton"
           on-change="onSimLockEnabledChange_" checked="{{lockEnabled_}}"
@@ -93,13 +85,13 @@
     </div>
 
     <!-- Enter PIN dialog -->
-    <dialog is="cr-dialog" id="enterPinDialog" close-text="$i18n{close}"
+    <dialog is="cr-dialog" id="enterPinDialog" close-text="[[i18n('close')]]"
         on-cancel="onEnterPinDialogCancel_"
         on-close="onEnterPinDialogClose_">
-      <div slot="title">$i18n{networkSimEnterPinTitle}</div>
+      <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
       <div slot="body">
         <paper-input id="enterPin" class="pin" no-label-float autofocus
-            label="$i18n{networkSimEnterPin}">
+            label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
           </iron-a11y-keys>
         </paper-input>
@@ -109,24 +101,24 @@
       </div>
       <div slot="button-container">
         <paper-button on-tap="sendEnterPin_">
-          $i18n{networkSimEnter}
+          [[i18n('networkSimEnter')]]
         </paper-button>
       </div>
     </dialog>
 
     <!-- Change PIN dialog -->
-    <dialog is="cr-dialog" id="changePinDialog" close-text="$i18n{close}"
+    <dialog is="cr-dialog" id="changePinDialog" close-text="[[i18n('close')]]"
         on-close="onChangePinDialogClose_">
-      <div slot="title">$i18n{networkSimChangePinTitle}</div>
+      <div slot="title">[[i18n('networkSimChangePinTitle')]]</div>
       <div slot="body">
         <paper-input id="changePinOld" class="pin" no-label-float autofocus
-            label="$i18n{networkSimEnterOldPin}">
+            label="[[i18n('networkSimEnterOldPin')]]">
         </paper-input>
         <paper-input id="changePinNew1" class="pin" no-label-float
-            label="$i18n{networkSimEnterNewPin}">
+            label="[[i18n('networkSimEnterNewPin')]]">
         </paper-input>
         <paper-input id="changePinNew2" class="pin" no-label-float
-            label="$i18n{networkSimReEnterNewPin}">
+            label="[[i18n('networkSimReEnterNewPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendChangePin_">
           </iron-a11y-keys>
         </paper-input>
@@ -136,18 +128,18 @@
       </div>
       <div slot="button-container">
         <paper-button on-tap="sendChangePin_">
-          $i18n{networkSimChange}
+          [[i18n('networkSimChange')]]
         </paper-button>
       </div>
     </dialog>
 
     <!-- Unlock PIN dialog -->
-    <dialog is="cr-dialog" id="unlockPinDialog" close-text="$i18n{close}"
+    <dialog is="cr-dialog" id="unlockPinDialog" close-text="[[i18n('close')]]"
         on-close="onUnlockPinDialogClose_">
-      <div slot="title">$i18n{networkSimLockedTitle}</div>
+      <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
         <paper-input id="unlockPin" class="pin" no-label-float autofocus
-            label="$i18n{networkSimEnterPin}">
+            label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
           </iron-a11y-keys>
         </paper-input>
@@ -157,32 +149,32 @@
       </div>
       <div slot="button-container">
         <paper-button on-tap="sendUnlockPin_">
-          $i18n{networkSimUnlock}
+          [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
     </dialog>
 
     <!-- Unlock PUK dialog -->
-    <dialog is="cr-dialog" id="unlockPukDialog" close-text="$i18n{close}"
+    <dialog is="cr-dialog" id="unlockPukDialog" close-text="[[i18n('close')]]"
         on-close="onUnlockPinDialogClose_">
-      <div slot="title">$i18n{networkSimLockedTitle}</div>
+      <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
         <div>
           Enter the 8-digit PIN Unblocking Key provided by your carrier
         </div>
         <paper-input id="unlockPuk" class="puk" no-label-float autofocus
-            label="$i18n{networkSimEnterPuk}">
+            label="[[i18n('networkSimEnterPuk')]]">
         </paper-input>
         <paper-input id="unlockPin1" class="pin" no-label-float
-            label="$i18n{networkSimEnterNewPin}">
+            label="[[i18n('networkSimEnterNewPin')]]">
         </paper-input>
         <paper-input id="unlockPin2" class="pin" no-label-float
-            label="$i18n{networkSimReEnterNewPin}">
+            label="[[i18n('networkSimReEnterNewPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPuk_">
           </iron-a11y-keys>
         </paper-input>
         <div class="dialog-error">
-          $i18n{networkSimLockedWarning}
+          [[i18n('networkSimLockedWarning')]]
         </div>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -190,7 +182,7 @@
       </div>
       <div slot="button-container">
         <paper-button on-tap="sendUnlockPuk_">
-          $i18n{networkSimUnlock}
+          [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
     </dialog>

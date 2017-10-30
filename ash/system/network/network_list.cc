@@ -103,6 +103,21 @@ bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
       network->guid(), network->profile_path(), nullptr /* onc_source */);
 }
 
+bool IsCellularSimLocked() {
+  const chromeos::DeviceState* cellular_device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
+          NetworkTypePattern::Cellular());
+  return cellular_device && cellular_device->IsSimLocked();
+}
+
+void ShowCellularSettings() {
+  const chromeos::NetworkState* cellular_network =
+      NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
+          NetworkTypePattern::Cellular());
+  Shell::Get()->system_tray_controller()->ShowNetworkSettings(
+      cellular_network ? cellular_network->guid() : std::string());
+}
+
 }  // namespace
 
 // A header row for sections in network detailed view which contains a title and
@@ -249,6 +264,10 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
     // (Tether may be enabled by turning on Bluetooth and turning on
     // 'Get data connection' in the Settings > Mobile data subpage).
     if (cellular_state != NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
+      if (is_on && IsCellularSimLocked()) {
+        ShowCellularSettings();
+        return;
+      }
       network_state_handler_->SetTechnologyEnabled(
           NetworkTypePattern::Cellular(), is_on,
           chromeos::network_handler::ErrorCallback());
