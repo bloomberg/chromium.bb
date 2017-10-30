@@ -20,10 +20,6 @@
 #include "net/base/net_export.h"
 #include "net/cert/cert_status_flags.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include <Security/x509defs.h>
-#endif
-
 namespace base {
 class Time;
 }  // namespace base
@@ -66,14 +62,6 @@ struct NET_EXPORT CertPrincipal {
   std::vector<std::string> organization_unit_names;
   std::vector<std::string> domain_components;
 };
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-// Compares two OIDs by value.
-inline bool CSSMOIDEqual(const CSSM_OID* oid1, const CSSM_OID* oid2) {
-  return oid1->Length == oid2->Length &&
-  (memcmp(oid1->Data, oid2->Data, oid1->Length) == 0);
-}
-#endif
 
 // A list of ASN.1 date/time formats that ParseCertificateDate() supports,
 // encoded in the canonical forms specified in RFC 2459/3280/5280.
