@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -189,7 +190,7 @@ bool IsExperimentalInputViewEnabled() {
 }
 
 bool IsFloatingVirtualKeyboardEnabled() {
-  return false;
+  return base::FeatureList::IsEnabled(features::kEnableFloatingVirtualKeyboard);
 }
 
 bool IsGestureTypingEnabled() {
