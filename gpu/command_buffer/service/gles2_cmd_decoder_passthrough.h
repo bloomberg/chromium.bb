@@ -381,6 +381,10 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   bool IsEmulatedFramebufferBound(GLenum target) const;
 
+  const FeatureInfo::FeatureFlags& features() const {
+    return feature_info_->feature_flags();
+  }
+
   GLES2DecoderClient* client_;
 
   int commands_to_process_;
