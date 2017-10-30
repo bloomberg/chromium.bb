@@ -418,11 +418,6 @@ TEST_F(SplitViewControllerTest, EnterOverviewTest) {
   auto iter = std::find(windows.begin(), windows.end(),
                         split_view_controller()->GetDefaultSnappedWindow());
   EXPECT_TRUE(iter == windows.end());
-
-  // TODO(sammiequon|xdai): Exit overview as a stop gap solution to avoid memory
-  // leak during shutdown. Fix and remove the ToggleOverview. See
-  // crbug.com/766725
-  ToggleOverview();
 }
 
 // Tests that the split divider was created when the split view mode is active
