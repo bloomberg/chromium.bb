@@ -686,7 +686,7 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
     std::vector<ACMatchClassification> before_contents_class;
     std::vector<ACMatchClassification> after_contents_class;
   } cases[] = {
-      // It should fix-up this match, since prefix matches.
+      // It should not touch this, since it's not a tail suggestion.
       {
           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
           "superman",
@@ -703,14 +703,7 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
           {{0, ACMatchClassification::INVISIBLE},
            {5, ACMatchClassification::MATCH}},
       },
-      // It should not touch this one, since prefix doesn't match.
-      {
-          AutocompleteMatchType::SEARCH_SUGGEST,
-          "suppertime",
-          "suppertime",
-          {{0, ACMatchClassification::NONE}, {3, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::NONE}, {3, ACMatchClassification::MATCH}},
-      }};
+  };
   ACMatches matches;
   for (const auto& test_case : cases) {
     AutocompleteMatch match;
