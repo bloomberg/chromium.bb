@@ -181,6 +181,9 @@ static const arg_def_t framerate =
 static const arg_def_t use_webm =
     ARG_DEF(NULL, "webm", 0, "Output WebM (default when WebM IO is enabled)");
 static const arg_def_t use_ivf = ARG_DEF(NULL, "ivf", 0, "Output IVF");
+#if CONFIG_OBU_NO_IVF
+static const arg_def_t use_obu = ARG_DEF(NULL, "obu", 0, "Output OBU");
+#endif
 static const arg_def_t out_part =
     ARG_DEF("P", "output-partitions", 0,
             "Makes encoder output partitions. Requires IVF output!");
@@ -224,6 +227,9 @@ static const arg_def_t *main_args[] = { &help,
                                         &psnrarg,
                                         &use_webm,
                                         &use_ivf,
+#if CONFIG_OBU_NO_IVF
+                                        &use_obu,
+#endif
                                         &out_part,
                                         &q_hist_n,
                                         &rate_hist_n,
@@ -746,6 +752,9 @@ struct stream_config {
   int arg_ctrls[ARG_CTRL_CNT_MAX][2];
   int arg_ctrl_cnt;
   int write_webm;
+#if CONFIG_OBU_NO_IVF
+  int write_ivf;
+#endif
   // whether to use 16bit internal buffers
   int use_16bit_internal;
 };
@@ -976,6 +985,9 @@ static struct stream_state *new_stream(struct AvxEncoderConfig *global,
 
     /* Initialize remaining stream parameters */
     stream->config.write_webm = 1;
+#if CONFIG_OBU_NO_IVF
+    stream->config.write_ivf = 0;
+#endif
 #if CONFIG_WEBM_IO
     stream->config.stereo_fmt = STEREO_FORMAT_MONO;
     stream->webm_ctx.last_pts_ns = -1;
@@ -1036,7 +1048,17 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
         if (out_fn_len >= 4 &&
             !strcmp(config->out_fn + out_fn_len - 4, ".ivf")) {
           config->write_webm = 0;
+#if CONFIG_OBU_NO_IVF
+          config->write_ivf = 1;
+#endif
         }
+#if CONFIG_OBU_NO_IVF
+        else if (out_fn_len >= 4 &&
+                 !strcmp(config->out_fn + out_fn_len - 4, ".obu")) {
+          config->write_webm = 0;
+          config->write_ivf = 0;
+        }
+#endif
       }
     } else if (arg_match(&arg, &fpf_name, argi)) {
       config->stats_fn = arg.val;
@@ -1053,6 +1075,14 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
 #endif
     } else if (arg_match(&arg, &use_ivf, argi)) {
       config->write_webm = 0;
+#if CONFIG_OBU_NO_IVF
+      config->write_ivf = 1;
+#endif
+#if CONFIG_OBU_NO_IVF
+    } else if (arg_match(&arg, &use_obu, argi)) {
+      config->write_webm = 0;
+      config->write_ivf = 0;
+#endif
     } else if (arg_match(&arg, &threads, argi)) {
       config->cfg.g_threads = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &profile, argi)) {
@@ -1160,8 +1190,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
           match = 1;
 
           /* Point either to the next free element or the first
-          * instance of this control.
-          */
+           * instance of this control.
+           */
           for (j = 0; j < config->arg_ctrl_cnt; j++)
             if (ctrl_args_map != NULL &&
                 config->arg_ctrls[j][0] == ctrl_args_map[i])
@@ -1370,7 +1400,11 @@ static void open_output_file(struct stream_state *stream,
   (void)pixel_aspect_ratio;
 #endif
 
-  if (!stream->config.write_webm) {
+  if (!stream->config.write_webm
+#if CONFIG_OBU_NO_IVF
+      && stream->config.write_ivf
+#endif
+      ) {
     ivf_write_file_header(stream->file, cfg, global->codec->fourcc, 0);
   }
 }
@@ -1387,7 +1421,11 @@ static void close_output_file(struct stream_state *stream,
   }
 #endif
 
-  if (!stream->config.write_webm) {
+  if (!stream->config.write_webm
+#if CONFIG_OBU_NO_IVF
+      && stream->config.write_ivf
+#endif
+      ) {
     if (!fseek(stream->file, 0, SEEK_SET))
       ivf_write_file_header(stream->file, &stream->config.cfg, fourcc,
                             stream->frames_out);
@@ -1606,21 +1644,27 @@ static void get_cx_data(struct stream_state *stream,
         }
 #endif
         if (!stream->config.write_webm) {
-          if (pkt->data.frame.partition_id <= 0) {
-            ivf_header_pos = ftello(stream->file);
-            fsize = pkt->data.frame.sz;
+#if CONFIG_OBU_NO_IVF
+          if (stream->config.write_ivf) {
+#endif
+            if (pkt->data.frame.partition_id <= 0) {
+              ivf_header_pos = ftello(stream->file);
+              fsize = pkt->data.frame.sz;
 
-            ivf_write_frame_header(stream->file, pkt->data.frame.pts, fsize);
-          } else {
-            fsize += pkt->data.frame.sz;
+              ivf_write_frame_header(stream->file, pkt->data.frame.pts, fsize);
+            } else {
+              fsize += pkt->data.frame.sz;
 
-            if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
-              const FileOffset currpos = ftello(stream->file);
-              fseeko(stream->file, ivf_header_pos, SEEK_SET);
-              ivf_write_frame_size(stream->file, fsize);
-              fseeko(stream->file, currpos, SEEK_SET);
+              if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
+                const FileOffset currpos = ftello(stream->file);
+                fseeko(stream->file, ivf_header_pos, SEEK_SET);
+                ivf_write_frame_size(stream->file, fsize);
+                fseeko(stream->file, currpos, SEEK_SET);
+              }
             }
+#if CONFIG_OBU_NO_IVF
           }
+#endif
 
           (void)fwrite(pkt->data.frame.buf, 1, pkt->data.frame.sz,
                        stream->file);
@@ -1971,9 +2015,16 @@ int main(int argc, const char **argv_) {
     FOREACH_STREAM(stream, streams) {
       if (stream->config.write_webm) {
         stream->config.write_webm = 0;
+#if CONFIG_OBU_NO_IVF
+        stream->config.write_ivf = 0;
+#endif
         warn(
             "aomenc was compiled without WebM container support."
+#if CONFIG_OBU_NO_IVF
+            "Producing OBU output");
+#else
             "Producing IVF output");
+#endif
       }
     }
 #endif

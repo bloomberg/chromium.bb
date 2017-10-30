@@ -333,6 +333,7 @@ EXPERIMENT_LIST="
     mono_video
     q_segmentation
     segment_pred_last
+    obu_no_ivf
 "
 CONFIG_LIST="
     dependency_tracking

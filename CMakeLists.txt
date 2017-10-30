@@ -166,6 +166,10 @@ set(AOM_DECODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/video_reader.c"
     "${AOM_ROOT}/video_reader.h")
 
+if (CONFIG_OBU_NO_IVF)
+  list(APPEND AOM_DECODER_APP_UTIL_SOURCES "${AOM_ROOT}/obudec.c" "${AOM_ROOT}/obudec.h")
+endif ()
+
 set(AOM_ENCODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/ivfenc.c"
     "${AOM_ROOT}/ivfenc.h"

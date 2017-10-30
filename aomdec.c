@@ -43,10 +43,15 @@
 
 #include "./md5_utils.h"
 
+#if CONFIG_OBU_NO_IVF
+#include "./obudec.h"
+#endif
+
 #include "./tools_common.h"
 #if CONFIG_WEBM_IO
 #include "./webmdec.h"
 #endif
+
 #include "./y4menc.h"
 
 static const char *exec_name;
@@ -273,6 +278,11 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
     case FILE_TYPE_IVF:
       return ivf_read_frame(input->aom_input_ctx->file, buf, bytes_in_buffer,
                             buffer_size);
+#if CONFIG_OBU_NO_IVF
+    case FILE_TYPE_OBU:
+      return obu_read_temporal_unit(input->aom_input_ctx->file, buf,
+                                    bytes_in_buffer, buffer_size);
+#endif
     default: return 1;
   }
 }
@@ -690,6 +700,10 @@ static int main_loop(int argc, const char **argv_) {
 #if CONFIG_WEBM_IO
   else if (file_is_webm(input.webm_ctx, input.aom_input_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_WEBM;
+#endif
+#if CONFIG_OBU_NO_IVF
+  else if (file_is_obu(input.aom_input_ctx))
+    input.aom_input_ctx->file_type = FILE_TYPE_OBU;
 #endif
   else if (file_is_raw(input.aom_input_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_RAW;

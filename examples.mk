@@ -84,6 +84,9 @@ ifeq ($(CONFIG_WEBM_IO),yes)
   aomdec.SRCS                 += $(LIBWEBM_PARSER_SRCS)
   aomdec.SRCS                 += webmdec.cc webmdec.h
 endif
+ifeq ($(CONFIG_OBU_NO_IVF),yes)
+  aomdec.SRCS                 += obudec.c obudec.h
+endif
 aomdec.GUID                  = BA5FE66F-38DD-E034-F542-B1578C5FB950
 aomdec.DESCRIPTION           = Full featured decoder
 UTILS-$(CONFIG_AV1_ENCODER) += aomenc.c

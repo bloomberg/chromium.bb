@@ -69,6 +69,9 @@ typedef long FileOffset; /* NOLINT */
 #define AV1_FOURCC 0x31305641
 
 enum VideoFileType {
+#if CONFIG_OBU_NO_IVF
+  FILE_TYPE_OBU,
+#endif
   FILE_TYPE_RAW,
   FILE_TYPE_IVF,
   FILE_TYPE_Y4M,
