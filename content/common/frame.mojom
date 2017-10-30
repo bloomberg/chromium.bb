@@ -4,8 +4,8 @@
 
 module content.mojom;
 
+import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/url_loader.mojom";
-import "content/public/common/url_loader_factory.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
@@ -38,14 +38,15 @@ interface FrameNavigationControl {
   // should request |body_url| to get access to the stream containing the body
   // of the response. When the Network Service is enabled, |body_url| is not
   // used and instead the data is passed to the renderer via |body_data|. In
-  // that case |default_subresource_url_loader_factory| may also be provided by
-  // the browser as a means for the renderer to load subresources.
+  // that case |subresource_loader_factories| may also be provided by the
+  // browser as a a means for the renderer to load subresources where
+  // applicable.
   CommitNavigation(URLResponseHead head,
                    url.mojom.Url body_url,
                    CommonNavigationParams common_params,
                    RequestNavigationParams request_params,
                    handle<data_pipe_consumer>? body_data,
-                   URLLoaderFactory? default_subresource_url_loader_factory);
+                   URLLoaderFactoryBundle? subresource_loader_factories);
 };
 
 // Implemented by the frame (e.g. renderer processes).
