@@ -54,7 +54,7 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsChromeos()),
       connection_type_(CONNECTION_NONE),
       max_bandwidth_mbps_(
-          NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+          NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
               SUBTYPE_NONE)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
@@ -158,7 +158,8 @@ void NetworkChangeNotifierChromeos::UpdateState(
       *connection_type_changed = true;
       *max_bandwidth_changed = true;
       connection_type_ = CONNECTION_NONE;
-      max_bandwidth_mbps_ = GetMaxBandwidthForConnectionSubtype(SUBTYPE_NONE);
+      max_bandwidth_mbps_ =
+          GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_NONE);
       service_path_.clear();
       ip_address_.clear();
       dns_servers_.clear();
@@ -220,7 +221,7 @@ void NetworkChangeNotifierChromeos::UpdateState(
   dns_servers_ = new_dns_servers;
   double old_max_bandwidth = max_bandwidth_mbps_;
   max_bandwidth_mbps_ =
-      GetMaxBandwidthForConnectionSubtype(GetConnectionSubtype(
+      GetMaxBandwidthMbpsForConnectionSubtype(GetConnectionSubtype(
           default_network->type(), default_network->network_technology()));
   if (max_bandwidth_mbps_ != old_max_bandwidth)
     *max_bandwidth_changed = true;

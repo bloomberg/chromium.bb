@@ -116,7 +116,7 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
       net::NetworkChangeNotifier::ConnectionType type,
       net::NetworkChangeNotifier::ConnectionSubtype subtype) {
     net::NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
-        net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+        net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
             subtype),
         type);
     base::RunLoop().RunUntilIdle();
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, VerifyNetworkStateInitialized) {
   NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
   EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
   EXPECT_EQ("ethernet", RunScriptExtractString("getType()"));
-  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
                 net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET),
             RunScriptExtractDouble("getDownlinkMax()"));
 }
@@ -166,14 +166,14 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkChangePlumbsToNavigator) {
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI,
                     net::NetworkChangeNotifier::SUBTYPE_WIFI_N);
   EXPECT_EQ("wifi", RunScriptExtractString("getType()"));
-  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
                 net::NetworkChangeNotifier::SUBTYPE_WIFI_N),
             RunScriptExtractDouble("getDownlinkMax()"));
 
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
                     net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET);
   EXPECT_EQ("ethernet", RunScriptExtractString("getType()"));
-  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
                 net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET),
             RunScriptExtractDouble("getDownlinkMax()"));
 }
