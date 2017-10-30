@@ -46,6 +46,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
+  void Flush(FlushCallback flush_callback) override;
 
  private:
   // Reference picture list.
@@ -100,6 +101,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
                                            uint32_t framerate);
   void DestroyTask();
+  void FlushTask();
 
   // Prepare and schedule an encode job if we have an input to encode
   // and enough resources to proceed.
@@ -238,6 +240,8 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   base::queue<linked_ptr<BitstreamBufferRef>> available_bitstream_buffers_;
 
   // Jobs submitted for encode, awaiting bitstream buffers to become available.
+  // A pending flush command, indicated by a null job, will be also put in the
+  // queue.
   base::queue<linked_ptr<EncodeJob>> submitted_encode_jobs_;
 
   // Encoder thread. All tasks are executed on it.
@@ -258,6 +262,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // thread (it's a member of this class).
   base::WeakPtr<VaapiVideoEncodeAccelerator> weak_this_;
   base::WeakPtrFactory<VaapiVideoEncodeAccelerator> weak_this_ptr_factory_;
+
+  // The completion callback of the Flush() function.
+  FlushCallback flush_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoEncodeAccelerator);
 };
