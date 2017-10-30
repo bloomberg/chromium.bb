@@ -70,7 +70,9 @@ class ProcessMetricsHistory {
 
   double cpu_usage_;
 
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
   int idle_wakeups_;
+#endif
 #if defined(OS_MACOSX)
   int package_idle_wakeups_;
 #endif
