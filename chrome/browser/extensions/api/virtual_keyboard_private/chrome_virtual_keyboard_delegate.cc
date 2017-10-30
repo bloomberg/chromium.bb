@@ -192,8 +192,17 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   results->SetBoolean("hotrodmode", keyboard::GetHotrodKeyboardEnabled());
   std::unique_ptr<base::ListValue> features(new base::ListValue());
 
+  // 'floatingvirtualkeyboard' is the name of the feature flag for the legacy
+  // floating keyboard that was prototyped quite some time ago. It is currently
+  // referenced by the extension even though we never enable this value and so
+  // re-using that value is not feasible due to the semi-tandem nature of the
+  // keyboard extension. The 'floatingkeybard' flag represents the new floating
+  // keyboard and should be used for new extension-side feature work for the
+  // floating keyboard.
+  // TODO(blakeo): once the old flag's usages have been removed from the
+  // extension and all pushes have settled, remove this overly verbose comment.
   features->AppendString(GenerateFeatureFlag(
-      "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
+      "floatingkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
   features->AppendString(
       GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
   features->AppendString(GenerateFeatureFlag(
