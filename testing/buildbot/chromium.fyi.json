@@ -4128,7 +4128,6 @@
       "content_browsertests",
       "content_shell",
       "content_unittests",
-      "crypto_unittests",
       "gl_unittests",
       "headless_shell",
       "ipc_tests",
@@ -4152,6 +4151,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "crypto_unittests"
       }
     ]
   },
