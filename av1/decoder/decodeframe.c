@@ -3039,6 +3039,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
 #endif  // CONFIG_REFERENCE_BUFFER
   if (cm->frame_type == KEY_FRAME) {
+    cm->current_video_frame = 0;
 #if !CONFIG_OBU
     read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 #endif

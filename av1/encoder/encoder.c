@@ -5283,6 +5283,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       !cpi->oxcf.disable_tempmv && !cm->cur_frame->intra_only;
 #endif
 
+  // Reset the frame packet stamp index.
+  if (cm->frame_type == KEY_FRAME) cm->current_video_frame = 0;
+
   // NOTE:
   // (1) Move the setup of the ref_frame_flags upfront as it would be
   //     determined by the current frame properties;
