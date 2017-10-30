@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 
 namespace base {
@@ -36,55 +37,39 @@ namespace chromeos {
 //     |callback|.
 class CHROMEOS_EXPORT PipeReader {
  public:
-  typedef base::Callback<void(void)> IOCompleteCallback;
+  using CompletionCallback =
+      base::OnceCallback<void(base::Optional<std::string> data)>;
 
-  PipeReader(const scoped_refptr<base::TaskRunner>& task_runner,
-             const IOCompleteCallback& callback);
-  virtual ~PipeReader();
+  explicit PipeReader(const scoped_refptr<base::TaskRunner>& task_runner);
+  ~PipeReader();
 
   // Starts data collection.
   // Returns the write end of the pipe if stream was setup correctly.
-  // On success data will automatically be accumulated into a string that
-  // can be retrieved with PipeReader::data().  To shutdown collection delete
-  // the instance and/or use PipeReader::OnDataReady(-1).
-  base::ScopedFD StartIO();
-
-  // Called when pipe data are available.  Can also be used to shutdown
-  // data collection by passing -1 for |byte_count|.
-  void OnDataReady(int byte_count);
-
-  // Virtual function that subclasses will override in order to deal
-  // with incoming data.
-  virtual void AcceptData(const char *data, int length) = 0;
+  // On completion, |callback| will be called with the read |data| in
+  // case of success, or with nullopt in case of an error.
+  // To shut down the collection delete the instance.
+  base::ScopedFD StartIO(CompletionCallback callback);
 
  private:
-  std::unique_ptr<net::FileStream> data_stream_;
+  // Posts a task to read the data from the pipe. Returns
+  // net::FileStream::Read()'s result.
+  int RequestRead();
+
+  // Called when |io_buffer_| is filled via |data_stream_.Read()|.
+  void OnRead(int byte_count);
+
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<base::TaskRunner> task_runner_;
-  IOCompleteCallback callback_;
+
+  CompletionCallback callback_;
+  std::unique_ptr<net::FileStream> data_stream_;
+  std::string data_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<PipeReader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeReader);
-};
-
-// PipeReader subclass which accepts incoming data to a string.
-class CHROMEOS_EXPORT PipeReaderForString : public PipeReader {
- public:
-  PipeReaderForString(const scoped_refptr<base::TaskRunner>& task_runner,
-                      const IOCompleteCallback& callback);
-
-  void AcceptData(const char* data, int length) override;
-
-  // Destructively returns collected data, by swapping |data_| with |data|.
-  void GetData(std::string* data);
-
- private:
-  std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipeReaderForString);
 };
 
 }  // namespace chromeos

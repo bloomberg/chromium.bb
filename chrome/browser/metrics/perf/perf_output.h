@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/pipe_reader.h"
@@ -34,12 +35,12 @@ class PerfOutputCall {
 
  private:
   // Internal callbacks.
-  void OnIOComplete();
+  void OnIOComplete(base::Optional<std::string> data);
   void OnGetPerfOutputError(const std::string& error_name,
                             const std::string& error_message);
 
   // Used to capture perf data written to a pipe.
-  std::unique_ptr<chromeos::PipeReaderForString> perf_data_pipe_reader_;
+  std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;
 
   // Saved arguments.
   base::TimeDelta duration_;

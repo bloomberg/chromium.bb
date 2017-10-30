@@ -18,12 +18,13 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  perf_data_pipe_reader_.reset(new chromeos::PipeReaderForString(
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}),
-      base::Bind(&PerfOutputCall::OnIOComplete, weak_factory_.GetWeakPtr())));
+  perf_data_pipe_reader_ =
+      std::make_unique<chromeos::PipeReader>(base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
-  base::ScopedFD pipe_write_end = perf_data_pipe_reader_->StartIO();
+  base::ScopedFD pipe_write_end =
+      perf_data_pipe_reader_->StartIO(base::BindOnce(
+          &PerfOutputCall::OnIOComplete, weak_factory_.GetWeakPtr()));
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->GetPerfOutput(duration_, perf_args_, pipe_write_end.get(),
@@ -33,13 +34,10 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
 
 PerfOutputCall::~PerfOutputCall() {}
 
-void PerfOutputCall::OnIOComplete() {
+void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  std::string stdout_data;
-  perf_data_pipe_reader_->GetData(&stdout_data);
-
-  done_callback_.Run(stdout_data);
+  perf_data_pipe_reader_.reset();
+  done_callback_.Run(result.value_or(std::string()));
   // The callback may delete us, so it's hammertime: Can't touch |this|.
 }
 
@@ -47,7 +45,9 @@ void PerfOutputCall::OnGetPerfOutputError(const std::string& error_name,
                                           const std::string& error_message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Signal pipe reader to shut down. This will cause
-  // OnIOComplete to be called, probably with an empty string.
-  perf_data_pipe_reader_->OnDataReady(-1);
+  // Signal pipe reader to shut down.
+  if (perf_data_pipe_reader_.get()) {
+    perf_data_pipe_reader_.reset();
+    done_callback_.Run(std::string());
+  }
 }
