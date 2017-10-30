@@ -72,7 +72,7 @@ struct VideoEncodeProfile {
 
 // Video encoder IPC interface.
 // Next MinVersion: 1
-// Next Method ID: 5
+// Next Method ID: 6
 interface VideoEncodeAccelerator {
 
   // The input buffer storage type.
@@ -162,6 +162,14 @@ interface VideoEncodeAccelerator {
   //  |framerate| is the requested new framerate, in frames per second.
   RequestEncodingParametersChange@4(uint32 bitrate,
                                     uint32 framerate);
+
+  // Flushes the encoder: all pending inputs will be encoded and all bitstreams
+  // handed back to the client. The client should not invoke Flush() or
+  // Encode() before the previous Flush() is finished.
+  // Callback:
+  //  Called with |true| if Flush() is complete; with |false| if Flush() is
+  //  canceled.
+  Flush@5() => (bool flush_done);
 };
 
 // Interface for clients that use VideoEncodeAccelerator. These callbacks will

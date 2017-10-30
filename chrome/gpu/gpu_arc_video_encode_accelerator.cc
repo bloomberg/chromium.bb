@@ -225,6 +225,15 @@ void GpuArcVideoEncodeAccelerator::RequestEncodingParametersChange(
   accelerator_->RequestEncodingParametersChange(bitrate, framerate);
 }
 
+void GpuArcVideoEncodeAccelerator::Flush(FlushCallback callback) {
+  DVLOGF(2);
+  if (!accelerator_) {
+    DLOG(ERROR) << "Accelerator is not initialized.";
+    return;
+  }
+  accelerator_->Flush(std::move(callback));
+}
+
 base::ScopedFD GpuArcVideoEncodeAccelerator::UnwrapFdFromMojoHandle(
     mojo::ScopedHandle handle) {
   DCHECK(client_);
