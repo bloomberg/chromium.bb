@@ -73,7 +73,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   bool SupportsRestartToApplyUserFlags() const override;
   void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override;
-  void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
+  void GetServerBackedStateKeys(StateKeysCallback callback) override;
 
   void StartArcInstance(ArcStartupMode startup_mode,
                         const cryptohome::Identification& cryptohome_id,

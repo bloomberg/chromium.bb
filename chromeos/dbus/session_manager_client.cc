@@ -101,12 +101,6 @@ std::vector<std::string> ReadCreateStateKeysStub(const base::FilePath& path) {
   return state_keys;
 }
 
-// Turn pass-by-value into pass-by-reference as expected by StateKeysCallback.
-void RunStateKeysCallbackStub(SessionManagerClient::StateKeysCallback callback,
-                              std::vector<std::string> state_keys) {
-  callback.Run(state_keys);
-}
-
 // Helper to notify the callback with SUCCESS, to be used by the stub.
 void NotifyOnRetrievePolicySuccess(
     SessionManagerClient::RetrievePolicyCallback callback,
@@ -396,7 +390,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void GetServerBackedStateKeys(const StateKeysCallback& callback) override {
+  void GetServerBackedStateKeys(StateKeysCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerGetServerBackedStateKeys);
@@ -410,7 +404,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
         base::BindOnce(&SessionManagerClientImpl::OnGetServerBackedStateKeys,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StartArcInstance(ArcStartupMode startup_mode,
@@ -763,7 +757,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // Called when kSessionManagerGetServerBackedStateKeys method is complete.
-  void OnGetServerBackedStateKeys(const StateKeysCallback& callback,
+  void OnGetServerBackedStateKeys(StateKeysCallback callback,
                                   dbus::Response* response) {
     std::vector<std::string> state_keys;
     if (response) {
@@ -786,8 +780,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
       }
     }
 
-    if (!callback.is_null())
-      callback.Run(state_keys);
+    std::move(callback).Run(state_keys);
   }
 
   void OnGetArcStartTime(DBusMethodCallback<base::TimeTicks> callback,
@@ -1032,7 +1025,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override {}
 
-  void GetServerBackedStateKeys(const StateKeysCallback& callback) override {
+  void GetServerBackedStateKeys(StateKeysCallback callback) override {
     base::FilePath owner_key_path;
     CHECK(PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path));
     const base::FilePath state_keys_path =
@@ -1040,8 +1033,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&ReadCreateStateKeysStub, state_keys_path),
-        base::Bind(&RunStateKeysCallbackStub, callback));
+        base::BindOnce(&ReadCreateStateKeysStub, state_keys_path),
+        std::move(callback));
   }
 
   void StartArcInstance(ArcStartupMode startup_mode,
