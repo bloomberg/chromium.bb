@@ -2902,6 +2902,25 @@
             ]
         }
     ],
+    "S13nSafeBrowsingParallelUrlCheck": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "CanaryDev_Enabled",
+                    "enable_features": [
+                        "S13nSafeBrowsingParallelUrlCheck"
+                    ]
+                }
+            ]
+        }
+    ],
     "SRTExperimentalEngineTrial": [
         {
             "platforms": [
