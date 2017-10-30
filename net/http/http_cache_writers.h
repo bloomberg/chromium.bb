@@ -240,7 +240,6 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
   void EraseTransaction(Transaction* transaction, int result);
   TransactionMap::iterator EraseTransaction(TransactionMap::iterator it,
                                             int result);
-
   void SetCacheCallback(bool success, const TransactionSet& make_readers);
 
   // IO Completion callback function.

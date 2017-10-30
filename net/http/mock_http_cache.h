@@ -299,6 +299,7 @@ class MockHttpCache {
   int GetCountReaders(const std::string& key);
   int GetCountAddToEntryQueue(const std::string& key);
   int GetCountDoneHeadersQueue(const std::string& key);
+  int GetCountWriterTransactions(const std::string& key);
 
  private:
   HttpCache http_cache_;

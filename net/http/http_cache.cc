@@ -116,6 +116,11 @@ bool HttpCache::ActiveEntry::SafeToDestroy() {
   return HasNoTransactions() && !writers && !will_process_queued_transactions;
 }
 
+bool HttpCache::ActiveEntry::TransactionInReaders(
+    Transaction* transaction) const {
+  return readers.count(transaction) > 0;
+}
+
 //-----------------------------------------------------------------------------
 
 // This structure keeps track of work items that are attempting to create or
@@ -947,12 +952,18 @@ void HttpCache::WritersDoneWritingToEntry(ActiveEntry* entry,
     return;
   }
 
-  // Add any idle writers to readers.
-  entry->writers.reset();
   if (success) {
-    entry->readers.insert(make_readers.begin(), make_readers.end());
+    // Add any idle writers to readers.
+    for (auto* reader : make_readers) {
+      reader->WriteModeTransactionAboutToBecomeReader();
+      entry->readers.insert(reader);
+    }
+    // Reset writers here so that WriteModeTransactionAboutToBecomeReader can
+    // access the network transaction.
+    entry->writers.reset();
     ProcessQueuedTransactions(entry);
   } else {
+    entry->writers.reset();
     ProcessEntryFailure(entry);
   }
 }
@@ -1072,16 +1083,37 @@ void HttpCache::ProcessDoneHeadersQueue(ActiveEntry* entry) {
   DCHECK(!entry->done_headers_queue.empty());
 
   Transaction* transaction = entry->done_headers_queue.front();
+  bool is_partial = transaction->partial() != nullptr;
 
-  // If this transaction is responsible for writing the response body.
-  if (transaction->mode() & Transaction::WRITE) {
+  if (IsWritingInProgress(entry)) {
+    if (is_partial || transaction->mode() == Transaction::READ) {
+      // TODO(shivanisha): Returning from here instead of checking the next
+      // transaction in the queue because the FIFO order is maintained
+      // throughout, until it becomes a reader or writer. May be at this point
+      // the ordering is not important but that would be optimizing a rare
+      // scenario where write mode transactions are insterspersed with read-only
+      // transactions.
+      return;
+    }
     AddTransactionToWriters(entry, transaction);
-  } else {
-    // If a transaction is in front of this queue with only read mode set and
-    // there is no writer, it implies response body is already written, convert
-    // to a reader.
-    auto return_val = entry->readers.insert(transaction);
-    DCHECK_EQ(return_val.second, true);
+  } else {  // no writing in progress
+    if (transaction->mode() & Transaction::WRITE) {
+      if (is_partial) {
+        AddTransactionToWriters(entry, transaction);
+      } else {
+        // Add the transaction to readers since the response body should have
+        // already been written. (If it was the first writer about to start
+        // writing to the cache, it would have been added to writers in
+        // DoneWithResponseHeaders, thus no writers here signify the response
+        // was completely written).
+        transaction->WriteModeTransactionAboutToBecomeReader();
+        auto return_val = entry->readers.insert(transaction);
+        DCHECK(return_val.second);
+      }
+    } else {  // mode READ
+      auto return_val = entry->readers.insert(transaction);
+      DCHECK(return_val.second);
+    }
   }
 
   // Post another task to give a chance to more transactions to either join
@@ -1100,12 +1132,11 @@ void HttpCache::AddTransactionToWriters(ActiveEntry* entry,
 
   DCHECK(entry->writers->CanAddWriters());
 
-  // TODO(shivanisha), is_exclusive should be set conditionally. Currently
-  // setting it for all cases to test the reduced case of at most 1 writer.
   Writers::TransactionInfo info(transaction->partial(),
                                 transaction->is_truncated(),
                                 *(transaction->GetResponseInfo()));
-  entry->writers->AddTransaction(transaction, true /* is_exclusive */,
+  entry->writers->AddTransaction(transaction,
+                                 transaction->partial() /* is_exclusive */,
                                  transaction->priority(), info);
 }
 

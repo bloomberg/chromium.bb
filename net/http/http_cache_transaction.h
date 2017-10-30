@@ -186,6 +186,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // If result is an error code, a future Read should fail with |result|.
   void WriterAboutToBeRemovedFromEntry(int result);
 
+  // Invoked when this transaction is about to become a reader because the cache
+  // entry has finished writing.
+  void WriteModeTransactionAboutToBecomeReader();
+
  private:
   static const size_t kNumValidationHeaders = 2;
   // Helper struct to pair a header name with its value, for
@@ -479,6 +483,11 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   const HttpTransaction* network_transaction() const;
   HttpTransaction* network_transaction();
 
+  // Returns the network transaction from |this| or from writers only if it was
+  // moved from |this| to writers. This is so that statistics of the network
+  // transaction are not attributed to any other writer member.
+  const HttpTransaction* GetOwnedOrMovedNetworkTransaction() const;
+
   // Returns true if we should bother attempting to resume this request if it is
   // aborted while in progress. If |has_data| is true, the size of the stored
   // data is considered for the result.
@@ -591,6 +600,15 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   bool recorded_histograms_;
 
   NetworkTransactionInfo network_transaction_info_;
+
+  // True if this transaction created the network transaction that is now being
+  // used by writers. This is used to check that only this transaction should
+  // account for the network bytes and other statistics of the network
+  // transaction.
+  // TODO(shivanisha) Note that if this transaction dies mid-way and there are
+  // other writer transactions, no transaction then accounts for those
+  // statistics.
+  bool moved_network_transaction_to_writers_;
 
   // The helper object to use to create WebSocketHandshakeStreamBase
   // objects. Only relevant when establishing a WebSocket connection.

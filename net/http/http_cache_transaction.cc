@@ -178,6 +178,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       cache_entry_status_(CacheEntryStatus::ENTRY_UNDEFINED),
       validation_cause_(VALIDATION_CAUSE_UNDEFINED),
       recorded_histograms_(false),
+      moved_network_transaction_to_writers_(false),
       websocket_handshake_stream_base_create_helper_(NULL),
       in_do_loop_(false),
       weak_factory_(this) {
@@ -401,15 +402,16 @@ int HttpCache::Transaction::TransitionToReadingState() {
   if (!InWriters()) {
     // Since transaction is not a writer and we are in Read(), it must be a
     // reader.
-    DCHECK(entry_->readers.count(this));
+    DCHECK(entry_->TransactionInReaders(this));
     DCHECK(mode_ == READ || (mode_ == READ_WRITE && partial_));
     next_state_ = STATE_CACHE_READ_DATA;
     return OK;
   }
 
+  DCHECK(mode_ & WRITE || mode_ == NONE);
+
   // If it's a writer and it is partial then it may need to read from the cache
   // or from the network based on whether network transaction is present or not.
-  DCHECK(mode_ == WRITE || mode_ == NONE || (mode_ == READ_WRITE && partial_));
   if (partial_) {
     if (entry_->writers->network_transaction())
       next_state_ = STATE_NETWORK_READ_CACHE_WRITE;
@@ -448,7 +450,7 @@ void HttpCache::Transaction::StopCaching() {
 
 bool HttpCache::Transaction::GetFullRequestHeaders(
     HttpRequestHeaders* headers) const {
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction) {
     return transaction->GetFullRequestHeaders(headers);
   } else if (!network_transaction_info_.full_request_headers.IsEmpty()) {
@@ -462,7 +464,7 @@ bool HttpCache::Transaction::GetFullRequestHeaders(
 
 int64_t HttpCache::Transaction::GetTotalReceivedBytes() const {
   int64_t total_received_bytes = network_transaction_info_.total_received_bytes;
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction)
     total_received_bytes += transaction->GetTotalReceivedBytes();
   return total_received_bytes;
@@ -470,7 +472,7 @@ int64_t HttpCache::Transaction::GetTotalReceivedBytes() const {
 
 int64_t HttpCache::Transaction::GetTotalSentBytes() const {
   int64_t total_sent_bytes = network_transaction_info_.total_sent_bytes;
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction)
     total_sent_bytes += transaction->GetTotalSentBytes();
   return total_sent_bytes;
@@ -511,7 +513,7 @@ void HttpCache::Transaction::SetQuicServerInfo(
 
 bool HttpCache::Transaction::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction)
     return transaction->GetLoadTimingInfo(load_timing_info);
 
@@ -533,7 +535,7 @@ bool HttpCache::Transaction::GetLoadTimingInfo(
 }
 
 bool HttpCache::Transaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction)
     return transaction->GetRemoteEndpoint(endpoint);
 
@@ -547,7 +549,7 @@ bool HttpCache::Transaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
 
 void HttpCache::Transaction::PopulateNetErrorDetails(
     NetErrorDetails* details) const {
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction)
     return transaction->PopulateNetErrorDetails(details);
   return;
@@ -607,7 +609,7 @@ int HttpCache::Transaction::ResumeNetworkStart() {
 void HttpCache::Transaction::GetConnectionAttempts(
     ConnectionAttempts* out) const {
   ConnectionAttempts new_connection_attempts;
-  const HttpTransaction* transaction = network_transaction();
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
   if (transaction)
     transaction->GetConnectionAttempts(&new_connection_attempts);
 
@@ -636,7 +638,8 @@ void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
 
   // Since the transaction can no longer access the network transaction, save
   // all network related info now.
-  if (InWriters() && entry_->writers->network_transaction()) {
+  if (InWriters() && entry_->writers->network_transaction() &&
+      moved_network_transaction_to_writers_) {
     SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
 
@@ -647,6 +650,14 @@ void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
     entry_ = nullptr;
     mode_ = NONE;
     shared_writing_error_ = result;
+  }
+}
+
+void HttpCache::Transaction::WriteModeTransactionAboutToBecomeReader() {
+  mode_ = READ;
+  if (InWriters() && entry_->writers->network_transaction() &&
+      moved_network_transaction_to_writers_) {
+    SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
 }
 
@@ -1784,7 +1795,8 @@ int HttpCache::Transaction::DoUpdateCachedResponseComplete(int result) {
     DoneWithEntry(true);
   } else if (entry_ && !handling_206_) {
     DCHECK_EQ(READ_WRITE, mode_);
-    if (!partial_ || partial_->IsLastRange()) {
+    if ((!partial_ && !cache_->IsWritingInProgress(entry_)) ||
+        partial_->IsLastRange()) {
       mode_ = READ;
     }
     // We no longer need the network transaction, so destroy it.
@@ -2007,6 +2019,7 @@ int HttpCache::Transaction::DoFinishHeadersComplete(int rv) {
 
   if (network_trans_ && InWriters()) {
     entry_->writers->SetNetworkTransaction(this, std::move(network_trans_));
+    moved_network_transaction_to_writers_ = true;
   }
 
   // If already reading, that means it is a partial request coming back to the
@@ -2057,7 +2070,6 @@ int HttpCache::Transaction::DoNetworkReadCacheWrite() {
 
 int HttpCache::Transaction::DoNetworkReadCacheWriteComplete(int result) {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoNetworkReadCacheWriteComplete");
-  DCHECK(mode_ & WRITE || mode_ == NONE);
   if (!cache_.get()) {
     TransitionToState(STATE_NONE);
     return ERR_UNEXPECTED;
@@ -2819,7 +2831,8 @@ int HttpCache::Transaction::SetupEntryForRead() {
     }
   }
 
-  mode_ = READ;
+  if (!cache_->IsWritingInProgress(entry_))
+    mode_ = READ;
 
   if (method_ == "HEAD")
     FixHeadersForHead();
@@ -3045,6 +3058,15 @@ const HttpTransaction* HttpCache::Transaction::network_transaction() const {
   if (network_trans_)
     return network_trans_.get();
   if (InWriters())
+    return entry_->writers->network_transaction();
+  return nullptr;
+}
+
+const HttpTransaction*
+HttpCache::Transaction::GetOwnedOrMovedNetworkTransaction() const {
+  if (network_trans_)
+    return network_trans_.get();
+  if (InWriters() && moved_network_transaction_to_writers_)
     return entry_->writers->network_transaction();
   return nullptr;
 }
@@ -3306,9 +3328,11 @@ void HttpCache::Transaction::SaveNetworkTransactionInfo(
   if (transaction.GetLoadTimingInfo(&load_timing))
     network_transaction_info_.old_network_trans_load_timing.reset(
         new LoadTimingInfo(load_timing));
+
   network_transaction_info_.total_received_bytes +=
       transaction.GetTotalReceivedBytes();
   network_transaction_info_.total_sent_bytes += transaction.GetTotalSentBytes();
+
   ConnectionAttempts attempts;
   transaction.GetConnectionAttempts(&attempts);
   for (const auto& attempt : attempts)
@@ -3316,10 +3340,6 @@ void HttpCache::Transaction::SaveNetworkTransactionInfo(
   network_transaction_info_.old_remote_endpoint = IPEndPoint();
   transaction.GetRemoteEndpoint(&network_transaction_info_.old_remote_endpoint);
 
-  // Do not overwrite the headers for a full request again for a parallel
-  // writing transaction.
-  if (!partial_ && !network_transaction_info_.full_request_headers.IsEmpty())
-    return;
   transaction.GetFullRequestHeaders(
       &network_transaction_info_.full_request_headers);
 }
