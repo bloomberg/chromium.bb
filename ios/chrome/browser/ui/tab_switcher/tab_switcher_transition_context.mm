@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -38,15 +39,8 @@
     [bvc.view setFrame:[[UIScreen mainScreen] bounds]];
   }
 
-  UIView* toolbarView = [[bvc toolbarController] view];
-  UIView* toolbarSnapshotView;
-  if ([toolbarView window]) {
-    toolbarSnapshotView = [toolbarView snapshotViewAfterScreenUpdates:NO];
-  } else {
-    toolbarSnapshotView = [[UIView alloc] initWithFrame:toolbarView.frame];
-    [toolbarSnapshotView layer].contents = static_cast<id>(
-        CaptureViewWithOption(toolbarView, 1, kClientSideRendering).CGImage);
-  }
+  UIView* toolbarSnapshotView =
+      [bvc.toolbarSnapshotProvider snapshotForTabSwitcher];
   transitionContextContent.toolbarSnapshotView = toolbarSnapshotView;
   transitionContextContent->_bvc = bvc;
   return transitionContextContent;

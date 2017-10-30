@@ -21,10 +21,10 @@
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe/history_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
+#include "ios/chrome/browser/ui/side_swipe/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -120,6 +120,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
 @synthesize inSwipe = inSwipe_;
 @synthesize swipeDelegate = swipeDelegate_;
+@synthesize toolbarInteractionHandler = _toolbarInteractionHandler;
 @synthesize snapshotDelegate = snapshotDelegate_;
 @synthesize tabStripDelegate = tabStripDelegate_;
 
@@ -215,17 +216,13 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // Since the toolbar and the contentView can overlap, check the toolbar frame
   // first, and confirm the right gesture recognizer is firing.
   CGRect toolbarFrame =
-      CGRectInset([[[swipeDelegate_ toolbarController] view] frame], -1, -1);
+      CGRectInset([self.toolbarInteractionHandler toolbarView].frame, -1, -1);
   if (CGRectContainsPoint(toolbarFrame, location)) {
     if (![gesture isEqual:panGestureRecognizer_]) {
       return NO;
     }
 
-    if ([[swipeDelegate_ toolbarController] isOmniboxFirstResponder] ||
-        [[swipeDelegate_ toolbarController] showingOmniboxPopup]) {
-      return NO;
-    }
-    return YES;
+    return [self.toolbarInteractionHandler canBeginToolbarSwipe];
   }
 
   // Otherwise, only allow contentView touches with |swipeGestureRecognizer_|.
@@ -423,7 +420,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [pageSideSwipeView_ setTargetView:[swipeDelegate_ contentView]];
 
     [gesture.view insertSubview:pageSideSwipeView_
-                   belowSubview:[[swipeDelegate_ toolbarController] view]];
+                   belowSubview:[self.toolbarInteractionHandler toolbarView]];
   }
 
   __weak Tab* weakCurrentTab = [model_ currentTab];
@@ -477,6 +474,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       tabSideSwipeView_ = [[CardSideSwipeView alloc] initWithFrame:frame
                                                          topMargin:headerHeight
                                                              model:model_];
+      tabSideSwipeView_.toolbarInteractionHandler =
+          self.toolbarInteractionHandler;
       [tabSideSwipeView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                              UIViewAutoresizingFlexibleHeight];
       [tabSideSwipeView_ setDelegate:swipeDelegate_];
@@ -490,9 +489,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
 
     // Layout tabs with new snapshots in the current orientation.
-    [tabSideSwipeView_
-        updateViewsForDirection:gesture.direction
-                    withToolbar:[swipeDelegate_ toolbarController]];
+    [tabSideSwipeView_ updateViewsForDirection:gesture.direction];
 
     // Insert behind infobar container (which is below toolbar)
     // so card border doesn't look janky during animation.

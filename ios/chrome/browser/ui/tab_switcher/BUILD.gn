@@ -85,6 +85,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common:ios_app_bundle_id_prefix_header",
     "//ios/public/provider/chrome/browser",

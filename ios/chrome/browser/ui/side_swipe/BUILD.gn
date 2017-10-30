@@ -13,6 +13,7 @@ source_set("side_swipe") {
     "side_swipe_controller.mm",
     "side_swipe_navigation_view.h",
     "side_swipe_navigation_view.mm",
+    "side_swipe_toolbar_interacting.h",
     "side_swipe_util.h",
     "side_swipe_util.mm",
   ]

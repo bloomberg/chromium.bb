@@ -16,9 +16,9 @@
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#include "ios/chrome/browser/ui/side_swipe/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -129,9 +129,7 @@ const CGFloat kResizeFactor = 4;
 // Is the current card is an edge card based on swipe direction.
 - (BOOL)isEdgeSwipe;
 // Initialize card based on model_ index.
-- (void)setupCard:(SwipeView*)card
-        withIndex:(NSInteger)index
-      withToolbar:(WebToolbarController*)toolbarController;
+- (void)setupCard:(SwipeView*)card withIndex:(NSInteger)index;
 // Build a |kResizeFactor| sized greyscaled version of |image|.
 - (UIImage*)smallGreyImage:(UIImage*)image;
 @end
@@ -139,6 +137,7 @@ const CGFloat kResizeFactor = 4;
 @implementation CardSideSwipeView
 
 @synthesize delegate = delegate_;
+@synthesize toolbarInteractionHandler = toolbarInteractionHandler_;
 @synthesize topMargin = topMargin_;
 
 - (id)initWithFrame:(CGRect)frame
@@ -184,26 +183,24 @@ const CGFloat kResizeFactor = 4;
 
 // Set up left and right card views depending on current tab and swipe
 // direction.
-- (void)updateViewsForDirection:(UISwipeGestureRecognizerDirection)direction
-                    withToolbar:(WebToolbarController*)tbc {
+- (void)updateViewsForDirection:(UISwipeGestureRecognizerDirection)direction {
   direction_ = direction;
   CGRect cardFrame = [self cardFrame];
   NSUInteger currentIndex = [model_ indexOfTab:model_.currentTab];
   CGFloat offset = UseRTLLayout() ? -1 : 1;
   if (direction_ == UISwipeGestureRecognizerDirectionRight) {
-    [self setupCard:rightCard_ withIndex:currentIndex withToolbar:tbc];
+    [self setupCard:rightCard_ withIndex:currentIndex];
     [rightCard_ setFrame:cardFrame];
-    [self setupCard:leftCard_ withIndex:currentIndex - offset withToolbar:tbc];
+    [self setupCard:leftCard_ withIndex:currentIndex - offset];
     cardFrame.origin.x -= cardFrame.size.width + kCardHorizontalSpacing;
     [leftCard_ setFrame:cardFrame];
   } else {
-    [self setupCard:leftCard_ withIndex:currentIndex withToolbar:tbc];
+    [self setupCard:leftCard_ withIndex:currentIndex];
     [leftCard_ setFrame:cardFrame];
-    [self setupCard:rightCard_ withIndex:currentIndex + offset withToolbar:tbc];
+    [self setupCard:rightCard_ withIndex:currentIndex + offset];
     cardFrame.origin.x += cardFrame.size.width + kCardHorizontalSpacing;
     [rightCard_ setFrame:cardFrame];
   }
-  [tbc resetToolbarAfterSideSwipeSnapshot];
 }
 
 - (UIImage*)smallGreyImage:(UIImage*)image {
@@ -219,9 +216,7 @@ const CGFloat kResizeFactor = 4;
 }
 
 // Create card view based on TabModel index.
-- (void)setupCard:(SwipeView*)card
-        withIndex:(NSInteger)index
-      withToolbar:(WebToolbarController*)toolbarController {
+- (void)setupCard:(SwipeView*)card withIndex:(NSInteger)index {
   if (index < 0 || index >= (NSInteger)[model_ count]) {
     [card setHidden:YES];
     return;
@@ -231,10 +226,8 @@ const CGFloat kResizeFactor = 4;
   Tab* tab = [model_ tabAtIndex:index];
   BOOL isNTP =
       tab.webState->GetLastCommittedURL().host_piece() == kChromeUINewTabHost;
-  [toolbarController updateToolbarForSideSwipeSnapshot:tab];
-  UIImage* toolbarView = CaptureViewWithOption([toolbarController view],
-                                               [[UIScreen mainScreen] scale],
-                                               kClientSideRendering);
+  UIImage* toolbarView =
+      [self.toolbarInteractionHandler toolbarSideSwipeSnapshotForTab:tab];
   [card setToolbarImage:toolbarView isNewTabPage:isNTP];
 
   // Converting snapshotted images to grey takes too much time for single core

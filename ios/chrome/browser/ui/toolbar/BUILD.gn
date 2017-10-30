@@ -24,6 +24,7 @@ source_set("toolbar") {
     "toolbar_model_impl_ios.mm",
     "toolbar_model_ios.h",
     "toolbar_owner.h",
+    "toolbar_snapshot_providing.h",
     "toolbar_tools_menu_button.h",
     "toolbar_tools_menu_button.mm",
     "toolbar_utils.h",
