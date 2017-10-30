@@ -113,7 +113,7 @@ int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
   return IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
 }
 
-void GpuMemoryBufferImplIOSurface::SetColorSpaceForScanout(
+void GpuMemoryBufferImplIOSurface::SetColorSpace(
     const gfx::ColorSpace& color_space) {
   if (color_space == color_space_)
     return;

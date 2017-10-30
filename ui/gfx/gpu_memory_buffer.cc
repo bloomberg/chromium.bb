@@ -15,8 +15,7 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle(
 
 GpuMemoryBufferHandle::~GpuMemoryBufferHandle() {}
 
-void GpuMemoryBuffer::SetColorSpaceForScanout(
-    const gfx::ColorSpace& color_space) {}
+void GpuMemoryBuffer::SetColorSpace(const gfx::ColorSpace& color_space) {}
 
 GpuMemoryBufferHandle CloneHandleForIPC(
     const GpuMemoryBufferHandle& source_handle) {

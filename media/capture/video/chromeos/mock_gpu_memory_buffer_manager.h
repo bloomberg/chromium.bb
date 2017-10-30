@@ -31,8 +31,7 @@ class MockGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 
   MOCK_CONST_METHOD1(stride, int(size_t plane));
 
-  MOCK_METHOD1(SetColorSpaceForScanout,
-               void(const gfx::ColorSpace& color_space));
+  MOCK_METHOD1(SetColorSpace, void(const gfx::ColorSpace& color_space));
 
   MOCK_CONST_METHOD0(GetId, gfx::GpuMemoryBufferId());
 

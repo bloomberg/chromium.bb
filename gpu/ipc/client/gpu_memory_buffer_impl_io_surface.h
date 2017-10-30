@@ -44,7 +44,7 @@ class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   void* memory(size_t plane) override;
   void Unmap() override;
   int stride(size_t plane) const override;
-  void SetColorSpaceForScanout(const gfx::ColorSpace& color_space) override;
+  void SetColorSpace(const gfx::ColorSpace& color_space) override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:

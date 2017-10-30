@@ -146,7 +146,7 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     return gbm_bo_get_plane_stride(buffer_object_, plane);
   }
 
-  void SetColorSpaceForScanout(const gfx::ColorSpace& color_space) override {}
+  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
 
   gfx::GpuMemoryBufferId GetId() const override { return handle_.id; }
 

@@ -302,7 +302,7 @@ gfx::GpuMemoryBuffer* LayerTreeResourceProvider::
     // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
     // http://crbug.com/554541
     if (gpu_memory_buffer_ && color_space_.IsValid())
-      gpu_memory_buffer_->SetColorSpaceForScanout(color_space_);
+      gpu_memory_buffer_->SetColorSpace(color_space_);
   }
   return gpu_memory_buffer_.get();
 }

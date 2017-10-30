@@ -524,7 +524,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
   for (const auto& plane_resource : frame_resources->plane_resources) {
     if (plane_resource.gpu_memory_buffer) {
       plane_resource.gpu_memory_buffer->Unmap();
-      plane_resource.gpu_memory_buffer->SetColorSpaceForScanout(
+      plane_resource.gpu_memory_buffer->SetColorSpace(
           video_frame->ColorSpace());
     }
   }
