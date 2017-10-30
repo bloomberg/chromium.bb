@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/device-orientation-helpers.js"></script>
 <script>
-description('Tests that events are never fired synchronously from a call to window.addEventListener().');
+'use strict';
 
-if (window.testRunner)
-    testRunner.setMockDeviceOrientation(true, 1.1, true, 2.2, true, 3.3, true);
-else
-    debug('This test can not be run without the TestRunner');
+async_test(test => {
+  assertTestRunner();
+  var orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
 
-var hasAddEventListenerReturned = false;
-window.addEventListener('deviceorientation', function() {
-    shouldBeTrue('hasAddEventListenerReturned');
-    finishJSTest();
-});
-hasAddEventListenerReturned = true;
+  setMockOrientation(orientationData);
 
-window.jsTestIsAsync = true;
+  var hasAddEventListenerReturned = false;
+  window.addEventListener('deviceorientation', test.step_func_done(() => {
+    assert_true(hasAddEventListenerReturned);
+  }));
+  hasAddEventListenerReturned = true;
+}, 'Tests that events are never fired synchronously from a call to window.addEventListener().');
 </script>
 </body>
 </html>

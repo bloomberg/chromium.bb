@@ -1,48 +1,35 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/device-orientation-helpers.js"></script>
 <script>
-description('Tests that updates to the orientation causes new events to fire.');
+'use strict';
 
-var mockEvent;
-function setMockOrientation(alpha, beta, gamma, absolute) {
-    mockEvent = {alpha: alpha, beta: beta, gamma: gamma, absolute: absolute};
-    if (window.testRunner)
-        testRunner.setMockDeviceOrientation(true, mockEvent.alpha, true, mockEvent.beta, true, mockEvent.gamma, mockEvent.absolute);
-    else
-        debug('This test can not be run without the TestRunner');
-}
+async_test(test => {
+  assertTestRunner();
+  var orientationData1 = generateOrientationData(1.1, 2.2, 3.3, true);
+  var orientationData2 = generateOrientationData(11.1, 22.2, 33.3, true);
 
-var deviceOrientationEvent;
-function checkOrientation(event) {
-    deviceOrientationEvent = event;
-    shouldBe('deviceOrientationEvent.alpha', 'mockEvent.alpha');
-    shouldBe('deviceOrientationEvent.beta', 'mockEvent.beta');
-    shouldBe('deviceOrientationEvent.gamma', 'mockEvent.gamma');
-    shouldBe('deviceOrientationEvent.absolute', 'mockEvent.absolute');
-}
-
-function firstListener(event) {
-    checkOrientation(event);
+  var firstListener = test.step_func(event => {
+    checkOrientation(event, orientationData1);
     window.removeEventListener('deviceorientation', firstListener);
-    setTimeout(function(){initUpdateListener();}, 0);
-}
+    setTimeout(initUpdateListener, 0);
+  });
 
-function initUpdateListener() {
-    setMockOrientation(11.1, 22.2, 33.3, true);
+  function initUpdateListener() {
+    setMockOrientation(orientationData2);
     window.addEventListener('deviceorientation', updateListener);
-}
+  }
 
-function updateListener(event) {
-    checkOrientation(event);
-    finishJSTest();
-}
+  var updateListener = test.step_func_done(event => {
+    checkOrientation(event, orientationData2);
+  });
 
-setMockOrientation(1.1, 2.2, 3.3, true);
-window.addEventListener('deviceorientation', firstListener);
-
-window.jsTestIsAsync = true;
+  setMockOrientation(orientationData1);
+  window.addEventListener('deviceorientation', firstListener);
+}, 'Tests that updates to the orientation causes new events to fire.');
 </script>
 </body>
 </html>
