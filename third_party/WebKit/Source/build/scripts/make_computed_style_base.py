@@ -424,8 +424,8 @@ def _evaluate_rare_non_inherited_group(properties, properties_ranking,
         "Length of rule and num_layers mismatch"
 
     layers_name = [
-        "rare-non-inherited-usage-less-than-{}".format(
-            str(int(round(partition_rule[i] * 100))) + "-percent")
+        "rare-non-inherited-usage-less-than-{}-percent".format(
+            int(round(partition_rule[i] * 100)))
         for i in range(num_layers)
     ]
     properties_ranking = _get_properties_ranking_using_partition_rule(
@@ -474,7 +474,8 @@ def _evaluate_rare_inherit_group(properties, properties_ranking,
 
     layers_name = [
         "rare-inherited-usage-less-than-{}-percent".format(
-            str(int(round(partition_rule[i] * 100))) for i in range(num_layers))
+            int(round(partition_rule[i] * 100)))
+        for i in range(num_layers)
     ]
 
     properties_ranking = _get_properties_ranking_using_partition_rule(
