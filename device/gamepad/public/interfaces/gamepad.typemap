@@ -14,10 +14,15 @@ deps = [
   "//third_party/WebKit/public:blink_headers",
 ]
 
+# Use typemaps for device::Gamepad and its member types. Gamepad data is
+# intentionally POD and fixed size so that it can be stored in shared memory
+# between hardware polling threads and the rest of the browser.
 type_mappings = [
   "device.mojom.Gamepad=device::Gamepad",
   "device.mojom.GamepadButton=device::GamepadButton",
   "device.mojom.GamepadHand=device::GamepadHand",
+  "device.mojom.GamepadHapticActuator=device::GamepadHapticActuator[nullable_is_same_type]",
+  "device.mojom.GamepadHapticActuatorType=device::GamepadHapticActuatorType",
   "device.mojom.GamepadPose=device::GamepadPose[nullable_is_same_type]",
   "device.mojom.GamepadQuaternion=device::GamepadQuaternion[nullable_is_same_type]",
   "device.mojom.GamepadVector=device::GamepadVector[nullable_is_same_type]",

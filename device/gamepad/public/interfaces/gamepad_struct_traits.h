@@ -51,6 +51,30 @@ struct StructTraits<device::mojom::GamepadButtonDataView,
 };
 
 template <>
+struct EnumTraits<device::mojom::GamepadHapticActuatorType,
+                  device::GamepadHapticActuatorType> {
+  static device::mojom::GamepadHapticActuatorType ToMojom(
+      device::GamepadHapticActuatorType input);
+  static bool FromMojom(device::mojom::GamepadHapticActuatorType input,
+                        device::GamepadHapticActuatorType* output);
+};
+
+template <>
+struct StructTraits<device::mojom::GamepadHapticActuatorDataView,
+                    device::GamepadHapticActuator> {
+  static bool IsNull(const device::GamepadHapticActuator& r) {
+    return !r.not_null;
+  }
+  static void SetToNull(device::GamepadHapticActuator* out);
+  static const device::GamepadHapticActuatorType& type(
+      const device::GamepadHapticActuator& r) {
+    return r.type;
+  }
+  static bool Read(device::mojom::GamepadHapticActuatorDataView data,
+                   device::GamepadHapticActuator* out);
+};
+
+template <>
 struct StructTraits<device::mojom::GamepadPoseDataView, device::GamepadPose> {
   static bool IsNull(const device::GamepadPose& r) { return !r.not_null; }
   static void SetToNull(device::GamepadPose* out);
@@ -98,6 +122,10 @@ struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
   static base::span<const device::GamepadButton> buttons(
       const device::Gamepad& r) {
     return base::make_span(r.buttons, r.buttons_length);
+  }
+  static const device::GamepadHapticActuator& vibration_actuator(
+      const device::Gamepad& r) {
+    return r.vibration_actuator;
   }
   static const device::GamepadPose& pose(const device::Gamepad& r) {
     return r.pose;
