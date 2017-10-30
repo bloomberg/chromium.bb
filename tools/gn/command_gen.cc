@@ -211,10 +211,14 @@ bool RunIdeWriter(const std::string& ide,
     std::string win_kit;
     if (command_line->HasSwitch(kSwitchIdeValueWinSdk))
       win_kit = command_line->GetSwitchValueASCII(kSwitchIdeValueWinSdk);
+    std::string ninja_extra_args;
+    if (command_line->HasSwitch(kSwitchNinjaExtraArgs))
+      ninja_extra_args =
+          command_line->GetSwitchValueASCII(kSwitchNinjaExtraArgs);
     bool no_deps = command_line->HasSwitch(kSwitchNoDeps);
-    bool res = VisualStudioWriter::RunAndWriteFiles(build_settings, builder,
-                                                    version, sln_name, filters,
-                                                    win_kit, no_deps, err);
+    bool res = VisualStudioWriter::RunAndWriteFiles(
+        build_settings, builder, version, sln_name, filters, win_kit,
+        ninja_extra_args, no_deps, err);
     if (res && !quiet) {
       OutputString("Generating Visual Studio projects took " +
                    base::Int64ToString(timer.Elapsed().InMilliseconds()) +
@@ -329,6 +333,10 @@ Visual Studio Flags
       As an example, "10.0.15063.0" can be specified to use Creators Update SDK
       instead of the default one.
 
+  --ninja-extra-args=<string>
+      This string is passed without any quoting to the ninja invocation
+      command-line. Can be used to configure ninja flags, like "-j".
+
 Xcode Flags
 
   --workspace=<file_name>
@@ -337,8 +345,7 @@ Xcode Flags
 
   --ninja-extra-args=<string>
       This string is passed without any quoting to the ninja invocation
-      command-line. Can be used to configure ninja flags, like "-j" if using
-      goma for example.
+      command-line. Can be used to configure ninja flags, like "-j".
 
   --root-target=<target_name>
       Name of the target corresponding to "All" target in Xcode. If unset,

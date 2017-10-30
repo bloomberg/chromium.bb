@@ -45,6 +45,7 @@ class VisualStudioWriter {
                                const std::string& sln_name,
                                const std::string& filters,
                                const std::string& win_sdk,
+                               const std::string& ninja_extra_args,
                                bool no_deps,
                                Err* err);
 
@@ -104,10 +105,13 @@ class VisualStudioWriter {
                      const std::string& win_kit);
   ~VisualStudioWriter();
 
-  bool WriteProjectFiles(const Target* target, Err* err);
+  bool WriteProjectFiles(const Target* target,
+                         const std::string& ninja_extra_args,
+                         Err* err);
   bool WriteProjectFileContents(std::ostream& out,
                                 const SolutionProject& solution_project,
                                 const Target* target,
+                                const std::string& ninja_extra_args,
                                 SourceFileCompileTypePairs* source_types,
                                 Err* err);
   void WriteFiltersFileContents(std::ostream& out,
