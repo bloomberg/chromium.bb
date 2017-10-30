@@ -61,7 +61,7 @@ WindowProxyManager::WindowProxyManager(Frame& frame, FrameType frame_type)
   // All WindowProxyManagers must be created in the main thread.
   // Note that |isolate_| is initialized with
   // V8PerIsolateData::MainThreadIsolate().
-  DCHECK(IsMainThread());
+  CHECK(IsMainThread());
 }
 
 WindowProxy* WindowProxyManager::CreateWindowProxy(DOMWrapperWorld& world) {
