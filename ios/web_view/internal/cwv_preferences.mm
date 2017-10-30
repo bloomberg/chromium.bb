@@ -4,6 +4,7 @@
 
 #import "ios/web_view/internal/cwv_preferences_internal.h"
 
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -40,6 +41,14 @@
       _prefService, prefs::kAcceptLanguages,
       /*preferred_languages_pref=*/nullptr);
   translatePrefs.ResetToDefaults();
+}
+
+- (void)setAutofillEnabled:(BOOL)enabled {
+  _prefService->SetBoolean(autofill::prefs::kAutofillEnabled, enabled);
+}
+
+- (BOOL)isAutofillEnabled {
+  return _prefService->GetBoolean(autofill::prefs::kAutofillEnabled);
 }
 
 @end
