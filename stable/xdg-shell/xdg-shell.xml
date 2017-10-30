@@ -860,7 +860,7 @@
 	will respond by emitting a configure event without the "maximized"
 	state. If available, the compositor will include the window geometry
 	dimensions the window had prior to being maximized in the configure
-	request. The client must then update its content, drawing it in a
+	event. The client must then update its content, drawing it in a
 	regular state, i.e. potentially with shadow, etc. The client must also
 	acknowledge the configure when committing the new content (see
 	ack_configure).
