@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
@@ -235,7 +236,7 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // Updates the screen state to match the current screen brightness - no-op
   // unless the current screen state is unknown.
-  void SetInitialScreenState(double screen_brightness);
+  void SetInitialScreenState(base::Optional<double> screen_brightness);
 
   // Updates ths screen state - if the stylus was recently removed and screen
   // has turned on, this will launch a new note action (stylus being removed

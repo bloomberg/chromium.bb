@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_BRIGHTNESS_CONTROL_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/optional.h"
 
 namespace ui {
 class Accelerator;
@@ -29,9 +30,9 @@ class BrightnessControlDelegate {
   virtual void SetBrightnessPercent(double percent, bool gradual) = 0;
 
   // Asynchronously invokes |callback| with the current brightness, in the range
-  // [0.0, 100.0].
+  // [0.0, 100.0]. In case of error, it is called with nullopt.
   virtual void GetBrightnessPercent(
-      const base::Callback<void(double)>& callback) = 0;
+      base::OnceCallback<void(base::Optional<double>)> callback) = 0;
 };
 
 }  // namespace ash

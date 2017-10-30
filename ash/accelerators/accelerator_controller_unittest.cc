@@ -118,8 +118,8 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   }
   void SetBrightnessPercent(double percent, bool gradual) override {}
   void GetBrightnessPercent(
-      const base::Callback<void(double)>& callback) override {
-    callback.Run(100.0);
+      base::OnceCallback<void(base::Optional<double>)> callback) override {
+    std::move(callback).Run(100.0);
   }
 
   int handle_brightness_down_count() const {

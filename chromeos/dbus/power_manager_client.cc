@@ -176,14 +176,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   void GetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback) override {
+      DBusMethodCallback<double> callback) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kGetScreenBrightnessPercentMethod);
     power_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&PowerManagerClientImpl::OnGetScreenBrightnessPercent,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void RequestStatusUpdate() override {
@@ -307,23 +307,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void GetBacklightsForcedOff(
-      const GetBacklightsForcedOffCallback& callback) override {
+  void GetBacklightsForcedOff(DBusMethodCallback<bool> callback) override {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kGetBacklightsForcedOffMethod);
     power_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&PowerManagerClientImpl::OnGetBacklightsForcedOff,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetSwitchStates(const GetSwitchStatesCallback& callback) override {
+  void GetSwitchStates(DBusMethodCallback<SwitchStates> callback) override {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kGetSwitchStatesMethod);
     power_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&PowerManagerClientImpl::OnGetSwitchStates,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   base::Closure GetSuspendReadinessCallback() override {
@@ -564,14 +563,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
   }
 
-  void OnGetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback,
-      dbus::Response* response) {
+  void OnGetScreenBrightnessPercent(DBusMethodCallback<double> callback,
+                                    dbus::Response* response) {
     if (!response) {
       if (!system::StatisticsProvider::GetInstance()->IsRunningOnVm()) {
         POWER_LOG(ERROR) << "Error calling "
                          << power_manager::kGetScreenBrightnessPercentMethod;
       }
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
@@ -579,15 +578,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (!reader.PopDouble(&percent)) {
       POWER_LOG(ERROR) << "Error reading response from powerd: "
                        << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
     }
-    callback.Run(percent);
+    std::move(callback).Run(percent);
   }
 
-  void OnGetBacklightsForcedOff(const GetBacklightsForcedOffCallback& callback,
+  void OnGetBacklightsForcedOff(DBusMethodCallback<bool> callback,
                                 dbus::Response* response) {
     if (!response) {
       POWER_LOG(ERROR) << "Error calling "
                        << power_manager::kGetBacklightsForcedOffMethod;
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
@@ -595,25 +597,32 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (!reader.PopBool(&state)) {
       POWER_LOG(ERROR) << "Error reading response from powerd: "
                        << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
     }
-    callback.Run(state);
+    std::move(callback).Run(state);
   }
 
-  void OnGetSwitchStates(const GetSwitchStatesCallback& callback,
+  void OnGetSwitchStates(DBusMethodCallback<SwitchStates> callback,
                          dbus::Response* response) {
     if (!response) {
       POWER_LOG(ERROR) << "Error calling "
                        << power_manager::kGetSwitchStatesMethod;
+      std::move(callback).Run(base::nullopt);
       return;
     }
+
+    dbus::MessageReader reader(response);
     power_manager::SwitchStates proto;
-    if (!dbus::MessageReader(response).PopArrayOfBytesAsProto(&proto)) {
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
       POWER_LOG(ERROR) << "Error parsing response from "
                        << power_manager::kGetSwitchStatesMethod;
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    callback.Run(GetLidStateFromProtoEnum(proto.lid_state()),
-                 GetTabletModeFromProtoEnum(proto.tablet_mode()));
+    std::move(callback).Run(
+        SwitchStates{GetLidStateFromProtoEnum(proto.lid_state()),
+                     GetTabletModeFromProtoEnum(proto.tablet_mode())});
   }
 
   void HandlePowerSupplyProperties(

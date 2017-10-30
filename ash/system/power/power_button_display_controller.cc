@@ -137,14 +137,14 @@ void PowerButtonDisplayController::OnStylusStateChanged(ui::StylusState state) {
 void PowerButtonDisplayController::GetInitialBacklightsForcedOff() {
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
-      ->GetBacklightsForcedOff(base::Bind(
+      ->GetBacklightsForcedOff(base::BindOnce(
           &PowerButtonDisplayController::OnGotInitialBacklightsForcedOff,
           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PowerButtonDisplayController::OnGotInitialBacklightsForcedOff(
-    bool is_forced_off) {
-  backlights_forced_off_ = is_forced_off;
+    base::Optional<bool> is_forced_off) {
+  backlights_forced_off_ = is_forced_off.value_or(false);
   UpdateTouchscreenStatus();
 }
 

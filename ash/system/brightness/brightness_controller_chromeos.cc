@@ -4,6 +4,8 @@
 
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 
+#include <utility>
+
 #include "base/metrics/user_metrics.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -40,10 +42,10 @@ void BrightnessControllerChromeos::SetBrightnessPercent(double percent,
 }
 
 void BrightnessControllerChromeos::GetBrightnessPercent(
-    const base::Callback<void(double)>& callback) {
+    base::OnceCallback<void(base::Optional<double>)> callback) {
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
-      ->GetScreenBrightnessPercent(callback);
+      ->GetScreenBrightnessPercent(std::move(callback));
 }
 
 }  // namespace system

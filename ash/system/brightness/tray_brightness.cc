@@ -199,13 +199,13 @@ void TrayBrightness::GetInitialBrightness() {
   if (!brightness_control_delegate)
     return;
   brightness_control_delegate->GetBrightnessPercent(
-      base::Bind(&TrayBrightness::HandleInitialBrightness,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&TrayBrightness::HandleInitialBrightness,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TrayBrightness::HandleInitialBrightness(double percent) {
-  if (!got_current_percent_)
-    HandleBrightnessChanged(percent, false);
+void TrayBrightness::HandleInitialBrightness(base::Optional<double> percent) {
+  if (!got_current_percent_ && percent.has_value())
+    HandleBrightnessChanged(percent.value(), false);
 }
 
 views::View* TrayBrightness::CreateDefaultView(LoginStatus status) {

@@ -137,7 +137,7 @@ TabletModeController::TabletModeController()
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_client->AddObserver(this);
-  power_manager_client->GetSwitchStates(base::Bind(
+  power_manager_client->GetSwitchStates(base::BindOnce(
       &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
 }
 
@@ -472,10 +472,11 @@ void TabletModeController::OnChromeTerminating() {
 }
 
 void TabletModeController::OnGetSwitchStates(
-    chromeos::PowerManagerClient::LidState lid_state,
-    chromeos::PowerManagerClient::TabletMode tablet_mode) {
-  LidEventReceived(lid_state, base::TimeTicks::Now());
-  TabletModeEventReceived(tablet_mode, base::TimeTicks::Now());
+    base::Optional<chromeos::PowerManagerClient::SwitchStates> result) {
+  if (!result.has_value())
+    return;
+  LidEventReceived(result->lid_state, base::TimeTicks::Now());
+  TabletModeEventReceived(result->tablet_mode, base::TimeTicks::Now());
 }
 
 bool TabletModeController::WasLidOpenedRecently() const {

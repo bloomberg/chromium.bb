@@ -10,6 +10,7 @@
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -109,8 +110,8 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   void SendPowerManagementSettings(bool force);
 
   // Callback used to receive switch states from PowerManagerClient.
-  void OnGotSwitchStates(PowerManagerClient::LidState lid_state,
-                         PowerManagerClient::TabletMode tablet_mode);
+  void OnGotSwitchStates(
+      base::Optional<PowerManagerClient::SwitchStates> result);
 
   PrefService* prefs_;              // Not owned.
   ash::PowerStatus* power_status_;  // Not owned.

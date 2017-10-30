@@ -145,8 +145,9 @@ void PowerHandler::OnPowerStatusChanged() {
 }
 
 void PowerHandler::PowerManagerRestarted() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->GetSwitchStates(base::Bind(
-      &PowerHandler::OnGotSwitchStates, weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()->GetPowerManagerClient()->GetSwitchStates(
+      base::BindOnce(&PowerHandler::OnGotSwitchStates,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PowerHandler::LidEventReceived(PowerManagerClient::LidState state,
@@ -353,9 +354,10 @@ void PowerHandler::SendPowerManagementSettings(bool force) {
 }
 
 void PowerHandler::OnGotSwitchStates(
-    PowerManagerClient::LidState lid_state,
-    PowerManagerClient::TabletMode tablet_mode) {
-  lid_state_ = lid_state;
+    base::Optional<PowerManagerClient::SwitchStates> result) {
+  if (!result.has_value())
+    return;
+  lid_state_ = result->lid_state;
   SendPowerManagementSettings(false /* force */);
 }
 
