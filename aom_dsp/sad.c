@@ -356,20 +356,17 @@ highbd_sadMxNx4D(128, 32)
                             int width, int height) {
   int y, x;
   unsigned int sad = 0;
-
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
-      const uint8_t pred = AOM_BLEND_A64(m[x], a[x], b[x]);
+      const int16_t pred = AOM_BLEND_A64(m[x], a[x], b[x]);
       sad += abs(pred - src[x]);
     }
-
     src += src_stride;
     a += a_stride;
     b += b_stride;
     m += m_stride;
   }
   sad = (sad + 31) >> 6;
-
   return sad;
 }
 
