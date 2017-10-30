@@ -150,7 +150,7 @@ UINetworkQualityEstimatorService::UINetworkQualityEstimatorService(
     : type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       http_rtt_(net::nqe::internal::InvalidRTT()),
       transport_rtt_(net::nqe::internal::InvalidRTT()),
-      downstream_throughput_kbps_(net::nqe::internal::kInvalidThroughput),
+      downstream_throughput_kbps_(net::nqe::internal::INVALID_RTT_THROUGHPUT),
       weak_factory_(this) {
   DCHECK(profile);
   // If this is running in a context without an IOThread, don't try to create
@@ -264,7 +264,7 @@ base::Optional<int32_t>
 UINetworkQualityEstimatorService::GetDownstreamThroughputKbps() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (downstream_throughput_kbps_ == net::nqe::internal::kInvalidThroughput)
+  if (downstream_throughput_kbps_ == net::nqe::internal::INVALID_RTT_THROUGHPUT)
     return base::Optional<int32_t>();
   return downstream_throughput_kbps_;
 }

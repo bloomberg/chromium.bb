@@ -81,7 +81,7 @@ TEST(NetworkQualityEstimatorParamsTest, TypicalNetworkQualities) {
     // The typical throughput for an effective connection type should not be
     // more than the threshold throughput.
     if (params.ConnectionThreshold(ect).downstream_throughput_kbps() !=
-        nqe::internal::kInvalidThroughput) {
+        nqe::internal::INVALID_RTT_THROUGHPUT) {
       EXPECT_LT(params.TypicalNetworkQuality(ect).downstream_throughput_kbps(),
                 params.ConnectionThreshold(ect).downstream_throughput_kbps());
     }
@@ -97,7 +97,8 @@ TEST(NetworkQualityEstimatorParamsTest, TypicalNetworkQualities) {
           .transport_rtt(),
       params.ConnectionThreshold(EFFECTIVE_CONNECTION_TYPE_3G).transport_rtt());
   if (params.ConnectionThreshold(EFFECTIVE_CONNECTION_TYPE_3G)
-          .downstream_throughput_kbps() != nqe::internal::kInvalidThroughput) {
+          .downstream_throughput_kbps() !=
+      nqe::internal::INVALID_RTT_THROUGHPUT) {
     EXPECT_GT(params.TypicalNetworkQuality(EFFECTIVE_CONNECTION_TYPE_4G)
                   .downstream_throughput_kbps(),
               params.ConnectionThreshold(EFFECTIVE_CONNECTION_TYPE_3G)

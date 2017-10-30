@@ -28,7 +28,7 @@ class NET_EXPORT RTTAndThroughputEstimatesObserver {
   // throughput (in kilobits per second), respectively. If an estimate of the
   // HTTP or transport RTT is unavailable, it will be set to
   // nqe::internal::InvalidRTT(). If the throughput estimate is unavailable,
-  // it will be set to nqe::internal::kInvalidThroughput.
+  // it will be set to nqe::internal::INVALID_RTT_THROUGHPUT.
   virtual void OnRTTOrThroughputEstimatesComputed(
       base::TimeDelta http_rtt,
       base::TimeDelta transport_rtt,
