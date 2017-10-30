@@ -289,6 +289,53 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
             chrome_translate_client->GetLanguageState().original_language());
 }
 
+// Tests that the language detection / HTML attribute override works correctly.
+// For languages in the whitelist, the detected language should override the
+// HTML attribute. For all other languages, the HTML attribute should be used.
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
+                       PageLanguageDetectionConflict) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+
+  // The InProcessBrowserTest opens a new tab, let's wait for that first.
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Open a new tab with a page in French with incorrect HTML language
+  // attribute specified. The language attribute should be overridden by the
+  // language detection.
+  ResetObserver();
+  AddTabAtIndex(
+      0,
+      GURL(embedded_test_server()->GetURL("/french_page_lang_conflict.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Open a new tab with a page in Korean with incorrect HTML language
+  // attribute specified. The language attribute should not be overridden by the
+  // language detection.
+  ResetObserver();
+  AddTabAtIndex(
+      0,
+      GURL(embedded_test_server()->GetURL("/korean_page_lang_conflict.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+
+  EXPECT_EQ("en",
+            chrome_translate_client->GetLanguageState().original_language());
+}
+
 // Test that the translation was successful.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
   ASSERT_TRUE(embedded_test_server()->Start());

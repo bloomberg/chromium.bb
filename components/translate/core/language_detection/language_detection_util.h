@@ -39,6 +39,10 @@ bool IsSameOrSimilarLanguages(const std::string& page_language,
 bool MaybeServerWrongConfiguration(const std::string& page_language,
                                    const std::string& cld_language);
 
+// Returns true if the specified language often has the wrong server
+// configuration language, false otherwise.
+bool IsServerWrongConfigurationLanguage(const std::string& language);
+
 }  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_LANGUAGE_DETECTION_LANGUAGE_DETECTION_UTIL_H_
