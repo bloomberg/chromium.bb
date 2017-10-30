@@ -442,6 +442,12 @@ test("gl_unittests") {
   data_deps = [
     "//third_party/mesa:osmesa",
   ]
+
+  if (use_x11) {
+    sources += [ "gl_context_glx_unittest.cc" ]
+    deps += [ "//ui/gfx/x" ]
+    configs += [ "//build/config/linux:x11" ]
+  }
 }
 
 # We can't run this test on real Chrome OS hardware for Ozone, so new target.
