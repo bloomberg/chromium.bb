@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -51,11 +50,9 @@ class KeyPressCounterView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(KeyPressCounterView);
 };
 
-// These tests run with both FullscreenAppList enabled and disabled.
 // TODO(crbug.com/743113) Unify the two test classes.
 class SearchBoxViewTest : public views::test::WidgetTest,
-                          public SearchBoxViewDelegate,
-                          public testing::WithParamInterface<bool> {
+                          public SearchBoxViewDelegate {
  public:
   SearchBoxViewTest() = default;
   ~SearchBoxViewTest() override = default;
@@ -63,15 +60,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   // Overridden from testing::Test:
   void SetUp() override {
     views::test::WidgetTest::SetUp();
-
-    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      // Current test is parameterized.
-      test_with_fullscreen_ = GetParam();
-      if (test_with_fullscreen_) {
-        scoped_feature_list_.InitAndEnableFeature(
-            features::kEnableFullscreenAppList);
-      }
-    }
 
     app_list_view_ = new AppListView(&view_delegate_);
     AppListView::InitParams params;
@@ -96,8 +84,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
  protected:
   SearchBoxView* view() { return view_.get(); }
   AppListView* app_list_view() { return app_list_view_; }
-
-  bool test_with_fullscreen() { return test_with_fullscreen_; }
 
   void SetLongAutoLaunchTimeout() {
     // Sets a long timeout that lasts longer than the test run.
@@ -156,8 +142,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   KeyPressCounterView* counter_view_;
   base::string16 last_query_;
   int query_changed_count_ = 0;
-  bool test_with_fullscreen_ = false;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewTest);
 };
@@ -171,9 +155,6 @@ class SearchBoxViewFullscreenTest : public views::test::WidgetTest,
   // Overridden from testing::Test:
   void SetUp() override {
     views::test::WidgetTest::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        app_list::features::kEnableFullscreenAppList);
-
     app_list_view_ = new AppListView(&view_delegate_);
     AppListView::InitParams params;
     params.parent = GetContext();
@@ -221,8 +202,6 @@ class SearchBoxViewFullscreenTest : public views::test::WidgetTest,
 
   void SetSearchResultSelection(bool select) override {}
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_;
   AppListView* app_list_view_ = nullptr;
@@ -231,11 +210,7 @@ class SearchBoxViewFullscreenTest : public views::test::WidgetTest,
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewFullscreenTest);
 };
 
-// Instantiate the Boolean which is used to toggle the Fullscreen app list in
-// the parameterized tests.
-INSTANTIATE_TEST_CASE_P(, SearchBoxViewTest, testing::Bool());
-
-TEST_P(SearchBoxViewTest, Basic) {
+TEST_F(SearchBoxViewTest, Basic) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   if (features::IsFullscreenAppListEnabled())
@@ -255,7 +230,7 @@ TEST_P(SearchBoxViewTest, Basic) {
   EXPECT_TRUE(GetLastQueryAndReset().empty());
 }
 
-TEST_P(SearchBoxViewTest, CancelAutoLaunch) {
+TEST_F(SearchBoxViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   ASSERT_NE(base::TimeDelta(), GetAutoLaunchTimeout());
 

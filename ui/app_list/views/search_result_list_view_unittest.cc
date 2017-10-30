@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -29,8 +28,7 @@ namespace {
 int kDefaultSearchItems = 5;
 }  // namespace
 
-class SearchResultListViewTest : public views::ViewsTestBase,
-                                 public testing::WithParamInterface<bool> {
+class SearchResultListViewTest : public views::ViewsTestBase {
  public:
   SearchResultListViewTest() = default;
   ~SearchResultListViewTest() override = default;
@@ -38,11 +36,6 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   // Overridden from testing::Test:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    if (!GetParam()) {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kEnableFullscreenAppList);
-    }
-
     view_.reset(new SearchResultListView(nullptr, &view_delegate_));
     view_->SetResults(view_delegate_.GetModel()->results());
   }
@@ -129,16 +122,11 @@ class SearchResultListViewTest : public views::ViewsTestBase,
  private:
   AppListTestViewDelegate view_delegate_;
   std::unique_ptr<SearchResultListView> view_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListViewTest);
 };
 
-// Instantiate the Boolean which is used to toggle the Fullscreen app list in
-// the parameterized tests.
-INSTANTIATE_TEST_CASE_P(, SearchResultListViewTest, testing::Bool());
-
-TEST_P(SearchResultListViewTest, Basic) {
+TEST_F(SearchResultListViewTest, Basic) {
   SetUpSearchResults();
 
   const int results = GetResultCount();
@@ -176,7 +164,7 @@ TEST_P(SearchResultListViewTest, Basic) {
   EXPECT_EQ(results - 1, GetSelectedIndex());
 }
 
-TEST_P(SearchResultListViewTest, AutoLaunch) {
+TEST_F(SearchResultListViewTest, AutoLaunch) {
   SetLongAutoLaunchTimeout();
   SetUpSearchResults();
 
@@ -191,7 +179,7 @@ TEST_P(SearchResultListViewTest, AutoLaunch) {
   EXPECT_EQ(base::TimeDelta(), GetAutoLaunchTimeout());
 }
 
-TEST_P(SearchResultListViewTest, CancelAutoLaunch) {
+TEST_F(SearchResultListViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   SetUpSearchResults();
 
@@ -212,7 +200,7 @@ TEST_P(SearchResultListViewTest, CancelAutoLaunch) {
   EXPECT_TRUE(IsAutoLaunching());
 }
 
-TEST_P(SearchResultListViewTest, SpokenFeedback) {
+TEST_F(SearchResultListViewTest, SpokenFeedback) {
   SetUpSearchResults();
 
   // Result 0 has a detail text. Expect that the detail is appended to the
@@ -225,7 +213,7 @@ TEST_P(SearchResultListViewTest, SpokenFeedback) {
             GetResultViewAt(2)->ComputeAccessibleName());
 }
 
-TEST_P(SearchResultListViewTest, ModelObservers) {
+TEST_F(SearchResultListViewTest, ModelObservers) {
   SetUpSearchResults();
   ExpectConsistent();
 
@@ -252,7 +240,7 @@ TEST_P(SearchResultListViewTest, ModelObservers) {
 
 // Regression test for http://crbug.com/402859 to ensure ProgressBar is
 // initialized properly in SearchResultListView::SetResult().
-TEST_P(SearchResultListViewTest, ProgressBar) {
+TEST_F(SearchResultListViewTest, ProgressBar) {
   SetUpSearchResults();
 
   GetResults()->GetItemAt(0)->SetIsInstalling(true);

@@ -119,7 +119,6 @@ class AppsGridViewTest : public views::ViewsTestBase,
       if (is_rtl_)
         base::i18n::SetICUDefaultLocale("he");
     }
-
     gfx::NativeView parent = GetContext();
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
@@ -149,10 +148,6 @@ class AppsGridViewTest : public views::ViewsTestBase,
   }
 
  protected:
-  void EnableFullscreenAppList() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableFullscreenAppList);
-  }
 
   AppListItemView* GetItemViewAt(int index) const {
     return static_cast<AppListItemView*>(test_api_->GetViewAtModelIndex(index));
@@ -250,6 +245,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
   base::test::ScopedFeatureList scoped_feature_list_;
+  bool test_with_fullscreen_ = true;
 
  private:
   // Restores the locale to default when destructor is called.
@@ -299,7 +295,7 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAppsGridViewFolderDelegate);
 };
 
-TEST_P(AppsGridViewTest, CreatePage) {
+TEST_F(AppsGridViewTest, CreatePage) {
   // Fully populates a page.
   const int kPages = 1;
 
@@ -316,7 +312,7 @@ TEST_P(AppsGridViewTest, CreatePage) {
   EXPECT_EQ(kPages + 1, GetPaginationModel()->total_pages());
 }
 
-TEST_P(AppsGridViewTest, EnsureHighlightedVisible) {
+TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
   const int kPages = 3;
   model_->PopulateApps(GetTilesPerPage(0) + (kPages - 1) * GetTilesPerPage(1));
   EXPECT_EQ(kPages, GetPaginationModel()->total_pages());
@@ -338,7 +334,7 @@ TEST_P(AppsGridViewTest, EnsureHighlightedVisible) {
   EXPECT_EQ(kPages - 1, GetPaginationModel()->selected_page());
 }
 
-TEST_P(AppsGridViewTest, RemoveSelectedLastApp) {
+TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
   const int kTotalItems = 2;
   const int kLastItemIndex = kTotalItems - 1;
 
@@ -356,7 +352,7 @@ TEST_P(AppsGridViewTest, RemoveSelectedLastApp) {
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(view));
 }
 
-TEST_P(AppsGridViewTest, MouseDragWithFolderDisabled) {
+TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
   model_->SetFoldersEnabled(false);
   const int kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
@@ -405,7 +401,7 @@ TEST_P(AppsGridViewTest, MouseDragWithFolderDisabled) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
+TEST_F(AppsGridViewTest, MouseDragItemIntoFolder) {
   size_t kTotalItems = 3;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -546,7 +542,7 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewTest, MouseDragItemReorder) {
+TEST_F(AppsGridViewTest, MouseDragItemReorder) {
   // Using a simulated 2x2 layout for the test. If fullscreen app list is
   // enabled, rows_per_page passed should be 3 as the first row is occupied by
   // suggested apps.
@@ -615,7 +611,7 @@ TEST_P(AppsGridViewTest, MouseDragItemReorder) {
             model_->GetModelContent());
 }
 
-TEST_P(AppsGridViewTest, MouseDragFolderReorder) {
+TEST_F(AppsGridViewTest, MouseDragFolderReorder) {
   size_t kTotalItems = 2;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   model_->PopulateAppWithId(kTotalItems);
@@ -639,7 +635,7 @@ TEST_P(AppsGridViewTest, MouseDragFolderReorder) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
+TEST_F(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   size_t kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -672,7 +668,7 @@ TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewTest, MouseDragFlipPage) {
+TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
   GetPaginationModel()->SetTransitionDurations(10, 10);
 
@@ -715,7 +711,7 @@ TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   apps_grid_view_->EndDrag(true);
 }
 
-TEST_P(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
+TEST_F(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
   model_->SetFoldersEnabled(false);
   const int kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
@@ -747,7 +743,7 @@ TEST_P(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
+TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
   const int kTotalItems = 4;
   TestAppsGridViewFolderDelegate folder_delegate;
   apps_grid_view_->set_folder_delegate(&folder_delegate);
@@ -1073,7 +1069,7 @@ TEST_P(AppsGridViewTest, SuggestionsContainerSelectionInStateStart) {
   EXPECT_TRUE(CheckSelectionAtExpandArrow());
 }
 
-TEST_P(AppsGridViewTest, ItemLabelShortNameOverride) {
+TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   // If the app's full name and short name differ, the title label's tooltip
   // should always be the full name of the app.
   std::string expected_text("xyz");
@@ -1091,7 +1087,7 @@ TEST_P(AppsGridViewTest, ItemLabelShortNameOverride) {
   EXPECT_EQ(expected_text, base::UTF16ToUTF8(title_label->text()));
 }
 
-TEST_P(AppsGridViewTest, ItemLabelNoShortName) {
+TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   // If the app's full name and short name are the same, use the default tooltip
   // behavior of the label (only show a tooltip if the title is truncated).
   std::string title("a");
@@ -1130,7 +1126,7 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   ASSERT_EQ(0, GetPaginationModel()->transition().progress);
 }
 
-TEST_P(AppsGridViewTest,
+TEST_F(AppsGridViewTest,
        OnGestureEventScrollSequenceHandleByPaginationController) {
   model_->PopulateApps(GetTilesPerPage(0) + 1);
   EXPECT_EQ(2, GetPaginationModel()->total_pages());

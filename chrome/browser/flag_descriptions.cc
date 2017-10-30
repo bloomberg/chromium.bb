@@ -2421,11 +2421,6 @@ const char kDisableSystemTimezoneAutomaticDetectionName[] =
 const char kDisableSystemTimezoneAutomaticDetectionDescription[] =
     "Disable system timezone automatic detection device policy.";
 
-const char kEnableFullscreenAppListName[] = "Enable The Peeking Launcher";
-const char kEnableFullscreenAppListDescription[] =
-    "The peeking launcher UI supports touch and provides more space for "
-    "upcoming features.";
-
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher, Lock Screen, and Tab "
