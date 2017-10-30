@@ -166,6 +166,10 @@ constexpr ArcState kUnmanagedArcStatesWithPlayStore[] = {
     ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
 };
 
+void OnPaiStartedCallback(bool* started_flag) {
+  *started_flag = true;
+}
+
 }  // namespace
 
 class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
@@ -1258,11 +1262,17 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
+  bool pai_started = false;
+
   arc::ArcPaiStarter starter1(profile_.get(), profile_->GetPrefs());
   arc::ArcPaiStarter starter2(profile_.get(), profile_->GetPrefs());
   EXPECT_FALSE(starter1.started());
   EXPECT_FALSE(starter2.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 0);
+
+  starter1.AddOnStartCallback(
+      base::BindOnce(&OnPaiStartedCallback, &pai_started));
+  EXPECT_FALSE(pai_started);
 
   arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
   ASSERT_TRUE(session_manager);
@@ -1281,6 +1291,14 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   SendPlayStoreApp();
 
   EXPECT_TRUE(starter1.started());
+  EXPECT_TRUE(pai_started);
+
+  // Test that callback is called immediately in case PAI was already started.
+  pai_started = false;
+  starter1.AddOnStartCallback(
+      base::BindOnce(&OnPaiStartedCallback, &pai_started));
+  EXPECT_TRUE(pai_started);
+
   EXPECT_FALSE(starter2.started());
   EXPECT_TRUE(session_manager->pai_starter()->started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 2);
@@ -1954,12 +1972,46 @@ TEST_P(ArcDefaulAppTest, DefaultAppsNotAvailable) {
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(empty_app_list);
 
-  ValidateHaveApps(fake_default_apps());
+  std::vector<arc::mojom::AppInfo> expected_apps(fake_default_apps());
+  ValidateHaveApps(expected_apps);
+
+  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+    prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
+    ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+    return;
+  }
+
+  // PAI was not started and we should not have any active timer for default
+  // apps.
+  prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
+  ValidateHaveApps(expected_apps);
+
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  ASSERT_TRUE(arc_session_manager);
+
+  arc::ArcPaiStarter* pai_starter = arc_session_manager->pai_starter();
+  ASSERT_TRUE(pai_starter);
+
+  EXPECT_FALSE(pai_starter->started());
+
+  // Play store app triggers PAI.
+  arc::mojom::AppInfo app;
+  app.name = "Play Store";
+  app.package_name = arc::kPlayStorePackage;
+  app.activity = arc::kPlayStoreActivity;
+  app_instance()->RefreshAppList();
+
+  std::vector<arc::mojom::AppInfo> only_play_store({app});
+  app_instance()->SendRefreshAppList(only_play_store);
+  expected_apps.push_back(app);
+
+  // Timer was set to detect not available default apps.
+  ValidateHaveApps(expected_apps);
 
   prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
 
   // No default app installation and already installed packages.
-  ValidateHaveApps(empty_app_list);
+  ValidateHaveApps(only_play_store);
 }
 
 TEST_P(ArcDefaulAppTest, DefaultAppsInstallation) {
