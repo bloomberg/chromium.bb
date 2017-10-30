@@ -24,6 +24,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -31,6 +32,7 @@
 #include "cc/trees/proxy_impl.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
@@ -406,6 +408,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     params.settings = &settings;
     params.mutator_host = mutator_host;
     params.image_worker_task_runner = std::move(image_worker_task_runner);
+    params.ukm_recorder_factory = std::make_unique<TestUkmRecorderFactory>();
 
     std::unique_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, &params, mode));
@@ -436,6 +439,8 @@ class LayerTreeHostForTesting : public LayerTreeHost {
             test_hooks_, GetSettings(), host_impl_client,
             GetTaskRunnerProvider(), task_graph_runner(),
             rendering_stats_instrumentation(), image_worker_task_runner_);
+
+    host_impl->InitializeUkm(ukm_recorder_factory_->CreateRecorder());
     input_handler_weak_ptr_ = host_impl->AsWeakPtr();
     return host_impl;
   }

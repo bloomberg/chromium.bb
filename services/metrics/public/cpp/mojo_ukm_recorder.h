@@ -27,7 +27,7 @@ namespace ukm {
  */
 class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
  public:
-  explicit MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface);
+  explicit MojoUkmRecorder(mojom::UkmRecorderInterfacePtr recorder_interface);
   ~MojoUkmRecorder() override;
 
   // UkmRecorder:

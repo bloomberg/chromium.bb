@@ -45,6 +45,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/surfaces/surface_reference_owner.h"
 #include "components/viz/common/surfaces/surface_sequence_generator.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -63,6 +64,7 @@ class RenderingStatsInstrumentation;
 struct ScrollBoundaryBehavior;
 class TaskGraphRunner;
 class UIResourceManager;
+class UkmRecorderFactory;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 
@@ -80,6 +82,8 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
     // compositor thread may make sync calls to this thread, analogous to the
     // raster worker threads.
     scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner;
+
+    std::unique_ptr<UkmRecorderFactory> ukm_recorder_factory;
 
     InitParams();
     ~InitParams();
@@ -502,6 +506,8 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
 
   float recording_scale_factor() const { return recording_scale_factor_; }
 
+  void SetURLForUkm(const GURL& url);
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
 
@@ -532,6 +538,7 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   base::WeakPtr<InputHandler> input_handler_weak_ptr_;
 
   scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner_;
+  std::unique_ptr<UkmRecorderFactory> ukm_recorder_factory_;
 
  private:
   friend class LayerTreeHostSerializationTest;

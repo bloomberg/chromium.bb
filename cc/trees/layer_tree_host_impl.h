@@ -40,6 +40,7 @@
 #include "cc/trees/managed_memory_policy.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/task_runner_provider.h"
+#include "cc/trees/ukm_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -636,6 +637,11 @@ class CC_EXPORT LayerTreeHostImpl
       base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
           decoding_mode_map);
 
+  void InitializeUkm(std::unique_ptr<ukm::UkmRecorder> recorder);
+  UkmManager* ukm_manager() { return ukm_manager_.get(); }
+
+  void RenewTreePriorityForTesting() { client_->RenewTreePriority(); }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -927,6 +933,8 @@ class CC_EXPORT LayerTreeHostImpl
   ImplThreadPhase impl_thread_phase_;
 
   base::Optional<ImageAnimationController> image_animation_controller_;
+
+  std::unique_ptr<UkmManager> ukm_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

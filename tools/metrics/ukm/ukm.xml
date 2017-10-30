@@ -279,6 +279,35 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Compositor.UserInteraction">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    Metrics related to user interaction handled by the compositor. This includes
+    user gestures like scrolling, pinch-zoom and page-scale animations triggered
+    in response to a double-tap event. The length of the user interaction is
+    defined as the time the compositor is running an animation resulting from
+    user input.
+  </summary>
+  <metric name="CheckerboardedContentArea">
+    <summary>
+      The number of visible pixels per frame checkerboarded during this
+      interaction.
+    </summary>
+  </metric>
+  <metric name="CheckerboardedContentAreaRatio">
+    <summary>
+      The percentage of visible pixels per frame checkerboarded during this
+      interaction. This value should be between [0, 100].
+    </summary>
+  </metric>
+  <metric name="NumMissingTiles">
+    <summary>
+      The number of visible tiles per frame checkerboarded during this
+      interaction.
+    </summary>
+  </metric>
+</event>
+
 <event name="ContextualSearch">
   <owner>donnd@chromium.org</owner>
   <summary>

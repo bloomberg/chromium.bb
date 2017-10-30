@@ -87,6 +87,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -917,6 +918,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   int num_incomplete_tiles = 0;
   int64_t checkerboarded_no_recording_content_area = 0;
   int64_t checkerboarded_needs_raster_content_area = 0;
+  int64_t total_visible_area = 0;
   bool have_copy_request =
       active_tree()->property_trees()->effect_tree.HasCopyRequests();
   bool have_missing_animated_tiles = false;
@@ -980,6 +982,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
           append_quads_data.checkerboarded_no_recording_content_area;
       checkerboarded_needs_raster_content_area +=
           append_quads_data.checkerboarded_needs_raster_content_area;
+      total_visible_area += append_quads_data.visible_layer_area;
       if (append_quads_data.num_missing_tiles > 0) {
         have_missing_animated_tiles |=
             layer->screen_space_transform_is_animating();
@@ -1042,6 +1045,13 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
     // Draw properties depend on copy requests.
     active_tree()->set_needs_update_draw_properties();
+  }
+
+  if (ukm_manager_) {
+    ukm_manager_->AddCheckerboardStatsForFrame(
+        checkerboarded_no_recording_content_area +
+            checkerboarded_needs_raster_content_area,
+        num_missing_tiles, total_visible_area);
   }
 
   if (active_tree_->has_ever_been_drawn()) {
@@ -4572,6 +4582,12 @@ void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
   // before a new tree is activated.
   bool needs_first_draw_on_activation = true;
   client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
+}
+
+void LayerTreeHostImpl::InitializeUkm(
+    std::unique_ptr<ukm::UkmRecorder> recorder) {
+  DCHECK(!ukm_manager_);
+  ukm_manager_ = std::make_unique<UkmManager>(std::move(recorder));
 }
 
 }  // namespace cc

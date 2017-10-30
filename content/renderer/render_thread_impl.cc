@@ -161,6 +161,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "ppapi/features/features.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -439,6 +440,28 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
   viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
   viz::LocalSurfaceId local_surface_id_;
   RenderWidgetSurfaceProperties surface_properties_;
+};
+
+// This factory is used to defer binding of the InterfacePtr to the compositor
+// thread.
+class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
+ public:
+  UkmRecorderFactoryImpl(ukm::mojom::UkmRecorderInterfacePtrInfo info)
+      : info_(std::move(info)) {
+    DCHECK(info_.is_valid());
+  }
+  ~UkmRecorderFactoryImpl() override = default;
+
+  std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
+    DCHECK(info_.is_valid());
+
+    ukm::mojom::UkmRecorderInterfacePtr recorder;
+    recorder.Bind(std::move(info_));
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+  }
+
+ private:
+  ukm::mojom::UkmRecorderInterfacePtrInfo info_;
 };
 
 }  // namespace
@@ -1692,6 +1715,13 @@ bool RenderThreadImpl::IsThreadedAnimationEnabled() {
 
 bool RenderThreadImpl::IsScrollAnimatorEnabled() {
   return is_scroll_animator_enabled_;
+}
+
+std::unique_ptr<cc::UkmRecorderFactory>
+RenderThreadImpl::CreateUkmRecorderFactory() {
+  ukm::mojom::UkmRecorderInterfacePtrInfo info;
+  mojo::MakeRequest(&info);
+  return std::make_unique<UkmRecorderFactoryImpl>(std::move(info));
 }
 
 void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {

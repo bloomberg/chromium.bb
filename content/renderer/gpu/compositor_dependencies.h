@@ -17,6 +17,7 @@ class SingleThreadTaskRunner;
 
 namespace cc {
 class TaskGraphRunner;
+class UkmRecorderFactory;
 }
 
 namespace blink {
@@ -50,6 +51,8 @@ class CompositorDependencies {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;
   virtual bool IsScrollAnimatorEnabled() = 0;
+  virtual std::unique_ptr<cc::UkmRecorderFactory>
+  CreateUkmRecorderFactory() = 0;
 
   virtual ~CompositorDependencies() {}
 };
