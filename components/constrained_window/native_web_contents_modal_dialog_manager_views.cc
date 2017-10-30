@@ -97,7 +97,8 @@ void NativeWebContentsModalDialogManagerViews::Show() {
   }
 #endif
   ShowWidget(widget);
-  Focus();
+  if (host_->ShouldActivateDialog())
+    Focus();
 
 #if defined(USE_AURA)
   // TODO(pkotwicz): Control the z-order of the constrained dialog via

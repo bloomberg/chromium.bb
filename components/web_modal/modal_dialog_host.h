@@ -33,6 +33,8 @@ class ModalDialogHost {
   virtual gfx::NativeView GetHostView() const = 0;
   // Gets the position for the dialog in coordinates relative to the host view.
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) = 0;
+  // Returns whether a dialog currently about to be shown should be activated.
+  virtual bool ShouldActivateDialog() const;
 
   // Add/remove observer.
   virtual void AddObserver(ModalDialogHostObserver* observer) = 0;

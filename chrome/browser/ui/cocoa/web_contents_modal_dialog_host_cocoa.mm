@@ -47,6 +47,10 @@ gfx::Point WebContentsModalDialogHostCocoa::GetDialogPosition(
   return gfx::Point();
 }
 
+bool WebContentsModalDialogHostCocoa::ShouldActivateDialog() const {
+  return [[sheet_controller_ parentWindow] isMainWindow];
+}
+
 void WebContentsModalDialogHostCocoa::AddObserver(
     web_modal::ModalDialogHostObserver* observer) {
   NOTREACHED();
