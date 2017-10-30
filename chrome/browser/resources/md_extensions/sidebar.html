@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="navigation_helper.html">
@@ -30,17 +29,21 @@
 
       #more-extensions {
         -webkit-padding-end: 16px;
-        align-items: center;
-        display: flex;
         justify-content: space-between;
         text-decoration: none;
       }
 
       .section-item {
         -webkit-padding-start: 24px;
+        align-items: center;
         color: #5A5A5A;
         cursor: pointer;
+        display: flex;
         height: 48px;
+      }
+
+      div.section-item {
+        font-size: 123%;  /* 16px when 100% is 13px */
       }
 
       button[is='paper-icon-button-light'].open-in-new {
@@ -51,15 +54,14 @@
       }
     </style>
     <paper-menu id="section-menu" selected="{{selected_}}">
-      <!-- TODO(scottchen): replace paper-item with a simple div. -->
-      <paper-item class="section-item" id="sections-extensions"
+      <div class="section-item" id="sections-extensions"
           on-tap="onExtensionsTap_">
-        <span>$i18n{sidebarExtensions}</span>
-      </paper-item>
-      <paper-item class="section-item" id="sections-shortcuts"
+        $i18n{sidebarExtensions}
+      </div>
+      <div class="section-item" id="sections-shortcuts"
           on-tap="onKeyboardShortcutsTap_">
-        <span>$i18n{keyboardShortcuts}</span>
-      </paper-item>
+        $i18n{keyboardShortcuts}
+      </div>
     </paper-menu>
     <a class="section-item" id="more-extensions" target="_blank"
         href="$i18n{getMoreExtensionsUrl}">
