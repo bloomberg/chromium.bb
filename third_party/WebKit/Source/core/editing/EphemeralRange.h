@@ -122,6 +122,10 @@ class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
   static EphemeralRangeTemplate<Strategy> RangeOfContents(
       const Node& /* node */);
 
+#ifndef NDEBUG
+  void ShowTreeForThis() const;
+#endif
+
  private:
   bool IsValid() const;
 
