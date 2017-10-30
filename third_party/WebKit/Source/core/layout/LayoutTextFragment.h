@@ -80,7 +80,6 @@ class CORE_EXPORT LayoutTextFragment final : public LayoutText {
 
   void TransformText() override;
 
-  // FIXME: Rename to LayoutTextFragment
   const char* GetName() const override { return "LayoutTextFragment"; }
 
   void SetFirstLetterPseudoElement(FirstLetterPseudoElement* element) {
