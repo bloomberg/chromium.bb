@@ -733,7 +733,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
   if (canvas_pixel_format == kF16CanvasPixelFormat)
     dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
 
-  if (!src_color_space.get() && !dst_color_space.get()) {
+  if (!src_color_space.get() && !dst_color_space.get() && data_) {
     memcpy(converted_pixels.get(), data_->Data(), data_->length());
     return true;
   }
@@ -784,6 +784,13 @@ ImageData::ImageData(const IntSize& size,
 
   ImageDataStorageFormat storage_format =
       GetImageDataStorageFormat(color_settings_.storageFormat());
+
+  // TODO (zakerinasab): crbug.com/779570
+  // The default color space for ImageData with U16/F32 data should be
+  // extended-srgb color space. It is temporarily set to linear-rgb, which is
+  // not correct, but fixes crbug.com/779419.
+  if (color_settings_.colorSpace() == kLegacyCanvasColorSpaceName)
+    color_settings_.setColorSpace(kSRGBCanvasColorSpaceName);
 
   switch (storage_format) {
     case kUint8ClampedArrayStorageFormat:
