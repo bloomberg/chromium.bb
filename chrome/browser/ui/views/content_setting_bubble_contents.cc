@@ -357,7 +357,7 @@ base::string16 ContentSettingBubbleContents::GetWindowTitle() const {
 }
 
 bool ContentSettingBubbleContents::ShouldShowCloseButton() const {
-  return ChromeLayoutProvider::Get()->IsHarmonyMode();
+  return false;
 }
 
 void ContentSettingBubbleContents::Init() {
