@@ -166,19 +166,7 @@ void CancelTerminate() {
   [appController stopTryingToTerminateApplication:self];
 }
 
-// The event |mask| has historically been declared as an NSUInteger
-// (unsigned long). Starting in the 10.12 SDK, the mask type changed to
-// NSEventMask (unsigned long long) if __LP64__ and NSUInteger otherwise.
-// These types are incompatible, which creates an issue for suppporting
-// both 10.10/10.11 and 10.12 SDKs. Work around it using the #if below.
-- (NSEvent*)nextEventMatchingMask:
-#if !defined(MAC_OS_X_VERSION_10_12) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12 || \
-    !defined(__LP64__)
-                                  (NSUInteger)mask
-#else
-                                  (NSEventMask)mask
-#endif
+- (NSEvent*)nextEventMatchingMask:(NSEventMask)mask
                         untilDate:(NSDate*)expiration
                            inMode:(NSString*)mode
                           dequeue:(BOOL)dequeue {
