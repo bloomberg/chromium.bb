@@ -21,6 +21,7 @@
     {
       'dependencies': [
         'cr_camera',
+        'cr_png_behavior',
         'cr_picture_types',
       ],
       'target_name': 'cr_picture_pane',

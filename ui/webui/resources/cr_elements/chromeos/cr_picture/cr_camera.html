@@ -10,6 +10,11 @@
     <!-- Note: Do not include cr-shared-style, we use different
          paper-icon-button-light styling -->
     <style>
+      :host {
+        --cr-camera-hidden-frame-size: 406px;
+        --cr-camera-preview-frame-size: 280px;
+      }
+
       #perspectiveBox {
         height: var(--cr-camera-image-size, 228px);
         margin: auto;
@@ -28,29 +33,41 @@
       }
 
       #userImageStreamCrop::after {
-        -webkit-mask-image: radial-gradient(transparent 140px, black 140px);
-        background-color: rgb(214, 214, 214);
+        border: 100px solid rgba(214, 214, 214, 0.34);
+        border-radius: 100%;
         content: '';
         display: block;
-        height: 100%;
-        opacity: 0.34;
-        transform: translateZ(0);
-        width: 100%;
+        height: var(--cr-camera-hidden-frame-size);
+        margin: 50% 50%;
+        transform: translateZ(0) translateX(-50%) translateY(-50%);
+        transition: width 100ms, height 100ms;
+        transition-timing-function: ease-in;
+        width: var(--cr-camera-hidden-frame-size);
       }
 
-      @-webkit-keyframes pulse {
-        0% { opacity: 0; }
-        50% { opacity: 1; }
-        100% { opacity: 0; }
+      #userImageStreamCrop.preview::after {
+        height: var(--cr-camera-preview-frame-size);
+        transition-timing-function: ease-out;
+        width: var(--cr-camera-preview-frame-size);
       }
 
-      #userImageStreamCrop.capture::after {
-        -webkit-mask-image: none;
-        animation: pulse linear 100ms normal forwards;
+      :host([!videomode]) #userImageStreamCrop.capture::after {
+        background-color: white;
+        transition: background-color 50ms ease-in 100ms;
+      }
+
+      @-webkit-keyframes flash {
+        0% { background-color: rgba(255, 255, 255, 0); }
+        33% { background-color: rgba(255, 255, 255, 0.67); }
+        100% { background-color: rgba(255, 255, 255, 0); }
       }
 
       :host([videomode]) #userImageStreamCrop.capture::after {
-        animation: pulse linear 50ms 20;
+        animation-delay: 100ms;
+        animation-duration: 100ms;
+        animation-iteration-count: 10;
+        animation-name: flash;
+        animation-timing-function: ease-out;
       }
 
       paper-spinner {

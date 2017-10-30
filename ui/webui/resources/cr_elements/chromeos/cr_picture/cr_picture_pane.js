@@ -11,7 +11,10 @@
 Polymer({
   is: 'cr-picture-pane',
 
+  behaviors: [CrPngBehavior],
+
   properties: {
+
     /** Whether the camera is present / available */
     cameraPresent: Boolean,
 
@@ -93,14 +96,19 @@ Polymer({
      * Data URLs for PNG images can be large. Create an object URL to avoid
      * URL length limits.
      */
+    var image = /** @type {!HTMLImageElement} */ (this.$$('#image'));
     if (this.imageSrc.startsWith('data:image/png')) {
       var byteString = atob(this.imageSrc.split(',')[1]);
       var bytes = new Uint8Array(byteString.length);
       for (var i = 0; i < byteString.length; i++)
         bytes[i] = byteString.charCodeAt(i);
       var blob = new Blob([bytes], {'type': 'image/png'});
+      // Use first frame as placeholder while rest of image loads.
+      image.style.backgroundImage = 'url(' +
+          CrPngBehavior.convertImageSequenceToPng([this.imageSrc]) + ')';
       this.imageUrl = URL.createObjectURL(blob);
     } else {
+      image.style.backgroundImage = 'none';
       this.imageUrl = this.imageSrc;
     }
   },
