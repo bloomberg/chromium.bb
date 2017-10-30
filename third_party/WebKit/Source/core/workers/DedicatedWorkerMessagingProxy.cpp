@@ -63,7 +63,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     const KURL& script_url,
     const String& user_agent,
     const String& source_code,
-    const String& referrer_policy) {
+    ReferrerPolicy referrer_policy) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate()) {
     // Worker.terminate() could be called from JS before the thread was

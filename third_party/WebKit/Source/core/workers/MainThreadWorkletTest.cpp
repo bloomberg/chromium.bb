@@ -53,7 +53,7 @@ class MainThreadWorkletTest : public ::testing::Test {
         document->Url(), document->UserAgent(), String() /* source_code */,
         nullptr /* cached_meta_data */,
         nullptr /* content_security_policy_parsed_headers */,
-        String() /* referrer_policy */, document->GetSecurityOrigin(),
+        document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         nullptr /* worker_clients */, document->AddressSpace(),
         OriginTrialContext::GetTokens(document).get(),
         nullptr /* worker_settings */, kV8CacheOptionsDefault);

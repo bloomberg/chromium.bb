@@ -403,8 +403,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         main_script_loader_->SourceText(),
         main_script_loader_->ReleaseCachedMetadata(),
         document->GetContentSecurityPolicy()->Headers().get(),
-        main_script_loader_->GetReferrerPolicy(), starter_origin,
-        worker_clients, main_script_loader_->ResponseAddressSpace(),
+        document->GetReferrerPolicy(), starter_origin, worker_clients,
+        main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         std::move(interface_provider_info_));
@@ -416,7 +416,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         "" /* SourceText */, nullptr /* CachedMetadata */,
-        nullptr /* ContentSecurityPolicy */, "" /* ReferrerPolicy */,
+        nullptr /* ContentSecurityPolicy */, kReferrerPolicyDefault,
         starter_origin, worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),

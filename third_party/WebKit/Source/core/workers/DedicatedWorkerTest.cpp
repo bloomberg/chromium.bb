@@ -18,6 +18,7 @@
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,8 +121,7 @@ class DedicatedWorkerMessagingProxyForTest
   void StartWithSourceCode(const String& source) {
     KURL script_url("http://fake.url/");
     security_origin_ = SecurityOrigin::Create(script_url);
-    std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-        WTF::MakeUnique<Vector<CSPHeaderAndType>>();
+    auto headers = std::make_unique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType header_and_type("contentSecurityPolicy",
                                      kContentSecurityPolicyHeaderTypeReport);
     headers->push_back(header_and_type);
@@ -131,7 +131,7 @@ class DedicatedWorkerMessagingProxyForTest
         std::make_unique<GlobalScopeCreationParams>(
             script_url, "fake user agent", source,
             nullptr /* cached_meta_data */, headers.get(),
-            "" /* referrer_policy */, security_origin_.get(),
+            kReferrerPolicyDefault, security_origin_.get(),
             nullptr /* worker_clients */, kWebAddressSpaceLocal,
             nullptr /* origin_trial_tokens */, std::move(worker_settings),
             kV8CacheOptionsDefault),

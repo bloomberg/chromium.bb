@@ -10,7 +10,10 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/origin_trials/OriginTrialContext.h"
+#include "core/testing/DummyPageHolder.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "modules/animationworklet/AnimationWorklet.h"
@@ -35,8 +38,11 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
 
   void SetUp() override {
     AnimationWorkletThread::CreateSharedBackingThreadForTest();
-    reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
-    security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
+    page_ = DummyPageHolder::Create();
+    Document* document = page_->GetFrame().GetDocument();
+    document->SetURL(KURL("https://example.com/"));
+    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+    reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
   void TearDown() override {
@@ -49,16 +55,18 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
 
     WorkerClients* clients = WorkerClients::Create();
 
-    thread->Start(std::make_unique<GlobalScopeCreationParams>(
-                      KURL("http://fake.url/"), "fake user agent",
-                      "" /* source_code */, nullptr /* cached_meta_data */,
-                      nullptr /* content_security_policy_parsed_headers */,
-                      "" /* referrer_policy */, security_origin_.get(), clients,
-                      kWebAddressSpaceLocal, nullptr /* origin_trial_tokens */,
-                      nullptr /* worker_settings */, kV8CacheOptionsDefault),
-                  WTF::nullopt,
-                  WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
-                  ParentFrameTaskRunners::Create());
+    Document* document = page_->GetFrame().GetDocument();
+    thread->Start(
+        std::make_unique<GlobalScopeCreationParams>(
+            document->Url(), document->UserAgent(), "" /* source_code */,
+            nullptr /* cached_meta_data */,
+            nullptr /* content_security_policy_parsed_headers */,
+            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
+            clients, document->AddressSpace(),
+            OriginTrialContext::GetTokens(document).get(),
+            nullptr /* worker_settings */, kV8CacheOptionsDefault),
+        WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+        ParentFrameTaskRunners::Create());
     return thread;
   }
 
@@ -268,7 +276,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     return value.IsEmpty();
   }
 
-  scoped_refptr<SecurityOrigin> security_origin_;
+  std::unique_ptr<DummyPageHolder> page_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 

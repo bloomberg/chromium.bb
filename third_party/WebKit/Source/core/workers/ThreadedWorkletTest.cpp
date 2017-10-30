@@ -5,6 +5,7 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessageStorage.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
@@ -143,22 +144,20 @@ class ThreadedWorkletMessagingProxyForTest
   ~ThreadedWorkletMessagingProxyForTest() override {}
 
   void Start() {
-    KURL script_url("http://fake.url/");
+    Document* document = ToDocument(GetExecutionContext());
     std::unique_ptr<Vector<char>> cached_meta_data = nullptr;
     Vector<CSPHeaderAndType> content_security_policy_headers;
-    String referrer_policy = "";
-    security_origin_ = SecurityOrigin::Create(script_url);
     WorkerClients* worker_clients = nullptr;
-    Vector<String> origin_trial_tokens;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, "fake user agent", "// fake source code",
+            document->Url(), document->UserAgent(), "" /* source_code */,
             std::move(cached_meta_data), &content_security_policy_headers,
-            referrer_policy, security_origin_.get(), worker_clients,
-            kWebAddressSpaceLocal, &origin_trial_tokens,
+            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
+            worker_clients, document->AddressSpace(),
+            OriginTrialContext::GetTokens(document).get(),
             std::move(worker_settings), kV8CacheOptionsDefault),
-        WTF::nullopt, script_url);
+        WTF::nullopt, document->Url());
   }
 
  private:
@@ -167,14 +166,15 @@ class ThreadedWorkletMessagingProxyForTest
   std::unique_ptr<WorkerThread> CreateWorkerThread() final {
     return WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
   }
-
-  scoped_refptr<SecurityOrigin> security_origin_;
 };
 
 class ThreadedWorkletTest : public ::testing::Test {
  public:
   void SetUp() override {
     page_ = DummyPageHolder::Create();
+    Document* document = page_->GetFrame().GetDocument();
+    document->SetURL(KURL("https://example.com/"));
+    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     messaging_proxy_ = new ThreadedWorkletMessagingProxyForTest(
         &page_->GetDocument(), WorkerClients::Create());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();

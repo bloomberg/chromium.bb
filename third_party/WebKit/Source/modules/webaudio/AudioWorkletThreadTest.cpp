@@ -12,6 +12,8 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/origin_trials/OriginTrialContext.h"
+#include "core/testing/DummyPageHolder.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerInspectorProxy.h"
@@ -38,24 +40,28 @@ class AudioWorkletThreadTest : public ::testing::Test {
  public:
   void SetUp() override {
     AudioWorkletThread::CreateSharedBackingThreadForTest();
+    page_ = DummyPageHolder::Create();
+    Document* document = page_->GetFrame().GetDocument();
+    document->SetURL(KURL("https://example.com/"));
+    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
-    security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
   }
 
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
         AudioWorkletThread::Create(nullptr, *reporting_proxy_);
-    thread->Start(std::make_unique<GlobalScopeCreationParams>(
-                      KURL("http://fake.url/"), "fake user agent",
-                      "" /* source_code */, nullptr /* cached_meta_data */,
-                      nullptr /* content_security_policy_parsed_headers */,
-                      "" /* referrer_policy */, security_origin_.get(),
-                      nullptr /* worker_clients */, kWebAddressSpaceLocal,
-                      nullptr /* origin_trial_tokens */,
-                      nullptr /* worker_settings */, kV8CacheOptionsDefault),
-                  WTF::nullopt,
-                  WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
-                  ParentFrameTaskRunners::Create());
+    Document* document = page_->GetFrame().GetDocument();
+    thread->Start(
+        std::make_unique<GlobalScopeCreationParams>(
+            document->Url(), document->UserAgent(), "" /* source_code */,
+            nullptr /* cached_meta_data */,
+            nullptr /* content_security_policy_parsed_headers */,
+            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
+            nullptr /* worker_clients */, document->AddressSpace(),
+            OriginTrialContext::GetTokens(document).get(),
+            nullptr /* worker_settings */, kV8CacheOptionsDefault),
+        WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+        ParentFrameTaskRunners::Create());
     return thread;
   }
 
@@ -91,7 +97,7 @@ class AudioWorkletThreadTest : public ::testing::Test {
     wait_event->Signal();
   }
 
-  scoped_refptr<SecurityOrigin> security_origin_;
+  std::unique_ptr<DummyPageHolder> page_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
