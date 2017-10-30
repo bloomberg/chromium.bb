@@ -224,7 +224,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       net::TestURLFetcher* fetcher = NULL;
 
       // Issue the oauth_token cookie first.
-      fetcher = PrepareOAuthFetcher(gaia_urls->client_login_to_oauth2_url());
+      fetcher = PrepareOAuthFetcher(
+          gaia_urls->deprecated_client_login_to_oauth2_url());
       if (!fetcher)
         return NULL;
 
@@ -466,7 +467,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
   // The PolicyOAuth2TokenFetcher posts delayed retries on some errors. This
   // data will make it fail immediately.
   net::TestURLFetcher* fetcher = PrepareOAuthFetcher(
-      GaiaUrls::GetInstance()->client_login_to_oauth2_url());
+      GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url());
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(400);
   fetcher->SetResponseString("Error=BadAuthentication");

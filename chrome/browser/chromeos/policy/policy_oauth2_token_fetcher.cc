@@ -179,7 +179,7 @@ void PolicyOAuth2TokenFetcherImpl::StartFetchingRefreshToken() {
   if (auth_code_.empty()) {
     refresh_token_fetcher_.reset(new GaiaAuthFetcher(
         this, GaiaConstants::kChromeSource, auth_context_getter_.get()));
-    refresh_token_fetcher_->StartCookieForOAuthLoginTokenExchange(
+    refresh_token_fetcher_->DeprecatedStartCookieForOAuthLoginTokenExchange(
         std::string());
   } else {
     refresh_token_fetcher_.reset(new GaiaAuthFetcher(

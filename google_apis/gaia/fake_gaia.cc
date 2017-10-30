@@ -234,8 +234,8 @@ void FakeGaia::Initialize() {
       gaia_urls->merge_session_url(), HandleMergeSession);
 
   // Handles /o/oauth2/programmatic_auth GAIA call.
-  REGISTER_RESPONSE_HANDLER(
-      gaia_urls->client_login_to_oauth2_url(), HandleProgramaticAuth);
+  REGISTER_RESPONSE_HANDLER(gaia_urls->deprecated_client_login_to_oauth2_url(),
+                            HandleProgramaticAuth);
 
   // Handles /ServiceLogin GAIA call.
   REGISTER_RESPONSE_HANDLER(

@@ -11,6 +11,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -195,9 +197,8 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       get_check_connection_info_url_(
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(source)),
       oauth2_iframe_url_(GaiaUrls::GetInstance()->oauth2_iframe_url()),
-      client_login_to_oauth2_gurl_(
-          GaiaUrls::GetInstance()->client_login_to_oauth2_url()) {
-}
+      deprecated_client_login_to_oauth2_gurl_(
+          GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url()) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
 
@@ -541,23 +542,22 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
                             kLoadFlagsIgnoreCookies, traffic_annotation);
 }
 
-void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
+void GaiaAuthFetcher::DeprecatedStartCookieForOAuthLoginTokenExchange(
     const std::string& session_index) {
-  StartCookieForOAuthLoginTokenExchangeWithDeviceId(session_index,
-                                                    std::string());
+  DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(session_index,
+                                                              std::string());
 }
 
-void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchangeWithDeviceId(
-    const std::string& session_index,
-    const std::string& device_id) {
-  StartCookieForOAuthLoginTokenExchange(
-      true,
-      session_index,
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+void GaiaAuthFetcher::
+    DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(
+        const std::string& session_index,
+        const std::string& device_id) {
+  DeprecatedStartCookieForOAuthLoginTokenExchange(
+      true, session_index, GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       device_id);
 }
 
-void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
+void GaiaAuthFetcher::DeprecatedStartCookieForOAuthLoginTokenExchange(
     bool fetch_token_from_auth_code,
     const std::string& session_index,
     const std::string& client_id,
@@ -613,9 +613,13 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
             }
           }
         })");
-  CreateAndStartGaiaFetcher(std::string(), device_id_header,
-                            client_login_to_oauth2_gurl_.Resolve(query_string),
-                            net::LOAD_NORMAL, traffic_annotation);
+
+  base::RecordAction(base::UserMetricsAction(
+      "Signin_UseDeprecatedCookieToOAuth2TokenEndpoint"));
+  CreateAndStartGaiaFetcher(
+      std::string(), device_id_header,
+      deprecated_client_login_to_oauth2_gurl_.Resolve(query_string),
+      net::LOAD_NORMAL, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
@@ -1214,7 +1218,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
   if (url == issue_auth_token_gurl_) {
     OnIssueAuthTokenFetched(data, status, response_code);
   } else if (base::StartsWith(url.spec(),
-                              client_login_to_oauth2_gurl_.spec(),
+                              deprecated_client_login_to_oauth2_gurl_.spec(),
                               base::CompareCase::SENSITIVE)) {
     OnClientLoginToOAuth2Fetched(data, cookies, status, response_code);
   } else if (url == oauth2_token_gurl_) {
