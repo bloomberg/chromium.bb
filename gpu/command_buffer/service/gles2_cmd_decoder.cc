@@ -4952,6 +4952,9 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     for (auto& fence : deschedule_until_finished_fences_) {
       fence->Invalidate();
     }
+
+    if (group_->texture_manager())
+      group_->texture_manager()->MarkContextLost();
   }
   deschedule_until_finished_fences_.clear();
 
