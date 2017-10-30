@@ -4,6 +4,8 @@
 
 #include "remoting/client/dual_buffer_frame_consumer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -12,6 +14,58 @@
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace remoting {
+
+namespace {
+
+// The implementation is mostly the same as webrtc::BasicDesktopFrame, except
+// that it has an extra padding of one row at the end of the buffer. This is
+// to workaround a bug in iOS' implementation of glTexSubimage2D that causes
+// occasional SIGSEGV.
+//
+// glTexSubimage2D is supposed to only read
+// kBytesPerPixel * width * (height - 1) bytes from the buffer but it seems to
+// be reading more than that, which may end up reading protected memory.
+//
+// See details in crbug.com/778550
+class PaddedDesktopFrame : public webrtc::DesktopFrame {
+ public:
+  explicit PaddedDesktopFrame(webrtc::DesktopSize size);
+  ~PaddedDesktopFrame() override;
+
+  // Creates a PaddedDesktopFrame that contains copy of |frame|.
+  static std::unique_ptr<webrtc::DesktopFrame> CopyOf(
+      const webrtc::DesktopFrame& frame);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaddedDesktopFrame);
+};
+
+PaddedDesktopFrame::PaddedDesktopFrame(webrtc::DesktopSize size)
+    : DesktopFrame(
+          size,
+          kBytesPerPixel * size.width(),
+          new uint8_t[kBytesPerPixel * size.width() * (size.height() + 1)],
+          nullptr) {}
+
+PaddedDesktopFrame::~PaddedDesktopFrame() {
+  delete[] data_;
+}
+
+// static
+std::unique_ptr<webrtc::DesktopFrame> PaddedDesktopFrame::CopyOf(
+    const webrtc::DesktopFrame& frame) {
+  std::unique_ptr<PaddedDesktopFrame> result =
+      std::make_unique<PaddedDesktopFrame>(frame.size());
+  for (int y = 0; y < frame.size().height(); ++y) {
+    memcpy(result->data() + y * result->stride(),
+           frame.data() + y * frame.stride(),
+           frame.size().width() * kBytesPerPixel);
+  }
+  result->CopyFrameInfoFrom(frame);
+  return result;
+}
+
+}  // namespace
 
 DualBufferFrameConsumer::DualBufferFrameConsumer(
     const RenderCallback& callback,
@@ -37,8 +91,8 @@ void DualBufferFrameConsumer::RequestFullDesktopFrame() {
   DCHECK(buffers_[0]->size().equals(buffers_[1]->size()));
   // This creates a copy of buffers_[0] and merges area defined in
   // |buffer_1_mask_| from buffers_[1] into the copy.
-  std::unique_ptr<webrtc::DesktopFrame> full_frame(
-      webrtc::BasicDesktopFrame::CopyOf(*buffers_[0]));
+  std::unique_ptr<webrtc::DesktopFrame> full_frame =
+      PaddedDesktopFrame::CopyOf(*buffers_[0]);
   webrtc::DesktopRect desktop_rect =
         webrtc::DesktopRect::MakeSize(buffers_[0]->size());
   for (webrtc::DesktopRegion::Iterator i(buffer_1_mask_); !i.IsAtEnd();
@@ -58,9 +112,9 @@ std::unique_ptr<webrtc::DesktopFrame> DualBufferFrameConsumer::AllocateFrame(
   // Both buffers are reallocated whenever screen size changes.
   if (!buffers_[0] || !buffers_[0]->size().equals(size)) {
     buffers_[0] = webrtc::SharedDesktopFrame::Wrap(
-        base::MakeUnique<webrtc::BasicDesktopFrame>(size));
+        base::MakeUnique<PaddedDesktopFrame>(size));
     buffers_[1] = webrtc::SharedDesktopFrame::Wrap(
-        base::MakeUnique<webrtc::BasicDesktopFrame>(size));
+        base::MakeUnique<PaddedDesktopFrame>(size));
     buffer_1_mask_.Clear();
     current_buffer_ = 0;
   } else {
