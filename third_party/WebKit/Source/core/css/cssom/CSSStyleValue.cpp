@@ -36,8 +36,13 @@ ScriptValue CSSStyleValue::parse(ScriptState* script_state,
 
   const CSSValue* css_value =
       CSSParser::ParseSingleValue(property_id, value, StrictCSSParserContext());
-  if (!css_value)
+  if (!css_value) {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "The value provided ('" + value +
+                          "') could not be parsed as a '" + property_name +
+                          "'.");
     return ScriptValue::CreateNull(script_state);
+  }
 
   CSSStyleValueVector style_value_vector =
       StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
