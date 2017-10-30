@@ -325,6 +325,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                                  const url::Origin& origin,
                                                  const GURL& resource_url);
 
+  // Opens a new view-source tab for the last committed document in |frame|.
+  virtual void ViewSource(RenderFrameHostImpl* frame) {}
+
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject>
   GetJavaRenderFrameHostDelegate();

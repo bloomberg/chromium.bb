@@ -42,7 +42,6 @@ class FilePath;
 namespace content {
 class ColorChooser;
 class JavaScriptDialogManager;
-class PageState;
 class RenderFrameHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
@@ -238,15 +237,6 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params);
-
-  // Opens source view for given WebContents that is navigated to the given
-  // page url.
-  virtual void ViewSourceForTab(WebContents* source, const GURL& page_url);
-
-  // Opens source view for the given subframe.
-  virtual void ViewSourceForFrame(WebContents* source,
-                                  const GURL& url,
-                                  const PageState& page_state);
 
   // Allows delegates to handle keyboard events before sending to the renderer.
   // See enum for description of return values.

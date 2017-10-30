@@ -252,8 +252,6 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     content::ContextMenuParams params;
     params.page_url = page_url;
     params.frame_url = frame->GetLastCommittedURL();
-    params.frame_page_state =
-        content::PageState::CreateFromURL(params.frame_url);
     params.media_type = blink::WebContextMenuData::kMediaTypePlugin;
     TestRenderViewContextMenu menu(frame, params);
     menu.Init();
@@ -1025,7 +1023,6 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
   content::ContextMenuParams params;
   params.page_url = page_url;
   params.frame_url = frame->GetLastCommittedURL();
-  params.frame_page_state = content::PageState::CreateFromURL(params.frame_url);
   params.media_type = blink::WebContextMenuData::kMediaTypePlugin;
   TestRenderViewContextMenu menu(frame, params);
   menu.Init();

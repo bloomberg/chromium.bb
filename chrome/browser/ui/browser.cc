@@ -1612,18 +1612,6 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   return search::NavEntryIsInstantNTP(source, entry);
 }
 
-void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
-  DCHECK(source);
-  chrome::ViewSource(this, source);
-}
-
-void Browser::ViewSourceForFrame(WebContents* source,
-                                 const GURL& frame_url,
-                                 const content::PageState& frame_page_state) {
-  DCHECK(source);
-  chrome::ViewSource(this, source, frame_url, frame_page_state);
-}
-
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
   TabModalConfirmDialog::Create(new RepostFormWarningController(source),
                                 source);

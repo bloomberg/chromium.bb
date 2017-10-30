@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "net/filter/filter_source_stream_test_util.h"
@@ -148,7 +149,7 @@ std::unique_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
 
   std::string body =
-      "<html><head><style>"
+      "<html><head><title>EmbeddedTestServer - EchoAll</title><style>"
       "pre { border: 1px solid black; margin: 5px; padding: 5px }"
       "</style></head><body>"
       "<div style=\"float: right\">"
@@ -165,9 +166,9 @@ std::unique_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
   body +=
       "</pre>"
       "<h1>Request Headers:</h1><pre>" +
-      request.all_headers +
-      "</pre>"
-      "</body></html>";
+      request.all_headers + "</pre>" +
+      "<h1>Response nonce:</h1><pre id='response-nonce'>" +
+      base::UnguessableToken::Create().ToString() + "</pre></body></html>";
 
   http_response->set_content_type("text/html");
   http_response->set_content(body);

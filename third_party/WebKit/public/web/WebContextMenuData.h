@@ -31,7 +31,6 @@
 #ifndef WebContextMenuData_h
 #define WebContextMenuData_h
 
-#include "WebHistoryItem.h"
 #include "WebMenuItemInfo.h"
 #include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebPoint.h"
@@ -102,9 +101,6 @@ struct WebContextMenuData {
 
   // The encoding for the frame in context.
   WebString frame_encoding;
-
-  // History state of the subframe in context.
-  WebHistoryItem frame_history_item;
 
   enum MediaFlags {
     kMediaNone = 0x0,

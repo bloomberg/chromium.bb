@@ -48,6 +48,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/service_manager_connection.h"
@@ -437,7 +438,10 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       BookmarkAllTabs(browser_);
       break;
     case IDC_VIEW_SOURCE:
-      ViewSelectedSource(browser_);
+      browser_->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetMainFrame()
+          ->ViewSource();
       break;
     case IDC_EMAIL_PAGE_LOCATION:
       EmailPageLocation(browser_);
