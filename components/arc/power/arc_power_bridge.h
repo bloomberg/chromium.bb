@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/instance_holder.h"
@@ -58,6 +59,9 @@ class ArcPowerBridge : public KeyedService,
   void OnScreenBrightnessUpdateRequest(double percent) override;
 
  private:
+  // Called on PowerManagerClient::GetScreenBrightnessPercent() completion.
+  void OnGetScreenBrightnessPercent(base::Optional<double> percent);
+
   void ReleaseAllDisplayWakeLocks();
   void UpdateAndroidScreenBrightness(double percent);
 

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
@@ -146,8 +147,8 @@ class ASH_EXPORT TabletModeController
   void HandleHingeRotation(
       scoped_refptr<const chromeos::AccelerometerUpdate> update);
 
-  void OnGetSwitchStates(chromeos::PowerManagerClient::LidState lid_state,
-                         chromeos::PowerManagerClient::TabletMode tablet_mode);
+  void OnGetSwitchStates(
+      base::Optional<chromeos::PowerManagerClient::SwitchStates> result);
 
   // Returns true if the lid was recently opened.
   bool WasLidOpenedRecently() const;

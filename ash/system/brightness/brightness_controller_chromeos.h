@@ -9,6 +9,7 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace ash {
 namespace system {
@@ -26,7 +27,7 @@ class ASH_EXPORT BrightnessControllerChromeos
   void HandleBrightnessUp(const ui::Accelerator& accelerator) override;
   void SetBrightnessPercent(double percent, bool gradual) override;
   void GetBrightnessPercent(
-      const base::Callback<void(double)>& callback) override;
+      base::OnceCallback<void(base::Optional<double>)> callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrightnessControllerChromeos);

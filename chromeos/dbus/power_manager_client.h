@@ -14,6 +14,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace power_manager {
@@ -38,15 +39,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     UNSUPPORTED,
   };
 
-  // Callback used for getting the current screen brightness. The param is in
-  // the range [0.0, 100.0].
-  typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
-
-  // Callback passed to GetBacklightsForcedOff().
-  typedef base::Callback<void(bool forced_off)> GetBacklightsForcedOffCallback;
-
-  // Callback passed to GetSwitchStates().
-  typedef base::Callback<void(LidState, TabletMode)> GetSwitchStatesCallback;
+  struct SwitchStates {
+    LidState lid_state;
+    TabletMode tablet_mode;
+  };
 
   // Interface for observing changes from the power manager.
   class Observer {
@@ -165,10 +161,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void SetScreenBrightnessPercent(double percent, bool gradual) = 0;
 
   // Asynchronously gets the current screen brightness, in the range
-  // [0.0, 100.0]. On error (e.g. powerd not running), |callback| will not be
-  // run.
+  // [0.0, 100.0]. On error (e.g. powerd not running), |callback| will be run
+  // with nullopt.
   virtual void GetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback) = 0;
+      DBusMethodCallback<double> callback) = 0;
 
   // Decreases the keyboard brightness.
   virtual void DecreaseKeyboardBrightness() = 0;
@@ -218,14 +214,13 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void SetBacklightsForcedOff(bool forced_off) = 0;
 
   // Gets the display and (if present) keyboard backlights' forced-off state. On
-  // error (e.g. powerd not running), |callback| will not be run.
-  virtual void GetBacklightsForcedOff(
-      const GetBacklightsForcedOffCallback& callback) = 0;
+  // error (e.g. powerd not running), |callback| will be called with nullopt.
+  virtual void GetBacklightsForcedOff(DBusMethodCallback<bool> callback) = 0;
 
   // Asynchronously fetches the current state of various hardware switches (e.g.
   // the lid switch and the tablet-mode switch). On error (e.g. powerd not
-  // running), |callback| will not be run.
-  virtual void GetSwitchStates(const GetSwitchStatesCallback& callback) = 0;
+  // running), |callback| will be called with nullopt.
+  virtual void GetSwitchStates(DBusMethodCallback<SwitchStates> callback) = 0;
 
   // Returns a callback that can be called by an observer to report
   // readiness for suspend.  See Observer::SuspendImminent().

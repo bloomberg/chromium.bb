@@ -79,8 +79,8 @@ void ArcPowerBridge::OnInstanceReady() {
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
       ->GetScreenBrightnessPercent(
-          base::Bind(&ArcPowerBridge::UpdateAndroidScreenBrightness,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&ArcPowerBridge::OnGetScreenBrightnessPercent,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcPowerBridge::OnInstanceClosed() {
@@ -212,6 +212,16 @@ void ArcPowerBridge::ReleaseAllDisplayWakeLocks() {
     controller->RemoveWakeLock(it.second);
   }
   wake_locks_.clear();
+}
+
+void ArcPowerBridge::OnGetScreenBrightnessPercent(
+    base::Optional<double> percent) {
+  if (!percent.has_value()) {
+    LOG(ERROR)
+        << "PowerManagerClient::GetScreenBrightnessPercent reports an error";
+    return;
+  }
+  UpdateAndroidScreenBrightness(percent.value());
 }
 
 void ArcPowerBridge::UpdateAndroidScreenBrightness(double percent) {

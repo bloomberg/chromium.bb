@@ -508,11 +508,13 @@ void StateController::FocusAppWindow(bool reverse) {
   note_app_window_->web_contents()->Focus();
 }
 
-void StateController::SetInitialScreenState(double screen_brightness) {
-  if (screen_state_ != ScreenState::kUnknown)
+void StateController::SetInitialScreenState(
+    base::Optional<double> screen_brightness) {
+  if (screen_state_ != ScreenState::kUnknown || !screen_brightness.has_value())
     return;
 
-  SetScreenState(screen_brightness == 0 ? ScreenState::kOff : ScreenState::kOn);
+  SetScreenState(screen_brightness.value() == 0 ? ScreenState::kOff
+                                                : ScreenState::kOn);
 }
 
 void StateController::SetScreenState(ScreenState screen_state) {

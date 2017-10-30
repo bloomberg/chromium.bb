@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace ash {
@@ -32,7 +33,7 @@ class ASH_EXPORT TrayBrightness
   // Updates |current_percent_| with the initial brightness requested by
   // GetInitialBrightness(), if we haven't seen the brightness already in the
   // meantime.
-  void HandleInitialBrightness(double percent);
+  void HandleInitialBrightness(base::Optional<double> percent);
 
   // Overridden from SystemTrayItem.
   views::View* CreateDefaultView(LoginStatus status) override;

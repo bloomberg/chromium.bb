@@ -60,12 +60,10 @@ void FakePowerManagerClient::SetScreenBrightnessPercent(double percent,
                                                         bool gradual) {}
 
 void FakePowerManagerClient::GetScreenBrightnessPercent(
-    const GetScreenBrightnessPercentCallback& callback) {
-  if (screen_brightness_percent_.has_value()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, screen_brightness_percent_.value()));
-  }
+    DBusMethodCallback<double> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), screen_brightness_percent_));
 }
 
 void FakePowerManagerClient::DecreaseKeyboardBrightness() {}
@@ -139,15 +137,16 @@ void FakePowerManagerClient::SetBacklightsForcedOff(bool forced_off) {
 }
 
 void FakePowerManagerClient::GetBacklightsForcedOff(
-    const GetBacklightsForcedOffCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, backlights_forced_off_));
+      FROM_HERE, base::BindOnce(std::move(callback), backlights_forced_off_));
 }
 
 void FakePowerManagerClient::GetSwitchStates(
-    const GetSwitchStatesCallback& callback) {
+    DBusMethodCallback<SwitchStates> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, lid_state_, tablet_mode_));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                SwitchStates{lid_state_, tablet_mode_}));
 }
 
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
