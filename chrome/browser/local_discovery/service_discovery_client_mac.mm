@@ -357,6 +357,9 @@ ServiceResolverImplMac::NetServiceContainer::StartResolvingOnDiscoveryThread() {
 
 void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
     RequestStatus status) {
+  if (callback_.is_null())
+    return;
+
   if (status != STATUS_SUCCESS) {
     callback_runner_->PostTask(
         FROM_HERE,
@@ -435,7 +438,8 @@ void ServiceResolverImplMac::OnResolveComplete(
 
   has_resolved_ = true;
 
-  std::move(callback_).Run(status, description);
+  if (!callback_.is_null())
+    std::move(callback_).Run(status, description);
 }
 
 ServiceResolverImplMac::NetServiceContainer*
