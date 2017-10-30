@@ -258,7 +258,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
                                const std::vector<std::string>& flags) = 0;
 
   using StateKeysCallback =
-      base::Callback<void(const std::vector<std::string>& state_keys)>;
+      base::OnceCallback<void(const std::vector<std::string>& state_keys)>;
 
   // Get the currently valid server-backed state keys for the device.
   // Server-backed state keys are opaque, device-unique, time-dependent,
@@ -268,7 +268,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // The state keys are returned asynchronously via |callback|. The callback
   // is invoked with an empty state key vector in case of errors. If the time
   // sync fails or there's no network, the callback is never invoked.
-  virtual void GetServerBackedStateKeys(const StateKeysCallback& callback) = 0;
+  virtual void GetServerBackedStateKeys(StateKeysCallback callback) = 0;
 
   // Asynchronously starts the ARC instance for the user whose cryptohome is
   // located by |cryptohome_id|.  Flag |disable_boot_completed_broadcast|

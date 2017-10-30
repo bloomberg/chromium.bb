@@ -263,9 +263,10 @@ void FakeSessionManagerClient::SetFlagsForUser(
     const std::vector<std::string>& flags) {}
 
 void FakeSessionManagerClient::GetServerBackedStateKeys(
-    const StateKeysCallback& callback) {
+    StateKeysCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, server_backed_state_keys_));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), server_backed_state_keys_));
 }
 
 void FakeSessionManagerClient::StartArcInstance(
