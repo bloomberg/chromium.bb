@@ -24,7 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
-#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "media/media_features.h"
 #include "ui/gl/gl_switches.h"
@@ -32,6 +31,12 @@
 namespace content {
 
 namespace {
+
+static bool IsGpuRasterizationBlacklisted() {
+  GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+  return manager->IsFeatureBlacklisted(
+        gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
+}
 
 const char kGpuCompositingFeatureName[] = "gpu_compositing";
 const char kWebGLFeatureName[] = "webgl";
@@ -46,101 +51,106 @@ const int kMaxRasterThreads = 4;
 
 const int kMinMSAASampleCount = 0;
 
-struct GpuFeatureData {
+struct GpuFeatureInfo {
   std::string name;
-  gpu::GpuFeatureStatus status;
+  bool blocked;
   bool disabled;
   std::string disabled_description;
   bool fallback_to_software;
 };
 
-bool IsForceGpuRasterizationEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kForceGpuRasterization);
-}
-
-const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
+const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
 
-  const GpuFeatureData kGpuFeatureData[] = {
+  const GpuFeatureInfo kGpuFeatureInfo[] = {
     {"2d_canvas",
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
      command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
      "Accelerated 2D canvas is unavailable: either disabled via blacklist or"
      " the command line.",
      true},
     {kGpuCompositingFeatureName,
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
      command_line.HasSwitch(switches::kDisableGpuCompositing),
      "Gpu compositing has been disabled, either via blacklist, about:flags"
      " or the command line. The browser will fall back to software compositing"
      " and hardware acceleration will be unavailable.",
      true},
-    {kWebGLFeatureName,
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL),
+    {kWebGLFeatureName, !manager->IsWebGLEnabled(),
      command_line.HasSwitch(switches::kDisableWebGL),
      "WebGL has been disabled via blacklist or the command line.", false},
-    {"flash_3d", manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_FLASH3D),
+    {"flash_3d", manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
      command_line.HasSwitch(switches::kDisableFlash3d),
      "Using 3d in flash has been disabled, either via blacklist, about:flags or"
      " the command line.",
      true},
     {"flash_stage3d",
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
      command_line.HasSwitch(switches::kDisableFlashStage3d),
      "Using Stage3d in Flash has been disabled, either via blacklist,"
      " about:flags or the command line.",
      true},
     {"flash_stage3d_baseline",
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE),
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE) ||
+         manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
      command_line.HasSwitch(switches::kDisableFlashStage3d),
      "Using Stage3d Baseline profile in Flash has been disabled, either"
      " via blacklist, about:flags or the command line.",
      true},
     {"video_decode",
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
      command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
      "Accelerated video decode has been disabled, either via blacklist,"
      " about:flags or the command line.",
      true},
+#if BUILDFLAG(ENABLE_WEBRTC)
+    {"video_encode",
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
+     command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),
+     "Accelerated video encode has been disabled, either via blacklist,"
+     " about:flags or the command line.",
+     true},
+#endif
 #if defined(OS_CHROMEOS)
     {"panel_fitting",
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
      command_line.HasSwitch(switches::kDisablePanelFitting),
      "Panel fitting has been disabled, either via blacklist, about:flags or"
      " the command line.",
      false},
 #endif
     {kRasterizationFeatureName,
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION),
-     (command_line.HasSwitch(switches::kDisableGpuRasterization) &&
-      !IsForceGpuRasterizationEnabled()),
+     IsGpuRasterizationBlacklisted() && !IsGpuRasterizationEnabled() &&
+         !IsForceGpuRasterizationEnabled(),
+     !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled() &&
+         !IsGpuRasterizationBlacklisted(),
      "Accelerated rasterization has been disabled, either via blacklist,"
      " about:flags or the command line.",
      true},
-    {kMultipleRasterThreadsFeatureName, gpu::kGpuFeatureStatusEnabled,
+    {kMultipleRasterThreadsFeatureName, false,
      NumberOfRendererRasterThreads() == 1, "Raster is using a single thread.",
      false},
-    {kNativeGpuMemoryBuffersFeatureName, gpu::kGpuFeatureStatusEnabled,
+    {kNativeGpuMemoryBuffersFeatureName, false,
      !gpu::AreNativeGpuMemoryBuffersEnabled(),
      "Native GpuMemoryBuffers have been disabled, either via about:flags"
      " or command line.",
      true},
-    {kWebGL2FeatureName,
-     manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2),
-     (command_line.HasSwitch(switches::kDisableWebGL) ||
-      command_line.HasSwitch(switches::kDisableWebGL2)),
+    {kWebGL2FeatureName, !manager->IsWebGL2Enabled(),
+     command_line.HasSwitch(switches::kDisableWebGL) ||
+         command_line.HasSwitch(switches::kDisableWebGL2),
      "WebGL2 has been disabled via blacklist or the command line.", false},
-    {kCheckerImagingFeatureName, gpu::kGpuFeatureStatusEnabled,
-     !IsCheckerImagingEnabled(),
+    {kCheckerImagingFeatureName, false, !IsCheckerImagingEnabled(),
      "Checker-imaging has been disabled via finch trial or the command line.",
      false},
   };
-  DCHECK(index < arraysize(kGpuFeatureData));
-  *eof = (index == arraysize(kGpuFeatureData) - 1);
-  return kGpuFeatureData[index];
+  DCHECK(index < arraysize(kGpuFeatureInfo));
+  *eof = (index == arraysize(kGpuFeatureInfo) - 1);
+  return kGpuFeatureInfo[index];
 }
 
 }  // namespace
@@ -217,6 +227,17 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
 #else
   return false;
 #endif
+}
+
+bool IsGpuRasterizationEnabled() {
+  GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+  return manager->IsFeatureEnabled(gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
+}
+
+bool IsForceGpuRasterizationEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kForceGpuRasterization);
 }
 
 int GpuRasterizationMSAASampleCount() {
@@ -299,39 +320,40 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
 
   bool eof = false;
   for (size_t i = 0; !eof; ++i) {
-    const GpuFeatureData gpu_feature_data = GetGpuFeatureData(i, &eof);
+    const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
     std::string status;
-    if (gpu_feature_data.disabled || gpu_access_blocked) {
+    if (gpu_feature_info.disabled) {
       status = "disabled";
-      if (gpu_feature_data.fallback_to_software)
+      if (gpu_feature_info.fallback_to_software)
         status += "_software";
       else
         status += "_off";
-    } else if (gpu_feature_data.status == gpu::kGpuFeatureStatusBlacklisted) {
-      status = "unavailable_off";
-    } else if (gpu_feature_data.status == gpu::kGpuFeatureStatusSoftware) {
-      status = "unavailable_software";
+    } else if (gpu_feature_info.blocked ||
+               gpu_access_blocked) {
+      status = "unavailable";
+      if (gpu_feature_info.fallback_to_software)
+        status += "_software";
+      else
+        status += "_off";
     } else {
       status = "enabled";
-      if ((gpu_feature_data.name == kWebGLFeatureName ||
-           gpu_feature_data.name == kWebGL2FeatureName) &&
-          (manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING) !=
-           gpu::kGpuFeatureStatusEnabled)) {
+      if ((gpu_feature_info.name == kWebGLFeatureName ||
+           gpu_feature_info.name == kWebGL2FeatureName) &&
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
         status += "_readback";
-      }
-      if (gpu_feature_data.name == kRasterizationFeatureName) {
+      if (gpu_feature_info.name == kRasterizationFeatureName) {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }
-      if (gpu_feature_data.name == kMultipleRasterThreadsFeatureName) {
+      if (gpu_feature_info.name == kMultipleRasterThreadsFeatureName) {
         const base::CommandLine& command_line =
             *base::CommandLine::ForCurrentProcess();
         if (command_line.HasSwitch(switches::kNumRasterThreads))
           status += "_force";
       }
-      if (gpu_feature_data.name == kMultipleRasterThreadsFeatureName)
+      if (gpu_feature_info.name == kMultipleRasterThreadsFeatureName)
         status += "_on";
-      if (gpu_feature_data.name == kCheckerImagingFeatureName) {
+      if (gpu_feature_info.name == kCheckerImagingFeatureName) {
         const base::CommandLine& command_line =
             *base::CommandLine::ForCurrentProcess();
         if (command_line.HasSwitch(cc::switches::kEnableCheckerImaging))
@@ -339,7 +361,14 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
         status += "_on";
       }
     }
-    feature_status_dict->SetString(gpu_feature_data.name, status);
+    if ((gpu_feature_info.name == kWebGLFeatureName ||
+         gpu_feature_info.name == kWebGL2FeatureName) &&
+        (gpu_feature_info.blocked || gpu_access_blocked) &&
+        manager->ShouldUseSwiftShader()) {
+      status = "unavailable_software";
+    }
+
+    feature_status_dict->SetString(gpu_feature_info.name, status);
   }
   return feature_status_dict;
 }
@@ -367,13 +396,14 @@ std::unique_ptr<base::ListValue> GetProblems() {
 
   bool eof = false;
   for (size_t i = 0; !eof; ++i) {
-    const GpuFeatureData gpu_feature_data = GetGpuFeatureData(i, &eof);
-    if (gpu_feature_data.disabled) {
-      auto problem = std::make_unique<base::DictionaryValue>();
-      problem->SetString("description", gpu_feature_data.disabled_description);
-      problem->Set("crBugs", std::make_unique<base::ListValue>());
-      auto disabled_features = std::make_unique<base::ListValue>();
-      disabled_features->AppendString(gpu_feature_data.name);
+    const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
+    if (gpu_feature_info.disabled) {
+      auto problem = base::MakeUnique<base::DictionaryValue>();
+      problem->SetString(
+          "description", gpu_feature_info.disabled_description);
+      problem->Set("crBugs", base::MakeUnique<base::ListValue>());
+      auto disabled_features = base::MakeUnique<base::ListValue>();
+      disabled_features->AppendString(gpu_feature_info.name);
       problem->Set("affectedGpuSettings", std::move(disabled_features));
       problem->SetString("tag", "disabledFeatures");
       problem_list->Append(std::move(problem));

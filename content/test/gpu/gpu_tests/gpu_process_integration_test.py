@@ -73,6 +73,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_gpu_info_complete', 'gpu/functional_3d_css.html'),
              ('GpuProcess_no_gpu_process', 'about:blank'),
              ('GpuProcess_driver_bug_workarounds_in_gpu_process', 'chrome:gpu'),
+             ('GpuProcess_readback_webgl_gpu_process', 'chrome:gpu'),
              ('GpuProcess_driver_bug_workarounds_upon_gl_renderer',
               'chrome:gpu'),
              ('GpuProcess_only_one_workaround', 'chrome:gpu'),
@@ -251,10 +252,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Browser must support GPU aux attributes')
     if not 'gl_renderer' in system_info.gpu.aux_attributes:
       self.fail('Browser must have gl_renderer in aux attribs')
-    if (len(system_info.gpu.aux_attributes['gl_renderer']) <= 0 and
-        sys.platform != 'darwin'):
-      # We don't create a GL context and collect GL strings on GPU process
-      # startup on MacOSX because it's too slow.
+    if len(system_info.gpu.aux_attributes['gl_renderer']) <= 0:
       self.fail('Must have a non-empty gl_renderer string')
 
   def _GpuProcess_no_gpu_process(self, test_path):
@@ -296,6 +294,39 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._Navigate(test_path)
     self._ValidateDriverBugWorkarounds(
       'use_gpu_driver_workaround_for_testing', None)
+
+  def _GpuProcess_readback_webgl_gpu_process(self, test_path):
+    # This test was designed to only run on desktop Linux.
+    options = self.__class__._original_finder_options.browser_options
+    is_platform_android = options.browser_type.startswith('android')
+    if sys.platform.startswith('linux') and not is_platform_android:
+      # Hit id 110 from kSoftwareRenderingListEntries.
+      self.RestartBrowserIfNecessaryWithArgs([
+        '--gpu-testing-vendor-id=0x10de',
+        '--gpu-testing-device-id=0x0de1',
+        '--gpu-testing-gl-vendor=VMware',
+        '--gpu-testing-gl-renderer=Gallium 0.4 ' \
+        'on llvmpipe (LLVM 3.4, 256 bits)',
+        '--gpu-testing-gl-version="3.0 Mesa 11.2"'])
+      self._Navigate(test_path)
+      feature_status_list = self.tab.EvaluateJavaScript(
+          'browserBridge.gpuInfo.featureStatus.featureStatus')
+      result = True
+      for name, status in feature_status_list.items():
+        if name == 'multiple_raster_threads':
+          result = result and status == 'enabled_on'
+        elif name == 'native_gpu_memory_buffers':
+          result = result and status == 'disabled_software'
+        elif name == 'webgl':
+          result = result and status == 'enabled_readback'
+        elif name == 'webgl2':
+          result = result and status == 'unavailable_software'
+        elif name == 'checker_imaging':
+          pass
+        else:
+          result = result and status == 'unavailable_software'
+      if not result:
+        self.fail('WebGL readback setup failed: %s' % feature_status_list)
 
   def _GpuProcess_driver_bug_workarounds_upon_gl_renderer(self, test_path):
     is_platform_android = self._RunningOnAndroid()

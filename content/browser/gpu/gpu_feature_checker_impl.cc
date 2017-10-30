@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
 
 namespace content {
 
@@ -15,13 +15,9 @@ namespace {
 
 // A false return value is always valid, but a true one is only valid if full
 // GPU info has been collected in a GPU process.
-bool IsFeatureAllowed(GpuDataManagerImpl* manager,
-                      gpu::GpuFeatureType feature) {
-  // This is mostly for WebStore checking WebGL status, therefore, don't return
-  // yes if WebGL is rendering on software, because user experience on the app
-  // won't be good in most cases.
-  return (manager->GpuAccessAllowed(nullptr) &&
-          manager->GetFeatureStatus(feature) == gpu::kGpuFeatureStatusEnabled);
+bool IsFeatureAllowed(GpuDataManager* manager, gpu::GpuFeatureType feature) {
+  return (manager->GpuAccessAllowed(NULL) &&
+          !manager->IsFeatureBlacklisted(feature));
 }
 
 }  // namespace
@@ -42,27 +38,41 @@ GpuFeatureCheckerImpl::~GpuFeatureCheckerImpl() {}
 void GpuFeatureCheckerImpl::CheckGpuFeatureAvailability() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-  if (!manager->IsGpuFeatureInfoAvailable()) {
-    AddRef();
-    manager->AddObserver(this);
-    return;
-  }
+  bool finalized = true;
+#if defined(OS_LINUX)
+  // On Windows and Mac, so far we can always make the final WebGL blacklisting
+  // decision based on partial GPU info; on Linux, we need to launch the GPU
+  // process to collect full GPU info and make the final decision.
+  finalized = false;
+#endif
+
+  GpuDataManager* manager = GpuDataManager::GetInstance();
+  if (manager->IsEssentialGpuInfoAvailable())
+    finalized = true;
 
   bool feature_allowed = IsFeatureAllowed(manager, feature_);
-  callback_.Run(feature_allowed);
+  if (!feature_allowed)
+    finalized = true;
+
+  if (finalized) {
+    callback_.Run(feature_allowed);
+  } else {
+    // Matched with a Release in OnGpuInfoUpdate.
+    AddRef();
+
+    manager->AddObserver(this);
+    manager->RequestCompleteGpuInfoIfNeeded();
+  }
 }
 
 void GpuFeatureCheckerImpl::OnGpuInfoUpdate() {
-  GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-  if (manager->IsGpuFeatureInfoAvailable()) {
-    manager->RemoveObserver(this);
-    bool feature_allowed = IsFeatureAllowed(manager, feature_);
-    callback_.Run(feature_allowed);
+  GpuDataManager* manager = GpuDataManager::GetInstance();
+  manager->RemoveObserver(this);
+  bool feature_allowed = IsFeatureAllowed(manager, feature_);
+  callback_.Run(feature_allowed);
 
-    // Matches the AddRef in CheckGpuFeatureAvailability().
-    Release();
-  }
+  // Matches the AddRef in CheckGpuFeatureAvailability().
+  Release();
 }
 
 }  // namespace content

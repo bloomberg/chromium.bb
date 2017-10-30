@@ -1383,6 +1383,16 @@
       ]
     },
     {
+      "id": 138,
+      "description": "Accelerated video encode is unavailable on Linux",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "accelerated_video_encode"
+      ]
+    },
+    {
       "id": 139,
       "description": "GPU Rasterization is disabled on pre-GCN AMD cards",
       "cr_bugs": [643850],

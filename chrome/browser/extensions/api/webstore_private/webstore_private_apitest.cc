@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/extension_install_ui.h"
+#include "gpu/config/gpu_feature_type.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gl/gl_switches.h"
@@ -386,14 +387,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild, InstallBlocked) {
 class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
  protected:
   void RunTest(bool webgl_allowed) {
-#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-    // TODO(zmo): crbug.com/777681
-    // In Mus GpuFeatureInfo computed in GPU process isn't wired back to
-    // browser process, therefore GpuFeatureChecker times out.
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kMus))
-      return;
-#endif
     // If Gpu access is disallowed then WebGL will not be available.
     if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
       webgl_allowed = false;
@@ -423,9 +416,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Allowed) {
 // Tests getWebGLStatus function when WebGL is blacklisted.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
   content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
-  EXPECT_EQ(gpu::kGpuFeatureStatusBlacklisted,
-            content::GpuDataManager::GetInstance()->GetFeatureStatus(
-                gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
+  EXPECT_TRUE(content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);

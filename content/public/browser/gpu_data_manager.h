@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
-#include "gpu/config/gpu_feature_info.h"
 
 class GURL;
 
@@ -34,9 +33,9 @@ class GpuDataManager {
   virtual void BlacklistWebGLForTesting() = 0;
 
   virtual bool IsFeatureBlacklisted(int feature) const = 0;
-
-  virtual gpu::GpuFeatureStatus GetFeatureStatus(
-      gpu::GpuFeatureType feature) const = 0;
+  virtual bool IsFeatureEnabled(int feature) const = 0;
+  virtual bool IsWebGLEnabled() const = 0;
+  virtual bool IsWebGL2Enabled() const = 0;
 
   virtual gpu::GPUInfo GetGPUInfo() const = 0;
 
@@ -55,6 +54,11 @@ class GpuDataManager {
 
   // Check if basic and context GPU info have been collected.
   virtual bool IsEssentialGpuInfoAvailable() const = 0;
+
+  // On Windows, besides basic and context GPU info, it also checks if
+  // DxDiagnostics have been collected.
+  // On other platforms, it's the same as IsEsentialGpuInfoAvailable().
+  virtual bool IsCompleteGpuInfoAvailable() const = 0;
 
   // Requests that the GPU process report its current video memory usage stats.
   virtual void RequestVideoMemoryUsageStatsUpdate(
