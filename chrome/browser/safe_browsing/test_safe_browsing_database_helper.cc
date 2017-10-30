@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -83,30 +82,35 @@ class InsertingDatabaseFactory : public safe_browsing::TestV4DatabaseFactory {
 
 TestSafeBrowsingDatabaseHelper::TestSafeBrowsingDatabaseHelper()
     : TestSafeBrowsingDatabaseHelper(
+          std::make_unique<
+              safe_browsing::TestV4GetHashProtocolManagerFactory>(),
           std::vector<safe_browsing::ListIdentifier>()) {}
 
 TestSafeBrowsingDatabaseHelper::TestSafeBrowsingDatabaseHelper(
-    std::vector<safe_browsing::ListIdentifier> lists_to_insert) {
-  sb_factory_ = base::MakeUnique<safe_browsing::TestSafeBrowsingServiceFactory>(
+    std::unique_ptr<safe_browsing::TestV4GetHashProtocolManagerFactory>
+        v4_get_hash_factory,
+    std::vector<safe_browsing::ListIdentifier> lists_to_insert)
+    : v4_get_hash_factory_(v4_get_hash_factory.get()) {
+  sb_factory_ = std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>(
       safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY);
   sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
   safe_browsing::SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
-  auto store_factory = base::MakeUnique<safe_browsing::TestV4StoreFactory>();
-  auto v4_db_factory = base::MakeUnique<InsertingDatabaseFactory>(
+  auto store_factory = std::make_unique<safe_browsing::TestV4StoreFactory>();
+  auto v4_db_factory = std::make_unique<InsertingDatabaseFactory>(
       store_factory.get(), lists_to_insert);
-  auto v4_get_hash_factory =
-      base::MakeUnique<safe_browsing::TestV4GetHashProtocolManagerFactory>();
 
   v4_db_factory_ = v4_db_factory.get();
-  v4_get_hash_factory_ = v4_get_hash_factory.get();
 
   safe_browsing::V4Database::RegisterStoreFactoryForTest(
       std::move(store_factory));
   safe_browsing::V4Database::RegisterDatabaseFactoryForTest(
       std::move(v4_db_factory));
-  safe_browsing::V4GetHashProtocolManager::RegisterFactory(
-      std::move(v4_get_hash_factory));
+
+  if (v4_get_hash_factory) {
+    safe_browsing::V4GetHashProtocolManager::RegisterFactory(
+        std::move(v4_get_hash_factory));
+  }
 }
 
 TestSafeBrowsingDatabaseHelper::~TestSafeBrowsingDatabaseHelper() {
@@ -116,14 +120,25 @@ TestSafeBrowsingDatabaseHelper::~TestSafeBrowsingDatabaseHelper() {
   safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
 }
 
-void TestSafeBrowsingDatabaseHelper::MarkUrlAsMatchingListIdWithMetadata(
+void TestSafeBrowsingDatabaseHelper::AddFullHashToDbAndFullHashCache(
     const GURL& bad_url,
     const safe_browsing::ListIdentifier& list_id,
     const safe_browsing::ThreatMetadata& threat_metadata) {
+  // Should only be called if we are mocking the v4 hash factory.
+  DCHECK(v4_get_hash_factory_);
+
+  LocallyMarkPrefixAsBad(bad_url, list_id);
+
   safe_browsing::FullHashInfo full_hash_info =
       GetFullHashInfoWithMetadata(bad_url, list_id, threat_metadata);
-  v4_db_factory_->MarkPrefixAsBad(list_id, full_hash_info.full_hash);
   v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+}
+
+void TestSafeBrowsingDatabaseHelper::LocallyMarkPrefixAsBad(
+    const GURL& url,
+    const safe_browsing::ListIdentifier& list_id) {
+  safe_browsing::FullHash full_hash = safe_browsing::GetFullHash(url);
+  v4_db_factory_->MarkPrefixAsBad(list_id, full_hash);
 }
 
 bool TestSafeBrowsingDatabaseHelper::HasListSynced(

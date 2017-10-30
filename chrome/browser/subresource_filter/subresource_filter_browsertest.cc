@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       g_browser_process->subresource_filter_ruleset_service();
   ASSERT_TRUE(service->ruleset_dealer());
   auto ruleset_handle =
-      base::MakeUnique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), ActivationLevel::ENABLED, false);
 
@@ -659,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
       g_browser_process->subresource_filter_ruleset_service();
   ASSERT_TRUE(service->ruleset_dealer());
   auto ruleset_handle =
-      base::MakeUnique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), ActivationLevel::ENABLED, false);
 
@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       testing::TestRuleset::Open(test_ruleset_pair.indexed));
 
   auto ruleset_handle =
-      base::MakeUnique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), ActivationLevel::ENABLED, false);
 

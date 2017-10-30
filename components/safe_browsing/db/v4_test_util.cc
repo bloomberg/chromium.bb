@@ -48,7 +48,7 @@ bool TestV4Store::HasValidData() const {
 }
 
 void TestV4Store::MarkPrefixAsBad(HashPrefix prefix) {
-  hash_prefix_map_[prefix.size()] = prefix;
+  hash_prefix_map_[prefix.size()] += prefix;
 }
 
 TestV4Database::TestV4Database(
