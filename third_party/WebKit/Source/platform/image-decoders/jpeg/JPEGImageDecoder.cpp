@@ -469,8 +469,30 @@ class JPEGImageReader final {
           JOCTET* profile = nullptr;
           unsigned profile_length = 0;
           if (read_icc_profile(Info(), &profile, &profile_length)) {
-            Decoder()->SetEmbeddedColorProfile(reinterpret_cast<char*>(profile),
-                                               profile_length);
+            sk_sp<SkColorSpace> color_space =
+                SkColorSpace::MakeICC(profile, profile_length);
+            if (color_space) {
+              const SkColorSpace::Type type = color_space->type();
+              switch (info_.jpeg_color_space) {
+                case JCS_CMYK:
+                case JCS_YCCK:
+                  if (type != SkColorSpace::kCMYK_Type)
+                    color_space = nullptr;
+                  break;
+                case JCS_GRAYSCALE:
+                  if (type != SkColorSpace::kGray_Type &&
+                      type != SkColorSpace::kRGB_Type)
+                    color_space = nullptr;
+                  break;
+                default:
+                  if (type != SkColorSpace::kRGB_Type)
+                    color_space = nullptr;
+                  break;
+              }
+              Decoder()->SetEmbeddedColorSpace(std::move(color_space));
+            } else {
+              DLOG(ERROR) << "Failed to parse image ICC profile";
+            }
             free(profile);
           }
           if (Decoder()->ColorTransform()) {
@@ -881,7 +903,7 @@ bool OutputRows(JPEGImageReader* reader, ImageFrame& buffer) {
       SetPixel<colorSpace>(pixel, samples, x);
 
     SkColorSpaceXform* xform = reader->Decoder()->ColorTransform();
-    if (JCS_RGB == colorSpace && xform) {
+    if (xform) {
       ImageFrame::PixelData* row = buffer.GetAddr(0, y);
       xform->apply(XformColorFormat(), row, XformColorFormat(), row, width,
                    kOpaque_SkAlphaType);
