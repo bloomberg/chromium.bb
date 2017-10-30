@@ -1680,8 +1680,16 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int mi_rel_col1 = mi_rel_col0 + mi_size_wide[bsize];
 
 #if CONFIG_FRAME_SUPERRES
-  const int mi_to_num = MI_SIZE * SCALE_NUMERATOR;
-  const int denom = cm->superres_scale_denominator;
+  // Write m for the relative mi column or row, D for the superres denominator
+  // and N for the superres numerator. If u is the upscaled (called "unscaled"
+  // elsewhere) pixel offset then we can write the downscaled pixel offset in
+  // two ways as:
+  //
+  //   MI_SIZE * m = N / D u
+  //
+  // from which we get u = D * MI_SIZE * m / N
+  const int mi_to_num = MI_SIZE * cm->superres_scale_denominator;
+  const int denom = SCALE_NUMERATOR;
 #else
   const int mi_to_num = MI_SIZE;
   const int denom = 1;
