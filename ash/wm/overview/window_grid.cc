@@ -580,6 +580,16 @@ void WindowGrid::SetBoundsAndUpdatePositionsIgnoringWindow(
   PositionWindows(true /* animate */, ignored_item);
 }
 
+void WindowGrid::SetSelectionWidgetVisibility(bool visible) {
+  if (!selection_widget_)
+    return;
+
+  if (visible)
+    selection_widget_->Show();
+  else
+    selection_widget_->Hide();
+}
+
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));

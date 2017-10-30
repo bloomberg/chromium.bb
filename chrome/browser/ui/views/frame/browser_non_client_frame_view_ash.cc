@@ -486,13 +486,12 @@ void BrowserNonClientFrameViewAsh::LayoutProfileIndicatorIcon() {
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
-  if (!frame()->IsFullscreen())
-    return true;
-
   // We need to paint when the top-of-window views are revealed in immersive
   // fullscreen.
   ImmersiveModeController* immersive_mode_controller =
       browser_view()->immersive_mode_controller();
-  return immersive_mode_controller->IsEnabled() &&
-         immersive_mode_controller->IsRevealed();
+  if (immersive_mode_controller->IsEnabled())
+    return immersive_mode_controller->IsRevealed();
+
+  return !frame()->IsFullscreen();
 }
