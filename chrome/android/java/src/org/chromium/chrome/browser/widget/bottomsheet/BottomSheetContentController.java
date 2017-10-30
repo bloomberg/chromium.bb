@@ -181,8 +181,12 @@ public class BottomSheetContentController
                 return;
             }
 
-            if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK) {
-                clearBottomSheetContents(mBottomSheet.getCurrentSheetContent() == null);
+            // If the home content is showing and the sheet is closed, destroy sheet contents that
+            // are no longer needed.
+            if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK
+                    && (newContent == null
+                               || newContent == mBottomSheetContents.get(getHomeContentId()))) {
+                clearBottomSheetContents(newContent == null);
             }
         }
     };
@@ -465,6 +469,11 @@ public class BottomSheetContentController
         if (content != null) return content;
 
         return createAndCacheContentForId(navItemId);
+    }
+
+    private int getHomeContentId() {
+        if (mTabModelSelector.isIncognitoSelected()) return INCOGNITO_HOME_ID;
+        return R.id.action_home;
     }
 
     /**
