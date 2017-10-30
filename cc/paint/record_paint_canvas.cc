@@ -166,18 +166,22 @@ void RecordPaintCanvas::clipPath(const SkPath& path,
 }
 
 SkRect RecordPaintCanvas::getLocalClipBounds() const {
+  DCHECK(InitializedWithRecordingBounds());
   return GetCanvas()->getLocalClipBounds();
 }
 
 bool RecordPaintCanvas::getLocalClipBounds(SkRect* bounds) const {
+  DCHECK(InitializedWithRecordingBounds());
   return GetCanvas()->getLocalClipBounds(bounds);
 }
 
 SkIRect RecordPaintCanvas::getDeviceClipBounds() const {
+  DCHECK(InitializedWithRecordingBounds());
   return GetCanvas()->getDeviceClipBounds();
 }
 
 bool RecordPaintCanvas::getDeviceClipBounds(SkIRect* bounds) const {
+  DCHECK(InitializedWithRecordingBounds());
   return GetCanvas()->getDeviceClipBounds(bounds);
 }
 
@@ -287,10 +291,12 @@ void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
 }
 
 bool RecordPaintCanvas::isClipEmpty() const {
+  DCHECK(InitializedWithRecordingBounds());
   return GetCanvas()->isClipEmpty();
 }
 
 bool RecordPaintCanvas::isClipRect() const {
+  DCHECK(InitializedWithRecordingBounds());
   return GetCanvas()->isClipRect();
 }
 
@@ -325,6 +331,13 @@ SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() {
   // which is incorrect.  SkRecorder cheats with private resetForNextCanvas.
   canvas_->clipRect(recording_bounds_, SkClipOp::kIntersect, false);
   return &*canvas_;
+}
+
+bool RecordPaintCanvas::InitializedWithRecordingBounds() const {
+  // If the RecordPaintCanvas is initialized with an empty bounds then
+  // the various clip related functions are not valid and should not
+  // be called.
+  return !recording_bounds_.isEmpty();
 }
 
 }  // namespace cc

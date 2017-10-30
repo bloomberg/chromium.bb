@@ -116,6 +116,8 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   const SkNoDrawCanvas* GetCanvas() const;
   SkNoDrawCanvas* GetCanvas();
 
+  bool InitializedWithRecordingBounds() const;
+
   DisplayItemList* list_;
 
   // TODO(enne): Although RecordPaintCanvas is mostly a write-only interface
