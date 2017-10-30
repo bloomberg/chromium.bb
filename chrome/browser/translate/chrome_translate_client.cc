@@ -122,11 +122,10 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
           this,
           translate::TranslateRankerFactory::GetForBrowserContext(
               web_contents->GetBrowserContext()),
-          LanguageModelFactory::GetInstance()->GetForBrowserContext(
+          LanguageModelFactory::GetForBrowserContext(
               web_contents->GetBrowserContext()))),
-      language_histogram_(
-          UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(
-              web_contents->GetBrowserContext())) {
+      language_histogram_(UrlLanguageHistogramFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext())) {
   translate_driver_.AddObserver(this);
   translate_driver_.set_translate_manager(translate_manager_.get());
 }

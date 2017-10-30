@@ -60,7 +60,7 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
           translate::TranslateRankerFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState())),
-          LanguageModelFactory::GetInstance()->GetForBrowserState(
+          LanguageModelFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState())))),
       translate_driver_(web_state,

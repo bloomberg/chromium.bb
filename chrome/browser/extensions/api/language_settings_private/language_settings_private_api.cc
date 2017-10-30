@@ -485,7 +485,7 @@ ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
   Profile* profile = chrome_details_.GetProfile();
   language::LanguageModel* language_model =
-      LanguageModelFactory::GetInstance()->GetForBrowserContext(profile);
+      LanguageModelFactory::GetForBrowserContext(profile);
   return RespondNow(OneArgument(
       base::MakeUnique<base::Value>(TranslateService::GetTargetLanguage(
           profile->GetPrefs(), language_model))));

@@ -492,8 +492,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
     language::UrlLanguageHistogram* language_histogram =
-        UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(
-            profile_);
+        UrlLanguageHistogramFactory::GetForBrowserContext(profile_);
     if (language_histogram) {
       language_histogram->ClearHistory(delete_begin_, delete_end_);
     }

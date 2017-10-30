@@ -341,7 +341,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   UrlLanguageHistogram* language_histogram =
-      UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(profile);
+      UrlLanguageHistogramFactory::GetForBrowserContext(profile);
 
   scoped_refptr<net::URLRequestContextGetter> request_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)

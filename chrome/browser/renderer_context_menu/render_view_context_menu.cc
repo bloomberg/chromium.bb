@@ -945,8 +945,7 @@ std::string RenderViewContextMenu::GetTargetLanguage() const {
   std::unique_ptr<translate::TranslatePrefs> prefs(
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(browser_context_)));
   language::LanguageModel* language_model =
-      LanguageModelFactory::GetInstance()->GetForBrowserContext(
-          browser_context_);
+      LanguageModelFactory::GetForBrowserContext(browser_context_);
   return translate::TranslateManager::GetTargetLanguage(prefs.get(),
                                                         language_model);
 }

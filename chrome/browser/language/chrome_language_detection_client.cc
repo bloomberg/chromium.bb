@@ -18,9 +18,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeLanguageDetectionClient);
 ChromeLanguageDetectionClient::ChromeLanguageDetectionClient(
     content::WebContents* const web_contents)
     : content::WebContentsObserver(web_contents),
-      language_histogram_(
-          UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(
-              web_contents->GetBrowserContext())) {}
+      language_histogram_(UrlLanguageHistogramFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext())) {}
 
 ChromeLanguageDetectionClient::~ChromeLanguageDetectionClient() = default;
 
