@@ -886,9 +886,16 @@
       <description summary="set the window as fullscreen on an output">
 	Make the surface fullscreen.
 
-	You can specify an output that you would prefer to be fullscreen.
-	If this value is NULL, it's up to the compositor to choose which
-	display will be used to map this surface.
+	After requesting that the surface should be fullscreened, the
+	compositor will respond by emitting a configure event with the
+	"fullscreen" state and the required window geometry. The client must
+	also acknowledge the configure when committing the new content (see
+	ack_configure).
+
+	The output passed by the request indicates the client's preference as
+	to which display it should be set fullscreen on. If this value is NULL,
+	it's up to the compositor to choose which display will be used to map
+	this surface.
 
 	If the surface doesn't cover the whole output, the compositor will
 	position the surface in the center of the output and compensate with
