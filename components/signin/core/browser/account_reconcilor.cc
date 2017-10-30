@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -94,14 +95,16 @@ AccountReconcilor::AccountReconcilor(
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
+  PrefService* prefs = client_->GetPrefs();
   if (ShouldMigrateToDiceOnStartup()) {
-    PrefService* prefs = client_->GetPrefs();
     DCHECK(prefs);
     if (!signin::IsDiceEnabledForProfile(prefs))
       VLOG(1) << "Profile is migrating to Dice";
     signin::MigrateProfileToDice(client->GetPrefs());
     DCHECK(signin::IsDiceEnabledForProfile(prefs));
   }
+  UMA_HISTOGRAM_BOOLEAN("Signin.DiceEnabledForProfile",
+                        signin::IsDiceEnabledForProfile(prefs));
 }
 
 AccountReconcilor::~AccountReconcilor() {
