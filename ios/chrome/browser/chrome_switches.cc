@@ -27,9 +27,6 @@ const char kDisableIOSPasswordSuggestions[] =
 // Disables the Suggestions UI
 const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 
-// Disables the WKBackForwardList based navigation manager experiment.
-const char kDisableSlimNavigationManager[] = "disable-slim-navigation-manager";
-
 // Disables the 3rd party keyboard omnibox workaround.
 const char kDisableThirdPartyKeyboardWorkaround[] =
     "disable-third-party-keyboard-workaround";
@@ -51,9 +48,6 @@ const char kEnableSpotlightActions[] = "enable-spotlight-actions";
 
 // Enables the Suggestions UI
 const char kEnableSuggestionsUI[] = "enable-suggestions-ui";
-
-// Enables the WKBackForwardList based navigation manager experiment.
-const char kEnableSlimNavigationManager[] = "enable-slim-navigation-manager";
 
 // Enables the 3rd party keyboard omnibox workaround.
 const char kEnableThirdPartyKeyboardWorkaround[] =

@@ -5,6 +5,7 @@
 #import "ios/web/public/test/fakes/test_web_client.h"
 
 #include "base/logging.h"
+#include "ios/web/public/features.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -16,9 +17,7 @@
 namespace web {
 
 TestWebClient::TestWebClient()
-    : last_cert_error_code_(0),
-      last_cert_error_overridable_(true),
-      is_slim_navigation_manager_enabled_(false) {}
+    : last_cert_error_code_(0), last_cert_error_overridable_(true) {}
 
 TestWebClient::~TestWebClient() {}
 
@@ -61,14 +60,6 @@ void TestWebClient::AllowCertificateError(
   last_cert_error_overridable_ = overridable;
 
   callback.Run(false);
-}
-
-bool TestWebClient::IsSlimNavigationManagerEnabled() const {
-  return is_slim_navigation_manager_enabled_;
-}
-
-void TestWebClient::SetIsSlimNavigationManager(bool flag) {
-  is_slim_navigation_manager_enabled_ = flag;
 }
 
 }  // namespace web

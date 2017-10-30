@@ -30,6 +30,7 @@ source_set("public") {
     "favicon_status.h",
     "favicon_url.cc",
     "favicon_url.h",
+    "features.h",
     "interstitials/web_interstitial.h",
     "interstitials/web_interstitial_delegate.h",
     "java_script_dialog_callback.h",

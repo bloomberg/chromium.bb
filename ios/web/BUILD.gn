@@ -53,6 +53,7 @@ source_set("web") {
     "browser_url_rewriter_impl.h",
     "browser_url_rewriter_impl.mm",
     "crw_navigation_item_storage.mm",
+    "features.mm",
     "interstitials/html_web_interstitial_impl.h",
     "interstitials/html_web_interstitial_impl.mm",
     "interstitials/native_web_interstitial_impl.h",

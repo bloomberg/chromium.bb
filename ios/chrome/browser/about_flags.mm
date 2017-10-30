@@ -45,6 +45,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_view_creation_util.h"
 
@@ -189,6 +190,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHistoryBatchUpdatesFilterName,
      flag_descriptions::kHistoryBatchUpdatesFilterDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kHistoryBatchUpdatesFilter)},
+    {"slim-navigation-manager", flag_descriptions::kSlimNavigationManagerName,
+     flag_descriptions::kSlimNavigationManagerDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kSlimNavigationManager)},
 };
 
 // Add all switches from experimental flags to |command_line|.
@@ -240,16 +244,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   } else if ([enableMostLikelyFaviconsFromServer isEqualToString:@"Disabled"]) {
     command_line->AppendSwitch(
         ntp_tiles::switches::kDisableNtpMostLikelyFaviconsFromServer);
-  }
-
-  // Populate command line flag for the native to WKBackForwardList based
-  // navigation manager experiment.
-  NSString* enableSlimNavigationManager =
-      [defaults stringForKey:@"EnableSlimNavigationManager"];
-  if ([enableSlimNavigationManager isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableSlimNavigationManager);
-  } else if ([enableSlimNavigationManager isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableSlimNavigationManager);
   }
 
   // Freeform commandline flags.  These are added last, so that any flags added

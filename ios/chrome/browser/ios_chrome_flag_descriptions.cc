@@ -78,6 +78,11 @@ extern const char kSafeAreaCompatibleToolbarName[] =
 extern const char kSafeAreaCompatibleToolbarDescription[] =
     "When enabled, the toolbar resizes itself when the safe area changes.";
 
+const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
+const char kSlimNavigationManagerDescription[] =
+    "When enabled, uses the experimental slim navigation manager that provides "
+    "better compatibility with HTML navigation spec.";
+
 const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
 const char kTabSwitcherPresentsBVCDescription[] =
     "When enabled, the tab switcher will present the BVC, so that when the "
