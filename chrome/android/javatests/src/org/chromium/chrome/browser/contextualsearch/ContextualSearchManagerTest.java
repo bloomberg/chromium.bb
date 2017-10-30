@@ -3219,8 +3219,8 @@ public class ContextualSearchManagerTest {
             }
         });
 
-        KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity().findViewById(R.id.find_query), KeyEvent.KEYCODE_T);
+        // Don't type anything to Find because that may cause scrolling which makes clicking in the
+        // page flaky.
 
         View findToolbar = mActivityTestRule.getActivity().findViewById(R.id.find_toolbar);
         Assert.assertTrue(findToolbar.isShown());
