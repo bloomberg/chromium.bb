@@ -263,7 +263,7 @@ bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
 
     case kHeapProfilingModeBackground:
       AllocationContextTracker::SetCaptureMode(
-          AllocationContextTracker::CaptureMode::PSEUDO_STACK);
+          AllocationContextTracker::CaptureMode::MIXED_STACK);
       break;
 
     case kHeapProfilingModePseudo:
