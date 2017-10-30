@@ -38,6 +38,8 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
   float to_x = 0;
   bool found_from_x = false;
   bool found_to_x = false;
+  float min_y = 0;
+  float max_y = 0;
 
   if (direction == TextDirection::kRtl)
     current_x = total_width;
@@ -84,6 +86,11 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
         to -= num_characters;
       }
 
+      if (found_from_x || found_to_x) {
+        min_y = std::min(min_y, result->Bounds().Y());
+        max_y = std::max(max_y, result->Bounds().MaxY());
+      }
+
       if (found_from_x && found_to_x)
         break;
       current_x += result->runs_[i]->width_;
@@ -111,8 +118,8 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
   if (!found_to_x && !found_from_x)
     from_x = to_x = 0;
   if (from_x < to_x)
-    return CharacterRange(from_x, to_x);
-  return CharacterRange(to_x, from_x);
+    return CharacterRange(from_x, to_x, -min_y, max_y);
+  return CharacterRange(to_x, from_x, -min_y, max_y);
 }
 
 CharacterRange ShapeResultBuffer::GetCharacterRange(TextDirection direction,
@@ -137,9 +144,9 @@ void ShapeResultBuffer::AddRunInfoRanges(const ShapeResult::RunInfo& run_info,
 
     // To match getCharacterRange we flip ranges to ensure start <= end.
     if (end < start)
-      ranges.push_back(CharacterRange(end, start));
+      ranges.push_back(CharacterRange(end, start, 0, 0));
     else
-      ranges.push_back(CharacterRange(start, end));
+      ranges.push_back(CharacterRange(start, end, 0, 0));
   }
 }
 

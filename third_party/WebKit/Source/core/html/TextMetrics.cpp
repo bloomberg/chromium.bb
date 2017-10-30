@@ -61,24 +61,21 @@ void TextMetrics::Update(const Font& font,
       TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion,
       direction, false);
   text_run.SetNormalizeSpace(true);
-  FloatRect text_bounds = font.SelectionRectForText(
-      text_run, FloatPoint(), font.GetFontDescription().ComputedSize(),
-      /* from */ 0, /* to */ -1);
-
+  FloatRect bbox = font.BoundingBox(text_run);
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
 
   // x direction
-  width_ = font.Width(text_run);
+  width_ = bbox.Width();
 
   float dx = 0.0f;
   if (align == kCenterTextAlign)
     dx = -width_ / 2.0f;
   else if (align == kRightTextAlign ||
            (align == kStartTextAlign && direction == TextDirection::kRtl) ||
-           (align == kEndTextAlign && direction == TextDirection::kRtl))
+           (align == kEndTextAlign && direction != TextDirection::kRtl))
     dx = -width_;
-  actual_bounding_box_left_ = -text_bounds.X() - dx;
-  actual_bounding_box_right_ = text_bounds.MaxX() + dx;
+  actual_bounding_box_left_ = -bbox.X() - dx;
+  actual_bounding_box_right_ = bbox.MaxX() + dx;
 
   // y direction
   const float ascent = font_metrics.FloatAscent();
@@ -87,8 +84,8 @@ void TextMetrics::Update(const Font& font,
 
   font_bounding_box_ascent_ = ascent - baseline_y;
   font_bounding_box_descent_ = descent + baseline_y;
-  actual_bounding_box_ascent_ = ascent - baseline_y;
-  actual_bounding_box_descent_ = descent + baseline_y;
+  actual_bounding_box_ascent_ = -bbox.Y() - baseline_y;
+  actual_bounding_box_descent_ = bbox.MaxY() + baseline_y;
 
   // it's not clear where the baseline for the em rect is.
   // We could try to render a letter that has 1em height and try to figure out.

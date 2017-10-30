@@ -8,14 +8,19 @@
 namespace blink {
 
 struct CharacterRange {
-  CharacterRange(float from, float to) : start(from), end(to) {
+  CharacterRange(float from, float to, float ascent, float descent)
+      : start(from), end(to), ascent(ascent), descent(descent) {
     DCHECK_LE(start, end);
   }
 
   float Width() const { return end - start; }
+  float Height() const { return ascent + descent; }
 
   float start;
   float end;
+
+  float ascent;
+  float descent;
 };
 
 }  // namespace blink
