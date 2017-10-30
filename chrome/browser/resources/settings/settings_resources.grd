@@ -1150,12 +1150,6 @@
         <structure name="IDR_SETTINGS_NETWORK_PROXY_SECTION_JS"
                    file="internet_page/network_proxy_section.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_SIMINFO_HTML"
-                   file="internet_page/network_siminfo.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_SIMINFO_JS"
-                   file="internet_page/network_siminfo.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_HTML"
                    file="internet_page/network_summary.html"
                    type="chrome_html" />

@@ -148,6 +148,12 @@
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROXY_INPUT_JS"
                file="cr_components/chromeos/network/network_proxy_input.js"
                type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_SIMINFO_HTML"
+               file="cr_components/chromeos/network/network_siminfo.html"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_SIMINFO_JS"
+               file="cr_components/chromeos/network/network_siminfo.js"
+               type="chrome_html" />
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_SHARED_CSS_HTML"
                file="cr_components/chromeos/network/network_shared_css.html"
                type="chrome_html" />

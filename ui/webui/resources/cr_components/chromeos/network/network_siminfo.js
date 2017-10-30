@@ -23,6 +23,8 @@ var PUK_MIN_LENGTH = 8;
 Polymer({
   is: 'network-siminfo',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The network properties associated with the element.

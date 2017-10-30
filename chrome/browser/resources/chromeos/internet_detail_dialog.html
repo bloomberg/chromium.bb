@@ -15,6 +15,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_proxy.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_shared_css.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -88,14 +89,15 @@
       </paper-button>
     </div>
 
-    <!-- Device properties (Cellular only) -->
-    <template is="dom-if" if="[[isCellular_(networkProperties)]]">
+    <!-- SIM Info (Cellular only). -->
+    <template is="dom-if" if="[[showCellularSim_(networkProperties)]]"
+        restamp>
       <div class="section single-column">
-        <network-property-list
-            hidden$="[[!hasDeviceFields_(networkProperties)]]"
-            fields="[[getDeviceFields_(networkProperties)]]"
-            property-dict="[[networkProperties]]">
-        </network-property-list>
+        <network-siminfo
+            editable on-siminfo-change="onNetworkPropertyChange_"
+            network-properties="[[networkProperties]]"
+            networking-private="[[networkingPrivate]]">
+        </network-siminfo>
       </div>
     </template>
 
