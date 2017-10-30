@@ -9080,7 +9080,9 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   TestWebGraphicsContext3D* context3d = context.get();
-  CreateHostImpl(DefaultSettings(), FakeLayerTreeFrameSink::Create3d());
+  context3d->set_support_compressed_texture_etc1(true);
+  CreateHostImpl(DefaultSettings(),
+                 FakeLayerTreeFrameSink::Create3d(std::move(context)));
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
