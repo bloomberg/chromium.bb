@@ -4422,7 +4422,6 @@ static int dimension_is_ok(int orig_dim, int resized_dim, int denom) {
   return (resized_dim * SCALE_NUMERATOR >= orig_dim * denom / 2);
 }
 
-// TODO(now): Fix?
 static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
   return dimension_is_ok(owidth, rsz->resize_width, rsz->superres_denom) &&
          (CONFIG_HORZONLY_FRAME_SUPERRES ||
