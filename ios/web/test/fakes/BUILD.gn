@@ -7,7 +7,10 @@ source_set("fakes") {
   testonly = true
 
   deps = [
-    "//ios/web:web",
+    "//base",
+    "//ios/web/navigation:core",
+    "//ios/web/public:public",
+    "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//third_party/ocmock:ocmock",
   ]
 

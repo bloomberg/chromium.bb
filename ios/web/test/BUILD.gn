@@ -57,6 +57,7 @@ source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//ios/web:web",
+    "//ios/web/navigation:core",
     "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
     "//ios/web/test/fakes",
