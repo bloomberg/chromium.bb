@@ -14,10 +14,8 @@
 
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "ui/base/work_area_watcher_observer.h"
 
 class AppControllerProfileObserver;
 @class AppShimMenuController;
@@ -32,10 +30,6 @@ class Profile;
 class QuitWithAppsController;
 class ScopedKeepAlive;
 @class ShareMenuController;
-
-namespace ui {
-class WorkAreaWatcherObserver;
-}
 
 // The application controller object, created by loading the MainMenu nib.
 // This handles things like responding to menus when there are no windows
@@ -96,9 +90,6 @@ class WorkAreaWatcherObserver;
   // If we are expecting a workspace change in response to a reopen
   // event, the time we got the event. A null time otherwise.
   base::TimeTicks reopenTime_;
-
-  // Observers that listen to the work area changes.
-  base::ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;
 
   std::unique_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
   PrefChangeRegistrar localPrefRegistrar_;
@@ -167,10 +158,6 @@ class WorkAreaWatcherObserver;
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge;
 - (HistoryMenuBridge*)historyMenuBridge;
-
-// Subscribes/unsubscribes from the work area change notification.
-- (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
-- (void)removeObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
 
 // Initializes the AppShimMenuController. This enables changing the menu bar for
 // apps.

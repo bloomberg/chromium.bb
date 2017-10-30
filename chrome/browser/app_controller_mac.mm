@@ -1535,14 +1535,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   return historyMenuBridge_.get();
 }
 
-- (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
-  workAreaChangeObservers_.AddObserver(observer);
-}
-
-- (void)removeObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
-  workAreaChangeObservers_.RemoveObserver(observer);
-}
-
 - (void)initAppShimMenuController {
   if (!appShimMenuController_)
     appShimMenuController_.reset([[AppShimMenuController alloc] init]);
@@ -1597,18 +1589,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
                      UpdateSharedCommandsForIncognitoAvailability,
                  menuState_.get(),
                  lastProfile_));
-}
-
-- (void)applicationDidChangeScreenParameters:(NSNotification*)notification {
-  // During this callback the working area is not always already updated. Defer.
-  [self performSelector:@selector(delayedScreenParametersUpdate)
-             withObject:nil
-             afterDelay:0];
-}
-
-- (void)delayedScreenParametersUpdate {
-  for (auto& observer : workAreaChangeObservers_)
-    observer.WorkAreaChanged();
 }
 
 - (BOOL)application:(NSApplication*)application
