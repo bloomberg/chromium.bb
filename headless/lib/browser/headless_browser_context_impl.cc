@@ -201,7 +201,8 @@ void HeadlessBrowserContextImpl::Close() {
 
 void HeadlessBrowserContextImpl::InitWhileIOAllowed() {
   if (!context_options_->user_data_dir().empty()) {
-    path_ = context_options_->user_data_dir();
+    path_ =
+        context_options_->user_data_dir().Append(FILE_PATH_LITERAL("Default"));
   } else {
     PathService::Get(base::DIR_EXE, &path_);
   }
