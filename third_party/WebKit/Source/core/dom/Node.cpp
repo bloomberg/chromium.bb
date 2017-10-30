@@ -1121,6 +1121,9 @@ bool Node::IsStyledElement() const {
 
 bool Node::CanParticipateInFlatTree() const {
   // TODO(hayato): Return false for pseudo elements.
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+    return !IsShadowRoot() && !IsActiveV0InsertionPoint(*this);
+  }
   return !IsShadowRoot() && !IsActiveSlotOrActiveV0InsertionPoint();
 }
 

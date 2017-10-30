@@ -66,7 +66,7 @@ AtomicString HTMLSlotElement::NormalizeSlotName(const AtomicString& name) {
   return (name.IsNull() || name.IsEmpty()) ? g_empty_atom : name;
 }
 
-const HeapVector<Member<Node>>& HTMLSlotElement::AssignedNodes() {
+const HeapVector<Member<Node>>& HTMLSlotElement::AssignedNodes() const {
   DCHECK(!NeedsDistributionRecalc());
   DCHECK(IsInShadowTree() || assigned_nodes_.IsEmpty());
   return assigned_nodes_;
@@ -133,6 +133,28 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
   Event* event = Event::CreateBubble(EventTypeNames::slotchange);
   event->SetTarget(this);
   DispatchScopedEvent(event);
+}
+
+Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
+  DCHECK(SupportsDistribution());
+  // TODO(crbug.com/776656): Assert that assigned_nodes_ is up-to-date.
+  // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
+  size_t index = assigned_nodes_.Find(&node);
+  DCHECK(index != WTF::kNotFound);
+  if (index + 1 == assigned_nodes_.size())
+    return nullptr;
+  return assigned_nodes_[index + 1].Get();
+}
+
+Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
+  DCHECK(SupportsDistribution());
+  // TODO(crbug.com/776656): Assert that assigned_nodes_ is up-to-date.
+  // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
+  size_t index = assigned_nodes_.Find(&node);
+  DCHECK(index != WTF::kNotFound);
+  if (index == 0)
+    return nullptr;
+  return assigned_nodes_[index - 1].Get();
 }
 
 Node* HTMLSlotElement::DistributedNodeNextTo(const Node& node) const {

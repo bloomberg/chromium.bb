@@ -44,10 +44,17 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLSlotElement);
 
-  const HeapVector<Member<Node>>& AssignedNodes();
+  const HeapVector<Member<Node>>& AssignedNodes() const;
   const HeapVector<Member<Node>>& GetDistributedNodes();
   const HeapVector<Member<Node>> assignedNodesForBinding(
       const AssignedNodesOptions&);
+
+  Node* FirstAssignedNode() const {
+    return assigned_nodes_.IsEmpty() ? nullptr : assigned_nodes_.front().Get();
+  }
+  Node* LastAssignedNode() const {
+    return assigned_nodes_.IsEmpty() ? nullptr : assigned_nodes_.back().Get();
+  }
 
   Node* FirstDistributedNode() const {
     DCHECK(SupportsDistribution());
@@ -59,6 +66,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return distributed_nodes_.IsEmpty() ? nullptr
                                         : distributed_nodes_.back().Get();
   }
+
+  Node* AssignedNodeNextTo(const Node&) const;
+  Node* AssignedNodePreviousTo(const Node&) const;
 
   Node* DistributedNodeNextTo(const Node&) const;
   Node* DistributedNodePreviousTo(const Node&) const;
