@@ -9,9 +9,9 @@ After setting suggestedValue:
 |   <shadow:root>
 |     <div>
 |       id="placeholder"
-|       pseudo="-webkit-input-suggested"
+|       pseudo="-internal-input-suggested"
 |       style="display: none !important;"
-|       shadow:pseudoId="-webkit-input-suggested"
+|       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
 | "input.value: initial value"
