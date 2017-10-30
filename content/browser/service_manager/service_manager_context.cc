@@ -101,7 +101,7 @@ void StartServiceInUtilityProcess(
   UtilityProcessHostImpl* process_host =
       new UtilityProcessHostImpl(nullptr, nullptr);
 #if defined(OS_WIN)
-  if (sandbox_type == service_manager::SANDBOX_TYPE_PPAPI)
+  if (sandbox_type == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
     process_host->AddFilter(new DWriteFontProxyMessageFilter());
 #endif
   process_host->SetName(process_name);
