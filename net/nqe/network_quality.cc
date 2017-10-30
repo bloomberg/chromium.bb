@@ -13,7 +13,7 @@ base::TimeDelta InvalidRTT() {
 }
 
 NetworkQuality::NetworkQuality()
-    : NetworkQuality(InvalidRTT(), InvalidRTT(), kInvalidThroughput) {}
+    : NetworkQuality(InvalidRTT(), InvalidRTT(), INVALID_RTT_THROUGHPUT) {}
 
 NetworkQuality::NetworkQuality(const base::TimeDelta& http_rtt,
                                const base::TimeDelta& transport_rtt,
@@ -21,7 +21,7 @@ NetworkQuality::NetworkQuality(const base::TimeDelta& http_rtt,
     : http_rtt_(http_rtt),
       transport_rtt_(transport_rtt),
       downstream_throughput_kbps_(downstream_throughput_kbps) {
-  DCHECK_GE(downstream_throughput_kbps_, kInvalidThroughput);
+  DCHECK_GE(downstream_throughput_kbps_, INVALID_RTT_THROUGHPUT);
 }
 
 NetworkQuality::NetworkQuality(const NetworkQuality& other)
@@ -50,8 +50,8 @@ bool NetworkQuality::IsFaster(const NetworkQuality& other) const {
          (transport_rtt() == InvalidRTT() ||
           other.transport_rtt() == InvalidRTT() ||
           transport_rtt() <= other.transport_rtt()) &&
-         (downstream_throughput_kbps() == kInvalidThroughput ||
-          other.downstream_throughput_kbps() == kInvalidThroughput ||
+         (downstream_throughput_kbps() == INVALID_RTT_THROUGHPUT ||
+          other.downstream_throughput_kbps() == INVALID_RTT_THROUGHPUT ||
           downstream_throughput_kbps() >= other.downstream_throughput_kbps());
 }
 

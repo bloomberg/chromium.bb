@@ -200,7 +200,7 @@ interface Renderer {
   // The downstream throughput is computed in kilobits per second. If an
   // estimate of the HTTP or transport RTT is unavailable, it will be set to
   // net::nqe::internal::InvalidRTT(). If the throughput estimate is
-  // unavailable, it will be set to net::nqe::internal::kInvalidThroughput.
+  // unavailable, it will be set to net::nqe::internal::INVALID_RTT_THROUGHPUT.
   OnNetworkQualityChanged(EffectiveConnectionType effective_connection_type,
                           mojo.common.mojom.TimeDelta http_rtt,
                           mojo.common.mojom.TimeDelta transport_rtt,

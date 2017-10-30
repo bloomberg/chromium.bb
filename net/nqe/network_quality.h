@@ -30,13 +30,6 @@ enum RttThroughputValues {
 // |INVALID_RTT_THROUGHPUT|.
 NET_EXPORT_PRIVATE base::TimeDelta InvalidRTT();
 
-// Throughput is set to |kInvalidThroughput| if a valid value is
-// unavailable. Readers should discard throughput value if it is set to
-// |kInvalidThroughput|.
-// TODO(tbansal): Remove this variable, and replace all calls by
-// |INVALID_RTT_THROUGHPUT|.
-const int32_t kInvalidThroughput = INVALID_RTT_THROUGHPUT;
-
 // NetworkQuality is used to cache the quality of a network connection.
 class NET_EXPORT_PRIVATE NetworkQuality {
  public:

@@ -138,7 +138,7 @@ void ObtainDefaultObservations(
     DCHECK_EQ(nqe::internal::InvalidRTT(), default_observations[i].http_rtt());
     DCHECK_EQ(nqe::internal::InvalidRTT(),
               default_observations[i].transport_rtt());
-    DCHECK_EQ(nqe::internal::kInvalidThroughput,
+    DCHECK_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
               default_observations[i].downstream_throughput_kbps());
   }
 
@@ -242,7 +242,7 @@ void ObtainTypicalNetworkQualities(
               typical_network_quality[i].http_rtt());
     DCHECK_EQ(nqe::internal::InvalidRTT(),
               typical_network_quality[i].transport_rtt());
-    DCHECK_EQ(nqe::internal::kInvalidThroughput,
+    DCHECK_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
               typical_network_quality[i].downstream_throughput_kbps());
   }
 
@@ -295,21 +295,21 @@ void ObtainConnectionThresholds(
           // Set to the 66th percentile of 2G RTT observations on Android.
           base::TimeDelta::FromMilliseconds(2010),
           base::TimeDelta::FromMilliseconds(1870),
-          nqe::internal::kInvalidThroughput);
+          nqe::internal::INVALID_RTT_THROUGHPUT);
 
   default_effective_connection_type_thresholds[EFFECTIVE_CONNECTION_TYPE_2G] =
       nqe::internal::NetworkQuality(
           // Set to the 50th percentile of RTT observations on Android.
           base::TimeDelta::FromMilliseconds(1420),
           base::TimeDelta::FromMilliseconds(1280),
-          nqe::internal::kInvalidThroughput);
+          nqe::internal::INVALID_RTT_THROUGHPUT);
 
   default_effective_connection_type_thresholds[EFFECTIVE_CONNECTION_TYPE_3G] =
       nqe::internal::NetworkQuality(
           // Set to the 50th percentile of 3G RTT observations on Android.
           base::TimeDelta::FromMilliseconds(273),
           base::TimeDelta::FromMilliseconds(204),
-          nqe::internal::kInvalidThroughput);
+          nqe::internal::INVALID_RTT_THROUGHPUT);
 
   // Connection threshold should not be set for 4G effective connection type
   // since it is the fastest.
@@ -325,7 +325,7 @@ void ObtainConnectionThresholds(
     DCHECK_EQ(nqe::internal::InvalidRTT(), connection_thresholds[i].http_rtt());
     DCHECK_EQ(nqe::internal::InvalidRTT(),
               connection_thresholds[i].transport_rtt());
-    DCHECK_EQ(nqe::internal::kInvalidThroughput,
+    DCHECK_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
               connection_thresholds[i].downstream_throughput_kbps());
     if (effective_connection_type == EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
       continue;

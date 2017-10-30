@@ -95,7 +95,7 @@ class TestRTTAndThroughputEstimatesObserver
   TestRTTAndThroughputEstimatesObserver()
       : http_rtt_(nqe::internal::InvalidRTT()),
         transport_rtt_(nqe::internal::InvalidRTT()),
-        downstream_throughput_kbps_(nqe::internal::kInvalidThroughput),
+        downstream_throughput_kbps_(nqe::internal::INVALID_RTT_THROUGHPUT),
         notifications_received_(0) {}
 
   // RTTAndThroughputEstimatesObserver implementation:
@@ -606,7 +606,7 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
             estimator.GetRTTEstimateInternal(
                 disallowed_observation_sources, base::TimeTicks(),
                 base::Optional<NetworkQualityEstimator::Statistic>(), 100));
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             estimator.GetDownlinkThroughputKbpsEstimateInternal(
                 base::TimeTicks(), 100));
 
@@ -1898,7 +1898,7 @@ TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
 
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer.http_rtt());
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer.transport_rtt());
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             observer.downstream_throughput_kbps());
   int notifications_received = observer.notifications_received();
   EXPECT_EQ(0, notifications_received);
@@ -1955,12 +1955,12 @@ TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
   estimator.AddRTTAndThroughputEstimatesObserver(&observer_2);
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer_2.http_rtt());
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer_2.transport_rtt());
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             observer_2.downstream_throughput_kbps());
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(nqe::internal::InvalidRTT(), observer_2.http_rtt());
   EXPECT_NE(nqe::internal::InvalidRTT(), observer_2.transport_rtt());
-  EXPECT_NE(nqe::internal::kInvalidThroughput,
+  EXPECT_NE(nqe::internal::INVALID_RTT_THROUGHPUT,
             observer_2.downstream_throughput_kbps());
 
   // |observer_3| should not be notified because it is unregisters before the
@@ -1969,13 +1969,13 @@ TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
   estimator.AddRTTAndThroughputEstimatesObserver(&observer_3);
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.http_rtt());
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.transport_rtt());
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             observer_3.downstream_throughput_kbps());
   estimator.RemoveRTTAndThroughputEstimatesObserver(&observer_3);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.http_rtt());
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.transport_rtt());
-  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             observer_3.downstream_throughput_kbps());
 }
 
@@ -2635,7 +2635,7 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
           // unavailable.
           false, 0.3, 0.4, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
           base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits,
-          nqe::internal::kInvalidThroughput, 3000 >> kTrimBits,
+          nqe::internal::INVALID_RTT_THROUGHPUT, 3000 >> kTrimBits,
       },
       {
           // Verify that the metric is recorded if the logging probability is
@@ -2716,7 +2716,8 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
           "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
       continue;
     }
-    if (test.downstream_throughput_kbps == nqe::internal::kInvalidThroughput) {
+    if (test.downstream_throughput_kbps ==
+        nqe::internal::INVALID_RTT_THROUGHPUT) {
       histogram_tester.ExpectTotalCount(
           "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
       continue;
@@ -2898,7 +2899,7 @@ TEST(NetworkQualityEstimatorTest,
                   rtt_throughput_observer.http_rtt());
         EXPECT_EQ(nqe::internal::InvalidRTT(),
                   rtt_throughput_observer.transport_rtt());
-        EXPECT_EQ(nqe::internal::kInvalidThroughput,
+        EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
                   rtt_throughput_observer.downstream_throughput_kbps());
       } else {
         EXPECT_EQ(estimator.params_->TypicalNetworkQuality(ect_type).http_rtt(),
