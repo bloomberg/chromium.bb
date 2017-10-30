@@ -18,21 +18,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [378, 23, 394, 544],
+          "rect": [409, 23, 363, 544],
           "reason": "geometry"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "selection"
-    },
     {
       "object": "LayoutText #text",
       "reason": "geometry"

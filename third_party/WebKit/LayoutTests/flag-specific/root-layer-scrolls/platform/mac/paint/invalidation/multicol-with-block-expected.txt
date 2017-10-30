@@ -17,13 +17,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [328, 8, 240, 21],
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [488, 8, 150, 20],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [488, 8, 150, 20],
+          "object": "LayoutText #text",
+          "rect": [488, 7, 80, 22],
           "reason": "style change"
         }
       ]
