@@ -29,8 +29,8 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -51,7 +51,7 @@ import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -228,6 +228,8 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    // https://crbug.com/779518
+    @DisableIf.Device(type = {UiDisableIf.TABLET, UiDisableIf.LARGETABLET})
     public void testFolderNavigation() throws InterruptedException, ExecutionException {
         BookmarkId testFolder = addFolder(TEST_FOLDER_TITLE);
         openBookmarkManager();
@@ -358,7 +360,8 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // https://crbug.com/779518
+    @DisableIf.Device(type = {UiDisableIf.TABLET, UiDisableIf.LARGETABLET})
     public void testCloseBookmarksWhileStillLoading() throws Exception {
         BookmarkManager.preventLoadingForTesting(true);
 
@@ -385,6 +388,8 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    // https://crbug.com/779518
+    @DisableIf.Device(type = {UiDisableIf.TABLET, UiDisableIf.LARGETABLET})
     public void testEditHiddenWhileStillLoading() throws Exception {
         BookmarkManager.preventLoadingForTesting(true);
 
@@ -398,22 +403,22 @@ public class BookmarkTest {
     }
 
     /**
-     * Asserts the number of bookmark items being shown, taking large device deviders into account.
+     * Asserts the number of bookmark items being shown, taking large device dividers into account.
      *
-     * @param errorMessage              Error message to display in case the assert fails.
-     * @param exepectedOnRegularDevice  Expected count of items on small tablets.
-     * @param adapter                   Adapter to retrieve the bookmark item count from.
-     * @param delegate                  BookmarkDelegate to check the bookmark UI state.
+     * @param errorMessage Error message to display in case the assert fails.
+     * @param expectedOnRegularDevice Expected count of items on small tablets.
+     * @param adapter Adapter to retrieve the bookmark item count from.
+     * @param delegate BookmarkDelegate to check the bookmark UI state.
      */
-    private void assertBookmarkItems(final String errorMessage, final int exepectedOnRegularDevice,
-            final Adapter adapter, final BookmarkDelegate delegate) {
+    private void assertBookmarkItems(final String errorMessage, final int expectedOnRegularDevice,
+            final Adapter<?> adapter, final BookmarkDelegate delegate) {
         // TODO(twellington): Remove after bookmarks redesign is complete.
         // The +1 for large devices stems from the divider being added to the state folder for now,
         // which will offset all counts by one.
         final int expectedCount = DeviceFormFactor.isLargeTablet(mActivityTestRule.getActivity())
                         && BookmarkUIState.STATE_FOLDER == delegate.getCurrentState()
-                ? exepectedOnRegularDevice + 1
-                : exepectedOnRegularDevice;
+                ? expectedOnRegularDevice + 1
+                : expectedOnRegularDevice;
         Assert.assertEquals(errorMessage, expectedCount, adapter.getItemCount());
     }
 
