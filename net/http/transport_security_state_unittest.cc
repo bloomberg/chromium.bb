@@ -3298,13 +3298,7 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("foo.crate.io"));
 }
 
-// http://crbug.com/624946
-#if defined(OS_IOS)
-#define MAYBE_PreloadedPins DISABLED_PreloadedPins
-#else
-#define MAYBE_PreloadedPins PreloadedPins
-#endif
-TEST_F(TransportSecurityStateStaticTest, MAYBE_PreloadedPins) {
+TEST_F(TransportSecurityStateStaticTest, PreloadedPins) {
   TransportSecurityState state;
   EnableStaticPins(&state);
   TransportSecurityState::STSState sts_state;
@@ -3434,13 +3428,7 @@ TEST_F(TransportSecurityStateStaticTest, BuiltinCertPins) {
   EXPECT_TRUE(HasStaticPublicKeyPins("si0.twimg.com"));
 }
 
-// http://crbug.com/624946
-#if defined(OS_IOS)
-#define MAYBE_OptionalHSTSCertPins DISABLED_OptionalHSTSCertPins
-#else
-#define MAYBE_OptionalHSTSCertPins OptionalHSTSCertPins
-#endif
-TEST_F(TransportSecurityStateStaticTest, MAYBE_OptionalHSTSCertPins) {
+TEST_F(TransportSecurityStateStaticTest, OptionalHSTSCertPins) {
   TransportSecurityState state;
   EnableStaticPins(&state);
 
