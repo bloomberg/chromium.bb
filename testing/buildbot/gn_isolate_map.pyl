@@ -236,6 +236,10 @@
     "label": "//chromecast/graphics:cast_graphics_unittests",
     "type": "console_test_launcher",
   },
+  "cast_junit_test_lists": {
+    "label": "//chromecast:cast_junit_test_lists",
+    "type": "additional_compile_target",
+  },
   "cast_media_unittests": {
     "label": "//chromecast/media:cast_media_unittests",
     "type": "console_test_launcher",
@@ -255,6 +259,10 @@
   "cast_shell_unittests": {
     "label": "//chromecast:cast_shell_unittests",
     "type": "console_test_launcher",
+  },
+  "cast_test_lists": {
+    "label": "//chromecast:cast_test_lists",
+    "type": "additional_compile_target",
   },
   "cast_unittests": {
     "label": "//media/cast:cast_unittests",
