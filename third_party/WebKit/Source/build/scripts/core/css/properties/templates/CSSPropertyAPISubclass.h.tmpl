@@ -65,11 +65,9 @@ class ComputedStyle;
 class {{api_classname}} : public CSSPropertyAPI {
  public:
   constexpr {{api_classname}}(CSSPropertyID id) : CSSPropertyAPI(id) {}
-
   {% for api_method in property.api_methods %}
   {{api_method.return_type}} {{api_method.name}}{{api_method.parameters}} const override;
   {% endfor %}
-
   {% if property.interpolable %}
   bool IsInterpolable() const override { return true; }
   {% endif %}
@@ -83,7 +81,6 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% if property.is_descriptor %}
   bool IsDescriptor() const override { return true; }
   {% endif %}
-
   {% if property.should_declare_application_functions %}
     {% if not property.api_custom_apply_functions_initial %}
   void ApplyInitial(StyleResolverState& state) const override {
@@ -100,7 +97,6 @@ class {{api_classname}} : public CSSPropertyAPI {
   }
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
-
     {% if not property.api_custom_apply_functions_inherit %}
   void ApplyInherit(StyleResolverState& state) const override {
       {% if property.svg %}
@@ -116,7 +112,6 @@ class {{api_classname}} : public CSSPropertyAPI {
   }
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
-
     {% if not property.api_custom_apply_functions_value %}
   void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
     {{convert_and_set_value(property)}}
@@ -143,7 +138,6 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% if not property.affected_by_all %}
   bool IsAffectedByAll() const override { return false; }
   {% endif %}
-
   {% if property.direction_aware_options %}
     {% if property.direction_aware_options.logical_side == "width" %}
   CSSPropertyID ResolveDirectionAwareProperty(
