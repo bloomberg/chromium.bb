@@ -532,6 +532,7 @@ post_process_cmdline() {
       soft_enable cfl
       soft_enable deblock_13tap
       soft_enable frame_marker
+      soft_enable kf_ctx
     fi
 
     # Enable low-bitdepth pixel pipeline by default
