@@ -782,15 +782,14 @@ def main():
   logging.warning('Building .build_config files...')
   _RunNinja(output_dir, [e.NinjaBuildConfigTarget() for e in main_entries])
 
-  # There are many unused libraries, so restrict to those that are actually used
-  # when using --all.
-  if args.all:
-    main_entries = [e for e in main_entries if (
-        e.GetType() == 'android_apk' or
-        e.GnTarget().endswith('_test_apk__apk') or
-        e.GnTarget().endswith('_junit_tests__java_binary'))]
-
   if args.split_projects:
+    # There are many unused libraries, so restrict to those that are actually
+    # used when using --all with individual project entries.
+    if args.all:
+      main_entries = [e for e in main_entries if (
+          e.GetType() == 'android_apk' or
+          e.GnTarget().endswith('_test_apk__apk') or
+          e.GnTarget().endswith('_junit_tests__java_binary'))]
     main_entries = _FindAllProjectEntries(main_entries)
     logging.info('Found %d dependent build_config targets.', len(main_entries))
 
