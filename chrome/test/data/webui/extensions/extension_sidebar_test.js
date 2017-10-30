@@ -21,7 +21,7 @@ cr.define('extension_sidebar_tests', function() {
     });
 
     test(assert(TestNames.SetSelected), function() {
-      const selector = 'paper-item.iron-selected';
+      const selector = '.section-item.iron-selected';
       expectFalse(!!sidebar.$$(selector));
 
       window.history.replaceState(undefined, '', '/shortcuts');
