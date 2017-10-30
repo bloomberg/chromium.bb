@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
-Tests that either screen taps are registered in VR when viewer is Cardboard
-or that controller clicks are registered as screen taps in VR when viewer is
-Daydream View.
+Tests that screen taps when using Cardboard are translated into controller
+input, and that Daydream controller input is registered when using Daydream
+View.
 -->
 <html>
   <head>
@@ -19,14 +19,16 @@ Daydream View.
           () => {finishJavaScriptStep();}, false);
       var pressed = false;
       var index = -1;
+      var canStartTest = false;
       window.addEventListener("gamepadconnected", function(e) {
         t.step( () => {
           assert_equals(index, -1, "Should only receive gamepadconnected once");
-          index = e.gamepad.index;
         });
+        index = e.gamepad.index;
       });
       onAnimationFrameCallback = function() {
         if (index == -1) return;
+        if (!canStartTest) return;
         var gp = navigator.getGamepads()[index];
         if (!pressed && gp.buttons[0].pressed == true) {
           pressed = true;

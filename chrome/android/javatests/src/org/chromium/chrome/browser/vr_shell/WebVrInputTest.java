@@ -128,6 +128,29 @@ public class WebVrInputTest {
         // Wait to enter VR
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
+        // The Gamepad API can flakily fail to detect the gamepad from a single button press, so
+        // spam it with button presses
+        boolean controllerConnected = false;
+        for (int i = 0; i < 10; i++) {
+            // The Gamepad API doesn't like detecting pressReleaseTouchpadButton() as it's too fast,
+            // so manually send the up and down events with a delay
+            controller.sendClickButtonToggleEvent();
+            SystemClock.sleep(100);
+            controller.sendClickButtonToggleEvent();
+            SystemClock.sleep(100);
+            if (VrTestFramework
+                            .runJavaScriptOrFail("index != -1", POLL_TIMEOUT_SHORT_MS,
+                                    mVrTestFramework.getFirstTabWebContents())
+                            .equals("true")) {
+                controllerConnected = true;
+                break;
+            }
+        }
+        Assert.assertTrue("Gamepad API detected controller", controllerConnected);
+        // Have a separate start condition so that the above presses/releases don't get
+        // accidentally detected during the actual test
+        VrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS,
+                mVrTestFramework.getFirstTabWebContents());
         // Send a controller click and wait for JavaScript to receive it.
         controller.sendClickButtonToggleEvent();
         VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
@@ -148,6 +171,10 @@ public class WebVrInputTest {
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_gamepad_button"), PAGE_LOAD_TIMEOUT_S);
+        // This boolean is used by testControllerClicksRegisteredOnDaydream to prevent some
+        // flakiness, but is unnecessary here, so set immediately
+        VrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS,
+                mVrTestFramework.getFirstTabWebContents());
         // Wait to enter VR
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
