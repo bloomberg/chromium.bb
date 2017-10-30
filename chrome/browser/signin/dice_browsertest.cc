@@ -378,6 +378,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     // stable state.
     reconcilor->AbortReconcile();
     reconcilor->AddObserver(this);
+
+    ASSERT_EQ(
+        account_consistency_method_ == signin::AccountConsistencyMethod::kDice,
+        signin::IsDiceEnabledForProfile(browser()->profile()->GetPrefs()));
   }
 
   void TearDownOnMainThread() override {
@@ -517,6 +521,12 @@ class DiceFixAuthErrorsBrowserTest : public DiceBrowserTestBase {
  public:
   DiceFixAuthErrorsBrowserTest()
       : DiceBrowserTestBase(AccountConsistencyMethod::kDiceFixAuthErrors) {}
+};
+
+class DiceMigrationBrowserTest : public DiceBrowserTestBase {
+ public:
+  DiceMigrationBrowserTest()
+      : DiceBrowserTestBase(AccountConsistencyMethod::kDiceMigration) {}
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
@@ -771,4 +781,50 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, Signout) {
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(0);
+}
+
+// Checks that signin on Gaia triggers the fetch for a refresh token.
+IN_PROC_BROWSER_TEST_F(DiceMigrationBrowserTest, Signin) {
+  EXPECT_EQ(0, reconcilor_started_count_);
+
+  // Navigate to Gaia and sign in.
+  NavigateToURL(kSigninURL);
+
+  // Check that the Dice request header was sent, with no signout confirmation.
+  std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+  EXPECT_EQ(
+      base::StringPrintf("version=%s,client_id=%s,signin_mode=all_accounts,"
+                         "signout_mode=no_confirmation",
+                         signin::kDiceProtocolVersion, client_id.c_str()),
+      dice_request_header_);
+
+  // Check that the token was requested and added to the token service.
+  WaitForTokenReceived();
+  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  // Sync should not be enabled.
+  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
+
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  WaitForReconcilorUnblockedCount(1);
+  EXPECT_EQ(1, reconcilor_started_count_);
+}
+
+IN_PROC_BROWSER_TEST_F(DiceMigrationBrowserTest, Signout) {
+  // Start from a signed-in state.
+  SetupSignedInAccounts();
+
+  // Signout from main account on the web.
+  SignOutWithDice(kAllAccounts);
+
+  // Check that the user is still signed in Chrome on the main account, the
+  // token for the secondary token has been deleted.
+  EXPECT_EQ(GetMainAccountID(),
+            GetSigninManager()->GetAuthenticatedAccountId());
+  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_FALSE(
+      GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
+  EXPECT_EQ(1, token_revoked_notification_count_);
+  EXPECT_EQ(1, token_revoked_count_);
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  WaitForReconcilorUnblockedCount(1);
 }
