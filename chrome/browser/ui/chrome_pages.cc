@@ -395,7 +395,7 @@ void ShowBrowserSignin(Browser* browser,
   } else {
     NavigateToSingletonTab(
         browser,
-        signin::GetPromoURL(
+        signin::GetPromoURLForTab(
             access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
             false));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);

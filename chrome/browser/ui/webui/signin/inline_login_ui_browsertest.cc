@@ -114,7 +114,7 @@ ACTION(ReturnNewWebUI) {
 }
 
 GURL GetSigninPromoURL() {
-  return signin::GetPromoURL(
+  return signin::GetPromoURLForTab(
       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
       signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false);
 }

@@ -405,6 +405,12 @@ const base::Feature kPushMessagingBackgroundMode{
 const base::Feature kPwaMinimalUi{"PwaMinimalUi",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint{
+    "RemoveUsageOfDeprecatedGaiaSigninEndpoint",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_CHROMEOS)
 // Runtime flag that indicates whether this leak detector should be enabled in
 // the current instance of Chrome.

@@ -691,6 +691,9 @@ extern const char kQuicDescription[];
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 
+extern const char kRemoveUsageOfDeprecatedGaiaSigninEndpointName[];
+extern const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[];
+
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 

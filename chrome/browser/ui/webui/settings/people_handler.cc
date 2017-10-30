@@ -297,7 +297,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
           signin::ManageAccountsParams(), access_point, false);
     } else {
-      url = signin::GetReauthURL(
+      url = signin::GetReauthURLForTab(
           access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
           browser->profile(), error_controller->error_account_id());
     }
@@ -307,7 +307,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
           signin::ManageAccountsParams(), access_point, false);
     } else {
-      url = signin::GetPromoURL(
+      url = signin::GetPromoURLForTab(
           access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
           true);
     }
