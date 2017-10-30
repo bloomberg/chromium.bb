@@ -94,18 +94,6 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
   window_list->push_back(*it);
 }
 
-void Unminimize(aura::Window* window) {
-  window->SetProperty(
-      aura::client::kShowStateKey,
-      window->GetProperty(aura::client::kPreMinimizedShowStateKey));
-  window->ClearProperty(aura::client::kPreMinimizedShowStateKey);
-}
-
-bool IsMinimized(aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-         ui::SHOW_STATE_MINIMIZED;
-}
-
 }  // namespace
 
 UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
@@ -143,10 +131,8 @@ bool UserSwitchAnimatorChromeOS::CoversScreen(aura::Window* window) {
   // Full screen covers the screen naturally. Since a normal window can have the
   // same size as the work area, we only compare the bounds against the work
   // area.
-  if (window->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_FULLSCREEN) {
+  if (wm::WindowStateIs(window, ui::SHOW_STATE_FULLSCREEN))
     return true;
-  }
   gfx::Rect bounds = window->GetBoundsInScreen();
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
@@ -268,9 +254,9 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
               owner_->window_to_entry().find(window);
           DCHECK(itr != owner_->window_to_entry().end());
           if (show_for_account_id != itr->second->owner() &&
-              IsMinimized(window)) {
+              wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED)) {
             owner_->ShowWindowForUserIntern(window, itr->second->owner());
-            Unminimize(window);
+            wm::Unminimize(window);
             continue;
           }
 
@@ -324,7 +310,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&
-            !IsMinimized(window)) {
+            !wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED)) {
           // Several unit tests come here without an activation client.
           wm::ActivationClient* client =
               wm::GetActivationClient(window->GetRootWindow());
