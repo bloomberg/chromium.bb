@@ -2212,6 +2212,10 @@ const char kEnableDesktopIosPromotionsDescription[] =
     "Enable Desktop to iOS promotions, and allow users to see them if they are "
     "eligible.";
 
+const char kExperimentalTabControllerName[] = "Experimental tab controller.";
+const char kExperimentalTabControllerDescription[] =
+    "Enable controller for highly experimental tab policies.";
+
 const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =
     "Use GDI to print text as simply text";
