@@ -2421,10 +2421,7 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
 }
 
 void set_compound_tools(AV1_COMMON *cm) {
-  (void)cm;
-#if CONFIG_INTERINTRA
   cm->allow_interintra_compound = 1;
-#endif  // CONFIG_INTERINTRA
   cm->allow_masked_compound = 1;
 }
 

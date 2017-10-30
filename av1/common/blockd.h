@@ -334,10 +334,8 @@ typedef struct MB_MODE_INFO {
   int8_t angle_delta[2];
 #endif  // CONFIG_EXT_INTRA
 
-#if CONFIG_INTERINTRA
   // interintra members
   INTERINTRA_MODE interintra_mode;
-#endif
   // TODO(debargha): Consolidate these flags
   int use_wedge_interintra;
   int interintra_wedge_index;
@@ -1288,30 +1286,15 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int loff);
 
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
-#if CONFIG_INTERINTRA
   return (bsize >= BLOCK_8X8) && (bsize <= BLOCK_32X32);
-#else
-  (void)bsize;
-  return 0;
-#endif  // CONFIG_INTERINTRA
 }
 
 static INLINE int is_interintra_allowed_mode(const PREDICTION_MODE mode) {
-#if CONFIG_INTERINTRA
   return (mode >= NEARESTMV) && (mode <= NEWMV);
-#else
-  (void)mode;
-  return 0;
-#endif  // CONFIG_INTERINTRA
 }
 
 static INLINE int is_interintra_allowed_ref(const MV_REFERENCE_FRAME rf[2]) {
-#if CONFIG_INTERINTRA
   return (rf[0] > INTRA_FRAME) && (rf[1] <= INTRA_FRAME);
-#else
-  (void)rf;
-  return 0;
-#endif  // CONFIG_INTERINTRA
 }
 
 static INLINE int is_interintra_allowed(const MB_MODE_INFO *mbmi) {

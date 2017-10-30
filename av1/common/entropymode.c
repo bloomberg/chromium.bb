@@ -753,7 +753,6 @@ static const aom_cdf_prob
 #endif
     };
 
-#if CONFIG_INTERINTRA
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   128, 226, 244, 254,
 };
@@ -829,8 +828,6 @@ static const aom_cdf_prob
 #endif  // CONFIG_EXT_PARTITION
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
-
-#endif  // CONFIG_INTERINTRA
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 #ifdef TWO_MODE
@@ -1112,13 +1109,11 @@ static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
 #endif
 
 /* clang-format off */
-#if CONFIG_INTERINTRA
 const aom_tree_index av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)] = {
   -II_DC_PRED, 2,        /* 0 = II_DC_NODE     */
   -II_SMOOTH_PRED, 4,    /* 1 = II_SMOOTH_PRED */
   -II_V_PRED, -II_H_PRED /* 2 = II_V_NODE      */
 };
-#endif  // CONFIG_INTERINTRA
 
 const aom_tree_index av1_inter_compound_mode_tree
     [TREE_SIZE(INTER_COMPOUND_MODES)] = {
@@ -5966,7 +5961,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
-#if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
 #if CONFIG_NEW_MULTISYMBOL
@@ -5975,7 +5969,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
-#endif  // CONFIG_INTERINTRA
   av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
   av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
 #if CONFIG_NEW_MULTISYMBOL
@@ -6126,7 +6119,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
                          counts->inter_singleref_comp_mode[i],
                          fc->inter_singleref_comp_mode_probs[i]);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_INTERINTRA
   if (cm->allow_interintra_compound) {
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
       if (is_interintra_allowed_bsize_group(i))
@@ -6144,7 +6136,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
             pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
     }
   }
-#endif  // CONFIG_INTERINTRA
 
   if (cm->allow_masked_compound) {
     for (i = 0; i < BLOCK_SIZES_ALL; ++i) {

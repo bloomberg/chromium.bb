@@ -278,9 +278,7 @@ typedef struct AV1Common {
 #endif
 
   int allow_screen_content_tools;
-#if CONFIG_INTERINTRA
   int allow_interintra_compound;
-#endif  // CONFIG_INTERINTRA
   int allow_masked_compound;
 
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING

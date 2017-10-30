@@ -521,19 +521,22 @@ const uint8_t *av1_get_compound_type_mask_inverse(
 
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type);
-#if CONFIG_INTERINTRA
+
 void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      uint8_t *ypred, uint8_t *upred,
                                      uint8_t *vpred, int ystride, int ustride,
                                      int vstride, BUFFER_SET *ctx,
                                      BLOCK_SIZE bsize);
+
 void av1_build_interintra_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          uint8_t *ypred, int ystride,
                                          BUFFER_SET *ctx, BLOCK_SIZE bsize);
+
 void av1_build_interintra_predictors_sbc(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          uint8_t *upred, int ustride,
                                          BUFFER_SET *ctx, int plane,
                                          BLOCK_SIZE bsize);
+
 void av1_build_interintra_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           uint8_t *upred, uint8_t *vpred,
                                           int ustride, int vstride,
@@ -545,7 +548,7 @@ void av1_build_intra_predictors_for_interintra(
 void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
                             const uint8_t *inter_pred, int inter_stride,
                             const uint8_t *intra_pred, int intra_stride);
-#endif  // CONFIG_INTERINTRA
+
 // Encoder only
 void av1_build_inter_predictors_for_planes_single_buf(
     MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to, int mi_row,

@@ -459,7 +459,7 @@ int main(int argc, const char **argv) {
                      "default_inter_singleref_comp_mode_cdf[INTER_MODE_"
                      "CONTEXTS][CDF_SIZE(INTER_SINGLEREF_COMP_MODES)]");
 #endif
-#if CONFIG_INTERINTRA
+
   /* Interintra */
   cts_each_dim[0] = BLOCK_SIZE_GROUPS;
   cts_each_dim[1] = 2;
@@ -491,7 +491,7 @@ int main(int argc, const char **argv) {
       &fc.wedge_interintra[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
       "default_wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)]");
-#endif
+
   /* Compound type */
   cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = COMPOUND_TYPES;

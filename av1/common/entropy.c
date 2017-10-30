@@ -2365,13 +2365,11 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   AVERAGE_TILE_CDFS(inter_singleref_comp_mode_cdf)
 #endif
 
-#if CONFIG_INTERINTRA
 #if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(interintra_cdf)
   AVERAGE_TILE_CDFS(wedge_interintra_cdf)
 #endif
   AVERAGE_TILE_CDFS(interintra_mode_cdf)
-#endif
 
   /* NB: kf_y_cdf is discarded after use, so no need
      for backwards update */

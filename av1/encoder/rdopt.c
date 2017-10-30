@@ -7637,7 +7637,6 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   return best_rd;
 }
 
-#if CONFIG_INTERINTRA
 static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
                                      const MACROBLOCK *const x,
                                      const BLOCK_SIZE bsize,
@@ -7658,7 +7657,6 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   mbmi->interintra_wedge_index = wedge_index;
   return rd;
 }
-#endif  // CONFIG_INTERINTRA
 
 static int64_t pick_interinter_mask(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     const BLOCK_SIZE bsize,
@@ -8417,10 +8415,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int pred_exists = 1;
   const int bw = block_size_wide[bsize];
   int_mv single_newmv[TOTAL_REFS_PER_FRAME];
-#if CONFIG_INTERINTRA
   const int *const interintra_mode_cost =
       x->interintra_mode_cost[size_group_lookup[bsize]];
-#endif  // CONFIG_INTERINTRA
   const int is_comp_interintra_pred = (mbmi->ref_frame[1] == INTRA_FRAME);
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 #if CONFIG_HIGHBITDEPTH
@@ -8446,20 +8442,16 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->ncobmc_mode[1] = NO_OVERLAP;
 #endif
 
-#if CONFIG_INTERINTRA
   int compmode_interintra_cost = 0;
   mbmi->use_wedge_interintra = 0;
-#endif
   int compmode_interinter_cost = 0;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
 #if CONFIG_LGT_FROM_PRED
   mbmi->use_lgt = 0;
 #endif
 
-#if CONFIG_INTERINTRA
   if (!cm->allow_interintra_compound && is_comp_interintra_pred)
     return INT64_MAX;
-#endif  // CONFIG_INTERINTRA
 
   // is_comp_interintra_pred implies !is_comp_pred
   assert(!is_comp_interintra_pred || (!is_comp_pred));
@@ -8833,7 +8825,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     compmode_interinter_cost = best_compmode_interinter_cost;
   }
 
-#if CONFIG_INTERINTRA
   if (is_comp_interintra_pred) {
     INTERINTRA_MODE best_interintra_mode = II_DC_PRED;
     int64_t best_interintra_rd = INT64_MAX;
@@ -8976,7 +8967,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   } else if (is_interintra_allowed(mbmi)) {
     compmode_interintra_cost = x->interintra_cost[size_group_lookup[bsize]][0];
   }
-#endif  // CONFIG_INTERINTRA
 
   if (pred_exists == 0) {
     int tmp_rate;
@@ -9015,10 +9005,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-#if CONFIG_INTERINTRA
   rd_stats->rate += compmode_interintra_cost;
   rate2_bmc_nocoeff += compmode_interintra_cost;
-#endif
   rd_stats->rate += compmode_interinter_cost;
 
   ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
@@ -9487,10 +9475,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int best_skip2 = 0;
   uint16_t ref_frame_skip_mask[2] = { 0 };
   uint32_t mode_skip_mask[TOTAL_REFS_PER_FRAME] = { 0 };
-#if CONFIG_INTERINTRA
   MV_REFERENCE_FRAME best_single_inter_ref = LAST_FRAME;
   int64_t best_single_inter_rd = INT64_MAX;
-#endif  // CONFIG_INTERINTRA
   int mode_skip_start = sf->mode_skip_start + 1;
   const int *const rd_threshes = rd_opt->threshes[segment_id][bsize];
   const int *const rd_thresh_freq_fact = tile_data->thresh_freq_fact[bsize];
@@ -9991,9 +9977,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_INTERINTRA
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
-#endif  // CONFIG_INTERINTRA
 
 #if CONFIG_FRAME_MARKER
     if (sf->selective_ref_frame) {
@@ -10199,7 +10183,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       backup_ref_mv[0] = mbmi_ext->ref_mvs[ref_frame][0];
       if (comp_pred) backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
-#if CONFIG_INTERINTRA
       if (second_ref_frame == INTRA_FRAME) {
         if (best_single_inter_ref != ref_frame) continue;
         mbmi->interintra_mode = intra_to_interintra_mode[best_intra_mode];
@@ -10214,7 +10197,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
 #endif  // CONFIG_FILTER_INTRA
       }
-#endif  // CONFIG_INTERINTRA
       mbmi->ref_mv_idx = 0;
       ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 
@@ -10739,13 +10721,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         best_intra_rd = this_rd;
         best_intra_mode = mbmi->mode;
       }
-#if CONFIG_INTERINTRA
     } else if (second_ref_frame == NONE_FRAME) {
       if (this_rd < best_single_inter_rd) {
         best_single_inter_rd = this_rd;
         best_single_inter_ref = mbmi->ref_frame[0];
       }
-#endif  // CONFIG_INTERINTRA
     }
 
     if (!disable_skip && ref_frame == INTRA_FRAME) {

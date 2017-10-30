@@ -2607,15 +2607,11 @@ void read_sequence_header(SequenceHeader *seq_params,
 
 static void read_compound_tools(AV1_COMMON *cm,
                                 struct aom_read_bit_buffer *rb) {
-  (void)cm;
-  (void)rb;
-#if CONFIG_INTERINTRA
   if (!frame_is_intra_only(cm) && cm->reference_mode != COMPOUND_REFERENCE) {
     cm->allow_interintra_compound = aom_rb_read_bit(rb);
   } else {
     cm->allow_interintra_compound = 0;
   }
-#endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SINGLEREF
   if (!frame_is_intra_only(cm)) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
@@ -3426,7 +3422,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     read_inter_mode_probs(fc, &r);
 #endif
 
-#if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
 #if !CONFIG_NEW_MULTISYMBOL
@@ -3449,7 +3444,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
       }
 #endif  // !CONFIG_NEW_MULTISYMBOL
     }
-#endif  // CONFIG_INTERINTRA
 
 #if !CONFIG_NEW_MULTISYMBOL
     for (int i = 0; i < INTRA_INTER_CONTEXTS; i++)
@@ -3498,12 +3492,10 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   assert(!memcmp(cm->counts.inter_compound_mode,
                  zero_counts.inter_compound_mode,
                  sizeof(cm->counts.inter_compound_mode)));
-#if CONFIG_INTERINTRA
   assert(!memcmp(cm->counts.interintra, zero_counts.interintra,
                  sizeof(cm->counts.interintra)));
   assert(!memcmp(cm->counts.wedge_interintra, zero_counts.wedge_interintra,
                  sizeof(cm->counts.wedge_interintra)));
-#endif  // CONFIG_INTERINTRA
   assert(!memcmp(cm->counts.compound_interinter,
                  zero_counts.compound_interinter,
                  sizeof(cm->counts.compound_interinter)));

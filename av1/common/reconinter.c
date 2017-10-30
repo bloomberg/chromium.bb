@@ -1388,7 +1388,7 @@ void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                     int mi_row, int mi_col, BUFFER_SET *ctx,
                                     BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 0, 0);
-#if CONFIG_INTERINTRA
+
   if (is_interintra_pred(&xd->mi[0]->mbmi)) {
     BUFFER_SET default_ctx = { { xd->plane[0].dst.buf, NULL, NULL },
                                { xd->plane[0].dst.stride, 0, 0 } };
@@ -1396,9 +1396,6 @@ void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
     av1_build_interintra_predictors_sby(cm, xd, xd->plane[0].dst.buf,
                                         xd->plane[0].dst.stride, ctx, bsize);
   }
-#else
-  (void)ctx;
-#endif  // CONFIG_INTERINTRA
 }
 
 void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -1406,7 +1403,7 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 1,
                                     MAX_MB_PLANE - 1);
-#if CONFIG_INTERINTRA
+
   if (is_interintra_pred(&xd->mi[0]->mbmi)) {
     BUFFER_SET default_ctx = {
       { NULL, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
@@ -1417,9 +1414,6 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
         cm, xd, xd->plane[1].dst.buf, xd->plane[2].dst.buf,
         xd->plane[1].dst.stride, xd->plane[2].dst.stride, ctx, bsize);
   }
-#else
-  (void)ctx;
-#endif  // CONFIG_INTERINTRA
 }
 
 void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -2326,7 +2320,6 @@ void set_sb_mi_boundaries(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif
 
 /* clang-format off */
-#if CONFIG_INTERINTRA
 #if CONFIG_EXT_PARTITION
 static const int ii_weights1d[MAX_SB_SIZE] = {
   60, 58, 56, 54, 52, 50, 48, 47, 45, 44, 42, 41, 39, 38, 37, 35, 34, 33, 32,
@@ -2605,7 +2598,6 @@ void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   av1_build_interintra_predictors_sbuv(cm, xd, upred, vpred, ustride, vstride,
                                        ctx, bsize);
 }
-#endif  // CONFIG_INTERINTRA
 
 // Builds the inter-predictor for the single ref case
 // for use in the encoder to search the wedges efficiently.

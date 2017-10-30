@@ -73,9 +73,7 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
   }
 }
 
-#if CONFIG_INTERINTRA
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
-#endif
 static struct av1_token compound_type_encodings[COMPOUND_TYPES];
 #if CONFIG_LOOP_RESTORATION
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
@@ -101,9 +99,7 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        int *const tile_col_size_bytes);
 #endif
 void av1_encode_token_init(void) {
-#if CONFIG_INTERINTRA
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
-#endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SINGLEREF
   av1_tokens_from_tree(inter_singleref_comp_mode_encodings,
                        av1_inter_singleref_comp_mode_tree);
@@ -1691,7 +1687,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_COMPOUND_SINGLEREF
     }
 
-#if CONFIG_INTERINTRA
     if (cpi->common.reference_mode != COMPOUND_REFERENCE &&
         cpi->common.allow_interintra_compound && is_interintra_allowed(mbmi)) {
       const int interintra = mbmi->ref_frame[1] == INTRA_FRAME;
@@ -1721,7 +1716,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         }
       }
     }
-#endif  // CONFIG_INTERINTRA
 
     if (mbmi->ref_frame[1] != INTRA_FRAME) write_motion_mode(cm, xd, mi, w);
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -3742,15 +3736,11 @@ static void write_sb_size(const AV1_COMMON *cm,
 
 static void write_compound_tools(const AV1_COMMON *cm,
                                  struct aom_write_bit_buffer *wb) {
-  (void)cm;
-  (void)wb;
-#if CONFIG_INTERINTRA
   if (!frame_is_intra_only(cm) && cm->reference_mode != COMPOUND_REFERENCE) {
     aom_wb_write_bit(wb, cm->allow_interintra_compound);
   } else {
     assert(cm->allow_interintra_compound == 0);
   }
-#endif  // CONFIG_INTERINTRA
 #if CONFIG_COMPOUND_SINGLEREF
   if (!frame_is_intra_only(cm)) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
@@ -4556,7 +4546,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if !CONFIG_NEW_MULTISYMBOL
     update_inter_mode_probs(cm, header_bc, counts);
 #endif
-#if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
 #if !CONFIG_NEW_MULTISYMBOL
@@ -4580,7 +4569,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
       }
 #endif  // !CONFIG_NEW_MULTISYMBOL
     }
-#endif  // CONFIG_INTERINTRA
 
 #if !CONFIG_NEW_MULTISYMBOL
     for (int i = 0; i < INTRA_INTER_CONTEXTS; i++)

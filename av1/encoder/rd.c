@@ -375,7 +375,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cost_tokens_from_cdf(x->inter_singleref_comp_mode_cost[i],
                                fc->inter_singleref_comp_mode_cdf[i], NULL);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_INTERINTRA
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
 #if CONFIG_NEW_MULTISYMBOL
       av1_cost_tokens_from_cdf(x->interintra_cost[i], fc->interintra_cdf[i],
@@ -398,7 +397,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
           av1_cost_bit(fc->wedge_interintra_prob[i], 1);
 #endif
     }
-#endif  // CONFIG_INTERINTRA
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
       av1_cost_tokens_from_cdf(x->motion_mode_cost[i], fc->motion_mode_cdf[i],
                                NULL);
