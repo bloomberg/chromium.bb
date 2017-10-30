@@ -126,7 +126,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGLayoutInputNode child,
       NGBreakToken* child_break_token,
       NGPreviousInflowPosition*,
-      RefPtr<NGBreakToken>* previous_inline_break_token);
+      scoped_refptr<NGBreakToken>* previous_inline_break_token);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
@@ -143,7 +143,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool HandleInflow(NGLayoutInputNode child,
                     NGBreakToken* child_break_token,
                     NGPreviousInflowPosition*,
-                    RefPtr<NGBreakToken>* previous_inline_break_token);
+                    scoped_refptr<NGBreakToken>* previous_inline_break_token);
 
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.
