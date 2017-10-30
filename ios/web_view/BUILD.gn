@@ -227,6 +227,7 @@ test("ios_web_view_unittests") {
   testonly = true
   sources = [
     "internal/cwv_html_element_unittest.mm",
+    "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
   ]
   sources += ios_web_view_sources
