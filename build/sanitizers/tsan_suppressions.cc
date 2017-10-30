@@ -255,10 +255,6 @@ char kTSanDefaultSuppressions[] =
     "race:base::i18n::IsRTL\n"
     "race:base::i18n::SetICUDefaultLocale\n"
 
-    // http://crbug.com/778254
-    "race:sw::Renderer::updateConfiguration\n"
-    "race:sw::Renderer::scheduleTask\n"
-
     //
     "race:third_party/harfbuzz-ng/src/*\n"
 
