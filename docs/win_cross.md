@@ -64,6 +64,7 @@ You can run the Windows binaries you built on swarming, like so:
         -S https://chromium-swarm.appspot.com \
         -I https://isolateserver.appspot.com \
         -d os Windows -d pool Chrome -s <hash printed by previous command>
+        [ -- <flag to target process, for example --gtest_filter>... ]
 
 Most tests that build should pass.  However, the cross build uses
 the lld linker, and a couple of tests fail when using lld. You can look at
