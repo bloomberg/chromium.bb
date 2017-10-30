@@ -222,6 +222,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // current.
   void ComputeWhichControlsFit();
 
+  void UpdateOverflowMenuWanted() const;
+  void MaybeRecordElementsDisplayed() const;
+
   // Takes a popup menu (caption, overflow) and position on the screen. This is
   // used because these menus use a fixed position in order to appear over all
   // content.

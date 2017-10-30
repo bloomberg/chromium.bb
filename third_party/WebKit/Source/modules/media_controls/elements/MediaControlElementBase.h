@@ -18,6 +18,7 @@ class Element;
 class HTMLElement;
 class HTMLMediaElement;
 class MediaControlsImpl;
+struct WebSize;
 
 // MediaControlElementBase is the base class for all the media control elements.
 // It is sub-classed by MediaControlInputElement and MediaControlDivElement
@@ -50,6 +51,10 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
   // Controls that can be added to the overflow menu should override this
   // function and return true.
   virtual bool HasOverflowButton() const;
+
+  // Get the size of the element in pixels or the default if we cannot get the
+  // size because the element has not been layed out yet.
+  virtual WebSize GetSizeOrDefault() const = 0;
 
   virtual void Trace(blink::Visitor*);
 

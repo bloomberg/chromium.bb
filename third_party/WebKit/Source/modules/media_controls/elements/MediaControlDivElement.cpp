@@ -5,6 +5,8 @@
 #include "modules/media_controls/elements/MediaControlDivElement.h"
 
 #include "modules/media_controls/MediaControlsImpl.h"
+#include "modules/media_controls/elements/MediaControlElementsHelper.h"
+#include "public/platform/WebSize.h"
 
 namespace blink {
 
@@ -24,6 +26,10 @@ MediaControlDivElement::MediaControlDivElement(
 
 bool MediaControlDivElement::IsMediaControlElement() const {
   return true;
+}
+
+WebSize MediaControlDivElement::GetSizeOrDefault() const {
+  return MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
 }
 
 void MediaControlDivElement::Trace(blink::Visitor* visitor) {
