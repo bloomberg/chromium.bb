@@ -563,7 +563,8 @@ void NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
     ConnectionType* connection_type) {
   if (!g_network_change_notifier) {
     *connection_type = CONNECTION_UNKNOWN;
-    *max_bandwidth_mbps = GetMaxBandwidthForConnectionSubtype(SUBTYPE_UNKNOWN);
+    *max_bandwidth_mbps =
+        GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_UNKNOWN);
     return;
   }
 
@@ -572,7 +573,7 @@ void NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
 }
 
 // static
-double NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+double NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
     ConnectionSubtype subtype) {
   switch (subtype) {
     case SUBTYPE_GSM:
@@ -1035,8 +1036,8 @@ void NetworkChangeNotifier::GetCurrentMaxBandwidthAndConnectionType(
   *connection_type = GetCurrentConnectionType();
   *max_bandwidth_mbps =
       *connection_type == CONNECTION_NONE
-          ? GetMaxBandwidthForConnectionSubtype(SUBTYPE_NONE)
-          : GetMaxBandwidthForConnectionSubtype(SUBTYPE_UNKNOWN);
+          ? GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_NONE)
+          : GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_UNKNOWN);
 }
 
 bool NetworkChangeNotifier::AreNetworkHandlesCurrentlySupported() const {

@@ -716,7 +716,7 @@ void FileManagerBrowserTestBase::OnMessage(const std::string& name,
 
   if (name == "useCellularNetwork") {
     net::NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
-        net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+        net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
             net::NetworkChangeNotifier::SUBTYPE_HSPA),
         net::NetworkChangeNotifier::CONNECTION_3G);
     return;

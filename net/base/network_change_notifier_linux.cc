@@ -88,7 +88,7 @@ void NetworkChangeNotifierLinux::Thread::OnLinkChanged() {
     NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
     last_type_ = GetCurrentConnectionType();
     double max_bandwidth_mbps =
-        NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+        NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
             last_type_ == CONNECTION_NONE ? SUBTYPE_NONE : SUBTYPE_UNKNOWN);
     NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
         max_bandwidth_mbps, last_type_);

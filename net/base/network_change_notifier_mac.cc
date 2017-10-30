@@ -259,7 +259,7 @@ void NetworkChangeNotifierMac::ReachabilityCallback(
   if (old_type != new_type) {
     NotifyObserversOfConnectionTypeChange();
     double max_bandwidth_mbps =
-        NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+        NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
             new_type == CONNECTION_NONE ? SUBTYPE_NONE : SUBTYPE_UNKNOWN);
     NotifyObserversOfMaxBandwidthChange(max_bandwidth_mbps, new_type);
   }
