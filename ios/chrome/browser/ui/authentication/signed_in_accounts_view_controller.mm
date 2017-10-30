@@ -379,7 +379,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 - (void)onSecondaryButtonPressed:(id)sender {
   [self dismiss];
-  [self.dispatcher showAccountsSettings];
+  [self.dispatcher
+      showAccountsSettingsFromViewController:self.presentingViewController];
 }
 
 #pragma mark OAuth2TokenServiceObserverBridgeDelegate

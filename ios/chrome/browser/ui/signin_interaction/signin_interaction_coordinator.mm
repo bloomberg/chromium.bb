@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -162,6 +163,11 @@
   [self.alertCoordinator executeCancelHandler];
   [self.alertCoordinator stop];
   self.alertCoordinator = nil;
+}
+
+- (void)showAccountsSettings {
+  [self.dispatcher
+      showAccountsSettingsFromViewController:self.presentingViewController];
 }
 
 - (BOOL)isPresenting {

@@ -502,7 +502,10 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 #pragma mark - ApplicationSettingsCommands
 
-- (void)showAccountsSettings {
+- (void)showAccountsSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  // |baseViewController| is intentionally unused because
+  // this navigation controller is already presented.
   AccountsCollectionViewController* controller =
       [[AccountsCollectionViewController alloc]
                initWithBrowserState:mainBrowserState_
