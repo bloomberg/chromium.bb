@@ -1,49 +1,36 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/device-orientation-helpers.js"></script>
 <script>
-description('Tests that adding a new event listener from a callback works as expected.');
+'use strict';
 
-var mockAlpha = 1.1;
-var mockBeta = 2.2;
-var mockGamma = 3.3;
-var mockAbsolute = true;
+async_test(test => {
+  assertTestRunner();
+  var orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
 
-if (window.testRunner)
-    testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, mockAbsolute);
-else
-    debug('This test can not be run without the TestRunner');
-
-var deviceOrientationEvent;
-function checkOrientation(event) {
-    deviceOrientationEvent = event;
-    shouldBe('deviceOrientationEvent.alpha', 'mockAlpha');
-    shouldBe('deviceOrientationEvent.beta', 'mockBeta');
-    shouldBe('deviceOrientationEvent.gamma', 'mockGamma');
-    shouldBe('deviceOrientationEvent.absolute', 'mockAbsolute');
-}
-
-var firstListenerEvents = 0;
-function firstListener(event) {
-    checkOrientation(event);
+  var firstListenerEvents = 0;
+  var firstListener = test.step_func(event => {
+    checkOrientation(event, orientationData);
     window.removeEventListener('deviceorientation', firstListener);
     if (++firstListenerEvents == 1)
-        window.addEventListener('deviceorientation', secondListener);
-}
+      window.addEventListener('deviceorientation', secondListener);
+  });
 
-var secondListenerEvents = 0;
-function secondListener(event) {
-    checkOrientation(event);
+  var secondListenerEvents = 0;
+  var secondListener = test.step_func(event => {
+    checkOrientation(event, orientationData);
     ++secondListenerEvents;
-    if (firstListenerEvents != 1 || secondListenerEvents != 1)
-        testFailed('Too many events fired for first or second listener');
-    finishJSTest();
-}
+    assert_equals(firstListenerEvents, 1, "Too many events fired for the first listener");
+    assert_equals(secondListenerEvents, 1, "Too many events fired for the second listener");
+    test.done();
+  });
 
-window.addEventListener('deviceorientation', firstListener);
-
-window.jsTestIsAsync = true;
+  setMockOrientation(orientationData);
+  window.addEventListener('deviceorientation', firstListener);
+}, 'Tests that adding a new deviceorientation event listener from a callback works as expected.');
 </script>
 </body>
 </html>

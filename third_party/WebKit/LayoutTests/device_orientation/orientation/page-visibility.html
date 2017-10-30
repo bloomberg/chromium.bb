@@ -1,54 +1,42 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/device-orientation-helpers.js"></script>
 <script>
-description('Tests to check that deviceorientation events are not fired when the page is not visible.');
-window.jsTestIsAsync = true;
+'use strict';
 
-function succeedAndFinish()
-{
-    testPassed("Received a deviceorientation event");
-    finishJSTest();
-}
+async_test(test => {
+  assertTestRunner();
 
-function testWithPageVisible()
-{
-    testPassed("Did not receive a deviceorientation event");
+  var orientationData = generateOrientationData(1, 2, 3, true);
+  var succeedAndFinish = test.step_func_done(() => {});
+
+  function testWithPageVisible() {
     window.removeEventListener('deviceorientation', failAndFinish);
-    if (window.testRunner)
-        testRunner.setPageVisibility("visible");
-    debug("* Page is visible");
+    testRunner.setPageVisibility("visible");
     window.addEventListener('deviceorientation', succeedAndFinish);
-}
+  }
 
-function failAndFinish()
-{
-    testFailed('Should not have received a deviceorientation event while the page was hidden');
-    finishJSTest();
-}
+  var failAndFinish = test.step_func_done(() => {
+    assert_unreached("Should not have received a deviceorientation event while the page was hidden");
+  });
 
-function testWithPageHidden()
-{
-    testPassed("Received a deviceorientation event");
+  function testWithPageHidden() {
     window.removeEventListener('deviceorientation', deviceOrientationListener);
-    if (window.testRunner)
-        testRunner.setPageVisibility("hidden");
-    debug("* Page is hidden");
+    testRunner.setPageVisibility("hidden");
     window.addEventListener('deviceorientation', failAndFinish);
-
     setTimeout(testWithPageVisible, 100);
-}
+  }
 
-function deviceOrientationListener(event) {
+  var deviceOrientationListener = test.step_func(() => {
     setTimeout(testWithPageHidden, 0);
-}
+  });
 
-if (window.testRunner)
-   testRunner.setMockDeviceOrientation(true, 1, true, 2, true, 3, true);
-
-debug("* Page is visible");
-window.addEventListener('deviceorientation', deviceOrientationListener);
+  setMockOrientation(orientationData);
+  window.addEventListener('deviceorientation', deviceOrientationListener);
+}, 'Tests to check that deviceorientation events are not fired when the page is not visible.');
 </script>
 </body>
 </html>
