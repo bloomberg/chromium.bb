@@ -60,7 +60,7 @@ void CastCdmFactory::Create(
   const int packed_cdm_config = (cdm_config.allow_distinctive_identifier << 2) |
                                 (cdm_config.allow_persistent_state << 1) |
                                 cdm_config.use_hw_secure_codecs;
-  metrics::CastMetricsHelper::GetInstance()->RecordEventWithValue(
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEventWithValue(
       "Cast.Platform.CreateCdm." + key_system, packed_cdm_config);
 
   task_runner_->PostTask(
