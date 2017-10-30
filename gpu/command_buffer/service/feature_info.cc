@@ -328,6 +328,8 @@ void FeatureInfo::EnableEXTColorBufferFloat() {
 }
 
 void FeatureInfo::EnableEXTColorBufferHalfFloat() {
+  if (!ext_color_buffer_half_float_available_)
+    return;
   AddExtensionString("GL_EXT_color_buffer_half_float");
   validators_.render_buffer_format.AddValue(GL_R16F);
   validators_.render_buffer_format.AddValue(GL_RG16F);
@@ -1619,9 +1621,10 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
   }
 
   // Enable GL_EXT_color_buffer_half_float if we have found the capability.
-  if (enable_ext_color_buffer_half_float &&
-      !disallowed_features_.ext_color_buffer_half_float) {
-    EnableEXTColorBufferHalfFloat();
+  if (enable_ext_color_buffer_half_float) {
+    ext_color_buffer_half_float_available_ = true;
+    if (!disallowed_features_.ext_color_buffer_half_float)
+      EnableEXTColorBufferHalfFloat();
   }
 
   if (enable_texture_float) {

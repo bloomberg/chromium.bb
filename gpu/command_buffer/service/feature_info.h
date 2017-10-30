@@ -187,6 +187,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return ext_color_buffer_float_available_;
   }
 
+  bool ext_color_buffer_half_float_available() const {
+    return ext_color_buffer_half_float_available_;
+  }
+
   bool oes_texture_float_linear_available() const {
     return oes_texture_float_linear_available_;
   }
@@ -218,6 +222,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   const GpuDriverBugWorkarounds workarounds_;
 
   bool ext_color_buffer_float_available_ = false;
+  bool ext_color_buffer_half_float_available_ = false;
   bool oes_texture_float_linear_available_ = false;
   bool oes_texture_half_float_linear_available_ = false;
 
