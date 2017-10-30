@@ -316,6 +316,7 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
                                           const std::string& sln_name,
                                           const std::string& filters,
                                           const std::string& win_sdk,
+                                          const std::string& ninja_extra_args,
                                           bool no_deps,
                                           Err* err) {
   std::vector<const Target*> targets;
@@ -351,7 +352,7 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
       continue;
     }
 
-    if (!writer.WriteProjectFiles(target, err))
+    if (!writer.WriteProjectFiles(target, ninja_extra_args, err))
       return false;
   }
 
@@ -372,7 +373,9 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
   return writer.WriteSolutionFile(sln_name, err);
 }
 
-bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
+bool VisualStudioWriter::WriteProjectFiles(const Target* target,
+                                           const std::string& ninja_extra_args,
+                                           Err* err) {
   std::string project_name = target->label().name();
   const char* project_config_platform = config_platform_;
   if (!target->settings()->is_default()) {
@@ -403,7 +406,7 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
   std::stringstream vcxproj_string_out;
   SourceFileCompileTypePairs source_types;
   if (!WriteProjectFileContents(vcxproj_string_out, *projects_.back(), target,
-                                &source_types, err)) {
+                                ninja_extra_args, &source_types, err)) {
     projects_.pop_back();
     return false;
   }
@@ -424,6 +427,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
     std::ostream& out,
     const SolutionProject& solution_project,
     const Target* target,
+    const std::string& ninja_extra_args,
     SourceFileCompileTypePairs* source_types,
     Err* err) {
   PathOutput path_output(
@@ -611,6 +615,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
         std::unique_ptr<XmlElementWriter> build = group->SubElement(
             compile_type, "Include", SourceFileWriter(path_output, file));
         build->SubElement("Command")->Text("call ninja.exe -C $(OutDir) " +
+                                           ninja_extra_args + " " +
                                            tool_outputs[0].value());
         build->SubElement("Outputs")->Text("$(OutDir)" +
                                            tool_outputs[0].value());
@@ -638,8 +643,9 @@ bool VisualStudioWriter::WriteProjectFileContents(
     std::unique_ptr<XmlElementWriter> build =
         project.SubElement("Target", XmlAttributes("Name", "Build"));
     build->SubElement(
-        "Exec", XmlAttributes("Command",
-                              "call ninja.exe -C $(OutDir) " + ninja_target));
+        "Exec",
+        XmlAttributes("Command", "call ninja.exe -C $(OutDir) " +
+                                     ninja_extra_args + " " + ninja_target));
   }
 
   {

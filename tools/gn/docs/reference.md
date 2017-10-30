@@ -663,6 +663,10 @@
       Use the specified Windows 10 SDK version to generate project files.
       As an example, "10.0.15063.0" can be specified to use Creators Update SDK
       instead of the default one.
+
+  --ninja-extra-args=<string>
+      This string is passed without any quoting to the ninja invocation
+      command-line. Can be used to configure ninja flags, like "-j".
 ```
 
 #### **Xcode Flags**
@@ -674,8 +678,7 @@
 
   --ninja-extra-args=<string>
       This string is passed without any quoting to the ninja invocation
-      command-line. Can be used to configure ninja flags, like "-j" if using
-      goma for example.
+      command-line. Can be used to configure ninja flags, like "-j".
 
   --root-target=<target_name>
       Name of the target corresponding to "All" target in Xcode. If unset,
