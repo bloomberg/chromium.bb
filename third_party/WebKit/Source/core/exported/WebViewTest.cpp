@@ -500,7 +500,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   SkCanvas canvas(bitmap);
   canvas.clear(kAlphaRed);
 
-  PaintRecordBuilder builder(FloatRect(0, 0, kWidth, kHeight));
+  PaintRecordBuilder builder;
 
   // Paint the root of the main frame in the way that CompositedLayerMapping
   // would.

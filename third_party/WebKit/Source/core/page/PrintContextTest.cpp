@@ -84,7 +84,7 @@ class PrintContextTest : public RenderingTest {
     IntRect page_rect(0, 0, kPageWidth, kPageHeight);
     GetPrintContext().BeginPrintMode(page_rect.Width(), page_rect.Height());
     GetDocument().View()->UpdateAllLifecyclePhases();
-    PaintRecordBuilder builder(page_rect);
+    PaintRecordBuilder builder;
     GraphicsContext& context = builder.Context();
     context.SetPrinting(true);
     GetDocument().View()->PaintContents(context, kGlobalPaintPrinting,

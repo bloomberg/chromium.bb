@@ -11,11 +11,10 @@
 
 namespace blink {
 
-PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
-                                       SkMetaData* meta_data,
+PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
                                        GraphicsContext* containing_context,
                                        PaintController* paint_controller)
-    : paint_controller_(nullptr), bounds_(bounds) {
+    : paint_controller_(nullptr) {
   GraphicsContext::DisabledMode disabled_mode =
       GraphicsContext::kNothingDisabled;
   if (containing_context && containing_context->ContextDisabled())
@@ -52,7 +51,7 @@ PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
 
 sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
     const PropertyTreeState& replay_state) {
-  context_->BeginRecording(bounds_);
+  context_->BeginRecording(FloatRect());
   paint_controller_->CommitNewDisplayItems();
   paint_controller_->GetPaintArtifact().Replay(*context_, replay_state);
   return context_->EndRecording();

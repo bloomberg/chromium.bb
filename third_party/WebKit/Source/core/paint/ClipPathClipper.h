@@ -41,7 +41,6 @@ class ClipPathClipper {
                      const FloatRect& visual_rect,
                      const FloatPoint& layer_position_offset);
   bool DrawClipAsMask(const FloatRect& target_bounding_box,
-                      const FloatRect& target_visual_rect,
                       const AffineTransform&,
                       const FloatPoint&);
   void FinishEffect();

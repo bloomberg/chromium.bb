@@ -15,7 +15,7 @@ namespace blink {
 using PaintRecordBuilderTest = PaintControllerTestBase;
 
 TEST_F(PaintRecordBuilderTest, TransientPaintController) {
-  PaintRecordBuilder builder(FloatRect(10, 10, 20, 20));
+  PaintRecordBuilder builder;
   auto& context = builder.Context();
   FakeDisplayItemClient client("client", LayoutRect(10, 10, 20, 20));
   DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
@@ -34,8 +34,7 @@ TEST_F(PaintRecordBuilderTest, TransientPaintController) {
 }
 
 TEST_F(PaintRecordBuilderTest, LastingPaintController) {
-  PaintRecordBuilder builder(FloatRect(10, 10, 20, 20), nullptr, nullptr,
-                             &GetPaintController());
+  PaintRecordBuilder builder(nullptr, nullptr, &GetPaintController());
   auto& context = builder.Context();
   EXPECT_EQ(&context.GetPaintController(), &GetPaintController());
 
@@ -79,7 +78,7 @@ TEST_F(PaintRecordBuilderTest, TransientAndAnotherPaintController) {
                       TestDisplayItem(client, kForegroundType));
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(client));
 
-  PaintRecordBuilder builder(FloatRect(10, 10, 20, 20));
+  PaintRecordBuilder builder;
   EXPECT_NE(&builder.Context().GetPaintController(), &GetPaintController());
   DrawRect(builder.Context(), client, kBackgroundType,
            FloatRect(10, 10, 20, 20));

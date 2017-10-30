@@ -159,8 +159,8 @@ bool ClipPathClipper::PrepareEffect(const FloatRect& target_bounding_box,
   mask_clip_recorder_.emplace(context_, layout_object_, SkBlendMode::kSrcOver,
                               1, &visual_rect);
   {
-    if (!DrawClipAsMask(target_bounding_box, visual_rect,
-                        animated_local_transform, layer_position_offset)) {
+    if (!DrawClipAsMask(target_bounding_box, animated_local_transform,
+                        layer_position_offset)) {
       // End the clip mask's compositor.
       mask_clip_recorder_.reset();
       return false;
@@ -175,14 +175,13 @@ bool ClipPathClipper::PrepareEffect(const FloatRect& target_bounding_box,
 }
 
 bool ClipPathClipper::DrawClipAsMask(const FloatRect& target_bounding_box,
-                                     const FloatRect& target_visual_rect,
                                      const AffineTransform& local_transform,
                                      const FloatPoint& layer_position_offset) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context_, layout_object_,
                                                   DisplayItem::kSVGClip))
     return true;
 
-  PaintRecordBuilder mask_builder(target_visual_rect, nullptr, &context_);
+  PaintRecordBuilder mask_builder(nullptr, &context_);
   GraphicsContext& mask_context = mask_builder.Context();
   {
     TransformRecorder recorder(mask_context, layout_object_, local_transform);

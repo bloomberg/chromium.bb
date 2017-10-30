@@ -58,12 +58,8 @@ BoxReflection BoxReflectionForPaintLayer(const PaintLayer& layer,
   LayoutRect mask_rect(LayoutPoint(), frame_layout_rect.Size());
   LayoutRect mask_bounding_rect(mask_rect);
   mask_bounding_rect.Expand(style.ImageOutsets(mask_nine_piece));
-  FloatRect mask_bounding_float_rect(mask_bounding_rect);
 
-  // TODO(jbroman): PaintRecordBuilder + DrawingRecorder seems excessive.
-  // If NinePieceImagePainter operated on SkCanvas, we'd only need a
-  // PictureRecorder here.
-  PaintRecordBuilder builder(mask_bounding_float_rect);
+  PaintRecordBuilder builder;
   {
     GraphicsContext& context = builder.Context();
     DrawingRecorder recorder(context, layer.GetLayoutObject(),
@@ -78,7 +74,7 @@ BoxReflection BoxReflectionForPaintLayer(const PaintLayer& layer,
                                  SkBlendMode::kSrcOver);
   }
   return BoxReflection(direction, offset, builder.EndRecording(),
-                       mask_bounding_float_rect);
+                       FloatRect(mask_bounding_rect));
 }
 
 }  // namespace blink

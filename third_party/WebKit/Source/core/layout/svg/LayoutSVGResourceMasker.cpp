@@ -71,14 +71,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceMasker::CreatePaintRecord(
     return cached_paint_record_;
 
   SubtreeContentTransformScope content_transform_scope(content_transformation);
-
-  // Using strokeBoundingBox instead of visualRectInLocalCoordinates
-  // to avoid the intersection with local clips/mask, which may yield incorrect
-  // results when mixing objectBoundingBox and userSpaceOnUse units.
-  // http://crbug.com/294900
-  FloatRect bounds = StrokeBoundingBox();
-
-  PaintRecordBuilder builder(bounds, nullptr, &context);
+  PaintRecordBuilder builder(nullptr, &context);
 
   ColorFilter mask_content_filter =
       Style()->SvgStyle().ColorInterpolation() == CI_LINEARRGB

@@ -243,13 +243,12 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   if (SVGLayoutSupport::IsOverflowHidden(&marker))
     canvas->clipRect(marker.Viewport());
 
+  PaintRecordBuilder builder(nullptr, &paint_info.context);
+  PaintInfo marker_paint_info(builder.Context(), paint_info);
   // It's expensive to track the transformed paint cull rect for each
   // marker so just disable culling. The shape paint call will already
   // be culled if it is outside the paint info cull rect.
-  IntRect bounds(LayoutRect::InfiniteIntRect());
-  PaintRecordBuilder builder(FloatRect(bounds), nullptr, &paint_info.context);
-  PaintInfo marker_paint_info(builder.Context(), paint_info);
-  marker_paint_info.cull_rect_.rect_ = bounds;
+  marker_paint_info.cull_rect_.rect_ = LayoutRect::InfiniteIntRect();
 
   SVGContainerPainter(marker).Paint(marker_paint_info);
   builder.EndRecording(*canvas);
