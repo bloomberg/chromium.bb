@@ -825,6 +825,14 @@ void BackgroundFetchDataManager::SetController(
   if (controller) {
     DCHECK_EQ(0u, controllers_.count(registration_id.unique_id()));
     controllers_.emplace(registration_id.unique_id(), controller);
+
+    // TODO(delphick): This assumes that fetches are always started afresh in
+    // each browser session. We need to initialize the number of downloads using
+    // information loaded from the database.
+    controller->InitializeRequestStatus(
+        0, /* completed_downloads*/
+        registrations_[registration_id.unique_id()]->GetTotalNumberOfRequests(),
+        std::vector<std::string>() /* outstanding download GUIDs */);
   } else {
     DCHECK_EQ(1u, controllers_.count(registration_id.unique_id()));
     controllers_.erase(registration_id.unique_id());
@@ -1161,12 +1169,6 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
                           developer_ids);
-}
-
-int BackgroundFetchDataManager::GetNumberOfRequestsForRegistration(
-    const BackgroundFetchRegistrationId& registration_id) {
-  return registrations_[registration_id.unique_id()]
-      ->GetTotalNumberOfRequests();
 }
 
 bool BackgroundFetchDataManager::IsActive(

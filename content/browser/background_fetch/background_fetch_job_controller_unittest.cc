@@ -107,8 +107,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     return std::make_unique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
-        registration, 0, total_downloads, std::vector<std::string>(),
-        &data_manager_,
+        registration, &data_manager_,
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
             base::Unretained(this)),

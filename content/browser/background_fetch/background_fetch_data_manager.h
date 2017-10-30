@@ -63,6 +63,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
    public:
     virtual ~Controller() {}
 
+    // Called once the status of the active and completed downloads has been
+    // loaded from the database.
+    virtual void InitializeRequestStatus(
+        int completed_downloads,
+        int total_downloads,
+        const std::vector<std::string>& outstanding_guids) = 0;
+
     // Called once UpdateRegistrationUI has been persisted to the database.
     virtual void UpdateUI(const std::string& title) = 0;
 
@@ -160,11 +167,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   void GetDeveloperIdsForServiceWorker(
       int64_t service_worker_registration_id,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
-
-  // Get the total number of requests (active/completed/pending) in the
-  // Background Fetch.
-  int GetNumberOfRequestsForRegistration(
-      const BackgroundFetchRegistrationId& registration_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
