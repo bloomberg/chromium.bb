@@ -7,37 +7,20 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Noncopyable.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom-blink.h"
-
-namespace service_manager {
-class InterfaceProvider;
-class Connector;
-}  // namespace service_manager
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace blink {
-
-class InterfaceProvider;
 
 // Base class for Resource Coordinators in Blink.
 class PLATFORM_EXPORT BlinkResourceCoordinatorBase {
   WTF_MAKE_NONCOPYABLE(BlinkResourceCoordinatorBase);
 
  public:
-  static bool IsEnabled();
-  virtual ~BlinkResourceCoordinatorBase();
+  static bool IsEnabled() {
+    return resource_coordinator::IsResourceCoordinatorEnabled();
+  }
 
-  void SendEvent(const resource_coordinator::mojom::blink::Event);
-  void SetProperty(const resource_coordinator::mojom::blink::PropertyType,
-                   int64_t);
-
- protected:
-  explicit BlinkResourceCoordinatorBase(service_manager::InterfaceProvider*);
-  BlinkResourceCoordinatorBase(service_manager::Connector*,
-                               const std::string& service_name);
-  BlinkResourceCoordinatorBase();
-
- private:
-  resource_coordinator::mojom::blink::CoordinationUnitPtr service_;
+  BlinkResourceCoordinatorBase() = default;
 };
 
 }  // namespace blink

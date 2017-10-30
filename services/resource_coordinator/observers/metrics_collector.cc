@@ -5,10 +5,10 @@
 #include "services/resource_coordinator/observers/metrics_collector.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
@@ -40,13 +40,12 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
 // associated with a |CoordinationUnitType::kPage| coordination unit.
 size_t GetNumCoresidentTabs(const CoordinationUnitBase* coordination_unit) {
   DCHECK_EQ(CoordinationUnitType::kPage, coordination_unit->id().type);
+  auto* page_cu =
+      PageCoordinationUnitImpl::FromCoordinationUnitBase(coordination_unit);
   std::set<CoordinationUnitBase*> coresident_tabs;
-  for (auto* process_coordination_unit :
-       coordination_unit->GetAssociatedCoordinationUnitsOfType(
-           CoordinationUnitType::kProcess)) {
+  for (auto* process_cu : page_cu->GetAssociatedProcessCoordinationUnits()) {
     for (auto* tab_coordination_unit :
-         process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
-             CoordinationUnitType::kPage)) {
+         process_cu->GetAssociatedPageCoordinationUnits()) {
       coresident_tabs.insert(tab_coordination_unit);
     }
   }

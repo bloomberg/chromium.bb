@@ -38,8 +38,7 @@ void IdlenessDetector::DomContentLoadedEventFired() {
 
   if (auto* frame_resource_coordinator =
           local_frame_->GetFrameResourceCoordinator()) {
-    frame_resource_coordinator->SetProperty(
-        resource_coordinator::mojom::PropertyType::kNetworkAlmostIdle, false);
+    frame_resource_coordinator->SetNetworkAlmostIdle(false);
   }
   OnDidLoadResource();
 }
@@ -122,8 +121,7 @@ void IdlenessDetector::WillProcessTask(double start_time) {
                           network_2_quiet_start_time_);
     if (auto* frame_resource_coordinator =
             local_frame_->GetFrameResourceCoordinator()) {
-      frame_resource_coordinator->SetProperty(
-          resource_coordinator::mojom::PropertyType::kNetworkAlmostIdle, true);
+      frame_resource_coordinator->SetNetworkAlmostIdle(true);
     }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
     network_2_quiet_ = -1;

@@ -5,6 +5,7 @@
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
 namespace resource_coordinator {
@@ -12,51 +13,47 @@ namespace resource_coordinator {
 FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitBase(id, std::move(service_ref)) {}
+    : CoordinationUnitInterface(id, std::move(service_ref)),
+      parent_frame_coordination_unit_(nullptr),
+      page_coordination_unit_(nullptr),
+      process_coordination_unit_(nullptr) {}
 
-FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() = default;
+FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
+  if (parent_frame_coordination_unit_)
+    parent_frame_coordination_unit_->RemoveChildFrame(this);
+  if (page_coordination_unit_)
+    page_coordination_unit_->RemoveFrame(this);
+  if (process_coordination_unit_)
+    process_coordination_unit_->RemoveFrame(this);
+  for (auto* child_frame : child_frame_coordination_units_)
+    child_frame->RemoveParentFrame(this);
+}
 
-std::set<CoordinationUnitBase*>
-FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
-    CoordinationUnitType type) const {
-  switch (type) {
-    case CoordinationUnitType::kProcess:
-    case CoordinationUnitType::kPage:
-      // Processes and Page are only associated with a frame if
-      // they are a direct parents of the frame.
-      return GetParentCoordinationUnitsOfType(type);
-    case CoordinationUnitType::kFrame: {
-      // Frame Coordination Units form a tree, thus associated frame
-      // coordination units are all frame coordination units in the tree. Loop
-      // back to the root frame, get all child frame coordination units from the
-      // root frame, add the root frame coordination unit and remove the current
-      // frame coordination unit.
-      const CoordinationUnitBase* root_frame_coordination_unit = this;
-      while (true) {
-        bool has_parent_frame_cu = false;
-        for (auto* parent : root_frame_coordination_unit->parents()) {
-          if (parent->id().type == CoordinationUnitType::kFrame) {
-            root_frame_coordination_unit = parent;
-            has_parent_frame_cu = true;
-            break;
-          }
-        }
-        if (has_parent_frame_cu)
-          continue;
-        break;
-      }
-      auto frame_coordination_units =
-          root_frame_coordination_unit->GetChildCoordinationUnitsOfType(type);
-      // Insert the root frame coordination unit.
-      frame_coordination_units.insert(
-          const_cast<CoordinationUnitBase*>(root_frame_coordination_unit));
-      // Remove itself.
-      frame_coordination_units.erase(
-          const_cast<FrameCoordinationUnitImpl*>(this));
-      return frame_coordination_units;
-    }
-    default:
-      return std::set<CoordinationUnitBase*>();
+void FrameCoordinationUnitImpl::AddChildFrame(const CoordinationUnitID& cu_id) {
+  DCHECK(cu_id != id());
+  FrameCoordinationUnitImpl* frame_cu =
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(cu_id);
+  if (!frame_cu)
+    return;
+  if (HasFrameCoordinationUnitInAncestors(frame_cu) ||
+      frame_cu->HasFrameCoordinationUnitInDescendants(this)) {
+    DCHECK(false) << "Cyclic reference in frame coordination units detected!";
+    return;
+  }
+  if (AddChildFrame(frame_cu)) {
+    frame_cu->AddParentFrame(this);
+  }
+}
+
+void FrameCoordinationUnitImpl::RemoveChildFrame(
+    const CoordinationUnitID& cu_id) {
+  DCHECK(cu_id != id());
+  FrameCoordinationUnitImpl* frame_cu =
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(cu_id);
+  if (!frame_cu)
+    return;
+  if (RemoveChildFrame(frame_cu)) {
+    frame_cu->RemoveParentFrame(this);
   }
 }
 
@@ -64,7 +61,7 @@ void FrameCoordinationUnitImpl::SetAudibility(bool audible) {
   SetProperty(mojom::PropertyType::kAudible, audible);
 }
 
-void FrameCoordinationUnitImpl::SetNetworkAlmostIdleness(bool idle) {
+void FrameCoordinationUnitImpl::SetNetworkAlmostIdle(bool idle) {
   SetProperty(mojom::PropertyType::kNetworkAlmostIdle, idle);
 }
 
@@ -76,34 +73,104 @@ void FrameCoordinationUnitImpl::OnNonPersistentNotificationCreated() {
   SendEvent(mojom::Event::kNonPersistentNotificationCreated);
 }
 
+FrameCoordinationUnitImpl*
+FrameCoordinationUnitImpl::GetParentFrameCoordinationUnit() const {
+  return parent_frame_coordination_unit_;
+}
+
 PageCoordinationUnitImpl* FrameCoordinationUnitImpl::GetPageCoordinationUnit()
     const {
-  for (auto* parent : parents_) {
-    if (parent->id().type != CoordinationUnitType::kPage)
-      continue;
-    return CoordinationUnitBase::ToPageCoordinationUnit(parent);
-  }
-  return nullptr;
+  return page_coordination_unit_;
+}
+
+ProcessCoordinationUnitImpl*
+FrameCoordinationUnitImpl::GetProcessCoordinationUnit() const {
+  return process_coordination_unit_;
 }
 
 bool FrameCoordinationUnitImpl::IsMainFrame() const {
-  for (auto* parent : parents_) {
-    if (parent->id().type == CoordinationUnitType::kFrame)
-      return false;
-  }
-  return true;
+  return !parent_frame_coordination_unit_;
 }
 
-void FrameCoordinationUnitImpl::OnEventReceived(const mojom::Event event) {
+void FrameCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
   for (auto& observer : observers())
     observer.OnFrameEventReceived(this, event);
 }
 
 void FrameCoordinationUnitImpl::OnPropertyChanged(
-    const mojom::PropertyType property_type,
+    mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())
     observer.OnFramePropertyChanged(this, property_type, value);
+}
+
+bool FrameCoordinationUnitImpl::HasFrameCoordinationUnitInAncestors(
+    FrameCoordinationUnitImpl* frame_cu) const {
+  if (parent_frame_coordination_unit_ == frame_cu ||
+      (parent_frame_coordination_unit_ &&
+       parent_frame_coordination_unit_->HasFrameCoordinationUnitInAncestors(
+           frame_cu))) {
+    return true;
+  }
+  return false;
+}
+
+bool FrameCoordinationUnitImpl::HasFrameCoordinationUnitInDescendants(
+    FrameCoordinationUnitImpl* frame_cu) const {
+  for (FrameCoordinationUnitImpl* child : child_frame_coordination_units_) {
+    if (child == frame_cu ||
+        child->HasFrameCoordinationUnitInDescendants(frame_cu)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void FrameCoordinationUnitImpl::AddParentFrame(
+    FrameCoordinationUnitImpl* parent_frame_cu) {
+  parent_frame_coordination_unit_ = parent_frame_cu;
+}
+
+bool FrameCoordinationUnitImpl::AddChildFrame(
+    FrameCoordinationUnitImpl* child_frame_cu) {
+  return child_frame_coordination_units_.count(child_frame_cu)
+             ? false
+             : child_frame_coordination_units_.insert(child_frame_cu).second;
+}
+
+void FrameCoordinationUnitImpl::RemoveParentFrame(
+    FrameCoordinationUnitImpl* parent_frame_cu) {
+  DCHECK(parent_frame_coordination_unit_ == parent_frame_cu);
+  parent_frame_coordination_unit_ = nullptr;
+}
+
+bool FrameCoordinationUnitImpl::RemoveChildFrame(
+    FrameCoordinationUnitImpl* child_frame_cu) {
+  return child_frame_coordination_units_.erase(child_frame_cu) > 0;
+}
+
+void FrameCoordinationUnitImpl::AddPageCoordinationUnit(
+    PageCoordinationUnitImpl* page_coordination_unit) {
+  DCHECK(!page_coordination_unit_);
+  page_coordination_unit_ = page_coordination_unit;
+}
+
+void FrameCoordinationUnitImpl::AddProcessCoordinationUnit(
+    ProcessCoordinationUnitImpl* process_coordination_unit) {
+  DCHECK(!process_coordination_unit_);
+  process_coordination_unit_ = process_coordination_unit;
+}
+
+void FrameCoordinationUnitImpl::RemovePageCoordinationUnit(
+    PageCoordinationUnitImpl* page_coordination_unit) {
+  DCHECK(page_coordination_unit == page_coordination_unit_);
+  page_coordination_unit_ = nullptr;
+}
+
+void FrameCoordinationUnitImpl::RemoveProcessCoordinationUnit(
+    ProcessCoordinationUnitImpl* process_coordination_unit) {
+  DCHECK(process_coordination_unit == process_coordination_unit_);
+  process_coordination_unit_ = nullptr;
 }
 
 }  // namespace resource_coordinator

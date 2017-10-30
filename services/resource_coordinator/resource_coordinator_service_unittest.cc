@@ -43,9 +43,9 @@ TEST_F(ResourceCoordinatorTest, ResourceCoordinatorInstantiate) {
   connector()->BindInterface(mojom::kServiceName, mojo::MakeRequest(&provider));
 
   CoordinationUnitID new_id(CoordinationUnitType::kPage, "test_id");
-  mojom::CoordinationUnitPtr coordination_unit;
-  provider->CreateCoordinationUnit(mojo::MakeRequest(&coordination_unit),
-                                   new_id);
+  mojom::PageCoordinationUnitPtr coordination_unit;
+  provider->CreatePageCoordinationUnit(mojo::MakeRequest(&coordination_unit),
+                                       new_id);
 
   coordination_unit->GetID(base::Bind(&ResourceCoordinatorTest::GetIDCallback,
                                       base::Unretained(this)));

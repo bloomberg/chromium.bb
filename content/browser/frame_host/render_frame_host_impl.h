@@ -604,8 +604,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the Mojo ImageDownloader service.
   const content::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
 
-  resource_coordinator::ResourceCoordinatorInterface*
-  GetFrameResourceCoordinator() override;
+  resource_coordinator::FrameResourceCoordinator* GetFrameResourceCoordinator()
+      override;
 
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
@@ -1221,7 +1221,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   content::mojom::ImageDownloaderPtr mojo_image_downloader_;
 
   // Holds the interface wrapper to the Global Resource Coordinator service.
-  std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
+  std::unique_ptr<resource_coordinator::FrameResourceCoordinator>
       frame_resource_coordinator_;
 
   // Tracks a navigation happening in this frame. Note that while there can be

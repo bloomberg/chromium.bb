@@ -4,11 +4,10 @@
 
 #include "services/resource_coordinator/observers/tab_signal_generator_impl.h"
 
-#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -44,10 +43,10 @@ TEST_F(TabSignalGeneratorImplTest,
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph;
   cu_graph.page->AddObserver(tab_signal_generator());
 
-  cu_graph.process->SetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, 1);
-  cu_graph.other_process->SetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, 10);
+  cu_graph.process->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromMilliseconds(1));
+  cu_graph.other_process->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromMilliseconds(10));
 
   // The |other_process| is not for the main frame so its EQT values does not
   // propagate to the page.

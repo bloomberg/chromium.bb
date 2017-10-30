@@ -12,9 +12,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
 #include "url/gurl.h"
+
+namespace resource_coordinator {
+class PageResourceCoordinator;
+}  // namespace resource_coordinator
 
 class ResourceCoordinatorWebContentsObserver
     : public content::WebContentsObserver,
@@ -27,8 +30,7 @@ class ResourceCoordinatorWebContentsObserver
 
   static bool IsEnabled();
 
-  resource_coordinator::ResourceCoordinatorInterface*
-  page_resource_coordinator() {
+  resource_coordinator::PageResourceCoordinator* page_resource_coordinator() {
     return page_resource_coordinator_.get();
   }
 
@@ -58,7 +60,7 @@ class ResourceCoordinatorWebContentsObserver
   friend class content::WebContentsUserData<
       ResourceCoordinatorWebContentsObserver>;
 
-  std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
+  std::unique_ptr<resource_coordinator::PageResourceCoordinator>
       page_resource_coordinator_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
