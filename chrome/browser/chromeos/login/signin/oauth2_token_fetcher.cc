@@ -58,7 +58,7 @@ void OAuth2TokenFetcher::StartExchangeFromCookies(
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
-  auth_fetcher_.StartCookieForOAuthLoginTokenExchangeWithDeviceId(
+  auth_fetcher_.DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(
       session_index, signin_scoped_device_id);
 }
 

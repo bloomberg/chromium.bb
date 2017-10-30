@@ -835,10 +835,8 @@ void SyncTest::SetupMockGaiaResponses() {
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->client_login_to_oauth2_url(),
-      "some_response",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+      GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url(),
+      "some_response", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->oauth2_token_url(),
       "{"

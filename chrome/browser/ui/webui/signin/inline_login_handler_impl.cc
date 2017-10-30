@@ -183,8 +183,9 @@ InlineSigninHelper::InlineSigninHelper(
         auth_code, signin_scoped_device_id);
   } else {
     DCHECK(!session_index_.empty());
-    gaia_auth_fetcher_.StartCookieForOAuthLoginTokenExchangeWithDeviceId(
-        session_index_, signin_scoped_device_id);
+    gaia_auth_fetcher_
+        .DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(
+            session_index_, signin_scoped_device_id);
   }
 }
 

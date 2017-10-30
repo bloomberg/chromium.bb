@@ -39,7 +39,8 @@ const char kGetCheckConnectionInfoSuffix[] = "GetCheckConnectionInfo";
 
 // API calls from accounts.google.com (LSO)
 const char kGetOAuthTokenUrlSuffix[] = "o/oauth/GetOAuthToken/";
-const char kClientLoginToOAuth2UrlSuffix[] = "o/oauth2/programmatic_auth";
+const char kDeprecatedClientLoginToOAuth2UrlSuffix[] =
+    "o/oauth2/programmatic_auth";
 const char kOAuth2AuthUrlSuffix[] = "o/oauth2/auth";
 const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
 const char kOAuth2IFrameUrlSuffix[] = "o/oauth2/iframerpc";
@@ -121,8 +122,8 @@ GaiaUrls::GaiaUrls() {
 
   // URLs from accounts.google.com (LSO).
   get_oauth_token_url_ = lso_origin_url_.Resolve(kGetOAuthTokenUrlSuffix);
-  client_login_to_oauth2_url_ =
-      lso_origin_url_.Resolve(kClientLoginToOAuth2UrlSuffix);
+  deprecated_client_login_to_oauth2_url_ =
+      lso_origin_url_.Resolve(kDeprecatedClientLoginToOAuth2UrlSuffix);
   oauth2_auth_url_ = lso_origin_url_.Resolve(kOAuth2AuthUrlSuffix);
   oauth2_revoke_url_ = lso_origin_url_.Resolve(kOAuth2RevokeUrlSuffix);
   oauth2_iframe_url_ =
@@ -241,8 +242,8 @@ const std::string& GaiaUrls::oauth2_chrome_client_secret() const {
   return oauth2_chrome_client_secret_;
 }
 
-const GURL& GaiaUrls::client_login_to_oauth2_url() const {
-  return client_login_to_oauth2_url_;
+const GURL& GaiaUrls::deprecated_client_login_to_oauth2_url() const {
+  return deprecated_client_login_to_oauth2_url_;
 }
 
 const GURL& GaiaUrls::oauth2_auth_url() const {
