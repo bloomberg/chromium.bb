@@ -133,17 +133,6 @@ PaymentRequest::PaymentRequest(
     }
   }
 
-  // Kickoff the process of loading the rules (which is asynchronous) for each
-  // profile's country, to get faster address normalization later.
-  for (const autofill::AutofillProfile* profile :
-       personal_data_manager_->GetProfilesToSuggest()) {
-    std::string countryCode =
-        base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-    if (autofill::data_util::IsValidCountryCode(countryCode)) {
-      address_normalizer_.LoadRulesForRegion(countryCode);
-    }
-  }
-
   RecordNumberOfSuggestionsShown();
   RecordRequestedInformation();
 }
