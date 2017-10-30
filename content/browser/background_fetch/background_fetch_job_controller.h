@@ -48,9 +48,6 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const BackgroundFetchRegistration& registration,
-      int completed_downloads,
-      int total_downloads,
-      const std::vector<std::string>& outstanding_guids,
       BackgroundFetchDataManager* data_manager,
       ProgressCallback progress_callback,
       FinishedCallback finished_callback);
@@ -61,6 +58,10 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   void Start();
 
   // BackgroundFetchDataManager::Controller implementation:
+  void InitializeRequestStatus(
+      int completed_downloads,
+      int total_downloads,
+      const std::vector<std::string>& outstanding_guids) override;
   void UpdateUI(const std::string& title) override;
   uint64_t GetInProgressDownloadedBytes() override;
   void Abort() override;
