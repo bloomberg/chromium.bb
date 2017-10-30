@@ -10,10 +10,13 @@
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/side_swipe/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 
 @protocol ActivityServicePositioner;
 @protocol QRScannerResultLoading;
+@class Tab;
 @protocol TabHistoryPositioner;
 @protocol TabHistoryUIUpdater;
 @class TabModel;
@@ -27,7 +30,9 @@
 @interface LegacyToolbarCoordinator
     : ChromeCoordinator<BubbleViewAnchorPointProvider,
                         IncognitoViewControllerDelegate,
-                        OmniboxFocuser>
+                        OmniboxFocuser,
+                        SideSwipeToolbarInteracting,
+                        ToolbarSnapshotProviding>
 
 @property(nonatomic, weak) TabModel* tabModel;
 @property(nonatomic, readonly, strong) UIView* view;
