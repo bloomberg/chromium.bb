@@ -36,8 +36,6 @@ static_library("usb") {
     "usb_device_win.h",
     "usb_endpoint_android.cc",
     "usb_endpoint_android.h",
-    "usb_ids.cc",
-    "usb_ids.h",
     "usb_interface_android.cc",
     "usb_interface_android.h",
     "usb_service.cc",
@@ -48,11 +46,9 @@ static_library("usb") {
     "usb_service_win.h",
     "webusb_descriptors.cc",
     "webusb_descriptors.h",
-    generated_ids,
   ]
 
   deps = [
-    ":usb_device_ids",
     "//base/third_party/dynamic_annotations",
     "//components/device_event_log",
     "//device/base",
@@ -75,6 +71,13 @@ static_library("usb") {
 
   if (is_android) {
     deps += [ ":jni_headers" ]
+  } else {
+    deps += [ ":usb_device_ids" ]
+    sources += [
+      "usb_ids.cc",
+      "usb_ids.h",
+      generated_ids,
+    ]
   }
 
   if (is_win || is_mac) {
