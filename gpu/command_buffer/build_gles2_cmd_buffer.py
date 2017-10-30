@@ -5038,6 +5038,10 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     f.write("""error::Error GLES2DecoderPassthroughImpl::Handle%(name)s(
         uint32_t immediate_data_size, const volatile void* cmd_data) {
       """ % {'name': func.name})
+    if func.IsES3():
+      f.write("""if (!feature_info_->IsWebGL2OrES3Context())
+          return error::kUnknownCommand;
+        """)
     if func.GetCmdArgs():
       f.write("""const volatile gles2::cmds::%(name)s& c =
             *static_cast<const volatile gles2::cmds::%(name)s*>(cmd_data);
@@ -5054,6 +5058,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WritePassthroughServiceImplementation(self, func, f):
     """Writes the service implementation for a command."""
     self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteHandlerExtensionCheck(func, f)
     self.WriteServiceHandlerArgGetCode(func, f)
     func.WritePassthroughHandlerValidation(f)
     self.WritePassthroughServiceFunctionDoerCall(func, f)
@@ -5064,6 +5069,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WritePassthroughImmediateServiceImplementation(self, func, f):
     """Writes the service implementation for a command."""
     self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteHandlerExtensionCheck(func, f)
     self.WriteImmediateServiceHandlerArgGetCode(func, f)
     func.WritePassthroughHandlerValidation(f)
     self.WritePassthroughServiceFunctionDoerCall(func, f)
@@ -5074,6 +5080,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WritePassthroughBucketServiceImplementation(self, func, f):
     """Writes the service implementation for a command."""
     self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteHandlerExtensionCheck(func, f)
     self.WriteBucketServiceHandlerArgGetCode(func, f)
     func.WritePassthroughHandlerValidation(f)
     self.WritePassthroughServiceFunctionDoerCall(func, f)
@@ -8234,6 +8241,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
   def WritePassthroughServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteHandlerExtensionCheck(func, f)
     self.WriteServiceHandlerArgGetCode(func, f)
 
     code = """  typedef cmds::%(func_name)s::Result Result;

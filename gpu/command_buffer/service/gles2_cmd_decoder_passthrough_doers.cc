@@ -2822,10 +2822,6 @@ GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
-    return error::kUnknownCommand;
-  }
-
   if (feature_info_->feature_flags().angle_framebuffer_multisample) {
     api()->glRenderbufferStorageMultisampleANGLEFn(
         target, samples, internalformat, width, height);
@@ -2843,10 +2839,6 @@ error::Error GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleEXT(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
-    return error::kUnknownCommand;
-  }
-
   if (feature_info_->feature_flags().angle_framebuffer_multisample) {
     api()->glRenderbufferStorageMultisampleANGLEFn(
         target, samples, internalformat, width, height);
@@ -2865,10 +2857,6 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2DMultisampleEXT(
     GLuint texture,
     GLint level,
     GLsizei samples) {
-  if (!feature_info_->feature_flags().multisampled_render_to_texture) {
-    return error::kUnknownCommand;
-  }
-
   if (IsEmulatedFramebufferBound(target)) {
     InsertError(GL_INVALID_OPERATION,
                 "Cannot change the attachments of the default framebuffer.");
@@ -2954,10 +2942,6 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
     int32_t sync_shm_id,
     uint32_t sync_shm_offset,
     uint32_t submit_count) {
-  if (!feature_info_->feature_flags().ext_disjoint_timer_query) {
-    return error::kUnknownCommand;
-  }
-
   scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(sync_shm_id);
   if (!buffer)
     return error::kInvalidArguments;
@@ -3116,10 +3100,6 @@ error::Error GLES2DecoderPassthroughImpl::DoSetDisjointValueSyncCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoInsertEventMarkerEXT(
     GLsizei length,
     const char* marker) {
-  if (!feature_info_->feature_flags().ext_debug_marker) {
-    return error::kUnknownCommand;
-  }
-
   api()->glInsertEventMarkerEXTFn(length, marker);
   return error::kNoError;
 }
@@ -3127,19 +3107,11 @@ error::Error GLES2DecoderPassthroughImpl::DoInsertEventMarkerEXT(
 error::Error GLES2DecoderPassthroughImpl::DoPushGroupMarkerEXT(
     GLsizei length,
     const char* marker) {
-  if (!feature_info_->feature_flags().ext_debug_marker) {
-    return error::kUnknownCommand;
-  }
-
   api()->glPushGroupMarkerEXTFn(length, marker);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoPopGroupMarkerEXT() {
-  if (!feature_info_->feature_flags().ext_debug_marker) {
-    return error::kUnknownCommand;
-  }
-
   api()->glPopGroupMarkerEXTFn();
   return error::kNoError;
 }
@@ -3848,10 +3820,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
-  if (!feature_info_->feature_flags().chromium_copy_texture) {
-    return error::kUnknownCommand;
-  }
-
   api()->glCopyTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false), source_level,
       dest_target, GetTextureServiceID(api(), dest_id, resources_, false),
@@ -3875,10 +3843,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
-  if (!feature_info_->feature_flags().chromium_copy_texture) {
-    return error::kUnknownCommand;
-  }
-
   api()->glCopySubTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false), source_level,
       dest_target, GetTextureServiceID(api(), dest_id, resources_, false),
@@ -3890,10 +3854,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoCompressedCopyTextureCHROMIUM(
     GLuint source_id,
     GLuint dest_id) {
-  if (!feature_info_->feature_flags().chromium_copy_compressed_texture) {
-    return error::kUnknownCommand;
-  }
-
   api()->glCompressedCopyTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false),
       GetTextureServiceID(api(), dest_id, resources_, false));
@@ -3905,9 +3865,6 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
     GLint first,
     GLsizei count,
     GLsizei primcount) {
-  if (!feature_info_->feature_flags().angle_instanced_arrays) {
-    return error::kUnknownCommand;
-  }
   api()->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
   return error::kNoError;
 }
@@ -3918,9 +3875,6 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
     GLenum type,
     const void* indices,
     GLsizei primcount) {
-  if (!feature_info_->feature_flags().angle_instanced_arrays) {
-    return error::kUnknownCommand;
-  }
   api()->glDrawElementsInstancedANGLEFn(mode, count, type, indices, primcount);
   return error::kNoError;
 }
@@ -3928,9 +3882,6 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttribDivisorANGLE(
     GLuint index,
     GLuint divisor) {
-  if (!feature_info_->feature_flags().angle_instanced_arrays) {
-    return error::kUnknownCommand;
-  }
   api()->glVertexAttribDivisorANGLEFn(index, divisor);
   return error::kNoError;
 }
@@ -4092,10 +4043,6 @@ error::Error GLES2DecoderPassthroughImpl::DoDiscardFramebufferEXT(
     GLenum target,
     GLsizei count,
     const volatile GLenum* attachments) {
-  if (!feature_info_->feature_flags().ext_discard_framebuffer) {
-    return error::kUnknownCommand;
-  }
-
   // Validate that count is non-negative before allocating a vector
   if (count < 0) {
     InsertError(GL_INVALID_VALUE, "count cannot be negative.");
