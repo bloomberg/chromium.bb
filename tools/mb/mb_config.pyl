@@ -204,6 +204,7 @@
       'CrWinGoma': 'release_bot_x86_minimal_symbols',
       'CrWinGoma(dll)': 'shared_release_bot_x86',
       'CrWinGoma(loc)': 'shared_release_bot_x86',
+      'CrWinClexeGoma': 'shared_release_bot_x86_no_clang',
       'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
 
       'EarlGreyiOS': 'ios',
@@ -1619,6 +1620,10 @@
 
     'shared_release_bot_x86': [
       'shared_release_bot', 'x86',
+    ],
+
+    'shared_release_bot_x86_no_clang': [
+      'shared_release_bot', 'x86', 'no_clang',
     ],
 
     'syzyasan_no_pch_release_x86': [
