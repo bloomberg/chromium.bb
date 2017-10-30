@@ -486,8 +486,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
   }
 }
 
-static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
-                                    int c,  // raster order
+static INLINE void get_base_ctx_set(const uint8_t *const levels,
+                                    const int c,  // raster order
                                     const int bwl, const int height,
                                     int ctx_set[NUM_BASE_LEVELS]) {
   const int row = c >> bwl;
@@ -496,7 +496,6 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
   int mag_count[NUM_BASE_LEVELS] = { 0 };
   int nb_mag[NUM_BASE_LEVELS][3] = { { 0 } };
   int idx;
-  tran_low_t abs_coeff;
   int i;
 
   for (idx = 0; idx < BASE_CONTEXT_POSITION_NUM; ++idx) {
@@ -507,7 +506,7 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
     if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
       continue;
 
-    abs_coeff = abs(tcoeffs[pos]);
+    const uint8_t abs_coeff = levels[pos];
 
     for (i = 0; i < NUM_BASE_LEVELS; ++i) {
       ctx_set[i] += abs_coeff > i;
@@ -636,7 +635,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         if (is_k == 0) break;
       }
 #else
-      get_base_ctx_set(qcoeff, scan[c], bwl, height, ctx_ls);
+      get_base_ctx_set(levels, scan[c], bwl, height, ctx_ls);
 
       int i;
       for (i = 0; i < NUM_BASE_LEVELS; ++i) {
@@ -652,7 +651,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
       if (level > NUM_BASE_LEVELS) {
         int ctx;
-        ctx = get_br_ctx_coeff(qcoeff, scan[c], bwl, height);
+        ctx = get_br_ctx(levels, scan[c], bwl, height);
         int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
           cost += coeff_costs->lps_cost[ctx][base_range];
@@ -1435,7 +1434,7 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
     }
 #else
     int ctx_ls[NUM_BASE_LEVELS] = { 0 };
-    get_base_ctx_set(txb_info->qcoeff, scan[scan_idx], txb_info->bwl,
+    get_base_ctx_set(txb_info->levels, scan[scan_idx], txb_info->bwl,
                      txb_info->height, ctx_ls);
 
     int i;
@@ -1446,8 +1445,8 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
 #endif
 
     if (abs_qc > NUM_BASE_LEVELS) {
-      int ctx = get_br_ctx_coeff(txb_info->qcoeff, scan[scan_idx],
-                                 txb_info->bwl, txb_info->height);
+      int ctx = get_br_ctx(txb_info->levels, scan[scan_idx], txb_info->bwl,
+                           txb_info->height);
       cost += get_br_cost(abs_qc, ctx, txb_costs->lps_cost[ctx]);
       cost += get_golomb_cost(abs_qc);
     }
