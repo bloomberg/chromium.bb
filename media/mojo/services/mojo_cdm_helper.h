@@ -9,7 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
+#include "media/mojo/interfaces/cdm_storage.mojom.h"
 #include "media/mojo/interfaces/output_protection.mojom.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -32,8 +34,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper {
   ~MojoCdmHelper() final;
 
   // CdmAuxiliaryHelper implementation.
-  std::unique_ptr<media::CdmFileIO> CreateCdmFileIO(
-      cdm::FileIOClient* client) final;
+  std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client) final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
@@ -46,21 +47,25 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper {
 
  private:
   // All services are created lazily.
+  void ConnectToCdmStorage();
   CdmAllocator* GetAllocator();
-  bool ConnectToOutputProtection();
-  bool ConnectToPlatformVerification();
+  void ConnectToOutputProtection();
+  void ConnectToPlatformVerification();
 
   // Provides interfaces when needed.
   service_manager::mojom::InterfaceProvider* interface_provider_;
 
-  // Keep track if connection to the Mojo service has been attempted once.
-  // The service may not exist, or may fail later.
-  bool output_protection_attempted_ = false;
-  bool platform_verification_attempted_ = false;
+  // Connections to the additional services. For the mojom classes, if a
+  // connection error occurs, we will not be able to reconnect to the
+  // service as the document has been destroyed (see FrameServiceBase) or
+  // the browser crashed, so there's no point in trying to reconnect.
+  mojom::CdmStoragePtr cdm_storage_ptr_;
+  std::unique_ptr<CdmAllocator> allocator_;
+  mojom::OutputProtectionPtr output_protection_ptr_;
+  mojom::PlatformVerificationPtr platform_verification_ptr_;
 
-  std::unique_ptr<media::CdmAllocator> allocator_;
-  media::mojom::OutputProtectionPtr output_protection_;
-  media::mojom::PlatformVerificationPtr platform_verification_;
+  base::WeakPtrFactory<MojoCdmHelper> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);
 };
 
 }  // namespace media
