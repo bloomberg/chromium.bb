@@ -390,6 +390,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
     DCHECK(!prepared_pending_script_);
 
+    // 20. "Let options be a script fetch options whose cryptographic nonce is
+    //      cryptographic nonce, integrity metadata is integrity metadata,
+    //      parser metadata is parser metadata, and credentials mode is module
+    //      script credentials mode." [spec text]
+    ScriptFetchOptions options(nonce_, parser_state, credentials_mode);
+
     // 21.6. "Switch on the script's type:"
     if (GetScriptType() == ScriptType::kClassic) {
       // - "classic":
@@ -420,9 +426,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         SubresourceIntegrityHelper::DoReport(element_document, report_info);
       }
 
-      if (!FetchClassicScript(url, element_document, nonce_, integrity_metadata,
-                              parser_state, cross_origin,
-                              element_document.GetSecurityOrigin(), encoding)) {
+      // "Fetch a classic script given url, settings object, options, CORS
+      // setting, and encoding." [spec text]
+      if (!FetchClassicScript(url, element_document, options,
+                              integrity_metadata, encoding)) {
         // TODO(hiroshige): Make this asynchronous. Currently we fire the error
         // event synchronously to keep the existing behavior.
         DispatchErrorEvent();
@@ -438,13 +445,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       Modulator* modulator = Modulator::From(
           ToScriptStateForMainWorld(context_document->GetFrame()));
-      // 20. "Let options be a script fetch options whose cryptographic nonce is
-      //      cryptographic nonce, integrity metadata is integrity metadata,
-      //      parser metadata is parser metadata, and credentials mode is module
-      //      script credentials mode." [spec text]
-      // TODO(kouhei,hiroshige): Move 20 higher up, when we modify
-      // FetchClassicScript to take |options| too.
-      ScriptFetchOptions options(nonce_, parser_state, credentials_mode);
       FetchModuleScriptTree(url, modulator, options);
     }
     // "When the chosen algorithm asynchronously completes, set
@@ -673,52 +673,62 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   return true;
 }
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
 bool ScriptLoader::FetchClassicScript(
     const KURL& url,
     Document& element_document,
-    const String& nonce,
+    const ScriptFetchOptions& options,
     const IntegrityMetadataSet& integrity_metadata,
-    ParserDisposition parser_state,
-    CrossOriginAttributeValue cross_origin,
-    SecurityOrigin* security_origin,
     const WTF::TextEncoding& encoding) {
   // TODO(hiroshige): remove nonce from the method argument.
-  DCHECK_EQ(nonce_, nonce);
-
-  // https://html.spec.whatwg.org/#prepare-a-script
-  // TODO(kouhei,hiroshige): Update to use ScriptFetchOptions
-  // 21.6, "classic":
-  // "Fetch a classic script given url, settings, ..."
-  ResourceRequest resource_request(url);
+  DCHECK_EQ(nonce_, options.Nonce());
 
   FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
   if (!parser_inserted_ || element_->AsyncAttributeValue() ||
       element_->DeferAttributeValue())
     defer = FetchParameters::kLazyLoad;
 
-  ResourceLoaderOptions options;
-  options.initiator_info.name = element_->InitiatorName();
-  FetchParameters params(resource_request, options);
+  // Step 1. Let request be the result of creating a potential-CORS request
+  // given url, ... [spec text]
+  ResourceRequest resource_request(url);
 
-  // "... cryptographic nonce, ..."
-  params.SetContentSecurityPolicyNonce(nonce_);
+  // Step 1. ... "script", ... [spec text]
+  ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.initiator_info.name = element_->InitiatorName();
+  FetchParameters params(resource_request, resource_loader_options);
 
-  // "... integrity metadata, ..."
+  // Step 1. ... and CORS setting. [spec text]
+  //
+  // Instead of using CrossOriginAttributeValue that corresponds to |CORS
+  // setting|, we use ScriptFetchOptions::CredentialsMode().
+  // We shouldn't call SetCrossOriginAccessControl() if CredentialsMode() is
+  // kFetchCredentialsModeOmit, because in that case the request should be
+  // no-cors, while SetCrossOriginAccessControl(kFetchCredentialsModeOmit)
+  // would result in a cors request.
+  if (options.CredentialsMode() !=
+      network::mojom::FetchCredentialsMode::kOmit) {
+    params.SetCrossOriginAccessControl(element_document.GetSecurityOrigin(),
+                                       options.CredentialsMode());
+  }
+
+  // Step 3. Set up the classic script request given request and options. [spec
+  // text]
+  //
+  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-classic-script-request
+  // Set request's cryptographic nonce metadata to options's cryptographic
+  // nonce, [spec text]
+  params.SetContentSecurityPolicyNonce(options.Nonce());
+
+  // its integrity metadata to options's integrity metadata, [spec text]
+  //
+  // TODO(hiroshige): Move IntegrityMetadata to ScriptFetchOptions.
   params.SetIntegrityMetadata(integrity_metadata);
-
-  // "... integrity value, ..."
   params.MutableResourceRequest().SetFetchIntegrity(
       element_->IntegrityAttributeValue());
 
-  // "... parser state, ..."
-  params.SetParserDisposition(parser_state);
+  // and its parser metadata to options's parser metadata. [spec text]
+  params.SetParserDisposition(options.ParserState());
 
-  // "... CORS setting, ..."
-  if (cross_origin != kCrossOriginAttributeNotSet) {
-    params.SetCrossOriginAccessControl(security_origin, cross_origin);
-  }
-
-  // "... and encoding."
   params.SetCharset(encoding);
 
   // This DeferOption logic is only for classic scripts, as we always set
