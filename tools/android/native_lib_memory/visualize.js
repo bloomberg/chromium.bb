@@ -2,46 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function readFileXhr(filename) {
-  let xhr = new XMLHttpRequest();
-  xhr.open("GET", filename, true);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      let contents = xhr.responseText;
-      let jsonData = JSON.parse(contents);
-      go(jsonData);
-    }
-  }
-  xhr.send(null);
+/**
+ * Fetches all the urls, and calls {@link createGraph} with the JSON contents.
+ */
+function fetchAllAndCreateGraph(urls) {
+  Promise.all(
+      urls.map(url => fetch(url)
+               .then(response => response.ok ? response.json() : undefined)))
+      .then(jsonContents => createGraph.apply(this, jsonContents));
 }
 
-function go(codePages) {
-  createGraph(codePages);
-}
+const CODE_PAGE = "code_page";
+const REACHED_PAGE = "reached_page";
 
-// Returns the fill color for an item.
+/**
+ * @return {string} the fill color for a given page slice.
+ */
 function getFillColor(d) {
-  if (d.type == "code_page") return pageToFillColor(d.data);
+  switch (d.type) {
+    case CODE_PAGE:
+      return pageFillColor(d.data);
+    case REACHED_PAGE:
+      return reachedPageFillColor(d.data);
+  }
 }
 
 // Prefixes, color, description.
+const colors = d3.scale.category20();
+let colorIndex = 1;
 const COLOR_MAPPING = [
-  [["third_party/WebKit"], "darksalmon", "Blink"],
-  [["v8"], "green", "V8"],
-  [["base"], "purple", "//base"],
-  [["content"], "blue", "//content"],
-  [["components"], "pink", "//components"],
-  [["chrome/android"], "lightgreen", "//chrome/android"],
-  [["chrome"], "darkblue", "//chrome"],
-  [["net", "third_party/boringssl"], "black", "Net"],
+  [["third_party/WebKit"], colors(colorIndex++), "Blink"],
+  [["v8"], colors(colorIndex++), "V8"],
+  [["base"], colors(colorIndex++), "//base"],
+  [["content"], colors(colorIndex++), "//content"],
+  [["components"], colors(colorIndex++), "//components"],
+  [["chrome/android"], colors(colorIndex++), "//chrome/android"],
+  [["chrome"], colors(colorIndex++), "//chrome"],
+  [["net", "third_party/boringssl"], colors(colorIndex++), "Net"],
   [["third_party/webrtc", "third_party/opus", "third_party/usrsctp"],
-   "orange", "WebRTC"],
-  [["third_party/ffmpeg", "third_party/libvpx"], "darkred", "Media"],
-  [["third_party/icu"], "yellow", "ICU"],
-  [["skia"], "red", "Skia"]];
+   colors(colorIndex++), "WebRTC"],
+  [["third_party/ffmpeg", "third_party/libvpx"], colors(colorIndex++), "Media"],
+  [["third_party/icu"], colors(colorIndex++), "ICU"],
+  [["skia"], colors(colorIndex++), "Skia"],
+  [["ui"], colors(colorIndex++), "UI"],
+  [["cc"], colors(colorIndex++), "CC"]];
 
-// Returns the fill color for a code page item.
-function pageToFillColor(page) {
+/**
+ * @return the fill color for an item representing a code page.
+ */
+function pageFillColor(page) {
   const sizeAndFilename = page.size_and_filenames[0];
   if (!sizeAndFilename) return "lightgrey";
 
@@ -56,6 +65,22 @@ function pageToFillColor(page) {
   return "darkgrey";
 }
 
+const reachedColorScale = d3.scale.linear()
+      .domain([0, 100])
+      .range(["black", "green"]);
+/**
+ * @return the fill color for an item reprensting reached data.
+ */
+function reachedPageFillColor(page) {
+  if (page.total == 0) return "white";
+  if (page.reached == 0) return "red";
+  const percentage = 100 * page.reached / page.total;
+  return reachedColorScale(percentage);
+}
+
+/**
+ * Adds the color legend to the document.
+ */
 function buildColorLegend() {
   let table = document.getElementById("colors-legend-table");
   for (let i = 0; i < COLOR_MAPPING.length; i++) {
@@ -73,15 +98,20 @@ function buildColorLegend() {
     table.appendChild(row);
   }
 }
-buildColorLegend();
 
-// Returns the legend for a page item.
-function getLegend(d) {
-  if (d.type == "code_page") pageLegend(d.data);
-}
+/**
+ * Updates the legend.
+ *
+ * @param offset Offset of the item to label in the legend.
+ * @param offsetToData {offset: data} map.
+ */
+function updateLegend(offset, offsetToData) {
+  let data = offsetToData[offset];
+  if (!data) return;
 
-// Returns the legend for a code page item.
-function pageLegend(page) {
+  let page = data[CODE_PAGE];
+  let reached = data[REACHED_PAGE];
+
   let legend = document.getElementById("legend");
   legend.style.display = "block";
 
@@ -90,10 +120,14 @@ function pageLegend(page) {
   let filename = "";
   if (sizeAndFilename) filename = sizeAndFilename[1];
 
+  let reachedSize = reached ? reached.reached : 0;
+  let reachedPercentage = reachedSize ? 100 * reachedSize / reached.total : 0;
   title.innerHTML = `
     <b>Page offset:</b> ${page.offset}
     <br/>
     <b>Accounted for:</b> ${page.accounted_for}
+    <br/>
+    <b>Reached: </b> ${reachedSize} (${reachedPercentage.toFixed(2)}%)
     <br/>
     <b>Dominant filename:</b> ${filename}`;
 
@@ -112,21 +146,59 @@ function pageLegend(page) {
   }
 }
 
-// Returns the lane index (from 0) for an item.
+
+/**
+ * @return {int} the lane index for a given data item.
+ */
 function typeToLane(d) {
-  return d.type == "code_page" ? 0 : 1;
+  switch (d.type) {
+    case CODE_PAGE:
+      return 0;
+    case REACHED_PAGE:
+      return 1;
+  }
 }
 
-// Takes the json data and displays it.
-function createGraph(codePages, residencyData) {
+/**
+ * Returns: offset -> {"code_page": codeData, "reached": reachedData}
+ */
+function getOffsetToData(flatData) {
+  let result = [];
+  for (let i = 0; i < flatData.length; i++) {
+    let data = flatData[i].data;
+    let type = flatData[i].type;
+    let offset = data["offset"];
+    if (!result[offset]) result[offset] = {};
+    result[offset][type] = data;
+  }
+  return result;
+}
+
+/**
+ * Creates the graph, and adds it to the DOM.
+ *
+ * reachedData can be undefined. In this case, only the code page data is shown.
+ *
+ * @param codePages data relative to code pages and their content.
+ * @param reachedData data relative to which fraction of code pages is reached.
+ */
+function createGraph(codePages, reachedPerPage) {
   const PAGE_SIZE = 4096;
 
   let offsets = codePages.map((x) => x.offset).sort((a, b) => a - b);
   let minOffset = +offsets[0];
   let maxOffset = +offsets[offsets.length - 1] + PAGE_SIZE;
 
-  let lanes = 1;  // Number of data tracks.
-  let flatData = codePages.map((page) => ({"type": "code_page", "data": page}));
+  let lanes = reachedPerPage ? 2 : 1;
+
+  // [{type: REACHED_PAGE | CODE_PAGE, data: pageData}]
+  let flatData = codePages.map((page) => ({"type": CODE_PAGE, "data": page}));
+  if (reachedPerPage) {
+    let typedReachedPerPage = reachedPerPage.map(
+        (page) => ({"type": REACHED_PAGE, "data": page}));
+    flatData = flatData.concat(typedReachedPerPage);
+  }
+  const offsetToData = getOffsetToData(flatData);
 
   let margins = [20, 15, 15, 120]  // top right bottom left
   let width = window.innerWidth - margins[1] - margins[3]
@@ -184,10 +256,10 @@ function createGraph(codePages, residencyData) {
   let mainAxis = d3.svg.axis().scale(mainAxisScale).orient("bottom");
   let mainXAxis = main.append("g")
       .attr("class", "x axis")
-      .attr("transform", `translate(0, ${mainHeight})`)
+      .attr("transform", `translate(0, -10)`)
       .call(mainAxis);
 
-  const labels = ["Component"];
+  const labels = ["Component", "Reached"].slice(0, lanes);
   main.append("g").selectAll(".laneLines")
       .data(labels)
       .enter().append("line")
@@ -276,7 +348,7 @@ function createGraph(codePages, residencyData) {
         .attr("width", (d) => zoomedXScalePageWidth)
         .attr("height", (d) => .8 * mainYScale(1))
         .style("fill", getFillColor)
-        .on("mouseover", getLegend);
+        .on("mouseover", (d) => updateLegend(d.data.offset, offsetToData));
 
     rects.exit().remove();
   }

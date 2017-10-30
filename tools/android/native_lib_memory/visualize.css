@@ -3,6 +3,10 @@
  * found in the LICENSE file.
  */
 
+html, html * {
+  font-family: "Roboto", sans-serif;
+}
+
 .chart {
     shape-rendering: crispEdges;
 }
