@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_PAI_STARTER_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_PAI_STARTER_H_
 
+#include <vector>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
@@ -36,6 +39,10 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   // is ready at this moment then PAI is started immediately.
   void ReleaseLock();
 
+  // Registers callback that is called once PAI has been started. If PAI is
+  // started already then callback is called immediately.
+  void AddOnStartCallback(base::OnceClosure callback);
+
   // Returns true if lock was acquired.
   bool locked() const { return locked_; }
 
@@ -45,10 +52,13 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   void MaybeStartPai();
 
   // ArcAppListPrefs::Observer:
+  void OnAppRegistered(const std::string& app_id,
+                       const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
 
   content::BrowserContext* const context_;
   PrefService* const pref_service_;
+  std::vector<base::OnceClosure> onstart_callbacks_;
   bool locked_ = false;
   bool started_ = false;
 

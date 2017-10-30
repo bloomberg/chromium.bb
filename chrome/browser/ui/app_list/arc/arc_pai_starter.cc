@@ -52,6 +52,15 @@ void ArcPaiStarter::ReleaseLock() {
   MaybeStartPai();
 }
 
+void ArcPaiStarter::AddOnStartCallback(base::OnceClosure callback) {
+  if (started_) {
+    std::move(callback).Run();
+    return;
+  }
+
+  onstart_callbacks_.push_back(std::move(callback));
+}
+
 void ArcPaiStarter::MaybeStartPai() {
   if (started_ || locked_)
     return;
@@ -71,6 +80,15 @@ void ArcPaiStarter::MaybeStartPai() {
   pref_service_->SetBoolean(prefs::kArcPaiStarted, true);
 
   prefs->RemoveObserver(this);
+
+  for (auto& callback : onstart_callbacks_)
+    std::move(callback).Run();
+  onstart_callbacks_.clear();
+}
+
+void ArcPaiStarter::OnAppRegistered(const std::string& app_id,
+                                    const ArcAppListPrefs::AppInfo& app_info) {
+  OnAppReadyChanged(app_id, app_info.ready);
 }
 
 void ArcPaiStarter::OnAppReadyChanged(const std::string& app_id, bool ready) {

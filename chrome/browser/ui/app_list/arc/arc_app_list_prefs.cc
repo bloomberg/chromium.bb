@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
+#include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -58,7 +59,7 @@ constexpr char kSystem[] = "system";
 constexpr char kUninstalled[] = "uninstalled";
 
 constexpr base::TimeDelta kDetectDefaultAppAvailabilityTimeout =
-    base::TimeDelta::FromSeconds(15);
+    base::TimeDelta::FromMinutes(1);
 
 // Provider of write access to a dictionary storing ARC prefs.
 class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
@@ -1073,8 +1074,19 @@ void ArcAppListPrefs::OnAppListRefreshed(
 
   if (!is_initialized_) {
     is_initialized_ = true;
-    MaybeSetDefaultAppLoadingTimeout();
+
     UMA_HISTOGRAM_COUNTS_1000("Arc.AppsInstalledAtStartup", ready_apps_.size());
+
+    arc::ArcPaiStarter* pai_starter =
+        arc::ArcSessionManager::Get()->pai_starter();
+
+    if (pai_starter) {
+      pai_starter->AddOnStartCallback(
+          base::BindOnce(&ArcAppListPrefs::MaybeSetDefaultAppLoadingTimeout,
+                         weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      MaybeSetDefaultAppLoadingTimeout();
+    }
   }
 }
 
