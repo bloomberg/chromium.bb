@@ -466,13 +466,11 @@ void ThreadWatcherList::ParseCommandLine(
     crash_on_hang_thread_names =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
   } else if (channel != version_info::Channel::STABLE) {
-    // Default to crashing the browser if UI or IO or FILE threads are not
-    // responsive except in stable channel.
-    crash_on_hang_thread_names = base::StringPrintf(
-        "UI:%d:%d,IO:%d:%d,FILE:%d:%d",
-        kLiveThreadsThreshold, crash_seconds,
-        kLiveThreadsThreshold, crash_seconds,
-        kLiveThreadsThreshold, crash_seconds * 5);
+    // Default to crashing the browser if UI or IO threads are not responsive
+    // except in stable channel.
+    crash_on_hang_thread_names =
+        base::StringPrintf("UI:%d:%d,IO:%d:%d", kLiveThreadsThreshold,
+                           crash_seconds, kLiveThreadsThreshold, crash_seconds);
   }
 
   ParseCommandLineCrashOnHangThreads(crash_on_hang_thread_names,
@@ -551,12 +549,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
   StartWatching(BrowserThread::UI, "UI", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::IO, "IO", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
-  StartWatching(BrowserThread::DB, "DB", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
-  StartWatching(BrowserThread::FILE, "FILE", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
-  StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_threads);
 }
 
