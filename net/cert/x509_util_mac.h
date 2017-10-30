@@ -178,6 +178,12 @@ class CSSMCachedCertificate {
   CSSM_HANDLE cached_cert_handle_;
 };
 
+// Compares two OIDs by value.
+inline bool CSSMOIDEqual(const CSSM_OID* oid1, const CSSM_OID* oid2) {
+  return oid1->Length == oid2->Length &&
+         (memcmp(oid1->Data, oid2->Data, oid1->Length) == 0);
+}
+
 #pragma clang diagnostic pop  // "-Wdeprecated-declarations"
 
 }  // namespace x509_util
