@@ -141,6 +141,7 @@
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
+#import "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
@@ -1359,9 +1360,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  // Reparent the toolbar if it's been relinquished.
-  if (_isToolbarControllerRelinquished)
-    [self reparentToolbarController];
+  // Reparent the toolbar if it's been relinquished.  If the tab switcher
+  // presentation experiment is enabled, only do this if the parent VC is not
+  // currently being presented.  Otherwise, reparenting here would remove the
+  // toolbar from the tab switcher while the switcher is in the process of
+  // animating.
+  if (_isToolbarControllerRelinquished) {
+    if (!TabSwitcherPresentsBVCEnabled() ||
+        (!self.beingPresented && !self.parentViewController.beingPresented)) {
+      [self reparentToolbarController];
+    }
+  }
 
   self.visible = YES;
 

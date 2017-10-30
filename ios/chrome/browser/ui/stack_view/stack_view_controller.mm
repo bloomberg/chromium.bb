@@ -1628,6 +1628,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     [_animationDelegate tabSwitcherPresentationAnimationDidEnd:self];
     [_delegate tabSwitcherPresentationTransitionDidEnd:self];
   } else {
+    [_animationDelegate tabSwitcherDismissalAnimationDidEnd:self];
     [_delegate tabSwitcherDismissTransitionDidEnd:self];
   }
 }
@@ -2151,6 +2152,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   void (^completionBlock)(void) = ^{
     [newCard removeFromSuperview];
     [[_scrollView layer] setShouldRasterize:NO];
+    [_animationDelegate tabSwitcherDismissalAnimationDidEnd:self];
     [_delegate tabSwitcherDismissTransitionDidEnd:self];
     double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
     if (_activeCardSet.tabModel.isOffTheRecord) {

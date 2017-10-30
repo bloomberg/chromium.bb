@@ -7,6 +7,8 @@ source_set("transitions") {
   sources = [
     "bvc_container_to_tab_switcher_animator.h",
     "bvc_container_to_tab_switcher_animator.mm",
+    "tab_switcher_to_bvc_container_animator.h",
+    "tab_switcher_to_bvc_container_animator.mm",
   ]
   deps = [
     "//base",

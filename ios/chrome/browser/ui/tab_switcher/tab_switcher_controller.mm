@@ -813,6 +813,8 @@ enum class SnapshotViewOption {
                            withModel:model
                             animated:animated
                       withCompletion:^{
+                        [self.animationDelegate
+                            tabSwitcherDismissalAnimationDidEnd:self];
                         [self.delegate tabSwitcherDismissTransitionDidEnd:self];
                       }];
 }
