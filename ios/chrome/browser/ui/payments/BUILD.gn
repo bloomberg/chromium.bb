@@ -110,6 +110,7 @@ source_set("payments_ui") {
     "payment_request_edit_view_controller.mm",
     "payment_request_edit_view_controller_actions.h",
     "payment_request_edit_view_controller_data_source.h",
+    "payment_request_edit_view_controller_validator.h",
     "payment_request_editor_field.h",
     "payment_request_editor_field.mm",
     "payment_request_error_view_controller.h",

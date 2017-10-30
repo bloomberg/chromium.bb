@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_validator.h"
 
 @protocol PaymentRequestEditConsumer;
 
@@ -21,7 +22,8 @@ class PaymentRequest;
 
 // Serves as data source for AddressEditViewController.
 @interface ContactInfoEditMediator
-    : NSObject<PaymentRequestEditViewControllerDataSource>
+    : NSObject<PaymentRequestEditViewControllerDataSource,
+               PaymentRequestEditViewControllerValidator>
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.

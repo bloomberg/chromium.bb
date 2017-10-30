@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -101,6 +102,42 @@
 }
 
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
+  return nil;
+}
+
+#pragma mark - PaymentRequestEditViewControllerValidator
+
+- (NSString*)paymentRequestEditViewController:
+                 (PaymentRequestEditViewController*)controller
+                                validateField:(EditorField*)field {
+  if (field.value.length) {
+    switch (field.autofillUIType) {
+      case AutofillUITypeProfileHomePhoneWholeNumber: {
+        const std::string countryCode =
+            autofill::AutofillCountry::CountryCodeForLocale(
+                self.paymentRequest->GetApplicationLocale());
+        if (!autofill::IsValidPhoneNumber(base::SysNSStringToUTF16(field.value),
+                                          countryCode)) {
+          return l10n_util::GetNSString(
+              IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE);
+        }
+        break;
+      }
+      case AutofillUITypeProfileEmailAddress: {
+        if (!autofill::IsValidEmailAddress(
+                base::SysNSStringToUTF16(field.value))) {
+          return l10n_util::GetNSString(
+              IDS_PAYMENTS_EMAIL_INVALID_VALIDATION_MESSAGE);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  } else if (field.isRequired) {
+    return l10n_util::GetNSString(
+        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+  }
   return nil;
 }
 

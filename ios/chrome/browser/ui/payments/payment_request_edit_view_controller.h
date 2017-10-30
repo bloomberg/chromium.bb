@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_validator.h"
 
 extern NSString* const kWarningMessageAccessibilityID;
 
@@ -37,17 +38,6 @@ extern NSString* const kWarningMessageAccessibilityID;
 - (void)paymentRequestEditViewController:
             (PaymentRequestEditViewController*)controller
                           didSelectField:(EditorField*)field;
-
-@end
-
-// Validator protocol for PaymentRequestEditViewController.
-@protocol PaymentRequestEditViewControllerValidator<NSObject>
-
-// Returns the validation error string for |field|. Returns nil if there are no
-// validation errors.
-- (NSString*)paymentRequestEditViewController:
-                 (PaymentRequestEditViewController*)controller
-                                validateField:(EditorField*)field;
 
 @end
 

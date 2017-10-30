@@ -39,8 +39,7 @@ class PaymentRequest;
 // controller. This view controller will be presented by the view controller
 // provided in the initializer.
 @interface ContactInfoEditCoordinator
-    : ChromeCoordinator<PaymentRequestEditViewControllerDelegate,
-                        PaymentRequestEditViewControllerValidator>
+    : ChromeCoordinator<PaymentRequestEditViewControllerDelegate>
 
 // The profile to be edited, if any. This pointer is not owned by this class
 // and should outlive it.

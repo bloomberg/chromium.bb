@@ -40,7 +40,6 @@ class PaymentRequest;
 // provided in the initializer.
 @interface AddressEditCoordinator
     : ChromeCoordinator<PaymentRequestEditViewControllerDelegate,
-                        PaymentRequestEditViewControllerValidator,
                         CountrySelectionCoordinatorDelegate>
 
 // The address to be edited, if any. This pointer is not owned by this class

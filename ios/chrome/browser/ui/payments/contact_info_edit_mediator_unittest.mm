@@ -10,6 +10,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
@@ -195,6 +196,80 @@ TEST_F(PaymentRequestContactInfoEditMediatorTest, TestFieldsRequestPhoneEmail) {
   [mediator setConsumer:consumer];
 
   EXPECT_OCMOCK_VERIFY(consumer);
+}
+
+// Tests that no validation error should be expected if validating an empty
+// field that is not required.
+TEST_F(PaymentRequestContactInfoEditMediatorTest, ValidateEmptyField) {
+  ContactInfoEditMediator* mediator =
+      [[ContactInfoEditMediator alloc] initWithPaymentRequest:payment_request()
+                                                      profile:nil];
+
+  EditorField* field = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
+                   fieldType:EditorFieldTypeTextField
+                       label:@""
+                       value:@""
+                    required:NO];
+  NSString* validationError =
+      [mediator paymentRequestEditViewController:nil
+                                   validateField:(EditorField*)field];
+  EXPECT_TRUE(!validationError);
+}
+
+// Tests that the appropriate validation error should be expected if validating
+// an empty field that is required.
+TEST_F(PaymentRequestContactInfoEditMediatorTest, ValidateEmptyRequiredField) {
+  ContactInfoEditMediator* mediator =
+      [[ContactInfoEditMediator alloc] initWithPaymentRequest:payment_request()
+                                                      profile:nil];
+
+  EditorField* field = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
+                   fieldType:EditorFieldTypeTextField
+                       label:@""
+                       value:@""
+                    required:YES];
+  NSString* validationError =
+      [mediator paymentRequestEditViewController:nil
+                                   validateField:(EditorField*)field];
+  EXPECT_TRUE([validationError
+      isEqualToString:l10n_util::GetNSString(
+                          IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE)]);
+}
+
+// Tests that the appropriate validation error should be expected if validating
+// a field with an invalid value.
+TEST_F(PaymentRequestContactInfoEditMediatorTest, ValidateFieldInvalidValue) {
+  ContactInfoEditMediator* mediator =
+      [[ContactInfoEditMediator alloc] initWithPaymentRequest:payment_request()
+                                                      profile:nil];
+
+  EditorField* field = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
+                   fieldType:EditorFieldTypeTextField
+                       label:@""
+                       value:@"1506853121"  // Missing one last digit.
+                    required:YES];
+  NSString* validationError =
+      [mediator paymentRequestEditViewController:nil
+                                   validateField:(EditorField*)field];
+  EXPECT_TRUE([validationError
+      isEqualToString:l10n_util::GetNSString(
+                          IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE)]);
+
+  field = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeProfileEmailAddress
+                   fieldType:EditorFieldTypeTextField
+                       label:@""
+                       value:@"example.com"  // Invalid email address.
+                    required:YES];
+  validationError =
+      [mediator paymentRequestEditViewController:nil
+                                   validateField:(EditorField*)field];
+  EXPECT_TRUE([validationError
+      isEqualToString:l10n_util::GetNSString(
+                          IDS_PAYMENTS_EMAIL_INVALID_VALIDATION_MESSAGE)]);
 }
 
 // Tests that the editor's title is correct in various situations.

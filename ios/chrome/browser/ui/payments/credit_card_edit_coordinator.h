@@ -44,8 +44,7 @@ class PaymentRequest;
 @interface CreditCardEditCoordinator
     : ChromeCoordinator<AddressEditCoordinatorDelegate,
                         BillingAddressSelectionCoordinatorDelegate,
-                        PaymentRequestEditViewControllerDelegate,
-                        PaymentRequestEditViewControllerValidator>
+                        PaymentRequestEditViewControllerDelegate>
 
 // The payment method to be edited, if any. This pointer is not owned by this
 // class and should outlive it.
