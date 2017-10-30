@@ -914,8 +914,6 @@ void UiSceneManager::ConfigureScene() {
         -kCloseButtonDistance);
     close_button_->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   }
-  scene_->set_background_distance(kContentDistance *
-                                  kBackgroundDistanceMultiplier);
 
   scene_->root_element().SetMode(mode());
 
