@@ -22,6 +22,8 @@ component("gamepad") {
     "gamepad_data_fetcher_manager.cc",
     "gamepad_data_fetcher_manager.h",
     "gamepad_export.h",
+    "gamepad_haptics_manager.cc",
+    "gamepad_haptics_manager.h",
     "gamepad_monitor.cc",
     "gamepad_monitor.h",
     "gamepad_pad_state_provider.cc",

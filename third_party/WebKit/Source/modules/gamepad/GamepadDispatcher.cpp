@@ -6,8 +6,11 @@
 
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/InterfaceProvider.h"
 
 namespace blink {
+
+using device::mojom::blink::GamepadHapticsManager;
 
 GamepadDispatcher& GamepadDispatcher::Instance() {
   DEFINE_STATIC_LOCAL(GamepadDispatcher, gamepad_dispatcher,
@@ -19,9 +22,34 @@ void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
   Platform::Current()->SampleGamepads(gamepads);
 }
 
-GamepadDispatcher::GamepadDispatcher() {}
+void GamepadDispatcher::PlayVibrationEffectOnce(
+    int pad_index,
+    device::mojom::blink::GamepadHapticEffectType type,
+    device::mojom::blink::GamepadEffectParametersPtr params,
+    GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  InitializeHaptics();
+  gamepad_haptics_manager_->PlayVibrationEffectOnce(
+      pad_index, type, std::move(params), std::move(callback));
+}
 
-GamepadDispatcher::~GamepadDispatcher() {}
+void GamepadDispatcher::ResetVibrationActuator(
+    int pad_index,
+    GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  InitializeHaptics();
+  gamepad_haptics_manager_->ResetVibrationActuator(pad_index,
+                                                   std::move(callback));
+}
+
+GamepadDispatcher::GamepadDispatcher() = default;
+
+GamepadDispatcher::~GamepadDispatcher() = default;
+
+void GamepadDispatcher::InitializeHaptics() {
+  if (!gamepad_haptics_manager_) {
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&gamepad_haptics_manager_));
+  }
+}
 
 void GamepadDispatcher::Trace(blink::Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);

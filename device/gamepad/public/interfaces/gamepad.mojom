@@ -38,12 +38,26 @@ enum GamepadHand {
   GamepadHandRight = 2
 };
 
+enum GamepadHapticActuatorType {
+  GamepadHapticActuatorTypeVibration = 0,
+  GamepadHapticActuatorTypeDualRumble = 1
+};
+
+enum GamepadHapticEffectType {
+  GamepadHapticEffectTypeDualRumble = 0
+};
+
+struct GamepadHapticActuator {
+  GamepadHapticActuatorType type;
+};
+
 struct Gamepad {
   bool connected;
   array<uint16> id;
   uint64 timestamp;
   array<double> axes;
   array<GamepadButton> buttons;
+  GamepadHapticActuator? vibration_actuator;
   array<uint16> mapping;
   GamepadPose? pose;
   GamepadHand hand;
@@ -67,4 +81,27 @@ interface GamepadMonitor {
   GamepadStopPolling() => ();
 
   SetObserver(GamepadObserver gamepad_observer);
+};
+
+struct GamepadEffectParameters {
+  double duration;
+  double start_delay;
+  double strong_magnitude;
+  double weak_magnitude;
+};
+
+enum GamepadHapticsResult {
+  GamepadHapticsResultError = 0,
+  GamepadHapticsResultComplete = 1,
+  GamepadHapticsResultPreempted = 2,
+  GamepadHapticsResultInvalidParameter = 3,
+  GamepadHapticsResultNotSupported = 4
+};
+
+interface GamepadHapticsManager {
+  PlayVibrationEffectOnce(int32 pad_index,
+                          GamepadHapticEffectType type,
+                          GamepadEffectParameters params)
+      => (GamepadHapticsResult result);
+  ResetVibrationActuator(int32 pad_index) => (GamepadHapticsResult result);
 };

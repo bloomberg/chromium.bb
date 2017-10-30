@@ -43,6 +43,7 @@
           "content::mojom::WebDatabaseHost",
           "content::mojom::WorkerURLLoaderFactoryProvider",
           "device::mojom::BatteryMonitor",
+          "device::mojom::GamepadHapticsManager",
           "device::mojom::GamepadMonitor",
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "media::mojom::VideoDecodePerfHistory",

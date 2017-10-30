@@ -59,6 +59,63 @@ bool StructTraits<device::mojom::GamepadButtonDataView, device::GamepadButton>::
 }
 
 // static
+device::mojom::GamepadHapticActuatorType
+EnumTraits<device::mojom::GamepadHapticActuatorType,
+           device::GamepadHapticActuatorType>::
+    ToMojom(device::GamepadHapticActuatorType input) {
+  switch (input) {
+    case device::GamepadHapticActuatorType::kVibration:
+      return device::mojom::GamepadHapticActuatorType::
+          GamepadHapticActuatorTypeVibration;
+    case device::GamepadHapticActuatorType::kDualRumble:
+      return device::mojom::GamepadHapticActuatorType::
+          GamepadHapticActuatorTypeDualRumble;
+  }
+
+  NOTREACHED();
+  return device::mojom::GamepadHapticActuatorType::
+      GamepadHapticActuatorTypeVibration;
+}
+
+// static
+bool EnumTraits<device::mojom::GamepadHapticActuatorType,
+                device::GamepadHapticActuatorType>::
+    FromMojom(device::mojom::GamepadHapticActuatorType input,
+              device::GamepadHapticActuatorType* output) {
+  switch (input) {
+    case device::mojom::GamepadHapticActuatorType::
+        GamepadHapticActuatorTypeVibration:
+      *output = device::GamepadHapticActuatorType::kVibration;
+      return true;
+    case device::mojom::GamepadHapticActuatorType::
+        GamepadHapticActuatorTypeDualRumble:
+      *output = device::GamepadHapticActuatorType::kDualRumble;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+void StructTraits<device::mojom::GamepadHapticActuatorDataView,
+                  device::GamepadHapticActuator>::
+    SetToNull(device::GamepadHapticActuator* out) {
+  memset(out, 0, sizeof(device::GamepadHapticActuator));
+  out->not_null = false;
+}
+
+// static
+bool StructTraits<device::mojom::GamepadHapticActuatorDataView,
+                  device::GamepadHapticActuator>::
+    Read(device::mojom::GamepadHapticActuatorDataView data,
+         device::GamepadHapticActuator* out) {
+  if (!data.ReadType(&out->type))
+    return false;
+  return true;
+}
+
+// static
 void StructTraits<device::mojom::GamepadPoseDataView,
                   device::GamepadPose>::SetToNull(device::GamepadPose* out) {
   memset(out, 0, sizeof(device::GamepadPose));
@@ -183,6 +240,9 @@ bool StructTraits<device::mojom::GamepadDataView, device::Gamepad>::Read(
   }
   // static_cast is safe when "data.ReadButtons(&buttons)" above returns true.
   out->buttons_length = static_cast<unsigned>(buttons.size());
+
+  if (!data.ReadVibrationActuator(&out->vibration_actuator))
+    return false;
 
   memset(out->mapping, 0, sizeof(out->mapping));
   base::span<uint16_t> mapping(reinterpret_cast<uint16_t*>(out->mapping),
