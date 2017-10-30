@@ -12,12 +12,14 @@ namespace {
 
 using WaylandClientPerfTests = exo::WaylandClientTest;
 
+// Test simple double-buffered client performance.
 TEST_F(WaylandClientPerfTests, Simple) {
   const int kWarmUpFrames = 20;
   const int kTestFrames = 600;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   exo::wayland::clients::ClientBase::InitParams params;
+  params.num_buffers = 2;  // Double-buffering.
   EXPECT_TRUE(params.FromCommandLine(*command_line));
 
   exo::wayland::clients::Simple client;

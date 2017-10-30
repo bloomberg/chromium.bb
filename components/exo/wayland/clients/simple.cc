@@ -37,8 +37,11 @@ void Simple::Run(int frames) {
     if (frame_count == frames)
       break;
 
+    Buffer* buffer = DequeueBuffer();
+    if (!buffer)
+      continue;
+
     callback_pending = true;
-    Buffer* buffer = buffers_.front().get();
     SkCanvas* canvas = buffer->sk_surface->getCanvas();
 
     static const SkColor kColors[] = {SK_ColorRED, SK_ColorBLACK};

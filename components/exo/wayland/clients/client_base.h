@@ -43,7 +43,7 @@ class ClientBase {
     bool FromCommandLine(const base::CommandLine& command_line);
 
     std::string title = "Wayland Client";
-    size_t num_buffers = 8;
+    size_t num_buffers = 2;
     size_t width = 256;
     size_t height = 256;
     int scale = 1;
@@ -105,6 +105,7 @@ class ClientBase {
   std::unique_ptr<Buffer> CreateDrmBuffer(const gfx::Size& size,
                                           int32_t drm_format,
                                           int32_t bo_usage);
+  ClientBase::Buffer* DequeueBuffer();
 
   gfx::Size size_ = gfx::Size(256, 256);
   int scale_ = 1;

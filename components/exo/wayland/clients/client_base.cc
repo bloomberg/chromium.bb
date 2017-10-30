@@ -767,6 +767,20 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
   return buffer;
 }
 
+ClientBase::Buffer* ClientBase::DequeueBuffer() {
+  auto buffer_it =
+      std::find_if(buffers_.begin(), buffers_.end(),
+                   [](const std::unique_ptr<ClientBase::Buffer>& buffer) {
+                     return !buffer->busy;
+                   });
+  if (buffer_it == buffers_.end())
+    return nullptr;
+
+  Buffer* buffer = buffer_it->get();
+  buffer->busy = true;
+  return buffer;
+}
+
 }  // namespace clients
 }  // namespace wayland
 }  // namespace exo
