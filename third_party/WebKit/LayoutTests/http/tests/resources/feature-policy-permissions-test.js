@@ -17,7 +17,8 @@ function assert_available_in_iframe(
   window.addEventListener('message', test.step_func(evt => {
     if (evt.source == frame.contentWindow) {
       assert_equals(evt.data, expected);
-      document.body.removeChild(frame);
+      // TODO(raymes): Uncomment the below line once crbug.com/779433 is fixed.
+      // document.body.removeChild(frame);
       test.done();
     }
   }));
