@@ -63,6 +63,7 @@ TEST_F(LoginPinViewTest, ButtonsFireEvents) {
 
   // Verify backspace events are emitted.
   EXPECT_EQ(0, backspace_);
+  test_api.GetBackspaceButton()->SetEnabled(true);
   test_api.GetBackspaceButton()->RequestFocus();
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   EXPECT_EQ(1, backspace_);
@@ -138,6 +139,7 @@ TEST_F(LoginPinViewTest, BackspaceAutoSubmitsAndRepeats) {
 
   // Verify backspace events are emitted.
   EXPECT_EQ(0, backspace_);
+  test_api.GetBackspaceButton()->SetEnabled(true);
   generator.MoveMouseTo(
       test_api.GetBackspaceButton()->GetBoundsInScreen().CenterPoint());
   generator.PressLeftButton();

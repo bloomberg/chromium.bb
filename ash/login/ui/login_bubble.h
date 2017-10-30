@@ -16,6 +16,7 @@ class StyledLabel;
 }
 
 namespace ash {
+class LoginButton;
 
 // A wrapper for the bubble view in the login screen.
 // This class observes keyboard events, mouse clicks and touch down events
@@ -38,7 +39,7 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   void ShowUserMenu(const base::string16& message,
                     const base::string16& sub_message,
                     views::View* anchor_view,
-                    views::View* bubble_opener,
+                    LoginButton* bubble_opener,
                     bool show_remove_user);
 
   // Shows a tooltip.
@@ -68,8 +69,8 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
 
   LoginBaseBubbleView* bubble_view_ = nullptr;
 
-  // A view that could open/close the bubble.
-  views::View* bubble_opener_ = nullptr;
+  // A button that could open/close the bubble.
+  LoginButton* bubble_opener_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LoginBubble);
 };

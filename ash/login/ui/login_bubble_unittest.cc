@@ -5,9 +5,11 @@
 #include <memory>
 
 #include "ash/login/ui/login_bubble.h"
+#include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,7 +45,7 @@ class LoginBubbleTest : public LoginTestBase {
     container_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical));
 
-    bubble_opener_ = new views::View();
+    bubble_opener_ = new LoginButton(nullptr /*listener*/);
     other_view_ = new views::View();
     bubble_opener_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     other_view_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -67,7 +69,7 @@ class LoginBubbleTest : public LoginTestBase {
   // Owned by test widget view hierarchy.
   views::View* container_ = nullptr;
   // Owned by test widget view hierarchy.
-  views::View* bubble_opener_ = nullptr;
+  LoginButton* bubble_opener_ = nullptr;
   // Owned by test widget view hierarchy.
   views::View* other_view_ = nullptr;
 
@@ -174,6 +176,34 @@ TEST_F(LoginBubbleTest, BubbleGestureEventHandling) {
   // Verifies that gesture event on the other view will close the bubble.
   generator.GestureTapAt(other_view_->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(bubble_->IsVisible());
+}
+
+// Verifies the ripple effects for the login button.
+TEST_F(LoginBubbleTest, LoginButtonRipple) {
+  views::test::InkDropHostViewTestApi ink_drop_api(bubble_opener_);
+  EXPECT_EQ(ink_drop_api.ink_drop_mode(),
+            views::InkDropHostView::InkDropMode::ON);
+
+  // Show the bubble to activate the ripple effect.
+  bubble_->ShowUserMenu(base::string16(), base::string16(), container_,
+                        bubble_opener_, false /*show_remove_user*/);
+  EXPECT_TRUE(bubble_->IsVisible());
+  EXPECT_TRUE(ink_drop_api.HasInkDrop());
+  EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
+            views::InkDropState::ACTIVATED);
+  EXPECT_TRUE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
+
+  // Close the bubble should hide the ripple effect.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(other_view_->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(bubble_->IsVisible());
+
+  // InkDropState::DEACTIVATED state will automatically transition to the
+  // InkDropState::HIDDEN state.
+  EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
+            views::InkDropState::HIDDEN);
+  EXPECT_FALSE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
 }
 
 }  // namespace ash

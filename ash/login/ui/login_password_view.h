@@ -19,13 +19,13 @@
 namespace views {
 class Button;
 class ButtonListener;
-class ImageButton;
 class ImageView;
 class Separator;
 class Textfield;
 }  // namespace views
 
 namespace ash {
+class LoginButton;
 
 // Contains a textfield instance with a submit button. The user can type a
 // password into the textfield and hit enter to submit.
@@ -133,7 +133,7 @@ class ASH_EXPORT LoginPasswordView
   views::View* password_row_ = nullptr;
 
   views::Textfield* textfield_ = nullptr;
-  views::ImageButton* submit_button_ = nullptr;
+  LoginButton* submit_button_ = nullptr;
   views::ImageView* capslock_icon_ = nullptr;
   views::Separator* separator_ = nullptr;
   EasyUnlockIcon* easy_unlock_icon_ = nullptr;

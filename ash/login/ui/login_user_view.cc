@@ -11,6 +11,7 @@
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/image_parser.h"
 #include "ash/login/ui/login_bubble.h"
+#include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_constants.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
@@ -36,13 +37,13 @@ namespace {
 // Vertical spacing between icon, label, and authentication UI.
 constexpr int kVerticalSpacingBetweenEntriesDp = 32;
 // Horizontal spacing between username label and the dropdown icon.
-constexpr int kDistanceBetweenUsernameAndDropdownDp = 12;
+constexpr int kDistanceBetweenUsernameAndDropdownDp = 8;
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
 // Distance between user icon and the user label in small/extra-small layouts.
 constexpr int kSmallManyDistanceFromUserIconToUserLabelDp = 16;
 
-constexpr int kDropdownIconSizeDp = 20;
+constexpr int kDropdownIconSizeDp = 28;
 
 // Width/height of the user view. Ensures proper centering.
 constexpr int kLargeUserViewWidthDp = 306;
@@ -241,15 +242,14 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
   user_image_ = new UserImage(GetImageSize(style));
   user_label_ = new UserLabel(style);
   if (show_dropdown) {
-    user_dropdown_ = new views::ImageButton(this);
+    user_dropdown_ = new LoginButton(this);
+    user_dropdown_->set_has_ink_drop_action_on_click(false);
     user_dropdown_->SetPreferredSize(
         gfx::Size(kDropdownIconSizeDp, kDropdownIconSizeDp));
     user_dropdown_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kLockScreenDropdownIcon, SK_ColorWHITE));
     user_dropdown_->SetFocusBehavior(FocusBehavior::ALWAYS);
-    user_dropdown_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
   }
 
   switch (style) {
