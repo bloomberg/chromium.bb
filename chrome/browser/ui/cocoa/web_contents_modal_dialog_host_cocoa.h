@@ -22,6 +22,7 @@ class WebContentsModalDialogHostCocoa
   // web_modal::ModalDialogHost:
   gfx::NativeView GetHostView() const override;
   gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  bool ShouldActivateDialog() const override;
   void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
   void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
