@@ -18,11 +18,9 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   for (int i = 0; i < REFERENCE_MODES; i++)
     td->rd_counts.comp_pred_diff[i] += td_t->rd_counts.comp_pred_diff[i];
 
-#if CONFIG_GLOBAL_MOTION
   for (int i = 0; i < TOTAL_REFS_PER_FRAME; i++)
     td->rd_counts.global_motion_used[i] +=
         td_t->rd_counts.global_motion_used[i];
-#endif  // CONFIG_GLOBAL_MOTION
 
   td->rd_counts.compound_ref_used_flag |=
       td_t->rd_counts.compound_ref_used_flag;

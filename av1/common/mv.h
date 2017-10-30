@@ -37,7 +37,6 @@ typedef struct mv32 {
   int32_t col;
 } MV32;
 
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 // Bits of precision used for the model
 #define WARPEDMODEL_PREC_BITS 16
 #define WARPEDMODEL_ROW3HOMO_PREC_BITS 16
@@ -91,9 +90,7 @@ typedef enum {
 #endif  // GLOBAL_TRANS_TYPES > 4
 
 typedef struct {
-#if CONFIG_GLOBAL_MOTION
   int global_warp_allowed;
-#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_WARPED_MOTION
   int local_warp_allowed;
 #endif  // CONFIG_WARPED_MOTION
@@ -123,9 +120,7 @@ static const WarpedMotionParams default_warp_params = {
   0,
 };
 /* clang-format on */
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
-#if CONFIG_GLOBAL_MOTION
 // The following constants describe the various precisions
 // of different parameters in the global motion experiment.
 //
@@ -316,7 +311,6 @@ static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
   else
     return AFFINE;
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 typedef struct candidate_mv {
   int_mv this_mv;

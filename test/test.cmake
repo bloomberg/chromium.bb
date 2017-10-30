@@ -79,14 +79,12 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/scan_test.cc")
   endif ()
 
-  if (CONFIG_GLOBAL_MOTION OR CONFIG_WARPED_MOTION)
-    if (HAVE_SSE2)
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/warp_filter_test.cc"
-          "${AOM_ROOT}/test/warp_filter_test_util.cc"
-          "${AOM_ROOT}/test/warp_filter_test_util.h")
-    endif ()
+  if (HAVE_SSE2)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/warp_filter_test.cc"
+        "${AOM_ROOT}/test/warp_filter_test_util.cc"
+        "${AOM_ROOT}/test/warp_filter_test_util.h")
   endif ()
 endif ()
 
@@ -277,11 +275,9 @@ if (CONFIG_AV1_ENCODER)
           "${AOM_ROOT}/test/av1_fht8x4_test.cc")
     endif ()
 
-    if (CONFIG_GLOBAL_MOTION)
-      set(AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
-          ${AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1}
-          "${AOM_ROOT}/test/corner_match_test.cc")
-    endif ()
+    set(AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
+        ${AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1}
+        "${AOM_ROOT}/test/corner_match_test.cc")
 
     if (CONFIG_MOTION_VAR)
       set(AOM_UNIT_TEST_ENCODER_SOURCES

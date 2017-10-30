@@ -34,7 +34,7 @@ int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
       aom_free(ybf->buffer_alloc);
     }
 
-#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH
     if (ybf->y_buffer_8bit) aom_free(ybf->y_buffer_8bit);
 #endif
 
@@ -167,7 +167,7 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                                        (uv_border_h * uv_stride) + uv_border_w,
                                    aom_byte_align);
 
-#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH
     if (use_highbitdepth) {
       if (ybf->y_buffer_8bit) aom_free(ybf->y_buffer_8bit);
       ybf->y_buffer_8bit = (uint8_t *)aom_memalign(32, (size_t)yplane_size);

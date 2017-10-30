@@ -235,10 +235,8 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fwd_txfm2d_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_inv_txfm2d_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_convolve_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_convolve_optimz_test.cc
-ifneq ($(findstring yes,$(CONFIG_GLOBAL_MOTION)$(CONFIG_WARPED_MOTION)),)
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += warp_filter_test_util.h
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += warp_filter_test.cc warp_filter_test_util.cc
-endif
 ifeq ($(CONFIG_LOOP_RESTORATION),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test_util.h
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test.cc
@@ -256,7 +254,7 @@ ifeq (yesx,$(CONFIG_CONVOLVE_ROUND)x$(CONFIG_COMPOUND_ROUND))
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_convolve_scale_test.cc
 endif
 
-ifeq ($(CONFIG_GLOBAL_MOTION)$(CONFIG_AV1_ENCODER),yesyes)
+ifeq ($(CONFIG_AV1_ENCODER),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += corner_match_test.cc
 endif
 

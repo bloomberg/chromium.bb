@@ -15,16 +15,14 @@
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/convolve.h"
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "aom/aom_integer.h"
 
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #define WARP_WM_NEIGHBORS_WITH_OBMC 0
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
-#if CONFIG_MOTION_VAR && CONFIG_GLOBAL_MOTION
+#if CONFIG_MOTION_VAR
 #define WARP_GM_NEIGHBORS_WITH_OBMC 0
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
@@ -290,14 +288,8 @@ void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
     int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
-    int xs, int ys,
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
-    int plane,
-#endif
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-    const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-    MACROBLOCKD *xd);
+    int xs, int ys, int plane, const WarpTypesAllowed *warp_types, int p_col,
+    int p_row, int ref, MACROBLOCKD *xd);
 
 static INLINE int round_mv_comp_q4(int value) {
   return (value < 0 ? value - 2 : value + 2) / 4;
@@ -377,27 +369,19 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize);
 
-void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
-                               int dst_stride, const MV *src_mv,
-                               const struct scale_factors *sf, int w, int h,
-                               ConvolveParams *conv_params,
-                               InterpFilters interp_filters,
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-                               const WarpTypesAllowed *warp_types, int p_col,
-                               int p_row, int plane, int ref,
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-                               enum mv_precision precision, int x, int y,
-                               const MACROBLOCKD *xd);
+void av1_build_inter_predictor(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
+    const MV *src_mv, const struct scale_factors *sf, int w, int h,
+    ConvolveParams *conv_params, InterpFilters interp_filters,
+    const WarpTypesAllowed *warp_types, int p_col, int p_row, int plane,
+    int ref, enum mv_precision precision, int x, int y, const MACROBLOCKD *xd);
 
 #if CONFIG_HIGHBITDEPTH
 void av1_highbd_build_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
-    InterpFilters interp_filters,
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-    const WarpTypesAllowed *warp_types, int p_col, int p_row,
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-    int plane, enum mv_precision precision, int x, int y,
+    InterpFilters interp_filters, const WarpTypesAllowed *warp_types, int p_col,
+    int p_row, int plane, enum mv_precision precision, int x, int y,
     const MACROBLOCKD *xd);
 #endif
 
@@ -477,9 +461,7 @@ static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   if (mbmi->motion_mode == WARPED_CAUSAL) return 0;
 #endif  // CONFIG_WARPED_MOTION
-#if CONFIG_GLOBAL_MOTION
   if (is_nontrans_global_motion(xd)) return 0;
-#endif  // CONFIG_GLOBAL_MOTION
   return 1;
 }
 

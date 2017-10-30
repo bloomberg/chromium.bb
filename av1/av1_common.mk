@@ -91,10 +91,8 @@ endif
 ifeq ($(CONFIG_INTRA_EDGE),yes)
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/intra_edge_sse4.c
 endif
-ifeq (yes,$(filter $(CONFIG_GLOBAL_MOTION) $(CONFIG_WARPED_MOTION),yes))
 AV1_COMMON_SRCS-yes += common/warped_motion.h
 AV1_COMMON_SRCS-yes += common/warped_motion.c
-endif
 ifeq ($(CONFIG_CDEF),yes)
 ifeq ($(CONFIG_CDEF_SINGLEPASS),yes)
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/cdef_block_avx2.c
@@ -155,12 +153,10 @@ ifeq ($(CONFIG_FILTER_INTRA),yes)
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/filterintra_sse4.c
 endif
 
-ifneq ($(findstring yes,$(CONFIG_GLOBAL_MOTION) $(CONFIG_WARPED_MOTION)),)
 AV1_COMMON_SRCS-$(HAVE_SSE2) += common/x86/warp_plane_sse2.c
 AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/warp_plane_ssse3.c
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)
 AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/highbd_warp_plane_ssse3.c
-endif
 endif
 
 ifeq ($(CONFIG_CONVOLVE_ROUND),yes)

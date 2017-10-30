@@ -39,18 +39,18 @@ AV1_CX_SRCS-yes += encoder/ethread.c
 AV1_CX_SRCS-yes += encoder/extend.c
 AV1_CX_SRCS-yes += encoder/firstpass.c
 AV1_CX_SRCS-yes += encoder/mathutils.h
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/fast.h
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/nonmax.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/fast_9.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/fast.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/corner_match.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/corner_match.h
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/corner_detect.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/corner_detect.h
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/global_motion.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/global_motion.h
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/ransac.c
-AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += encoder/ransac.h
+AV1_CX_SRCS-yes += ../third_party/fastfeat/fast.h
+AV1_CX_SRCS-yes += ../third_party/fastfeat/nonmax.c
+AV1_CX_SRCS-yes += ../third_party/fastfeat/fast_9.c
+AV1_CX_SRCS-yes += ../third_party/fastfeat/fast.c
+AV1_CX_SRCS-yes += encoder/corner_match.c
+AV1_CX_SRCS-yes += encoder/corner_match.h
+AV1_CX_SRCS-yes += encoder/corner_detect.c
+AV1_CX_SRCS-yes += encoder/corner_detect.h
+AV1_CX_SRCS-yes += encoder/global_motion.c
+AV1_CX_SRCS-yes += encoder/global_motion.h
+AV1_CX_SRCS-yes += encoder/ransac.c
+AV1_CX_SRCS-yes += encoder/ransac.h
 AV1_CX_SRCS-yes += encoder/block.h
 AV1_CX_SRCS-yes += encoder/bitstream.h
 AV1_CX_SRCS-yes += encoder/encodemb.h
@@ -158,9 +158,7 @@ AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/fdct16x16_msa.c
 AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/fdct_msa.h
 AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/temporal_filter_msa.c
 
-ifeq ($(CONFIG_GLOBAL_MOTION),yes)
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/corner_match_sse4.c
-endif
 
 ifeq ($(CONFIG_EXT_TX),yes)
 AV1_CX_SRCS-yes += encoder/tx_prune_model_weights.h

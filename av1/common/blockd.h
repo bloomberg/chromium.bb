@@ -516,7 +516,6 @@ PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
 PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
                                      const MODE_INFO *above_mi, int b);
 
-#if CONFIG_GLOBAL_MOTION
 static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
                                      TransformationType type) {
   PREDICTION_MODE mode = get_y_mode(mi, block);
@@ -530,7 +529,6 @@ static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
   return (mode == ZEROMV || mode == ZERO_ZEROMV) && type > TRANSLATION &&
          block_size_allowed;
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 enum mv_precision { MV_PRECISION_Q3, MV_PRECISION_Q4 };
 
@@ -733,9 +731,7 @@ typedef struct macroblockd {
 // same with that in AV1_COMMON
 #endif
   struct aom_internal_error_info *error_info;
-#if CONFIG_GLOBAL_MOTION
   WarpedMotionParams *global_motion;
-#endif  // CONFIG_GLOBAL_MOTION
   int prev_qindex;
   int delta_qindex;
   int current_qindex;
@@ -1433,22 +1429,18 @@ static INLINE NCOBMC_MODE ncobmc_mode_allowed_bsize(BLOCK_SIZE bsize) {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR
 
-static INLINE MOTION_MODE motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION
-    int block, const WarpedMotionParams *gm_params,
-#endif  // CONFIG_GLOBAL_MOTION
+static INLINE MOTION_MODE
+motion_mode_allowed(int block, const WarpedMotionParams *gm_params,
 #if CONFIG_WARPED_MOTION
-    const MACROBLOCKD *xd,
+                    const MACROBLOCKD *xd,
 #endif
-    const MODE_INFO *mi) {
+                    const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 #if CONFIG_AMVR
   if (xd->cur_frame_force_integer_mv == 0) {
 #endif
-#if CONFIG_GLOBAL_MOTION
     const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
     if (is_global_mv_block(mi, block, gm_type)) return SIMPLE_TRANSLATION;
-#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_AMVR
   }
 #endif
@@ -1485,23 +1477,18 @@ static INLINE MOTION_MODE motion_mode_allowed(
   }
 }
 
-static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
-#if CONFIG_GLOBAL_MOTION
-                                            int block,
+static INLINE void assert_motion_mode_valid(MOTION_MODE mode, int block,
                                             const WarpedMotionParams *gm_params,
-#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_WARPED_MOTION
                                             const MACROBLOCKD *xd,
 #endif
                                             const MODE_INFO *mi) {
-  const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION
-      block, gm_params,
-#endif  // CONFIG_GLOBAL_MOTION
+  const MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed(block, gm_params,
 #if CONFIG_WARPED_MOTION
-      xd,
+                          xd,
 #endif
-      mi);
+                          mi);
 
   // Check that the input mode is not illegal
   if (last_motion_mode_allowed < mode)
@@ -1568,7 +1555,6 @@ typedef struct {
   ColorCost color_cost;
 } Av1ColorMapParam;
 
-#if CONFIG_GLOBAL_MOTION
 static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -1587,7 +1573,6 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   }
   return 1;
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 static INLINE PLANE_TYPE get_plane_type(int plane) {
   return (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;

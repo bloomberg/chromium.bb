@@ -409,20 +409,12 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               const MODE_INFO *mi, aom_writer *w) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 
-#if !CONFIG_GLOBAL_MOTION
-  // The cm parameter is only used with global_motion or with
-  // motion_var and warped_motion. In other cases, explicitly ignore
-  // it to avoid a compiler warning.
-  (void)cm;
-#endif
-  MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION
-      0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
+  MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed(0, cm->global_motion,
 #if CONFIG_WARPED_MOTION
-      xd,
+                          xd,
 #endif
-      mi);
+                          mi);
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -1668,10 +1660,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         assert(mbmi->ref_mv_idx == 0);
     }
 
-#if !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION && !CONFIG_GLOBAL_MOTION
-    write_mb_interp_filter(cpi, xd, w);
-#endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
-
     if (mode == NEWMV || mode == NEW_NEWMV) {
       int_mv ref_mv;
       for (ref = 0; ref < 1 + is_compound; ++ref) {
@@ -1799,9 +1787,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     }
 
-#if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
     write_mb_interp_filter(cpi, xd, w);
-#endif  // CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 
 #if !CONFIG_TXK_SEL
@@ -3099,13 +3085,13 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
       // Only one filter is used. So set the filter at frame level
       for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
         if (count[i]) {
-#if CONFIG_MOTION_VAR && (CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION)
+#if CONFIG_MOTION_VAR
 #if CONFIG_WARPED_MOTION
           if (i == EIGHTTAP_REGULAR || WARP_WM_NEIGHBORS_WITH_OBMC)
 #else
           if (i == EIGHTTAP_REGULAR || WARP_GM_NEIGHBORS_WITH_OBMC)
 #endif  // CONFIG_WARPED_MOTION
-#endif  // CONFIG_MOTION_VAR && (CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION)
+#endif  // CONFIG_MOTION_VAR
             cm->interp_filter = i;
           break;
         }
@@ -3851,7 +3837,6 @@ static void write_compound_tools(const AV1_COMMON *cm,
 #endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 }
 
-#if CONFIG_GLOBAL_MOTION
 static void write_global_motion_params(const WarpedMotionParams *params,
                                        const WarpedMotionParams *ref_params,
                                        struct aom_write_bit_buffer *wb,
@@ -3949,7 +3934,6 @@ static void write_global_motion(AV1_COMP *cpi,
            */
   }
 }
-#endif
 
 #if !CONFIG_OBU
 static void write_uncompressed_header_frame(AV1_COMP *cpi,
@@ -4239,9 +4223,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->use_adapt_scan);
 #endif
 
-#if CONFIG_GLOBAL_MOTION
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
-#endif  // CONFIG_GLOBAL_MOTION
 
   write_tile_info(cm, wb);
 }
@@ -4572,9 +4554,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
 
-#if CONFIG_GLOBAL_MOTION
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
-#endif  // CONFIG_GLOBAL_MOTION
 
   write_tile_info(cm, wb);
 }

@@ -39,12 +39,8 @@
 #include "av1/encoder/aq_complexity.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-#if CONFIG_GLOBAL_MOTION
 #include "av1/encoder/global_motion.h"
-#endif  // CONFIG_GLOBAL_MOTION
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
@@ -338,7 +334,6 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
   }
 }
 #endif
-#if CONFIG_GLOBAL_MOTION
 static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
                                       const MB_MODE_INFO *mbmi,
                                       RD_COUNTS *rdc) {
@@ -351,7 +346,6 @@ static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
     }
   }
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                           const TX_MODE tx_mode) {
@@ -546,7 +540,6 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   if (!frame_is_intra_only(cm)) {
     if (is_inter_block(mbmi)) {
       av1_update_mv_count(td);
-#if CONFIG_GLOBAL_MOTION
       if (bsize >= BLOCK_8X8) {
         // TODO(sarahparker): global motion stats need to be handled per-tile
         // to be compatible with tile-based threading.
@@ -562,15 +555,11 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
           }
         }
       }
-#endif  // CONFIG_GLOBAL_MOTION
       if (cm->interp_filter == SWITCHABLE
 #if CONFIG_WARPED_MOTION
           && mbmi->motion_mode != WARPED_CAUSAL
 #endif  // CONFIG_WARPED_MOTION
-#if CONFIG_GLOBAL_MOTION
-          && !is_nontrans_global_motion(xd)
-#endif  // CONFIG_GLOBAL_MOTION
-              ) {
+          && !is_nontrans_global_motion(xd)) {
 #if CONFIG_DUAL_FILTER
         update_filter_type_count(td->counts, xd, mbmi);
 #else
@@ -1204,14 +1193,12 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #if CONFIG_WARPED_MOTION
         set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
 #endif
-        const MOTION_MODE motion_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION
-            0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
+        const MOTION_MODE motion_allowed =
+            motion_mode_allowed(0, xd->global_motion,
 #if CONFIG_WARPED_MOTION
-            xd,
+                                xd,
 #endif
-            mi);
+                                mi);
         if (mbmi->ref_frame[1] != INTRA_FRAME)
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
         {
@@ -1474,14 +1461,11 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
 
 #if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
-  const MOTION_MODE motion_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION
-      0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
+  const MOTION_MODE motion_allowed = motion_mode_allowed(0, xd->global_motion,
 #if CONFIG_WARPED_MOTION
-      xd,
+                                                         xd,
 #endif
-      xd->mi[0]);
+                                                         xd->mi[0]);
 #endif  // CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
 
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
@@ -3595,7 +3579,6 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 }
 #endif
 
-#if CONFIG_GLOBAL_MOTION
 #define GLOBAL_TRANS_TYPES_ENC 3  // highest motion model to search
 static int gm_get_params_cost(const WarpedMotionParams *gm,
                               const WarpedMotionParams *ref_gm, int allow_hp) {
@@ -3660,7 +3643,6 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
   }
   return 1;
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 // Estimate if the source frame is screen content, based on the portion of
 // blocks that have no more than 4 (experimentally selected) luma colors.
@@ -3799,7 +3781,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   alloc_ncobmc_pred_buffer(xd);
 #endif
 
-#if CONFIG_GLOBAL_MOTION
   av1_zero(rdc->global_motion_used);
   av1_zero(cpi->gmparams_cost);
   if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
@@ -3924,7 +3905,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   }
   memcpy(cm->cur_frame->global_motion, cm->global_motion,
          TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
-#endif  // CONFIG_GLOBAL_MOTION
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {
     const int qindex = cm->seg.enabled

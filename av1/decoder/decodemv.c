@@ -289,14 +289,12 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)cm;
 #endif
 
-  const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION
-      0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
+  const MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed(0, xd->global_motion,
 #if CONFIG_WARPED_MOTION
-      xd,
+                          xd,
 #endif
-      mi);
+                          mi);
   int motion_mode;
   FRAME_COUNTS *counts = xd->counts;
 
@@ -1896,7 +1894,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case ZEROMV: {
-#if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
                                           mi_col, mi_row, block
@@ -1916,10 +1913,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
                                             )
                            .as_int;
-#else
-      mv[0].as_int = 0;
-      if (is_compound) mv[1].as_int = 0;
-#endif  // CONFIG_GLOBAL_MOTION
 
       pred_mv[0].as_int = mv[0].as_int;
       if (is_compound) pred_mv[1].as_int = mv[1].as_int;
@@ -1965,14 +1958,10 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case SR_ZERO_NEWMV: {
       assert(!is_compound);
-#if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
                                           mi_col, mi_row, block)
                          .as_int;
-#else
-      mv[0].as_int = 0;
-#endif  // CONFIG_GLOBAL_MOTION
 
       FRAME_COUNTS *counts = xd->counts;
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
@@ -2090,7 +2079,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case ZERO_ZEROMV: {
       assert(is_compound);
-#if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
                                           mi_col, mi_row, block
@@ -2109,10 +2097,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
                                           )
                          .as_int;
-#else
-      mv[0].as_int = 0;
-      mv[1].as_int = 0;
-#endif  // CONFIG_GLOBAL_MOTION
       break;
     }
     default: { return 0; }
@@ -2285,7 +2269,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       MV_REFERENCE_FRAME rf[2];
       int_mv zeromv[2];
       av1_set_ref_frame(rf, ref_frame);
-#if CONFIG_GLOBAL_MOTION
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                               cm->allow_high_precision_mv,
                                               bsize, mi_col, mi_row, 0
@@ -2307,9 +2290,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                      )
                     .as_int
               : 0;
-#else
-      zeromv[0].as_int = zeromv[1].as_int = 0;
-#endif
       for (ref = 0; ref < 2; ++ref) {
         if (rf[ref] == NONE_FRAME) continue;
 #if CONFIG_AMVR
@@ -2462,10 +2442,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         xd->ref_mv_stack[mbmi->ref_frame[0]][1 + mbmi->ref_mv_idx].this_mv;
     nearmv[0] = cur_mv;
   }
-
-#if !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION && !CONFIG_GLOBAL_MOTION
-  read_mb_interp_filter(cm, xd, mbmi, r);
-#endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
   int_mv ref_mv[2];
   ref_mv[0] = nearestmv[0];
@@ -2672,9 +2648,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       xd->counts->compound_interinter[bsize][mbmi->interinter_compound_type]++;
   }
 
-#if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
   read_mb_interp_filter(cm, xd, mbmi, r);
-#endif  // CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
 
 #if CONFIG_WARPED_MOTION
   if (mbmi->motion_mode == WARPED_CAUSAL) {

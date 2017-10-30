@@ -66,9 +66,7 @@
 #include "av1/decoder/dsubexp.h"
 #include "av1/decoder/symbolrate.h"
 
-#if CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
 
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
@@ -2787,7 +2785,6 @@ static void check_valid_ref_frames(AV1_COMMON *cm) {
 }
 #endif  // CONFIG_VAR_REFS
 
-#if CONFIG_GLOBAL_MOTION
 static int read_global_motion_params(WarpedMotionParams *params,
                                      const WarpedMotionParams *ref_params,
                                      struct aom_read_bit_buffer *rb,
@@ -2904,7 +2901,6 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   memcpy(cm->cur_frame->global_motion, cm->global_motion,
          TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 static size_t read_uncompressed_header(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb) {
@@ -3481,9 +3477,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
 
-#if CONFIG_GLOBAL_MOTION
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
-#endif
 
   read_tile_info(pbi, rb);
   if (use_compressed_header(cm)) {
@@ -3756,14 +3750,12 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
 #endif
 
-#if CONFIG_GLOBAL_MOTION
   int i;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     cm->global_motion[i] = default_warp_params;
     cm->cur_frame->global_motion[i] = default_warp_params;
   }
   xd->global_motion = cm->global_motion;
-#endif  // CONFIG_GLOBAL_MOTION
 
   first_partition_size = read_uncompressed_header(
       pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));

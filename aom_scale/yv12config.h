@@ -86,7 +86,7 @@ typedef struct yv12_buffer_config {
     uint8_t *buffers[4];
   };
 
-#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH
   // If the frame is stored in a 16-bit buffer, this stores an 8-bit version
   // for use in global motion detection. It is allocated on-demand.
   uint8_t *y_buffer_8bit;

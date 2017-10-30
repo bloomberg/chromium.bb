@@ -2461,9 +2461,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   cpi->oxcf = *oxcf;
   x->e_mbd.bd = (int)cm->bit_depth;
-#if CONFIG_GLOBAL_MOTION
   x->e_mbd.global_motion = cm->global_motion;
-#endif  // CONFIG_GLOBAL_MOTION
 
   if ((oxcf->pass == 0) && (oxcf->rc_mode == AOM_Q)) {
     rc->baseline_gf_interval = FIXED_GF_INTERVAL;
@@ -3496,7 +3494,6 @@ void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
 }
 #endif  // OUTPUT_YUV_REC
 
-#if CONFIG_GLOBAL_MOTION
 #define GM_RECODE_LOOP_NUM4X4_FACTOR 192
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
   int i;
@@ -3516,7 +3513,6 @@ static int recode_loop_test_global_motion(AV1_COMP *cpi) {
   }
   return recode;
 }
-#endif  // CONFIG_GLOBAL_MOTION
 
 // Function to test for conditions that indicate we should loop
 // back and recode a frame.
@@ -4113,13 +4109,11 @@ static void set_mv_search_params(AV1_COMP *cpi) {
 }
 
 static void set_size_independent_vars(AV1_COMP *cpi) {
-#if CONFIG_GLOBAL_MOTION
   int i;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     cpi->common.global_motion[i] = default_warp_params;
   }
   cpi->global_motion_search_done = 0;
-#endif  // CONFIG_GLOBAL_MOTION
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
@@ -4711,7 +4705,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   if (cpi->unscaled_last_source != NULL)
     cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
                                              &cpi->scaled_last_source);
-#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH
   cpi->source->buf_8bit_valid = 0;
 #endif
 
@@ -4767,7 +4761,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
   set_size_independent_vars(cpi);
 
-#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH
   cpi->source->buf_8bit_valid = 0;
 #endif
 
@@ -4801,13 +4795,11 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
                                        &frame_over_shoot_limit);
     }
 
-#if CONFIG_GLOBAL_MOTION
     // if frame was scaled calculate global_motion_search again if already done
     if (loop_count > 0 && cpi->source && cpi->global_motion_search_done)
       if (cpi->source->y_crop_width != cm->width ||
           cpi->source->y_crop_height != cm->height)
         cpi->global_motion_search_done = 0;
-#endif  // CONFIG_GLOBAL_MOTION
     cpi->source =
         av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
     if (cpi->unscaled_last_source != NULL)
@@ -5015,11 +5007,9 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
         rc->projected_frame_size < rc->max_frame_bandwidth)
       loop = 0;
 
-#if CONFIG_GLOBAL_MOTION
     if (recode_loop_test_global_motion(cpi)) {
       loop = 1;
     }
-#endif  // CONFIG_GLOBAL_MOTION
 
     if (loop) {
       ++loop_count;
@@ -6452,7 +6442,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (cm->new_fb_idx == INVALID_IDX) return -1;
 
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
-#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH
   cm->cur_frame->buf.buf_8bit_valid = 0;
 #endif
 

@@ -744,7 +744,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   }
 #endif
 
-#if CONFIG_GLOBAL_MOTION
   if (cpi->oxcf.pass != 1) {
     for (int i = 0; i < TRANS_TYPES; ++i)
 #if GLOBAL_TRANS_TYPES > 4
@@ -759,7 +758,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
                             << AV1_PROB_COST_SHIFT;
 #endif  // GLOBAL_TRANS_TYPES > 4
   }
-#endif  // CONFIG_GLOBAL_MOTION
 }
 
 static void model_rd_norm(int xsq_q10, int *r_q10, int *d_q10) {
