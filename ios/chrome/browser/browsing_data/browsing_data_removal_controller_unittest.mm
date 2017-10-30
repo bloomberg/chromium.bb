@@ -23,17 +23,14 @@ typedef web::WebTest BrowsingDataRemovalControllerTest;
 // finish performing its operation even when a BrowserState is destroyed.
 TEST_F(BrowsingDataRemovalControllerTest, PerformAfterBrowserStateDestruction) {
   __block BOOL block_was_called = NO;
-  BrowsingDataRemovalController* removal_controller =
-      [[BrowsingDataRemovalController alloc] init];
 
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
-  ios::ChromeBrowserState* otr_browser_state =
-      browser_state->GetOffTheRecordChromeBrowserState();
+  BrowsingDataRemovalController* removal_controller =
+      [[BrowsingDataRemovalController alloc]
+          initWithBrowserState:browser_state.get()];
   int remove_all_mask = ~0;
-  [removal_controller
-      removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otr_browser_state
-                                                        mask:remove_all_mask
+  [removal_controller removeIOSSpecificIncognitoBrowsingData:remove_all_mask
                                            completionHandler:^{
                                              block_was_called = YES;
                                            }];

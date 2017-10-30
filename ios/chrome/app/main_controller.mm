@@ -101,6 +101,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
@@ -359,10 +360,10 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 @property(nonatomic, strong)
     SigninInteractionCoordinator* signinInteractionCoordinator;
 
-// Activates browsing and enables web views if |enabled| is YES.
-// Disables browsing and purges web views if |enabled| is NO.
-// Must be called only on the main thread.
-- (void)setWebUsageEnabled:(BOOL)enabled;
+// Controller for removing browsing data.
+@property(nonatomic, strong)
+    BrowsingDataRemovalController* browsingDataRemovalController;
+
 // Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
 // |currentBVC| can be made active.
 - (void)activateBVCAndMakeCurrentBVCPrimary;
@@ -480,8 +481,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 - (void)scheduleShowPromo;
 // Crashes the application if requested.
 - (void)crashIfRequested;
-// Returns the BrowsingDataRemovalController. Lazily creates one if necessary.
-- (BrowsingDataRemovalController*)browsingDataRemovalController;
 // Clears incognito data that is specific to iOS and won't be cleared by
 // deleting the browser state.
 - (void)clearIOSSpecificIncognitoData;
@@ -523,6 +522,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 @synthesize metricsMediator = _metricsMediator;
 @synthesize settingsNavigationController = _settingsNavigationController;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
+@synthesize browsingDataRemovalController = _browsingDataRemovalController;
 
 #pragma mark - Application lifecycle
 
@@ -740,6 +740,10 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 
   [self scheduleTasksRequiringBVCWithBrowserState];
 
+  // Initialize Browsing Data Removal Controller.
+  self.browsingDataRemovalController = [[BrowsingDataRemovalController alloc]
+      initWithBrowserState:_mainBrowserState];
+
   // Now that everything is properly set up, run the tests.
   tests_hook::RunTestsIfPresent();
 }
@@ -785,17 +789,13 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (void)clearIOSSpecificIncognitoData {
-  DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
-  ios::ChromeBrowserState* otrBrowserState =
-      _mainBrowserState->GetOffTheRecordChromeBrowserState();
   int removeAllMask = ~0;
   void (^completion)() = ^{
     [self activateBVCAndMakeCurrentBVCPrimary];
   };
   [self.browsingDataRemovalController
-      removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otrBrowserState
-                                                        mask:removeAllMask
-                                           completionHandler:completion];
+      removeIOSSpecificIncognitoBrowsingData:removeAllMask
+                           completionHandler:completion];
 }
 
 - (void)deleteIncognitoBrowserState {
@@ -823,29 +823,10 @@ const int kExternalFilesCleanupDelaySeconds = 60;
     [_tabSwitcherController setOtrTabModel:self.otrTabModel];
 }
 
-- (BrowsingDataRemovalController*)browsingDataRemovalController {
-  if (!_browsingDataRemovalController) {
-    _browsingDataRemovalController =
-        [[BrowsingDataRemovalController alloc] init];
-  }
-  return _browsingDataRemovalController;
-}
-
-- (void)setWebUsageEnabled:(BOOL)enabled {
-  DCHECK([NSThread isMainThread]);
-  if (enabled) {
-    [self activateBVCAndMakeCurrentBVCPrimary];
-  } else {
-    [self.mainBVC setActive:NO];
-    [self.otrBVC setActive:NO];
-  }
-}
-
 - (void)activateBVCAndMakeCurrentBVCPrimary {
   // If there are pending removal operations, the activation will be deferred
   // until the callback for |removeBrowsingDataFromBrowserState:| is received.
-  if (![self.browsingDataRemovalController
-          hasPendingRemovalOperations:self.currentBrowserState]) {
+  if (![self.browsingDataRemovalController hasPendingRemovalOperations]) {
     [self.mainBVC setActive:YES];
     [self.otrBVC setActive:YES];
 
@@ -902,6 +883,9 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (void)stopChromeMain {
+  [self.browsingDataRemovalController shutdown];
+  self.browsingDataRemovalController = nil;
+
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
@@ -1981,22 +1965,14 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                       mask:(int)mask
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler {
-  // TODO(crbug.com/632772): Remove web usage disabling once
-  // https://bugs.webkit.org/show_bug.cgi?id=149079 has been fixed.
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA) {
-    [self setWebUsageEnabled:NO];
-  }
   ProceduralBlock browsingDataRemoved = ^{
-    [self setWebUsageEnabled:YES];
     if (completionHandler) {
       completionHandler();
     }
   };
-  [self.browsingDataRemovalController
-      removeBrowsingDataFromBrowserState:browserState
-                                    mask:mask
-                              timePeriod:timePeriod
-                       completionHandler:browsingDataRemoved];
+  [self.browsingDataRemovalController removeBrowsingData:mask
+                                              timePeriod:timePeriod
+                                       completionHandler:browsingDataRemoved];
 }
 
 #pragma mark - Navigation Controllers
