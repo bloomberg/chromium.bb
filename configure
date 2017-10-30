@@ -531,6 +531,7 @@ post_process_cmdline() {
       soft_enable loopfilter_level
       soft_enable cfl
       soft_enable deblock_13tap
+      soft_enable frame_marker
     fi
 
     # Enable low-bitdepth pixel pipeline by default
