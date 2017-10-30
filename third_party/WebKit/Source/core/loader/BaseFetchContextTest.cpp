@@ -31,6 +31,7 @@
 #include "core/loader/BaseFetchContext.h"
 
 #include "core/testing/NullExecutionContext.h"
+#include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -384,6 +385,59 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
                 Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 FetchParameters::kNoOriginRestriction,
+                ResourceRequest::RedirectStatus::kFollowedRedirect));
+}
+
+// Test that User Agent CSS can only load images with data urls.
+TEST_F(BaseFetchContextTest, UACSSTest) {
+  KURL test_url("https://example.com");
+  KURL data_url("data:image/png;base64,test");
+
+  ResourceRequest resource_request(test_url);
+  ResourceLoaderOptions options;
+  options.initiator_info.name = FetchInitiatorTypeNames::uacss;
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kOther,
+            fetch_context_->CanRequest(
+                Resource::kScript, resource_request, test_url, options,
+                SecurityViolationReportingPolicy::kReport,
+                FetchParameters::kUseDefaultOriginRestrictionForType,
+                ResourceRequest::RedirectStatus::kFollowedRedirect));
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kOther,
+            fetch_context_->CanRequest(
+                Resource::kImage, resource_request, test_url, options,
+                SecurityViolationReportingPolicy::kReport,
+                FetchParameters::kUseDefaultOriginRestrictionForType,
+                ResourceRequest::RedirectStatus::kFollowedRedirect));
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            fetch_context_->CanRequest(
+                Resource::kImage, resource_request, data_url, options,
+                SecurityViolationReportingPolicy::kReport,
+                FetchParameters::kUseDefaultOriginRestrictionForType,
+                ResourceRequest::RedirectStatus::kFollowedRedirect));
+}
+
+// Test that User Agent CSS can bypass CSP to load embedded images.
+TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
+  ContentSecurityPolicy* policy =
+      execution_context_->GetContentSecurityPolicy();
+  policy->DidReceiveHeader("default-src 'self'",
+                           kContentSecurityPolicyHeaderTypeEnforce,
+                           kContentSecurityPolicyHeaderSourceHTTP);
+
+  KURL data_url("data:image/png;base64,test");
+
+  ResourceRequest resource_request(data_url);
+  ResourceLoaderOptions options;
+  options.initiator_info.name = FetchInitiatorTypeNames::uacss;
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            fetch_context_->CanRequest(
+                Resource::kImage, resource_request, data_url, options,
+                SecurityViolationReportingPolicy::kReport,
+                FetchParameters::kUseDefaultOriginRestrictionForType,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 }
 

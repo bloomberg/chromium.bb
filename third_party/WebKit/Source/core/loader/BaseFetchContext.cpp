@@ -211,6 +211,15 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
       break;
   }
 
+  // User Agent CSS stylesheets should only support loading images and should be
+  // restricted to data urls.
+  if (options.initiator_info.name == FetchInitiatorTypeNames::uacss) {
+    if (type == Resource::kImage && url.ProtocolIsData()) {
+      return ResourceRequestBlockedReason::kNone;
+    }
+    return ResourceRequestBlockedReason::kOther;
+  }
+
   WebURLRequest::RequestContext request_context =
       resource_request.GetRequestContext();
 

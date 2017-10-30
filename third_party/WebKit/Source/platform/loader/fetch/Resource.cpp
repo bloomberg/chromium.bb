@@ -1163,13 +1163,15 @@ static const char* InitiatorTypeNameToString(
     return "Processing instruction";
   if (initiator_type_name == FetchInitiatorTypeNames::texttrack)
     return "Text track";
+  if (initiator_type_name == FetchInitiatorTypeNames::uacss)
+    return "User Agent CSS resource";
   if (initiator_type_name == FetchInitiatorTypeNames::xml)
     return "XML resource";
   if (initiator_type_name == FetchInitiatorTypeNames::xmlhttprequest)
     return "XMLHttpRequest";
 
   static_assert(
-      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount == 12,
+      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount == 13,
       "New FetchInitiatorTypeNames should be handled correctly here.");
 
   return "Resource";
