@@ -13,8 +13,9 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     self.Fail('GpuProcess_video', ['linux'], bug=257109)
 
-    # Chrome on Android doesn't support software fallback.
-    self.Skip('GpuProcess_no_gpu_process', ['android'], bug=643282)
+    # GPU process should always be launched for making blacklist decisions.
+    self.Skip('GpuProcess_no_gpu_process')
+
     self.Skip('GpuProcess_skip_gpu_process', ['android'], bug=(610951, 610023))
 
     # Chrome on Windows and Linux create a GPU process that uses SwiftShader
