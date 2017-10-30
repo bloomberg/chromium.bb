@@ -162,7 +162,7 @@ class Parameter(object):
 
 
 def build_param_name(param_type):
-    return "param" + re.match(r"(const |RefPtr<)?(\w*)", param_type).group(2)
+    return "param" + re.match(r"(const |scoped_refptr<)?(\w*)", param_type).group(2)
 
 
 def load_config(file_name):

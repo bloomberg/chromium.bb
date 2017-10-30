@@ -40,7 +40,7 @@ class RayMode {
 
 class CSSRayNonInterpolableValue : public NonInterpolableValue {
  public:
-  static RefPtr<CSSRayNonInterpolableValue> Create(const RayMode& mode) {
+  static scoped_refptr<CSSRayNonInterpolableValue> Create(const RayMode& mode) {
     return WTF::AdoptRef(new CSSRayNonInterpolableValue(mode));
   }
 
@@ -91,12 +91,12 @@ class UnderlyingRayModeChecker
 class InheritedRayChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedRayChecker> Create(
-      RefPtr<StyleRay> style_ray) {
+      scoped_refptr<StyleRay> style_ray) {
     return WTF::WrapUnique(new InheritedRayChecker(std::move(style_ray)));
   }
 
  private:
-  InheritedRayChecker(RefPtr<StyleRay> style_ray)
+  InheritedRayChecker(scoped_refptr<StyleRay> style_ray)
       : style_ray_(std::move(style_ray)) {
     DCHECK(style_ray_);
   }
@@ -106,7 +106,7 @@ class InheritedRayChecker : public CSSInterpolationType::CSSConversionChecker {
     return GetRay(*state.ParentStyle()) == style_ray_.get();
   }
 
-  const RefPtr<StyleRay> style_ray_;
+  const scoped_refptr<StyleRay> style_ray_;
 };
 
 InterpolationValue CreateValue(float angle, const RayMode& mode) {
