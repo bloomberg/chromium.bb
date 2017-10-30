@@ -224,22 +224,49 @@ TEST_F(AllocationContextTrackerTest, PseudoStackMixedTrace) {
   AssertBacktraceContainsOnlyThreadName();
 }
 
-TEST_F(AllocationContextTrackerTest, NoStackMode) {
+TEST_F(AllocationContextTrackerTest, MixedStackWithProgramCounter) {
   StackFrame t = StackFrame::FromThreadName(kThreadName);
-  StackFrame frame_t[] = {t};
-  const char kContext[] = "context";
+  StackFrame c = StackFrame::FromTraceEventName(kCupcake);
+  StackFrame f = StackFrame::FromTraceEventName(kFroyo);
+  const void* pc1 = reinterpret_cast<void*>(0x1000);
+  const void* pc2 = reinterpret_cast<void*>(0x2000);
+  StackFrame n1 = StackFrame::FromProgramCounter(pc1);
+  StackFrame n2 = StackFrame::FromProgramCounter(pc2);
+
+  StackFrame frame_c[] = {t, c};
+  StackFrame frame_cd[] = {t, c, n1};
+  StackFrame frame_e[] = {t, n2, n1};
+  StackFrame frame_ef[] = {t, n2, n1, f};
+
+  AssertBacktraceContainsOnlyThreadName();
 
   AllocationContextTracker::SetCaptureMode(
-      AllocationContextTracker::CaptureMode::NO_STACK);
-  TRACE_EVENT_BEGIN0("Testing", kCupcake);
-  AssertBacktraceEquals(frame_t);
+      AllocationContextTracker::CaptureMode::MIXED_STACK);
 
-  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event1(kContext);
-  AllocationContext ctx;
-  ASSERT_TRUE(AllocationContextTracker::GetInstanceForCurrentThread()
-                  ->GetContextSnapshot(&ctx));
-  ASSERT_EQ(kContext, ctx.type_name);
-  AssertBacktraceEquals(frame_t);
+  TRACE_EVENT_BEGIN0("Testing", kCupcake);
+  AssertBacktraceEquals(frame_c);
+
+  {
+    TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER e1(pc1);
+    AssertBacktraceEquals(frame_cd);
+  }
+
+  AssertBacktraceEquals(frame_c);
+  TRACE_EVENT_END0("Testing", kCupcake);
+  AssertBacktraceContainsOnlyThreadName();
+
+  {
+    TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER e1(pc2);
+    TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER e2(pc1);
+    AssertBacktraceEquals(frame_e);
+
+    TRACE_EVENT0("Testing", kFroyo);
+    AssertBacktraceEquals(frame_ef);
+  }
+
+  AssertBacktraceContainsOnlyThreadName();
+  AllocationContextTracker::SetCaptureMode(
+      AllocationContextTracker::CaptureMode::DISABLED);
 }
 
 TEST_F(AllocationContextTrackerTest, BacktraceTakesTop) {
@@ -301,22 +328,6 @@ TEST_F(AllocationContextTrackerTest, TrackCategoryName) {
     ASSERT_TRUE(AllocationContextTracker::GetInstanceForCurrentThread()
                     ->GetContextSnapshot(&ctx2));
     ASSERT_EQ(kContext2, ctx2.type_name);
-  }
-
-  {
-    // Type should be category name of the last seen trace event.
-    TRACE_EVENT0("Testing", kCupcake);
-    AllocationContext ctx1;
-    ASSERT_TRUE(AllocationContextTracker::GetInstanceForCurrentThread()
-                    ->GetContextSnapshot(&ctx1));
-    ASSERT_EQ("Testing", std::string(ctx1.type_name));
-
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("Testing"), kCupcake);
-    AllocationContext ctx2;
-    ASSERT_TRUE(AllocationContextTracker::GetInstanceForCurrentThread()
-                    ->GetContextSnapshot(&ctx2));
-    ASSERT_EQ(TRACE_DISABLED_BY_DEFAULT("Testing"),
-              std::string(ctx2.type_name));
   }
 
   // Type should be nullptr without task event.

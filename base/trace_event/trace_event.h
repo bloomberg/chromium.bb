@@ -433,21 +433,27 @@
 // location where it was posted from.
 //
 // This implementation is for when location sources are available.
+// TODO(ssid): The program counter of the current task should be added here.
 #define INTERNAL_TRACE_TASK_EXECUTION(run_function, task)                 \
   TRACE_EVENT2("toplevel", run_function, "src_file",                      \
                (task).posted_from.file_name(), "src_func",                \
                (task).posted_from.function_name());                       \
   TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION INTERNAL_TRACE_EVENT_UID( \
-      task_event)((task).posted_from.file_name());
+      task_event)((task).posted_from.file_name());                        \
+  TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER                     \
+  INTERNAL_TRACE_EVENT_UID(task_pc_event)((task).posted_from.program_counter());
 
 #else
 
 // TODO(http://crbug.com760702) remove file name and just pass the program
 // counter to the heap profiler macro.
+// TODO(ssid): The program counter of the current task should be added here.
 #define INTERNAL_TRACE_TASK_EXECUTION(run_function, task)                      \
   TRACE_EVENT1("toplevel", run_function, "src", (task).posted_from.ToString()) \
   TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION INTERNAL_TRACE_EVENT_UID(      \
-      task_event)((task).posted_from.file_name());
+      task_event)((task).posted_from.file_name());                             \
+  TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER                          \
+  INTERNAL_TRACE_EVENT_UID(task_pc_event)((task).posted_from.program_counter());
 
 #endif
 

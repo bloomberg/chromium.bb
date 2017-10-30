@@ -894,7 +894,7 @@ TEST_F(MemoryDumpManagerTest, EnableHeapProfilingPseudoStack) {
   EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeInvalid);
 }
 
-TEST_F(MemoryDumpManagerTest, EnableHeapProfilingNoStack) {
+TEST_F(MemoryDumpManagerTest, EnableHeapProfilingBackground) {
   InitializeMemoryDumpManagerForInProcessTesting(true /* is_coordinator */);
   MockMemoryDumpProvider mdp1;
   MemoryDumpProvider::Options supported_options;
@@ -916,7 +916,7 @@ TEST_F(MemoryDumpManagerTest, EnableHeapProfilingNoStack) {
 
   EXPECT_TRUE(mdm_->EnableHeapProfiling(kHeapProfilingModeBackground));
   RunLoop().RunUntilIdle();
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
+  ASSERT_EQ(AllocationContextTracker::CaptureMode::MIXED_STACK,
             AllocationContextTracker::capture_mode());
   EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeBackground);
   EXPECT_EQ(0u, TraceLog::GetInstance()->enabled_modes());
@@ -925,7 +925,7 @@ TEST_F(MemoryDumpManagerTest, EnableHeapProfilingNoStack) {
   // Do nothing when already enabled.
   EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModeBackground));
   EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModePseudo));
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
+  ASSERT_EQ(AllocationContextTracker::CaptureMode::MIXED_STACK,
             AllocationContextTracker::capture_mode());
   EXPECT_EQ(0u, TraceLog::GetInstance()->enabled_modes());
   EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeBackground);

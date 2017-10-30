@@ -10,6 +10,7 @@
 #include "base/atomicops.h"
 #include "base/debug/debugging_flags.h"
 #include "base/debug/leak_annotations.h"
+#include "base/debug/stack_trace.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
@@ -83,7 +84,7 @@ AllocationContextTracker::GetInstanceForCurrentThread() {
 
 AllocationContextTracker::AllocationContextTracker()
     : thread_name_(nullptr), ignore_scope_depth_(0) {
-  pseudo_stack_.reserve(kMaxStackDepth);
+  tracked_stack_.reserve(kMaxStackDepth);
   task_contexts_.reserve(kMaxTaskDepth);
 }
 AllocationContextTracker::~AllocationContextTracker() {}
@@ -111,10 +112,12 @@ void AllocationContextTracker::PushPseudoStackFrame(
     AllocationContextTracker::PseudoStackFrame stack_frame) {
   // Impose a limit on the height to verify that every push is popped, because
   // in practice the pseudo stack never grows higher than ~20 frames.
-  if (pseudo_stack_.size() < kMaxStackDepth)
-    pseudo_stack_.push_back(stack_frame);
-  else
+  if (tracked_stack_.size() < kMaxStackDepth) {
+    tracked_stack_.push_back(
+        StackFrame::FromTraceEventName(stack_frame.trace_event_name));
+  } else {
     NOTREACHED();
+  }
 }
 
 void AllocationContextTracker::PopPseudoStackFrame(
@@ -122,18 +125,25 @@ void AllocationContextTracker::PopPseudoStackFrame(
   // Guard for stack underflow. If tracing was started with a TRACE_EVENT in
   // scope, the frame was never pushed, so it is possible that pop is called
   // on an empty stack.
-  if (pseudo_stack_.empty())
+  if (tracked_stack_.empty())
     return;
 
-  // Assert that pushes and pops are nested correctly. This DCHECK can be
-  // hit if some TRACE_EVENT macro is unbalanced (a TRACE_EVENT_END* call
-  // without a corresponding TRACE_EVENT_BEGIN).
-  DCHECK(stack_frame == pseudo_stack_.back())
-      << "Encountered an unmatched TRACE_EVENT_END: "
-      << stack_frame.trace_event_name
-      << " vs event in stack: " << pseudo_stack_.back().trace_event_name;
+  tracked_stack_.pop_back();
+}
 
-  pseudo_stack_.pop_back();
+void AllocationContextTracker::PushNativeStackFrame(const void* pc) {
+  if (tracked_stack_.size() < kMaxStackDepth)
+    tracked_stack_.push_back(StackFrame::FromProgramCounter(pc));
+  else
+    NOTREACHED();
+}
+
+void AllocationContextTracker::PopNativeStackFrame(const void* pc) {
+  if (tracked_stack_.empty())
+    return;
+
+  DCHECK_EQ(pc, tracked_stack_.back().value);
+  tracked_stack_.pop_back();
 }
 
 void AllocationContextTracker::PushCurrentTaskContext(const char* context) {
@@ -183,18 +193,16 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
 
   switch (mode) {
     case CaptureMode::DISABLED:
-    case CaptureMode::NO_STACK:
       {
         break;
       }
     case CaptureMode::PSEUDO_STACK:
+    case CaptureMode::MIXED_STACK:
       {
-        for (const PseudoStackFrame& stack_frame : pseudo_stack_) {
-          if (backtrace == backtrace_end) {
+        for (const StackFrame& stack_frame : tracked_stack_) {
+          if (backtrace == backtrace_end)
             break;
-          }
-          *backtrace++ =
-              StackFrame::FromTraceEventName(stack_frame.trace_event_name);
+          *backtrace++ = stack_frame;
         }
         break;
       }
@@ -243,10 +251,6 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
   // (component name) in the heap profiler and not piggy back on the type name.
   if (!task_contexts_.empty()) {
     ctx->type_name = task_contexts_.back();
-  } else if (!pseudo_stack_.empty()) {
-    // If task context was unavailable, then the category names are taken from
-    // trace events.
-    ctx->type_name = pseudo_stack_.back().trace_event_category;
   } else {
     ctx->type_name = nullptr;
   }
