@@ -4125,7 +4125,6 @@
   },
   "Fuchsia ARM64": {
     "additional_compile_targets": [
-      "base_unittests",
       "content_browsertests",
       "content_shell",
       "content_unittests",
@@ -4143,6 +4142,17 @@
       "skia_unittests",
       "service_manager_unittests",
       "ui_base_unittests"
+    ],
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      }
     ]
   },
   "Headless Linux (dbg)": {

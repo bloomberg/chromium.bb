@@ -58,3 +58,10 @@
 
 # https://crbug.com/752368.
 -FieldTrialListTest.ClearParamsFromSharedMemory
+
+# https://crbug.com/779645 - requires ability to set address-space limits.
+-PartitionAllocTest.RepeatedReturnNull
+-PartitionAllocTest.RepeatedReturnNullDirect
+
+# https://crbug.com/779668 - fails under Fuchsia/ARM64 due to Time::Now issue.
+-BuildTime.InThePast
