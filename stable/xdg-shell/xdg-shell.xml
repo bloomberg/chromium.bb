@@ -849,6 +849,10 @@
 
 	If the surface was already maximized, the compositor will still emit
 	a configure event with the "maximized" state.
+
+	If the surface is in a fullscreen state, this request has no direct
+	effect. It will alter the state the surface is returned to when
+	unmaximized if not overridden by the compositor.
       </description>
     </request>
 
@@ -871,6 +875,10 @@
 
 	If the surface was already not maximized, the compositor will still
 	emit a configure event without the "maximized" state.
+
+	If the surface is in a fullscreen state, this request has no direct
+	effect. It will alter the state the surface is returned to when
+	unmaximized if not overridden by the compositor.
       </description>
     </request>
 
