@@ -93,6 +93,7 @@
 #include "chromeos/timezone/timezone_provider.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/pairing/bluetooth_controller_pairing_controller.h"
 #include "components/pairing/bluetooth_host_pairing_controller.h"
@@ -875,7 +876,8 @@ void WizardController::OnVoiceInteractionValuePropSkipped() {
 
 void WizardController::OnVoiceInteractionValuePropAccepted() {
   const Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(profile)) {
+  if (is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(profile) &&
+      !arc::ShouldArcAlwaysStart()) {
     ShowArcTermsOfServiceScreen();
     return;
   }
