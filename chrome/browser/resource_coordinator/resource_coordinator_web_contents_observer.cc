@@ -20,6 +20,8 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
+#include "services/resource_coordinator/public/cpp/page_resource_coordinator.h"
+#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
@@ -37,14 +39,12 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
 
   page_resource_coordinator_ =
-      base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
-          connector, resource_coordinator::CoordinationUnitType::kPage);
+      base::MakeUnique<resource_coordinator::PageResourceCoordinator>(
+          connector);
 
   // Make sure to set the visibility property when we create
   // |page_resource_coordinator_|.
-  page_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kVisible,
-      web_contents->IsVisible());
+  page_resource_coordinator_->SetVisibility(web_contents->IsVisible());
 
   connector->BindInterface(resource_coordinator::mojom::kServiceName,
                            mojo::MakeRequest(&service_callbacks_));
@@ -114,13 +114,11 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
 }
 
 void ResourceCoordinatorWebContentsObserver::WasShown() {
-  page_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kVisible, true);
+  page_resource_coordinator_->SetVisibility(true);
 }
 
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
-  page_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kVisible, false);
+  page_resource_coordinator_->SetVisibility(false);
 }
 
 void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
@@ -145,8 +143,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   if (navigation_handle->IsInMainFrame()) {
     UpdateUkmRecorder(navigation_handle->GetNavigationId());
     ResetFlag();
-    page_resource_coordinator_->SendEvent(
-        resource_coordinator::mojom::Event::kNavigationCommitted);
+    page_resource_coordinator_->OnMainFrameNavigationCommitted();
   }
 
   content::RenderFrameHost* render_frame_host =
@@ -154,11 +151,11 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
 
   auto* frame_resource_coordinator =
       render_frame_host->GetFrameResourceCoordinator();
-  page_resource_coordinator_->AddChild(*frame_resource_coordinator);
+  page_resource_coordinator_->AddFrame(*frame_resource_coordinator);
 
   auto* process_resource_coordinator =
       render_frame_host->GetProcess()->GetProcessResourceCoordinator();
-  process_resource_coordinator->AddChild(*frame_resource_coordinator);
+  process_resource_coordinator->AddFrame(*frame_resource_coordinator);
 }
 
 void ResourceCoordinatorWebContentsObserver::TitleWasSet(
@@ -167,8 +164,7 @@ void ResourceCoordinatorWebContentsObserver::TitleWasSet(
     first_time_title_set_ = true;
     return;
   }
-  page_resource_coordinator_->SendEvent(
-      resource_coordinator::mojom::Event::kTitleUpdated);
+  page_resource_coordinator_->OnTitleUpdated();
 }
 
 void ResourceCoordinatorWebContentsObserver::DidUpdateFaviconURL(
@@ -177,8 +173,7 @@ void ResourceCoordinatorWebContentsObserver::DidUpdateFaviconURL(
     first_time_favicon_set_ = true;
     return;
   }
-  page_resource_coordinator_->SendEvent(
-      resource_coordinator::mojom::Event::kFaviconUpdated);
+  page_resource_coordinator_->OnFaviconUpdated();
 }
 
 void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
@@ -189,8 +184,7 @@ void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
 
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
-  page_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kUKMSourceId, ukm_source_id_);
+  page_resource_coordinator_->SetUKMSourceId(ukm_source_id_);
 }
 
 void ResourceCoordinatorWebContentsObserver::ResetFlag() {

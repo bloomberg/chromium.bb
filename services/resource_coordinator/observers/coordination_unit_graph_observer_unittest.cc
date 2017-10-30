@@ -4,12 +4,11 @@
 
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
-#include <string>
-
 #include "base/process/process_handle.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
+#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
@@ -73,38 +72,28 @@ TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
       static_cast<TestCoordinationUnitGraphObserver*>(
           coordination_unit_manager().observers_for_testing()[0].get());
 
-  CoordinationUnitID process_cu_id(CoordinationUnitType::kProcess,
-                                   std::string());
-  CoordinationUnitID root_frame_cu_id(CoordinationUnitType::kFrame,
-                                      std::string());
-  CoordinationUnitID frame_cu_id(CoordinationUnitType::kFrame, std::string());
+  auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+  auto root_frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
 
-  auto process_coordination_unit = CreateCoordinationUnit(process_cu_id);
-  auto root_frame_coordination_unit = CreateCoordinationUnit(root_frame_cu_id);
-  auto frame_coordination_unit = CreateCoordinationUnit(frame_cu_id);
-
-  coordination_unit_manager().OnCoordinationUnitCreated(
-      process_coordination_unit.get());
-  coordination_unit_manager().OnCoordinationUnitCreated(
-      root_frame_coordination_unit.get());
-  coordination_unit_manager().OnCoordinationUnitCreated(
-      frame_coordination_unit.get());
+  coordination_unit_manager().OnCoordinationUnitCreated(process_cu.get());
+  coordination_unit_manager().OnCoordinationUnitCreated(root_frame_cu.get());
+  coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
   EXPECT_EQ(2u, observer->coordination_unit_created_count());
 
   // The registered observer will only observe the events that happen to
   // |root_frame_coordination_unit| and |frame_coordination_unit| because
   // they are CoordinationUnitType::kFrame, so OnPropertyChanged
   // will only be called for |root_frame_coordination_unit|.
-  root_frame_coordination_unit->SetProperty(mojom::PropertyType::kTest, 42);
-  process_coordination_unit->SetProperty(mojom::PropertyType::kTest, 42);
+  root_frame_cu->SetPropertyForTesting(42);
+  process_cu->SetPropertyForTesting(42);
   EXPECT_EQ(1u, observer->property_changed_count());
 
   coordination_unit_manager().OnBeforeCoordinationUnitDestroyed(
-      process_coordination_unit.get());
+      process_cu.get());
   coordination_unit_manager().OnBeforeCoordinationUnitDestroyed(
-      root_frame_coordination_unit.get());
-  coordination_unit_manager().OnBeforeCoordinationUnitDestroyed(
-      frame_coordination_unit.get());
+      root_frame_cu.get());
+  coordination_unit_manager().OnBeforeCoordinationUnitDestroyed(frame_cu.get());
   EXPECT_EQ(2u, observer->coordination_unit_destroyed_count());
 }
 

@@ -35,7 +35,7 @@ class Identity;
 }
 
 namespace resource_coordinator {
-class ResourceCoordinatorInterface;
+class ProcessResourceCoordinator;
 }
 
 namespace viz {
@@ -380,7 +380,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual mojom::Renderer* GetRendererInterface() = 0;
 
   // Acquires the interface to the Global Resource Coordinator for this process.
-  virtual resource_coordinator::ResourceCoordinatorInterface*
+  virtual resource_coordinator::ProcessResourceCoordinator*
   GetProcessResourceCoordinator() = 0;
 
   // Whether this process is locked out from ever being reused for sites other
