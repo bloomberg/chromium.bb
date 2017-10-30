@@ -80,7 +80,6 @@ DownloadDangerPromptImpl::DownloadDangerPromptImpl(
       download_(download),
       show_context_(show_context),
       done_(done) {
-  DCHECK(!done_.is_null());
   download_->AddObserver(this);
   RecordOpenedDangerousConfirmDialog(download_->GetDangerType());
 
