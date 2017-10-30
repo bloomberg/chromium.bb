@@ -5346,6 +5346,6 @@ Battery full
     Taking notes with <ph name="LOCK_SCREEN_APP_NAME">$1<ex>Lock Screen Enabled App</ex></ph>
   </message>
   <message name="IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_MESSAGE" desc="Message shown in the body of the dialog shown to the user when they launch note taking app from the lock screen for the first time - the message has a placeholder for the launched app's name.">
-    Lock screen notes are accessible from the lock screen and automatically saved to <ph name="LOCK_SCREEN_APP_NAME">$1<ex>Lock Screen Enabled App</ex></ph>.
+    Lock screen notes are automatically saved to <ph name="LOCK_SCREEN_APP_NAME">$1<ex>Lock Screen Enabled App</ex></ph>. Your most recent note will remain on the lock screen.
   </message>
 </grit-part>
