@@ -738,7 +738,7 @@ void AutofillAgent::QueryAutofillSuggestions(
 void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
                                          WebInputElement* node) {
   base::AutoReset<bool> auto_reset(&ignore_text_changes_, true);
-  node->SetEditingValue(
+  node->SetAutofillValue(
       blink::WebString::FromUTF16(value.substr(0, node->MaxLength())));
   password_autofill_agent_->UpdateStateForTextChange(*node);
 }
