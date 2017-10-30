@@ -8,9 +8,12 @@ source_set("fakes") {
 
   deps = [
     "//base",
-    "//ios/web:web",
+    "//ios/web/public",
     "//ios/web/test:test_constants",
-    "//mojo/common:common_custom_types",
+    "//ios/web/web_state:navigation_context",
+    "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
+    "//ios/web/web_state/ui:web_view_js_utils",
+    "//ios/web/webui:webui",
     "//net:test_support",
     "//testing/gtest",
     "//ui/base",
