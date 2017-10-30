@@ -851,7 +851,7 @@ def FindCompressor(compression, chroot=None):
     para = 'pbzip2'
   elif compression == COMP_XZ:
     std = 'xz'
-    para = 'xz'
+    para = 'pixz'
   elif compression == COMP_NONE:
     return 'cat'
   else:
@@ -924,8 +924,14 @@ def CompressFile(infile, outfile):
   comp_type = CompressionExtToType(outfile)
   assert comp_type and comp_type != COMP_NONE
   comp = FindCompressor(comp_type)
-  cmd = [comp, '-c', infile]
-  RunCommand(cmd, log_stdout_to_file=outfile)
+  if os.path.basename(comp) == 'pixz':
+    # pixz does not accept '-c'; instead an explicit '-i' indicates input file
+    # should not be deleted, and '-o' specifies output file.
+    cmd = [comp, '-i', infile, '-o', outfile]
+    RunCommand(cmd)
+  else:
+    cmd = [comp, '-c', infile]
+    RunCommand(cmd, log_stdout_to_file=outfile)
 
 
 def UncompressFile(infile, outfile):
@@ -939,8 +945,14 @@ def UncompressFile(infile, outfile):
   comp_type = CompressionExtToType(infile)
   assert comp_type and comp_type != COMP_NONE
   comp = FindCompressor(comp_type)
-  cmd = [comp, '-dc', infile]
-  RunCommand(cmd, log_stdout_to_file=outfile)
+  if os.path.basename(comp) == 'pixz':
+    # pixz does not accept '-c'; instead an explicit '-i' indicates input file
+    # should not be deleted, and '-o' specifies output file.
+    cmd = [comp, '-d', '-i', infile, '-o', outfile]
+    RunCommand(cmd)
+  else:
+    cmd = [comp, '-dc', infile]
+    RunCommand(cmd, log_stdout_to_file=outfile)
 
 
 class CreateTarballError(RunCommandError):
