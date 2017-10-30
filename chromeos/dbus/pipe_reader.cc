@@ -4,7 +4,10 @@
 
 #include "chromeos/dbus/pipe_reader.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_runner.h"
 #include "net/base/file_stream.h"
@@ -13,17 +16,22 @@
 
 namespace chromeos {
 
-PipeReader::PipeReader(const scoped_refptr<base::TaskRunner>& task_runner,
-                       const IOCompleteCallback& callback)
+PipeReader::PipeReader(const scoped_refptr<base::TaskRunner>& task_runner)
     : io_buffer_(new net::IOBufferWithSize(4096)),
       task_runner_(task_runner),
-      callback_(callback),
       weak_ptr_factory_(this) {}
 
-PipeReader::~PipeReader() {
-}
+PipeReader::~PipeReader() = default;
 
-base::ScopedFD PipeReader::StartIO() {
+base::ScopedFD PipeReader::StartIO(CompletionCallback callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(data_.empty());
+
+  if (!callback_.is_null()) {
+    LOG(ERROR) << "There already is in-flight operation.";
+    return base::ScopedFD();
+  }
+
   // Use a pipe to collect data
   int pipe_fds[2];
   const int status = HANDLE_EINTR(pipe(pipe_fds));
@@ -31,53 +39,55 @@ base::ScopedFD PipeReader::StartIO() {
     PLOG(ERROR) << "pipe";
     return base::ScopedFD();
   }
+
   base::ScopedFD pipe_write_end(pipe_fds[1]);
   // Pass ownership of pipe_fds[0] to data_stream_, which will close it.
-  data_stream_.reset(new net::FileStream(
-      base::File(pipe_fds[0]), task_runner_));
+  data_stream_ =
+      std::make_unique<net::FileStream>(base::File(pipe_fds[0]), task_runner_);
 
   // Post an initial async read to setup data collection
-  int rv = data_stream_->Read(
-      io_buffer_.get(), io_buffer_->size(),
-      base::Bind(&PipeReader::OnDataReady, weak_ptr_factory_.GetWeakPtr()));
+  // Expect asynchronous operation.
+  int rv = RequestRead();
   if (rv != net::ERR_IO_PENDING) {
     LOG(ERROR) << "Unable to post initial read";
+    data_stream_.reset();
     return base::ScopedFD();
   }
+
+  // The operation is successfully started. Keep objects in the members,
+  // and returns the write-side of the pipe.
+  callback_ = std::move(callback);
   return pipe_write_end;
 }
 
-void PipeReader::OnDataReady(int byte_count) {
-  DVLOG(1) << "OnDataReady byte_count " << byte_count;
+int PipeReader::RequestRead() {
+  DCHECK(data_stream_.get());
+  return data_stream_->Read(
+      io_buffer_.get(), io_buffer_->size(),
+      base::Bind(&PipeReader::OnRead, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PipeReader::OnRead(int byte_count) {
+  DVLOG(1) << "OnRead byte_count: " << byte_count;
   if (byte_count <= 0) {
-    callback_.Run();  // signal creator to take data and delete us
+    // On EOF (= 0), or on error (< 0).
+    base::Optional<std::string> result =
+        byte_count < 0 ? base::nullopt : base::make_optional(std::move(data_));
+    // Clear members before calling the |callback|.
+    data_.clear();
+    data_stream_.reset();
+    base::ResetAndReturn(&callback_).Run(std::move(result));
     return;
   }
 
-  AcceptData(io_buffer_->data(), byte_count);
+  data_.append(io_buffer_->data(), byte_count);
 
-  // Post another read
-  int rv = data_stream_->Read(
-      io_buffer_.get(), io_buffer_->size(),
-      base::Bind(&PipeReader::OnDataReady, weak_ptr_factory_.GetWeakPtr()));
+  // Post another read.
+  int rv = RequestRead();
   if (rv != net::ERR_IO_PENDING) {
-    LOG(ERROR) << "Unable to post another read";
-    // TODO(sleffler) do something more intelligent?
+    // Calls OnRead() again with the error, which handles remaining clean up.
+    OnRead(rv > 0 ? net::ERR_FAILED : rv);
   }
-}
-
-PipeReaderForString::PipeReaderForString(
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    const IOCompleteCallback& callback)
-    : PipeReader(task_runner, callback) {
-}
-
-void PipeReaderForString::AcceptData(const char *data, int byte_count) {
-  data_.append(data, byte_count);
-}
-
-void PipeReaderForString::GetData(std::string* data) {
-  data_.swap(*data);
 }
 
 }  // namespace chromeos

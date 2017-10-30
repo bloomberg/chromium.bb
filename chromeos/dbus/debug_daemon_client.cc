@@ -56,44 +56,54 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
  public:
   explicit PipeReaderWrapper(const DebugDaemonClient::GetLogsCallback& callback)
       : pipe_reader_(base::CreateTaskRunnerWithTraits(
-                         {base::MayBlock(),
-                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
-                     base::Bind(&PipeReaderWrapper::OnIOComplete, AsWeakPtr())),
+            {base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
         callback_(callback) {}
 
-  base::ScopedFD Initialize() { return pipe_reader_.StartIO(); }
+  base::ScopedFD Initialize() {
+    return pipe_reader_.StartIO(
+        base::BindOnce(&PipeReaderWrapper::OnIOComplete, AsWeakPtr()));
+  }
 
-  void OnIOComplete() {
-    std::string pipe_data;
-    pipe_reader_.GetData(&pipe_data);
-    JSONStringValueDeserializer json_reader(pipe_data);
-
-    std::map<std::string, std::string> data;
-    const base::DictionaryValue* dictionary = nullptr;
-    std::unique_ptr<base::Value> logs_value =
-        json_reader.Deserialize(nullptr, nullptr);
-    if (!logs_value.get() || !logs_value->GetAsDictionary(&dictionary)) {
-      VLOG(1) << "Failed to deserialize the JSON logs.";
-      callback_.Run(false, data);
-      delete this;
+  void OnIOComplete(base::Optional<std::string> result) {
+    if (!result.has_value()) {
+      VLOG(1) << "Failed to read data.";
+      RunCallbackAndDestroy(base::nullopt);
       return;
     }
 
-    base::DictionaryValue::Iterator itr(*dictionary);
-    for (; !itr.IsAtEnd(); itr.Advance()) {
-      std::string value;
-      itr.value().GetAsString(&value);
-      data[itr.key()] = value;
+    JSONStringValueDeserializer json_reader(result.value());
+    std::unique_ptr<base::DictionaryValue> logs =
+        base::DictionaryValue::From(json_reader.Deserialize(nullptr, nullptr));
+    if (!logs.get()) {
+      VLOG(1) << "Failed to deserialize the JSON logs.";
+      RunCallbackAndDestroy(base::nullopt);
+      return;
     }
 
-    callback_.Run(true, data);
+    std::map<std::string, std::string> data;
+    for (const auto& entry : *logs)
+      data[entry.first] = entry.second->GetString();
+    RunCallbackAndDestroy(std::move(data));
+  }
+
+  void TerminateStream() {
+    VLOG(1) << "Terminated";
+    RunCallbackAndDestroy(base::nullopt);
+  }
+
+ private:
+  void RunCallbackAndDestroy(
+      base::Optional<std::map<std::string, std::string>> result) {
+    if (result.has_value()) {
+      callback_.Run(true, result.value());
+    } else {
+      callback_.Run(false, std::map<std::string, std::string>());
+    }
     delete this;
   }
 
-  void TerminateStream() { pipe_reader_.OnDataReady(-1); }
-
- private:
-  PipeReaderForString pipe_reader_;
+  PipeReader pipe_reader_;
   DebugDaemonClient::GetLogsCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeReaderWrapper);
@@ -306,20 +316,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       return;
     }
 
-    pipe_reader_.reset(
-        new PipeReaderForString(stop_agent_tracing_task_runner_,
-                                base::Bind(&DebugDaemonClientImpl::OnIOComplete,
-                                           weak_ptr_factory_.GetWeakPtr())));
+    pipe_reader_ =
+        std::make_unique<PipeReader>(stop_agent_tracing_task_runner_);
+    callback_ = callback;
+    base::ScopedFD pipe_write_end = pipe_reader_->StartIO(base::BindOnce(
+        &DebugDaemonClientImpl::OnIOComplete, weak_ptr_factory_.GetWeakPtr()));
 
-    base::ScopedFD pipe_write_end = pipe_reader_->StartIO();
     DCHECK(pipe_write_end.is_valid());
     // Issue the dbus request to stop system tracing
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kSystraceStop);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(pipe_write_end.get());
-
-    callback_ = callback;
 
     DVLOG(1) << "Requesting a systrace stop";
     debugdaemon_proxy_->CallMethod(
@@ -691,8 +699,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       LOG(ERROR) << "Failed to request systrace stop";
       // If debugd crashes or completes I/O before this message is processed
       // then pipe_reader_ can be NULL, see OnIOComplete().
-      if (pipe_reader_.get())
-        pipe_reader_->OnDataReady(-1);  // terminate data stream
+      if (pipe_reader_.get()) {
+        pipe_reader_.reset();
+        base::ResetAndReturn(&callback_)
+            .Run(GetTracingAgentName(), GetTraceEventLabel(),
+                 scoped_refptr<base::RefCountedString>(
+                     new base::RefCountedString()));
+      }
     }
     // NB: requester is signaled when i/o completes
   }
@@ -706,12 +719,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   // Called when pipe i/o completes; pass data on and delete the instance.
-  void OnIOComplete() {
-    std::string pipe_data;
-    pipe_reader_->GetData(&pipe_data);
-    callback_.Run(GetTracingAgentName(), GetTraceEventLabel(),
-                  base::RefCountedString::TakeString(&pipe_data));
+  void OnIOComplete(base::Optional<std::string> result) {
     pipe_reader_.reset();
+    std::string pipe_data =
+        result.has_value() ? std::move(result).value() : std::string();
+    base::ResetAndReturn(&callback_)
+        .Run(GetTracingAgentName(), GetTraceEventLabel(),
+             base::RefCountedString::TakeString(&pipe_data));
   }
 
   void OnSetOomScoreAdj(const SetOomScoreAdjCallback& callback,
@@ -747,7 +761,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;
-  std::unique_ptr<PipeReaderForString> pipe_reader_;
+  std::unique_ptr<PipeReader> pipe_reader_;
   StopAgentTracingCallback callback_;
   scoped_refptr<base::TaskRunner> stop_agent_tracing_task_runner_;
   base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;

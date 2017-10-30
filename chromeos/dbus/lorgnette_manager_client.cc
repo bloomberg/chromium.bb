@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -102,36 +103,36 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     CompletionCallback Start(const ScanImageToStringCallback& callback,
                              base::ScopedFD* fd) {
       CHECK(!pipe_reader_.get());
-      pipe_reader_.reset(new chromeos::PipeReaderForString(
+      pipe_reader_ = std::make_unique<chromeos::PipeReader>(
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(),
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
-          base::Bind(&ScanToStringCompletion::OnScanToStringDataCompleted,
-                     base::Unretained(this))));
-      *fd = pipe_reader_->StartIO();
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
+      *fd = pipe_reader_->StartIO(
+          base::BindOnce(&ScanToStringCompletion::OnScanToStringDataCompleted,
+                         base::Unretained(this)));
       return base::Bind(&ScanToStringCompletion::OnScanToStringCompleted,
                         base::Owned(this), callback);
     }
 
    private:
     // Called when a |pipe_reader_| completes reading scan data to a string.
-    void OnScanToStringDataCompleted() {
-      pipe_reader_->GetData(&scanned_image_data_string_);
+    void OnScanToStringDataCompleted(base::Optional<std::string> result) {
+      scanned_image_data_string_ =
+          result.has_value() ? std::move(result).value() : std::string();
       pipe_reader_.reset();
     }
 
     // Called by LorgnetteManagerImpl when scan completes.
     void OnScanToStringCompleted(const ScanImageToStringCallback& callback,
                                  bool succeeded) {
-      if (pipe_reader_.get()) {
-        pipe_reader_->OnDataReady(-1);  // terminate data stream
-      }
+      if (pipe_reader_.get())
+        pipe_reader_.reset();
       callback.Run(succeeded, scanned_image_data_string_);
       scanned_image_data_string_.clear();
     }
 
-    std::unique_ptr<chromeos::PipeReaderForString> pipe_reader_;
+    std::unique_ptr<chromeos::PipeReader> pipe_reader_;
     std::string scanned_image_data_string_;
 
     DISALLOW_COPY_AND_ASSIGN(ScanToStringCompletion);
