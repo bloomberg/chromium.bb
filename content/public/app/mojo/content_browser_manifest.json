@@ -55,8 +55,7 @@
           "resource_coordinator::mojom::ProcessCoordinationUnit",
           "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu",
-          "viz::mojom::SharedBitmapAllocationNotifier",
-          "viz::mojom::CompositingModeReporter"
+          "viz::mojom::SharedBitmapAllocationNotifier"
         ],
         "geolocation_config": [
           "device::mojom::GeolocationConfig"

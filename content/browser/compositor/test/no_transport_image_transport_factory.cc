@@ -40,10 +40,6 @@ NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
   context_factory_.SendOnLostResources();
 }
 
-bool NoTransportImageTransportFactory::IsGpuCompositingDisabled() {
-  return false;
-}
-
 ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
   return &context_factory_;
 }
