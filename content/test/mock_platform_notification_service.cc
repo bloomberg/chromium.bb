@@ -22,23 +22,17 @@ void OnEventDispatchComplete(PersistentNotificationStatus status) {}
 
 }  // namespace
 
-MockPlatformNotificationService::MockPlatformNotificationService()
-    : weak_factory_(this) {}
+MockPlatformNotificationService::MockPlatformNotificationService() = default;
 
-MockPlatformNotificationService::~MockPlatformNotificationService() {}
+MockPlatformNotificationService::~MockPlatformNotificationService() = default;
 
 void MockPlatformNotificationService::DisplayNotification(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
-    const NotificationResources& notification_resources,
-    base::Closure* cancel_callback) {
+    const NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(cancel_callback);
-
-  *cancel_callback = base::Bind(&MockPlatformNotificationService::Close,
-                                weak_factory_.GetWeakPtr(), notification_id);
 
   ReplaceNotificationIfNeeded(notification_id);
   non_persistent_notifications_.insert(notification_id);
@@ -68,6 +62,22 @@ void MockPlatformNotificationService::DisplayPersistentNotification(
 
   notification_id_map_[base::UTF16ToUTF8(notification_data.title)] =
       notification_id;
+}
+
+void MockPlatformNotificationService::CloseNotification(
+    BrowserContext* browser_context,
+    const std::string& notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const auto non_persistent_iter =
+      non_persistent_notifications_.find(notification_id);
+  if (non_persistent_iter == non_persistent_notifications_.end())
+    return;
+
+  NotificationEventDispatcher::GetInstance()->DispatchNonPersistentCloseEvent(
+      notification_id);
+
+  non_persistent_notifications_.erase(non_persistent_iter);
 }
 
 void MockPlatformNotificationService::ClosePersistentNotification(
@@ -160,18 +170,6 @@ MockPlatformNotificationService::CheckPermissionOnIOThread(
     int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return CheckPermission(origin);
-}
-
-void MockPlatformNotificationService::Close(
-    const std::string& notification_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const auto non_persistent_iter =
-      non_persistent_notifications_.find(notification_id);
-  if (non_persistent_iter == non_persistent_notifications_.end()) {
-    NotificationEventDispatcher::GetInstance()->DispatchNonPersistentCloseEvent(
-        notification_id);
-    non_persistent_notifications_.erase(non_persistent_iter);
-  }
 }
 
 void MockPlatformNotificationService::ReplaceNotificationIfNeeded(

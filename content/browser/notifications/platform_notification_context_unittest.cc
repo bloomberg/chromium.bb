@@ -32,7 +32,8 @@ const int64_t kFakeServiceWorkerRegistrationId = 42;
 class NotificationBrowserClient : public TestContentBrowserClient {
  public:
   NotificationBrowserClient()
-      : platform_notification_service_(new MockPlatformNotificationService()) {}
+      : platform_notification_service_(
+            std::make_unique<MockPlatformNotificationService>()) {}
 
   PlatformNotificationService* GetPlatformNotificationService() override {
     return platform_notification_service_.get();
