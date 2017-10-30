@@ -79,6 +79,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/runtime_enabled_features.h"
+#include "public/platform/WebSize.h"
 
 namespace blink {
 
@@ -109,6 +110,10 @@ const char* kStateCSSClasses[6] = {
     "phase-ready state-playing",          // kPlaying
     "phase-ready state-buffering",        // kBuffering
 };
+
+// The padding in pixels inside the button panel.
+constexpr int kModernControlsAudioButtonPadding = 20;
+constexpr int kModernControlsVideoButtonPadding = 26;
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -865,6 +870,102 @@ void MediaControlsImpl::RemotePlaybackStateChanged() {
   overlay_cast_button_->UpdateDisplayType();
 }
 
+void MediaControlsImpl::UpdateOverflowMenuWanted() const {
+  // If the bool is true then the element is "sticky" this means that we will
+  // always try and show it unless there is not room for it.
+  std::pair<MediaControlElementBase*, bool> row_elements[] = {
+      std::make_pair(play_button_.Get(), true),
+      std::make_pair(mute_button_.Get(), true),
+      std::make_pair(fullscreen_button_.Get(), true),
+      std::make_pair(current_time_display_.Get(), true),
+      std::make_pair(duration_display_.Get(), true),
+      std::make_pair(cast_button_.Get(), false),
+      std::make_pair(download_button_.Get(), false),
+      std::make_pair(toggle_closed_captions_button_.Get(), false),
+  };
+
+  // Get the size of the media controls.
+  WebSize controls_size =
+      MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
+
+  // The video controls are more than one row so we need to allocate vertical
+  // room and hide the overlay play button if there is not enough room.
+  if (MediaElement().IsHTMLVideoElement()) {
+    // These are the elements in order of priority that take up vertical room.
+    MediaControlElementBase* column_elements[] = {
+        overlay_play_button_.Get(), media_button_panel_.Get(), timeline_.Get(),
+    };
+
+    controls_size.width -= kModernControlsVideoButtonPadding;
+
+    // Allocate vertical room for the column elements.
+    for (MediaControlElementBase* element : column_elements) {
+      WebSize element_size = element->GetSizeOrDefault();
+      if (controls_size.height - element_size.height >= 0) {
+        element->SetDoesFit(true);
+        controls_size.height -= element_size.height;
+      } else {
+        element->SetDoesFit(false);
+      }
+    }
+
+    // If we cannot show the overlay play button, show the normal one.
+    play_button_->SetIsWanted(!overlay_play_button_->DoesFit());
+  } else {
+    controls_size.width -= kModernControlsAudioButtonPadding;
+  }
+
+  // Go through the elements and if they are sticky allocate them to the panel
+  // if we have enough room. If not (or they are not sticky) then add them to
+  // the overflow menu. Once we have run out of room add_elements will be
+  // made false and no more elements will be added.
+  MediaControlElementBase* last_element = nullptr;
+  bool add_elements = true;
+  bool overflow_wanted = false;
+  for (std::pair<MediaControlElementBase*, bool> pair : row_elements) {
+    MediaControlElementBase* element = pair.first;
+
+    // If the element is wanted then it should take up space, otherwise skip it.
+    element->SetOverflowElementIsWanted(false);
+    if (!element->IsWanted())
+      continue;
+
+    // Get the size of the element and see if we should allocate space to it.
+    WebSize element_size = element->GetSizeOrDefault();
+    bool does_fit = add_elements && pair.second &&
+                    ((controls_size.width - element_size.width) >= 0);
+    element->SetDoesFit(does_fit);
+
+    // The element does fit and is sticky so we should allocate space for it. If
+    // we cannot fit this element we should stop allocating space for other
+    // elements.
+    if (does_fit) {
+      controls_size.width -= element_size.width;
+      last_element = element;
+    } else {
+      add_elements = false;
+      if (element->HasOverflowButton()) {
+        overflow_wanted = true;
+        element->SetOverflowElementIsWanted(true);
+      }
+    }
+  }
+
+  overflow_menu_->SetDoesFit(overflow_wanted);
+  overflow_menu_->SetIsWanted(overflow_wanted);
+
+  // If we want to show the overflow button and we do not have any space to show
+  // it then we should hide the last shown element.
+  int overflow_icon_width = overflow_menu_->GetSizeOrDefault().width;
+  if (overflow_wanted && last_element &&
+      controls_size.width < overflow_icon_width) {
+    last_element->SetDoesFit(false);
+    last_element->SetOverflowElementIsWanted(true);
+  }
+
+  MaybeRecordElementsDisplayed();
+}
+
 void MediaControlsImpl::DefaultEventHandler(Event* event) {
   HTMLDivElement::DefaultEventHandler(event);
 
@@ -1166,10 +1267,10 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   // Hide all controls that don't fit, and show the ones that do.
   // This might be better suited for a layout, but since JS media controls
   // won't benefit from that anwyay, we just do it here like JS will.
-
-  // TODO(beccahughes): Update this for modern controls.
-  if (IsModern())
+  if (IsModern()) {
+    UpdateOverflowMenuWanted();
     return;
+  }
 
   // Controls that we'll hide / show, in order of decreasing priority.
   MediaControlElementBase* elements[] = {
@@ -1282,15 +1383,36 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
     overlay_play_button_->SetDoesFit(does_fit);
   }
 
+  MaybeRecordElementsDisplayed();
+}
+
+void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
   // Record the display state when needed. It is only recorded when the media
   // element is in a state that allows it in order to reduce noise in the
   // metrics.
-  if (MediaControlInputElement::ShouldRecordDisplayStates(MediaElement())) {
-    // Record which controls are used.
-    for (const auto& element : elements)
+  if (!MediaControlInputElement::ShouldRecordDisplayStates(MediaElement()))
+    return;
+
+  MediaControlElementBase* elements[] = {
+      play_button_.Get(),
+      fullscreen_button_.Get(),
+      download_button_.Get(),
+      timeline_.Get(),
+      mute_button_.Get(),
+      volume_slider_.Get(),
+      toggle_closed_captions_button_.Get(),
+      cast_button_.Get(),
+      current_time_display_.Get(),
+      duration_display_.Get(),
+      overlay_play_button_.Get(),
+  };
+
+  // Record which controls are used.
+  for (const auto& element : elements) {
+    if (element)
       element->MaybeRecordDisplayed();
-    overflow_menu_->MaybeRecordDisplayed();
   }
+  overflow_menu_->MaybeRecordDisplayed();
 
   if (download_iph_manager_)
     download_iph_manager_->UpdateInProductHelp();

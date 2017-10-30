@@ -10,6 +10,7 @@
 namespace blink {
 
 class Event;
+class HTMLDivElement;
 class MediaControlsImpl;
 
 class MediaControlOverlayPlayButtonElement final
@@ -20,12 +21,18 @@ class MediaControlOverlayPlayButtonElement final
   // MediaControlInputElement overrides.
   void UpdateDisplayType() override;
 
+  WebSize GetSizeOrDefault() const final;
+
+  void Trace(blink::Visitor*) override;
+
  protected:
   const char* GetNameForHistograms() const override;
 
  private:
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
+
+  Member<HTMLDivElement> internal_button_;
 };
 
 }  // namespace blink

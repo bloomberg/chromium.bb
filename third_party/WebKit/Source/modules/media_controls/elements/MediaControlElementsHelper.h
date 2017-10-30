@@ -16,11 +16,13 @@ class AtomicString;
 namespace blink {
 
 class ContainerNode;
+class Element;
 class Event;
 class HTMLDivElement;
 class HTMLMediaElement;
 class LayoutObject;
 class Node;
+struct WebSize;
 
 // Helper class for media control elements. It contains methods, constants or
 // concepts shared by more than one element.
@@ -48,6 +50,10 @@ class MediaControlElementsHelper final {
   // Utility function for quickly creating div elements.
   static HTMLDivElement* CreateDiv(const WTF::AtomicString& id,
                                    ContainerNode* parent);
+
+  // Utility function for getting the size in pixels of an element. If the
+  // element has not been layed out then returns the supplied default.
+  static WebSize GetSizeOrDefault(const Element&, const WebSize&);
 };
 
 }  // namespace blink
