@@ -83,7 +83,7 @@ Error MapSystemError(logging::SystemErrorCode os_error) {
     case ENFILE:  // Too many open files in system.
       return ERR_INSUFFICIENT_RESOURCES;
     case ENOBUFS:  // No buffer space available.
-      return ERR_OUT_OF_MEMORY;
+      return ERR_NO_BUFFER_SPACE;
     case ENODEV:  // No such device.
       return ERR_INVALID_ARGUMENT;
     case ENOENT:  // No such file or directory.

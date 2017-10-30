@@ -4714,6 +4714,104 @@ TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
   session_.reset();
 }
 
+TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData socket_data;
+  QuicStreamOffset offset = 0;
+  socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
+  socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
+  socket_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &offset));
+  socket_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK")));
+  socket_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  socket_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponse("hello!");
+  session_.reset();
+}
+
+TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData socket_data;
+  QuicStreamOffset offset = 0;
+  socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
+  socket_data.AddWrite(SYNCHRONOUS, ERR_NO_BUFFER_SPACE);
+  socket_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &offset));
+  socket_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK")));
+  socket_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  socket_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponse("hello!");
+  session_.reset();
+}
+
+TEST_P(QuicNetworkTransactionTest, RetryAgainAfterAsyncNoBufferSpace) {
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData socket_data;
+  QuicStreamOffset offset = 0;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
+  for (int i = 0; i < 21; ++i) {
+    socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
+  }
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+}
+
+TEST_P(QuicNetworkTransactionTest, RetryOnceAfterSynchronousNoBufferSpace) {
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData socket_data;
+  QuicStreamOffset offset = 0;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
+  for (int i = 0; i < 21; ++i) {
+    socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
+  }
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+}
+
 // Adds coverage to catch regression such as https://crbug.com/622043
 TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
   session_params_.origins_to_force_quic_on.insert(
