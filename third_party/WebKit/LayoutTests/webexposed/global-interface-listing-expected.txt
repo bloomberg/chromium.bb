@@ -638,12 +638,22 @@ interface CSSKeywordValue : CSSStyleValue
     getter value
     method constructor
     setter value
+interface CSSMathInvert : CSSMathValue
+    attribute @@toStringTag
+    getter value
+    method constructor
+    setter value
 interface CSSMathMax : CSSMathValue
     attribute @@toStringTag
     method constructor
 interface CSSMathMin : CSSMathValue
     attribute @@toStringTag
     method constructor
+interface CSSMathNegate : CSSMathValue
+    attribute @@toStringTag
+    getter value
+    method constructor
+    setter value
 interface CSSMathProduct : CSSMathValue
     attribute @@toStringTag
     method constructor

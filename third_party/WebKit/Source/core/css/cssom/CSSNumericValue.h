@@ -27,6 +27,8 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   // Blink-internal ways of creating CSSNumericValues.
   static CSSNumericValue* parse(const String& css_text, ExceptionState&);
   static CSSNumericValue* FromCSSValue(const CSSPrimitiveValue&);
+  // https://drafts.css-houdini.org/css-typed-om-1/#rectify-a-numberish-value
+  static CSSNumericValue* FromNumberish(const CSSNumberish& value);
 
   // Methods defined in the IDL.
   virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) {
