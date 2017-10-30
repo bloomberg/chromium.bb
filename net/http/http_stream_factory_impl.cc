@@ -246,9 +246,9 @@ bool HttpStreamFactoryImpl::ProxyServerSupportsPriorities(
 
 void HttpStreamFactoryImpl::AddJobControllerCountToHistograms() {
   // Only log the count of JobControllers when the count is hitting one of the
-  // boundaries for the first time which is a multiple of 100: 100, 200, 300,
-  // etc.
-  if (job_controller_set_.size() % 100 != 0 ||
+  // boundaries for the first time which is a multiple of 1000: 1000, 2000,
+  // 3000, etc.
+  if (job_controller_set_.size() % 1000 != 0 ||
       job_controller_set_.size() <= last_logged_job_controller_count_) {
     return;
   }
@@ -260,12 +260,8 @@ void HttpStreamFactoryImpl::AddJobControllerCountToHistograms() {
   size_t num_controllers_with_request = 0;
   size_t num_controllers_for_preconnect = 0;
   for (const auto& job_controller : job_controller_set_) {
-    DCHECK(job_controller->HasPendingAltJob() ||
-           job_controller->HasPendingMainJob());
-    // Additionally logs the states of the jobs if there are at least 500
-    // controllers, which suggests that there might be a leak.
-    if (job_controller_set_.size() >= 500)
-      job_controller->LogHistograms();
+    // Additionally log the states of the jobs.
+    job_controller->LogHistograms();
     // For a preconnect controller, it should have exactly the main job.
     if (job_controller->is_preconnect()) {
       num_controllers_for_preconnect++;
