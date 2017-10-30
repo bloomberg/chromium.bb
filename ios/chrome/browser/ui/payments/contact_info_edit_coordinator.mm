@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/core/payments_profile_comparator.h"
-#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/contact_info_edit_mediator.h"
@@ -53,12 +52,12 @@ using ::AutofillTypeFromAutofillUIType;
 - (void)start {
   self.editViewController = [[PaymentRequestEditViewController alloc] init];
   [self.editViewController setDelegate:self];
-  [self.editViewController setValidatorDelegate:self];
   self.mediator = [[ContactInfoEditMediator alloc]
       initWithPaymentRequest:self.paymentRequest
                      profile:self.profile];
   [self.mediator setConsumer:self.editViewController];
   [self.editViewController setDataSource:self.mediator];
+  [self.editViewController setValidatorDelegate:self.mediator];
   [self.editViewController loadModel];
 
   self.viewController = [[PaymentRequestNavigationController alloc]
@@ -79,42 +78,6 @@ using ::AutofillTypeFromAutofillUIType;
                          completion:nil];
   self.editViewController = nil;
   self.viewController = nil;
-}
-
-#pragma mark - PaymentRequestEditViewControllerValidator
-
-- (NSString*)paymentRequestEditViewController:
-                 (PaymentRequestEditViewController*)controller
-                                validateField:(EditorField*)field {
-  if (field.value.length) {
-    switch (field.autofillUIType) {
-      case AutofillUITypeProfileHomePhoneWholeNumber: {
-        const std::string countryCode =
-            autofill::AutofillCountry::CountryCodeForLocale(
-                self.paymentRequest->GetApplicationLocale());
-        if (!autofill::IsValidPhoneNumber(base::SysNSStringToUTF16(field.value),
-                                          countryCode)) {
-          return l10n_util::GetNSString(
-              IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE);
-        }
-        break;
-      }
-      case AutofillUITypeProfileEmailAddress: {
-        if (!autofill::IsValidEmailAddress(
-                base::SysNSStringToUTF16(field.value))) {
-          return l10n_util::GetNSString(
-              IDS_PAYMENTS_EMAIL_INVALID_VALIDATION_MESSAGE);
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  } else if (field.isRequired) {
-    return l10n_util::GetNSString(
-        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
-  }
-  return nil;
 }
 
 #pragma mark - PaymentRequestEditViewControllerDelegate

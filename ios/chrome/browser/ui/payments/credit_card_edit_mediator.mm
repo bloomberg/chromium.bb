@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/payments/credit_card_edit_mediator.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
@@ -17,6 +19,7 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
@@ -32,6 +35,41 @@ namespace {
 using ::autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork;
 using ::autofill::data_util::GetPaymentRequestData;
 using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
+
+// Returns true if |card_number| is a supported card type and a valid credit
+// card number and no other credit card with the same number exists.
+// |error_message| can't be null and will be filled with the appropriate error
+// message iff the return value is false.
+bool IsValidCreditCardNumber(const base::string16& card_number,
+                             payments::PaymentRequest* payment_request,
+                             const autofill::CreditCard* credit_card_to_edit,
+                             base::string16* error_message) {
+  std::set<std::string> supported_card_networks(
+      payment_request->supported_card_networks().begin(),
+      payment_request->supported_card_networks().end());
+  if (!::autofill::IsValidCreditCardNumberForBasicCardNetworks(
+          card_number, supported_card_networks, error_message)) {
+    return false;
+  }
+
+  // Check if another credit card has already been created with this number.
+  // TODO(crbug.com/725604): the UI should offer to load / update the existing
+  // credit card info.
+  autofill::CreditCard* existing_card =
+      payment_request->GetPersonalDataManager()->GetCreditCardByNumber(
+          base::UTF16ToASCII(card_number));
+  // If a card exists, it could be the one currently being edited.
+  if (!existing_card || (credit_card_to_edit && credit_card_to_edit->guid() ==
+                                                    existing_card->guid())) {
+    return true;
+  }
+  if (error_message) {
+    *error_message = l10n_util::GetStringUTF16(
+        IDS_PAYMENTS_VALIDATION_ALREADY_USED_CREDIT_CARD_NUMBER);
+  }
+  return false;
+}
+
 }  // namespace
 
 @interface CreditCardEditViewControllerMediator ()
@@ -184,6 +222,41 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   int resourceID = autofill::data_util::GetPaymentRequestData(issuerNetwork)
                        .icon_resource_id;
   return NativeImage(resourceID);
+}
+
+#pragma mark - PaymentRequestEditViewControllerValidator
+
+- (NSString*)paymentRequestEditViewController:
+                 (PaymentRequestEditViewController*)controller
+                                validateField:(EditorField*)field {
+  if (field.value.length) {
+    base::string16 errorMessage;
+    base::string16 valueString = base::SysNSStringToUTF16(field.value);
+    if (field.autofillUIType == AutofillUITypeCreditCardNumber) {
+      ::IsValidCreditCardNumber(valueString, _paymentRequest, _creditCard,
+                                &errorMessage);
+    } else if (field.autofillUIType == AutofillUITypeCreditCardExpDate) {
+      NSArray<NSString*>* fieldComponents =
+          [field.value componentsSeparatedByString:@" / "];
+      int expMonth = [fieldComponents[0] intValue];
+      int expYear = [fieldComponents[1] intValue];
+      if (!autofill::IsValidCreditCardExpirationDate(
+              expYear, expMonth, autofill::AutofillClock::Now())) {
+        errorMessage = l10n_util::GetStringUTF16(
+            IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED);
+      }
+    } else if (field.autofillUIType != AutofillUITypeCreditCardBillingAddress &&
+               field.autofillUIType != AutofillUITypeCreditCardSaveToChrome) {
+      autofill::IsValidForType(
+          valueString, ::AutofillTypeFromAutofillUIType(field.autofillUIType),
+          &errorMessage);
+    }
+    return !errorMessage.empty() ? base::SysUTF16ToNSString(errorMessage) : nil;
+  } else if (field.isRequired) {
+    return l10n_util::GetNSString(
+        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+  }
+  return nil;
 }
 
 #pragma mark - Helper methods
