@@ -195,6 +195,11 @@
                 icon-aria-label="[[data.controlledInfo.type]]">
             </cr-tooltip-icon>
             <cr-toggle id="enable-toggle"
+                aria-label$="[[appOrExtension(
+                    data.type,
+                    '$i18nPolymer{appEnabled}',
+                    '$i18nPolymer{extensionEnabled}')]]"
+                aria-describedby="name"
                 checked="[[isEnabled_(data.state)]]"
                 on-change="onEnableChange_"
                 disabled="[[!isEnableToggleEnabled_(data.*)]]">
