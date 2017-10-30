@@ -25,8 +25,13 @@ void read_sequence_header(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb);
 #endif
 
+#if CONFIG_FRAME_SIZE
+void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
+                         int num_bits_height, int *width, int *height);
+#else
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,
                          int *height);
+#endif
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
 
 // This function is now obsolete

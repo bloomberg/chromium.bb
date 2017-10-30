@@ -281,7 +281,11 @@ static aom_codec_err_t decoder_peek_si_internal(
     }
     error_resilient = aom_rb_read_bit(&rb);
 #if CONFIG_REFERENCE_BUFFER
+#if CONFIG_FRAME_SIZE
+    SequenceHeader seq_params = { 0, 0, 0, 0, 0, 0, 0 };
+#else
     SequenceHeader seq_params = { 0, 0, 0 };
+#endif
     if (si->is_kf) {
       /* TODO: Move outside frame loop or inside key-frame branch */
       read_sequence_header(&seq_params, &rb);
@@ -290,15 +294,33 @@ static aom_codec_err_t decoder_peek_si_internal(
 #endif  // CONFIG_EXT_TILE
     }
 #endif  // CONFIG_REFERENCE_BUFFER
+
 #if CONFIG_REFERENCE_BUFFER
     if (seq_params.frame_id_numbers_present_flag) {
       aom_rb_read_literal(&rb, seq_params.frame_id_length);
     }
 #endif  // CONFIG_REFERENCE_BUFFER
+
+#if CONFIG_FRAME_SIZE
+    int frame_size_override_flag = aom_rb_read_bit(&rb);
+#endif
+
     if (si->is_kf) {
       if (!parse_bitdepth_colorspace_sampling(profile, &rb))
         return AOM_CODEC_UNSUP_BITSTREAM;
+#if CONFIG_FRAME_SIZE
+      if (frame_size_override_flag) {
+        int num_bits_width = seq_params.num_bits_width;
+        int num_bits_height = seq_params.num_bits_height;
+        av1_read_frame_size(&rb, num_bits_width, num_bits_height, (int *)&si->w,
+                            (int *)&si->h);
+      } else {
+        si->w = seq_params.max_frame_width;
+        si->h = seq_params.max_frame_height;
+      }
+#else
       av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
+#endif
     } else {
       rb.bit_offset += error_resilient ? 0 : 2;  // reset_frame_context
 
@@ -308,7 +330,19 @@ static aom_codec_err_t decoder_peek_si_internal(
             return AOM_CODEC_UNSUP_BITSTREAM;
         }
         rb.bit_offset += REF_FRAMES;  // refresh_frame_flags
+#if CONFIG_FRAME_SIZE
+        if (frame_size_override_flag) {
+          int num_bits_width = seq_params.num_bits_width;
+          int num_bits_height = seq_params.num_bits_height;
+          av1_read_frame_size(&rb, num_bits_width, num_bits_height,
+                              (int *)&si->w, (int *)&si->h);
+        } else {
+          si->w = seq_params.max_frame_width;
+          si->h = seq_params.max_frame_height;
+        }
+#else
         av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
+#endif
       }
     }
 #endif  // CONFIG_OBU

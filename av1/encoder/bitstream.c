@@ -3570,15 +3570,30 @@ static void write_superres_scale(const AV1_COMMON *const cm,
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
+#if CONFIG_FRAME_SIZE
+static void write_frame_size(const AV1_COMMON *cm, int frame_size_override,
+                             struct aom_write_bit_buffer *wb) {
+#else
 static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb) {
+#endif
 #if CONFIG_FRAME_SUPERRES
   aom_wb_write_literal(wb, cm->superres_upscaled_width - 1, 16);
   aom_wb_write_literal(wb, cm->superres_upscaled_height - 1, 16);
   write_superres_scale(cm, wb);
 #else
+#if CONFIG_FRAME_SIZE
+  if (frame_size_override) {
+    const SequenceHeader *seq_params = &cm->seq_params;
+    int num_bits_width = seq_params->num_bits_width;
+    int num_bits_height = seq_params->num_bits_height;
+    aom_wb_write_literal(wb, cm->width - 1, num_bits_width);
+    aom_wb_write_literal(wb, cm->height - 1, num_bits_height);
+  }
+#else
   aom_wb_write_literal(wb, cm->width - 1, 16);
   aom_wb_write_literal(wb, cm->height - 1, 16);
+#endif
 #endif  // CONFIG_FRAME_SUPERRES
   write_render_size(cm, wb);
 }
@@ -3612,7 +3627,14 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
     }
   }
 
+#if CONFIG_FRAME_SIZE
+  if (!found) {
+    int frame_size_override = 1;  // Allways equal to 1 in this function
+    write_frame_size(cm, frame_size_override, wb);
+  }
+#else
   if (!found) write_frame_size(cm, wb);
+#endif
 }
 
 static void write_profile(BITSTREAM_PROFILE profile,
@@ -3664,6 +3686,24 @@ static void write_bitdepth_colorspace_sampling(
 void write_sequence_header(AV1_COMMON *const cm,
                            struct aom_write_bit_buffer *wb) {
   SequenceHeader *seq_params = &cm->seq_params;
+
+#if CONFIG_FRAME_SIZE
+  int num_bits_width = 16;
+  int num_bits_height = 16;
+  int max_frame_width = cm->width;
+  int max_frame_height = cm->height;
+
+  seq_params->num_bits_width = num_bits_width;
+  seq_params->num_bits_height = num_bits_height;
+  seq_params->max_frame_width = max_frame_width;
+  seq_params->max_frame_height = max_frame_height;
+
+  aom_wb_write_literal(wb, num_bits_width - 1, 4);
+  aom_wb_write_literal(wb, num_bits_height - 1, 4);
+  aom_wb_write_literal(wb, max_frame_width - 1, num_bits_width);
+  aom_wb_write_literal(wb, max_frame_height - 1, num_bits_height);
+#endif
+
   /* Placeholder for actually writing to the bitstream */
   seq_params->frame_id_numbers_present_flag =
 #if CONFIG_EXT_TILE
@@ -3881,9 +3921,21 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 #endif  // CONFIG_REFERENCE_BUFFER
+
+#if CONFIG_FRAME_SIZE
+  int frame_size_override_flag =
+      (cm->width != cm->seq_params.max_frame_width ||
+       cm->height != cm->seq_params.max_frame_height);
+  aom_wb_write_bit(wb, frame_size_override_flag);
+#endif
+
   if (cm->frame_type == KEY_FRAME) {
     write_bitdepth_colorspace_sampling(cm, wb);
+#if CONFIG_FRAME_SIZE
+    write_frame_size(cm, frame_size_override_flag, wb);
+#else
     write_frame_size(cm, wb);
+#endif
     write_sb_size(cm, wb);
 
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
@@ -3924,7 +3976,11 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       write_bitdepth_colorspace_sampling(cm, wb);
 
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+#if CONFIG_FRAME_SIZE
+      write_frame_size(cm, frame_size_override_flag, wb);
+#else
       write_frame_size(cm, wb);
+#endif
 
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
       assert(cpi->common.ans_window_size_log2 >= 8);
@@ -3968,10 +4024,10 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       }
 
 #if CONFIG_FRAME_SIZE
-      if (cm->error_resilient_mode == 0) {
+      if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
         write_frame_size_with_refs(cpi, wb);
       } else {
-        write_frame_size(cm, wb);
+        write_frame_size(cm, frame_size_override_flag, wb);
       }
 #else
       write_frame_size_with_refs(cpi, wb);
@@ -4168,8 +4224,20 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 #endif  // CONFIG_REFERENCE_BUFFER
+
+#if CONFIG_FRAME_SIZE
+  int frame_size_override_flag =
+      (cm->width != cm->seq_params.max_frame_width ||
+       cm->height != cm->seq_params.max_frame_height);
+  aom_wb_write_bit(wb, frame_size_override_flag);
+#endif
+
   if (cm->frame_type == KEY_FRAME) {
+#if CONFIG_FRAME_SIZE
+    write_frame_size(cm, frame_size_override_flag, wb);
+#else
     write_frame_size(cm, wb);
+#endif
     write_sb_size(cm, wb);
 
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
@@ -4202,7 +4270,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
     if (cm->intra_only) {
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+#if CONFIG_FRAME_SIZE
+      write_frame_size(cm, frame_size_override_flag, wb);
+#else
       write_frame_size(cm, wb);
+#endif
 
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
       assert(cpi->common.ans_window_size_log2 >= 8);
@@ -4256,10 +4328,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
 
 #if CONFIG_FRAME_SIZE
-    if (cm->error_resilient_mode == 0) {
+    if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
       write_frame_size_with_refs(cpi, wb);
     } else {
-      write_frame_size(cm, wb);
+      write_frame_size(cm, frame_size_override_flag, wb);
     }
 #else
     write_frame_size_with_refs(cpi, wb);
@@ -4321,10 +4393,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
 
 #if CONFIG_FRAME_SIZE
-    if (cm->error_resilient_mode == 0) {
+    if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
       write_frame_size_with_refs(cpi, wb);
     } else {
-      write_frame_size(cm, wb);
+      write_frame_size(cm, frame_size_override_flag, wb);
     }
 #else
     write_frame_size_with_refs(cpi, wb);
@@ -4743,6 +4815,23 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   write_profile(cm->profile, &wb);
 
   aom_wb_write_literal(&wb, 0, 4);
+
+#if CONFIG_FRAME_SIZE
+  int num_bits_width = 16;
+  int num_bits_height = 16;
+  int max_frame_width = cm->width;
+  int max_frame_height = cm->height;
+
+  seq_params->num_bits_width = num_bits_width;
+  seq_params->num_bits_height = num_bits_height;
+  seq_params->max_frame_width = max_frame_width;
+  seq_params->max_frame_height = max_frame_height;
+
+  aom_wb_write_literal(&wb, num_bits_width - 1, 4);
+  aom_wb_write_literal(&wb, num_bits_height - 1, 4);
+  aom_wb_write_literal(&wb, max_frame_width - 1, num_bits_width);
+  aom_wb_write_literal(&wb, max_frame_height - 1, num_bits_height);
+#endif
 
   seq_params->frame_id_numbers_present_flag = FRAME_ID_NUMBERS_PRESENT_FLAG;
   aom_wb_write_literal(&wb, seq_params->frame_id_numbers_present_flag, 1);

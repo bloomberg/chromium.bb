@@ -1519,7 +1519,11 @@ static void setup_render_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   cm->render_height = cm->height;
 #endif  // CONFIG_FRAME_SUPERRES
   if (aom_rb_read_bit(rb))
+#if CONFIG_FRAME_SIZE
+    av1_read_frame_size(rb, 16, 16, &cm->render_width, &cm->render_height);
+#else
     av1_read_frame_size(rb, &cm->render_width, &cm->render_height);
+#endif
 }
 
 #if CONFIG_FRAME_SUPERRES
@@ -1575,10 +1579,26 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
   cm->cur_frame->height = cm->height;
 }
 
+#if CONFIG_FRAME_SIZE
+static void setup_frame_size(AV1_COMMON *cm, int frame_size_override_flag,
+                             struct aom_read_bit_buffer *rb) {
+#else
 static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+#endif
   int width, height;
   BufferPool *const pool = cm->buffer_pool;
+#if CONFIG_FRAME_SIZE
+  if (frame_size_override_flag) {
+    int num_bits_width = cm->seq_params.num_bits_width;
+    int num_bits_height = cm->seq_params.num_bits_height;
+    av1_read_frame_size(rb, num_bits_width, num_bits_height, &width, &height);
+  } else {
+    width = cm->seq_params.max_frame_width;
+    height = cm->seq_params.max_frame_height;
+  }
+#else
   av1_read_frame_size(rb, &width, &height);
+#endif
 #if CONFIG_FRAME_SUPERRES
   setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
@@ -1655,7 +1675,13 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   }
 
   if (!found) {
+#if CONFIG_FRAME_SIZE
+    int num_bits_width = cm->seq_params.num_bits_width;
+    int num_bits_height = cm->seq_params.num_bits_height;
+    av1_read_frame_size(rb, num_bits_width, num_bits_height, &width, &height);
+#else
     av1_read_frame_size(rb, &width, &height);
+#endif
 #if CONFIG_FRAME_SUPERRES
     setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
@@ -2554,6 +2580,18 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 #if CONFIG_REFERENCE_BUFFER
 void read_sequence_header(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {
+#if CONFIG_FRAME_SIZE
+  int num_bits_width = aom_rb_read_literal(rb, 4) + 1;
+  int num_bits_height = aom_rb_read_literal(rb, 4) + 1;
+  int max_frame_width = aom_rb_read_literal(rb, num_bits_width) + 1;
+  int max_frame_height = aom_rb_read_literal(rb, num_bits_height) + 1;
+
+  seq_params->num_bits_width = num_bits_width;
+  seq_params->num_bits_height = num_bits_height;
+  seq_params->max_frame_width = max_frame_width;
+  seq_params->max_frame_height = max_frame_height;
+#endif
+
   /* Placeholder for actually reading from the bitstream */
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
@@ -2876,6 +2914,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 #endif  // CONFIG_REFERENCE_BUFFER
+
+#if CONFIG_FRAME_SIZE
+  int frame_size_override_flag = aom_rb_read_literal(rb, 1);
+#endif
+
   if (cm->frame_type == KEY_FRAME) {
     cm->current_video_frame = 0;
 #if !CONFIG_OBU
@@ -2891,7 +2934,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_VAR_REFS
     }
 
+#if CONFIG_FRAME_SIZE
+    setup_frame_size(cm, frame_size_override_flag, rb);
+#else
     setup_frame_size(cm, rb);
+#endif
     setup_sb_size(cm, rb);
 
     if (pbi->need_resync) {
@@ -2950,7 +2997,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+#if CONFIG_FRAME_SIZE
+      setup_frame_size(cm, frame_size_override_flag, rb);
+#else
       setup_frame_size(cm, rb);
+#endif
       setup_sb_size(cm, rb);
       if (pbi->need_resync) {
         memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
@@ -3029,10 +3080,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_VAR_REFS
 
 #if CONFIG_FRAME_SIZE
-      if (cm->error_resilient_mode == 0) {
+      if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
         setup_frame_size_with_refs(cm, rb);
       } else {
-        setup_frame_size(cm, rb);
+        setup_frame_size(cm, frame_size_override_flag, rb);
       }
 #else
       setup_frame_size_with_refs(cm, rb);
@@ -3510,10 +3561,17 @@ static struct aom_read_bit_buffer *init_read_bit_buffer(
 
 //------------------------------------------------------------------------------
 
+#if CONFIG_FRAME_SIZE
+void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
+                         int num_bits_height, int *width, int *height) {
+  *width = aom_rb_read_literal(rb, num_bits_width) + 1;
+  *height = aom_rb_read_literal(rb, num_bits_height) + 1;
+#else
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,
                          int *height) {
   *width = aom_rb_read_literal(rb, 16) + 1;
   *height = aom_rb_read_literal(rb, 16) + 1;
+#endif
 }
 
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
@@ -3889,6 +3947,18 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   cm->profile = av1_read_profile(rb);
   aom_rb_read_literal(rb, 4);  // level
+
+#if CONFIG_FRAME_SIZE
+  int num_bits_width = aom_rb_read_literal(rb, 4) + 1;
+  int num_bits_height = aom_rb_read_literal(rb, 4) + 1;
+  int max_frame_width = aom_rb_read_literal(rb, num_bits_width) + 1;
+  int max_frame_height = aom_rb_read_literal(rb, num_bits_height) + 1;
+
+  seq_params->num_bits_width = num_bits_width;
+  seq_params->num_bits_height = num_bits_height;
+  seq_params->max_frame_width = max_frame_width;
+  seq_params->max_frame_height = max_frame_height;
+#endif
 
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
