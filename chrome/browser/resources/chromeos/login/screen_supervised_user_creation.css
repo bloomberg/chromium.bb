@@ -420,10 +420,6 @@ html[dir=rtl] #supervised-user-creation-image-preview {
   display: none;
 }
 
-.camera #supervised-user-creation-image-preview-img {
-  transform: rotateY(180deg);
-}
-
 .default-image #supervised-user-creation-image-preview-img {
   background: white;
   border: solid 1px #cacaca;

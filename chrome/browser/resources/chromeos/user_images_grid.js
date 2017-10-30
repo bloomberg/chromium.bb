@@ -462,9 +462,10 @@ cr.define('options', function() {
         this.cameraTitle_ = this.capturedImageTitle_;
         this.cameraImage = previewImg.src;
       }.bind(this));
-      previewImg.src = canvas.toDataURL('image/png');
+      var imageUrl = this.flipFrame_(canvas);
+      previewImg.src = imageUrl;
       var e = new Event('phototaken');
-      e.dataURL = this.flipFrame_(canvas);
+      e.dataURL = imageUrl;
       this.dispatchEvent(e);
       return true;
     },
