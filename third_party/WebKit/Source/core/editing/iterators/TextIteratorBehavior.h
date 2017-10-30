@@ -39,6 +39,9 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool EntersOpenShadowRoots() const {
     return values_.bits.enters_open_shadow_roots;
   }
+  bool EmitsSmallXForTextSecurity() const {
+    return values_.bits.emits_small_x_for_text_security;
+  }
   bool EntersTextControls() const { return values_.bits.enters_text_controls; }
   bool ExcludeAutofilledValue() const {
     return values_.bits.exclude_autofilled_value;
@@ -75,6 +78,7 @@ class CORE_EXPORT TextIteratorBehavior final {
       bool emits_space_for_nbsp : 1;
       bool emits_object_replacement_character : 1;
       bool emits_original_text : 1;
+      bool emits_small_x_for_text_security : 1;
       bool enters_open_shadow_roots : 1;
       bool enters_text_controls : 1;
       bool exclude_autofilled_value : 1;
@@ -103,6 +107,7 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
   Builder& SetEmitsSpaceForNbsp(bool);
   Builder& SetEmitsObjectReplacementCharacter(bool);
   Builder& SetEmitsOriginalText(bool);
+  Builder& SetEmitsSmallXForTextSecurity(bool);
   Builder& SetEntersOpenShadowRoots(bool);
   Builder& SetEntersTextControls(bool);
   Builder& SetExcludeAutofilledValue(bool);
