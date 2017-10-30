@@ -127,6 +127,9 @@ class CommandBufferSetup {
 #endif
     discardable_manager_ = std::make_unique<ServiceDiscardableManager>();
 
+    if (gpu_preferences_.use_passthrough_cmd_decoder)
+      recreate_context_ = true;
+
 #if !defined(GPU_FUZZER_USE_STUB)
     surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size());
     surface_->Initialize();
