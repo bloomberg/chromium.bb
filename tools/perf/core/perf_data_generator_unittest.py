@@ -344,3 +344,44 @@ class PerfDataGeneratorTest(unittest.TestCase):
     for key in keys:
       lst = getattr(perf_data_generator, key)
       self.assertEqual(sorted(lst), lst, 'please sort %s' % key)
+
+  def testGenerateCplusplusIsolateScriptTest(self):
+    dimension={
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'Chrome-perf',
+        'device_ids': [
+          'build92-m1', 'build93-m1',
+          'build94-m1', 'build95-m1', 'build96-m1'
+        ],
+        'perf_tests': [
+          ('angle_perftests', 'build94-m1'),
+        ],
+      }
+    test = perf_data_generator.generate_cplusplus_isolate_script_test(dimension)
+    test = test[0]
+    self.assertEqual(test['name'], 'angle_perftests')
+    self.assertEqual(test['isolate_name'], 'angle_perftests')
+
+  def testGenerateCplusplusIsolateScriptTestWithArgs(self):
+    dimension={
+      'gpu': '10de:104a',
+      'os': 'Windows-2008ServerR2-SP1',
+      'pool': 'Chrome-perf',
+      'device_ids': [
+        'build92-m1', 'build93-m1',
+        'build94-m1', 'build95-m1', 'build96-m1'
+      ],
+      'perf_tests_with_args': [
+        ('passthrough_command_buffer_perftests', 'build94-m1',
+          ['--use-cmd-decoder=passthrough', '--use-angle=gl-null'],
+          'command_buffer_perftests')
+      ]
+    }
+    test = perf_data_generator.generate_cplusplus_isolate_script_test_with_args(
+              dimension)
+    test = test[0]
+    self.assertEqual(test['name'], 'passthrough_command_buffer_perftests')
+    self.assertEqual(test['isolate_name'], 'command_buffer_perftests')
+    self.assertTrue('--use-cmd-decoder=passthrough' in test['args'])
+    self.assertTrue('--use-angle=gl-null' in test['args'])
