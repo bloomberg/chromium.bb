@@ -95,7 +95,6 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         width: 20px;
         border-radius: 50%;
         box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.6);
-        transition: -webkit-transform linear .08s, background-color linear .08s;
         transition: transform linear .08s, background-color linear .08s;
         will-change: transform;
         background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
@@ -104,7 +103,6 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       }
 
       .toggle-button.dragging {
-        -webkit-transition: none;
         transition: none;
       }
 
@@ -121,7 +119,6 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       }
 
       :host([checked]) .toggle-button {
-        -webkit-transform: translate(16px, 0);
         transform: translate(16px, 0);
       }
 

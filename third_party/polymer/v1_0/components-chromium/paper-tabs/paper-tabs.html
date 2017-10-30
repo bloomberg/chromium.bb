@@ -102,9 +102,6 @@ Custom property | Description | Default
         font-size: 14px;
         font-weight: 500;
         overflow: hidden;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        -webkit-user-select: none;
         user-select: none;
 
         /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
@@ -128,8 +125,6 @@ Custom property | Description | Default
 
       #tabsContent {
         height: 100%;
-        -moz-flex-basis: auto;
-        -ms-flex-basis: auto;
         flex-basis: auto;
       }
 
@@ -149,8 +144,6 @@ Custom property | Description | Default
 
       #tabsContent.scrollable.fit-container > ::content > * {
         /* IE - prevent tabs from compressing when they should scroll. */
-        -ms-flex: 1 0 auto;
-        -webkit-flex: 1 0 auto;
         flex: 1 0 auto;
       }
 
@@ -177,11 +170,8 @@ Custom property | Description | Default
         left: 0;
         right: 0;
         background-color: var(--paper-tabs-selection-bar-color, --paper-yellow-a100);
-          -webkit-transform: scale(0);
         transform: scale(0);
-          -webkit-transform-origin: left center;
         transform-origin: left center;
-          transition: -webkit-transform;
         transition: transform;
 
         @apply(--paper-tabs-selection-bar);

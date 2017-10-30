@@ -111,6 +111,9 @@ if [[ ! -z "${new}${deleted}" ]]; then
   echo
 fi
 
+echo 'Stripping unnecessary prefixed CSS rules...'
+python css_strip_prefixes.py
+
 echo 'Creating a summary of components...'
 python create_components_summary.py > components_summary.txt
 
