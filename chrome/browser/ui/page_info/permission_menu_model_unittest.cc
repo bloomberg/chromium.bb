@@ -41,6 +41,7 @@ TEST_F(PermissionMenuModelTest, TestDefault) {
   permission.type = CONTENT_SETTINGS_TYPE_COOKIES;
   permission.setting = CONTENT_SETTING_ALLOW;
   permission.default_setting = CONTENT_SETTING_ALLOW;
+  permission.source = content_settings::SETTING_SOURCE_USER;
   permission.is_incognito = false;
   PermissionMenuModel model(profile(), GURL("http://www.google.com"),
                             permission, callback.callback());
@@ -56,6 +57,7 @@ TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
     permission.type = type;
     permission.setting = CONTENT_SETTING_ALLOW;
     permission.default_setting = CONTENT_SETTING_ALLOW;
+    permission.source = content_settings::SETTING_SOURCE_USER;
     permission.is_incognito = false;
     PermissionMenuModel model(profile(), GURL("http://www.google.com"),
                               permission, callback.callback());
@@ -69,6 +71,7 @@ TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   permission.type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;
+  permission.source = content_settings::SETTING_SOURCE_USER;
 
   permission.is_incognito = false;
   PermissionMenuModel regular_model(profile(), GURL("https://www.google.com"),
@@ -87,6 +90,7 @@ TEST_F(PermissionMenuModelTest, TestSubresourceFilter) {
   permission.type = CONTENT_SETTINGS_TYPE_ADS;
   permission.setting = CONTENT_SETTING_BLOCK;
   permission.default_setting = CONTENT_SETTING_BLOCK;
+  permission.source = content_settings::SETTING_SOURCE_USER;
   permission.is_incognito = false;
   PermissionMenuModel model(profile(), GURL("http://www.google.com"),
                             permission, callback.callback());
