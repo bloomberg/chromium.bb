@@ -638,6 +638,7 @@ void FileIOTest::OnTestComplete(bool success) {
     file_io_stack_.pop();
   }
   FILE_IO_DVLOG(3) << test_name_ << (success ? " PASSED" : " FAILED");
+  DLOG_IF(WARNING, !success) << test_name_ << " FAILED";
   base::ResetAndReturn(&completion_cb_).Run(success);
 }
 

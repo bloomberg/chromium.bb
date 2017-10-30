@@ -16,16 +16,14 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
 #include "media/mojo/interfaces/cdm_storage.mojom.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
 namespace storage {
 class FileSystemContext;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace content {
+class CdmFileImpl;
 class RenderFrameHost;
 
 // This class implements the media::mojom::CdmStorage using the
@@ -34,21 +32,6 @@ class RenderFrameHost;
 class CONTENT_EXPORT CdmStorageImpl final
     : public content::FrameServiceBase<media::mojom::CdmStorage> {
  public:
-  // The file system is different for each CDM and each origin. So track files
-  // in use based on the tuple CDM file system ID, origin, and file name.
-  struct FileLockKey {
-    FileLockKey(const std::string& cdm_file_system_id,
-                const url::Origin& origin,
-                const std::string& file_name);
-    ~FileLockKey() = default;
-
-    // Allow use as a key in std::set.
-    bool operator<(const FileLockKey& other) const;
-
-    std::string cdm_file_system_id;
-    url::Origin origin;
-    std::string file_name;
-  };
 
   // Check if |cdm_file_system_id| is valid.
   static bool IsValidCdmFileSystemId(const std::string& cdm_file_system_id);
@@ -63,39 +46,54 @@ class CONTENT_EXPORT CdmStorageImpl final
   void Open(const std::string& file_name, OpenCallback callback) final;
 
  private:
+  // File system should only be opened once, so keep track if it has already
+  // been opened (or is in the process of opening). State is kError if an error
+  // happens while opening the file system.
+  enum class FileSystemState { kUnopened, kOpening, kOpened, kError };
+
   CdmStorageImpl(RenderFrameHost* render_frame_host,
                  const std::string& cdm_file_system_id,
                  scoped_refptr<storage::FileSystemContext> file_system_context,
                  media::mojom::CdmStorageRequest request);
   ~CdmStorageImpl() final;
 
-  // Called when the file system has been opened (OpenPluginPrivateFileSystem
-  // is asynchronous).
-  void OnFileSystemOpened(const FileLockKey& key,
-                          const std::string& fsid,
-                          OpenCallback callback,
-                          base::File::Error error);
+  // Called when the file system is opened.
+  void OnFileSystemOpened(base::File::Error error);
 
-  // Called when the requested file has been opened.
-  void OnFileOpened(const FileLockKey& key,
-                    OpenCallback callback,
-                    base::File file,
-                    const base::Closure& on_close_callback);
+  // After the file system is opened, called to create a CdmFile object.
+  void CreateCdmFile(const std::string& file_name, OpenCallback callback);
+
+  // Called after the CdmFileImpl object has opened the file for reading.
+  void OnCdmFileInitialized(std::unique_ptr<CdmFileImpl> cdm_file_impl,
+                            OpenCallback callback,
+                            base::File file);
 
   // Files are stored in the PluginPrivateFileSystem, so keep track of the
   // CDM file system ID in order to open the files in the correct context.
   const std::string cdm_file_system_id_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
+  // The PluginPrivateFileSystem only needs to be opened once.
+  FileSystemState file_system_state_ = FileSystemState::kUnopened;
+
+  // As multiple calls to Open() could happen while the file system is being
+  // opened asynchronously, keep track of the requests so they can be
+  // processed once the file system is open.
+  using PendingOpenData = std::pair<std::string, OpenCallback>;
+  std::vector<PendingOpenData> pending_open_calls_;
+
+  // Once the PluginPrivateFileSystem is opened, keep track of the URI that
+  // refers to it.
+  std::string file_system_root_uri_;
+
   // This is the child process that will actually read and write the file(s)
-  // returned, and it needs permission to access the file when it's opened.
+  // returned, and it needs permission to access the file(s).
   const int child_process_id_;
 
-  // As a lock is taken on a file when Open() is called, it needs to be
-  // released if the async operations to open the file haven't completed
-  // by the time |this| is destroyed. So keep track of FileLockKey for files
-  // that have a lock on them but failed to finish.
-  std::set<FileLockKey> pending_open_;
+  // Keep track of all media::mojom::CdmFile bindings, as each CdmFileImpl
+  // object keeps a reference to |this|. If |this| goes away unexpectedly,
+  // all remaining CdmFile bindings will be closed.
+  mojo::StrongAssociatedBindingSet<media::mojom::CdmFile> cdm_file_bindings_;
 
   base::WeakPtrFactory<CdmStorageImpl> weak_factory_;
 
