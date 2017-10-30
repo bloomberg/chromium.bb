@@ -20,33 +20,40 @@ class ChromeBrowserState;
 // ChromeBrowserState.
 @interface BrowsingDataRemovalController : NSObject
 
-// Removes browsing data from |browserState| for datatypes in |mask|.
+// Designated initializer,|browserState| cannot be null and must not be off the
+// record.
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+// Removes browsing data from browserState_ for datatypes in |mask|.
 // |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask.
-// |browserState| cannot be null and must not be off the record.
-- (void)removeBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                      mask:(int)mask
-                                timePeriod:(browsing_data::TimePeriod)timePeriod
-                         completionHandler:(ProceduralBlock)completionHandler;
+- (void)removeBrowsingData:(int)mask
+                timePeriod:(browsing_data::TimePeriod)timePeriod
+         completionHandler:(ProceduralBlock)completionHandler;
 
-// Removes browsing data that iOS has associated with |browserState| and which
-// is not removed when the |browserState| is destroyed.
+// Removes browsing data that iOS has associated with browserState_ and which
+// is not removed when the browserState_ is destroyed.
 // |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask
-// |browserState| cannot be  null. |completionHandler| is called when this
-// operation finishes. This method finishes removal of the browsing data even if
-// |browserState| is destroyed after this method call.
-- (void)removeIOSSpecificIncognitoBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                          mask:(int)mask
-                                             completionHandler:
-                                                 (ProceduralBlock)
-                                                     completionHandler;
+// |completionHandler| is called when this operation finishes. This method
+// finishes removal of the browsing data even if browserState_ is destroyed
+// after this method call.
+- (void)removeIOSSpecificIncognitoBrowsingData:(int)mask
+                             completionHandler:
+                                 (ProceduralBlock)completionHandler;
 
-// Called when |browserState| is destroyed.
+// Sets browserState_ TabModels web usage to |enabled|.
+- (void)setWebUsageEnabled:(BOOL)enabled;
+
+// Called if |browserState| is destroyed. If |browserState| has any
+// pendingRemovalOperations they will be cleared.
 - (void)browserStateDestroyed:(ios::ChromeBrowserState*)browserState;
 
-// Returns YES if browsing data for |browserState| is still being cleared.
-- (BOOL)hasPendingRemovalOperations:(ios::ChromeBrowserState*)browserState;
+// Returns YES if browsing data for browserState_ is still being cleared.
+- (BOOL)hasPendingRemovalOperations;
+
+// Sets browserState_ to nullptr.
+- (void)shutdown;
 
 @end
 
