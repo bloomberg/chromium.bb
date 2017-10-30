@@ -1414,7 +1414,8 @@ void GlobalActivityTracker::RecordProcessLaunch(
     // TODO(bcwhite): Measure this in UMA.
     NOTREACHED() << "Process #" << process_id
                  << " was previously recorded as \"launched\""
-                 << " with no corresponding exit.";
+                 << " with no corresponding exit.\n"
+                 << known_processes_[pid];
     known_processes_.erase(pid);
   }
 
