@@ -35,6 +35,14 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   BackgroundFetchRequestInfo(int request_index,
                              const ServiceWorkerFetchRequest& fetch_request);
 
+  // Sets the download GUID to a newly generated value. Can only be used if no
+  // GUID is already set.
+  void InitializeDownloadGuid();
+
+  // Sets the download GUID to a given value (to be used when requests are
+  // retrieved from storage). Can only be used if no GUID is already set.
+  void SetDownloadGuid(const std::string& download_guid);
+
   // Populates the cached state for the in-progress download.
   void PopulateWithResponse(std::unique_ptr<BackgroundFetchResponse> response);
 
@@ -42,6 +50,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
   // Returns the index of this request within a Background Fetch registration.
   int request_index() const { return request_index_; }
+
+  // Returns the GUID used to identify this download. (Empty before the download
+  // becomes active).
+  const std::string& download_guid() const { return download_guid_; }
 
   // Returns the Fetch API Request object that details the developer's request.
   const ServiceWorkerFetchRequest& fetch_request() const {
@@ -80,7 +92,6 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   ~BackgroundFetchRequestInfo();
 
   // ---- Data associated with the request -------------------------------------
-
   int request_index_ = kInvalidBackgroundFetchRequestIndex;
   ServiceWorkerFetchRequest fetch_request_;
 

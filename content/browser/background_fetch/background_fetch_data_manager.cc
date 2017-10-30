@@ -701,6 +701,8 @@ class BackgroundFetchDataManager::RegistrationData {
     auto request = pending_requests_.front();
     pending_requests_.pop();
 
+    request->InitializeDownloadGuid();
+
     // The |request| is considered to be active now.
     active_requests_.push_back(request);
 

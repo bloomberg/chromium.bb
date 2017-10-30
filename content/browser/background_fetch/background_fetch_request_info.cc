@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/background_fetch_response.h"
@@ -25,6 +26,20 @@ BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void BackgroundFetchRequestInfo::InitializeDownloadGuid() {
+  DCHECK(download_guid_.empty());
+
+  download_guid_ = base::GenerateGUID();
+}
+
+void BackgroundFetchRequestInfo::SetDownloadGuid(
+    const std::string& download_guid) {
+  DCHECK(!download_guid.empty());
+  DCHECK(download_guid_.empty());
+
+  download_guid_ = download_guid;
 }
 
 void BackgroundFetchRequestInfo::PopulateWithResponse(
