@@ -903,7 +903,27 @@
       </description>
       <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
-    <request name="unset_fullscreen" />
+
+    <request name="unset_fullscreen">
+      <description summary="unset the window as fullscreen">
+	Make the surface no longer fullscreen.
+
+	After requesting that the surface should be unfullscreened, the
+	compositor will respond by emitting a configure event without the
+	"fullscreen" state.
+
+	Making a surface unfullscreen sets states for the surface based on the following:
+	* the state(s) it may have had before becoming fullscreen
+	* any state(s) decided by the compositor
+	* any state(s) requested by the client while the surface was fullscreen
+
+	The compositor may include the previous window geometry dimensions in
+	the configure event, if applicable.
+
+	The client must also acknowledge the configure when committing the new
+	content (see ack_configure).
+      </description>
+    </request>
 
     <request name="set_minimized">
       <description summary="set the window as minimized">
