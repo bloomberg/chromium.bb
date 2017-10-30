@@ -15,6 +15,8 @@ declare_args() {
 
 if (!use_system_libdrm) {
   config("libdrm_config") {
+    # Define _GNU_SOURCE for vasprintf use in xf86drm.c
+    defines = [ "_GNU_SOURCE" ]
     include_dirs = [
       "src",
       "src/include",
