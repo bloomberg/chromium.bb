@@ -32,11 +32,11 @@ extern "C" {
 #endif
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-#define SGRPROJ_BORDER_VERT 2  // Vertical border used for Sgr
+#define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
 #else
-#define SGRPROJ_BORDER_VERT 1  // Vertical border used for Sgr
+#define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
 #endif
-#define SGRPROJ_BORDER_HORZ 2  // Horizontal border used for Sgr
+#define SGRPROJ_BORDER_HORZ 3  // Horizontal border used for Sgr
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
 #define WIENER_BORDER_VERT 2  // Vertical border used for Wiener

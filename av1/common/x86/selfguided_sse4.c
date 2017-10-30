@@ -9,9 +9,9 @@
    (corresponding to the first loop in the C version of
    av1_selfguided_restoration)
 */
-static void calc_block(__m128i sum, __m128i sum_sq, __m128i n,
-                       __m128i *one_over_n_, __m128i *s_, int bit_depth,
-                       int idx, int32_t *A, int32_t *B) {
+static void calc_block(const __m128i sum, const __m128i sum_sq, const __m128i n,
+                       const __m128i *one_over_n_, const __m128i *s_,
+                       int bit_depth, int idx, int32_t *A, int32_t *B) {
   __m128i a, b, p;
   __m128i one_over_n = *one_over_n_;
   __m128i s = *s_;
@@ -136,8 +136,6 @@ static void selfguided_restoration_1_h(int32_t *A, int32_t *B, int width,
   // Horizontal sum
   int width_extend = (width + 3) & ~3;
   for (i = 0; i < height; ++i) {
-    int h = AOMMIN(2, height - i) + AOMMIN(1, i);
-
     __m128i a1 = _mm_loadu_si128((__m128i *)&A[i * buf_stride]);
     __m128i b1 = _mm_loadu_si128((__m128i *)&B[i * buf_stride]);
     __m128i a2 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + 4]);
@@ -151,19 +149,11 @@ static void selfguided_restoration_1_h(int32_t *A, int32_t *B, int width,
                                  _mm_add_epi32(b1, _mm_alignr_epi8(b2, b1, 4)));
     __m128i sum_sq_ = _mm_add_epi32(
         _mm_slli_si128(a1, 4), _mm_add_epi32(a1, _mm_alignr_epi8(a2, a1, 4)));
-    __m128i n = _mm_set_epi32(3 * h, 3 * h, 3 * h, 2 * h);
-    __m128i one_over_n =
-        _mm_set_epi32(one_by_x[3 * h - 1], one_by_x[3 * h - 1],
-                      one_by_x[3 * h - 1], one_by_x[2 * h - 1]);
-    __m128i s = _mm_set_epi32(
-        sgrproj_mtable[eps - 1][3 * h - 1], sgrproj_mtable[eps - 1][3 * h - 1],
-        sgrproj_mtable[eps - 1][3 * h - 1], sgrproj_mtable[eps - 1][2 * h - 1]);
+    const __m128i n = _mm_set1_epi32(9);
+    const __m128i one_over_n = _mm_set1_epi32(one_by_x[9 - 1]);
+    const __m128i s = _mm_set1_epi32(sgrproj_mtable[eps - 1][9 - 1]);
     calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth, i * buf_stride, A,
                B);
-
-    n = _mm_set1_epi32(3 * h);
-    one_over_n = _mm_set1_epi32(one_by_x[3 * h - 1]);
-    s = _mm_set1_epi32(sgrproj_mtable[eps - 1][3 * h - 1]);
 
     // Re-align a1 and b1 so that they start at index i * buf_stride + 3
     a2 = _mm_alignr_epi8(a2, a1, 12);
@@ -175,7 +165,7 @@ static void selfguided_restoration_1_h(int32_t *A, int32_t *B, int width,
     // This is fine, since we fix up those values in the block after this
     // loop, and in exchange we never have more than four values to
     // write / fix up after this loop finishes.
-    for (j = 4; j < width_extend - 4; j += 4) {
+    for (j = 4; j < width_extend; j += 4) {
       a1 = a2;
       b1 = b2;
       a2 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + j + 3]);
@@ -192,54 +182,6 @@ static void selfguided_restoration_1_h(int32_t *A, int32_t *B, int width,
       calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth,
                  i * buf_stride + j, A, B);
     }
-    __m128i a3 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + j + 3]);
-    __m128i b3 = _mm_loadu_si128((__m128i *)&B[i * buf_stride + j + 3]);
-
-    j = width - 4;
-    switch (width % 4) {
-      case 0:
-        a1 = a2;
-        b1 = b2;
-        a2 = a3;
-        b2 = b3;
-        break;
-      case 1:
-        a1 = _mm_alignr_epi8(a2, a1, 4);
-        b1 = _mm_alignr_epi8(b2, b1, 4);
-        a2 = _mm_alignr_epi8(a3, a2, 4);
-        b2 = _mm_alignr_epi8(b3, b2, 4);
-        break;
-      case 2:
-        a1 = _mm_alignr_epi8(a2, a1, 8);
-        b1 = _mm_alignr_epi8(b2, b1, 8);
-        a2 = _mm_alignr_epi8(a3, a2, 8);
-        b2 = _mm_alignr_epi8(b3, b2, 8);
-        break;
-      case 3:
-        a1 = _mm_alignr_epi8(a2, a1, 12);
-        b1 = _mm_alignr_epi8(b2, b1, 12);
-        a2 = _mm_alignr_epi8(a3, a2, 12);
-        b2 = _mm_alignr_epi8(b3, b2, 12);
-        break;
-    }
-
-    // Zero out the data loaded from "off the edge" of the array
-    __m128i zero = _mm_setzero_si128();
-    a2 = _mm_blend_epi16(a2, zero, 0xfc);
-    b2 = _mm_blend_epi16(b2, zero, 0xfc);
-
-    sum_ = _mm_add_epi32(b1, _mm_add_epi32(_mm_alignr_epi8(b2, b1, 4),
-                                           _mm_alignr_epi8(b2, b1, 8)));
-    sum_sq_ = _mm_add_epi32(a1, _mm_add_epi32(_mm_alignr_epi8(a2, a1, 4),
-                                              _mm_alignr_epi8(a2, a1, 8)));
-    n = _mm_set_epi32(2 * h, 3 * h, 3 * h, 3 * h);
-    one_over_n = _mm_set_epi32(one_by_x[2 * h - 1], one_by_x[3 * h - 1],
-                               one_by_x[3 * h - 1], one_by_x[3 * h - 1]);
-    s = _mm_set_epi32(
-        sgrproj_mtable[eps - 1][2 * h - 1], sgrproj_mtable[eps - 1][3 * h - 1],
-        sgrproj_mtable[eps - 1][3 * h - 1], sgrproj_mtable[eps - 1][3 * h - 1]);
-    calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth, i * buf_stride + j,
-               A, B);
   }
 }
 
@@ -324,8 +266,6 @@ static void selfguided_restoration_2_h(int32_t *A, int32_t *B, int width,
   // Horizontal sum
   int width_extend = (width + 3) & ~3;
   for (i = 0; i < height; ++i) {
-    int h = AOMMIN(3, height - i) + AOMMIN(2, i);
-
     __m128i a1 = _mm_loadu_si128((__m128i *)&A[i * buf_stride]);
     __m128i b1 = _mm_loadu_si128((__m128i *)&B[i * buf_stride]);
     __m128i a2 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + 4]);
@@ -342,13 +282,9 @@ static void selfguided_restoration_2_h(int32_t *A, int32_t *B, int width,
             _mm_add_epi32(a1, _mm_alignr_epi8(a2, a1, 4))),
         _mm_alignr_epi8(a2, a1, 8));
 
-    __m128i n = _mm_set_epi32(5 * h, 5 * h, 4 * h, 3 * h);
-    __m128i one_over_n =
-        _mm_set_epi32(one_by_x[5 * h - 1], one_by_x[5 * h - 1],
-                      one_by_x[4 * h - 1], one_by_x[3 * h - 1]);
-    __m128i s = _mm_set_epi32(
-        sgrproj_mtable[eps - 1][5 * h - 1], sgrproj_mtable[eps - 1][5 * h - 1],
-        sgrproj_mtable[eps - 1][4 * h - 1], sgrproj_mtable[eps - 1][3 * h - 1]);
+    const __m128i n = _mm_set1_epi32(25);
+    const __m128i one_over_n = _mm_set1_epi32(one_by_x[25 - 1]);
+    const __m128i s = _mm_set1_epi32(sgrproj_mtable[eps - 1][25 - 1]);
     calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth, i * buf_stride, A,
                B);
 
@@ -356,11 +292,7 @@ static void selfguided_restoration_2_h(int32_t *A, int32_t *B, int width,
     a2 = _mm_alignr_epi8(a2, a1, 8);
     b2 = _mm_alignr_epi8(b2, b1, 8);
 
-    n = _mm_set1_epi32(5 * h);
-    one_over_n = _mm_set1_epi32(one_by_x[5 * h - 1]);
-    s = _mm_set1_epi32(sgrproj_mtable[eps - 1][5 * h - 1]);
-
-    for (j = 4; j < width_extend - 4; j += 4) {
+    for (j = 4; j < width_extend; j += 4) {
       a1 = a2;
       a2 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + j + 2]);
       b1 = b2;
@@ -382,64 +314,10 @@ static void selfguided_restoration_2_h(int32_t *A, int32_t *B, int width,
       calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth,
                  i * buf_stride + j, A, B);
     }
-    // If the width is not a multiple of 4, we need to reset j to width - 4
-    // and adjust a1, a2, b1, b2 so that the loop invariant above is maintained
-    __m128i a3 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + j + 2]);
-    __m128i b3 = _mm_loadu_si128((__m128i *)&B[i * buf_stride + j + 2]);
-
-    j = width - 4;
-    switch (width % 4) {
-      case 0:
-        a1 = a2;
-        b1 = b2;
-        a2 = a3;
-        b2 = b3;
-        break;
-      case 1:
-        a1 = _mm_alignr_epi8(a2, a1, 4);
-        b1 = _mm_alignr_epi8(b2, b1, 4);
-        a2 = _mm_alignr_epi8(a3, a2, 4);
-        b2 = _mm_alignr_epi8(b3, b2, 4);
-        break;
-      case 2:
-        a1 = _mm_alignr_epi8(a2, a1, 8);
-        b1 = _mm_alignr_epi8(b2, b1, 8);
-        a2 = _mm_alignr_epi8(a3, a2, 8);
-        b2 = _mm_alignr_epi8(b3, b2, 8);
-        break;
-      case 3:
-        a1 = _mm_alignr_epi8(a2, a1, 12);
-        b1 = _mm_alignr_epi8(b2, b1, 12);
-        a2 = _mm_alignr_epi8(a3, a2, 12);
-        b2 = _mm_alignr_epi8(b3, b2, 12);
-        break;
-    }
-
-    // Zero out the data loaded from "off the edge" of the array
-    __m128i zero = _mm_setzero_si128();
-    a2 = _mm_blend_epi16(a2, zero, 0xf0);
-    b2 = _mm_blend_epi16(b2, zero, 0xf0);
-
-    sum_ = _mm_add_epi32(
-        _mm_add_epi32(b1, _mm_add_epi32(_mm_alignr_epi8(b2, b1, 4),
-                                        _mm_alignr_epi8(b2, b1, 8))),
-        _mm_add_epi32(_mm_alignr_epi8(b2, b1, 12), b2));
-    sum_sq_ = _mm_add_epi32(
-        _mm_add_epi32(a1, _mm_add_epi32(_mm_alignr_epi8(a2, a1, 4),
-                                        _mm_alignr_epi8(a2, a1, 8))),
-        _mm_add_epi32(_mm_alignr_epi8(a2, a1, 12), a2));
-
-    n = _mm_set_epi32(3 * h, 4 * h, 5 * h, 5 * h);
-    one_over_n = _mm_set_epi32(one_by_x[3 * h - 1], one_by_x[4 * h - 1],
-                               one_by_x[5 * h - 1], one_by_x[5 * h - 1]);
-    s = _mm_set_epi32(
-        sgrproj_mtable[eps - 1][3 * h - 1], sgrproj_mtable[eps - 1][4 * h - 1],
-        sgrproj_mtable[eps - 1][5 * h - 1], sgrproj_mtable[eps - 1][5 * h - 1]);
-    calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth, i * buf_stride + j,
-               A, B);
   }
 }
 
+#if MAX_RADIUS > 2
 static void selfguided_restoration_3_v(const uint8_t *src, int width,
                                        int height, int src_stride, int32_t *A,
                                        int32_t *B, int buf_stride) {
@@ -537,8 +415,6 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
   // Horizontal sum over 7-pixel regions of dst
   int width_extend = (width + 3) & ~3;
   for (i = 0; i < height; ++i) {
-    int h = AOMMIN(4, height - i) + AOMMIN(3, i);
-
     __m128i a1 = _mm_loadu_si128((__m128i *)&A[i * buf_stride]);
     __m128i b1 = _mm_loadu_si128((__m128i *)&B[i * buf_stride]);
     __m128i a2 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + 4]);
@@ -559,13 +435,9 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
                                     _mm_alignr_epi8(a2, a1, 8)),
                       _mm_alignr_epi8(a2, a1, 12)));
 
-    __m128i n = _mm_set_epi32(7 * h, 6 * h, 5 * h, 4 * h);
-    __m128i one_over_n =
-        _mm_set_epi32(one_by_x[7 * h - 1], one_by_x[6 * h - 1],
-                      one_by_x[5 * h - 1], one_by_x[4 * h - 1]);
-    __m128i s = _mm_set_epi32(
-        sgrproj_mtable[eps - 1][7 * h - 1], sgrproj_mtable[eps - 1][6 * h - 1],
-        sgrproj_mtable[eps - 1][5 * h - 1], sgrproj_mtable[eps - 1][4 * h - 1]);
+    const __m128i n = _mm_set1_epi32(49);
+    const __m128i one_over_n = _mm_set1_epi32(one_by_x[49 - 1]);
+    const __m128i s = _mm_set1_epi32(sgrproj_mtable[eps - 1][49 - 1]);
     calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth, i * buf_stride, A,
                B);
 
@@ -573,11 +445,7 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
     a2 = _mm_alignr_epi8(a2, a1, 4);
     b2 = _mm_alignr_epi8(b2, b1, 4);
 
-    n = _mm_set1_epi32(7 * h);
-    one_over_n = _mm_set1_epi32(one_by_x[7 * h - 1]);
-    s = _mm_set1_epi32(sgrproj_mtable[eps - 1][7 * h - 1]);
-
-    for (j = 4; j < width_extend - 4; j += 4) {
+    for (j = 4; j < width_extend; j += 4) {
       a1 = a2;
       a2 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + j + 1]);
       b1 = b2;
@@ -606,65 +474,9 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
       calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth,
                  i * buf_stride + j, A, B);
     }
-    __m128i a3 = _mm_loadu_si128((__m128i *)&A[i * buf_stride + j + 1]);
-    __m128i b3 = _mm_loadu_si128((__m128i *)&B[i * buf_stride + j + 1]);
-
-    j = width - 4;
-    switch (width % 4) {
-      case 0:
-        a1 = a2;
-        b1 = b2;
-        a2 = a3;
-        b2 = b3;
-        break;
-      case 1:
-        a1 = _mm_alignr_epi8(a2, a1, 4);
-        b1 = _mm_alignr_epi8(b2, b1, 4);
-        a2 = _mm_alignr_epi8(a3, a2, 4);
-        b2 = _mm_alignr_epi8(b3, b2, 4);
-        break;
-      case 2:
-        a1 = _mm_alignr_epi8(a2, a1, 8);
-        b1 = _mm_alignr_epi8(b2, b1, 8);
-        a2 = _mm_alignr_epi8(a3, a2, 8);
-        b2 = _mm_alignr_epi8(b3, b2, 8);
-        break;
-      case 3:
-        a1 = _mm_alignr_epi8(a2, a1, 12);
-        b1 = _mm_alignr_epi8(b2, b1, 12);
-        a2 = _mm_alignr_epi8(a3, a2, 12);
-        b2 = _mm_alignr_epi8(b3, b2, 12);
-        break;
-    }
-
-    // Zero out the data loaded from "off the edge" of the array
-    __m128i zero = _mm_setzero_si128();
-    a2 = _mm_blend_epi16(a2, zero, 0xc0);
-    b2 = _mm_blend_epi16(b2, zero, 0xc0);
-
-    sum_ = _mm_add_epi32(
-        _mm_add_epi32(_mm_add_epi32(b1, _mm_alignr_epi8(b2, b1, 4)),
-                      _mm_add_epi32(_mm_alignr_epi8(b2, b1, 8),
-                                    _mm_alignr_epi8(b2, b1, 12))),
-        _mm_add_epi32(_mm_add_epi32(b2, _mm_alignr_epi8(zero, b2, 4)),
-                      _mm_alignr_epi8(zero, b2, 8)));
-    sum_sq_ = _mm_add_epi32(
-        _mm_add_epi32(_mm_add_epi32(a1, _mm_alignr_epi8(a2, a1, 4)),
-                      _mm_add_epi32(_mm_alignr_epi8(a2, a1, 8),
-                                    _mm_alignr_epi8(a2, a1, 12))),
-        _mm_add_epi32(_mm_add_epi32(a2, _mm_alignr_epi8(zero, a2, 4)),
-                      _mm_alignr_epi8(zero, a2, 8)));
-
-    n = _mm_set_epi32(4 * h, 5 * h, 6 * h, 7 * h);
-    one_over_n = _mm_set_epi32(one_by_x[4 * h - 1], one_by_x[5 * h - 1],
-                               one_by_x[6 * h - 1], one_by_x[7 * h - 1]);
-    s = _mm_set_epi32(
-        sgrproj_mtable[eps - 1][4 * h - 1], sgrproj_mtable[eps - 1][5 * h - 1],
-        sgrproj_mtable[eps - 1][6 * h - 1], sgrproj_mtable[eps - 1][7 * h - 1]);
-    calc_block(sum_, sum_sq_, n, &one_over_n, &s, bit_depth, i * buf_stride + j,
-               A, B);
   }
 }
+#endif  // MAX_RADIUS > 2
 
 void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
                                        int height, int dgd_stride, int32_t *dst,
@@ -681,9 +493,6 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
   // We also align the stride to a multiple of 16 bytes for efficiency.
   int buf_stride = ((width_ext + 3) & ~3) + 16;
 
-  // Don't filter tiles with dimensions < 5 on any axis
-  if ((width < 5) || (height < 5)) return;
-
   const uint8_t *dgd0 =
       dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
   if (r == 1) {
@@ -694,76 +503,20 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
     selfguided_restoration_2_v(dgd0, width_ext, height_ext, dgd_stride, A, B,
                                buf_stride);
     selfguided_restoration_2_h(A, B, width_ext, height_ext, buf_stride, eps, 8);
+#if MAX_RADIUS > 2
   } else if (r == 3) {
     selfguided_restoration_3_v(dgd0, width_ext, height_ext, dgd_stride, A, B,
                                buf_stride);
     selfguided_restoration_3_h(A, B, width_ext, height_ext, buf_stride, eps, 8);
+#endif  // MAX_RADIUS > 2
   } else {
     assert(0);
   }
   A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
   B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
 
-  {
-    i = 0;
-    j = 0;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k + buf_stride] +
-                        A[k + buf_stride + 1];
-      const int32_t b = 3 * B[k] + 2 * B[k + 1] + 2 * B[k + buf_stride] +
-                        B[k + buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + buf_stride] +
-                        A[k + buf_stride - 1] + A[k + buf_stride + 1];
-      const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k + buf_stride] +
-                        B[k + buf_stride - 1] + B[k + buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    j = width - 1;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k + buf_stride] +
-                        A[k + buf_stride - 1];
-      const int32_t b = 3 * B[k] + 2 * B[k - 1] + 2 * B[k + buf_stride] +
-                        B[k + buf_stride - 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-  }
-  for (i = 1; i < height - 1; ++i) {
-    j = 0;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
-                        A[k + 1] + A[k - buf_stride + 1] +
-                        A[k + buf_stride + 1];
-      const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
-                        B[k + 1] + B[k - buf_stride + 1] +
-                        B[k + buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-
-    // Vectorize the innermost loop
-    for (j = 1; j < width - 1; j += 4) {
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; j += 4) {
       const int k = i * buf_stride + j;
       const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
@@ -815,8 +568,7 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
     }
 
     // Deal with any extra pixels at the right-hand edge of the frame
-    // (typically have 2 such pixels, but may have anywhere between 0 and 3)
-    for (; j < width - 1; ++j) {
+    for (; j < width; ++j) {
       const int k = i * buf_stride + j;
       const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
@@ -833,64 +585,6 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
           (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
            B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
               3;
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-
-    j = width - 1;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
-                        A[k - 1] + A[k - buf_stride - 1] +
-                        A[k + buf_stride - 1];
-      const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
-                        B[k - 1] + B[k - buf_stride - 1] +
-                        B[k + buf_stride - 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-  }
-
-  {
-    i = height - 1;
-    j = 0;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k - buf_stride] +
-                        A[k - buf_stride + 1];
-      const int32_t b = 3 * B[k] + 2 * B[k + 1] + 2 * B[k - buf_stride] +
-                        B[k - buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - buf_stride] +
-                        A[k - buf_stride - 1] + A[k - buf_stride + 1];
-      const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k - buf_stride] +
-                        B[k - buf_stride - 1] + B[k - buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    j = width - 1;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k - buf_stride] +
-                        A[k - buf_stride - 1];
-      const int32_t b = 3 * B[k] + 2 * B[k - 1] + 2 * B[k - buf_stride] +
-                        B[k - buf_stride - 1];
       const int32_t v = a * dgd[l] + b;
       dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
     }
@@ -1276,6 +970,7 @@ static void highbd_selfguided_restoration_2_v(const uint16_t *src, int width,
   }
 }
 
+#if MAX_RADIUS > 2
 static void highbd_selfguided_restoration_3_v(const uint16_t *src, int width,
                                               int height, int src_stride,
                                               int32_t *A, int32_t *B,
@@ -1373,6 +1068,7 @@ static void highbd_selfguided_restoration_3_v(const uint16_t *src, int width,
     _mm_store_si128((__m128i *)&A[(i + 3) * buf_stride + j], sum_sq);
   }
 }
+#endif  // MAX_RADIUS > 2
 
 void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
                                               int height, int dgd_stride,
@@ -1390,9 +1086,6 @@ void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
   // We also align the stride to a multiple of 16 bytes for efficiency.
   int buf_stride = ((width_ext + 3) & ~3) + 16;
 
-  // Don't filter tiles with dimensions < 5 on any axis
-  if ((width < 5) || (height < 5)) return;
-
   const uint16_t *dgd0 =
       dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
   if (r == 1) {
@@ -1405,77 +1098,21 @@ void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
                                       A, B, buf_stride);
     selfguided_restoration_2_h(A, B, width_ext, height_ext, buf_stride, eps,
                                bit_depth);
+#if MAX_RADIUS > 2
   } else if (r == 3) {
     highbd_selfguided_restoration_3_v(dgd0, width_ext, height_ext, dgd_stride,
                                       A, B, buf_stride);
     selfguided_restoration_3_h(A, B, width_ext, height_ext, buf_stride, eps,
                                bit_depth);
+#endif  // MAX_RADIUS > 2
   } else {
     assert(0);
   }
   A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
   B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
 
-  {
-    i = 0;
-    j = 0;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k + buf_stride] +
-                        A[k + buf_stride + 1];
-      const int32_t b = 3 * B[k] + 2 * B[k + 1] + 2 * B[k + buf_stride] +
-                        B[k + buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + buf_stride] +
-                        A[k + buf_stride - 1] + A[k + buf_stride + 1];
-      const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k + buf_stride] +
-                        B[k + buf_stride - 1] + B[k + buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    j = width - 1;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k + buf_stride] +
-                        A[k + buf_stride - 1];
-      const int32_t b = 3 * B[k] + 2 * B[k - 1] + 2 * B[k + buf_stride] +
-                        B[k + buf_stride - 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-  }
-  for (i = 1; i < height - 1; ++i) {
-    j = 0;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
-                        A[k + 1] + A[k - buf_stride + 1] +
-                        A[k + buf_stride + 1];
-      const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
-                        B[k + 1] + B[k - buf_stride + 1] +
-                        B[k + buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-
-    // Vectorize the innermost loop
-    for (j = 1; j < width - 1; j += 4) {
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; j += 4) {
       const int k = i * buf_stride + j;
       const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
@@ -1527,8 +1164,7 @@ void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
     }
 
     // Deal with any extra pixels at the right-hand edge of the frame
-    // (typically have 2 such pixels, but may have anywhere between 0 and 3)
-    for (; j < width - 1; ++j) {
+    for (; j < width; ++j) {
       const int k = i * buf_stride + j;
       const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
@@ -1545,64 +1181,6 @@ void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
           (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
            B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
               3;
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-
-    j = width - 1;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
-                        A[k - 1] + A[k - buf_stride - 1] +
-                        A[k + buf_stride - 1];
-      const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
-                        B[k - 1] + B[k - buf_stride - 1] +
-                        B[k + buf_stride - 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-  }
-
-  {
-    i = height - 1;
-    j = 0;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k - buf_stride] +
-                        A[k - buf_stride + 1];
-      const int32_t b = 3 * B[k] + 2 * B[k + 1] + 2 * B[k - buf_stride] +
-                        B[k - buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - buf_stride] +
-                        A[k - buf_stride - 1] + A[k - buf_stride + 1];
-      const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k - buf_stride] +
-                        B[k - buf_stride - 1] + B[k - buf_stride + 1];
-      const int32_t v = a * dgd[l] + b;
-      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-    }
-    j = width - 1;
-    {
-      const int k = i * buf_stride + j;
-      const int l = i * dgd_stride + j;
-      const int m = i * dst_stride + j;
-      const int nb = 3;
-      const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k - buf_stride] +
-                        A[k - buf_stride - 1];
-      const int32_t b = 3 * B[k] + 2 * B[k - 1] + 2 * B[k - buf_stride] +
-                        B[k - buf_stride - 1];
       const int32_t v = a * dgd[l] + b;
       dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
     }
