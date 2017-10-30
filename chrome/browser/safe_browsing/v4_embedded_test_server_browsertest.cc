@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -36,9 +35,9 @@ class V4EmbeddedTestServerBrowserTest : public InProcessBrowserTest {
     // We only need to mock a local database. The tests will use a true real V4
     // protocol manager.
     V4Database::RegisterStoreFactoryForTest(
-        base::MakeUnique<TestV4StoreFactory>());
+        std::make_unique<TestV4StoreFactory>());
 
-    auto v4_db_factory = base::MakeUnique<TestV4DatabaseFactory>();
+    auto v4_db_factory = std::make_unique<TestV4DatabaseFactory>();
     v4_db_factory_ = v4_db_factory.get();
     V4Database::RegisterDatabaseFactoryForTest(std::move(v4_db_factory));
 

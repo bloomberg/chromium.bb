@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/safe_browsing/db/v4_test_util.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -102,8 +102,9 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
   void SetUp() override {
     std::vector<safe_browsing::ListIdentifier> list_ids = {
         safe_browsing::GetUrlSubresourceFilterId()};
-    database_helper_ =
-        base::MakeUnique<TestSafeBrowsingDatabaseHelper>(std::move(list_ids));
+    database_helper_ = std::make_unique<TestSafeBrowsingDatabaseHelper>(
+        std::make_unique<safe_browsing::TestV4GetHashProtocolManagerFactory>(),
+        std::move(list_ids));
 
     InProcessBrowserTest::SetUp();
   }
@@ -137,14 +138,14 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
     safe_browsing::ThreatMetadata metadata;
     metadata.subresource_filter_match = {
         {SubresourceFilterType::ABUSIVE, SubresourceFilterLevel::ENFORCE}};
-    database_helper_->MarkUrlAsMatchingListIdWithMetadata(
+    database_helper_->AddFullHashToDbAndFullHashCache(
         url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
   }
   void ConfigureAsAbusiveWarn(const GURL& url) {
     safe_browsing::ThreatMetadata metadata;
     metadata.subresource_filter_match = {
         {SubresourceFilterType::ABUSIVE, SubresourceFilterLevel::WARN}};
-    database_helper()->MarkUrlAsMatchingListIdWithMetadata(
+    database_helper()->AddFullHashToDbAndFullHashCache(
         url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
   }
 
@@ -226,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
 
   // Mark as matching social engineering, not subresource filter.
   safe_browsing::ThreatMetadata metadata;
-  database_helper()->MarkUrlAsMatchingListIdWithMetadata(
+  database_helper()->AddFullHashToDbAndFullHashCache(
       a_url, safe_browsing::GetUrlSocEngId(), metadata);
 
   // Navigate to a_url, should not trigger the popup blocker.
@@ -435,7 +436,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingTriggeredPopupBlockerParamBrowserTest,
 
   // Do not set the ABUSIVE bit.
   safe_browsing::ThreatMetadata metadata;
-  database_helper()->MarkUrlAsMatchingListIdWithMetadata(
+  database_helper()->AddFullHashToDbAndFullHashCache(
       url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
 
   // Navigate to url, should not trigger the popup blocker.
