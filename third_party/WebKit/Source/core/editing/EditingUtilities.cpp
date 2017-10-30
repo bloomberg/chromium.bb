@@ -1089,6 +1089,14 @@ const String& NonBreakingSpaceString() {
   return non_breaking_space_string;
 }
 
+String RepeatString(const String& string, unsigned count) {
+  StringBuilder builder;
+  builder.ReserveCapacity(string.length() * count);
+  for (unsigned counter = 0; counter < count; ++counter)
+    builder.Append(string);
+  return builder.ToString();
+}
+
 // FIXME: need to dump this
 static bool IsSpecialHTMLElement(const Node& n) {
   if (!n.IsHTMLElement())
