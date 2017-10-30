@@ -28,6 +28,7 @@
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace cc {
 
@@ -402,12 +403,15 @@ bool ProxyImpl::IsInsideDraw() {
 
 void ProxyImpl::RenewTreePriority() {
   DCHECK(IsImplThread());
-  bool smoothness_takes_priority = host_impl_->pinch_gesture_active() ||
-                                   host_impl_->page_scale_animation_active() ||
-                                   host_impl_->IsActivelyScrolling();
+  const bool user_interaction_in_progress =
+      host_impl_->pinch_gesture_active() ||
+      host_impl_->page_scale_animation_active() ||
+      host_impl_->IsActivelyScrolling();
+  host_impl_->ukm_manager()->SetUserInteractionInProgress(
+      user_interaction_in_progress);
 
   // Schedule expiration if smoothness currently takes priority.
-  if (smoothness_takes_priority)
+  if (user_interaction_in_progress)
     smoothness_priority_expiration_notifier_.Schedule();
 
   // We use the same priority for both trees by default.
@@ -716,6 +720,18 @@ ProxyImpl::BlockedMainCommitOnly& ProxyImpl::blocked_main_commit() {
 
 base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
   return task_runner_provider_->MainThreadTaskRunner();
+}
+
+void ProxyImpl::SetURLForUkm(const GURL& url) {
+  DCHECK(IsImplThread());
+  DCHECK(host_impl_->ukm_manager());
+  // The active tree might still be from content for the previous page when the
+  // recorder is updated here, since new content will be pushed with the next
+  // main frame. But we should only get a few impl frames wrong here in that
+  // case. Also, since checkerboard stats are only recorded with user
+  // interaction, it must be in progress when the navigation commits for this
+  // case to occur.
+  host_impl_->ukm_manager()->SetSourceURL(url);
 }
 
 }  // namespace cc

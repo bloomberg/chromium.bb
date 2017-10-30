@@ -23,6 +23,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
@@ -1361,6 +1362,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.mutator_host = animation_host.get();
+  params.ukm_recorder_factory = std::make_unique<TestUkmRecorderFactory>();
   std::unique_ptr<LayerTreeHost> layer_tree_host =
       LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
 

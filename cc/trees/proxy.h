@@ -17,6 +17,8 @@
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "url/gurl.h"
 
 namespace gfx {
 class Rect;
@@ -74,6 +76,8 @@ class CC_EXPORT Proxy {
 
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
+
+  virtual void SetURLForUkm(const GURL& url) = 0;
 };
 
 }  // namespace cc

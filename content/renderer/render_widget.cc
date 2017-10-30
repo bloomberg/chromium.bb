@@ -42,6 +42,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/cursor_utils.h"
@@ -1430,6 +1431,8 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
     }
   }
 
+  UpdateURLForCompositorUkm();
+
   return compositor_.get();
 }
 
@@ -2508,6 +2511,20 @@ void RenderWidget::DidResizeOrRepaintAck() {
   Send(new ViewHostMsg_ResizeOrRepaint_ACK(routing_id_, params));
   next_paint_flags_ = 0;
   need_update_rect_for_auto_resize_ = false;
+}
+
+void RenderWidget::UpdateURLForCompositorUkm() {
+  DCHECK(compositor_);
+
+  if (!GetWebWidget() || !GetWebWidget()->IsWebFrameWidget())
+    return;
+
+  auto* render_frame = RenderFrameImpl::FromWebFrame(
+      static_cast<blink::WebFrameWidget*>(GetWebWidget())->LocalRoot());
+  if (!render_frame->IsMainFrame())
+    return;
+
+  compositor_->SetURLForUkm(render_frame->GetWebFrame()->GetDocument().Url());
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

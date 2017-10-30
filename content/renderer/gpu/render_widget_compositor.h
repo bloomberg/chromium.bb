@@ -20,6 +20,7 @@
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -124,6 +125,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetContentSourceId(uint32_t source_id);
   void SetViewportSize(const gfx::Size& device_viewport_size,
                        const viz::LocalSurfaceId& local_surface_id);
+  void SetURLForUkm(const GURL& url);
 
   // WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;

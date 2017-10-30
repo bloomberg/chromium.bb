@@ -103,6 +103,7 @@
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/frame_owner_properties.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/image_downloader/image_downloader_impl.h"
@@ -3889,8 +3890,17 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // Navigations that change the document represent a new content source.  Keep
   // track of that on the widget to help the browser process detect when stale
   // compositor frames are being shown after a commit.
-  if (is_main_frame_ && !navigation_state->WasWithinSameDocument())
+  if (is_main_frame_ && !navigation_state->WasWithinSameDocument()) {
     GetRenderWidget()->IncrementContentSourceId();
+
+    // Update the URL used to key Ukm metrics in the compositor if the
+    // navigation is not in the same document, which represents a new source
+    // URL.
+    // Note that this is only done for the main frame since the metrics for all
+    // frames are keyed to the main frame's URL.
+    if (GetRenderWidget()->compositor())
+      GetRenderWidget()->compositor()->SetURLForUkm(GetLoadingUrl());
+  }
 
   // When we perform a new navigation, we need to update the last committed
   // session history entry with state for the page we are leaving. Do this

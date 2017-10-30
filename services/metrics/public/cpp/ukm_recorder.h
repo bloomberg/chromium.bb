@@ -30,6 +30,10 @@ namespace blink {
 class AutoplayUmaHelper;
 }
 
+namespace cc {
+class UkmManager;
+}
+
 namespace content {
 class RenderWidgetHostLatencyTracker;
 }  // namespace content
@@ -78,6 +82,7 @@ class METRICS_EXPORT UkmRecorder {
 
  private:
   friend blink::AutoplayUmaHelper;
+  friend cc::UkmManager;
   friend ContextualSearchRankerLoggerImpl;
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;

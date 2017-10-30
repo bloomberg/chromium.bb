@@ -57,6 +57,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -83,6 +84,10 @@ using testing::Mock;
 
 namespace cc {
 namespace {
+const char kUserInteraction[] = "Compositor.UserInteraction";
+const char kCheckerboardArea[] = "CheckerboardedContentArea";
+const char kCheckerboardAreaRatio[] = "CheckerboardedContentAreaRatio";
+const char kMissingTiles[] = "NumMissingTiles";
 
 class LayerTreeHostTest : public LayerTreeTest {};
 
@@ -8184,5 +8189,70 @@ class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageDecodingHints);
+
+class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestCheckerboardUkm() : url_(GURL("chrome://test")) {}
+
+  void BeginTest() override {
+    PostSetNeedsCommitToMainThread();
+    layer_tree_host()->SetURLForUkm(url_);
+  }
+
+  void SetupTree() override {
+    gfx::Size layer_size(100, 100);
+    content_layer_client_.set_bounds(layer_size);
+    content_layer_client_.set_fill_with_nonsolid_color(true);
+    layer_tree_host()->SetRootLayer(
+        FakePictureLayer::Create(&content_layer_client_));
+    layer_tree_host()->root_layer()->SetBounds(layer_size);
+    LayerTreeTest::SetupTree();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    if (impl->active_tree()->source_frame_number() != 0)
+      return;
+
+    // We have an active tree. Start a pinch gesture so we start recording
+    // stats.
+    impl->PinchGestureBegin();
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (!impl->pinch_gesture_active())
+      return;
+
+    // We just drew a frame, stats for it should have been recorded. End the
+    // gesture so they are flushed to the recorder.
+    impl->PinchGestureEnd();
+
+    // RenewTreePriority will run when the smoothness expiration timer fires.
+    // Synthetically do it here so the UkmManager is notified.
+    impl->RenewTreePriorityForTesting();
+
+    auto* recorder = static_cast<ukm::TestUkmRecorder*>(
+        impl->ukm_manager()->recorder_for_testing());
+    auto* source = recorder->GetSourceForUrl(url_);
+    ASSERT_TRUE(source);
+
+    EXPECT_EQ(recorder->entries_count(), 1u);
+    recorder->ExpectMetric(*source, kUserInteraction, kCheckerboardArea, 0);
+    recorder->ExpectMetric(*source, kUserInteraction, kMissingTiles, 0);
+    recorder->ExpectMetric(*source, kUserInteraction, kCheckerboardAreaRatio,
+                           0);
+
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  const GURL url_;
+  FakeContentLayerClient content_layer_client_;
+};
+
+// Only multi-thread mode needs to record UKMs.
+MULTI_THREAD_TEST_F(LayerTreeHostTestCheckerboardUkm);
+
 }  // namespace
 }  // namespace cc

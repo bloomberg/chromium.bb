@@ -88,6 +88,7 @@ class CC_EXPORT ProxyMain : public Proxy {
                                   BrowserControlsState current,
                                   bool animate) override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
+  void SetURLForUkm(const GURL& url) override;
 
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.

@@ -43,6 +43,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/swap_promise.h"
+#include "cc/trees/ukm_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -320,6 +321,7 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
   params.task_graph_runner = deps->GetTaskGraphRunner();
   params.main_task_runner = deps->GetCompositorMainThreadTaskRunner();
   params.mutator_host = mutator_host;
+  params.ukm_recorder_factory = deps->CreateUkmRecorderFactory();
   if (base::TaskScheduler::GetInstance()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
@@ -1310,6 +1312,10 @@ void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
 
 void RenderWidgetCompositor::RequestBeginMainFrameNotExpected(bool new_state) {
   layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
+}
+
+void RenderWidgetCompositor::SetURLForUkm(const GURL& url) {
+  layer_tree_host_->SetURLForUkm(url);
 }
 
 }  // namespace content
