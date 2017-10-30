@@ -284,12 +284,19 @@ TEST_F(ArcIntentHelperTest, TestOnOpenUrl) {
             test_open_url_delegate_->TakeLastOpenedUrl());
 }
 
-// Tests that OnOpenUrl does not open URLs with the 'chrome' scheme.
+// Tests that OnOpenUrl does not open URLs with the 'chrome://' and equivalent
+// schemes like 'about:'.
 TEST_F(ArcIntentHelperTest, TestOnOpenUrl_ChromeScheme) {
   instance_->OnOpenUrl("chrome://www.google.com");
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 
   instance_->OnOpenUrl("chrome://settings");
+  EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:");
+  EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings");
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 }
 

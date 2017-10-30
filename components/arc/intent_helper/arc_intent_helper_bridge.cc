@@ -16,6 +16,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
+#include "components/url_formatter/url_fixer.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
 
@@ -124,9 +125,11 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
 
 void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  const GURL gurl(url);
+  // Converts |url| to a fixed-up one. This converts about: URIs to chrome://,
+  // for example.
+  const GURL gurl(url_formatter::FixupURL(url, std::string()));
   // Disallow opening chrome:// URLs.
-  if (gurl.SchemeIs(kChromeUIScheme))
+  if (!gurl.is_valid() || gurl.SchemeIs(kChromeUIScheme))
     return;
   open_url_delegate_->OpenUrl(gurl);
 }
