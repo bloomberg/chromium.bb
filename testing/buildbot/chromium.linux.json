@@ -3055,12 +3055,15 @@
   },
   "Cast Android (dbg)": {
     "additional_compile_targets": [
-      "cast_shell_apk"
+      "cast_junit_test_lists",
+      "cast_shell_apk",
+      "cast_test_lists"
     ]
   },
   "Cast Audio Linux": {
     "additional_compile_targets": [
-      "cast_shell"
+      "cast_shell",
+      "cast_test_lists"
     ],
     "gtest_tests": [
       {
@@ -3244,7 +3247,8 @@
   },
   "Cast Linux": {
     "additional_compile_targets": [
-      "cast_shell"
+      "cast_shell",
+      "cast_test_lists"
     ],
     "gtest_tests": [
       {
