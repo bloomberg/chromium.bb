@@ -123,7 +123,7 @@ std::string PendingRequestKey(
          base::IntToString(request_index);
 }
 
-void IgnoreError(blink::mojom::BackgroundFetchError) {}
+void EmptyErrorHandler(blink::mojom::BackgroundFetchError) {}
 
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
@@ -654,7 +654,7 @@ class CleanupTask : public BackgroundFetchDataManager::DatabaseTask {
             // DeleteRegistrationTask for the actual deletion logic.
             AddDatabaseTask(std::make_unique<DeleteRegistrationTask>(
                 data_manager(), service_worker_registration_id, unique_id,
-                base::BindOnce(&IgnoreError)));
+                base::BindOnce(&EmptyErrorHandler)));
           }
         }
       }
