@@ -156,6 +156,31 @@ class SimpleBuilder(generic_builders.Builder):
                                       builder_run=builder_run)
     return result
 
+  def _RunVMTests(self, builder_run, board):
+    """Run VM test stages for the specified board.
+
+    Args:
+      builder_run: BuilderRun object for stages.
+      board: String containing board name.
+    """
+    config = builder_run.config
+
+    if config.vm_test_runs > 1:
+      # Run the VMTests multiple times to see if they fail.
+      self._RunStage(generic_stages.RepeatStage, config.vm_test_runs,
+                     vm_test_stages.VMTestStage, board, builder_run=builder_run)
+    else:
+      # Retry VM-based tests in case failures are flaky.
+      self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+                     vm_test_stages.VMTestStage, board, builder_run=builder_run)
+
+    # Run stages serially to avoid issues encountered when running VMs (or the
+    # devserver) in parallel: https://crbug.com/779267
+    if config.tast_vm_tests:
+      self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+                     tast_test_stages.TastVMTestStage, board,
+                     builder_run=builder_run)
+
   def _RunDebugSymbolStages(self, builder_run, board):
     """Run debug-related stages for the specified board.
 
@@ -231,23 +256,9 @@ class SimpleBuilder(generic_builders.Builder):
 
     stage_list += [[chrome_stages.SimpleChromeArtifactsStage, board]]
 
-    if config.vm_test_runs > 1:
-      # Run the VMTests multiple times to see if they fail.
-      stage_list += [
-          [generic_stages.RepeatStage, config.vm_test_runs,
-           vm_test_stages.VMTestStage, board]]
-    else:
-      # Retry VM-based tests in case failures are flaky.
-      stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
-                      vm_test_stages.VMTestStage, board]]
-
     if config.gce_tests:
       stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
                       vm_test_stages.GCETestStage, board]]
-
-    if config.tast_vm_tests:
-      stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
-                      tast_test_stages.TastVMTestStage, board]]
 
     if config.afdo_generate:
       stage_list += [[afdo_stages.AFDODataGenerateStage, board]]
@@ -274,6 +285,7 @@ class SimpleBuilder(generic_builders.Builder):
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
         lambda: self._RunHWTests(builder_run, board),
+        lambda: self._RunVMTests(builder_run, board),
         lambda: self._RunDebugSymbolStages(builder_run, board),
     ])
 
