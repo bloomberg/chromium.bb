@@ -3435,18 +3435,10 @@ void RenderFrameHostImpl::CommitNavigation(
       default_factory.Bind(
           std::move(subresource_loader_params->loader_factory_info));
     } else {
-      const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
-      if (std::find(schemes.begin(), schemes.end(),
-                    common_params.url.scheme()) != schemes.end()) {
-        // If navigating to WebUI, supply a default subresource loader which
-        // can only load WebUI resources.
-        default_factory = CreateWebUIURLLoader(frame_tree_node_);
-      } else {
-        // Otherwise default to a Network Service-backed loader from the
-        // appropriate NetworkContext.
-        storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-            mojo::MakeRequest(&default_factory), GetProcess()->GetID());
-      }
+      // Otherwise default to a Network Service-backed loader from the
+      // appropriate NetworkContext.
+      storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
+          mojo::MakeRequest(&default_factory), GetProcess()->GetID());
     }
 
     DCHECK(default_factory.is_bound());
