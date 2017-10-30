@@ -33,7 +33,6 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
@@ -314,21 +313,6 @@ class ShelfLayoutManagerTest : public AshTestBase {
     return display::Screen::GetScreen()->GetPrimaryDisplay().id();
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
-};
-
-class ShelfLayoutManagerFullscreenAppListTest : public ShelfLayoutManagerTest {
- public:
-  ShelfLayoutManagerFullscreenAppListTest() {}
-
-  void SetUp() override {
-    ShelfLayoutManagerTest::SetUp();
-
-    scoped_feature_list.InitAndEnableFeature(
-        app_list::features::kEnableFullscreenAppList);
-  }
-
   void StartScroll(gfx::Point start) {
     timestamp_ = base::TimeTicks::Now();
     current_point_ = start;
@@ -364,11 +348,10 @@ class ShelfLayoutManagerFullscreenAppListTest : public ShelfLayoutManagerTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list;
   base::TimeTicks timestamp_;
   gfx::Point current_point_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerFullscreenAppListTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
 };
 
 void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
@@ -1439,8 +1422,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
 
 // If swiping up on shelf ends with fling event, the app list state should
 // depends on the fling velocity.
-TEST_F(ShelfLayoutManagerFullscreenAppListTest,
-       FlingUpOnShelfForFullscreenAppList) {
+TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
@@ -1490,8 +1472,7 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
 }
 
 // Change the shelf alignment during dragging should dismiss the app list.
-TEST_F(ShelfLayoutManagerFullscreenAppListTest,
-       ChangeShelfAlignmentDuringAppListDragging) {
+TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
@@ -1514,7 +1495,7 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
   EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
 }
 
-TEST_F(ShelfLayoutManagerFullscreenAppListTest,
+TEST_F(ShelfLayoutManagerTest,
        SwipingUpOnShelfInTabletModeForFullscreenAppList) {
   Shell* shell = Shell::Get();
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -1606,7 +1587,7 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
             test_app_list_presenter.app_list_state());
 }
 
-TEST_F(ShelfLayoutManagerFullscreenAppListTest,
+TEST_F(ShelfLayoutManagerTest,
        SwipingUpOnShelfInLaptopModeForFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
@@ -1666,8 +1647,7 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
 }
 
 // Swiping on shelf when fullscreen app list is opened should have no effect.
-TEST_F(ShelfLayoutManagerFullscreenAppListTest,
-       SwipingOnShelfIfFullscreenAppListOpened) {
+TEST_F(ShelfLayoutManagerTest, SwipingOnShelfIfFullscreenAppListOpened) {
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   aura::Window* root_window =

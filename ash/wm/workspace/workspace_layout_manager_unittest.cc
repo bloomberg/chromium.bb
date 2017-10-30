@@ -39,7 +39,6 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/aura/client/aura_constants.h"
@@ -1401,12 +1400,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
       true);
   EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
 
-  // Enable fullscreen app list.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      app_list::features::kEnableFullscreenAppList);
-  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
-
   // Showing the app list on the primary display should not hide the backdrop on
   // the secondary display.
   EXPECT_TRUE(primary_test_helper.GetBackdropWindow());
@@ -1462,10 +1455,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   ShowTopWindowBackdropForContainer(default_container(), true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
-  // Enable fullscreen app list.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      app_list::features::kEnableFullscreenAppList);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
   // Showing the fullscreen app list should hide the backdrop.

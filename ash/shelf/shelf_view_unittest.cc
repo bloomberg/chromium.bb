@@ -45,7 +45,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
@@ -2031,10 +2030,6 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
 }
 
 TEST_F(ShelfViewTest, MouseWheelScrollOnShelfTransitionsAppList) {
-  // Enable the Fullscreen AppList.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      app_list::features::kEnableFullscreenAppList);
   TestAppListPresenterImpl app_list_presenter_impl;
   app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   app_list::test::TestAppListPresenter test_app_list_presenter;
@@ -2052,10 +2047,6 @@ TEST_F(ShelfViewTest, MouseWheelScrollOnShelfTransitionsAppList) {
 }
 
 TEST_F(ShelfViewTest, MouseWheelScrollOnApplistButtonTransitionsAppList) {
-  // Enable the fullscreen app list.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      app_list::features::kEnableFullscreenAppList);
   TestAppListPresenterImpl app_list_presenter_impl;
   app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   app_list::test::TestAppListPresenter test_app_list_presenter;
@@ -2074,10 +2065,6 @@ TEST_F(ShelfViewTest, MouseWheelScrollOnApplistButtonTransitionsAppList) {
 }
 
 TEST_F(ShelfViewTest, MouseWheelScrollOnAppIconTransitionsAppList) {
-  // Enable the Fullscreen AppList.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      app_list::features::kEnableFullscreenAppList);
   TestAppListPresenterImpl app_list_presenter_impl;
   app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   app_list::test::TestAppListPresenter test_app_list_presenter;

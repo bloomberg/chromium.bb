@@ -30,9 +30,6 @@ APP_LIST_EXPORT extern const base::Feature kEnableAnswerCardDarkRun;
 // choppier app list animations. crbug.com/765292.
 APP_LIST_EXPORT extern const base::Feature kEnableBackgroundBlur;
 
-// Enables the fullscreen app list.
-APP_LIST_EXPORT extern const base::Feature kEnableFullscreenAppList;
-
 // Enables the Play Store app search.
 APP_LIST_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 

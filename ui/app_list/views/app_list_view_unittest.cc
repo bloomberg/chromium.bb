@@ -193,8 +193,6 @@ class AppListViewFullscreenTest : public AppListViewTest {
   // testing::Test
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableFullscreenAppList);
   }
 
  protected:
