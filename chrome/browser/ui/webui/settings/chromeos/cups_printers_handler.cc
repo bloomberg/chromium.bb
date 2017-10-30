@@ -529,7 +529,8 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   CHECK(args->GetDictionary(0, &printer_dict));
 
   std::unique_ptr<Printer> printer = DictToPrinter(*printer_dict);
-  if (!printer) {
+  PrinterUri uri;
+  if (!printer || !ParseUri(printer->uri(), &uri)) {
     LOG(ERROR) << "Failed to parse printer";
     OnAddPrinterError(PrinterSetupResult::kFatalError);
     return;
