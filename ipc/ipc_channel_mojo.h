@@ -114,6 +114,8 @@ class IPC_EXPORT ChannelMojo : public Channel,
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
+  base::WeakPtr<ChannelMojo> weak_ptr_;
+
   // A TaskRunner which runs tasks on the ChannelMojo's owning thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

@@ -111,6 +111,7 @@ ChannelMojo::ChannelMojo(
       pipe_(handle.get()),
       listener_(listener),
       weak_factory_(this) {
+  weak_ptr_ = weak_factory_.GetWeakPtr();
   bootstrap_ = MojoBootstrap::Create(std::move(handle), mode, ipc_task_runner);
 }
 
@@ -183,9 +184,8 @@ void ChannelMojo::OnPipeError() {
   if (task_runner_->RunsTasksInCurrentSequence()) {
     listener_->OnChannelError();
   } else {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChannelMojo::OnPipeError, weak_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ChannelMojo::OnPipeError, weak_ptr_));
   }
 }
 
@@ -230,10 +230,9 @@ std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
 ChannelMojo::CreateThreadSafeChannel() {
   return std::make_unique<mojo::ThreadSafeForwarder<mojom::Channel>>(
       task_runner_,
-      base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr,
-                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr, weak_ptr_),
       base::Bind(&ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
-                 weak_factory_.GetWeakPtr()),
+                 weak_ptr_),
       *bootstrap_->GetAssociatedGroup());
 }
 
