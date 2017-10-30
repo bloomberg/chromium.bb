@@ -44285,6 +44285,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.RetryAfterWriteErrorCount" units="retries">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of consecutive times a packet was retried after a write error.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.RstStreamErrorCodeClient"
     enum="QuicRstStreamErrorCodes">
   <owner>rch@chromium.org</owner>

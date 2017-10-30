@@ -404,6 +404,9 @@ NET_ERROR(READ_IF_READY_NOT_IMPLEMENTED, -174)
 //    is unlikely.
 NET_ERROR(SSL_VERSION_INTERFERENCE, -175)
 
+// No socket buffer space is available.
+NET_ERROR(NO_BUFFER_SPACE, -176)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
