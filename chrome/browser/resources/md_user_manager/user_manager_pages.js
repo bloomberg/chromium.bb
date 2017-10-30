@@ -46,6 +46,20 @@ Polymer({
   },
 
   /**
+   * This is to prevent events from propagating to the document element, which
+   * erroneously triggers user-pod selections.
+   *
+   * TODO(scottchen): re-examine if its necessary for user_pod_row.js to bind
+   * listeners on the entire document element.
+   *
+   * @param {!Event} e
+   * @private
+   */
+  stopPropagation_: function(e) {
+    e.stopPropagation();
+  },
+
+  /**
    * Returns True if the first argument is present in the given set of values.
    * @param {string} selectedPage ID of the currently selected page.
    * @param {...string} var_args Pages IDs to check the first argument against.
