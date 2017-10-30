@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import argparse
 import os
 
 from chromite.lib import commandline
@@ -30,28 +31,28 @@ class VM(object):
 
   SSH_PORT = 9222
 
-  def __init__(self, image_path=None, qemu_path=None, enable_kvm=True,
-               display=True, ssh_port=SSH_PORT, dry_run=False):
+  def __init__(self, argv):
     """Initialize VM.
 
     Args:
-      image_path: path of vm image.
-      qemu_path: path to qemu binary.
-      enable_kvm: enable kvm (kernel support for virtualization).
-      display: display video output.
-      ssh_port: ssh port to use.
-      dry_run: disable VM commands.
+      argv: command line args.
     """
+    opts = self._ParseArgs(argv)
+    opts.Freeze()
 
-    self.qemu_path = qemu_path
-    self.enable_kvm = enable_kvm
+    self.qemu_path = opts.qemu_path
+    self.enable_kvm = opts.enable_kvm
     # We don't need sudo access for software emulation or if /dev/kvm is
     # writeable.
-    self.use_sudo = enable_kvm and not os.access('/dev/kvm', os.W_OK)
-    self.display = display
-    self.image_path = image_path
-    self.ssh_port = ssh_port
-    self.dry_run = dry_run
+    self.use_sudo = self.enable_kvm and not os.access('/dev/kvm', os.W_OK)
+    self.display = opts.display
+    self.image_path = opts.image_path
+    self.ssh_port = opts.ssh_port
+    self.dry_run = opts.dry_run
+
+    self.start = opts.start
+    self.stop = opts.stop
+    self.cmd = opts.args[1:] if opts.cmd else None
 
     self.vm_dir = os.path.join(osutils.GetGlobalTempDir(), 'cros_vm')
     if os.path.exists(self.vm_dir):
@@ -70,11 +71,10 @@ class VM(object):
     self.kvm_serial = '%s.serial' % self.kvm_monitor
 
     self.remote = remote_access.RemoteDevice(remote_access.LOCALHOST,
-                                             port=ssh_port)
+                                             port=self.ssh_port)
 
     # TODO(achuith): support nographics, snapshot, mem_path, usb_passthrough,
     # moblab, etc.
-
 
   def _RunCommand(self, *args, **kwargs):
     """Use SudoRunCommand or RunCommand as necessary."""
@@ -93,26 +93,21 @@ class VM(object):
     if recreate:
       osutils.SafeMakedirs(self.vm_dir)
 
-  def PerformAction(self, start=False, stop=False, cmd=None):
+  def Run(self):
     """Performs an action, one of start, stop, or run a command in the VM.
-
-    Args:
-      start: start the VM.
-      stop: stop the VM.
-      cmd: list or scalar command to run in the VM.
 
     Returns:
       cmd output.
     """
 
-    if not start and not stop and not cmd:
+    if not self.start and not self.stop and not self.cmd:
       raise VMError('Must specify one of start, stop, or cmd.')
-    if start:
+    if self.start:
       self.Start()
-    if stop:
+    if self.cmd:
+      return self.RemoteCommand(self.cmd)
+    if self.stop:
       self.Stop()
-    if cmd:
-      return self.RemoteCommand(cmd.split())
 
   def Start(self):
     """Start the VM."""
@@ -254,58 +249,59 @@ class VM(object):
     if result.returncode != 0:
       raise VMError('WaitForBoot failed: %s.' % result.error)
 
-    self._WaitForProcs()
+    # Chrome can take a while to start with software emulation.
+    if not self.enable_kvm:
+      self._WaitForProcs()
 
-  def RemoteCommand(self, cmd):
+  def RemoteCommand(self, cmd, **kwargs):
     """Run a remote command in the VM.
 
     Args:
-      cmd: command to run, of list type.
+      cmd: command to run.
+      kwargs: additional args (see documentation for RemoteDevice.RunCommand).
     """
-    if not isinstance(cmd, list):
-      raise VMError('cmd must be a list.')
-
     if not self.dry_run:
       return self.remote.RunCommand(cmd, debug_level=logging.INFO,
                                     combine_stdout_stderr=True,
                                     log_output=True,
-                                    error_code_ok=True)
+                                    error_code_ok=True,
+                                    **kwargs)
 
-def ParseCommandLine(argv):
-  """Parse the command line.
+  @staticmethod
+  def _ParseArgs(argv):
+    """Parse a list of args.
 
-  Args:
-    argv: Command arguments.
+    Args:
+      argv: list of command line arguments.
 
-  Returns:
-    List of parsed args.
-  """
-  parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('--start', action='store_true', default=False,
-                      help='Start the VM.')
-  parser.add_argument('--stop', action='store_true', default=False,
-                      help='Stop the VM.')
-  parser.add_argument('--cmd', help='Run this command in the VM.')
-  parser.add_argument('--image-path', type='path',
-                      help='Path to VM image to launch with --start.')
-  parser.add_argument('--qemu-path', type='path',
-                      help='Path of qemu binary to launch with --start.')
-  parser.add_argument('--disable-kvm', dest='enable_kvm',
-                      action='store_false', default=True,
-                      help='Disable KVM, use software emulation.')
-  parser.add_argument('--no-display', dest='display',
-                      action='store_false', default=True,
-                      help='Do not display video output.')
-  parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
-                      help='ssh port to communicate with VM.')
-  parser.add_argument('--dry-run', action='store_true', default=False,
-                      help='dry run for debugging.')
-  return parser.parse_args(argv)
-
+    Returns:
+      List of parsed opts.
+    """
+    parser = commandline.ArgumentParser(description=__doc__)
+    parser.add_argument('--start', action='store_true', default=False,
+                        help='Start the VM.')
+    parser.add_argument('--stop', action='store_true', default=False,
+                        help='Stop the VM.')
+    parser.add_argument('--image-path', type='path',
+                        help='Path to VM image to launch with --start.')
+    parser.add_argument('--qemu-path', type='path',
+                        help='Path of qemu binary to launch with --start.')
+    parser.add_argument('--disable-kvm', dest='enable_kvm',
+                        action='store_false', default=True,
+                        help='Disable KVM, use software emulation.')
+    parser.add_argument('--no-display', dest='display',
+                        action='store_false', default=True,
+                        help='Do not display video output.')
+    parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
+                        help='ssh port to communicate with VM.')
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='dry run for debugging.')
+    parser.add_argument('--cmd', action='store_true', default=False,
+                        help='Run a command in the VM.')
+    parser.add_argument('args', nargs=argparse.REMAINDER,
+                        help='Command to run in the VM.')
+    return parser.parse_args(argv)
 
 def main(argv):
-  args = ParseCommandLine(argv)
-  vm = VM(image_path=args.image_path, qemu_path=args.qemu_path,
-          enable_kvm=args.enable_kvm, display=args.display,
-          ssh_port=args.ssh_port, dry_run=args.dry_run)
-  vm.PerformAction(start=args.start, stop=args.stop, cmd=args.cmd)
+  vm = VM(argv)
+  vm.Run()

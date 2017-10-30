@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import datetime
 import os
+import re
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -23,17 +24,13 @@ class VMTest(object):
       '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests'
   SANITY_TEST = '/usr/local/autotest/bin/vm_sanity.py'
 
-  def __init__(self, image_path, qemu_path, enable_kvm, display, catapult_tests,
-               guest, start_vm, ssh_port):
+  def __init__(self, catapult_tests, guest, start_vm, vm_args):
     self.start_time = datetime.datetime.utcnow()
     self.test_pattern = catapult_tests
     self.guest = guest
     self.start_vm = start_vm
-    self.ssh_port = ssh_port
 
-    self._vm = cros_vm.VM(image_path=image_path, qemu_path=qemu_path,
-                          enable_kvm=enable_kvm, display=display,
-                          ssh_port=ssh_port)
+    self._vm = cros_vm.VM(vm_args)
 
   def __del__(self):
     self.StopVM()
@@ -83,7 +80,8 @@ class VMTest(object):
                                '--build-dir', build_dir,
                                '--process-timeout', '180',
                                '--to', 'localhost',
-                               '--port', str(self.ssh_port)], log_output=True)
+                               '--port', str(self._vm.ssh_port)],
+                              log_output=True)
     self._vm.WaitForBoot()
 
   def _RunCatapultTests(self, test_pattern, guest):
@@ -94,14 +92,13 @@ class VMTest(object):
       guest: Run in guest mode.
 
     Returns:
-      True if all tests passed.
+      cros_build_lib.CommandResult object.
     """
 
     browser = 'system-guest' if guest else 'system'
-    result = self._vm.RemoteCommand(['python', self.CATAPULT_RUN_TESTS,
-                                     '--browser=%s' % browser,
-                                     test_pattern])
-    return result.returncode == 0
+    return self._vm.RemoteCommand(['python', self.CATAPULT_RUN_TESTS,
+                                   '--browser=%s' % browser,
+                                   test_pattern])
 
   def RunTests(self):
     """Run all eligible tests.
@@ -110,13 +107,35 @@ class VMTest(object):
     Otherwise, run vm_sanity.
 
     Returns:
-      True if all tests passed.
+      cros_build_lib.CommandResult object.
     """
 
     if self.test_pattern:
       return self._RunCatapultTests(self.test_pattern, self.guest)
 
-    return self._vm.RemoteCommand([self.SANITY_TEST]).returncode == 0
+    return self._vm.RemoteCommand([self.SANITY_TEST])
+
+  def ProcessResult(self, result, output):
+    """Process the CommandResult object from RunCmd/RunTests.
+
+    Args:
+      result: cros_build_lib.CommandResult object.
+      output: output file to write to.
+    """
+    result_str = 'succeeded' if result.returncode == 0 else 'failed'
+    logging.info('Tests %s.', result_str)
+    if not output:
+      return
+
+    # Skip SSH warning.
+    suppress_list = [
+        r'Warning: Permanently added .* to the list of known hosts']
+    with open(output, 'w') as f:
+      lines = result.output.splitlines(True)
+      for line in lines:
+        for suppress in suppress_list:
+          if not re.search(suppress, line):
+            f.write(line)
 
 
 def ParseCommandLine(argv):
@@ -126,7 +145,7 @@ def ParseCommandLine(argv):
     argv: Command arguments.
 
   Returns:
-    List of parsed options.
+    List of parsed options for VMTest, and args to pass to VM.
   """
 
   parser = commandline.ArgumentParser(description=__doc__)
@@ -134,6 +153,7 @@ def ParseCommandLine(argv):
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests',
                       help='Catapult test pattern to run, passed to run_tests.')
+  parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
   parser.add_argument('--build-dir', type='path',
@@ -144,37 +164,21 @@ def ParseCommandLine(argv):
   parser.add_argument('--deploy', action='store_true', default=False,
                       help='Before running tests, deploy chrome to the VM, '
                       '--build-dir must be specified.')
-  parser.add_argument('--image-path', type='path',
-                      help='Path to VM image to launch with --start-vm.')
-  parser.add_argument('--qemu-path', type='path',
-                      help='Path of qemu binary to launch with --start-vm.')
-  parser.add_argument('--disable-kvm', dest='enable_kvm',
-                      action='store_false', default=True,
-                      help='Disable KVM, use software emulation.')
-  parser.add_argument('--no-display', dest='display',
-                      action='store_false', default=True,
-                      help='Do not display video output.')
-  parser.add_argument('--ssh-port', type=int, default=cros_vm.VM.SSH_PORT,
-                      help='ssh port to communicate with VM.')
 
-  opts = parser.parse_args(argv)
+  opts, vm_args = parser.parse_known_args(argv)
   if opts.build or opts.deploy:
     if not opts.build_dir:
       parser.error('Must specifiy --build-dir with --build or --deploy.')
     if not os.path.isdir(opts.build_dir):
       parser.error('%s is not a directory.' % opts.build_dir)
-
-  opts.Freeze()
-  return opts
+  return opts, vm_args
 
 
 def main(argv):
-  opts = ParseCommandLine(argv)
-  vm_test = VMTest(image_path=opts.image_path,
-                   qemu_path=opts.qemu_path, enable_kvm=opts.enable_kvm,
-                   display=opts.display, catapult_tests=opts.catapult_tests,
+  opts, vm_args = ParseCommandLine(argv)
+  vm_test = VMTest(catapult_tests=opts.catapult_tests,
                    guest=opts.guest,
-                   start_vm=opts.start_vm, ssh_port=opts.ssh_port)
+                   start_vm=opts.start_vm, vm_args=vm_args)
 
   vm_test.StartVM()
 
@@ -184,8 +188,8 @@ def main(argv):
   if opts.build or opts.deploy:
     vm_test.Deploy(opts.build_dir)
 
-  success = vm_test.RunTests()
-  success_str = 'succeeded' if success else 'failed'
-  logging.info('Tests %s.', success_str)
+  result = vm_test.RunTests()
+  vm_test.ProcessResult(result, opts.output)
+
   vm_test.StopVM()
-  return not success
+  return result.returncode
