@@ -1552,16 +1552,24 @@ public class LocationBarLayout extends FrameLayout
 
         assert urlContainerChildIndex != -1;
         int urlContainerMarginEnd = 0;
-        for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
-            View childView = getChildAt(i);
-            if (childView.getVisibility() != GONE) {
-                LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
-                urlContainerMarginEnd = Math.max(urlContainerMarginEnd,
-                        childLayoutParams.width
-                                + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
-                                + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
+
+        // When Chrome Home is enabled, the URL actions container slides out of view during the
+        // URL defocus animation. Adding margin during this animation creates a hole.
+        boolean addMarginForActionsContainer =
+                mBottomSheet == null || !mUrlFocusChangeInProgress || mUrlHasFocus;
+        if (addMarginForActionsContainer) {
+            for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
+                View childView = getChildAt(i);
+                if (childView.getVisibility() != GONE) {
+                    LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
+                    urlContainerMarginEnd = Math.max(urlContainerMarginEnd,
+                            childLayoutParams.width
+                                    + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
+                                    + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
+                }
             }
         }
+
         LayoutParams urlLayoutParams = (LayoutParams) mUrlBar.getLayoutParams();
         if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
             ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
