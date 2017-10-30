@@ -924,7 +924,7 @@ def _CheckFilePermissions(input_api, output_api):
   args = [input_api.python_executable, checkperms_tool,
           '--root', input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
-    args += ['--file', f.LocalPath()]
+    args += ['--file', f.AbsoluteLocalPath()]
   try:
     input_api.subprocess.check_output(args)
     return []
@@ -2669,20 +2669,13 @@ def _CheckForWindowsLineEndings(input_api, output_api):
     r'.+%s' % _IMPLEMENTATION_EXTENSIONS
   )
 
-  filter = lambda f: input_api.FilterSourceFile(
-    f, white_list=file_inclusion_pattern, black_list=None)
-  files = [f.LocalPath() for f in
-           input_api.AffectedSourceFiles(filter)]
-
   problems = []
-
-  for file in files:
-    fp = open(file, 'r')
-    for line in fp:
+  source_file_filter = lambda f: input_api.FilterSourceFile(
+      f, white_list=file_inclusion_pattern, black_list=None)
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    for line_number, line in f.ChangedContents():
       if line.endswith('\r\n'):
-        problems.append(file)
-        break
-    fp.close()
+        problems.append(f.LocalPath())
 
   if problems:
     return [output_api.PresubmitPromptWarning('Are you sure that you want '
