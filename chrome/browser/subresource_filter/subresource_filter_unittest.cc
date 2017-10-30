@@ -325,3 +325,22 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
                                                                   metadata));
   }
 }
+
+TEST_F(SubresourceFilterTest, WarningSite_NoMetadata) {
+  subresource_filter::Configuration config(
+      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::ActivationScope::ACTIVATION_LIST,
+      subresource_filter::ActivationList::BETTER_ADS);
+  scoped_configuration().ResetConfiguration(std::move(config));
+  const GURL url("https://example.test/");
+  safe_browsing::ThreatMetadata metadata;
+  metadata.subresource_filter_match
+      [safe_browsing::SubresourceFilterType::BETTER_ADS] =
+      safe_browsing::SubresourceFilterLevel::WARN;
+  auto threat_type =
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER;
+  fake_safe_browsing_database()->AddBlacklistedUrl(url, threat_type, metadata);
+
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+}
