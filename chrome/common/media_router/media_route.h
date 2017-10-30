@@ -101,10 +101,10 @@ class MediaRoute {
   void set_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
   bool is_incognito() const { return is_incognito_; }
 
-  void set_offscreen_presentation(bool is_offscreen_presentation) {
-    is_offscreen_presentation_ = is_offscreen_presentation;
+  void set_local_presentation(bool is_local_presentation) {
+    is_local_presentation_ = is_local_presentation;
   }
-  bool is_offscreen_presentation() const { return is_offscreen_presentation_; }
+  bool is_local_presentation() const { return is_local_presentation_; }
 
   bool Equals(const MediaRoute& other) const;
 
@@ -146,9 +146,9 @@ class MediaRoute {
   // |true| if the route was created by an incognito profile.
   bool is_incognito_ = false;
 
-  // |true| if the presentation associated with this route is an offscreen
+  // |true| if the presentation associated with this route is a local
   // presentation.
-  bool is_offscreen_presentation_ = false;
+  bool is_local_presentation_ = false;
 };
 
 }  // namespace media_router

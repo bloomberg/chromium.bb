@@ -111,8 +111,8 @@ struct MediaRoute {
   bool for_display;
   // Set to true if this route was created by an incognito profile.
   bool is_incognito;
-  // Set to true if this route corresponds to an offscreen presentation.
-  bool is_offscreen_presentation;
+  // Set to true if this route corresponds to a local presentation.
+  bool is_local_presentation;
 };
 
 // Notifications or an actionable events to be shown to the user.

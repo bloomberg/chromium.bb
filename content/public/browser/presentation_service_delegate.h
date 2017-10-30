@@ -181,10 +181,10 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
       const PresentationConnectionStateChangedCallback& state_changed_cb) = 0;
 
   // Connect |controller_connection| owned by the controlling frame to the
-  // offscreen presentation represented by |presentation_info|.
+  // local presentation represented by |presentation_info|.
   // |render_process_id|, |render_frame_id|: ID of originating frame.
   // |controller_connection|: Pointer to controller's presentation connection,
-  // ownership passed from controlling frame to the offscreen presentation.
+  // ownership passed from controlling frame to the local presentation.
   // |receiver_connection_request|: Mojo InterfaceRequest to be bind to receiver
   // page's presentation connection.
   virtual void ConnectToPresentation(
@@ -203,7 +203,7 @@ class CONTENT_EXPORT ReceiverPresentationServiceDelegate
   // Registers a callback from the embedder when an offscreeen presentation has
   // been successfully started.
   // |receiver_available_callback|: Invoked when successfully starting a
-  // offscreen presentation.
+  // local presentation.
   virtual void RegisterReceiverConnectionAvailableCallback(
       const content::ReceiverConnectionAvailableCallback&
           receiver_available_callback) = 0;

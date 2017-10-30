@@ -434,8 +434,8 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
     return route.is_incognito();
   }
 
-  static bool is_offscreen_presentation(const media_router::MediaRoute& route) {
-    return route.is_offscreen_presentation();
+  static bool is_local_presentation(const media_router::MediaRoute& route) {
+    return route.is_local_presentation();
   }
 };
 

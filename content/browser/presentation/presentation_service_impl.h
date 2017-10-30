@@ -215,7 +215,7 @@ class CONTENT_EXPORT PresentationServiceImpl
       const content::PresentationInfo& presentation_info,
       std::vector<content::PresentationConnectionMessage> messages);
 
-  // A callback registered to OffscreenPresentationManager when
+  // A callback registered to LocalPresentationManager when
   // the PresentationServiceImpl for the presentation receiver is initialized.
   // Calls |client_| to create a new PresentationConnection on receiver page.
   void OnReceiverConnectionAvailable(

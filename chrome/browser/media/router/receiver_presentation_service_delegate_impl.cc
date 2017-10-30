@@ -5,8 +5,8 @@
 #include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/media/router/offscreen_presentation_manager.h"
-#include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
+#include "chrome/browser/media/router/local_presentation_manager.h"
+#include "chrome/browser/media/router/local_presentation_manager_factory.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::ReceiverPresentationServiceDelegateImpl);
@@ -47,7 +47,7 @@ void ReceiverPresentationServiceDelegateImpl::RemoveObserver(
 void ReceiverPresentationServiceDelegateImpl::Reset(int render_process_id,
                                                     int render_frame_id) {
   DVLOG(2) << __FUNCTION__ << render_process_id << ", " << render_frame_id;
-  offscreen_presentation_manager_->OnOffscreenPresentationReceiverTerminated(
+  local_presentation_manager_->OnLocalPresentationReceiverTerminated(
       presentation_id_);
 }
 
@@ -56,19 +56,19 @@ ReceiverPresentationServiceDelegateImpl::
                                             const std::string& presentation_id)
     : web_contents_(web_contents),
       presentation_id_(presentation_id),
-      offscreen_presentation_manager_(
-          OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
+      local_presentation_manager_(
+          LocalPresentationManagerFactory::GetOrCreateForWebContents(
               web_contents_)) {
   DCHECK(web_contents_);
   DCHECK(!presentation_id.empty());
-  DCHECK(offscreen_presentation_manager_);
+  DCHECK(local_presentation_manager_);
 }
 
 void ReceiverPresentationServiceDelegateImpl::
     RegisterReceiverConnectionAvailableCallback(
         const content::ReceiverConnectionAvailableCallback&
             receiver_available_callback) {
-  offscreen_presentation_manager_->OnOffscreenPresentationReceiverCreated(
+  local_presentation_manager_->OnLocalPresentationReceiverCreated(
       content::PresentationInfo(web_contents_->GetLastCommittedURL(),
                                 presentation_id_),
       receiver_available_callback);

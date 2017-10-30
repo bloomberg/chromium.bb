@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/media/router/offscreen_presentation_manager.h"
+#include "chrome/browser/media/router/local_presentation_manager.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,9 +36,9 @@ class MockReceiverConnectionAvailableCallback {
                     blink::mojom::PresentationConnection*));
 };
 
-class OffscreenPresentationManagerTest : public ::testing::Test {
+class LocalPresentationManagerTest : public ::testing::Test {
  public:
-  OffscreenPresentationManagerTest()
+  LocalPresentationManagerTest()
       : render_frame_host_id_(1, 1),
         presentation_info_(GURL(kPresentationUrl), kPresentationId),
         route_("route_1",
@@ -49,17 +49,17 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
                "",
                false) {}
 
-  OffscreenPresentationManager* manager() { return &manager_; }
+  LocalPresentationManager* manager() { return &manager_; }
 
   void VerifyPresentationsSize(size_t expected) {
-    EXPECT_EQ(expected, manager_.offscreen_presentations_.size());
+    EXPECT_EQ(expected, manager_.local_presentations_.size());
   }
 
   void VerifyControllerSize(size_t expected,
                             const std::string& presentationId) {
     EXPECT_TRUE(
-        base::ContainsKey(manager_.offscreen_presentations_, presentationId));
-    EXPECT_EQ(expected, manager_.offscreen_presentations_[presentationId]
+        base::ContainsKey(manager_.local_presentations_, presentationId));
+    EXPECT_EQ(expected, manager_.local_presentations_[presentationId]
                             ->pending_controllers_.size());
   }
 
@@ -85,7 +85,7 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
                           const RenderFrameHostId& render_frame_id,
                           content::PresentationConnectionPtr controller) {
     content::PresentationConnectionRequest receiver_conn_request;
-    manager()->RegisterOffscreenPresentationController(
+    manager()->RegisterLocalPresentationController(
         presentation_info, render_frame_id, std::move(controller),
         std::move(receiver_conn_request), route_);
   }
@@ -98,7 +98,7 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
   void RegisterReceiver(
       const std::string& presentation_id,
       MockReceiverConnectionAvailableCallback& receiver_callback) {
-    manager()->OnOffscreenPresentationReceiverCreated(
+    manager()->OnLocalPresentationReceiverCreated(
         content::PresentationInfo(GURL(kPresentationUrl), presentation_id),
         base::Bind(&MockReceiverConnectionAvailableCallback::
                        OnReceiverConnectionAvailable,
@@ -106,27 +106,27 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
   }
 
   void UnregisterController(const RenderFrameHostId& render_frame_id) {
-    manager()->UnregisterOffscreenPresentationController(kPresentationId,
-                                                         render_frame_id);
+    manager()->UnregisterLocalPresentationController(kPresentationId,
+                                                     render_frame_id);
   }
 
   void UnregisterController() {
-    manager()->UnregisterOffscreenPresentationController(kPresentationId,
-                                                         render_frame_host_id_);
+    manager()->UnregisterLocalPresentationController(kPresentationId,
+                                                     render_frame_host_id_);
   }
 
   void UnregisterReceiver() {
-    manager()->OnOffscreenPresentationReceiverTerminated(kPresentationId);
+    manager()->OnLocalPresentationReceiverTerminated(kPresentationId);
   }
 
  private:
   const RenderFrameHostId render_frame_host_id_;
   const content::PresentationInfo presentation_info_;
-  OffscreenPresentationManager manager_;
+  LocalPresentationManager manager_;
   MediaRoute route_;
 };
 
-TEST_F(OffscreenPresentationManagerTest, RegisterUnregisterController) {
+TEST_F(LocalPresentationManagerTest, RegisterUnregisterController) {
   content::PresentationConnectionPtr controller;
   RegisterController(std::move(controller));
   VerifyPresentationsSize(1);
@@ -134,7 +134,7 @@ TEST_F(OffscreenPresentationManagerTest, RegisterUnregisterController) {
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest, RegisterUnregisterReceiver) {
+TEST_F(LocalPresentationManagerTest, RegisterUnregisterReceiver) {
   MockReceiverConnectionAvailableCallback receiver_callback;
   RegisterReceiver(receiver_callback);
   VerifyPresentationsSize(1);
@@ -142,17 +142,17 @@ TEST_F(OffscreenPresentationManagerTest, RegisterUnregisterReceiver) {
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest, UnregisterNonexistentController) {
+TEST_F(LocalPresentationManagerTest, UnregisterNonexistentController) {
   UnregisterController();
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest, UnregisterNonexistentReceiver) {
+TEST_F(LocalPresentationManagerTest, UnregisterNonexistentReceiver) {
   UnregisterReceiver();
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        RegisterMultipleControllersSamePresentation) {
   content::PresentationConnectionPtr controller1;
   RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
@@ -161,7 +161,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(1);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        RegisterMultipleControllersDifferentPresentations) {
   content::PresentationConnectionPtr controller1;
   RegisterController(kPresentationId, std::move(controller1));
@@ -170,7 +170,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(2);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        RegisterControllerThenReceiverInvokesCallback) {
   content::PresentationConnectionPtr controller;
   MockReceiverConnectionAvailableCallback receiver_callback;
@@ -182,7 +182,7 @@ TEST_F(OffscreenPresentationManagerTest,
   RegisterReceiver(receiver_callback);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        UnregisterReceiverFromConnectedPresentation) {
   content::PresentationConnectionPtr controller;
   MockReceiverConnectionAvailableCallback receiver_callback;
@@ -197,7 +197,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        UnregisterControllerFromConnectedPresentation) {
   content::PresentationConnectionPtr controller;
   MockReceiverConnectionAvailableCallback receiver_callback;
@@ -212,7 +212,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(1);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        UnregisterReceiverThenControllerFromConnectedPresentation) {
   content::PresentationConnectionPtr controller;
   MockReceiverConnectionAvailableCallback receiver_callback;
@@ -228,7 +228,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        UnregisterControllerThenReceiverFromConnectedPresentation) {
   content::PresentationConnectionPtr controller;
   MockReceiverConnectionAvailableCallback receiver_callback;
@@ -244,7 +244,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(0);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        RegisterTwoControllersThenReceiverInvokesCallbackTwice) {
   content::PresentationConnectionPtr controller1;
   RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
@@ -257,7 +257,7 @@ TEST_F(OffscreenPresentationManagerTest,
   RegisterReceiver(receiver_callback);
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        RegisterControllerReceiverConontrollerInvokesCallbackTwice) {
   content::PresentationConnectionPtr controller1;
   RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
@@ -271,7 +271,7 @@ TEST_F(OffscreenPresentationManagerTest,
   RegisterController(RenderFrameHostId(1, 2), std::move(controller2));
 }
 
-TEST_F(OffscreenPresentationManagerTest,
+TEST_F(LocalPresentationManagerTest,
        UnregisterFirstControllerFromeConnectedPresentation) {
   content::PresentationConnectionPtr controller1;
   RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
@@ -288,7 +288,7 @@ TEST_F(OffscreenPresentationManagerTest,
   VerifyPresentationsSize(1);
 }
 
-TEST_F(OffscreenPresentationManagerTest, TwoPresentations) {
+TEST_F(LocalPresentationManagerTest, TwoPresentations) {
   content::PresentationConnectionPtr controller1;
   RegisterController(kPresentationId, std::move(controller1));
 
@@ -311,14 +311,14 @@ TEST_F(OffscreenPresentationManagerTest, TwoPresentations) {
   VerifyPresentationsSize(1);
 }
 
-TEST_F(OffscreenPresentationManagerTest, TestIsOffscreenPresentation) {
-  EXPECT_FALSE(manager()->IsOffscreenPresentation(kPresentationId));
+TEST_F(LocalPresentationManagerTest, TestIsLocalPresentation) {
+  EXPECT_FALSE(manager()->IsLocalPresentation(kPresentationId));
   content::PresentationConnectionPtr controller1;
   RegisterController(kPresentationId, std::move(controller1));
-  EXPECT_TRUE(manager()->IsOffscreenPresentation(kPresentationId));
+  EXPECT_TRUE(manager()->IsLocalPresentation(kPresentationId));
 }
 
-TEST_F(OffscreenPresentationManagerTest, TestRegisterAndGetRoute) {
+TEST_F(LocalPresentationManagerTest, TestRegisterAndGetRoute) {
   MediaSource source("source_1");
   MediaRoute route("route_1", source, "sink_1", "", false, "", false);
 
