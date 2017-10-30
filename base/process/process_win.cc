@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace {
 
@@ -151,6 +152,9 @@ bool Process::WaitForExit(int* exit_code) const {
 }
 
 bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
+  if (!timeout.is_zero())
+    internal::AssertBaseSyncPrimitivesAllowed();
+
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedProcessWaitActivity process_activity(this);
 

@@ -68,6 +68,13 @@ extern char** environ;
 
 namespace base {
 
+// Friend and derived class of ScopedAllowBaseSyncPrimitives which allows
+// GetAppOutputInternal() to join a process. GetAppOutputInternal() can't itself
+// be a friend of ScopedAllowBaseSyncPrimitives because it is in the anonymous
+// namespace.
+class GetAppOutputScopedAllowBaseSyncPrimitives
+    : public base::ScopedAllowBaseSyncPrimitives {};
+
 #if !defined(OS_NACL_NONSFI)
 
 namespace {
@@ -540,7 +547,6 @@ static bool GetAppOutputInternal(
     std::string* output,
     bool do_search_path,
     int* exit_code) {
-  // Doing a blocking wait for another command to finish counts as IO.
   base::AssertBlockingAllowed();
   // exit_code must be supplied so calling function can determine success.
   DCHECK(exit_code);
@@ -638,6 +644,9 @@ static bool GetAppOutputInternal(
       // Always wait for exit code (even if we know we'll declare
       // GOT_MAX_OUTPUT).
       Process process(pid);
+      // A process launched with GetAppOutput*() usually doesn't wait on the
+      // process that launched it and thus chances of deadlock are low.
+      GetAppOutputScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
       return process.WaitForExit(exit_code);
     }
   }
