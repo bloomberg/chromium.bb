@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "crypto/ec_private_key.h"
+#include "crypto/nss_crypto_module_delegate.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/x509_util_nss.h"

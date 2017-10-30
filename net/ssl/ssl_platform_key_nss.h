@@ -21,11 +21,13 @@ class X509Certificate;
 
 // Returns an SSLPrivateKey backed by the NSS private key that corresponds to
 // |certificate|'s public key. If |password_delegate| is non-null, it will be
-// used to prompt for a password if necessary to unlock a slot.
+// used to prompt for a password if necessary to unlock a slot or perform
+// signing operations.
 NET_EXPORT scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
     const X509Certificate* certificate,
     CERTCertificate* cert_certificate,
-    crypto::CryptoModuleBlockingPasswordDelegate* password_delegate);
+    scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate>
+        password_delegate);
 
 }  // namespace net
 
