@@ -26,6 +26,23 @@ const size_t kMaxResolutionWidth = 4096;
 const size_t kMaxResolutionHeight = 2160;
 const size_t kNumInputBuffers = 3;
 
+const VideoCodecProfile kSupportedProfiles[] = {
+    H264PROFILE_BASELINE, H264PROFILE_MAIN, H264PROFILE_HIGH};
+
+static CFStringRef VideoCodecProfileToVTProfile(VideoCodecProfile profile) {
+  switch (profile) {
+    case H264PROFILE_BASELINE:
+      return kVTProfileLevel_H264_Baseline_AutoLevel;
+    case H264PROFILE_MAIN:
+      return kVTProfileLevel_H264_Main_AutoLevel;
+    case H264PROFILE_HIGH:
+      return kVTProfileLevel_H264_High_AutoLevel;
+    default:
+      NOTREACHED();
+  }
+  return kVTProfileLevel_H264_Baseline_AutoLevel;
+}
+
 }  // namespace
 
 struct VTVideoEncodeAccelerator::InProgressFrameEncode {
@@ -75,6 +92,7 @@ struct VTVideoEncodeAccelerator::BitstreamBufferRef {
 // of time.
 VTVideoEncodeAccelerator::VTVideoEncodeAccelerator()
     : target_bitrate_(0),
+      h264_profile_(H264PROFILE_BASELINE),
       bitrate_adjuster_(webrtc::Clock::GetRealTimeClock(), .5, .95),
       client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encoder_thread_("VTEncoderThread"),
@@ -106,11 +124,13 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
   }
 
   SupportedProfile profile;
-  profile.profile = H264PROFILE_BASELINE;
   profile.max_framerate_numerator = kMaxFrameRateNumerator;
   profile.max_framerate_denominator = kMaxFrameRateDenominator;
   profile.max_resolution = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
-  profiles.push_back(profile);
+  for (const auto& supported_profile : kSupportedProfiles) {
+    profile.profile = supported_profile;
+    profiles.push_back(profile);
+  }
   return profiles;
 }
 
@@ -131,11 +151,13 @@ bool VTVideoEncodeAccelerator::Initialize(VideoPixelFormat format,
                 << VideoPixelFormatToString(format);
     return false;
   }
-  if (H264PROFILE_BASELINE != output_profile) {
+  if (std::find(std::begin(kSupportedProfiles), std::end(kSupportedProfiles),
+                output_profile) == std::end(kSupportedProfiles)) {
     DLOG(ERROR) << "Output profile not supported= "
                 << GetProfileName(output_profile);
     return false;
   }
+  h264_profile_ = output_profile;
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
@@ -507,8 +529,9 @@ bool VTVideoEncodeAccelerator::ConfigureCompressionSession() {
   video_toolbox::SessionPropertySetter session_property_setter(
       compression_session_);
   bool rv = true;
-  rv &= session_property_setter.Set(kVTCompressionPropertyKey_ProfileLevel,
-                                    kVTProfileLevel_H264_Baseline_AutoLevel);
+  rv &=
+      session_property_setter.Set(kVTCompressionPropertyKey_ProfileLevel,
+                                  VideoCodecProfileToVTProfile(h264_profile_));
   rv &= session_property_setter.Set(kVTCompressionPropertyKey_RealTime, true);
   rv &= session_property_setter.Set(
       kVTCompressionPropertyKey_AllowFrameReordering, false);

@@ -106,6 +106,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   int32_t initial_bitrate_;
   int32_t target_bitrate_;
   int32_t encoder_set_bitrate_;
+  VideoCodecProfile h264_profile_;
 
   // Bitrate adjuster used to fix VideoToolbox's inconsistent bitrate issues.
   webrtc::BitrateAdjuster bitrate_adjuster_;
