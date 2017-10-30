@@ -555,8 +555,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
 
   V8CompileHistogram::Cacheability cacheability_if_no_handler =
       V8CompileHistogram::Cacheability::kNoncacheable;
-  if (!cache_handler && (script_start_position.line_.ZeroBasedInt() == 0) &&
-      (script_start_position.column_.ZeroBasedInt() == 0))
+  if (!cache_handler && (script_start_position.line_.ZeroBasedInt() != 0 ||
+                         script_start_position.column_.ZeroBasedInt() != 0))
     cacheability_if_no_handler =
         V8CompileHistogram::Cacheability::kInlineScript;
 
