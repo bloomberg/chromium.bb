@@ -64,7 +64,7 @@ def DefaultPages(base_name):
       'pixel_css3d.html',
       base_name + '_CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],
-      revision=16),
+      revision=17),
 
     PixelTestPage(
       'pixel_webgl_aa_alpha.html',
