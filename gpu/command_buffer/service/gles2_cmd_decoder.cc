@@ -16705,6 +16705,15 @@ error::Error GLES2DecoderImpl::HandleQueryCounterEXT(
     }
     query =
         query_manager_->CreateQuery(target, client_id, std::move(buffer), sync);
+  } else {
+    if (query->target() != target) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glQueryCounterEXT",
+                         "target does not match");
+      return error::kNoError;
+    } else if (query->sync() != sync) {
+      DLOG(ERROR) << "Shared memory used by query not the same as before";
+      return error::kInvalidArguments;
+    }
   }
   query_manager_->QueryCounter(query, submit_count);
 

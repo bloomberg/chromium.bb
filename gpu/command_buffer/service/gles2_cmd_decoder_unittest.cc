@@ -533,6 +533,31 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->IsPending());
 
+  // Begin should fail if using a different target
+  begin_cmd.Init(GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, kNewClientId,
+                 shared_memory_id_, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Begin should fail if using a different sync
+  begin_cmd.Init(GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, kNewClientId,
+                 shared_memory_id_, kSharedMemoryOffset + sizeof(QuerySync));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // QueryCounter should fail if using a different target
+  QueryCounterEXT query_counter_cmd;
+  query_counter_cmd.Init(kNewClientId, GL_TIMESTAMP, shared_memory_id_,
+                         kSharedMemoryOffset, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // QueryCounter should fail if using a different sync
+  query_counter_cmd.Init(kNewClientId, GL_TIMESTAMP, shared_memory_id_,
+                         kSharedMemoryOffset + sizeof(QuerySync), 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
   EXPECT_CALL(*gl_, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
 }
 
