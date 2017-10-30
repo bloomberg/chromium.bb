@@ -79,7 +79,7 @@ extern "C" {
 #define SIG_COEF_CONTEXTS_2D 16
 #define SIG_COEF_CONTEXTS 16
 #endif  // CONFIG_EXT_TX
-#define COEFF_BASE_CONTEXTS 42
+#define COEFF_BASE_CONTEXTS 25
 #define DC_SIGN_CONTEXTS 3
 
 #define BR_TMP_OFFSET 12

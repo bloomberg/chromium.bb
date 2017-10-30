@@ -37,6 +37,10 @@ static INLINE TX_SIZE get_txsize_context(TX_SIZE tx_size) {
   return txsize_sqr_up_map[tx_size];
 }
 
+static const int base_level_count_to_index[13] = {
+  0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+};
+
 static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
   { -2, 0 }, { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -2 }, { 0, -1 }, { 0, 1 },
@@ -122,7 +126,7 @@ static INLINE int get_level_count_mag_coeff(
 
 static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
                                               int sig_mag) {
-  const int ctx = (count + 1) >> 1;
+  const int ctx = base_level_count_to_index[count];
   int ctx_idx = -1;
 
   if (row == 0 && col == 0) {
@@ -138,7 +142,6 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
 
     ctx_idx = 3 + ctx;
     assert(ctx_idx <= 6);
-
     return ctx_idx;
   } else if (row == 0) {
     if (sig_mag >= 2) return ctx_idx = 6;
@@ -151,39 +154,36 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
     }
 
     ctx_idx = 9 + ctx;
-
-    assert(ctx_idx <= 13);
-
+    assert(ctx_idx <= 11);
     return ctx_idx;
   } else if (col == 0) {
-    if (sig_mag >= 2) return ctx_idx = 14;
+    if (sig_mag >= 2) return ctx_idx = 12;
     if (sig_mag == 1) {
       if (count >= 2)
-        ctx_idx = 15;
+        ctx_idx = 13;
       else
-        ctx_idx = 16;
+        ctx_idx = 14;
 
       return ctx_idx;
     }
 
-    ctx_idx = 17 + ctx;
-
-    assert(ctx_idx <= 21);
+    ctx_idx = 15 + ctx;
+    assert(ctx_idx <= 17);
     // TODO(angiebird): turn this on once the optimization is finalized
     // assert(ctx_idx < 28);
   } else {
-    if (sig_mag >= 2) return ctx_idx = 22;
+    if (sig_mag >= 2) return ctx_idx = 18;
     if (sig_mag == 1) {
       if (count >= 2)
-        ctx_idx = 23;
+        ctx_idx = 19;
       else
-        ctx_idx = 24;
+        ctx_idx = 20;
       return ctx_idx;
     }
 
-    ctx_idx = 25 + ctx;
+    ctx_idx = 21 + ctx;
 
-    assert(ctx_idx <= 31);
+    assert(ctx_idx <= 24);
   }
   return ctx_idx;
 }
