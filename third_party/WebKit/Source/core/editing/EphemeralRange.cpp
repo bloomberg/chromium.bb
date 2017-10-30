@@ -160,6 +160,30 @@ bool EphemeralRangeTemplate<Strategy>::IsValid() const {
 }
 #endif
 
+#ifndef NDEBUG
+
+template <typename Strategy>
+void EphemeralRangeTemplate<Strategy>::ShowTreeForThis() const {
+  if (IsNull()) {
+    LOG(INFO) << "<null range>" << std::endl;
+    return;
+  }
+  LOG(INFO) << std::endl
+            << StartPosition()
+                   .AnchorNode()
+                   ->ToMarkedTreeString(StartPosition().AnchorNode(), "S",
+                                        EndPosition().AnchorNode(), "E")
+                   .Utf8()
+                   .data()
+            << "start: "
+            << StartPosition().ToAnchorTypeAndOffsetString().Utf8().data()
+            << std::endl
+            << "end: "
+            << EndPosition().ToAnchorTypeAndOffsetString().Utf8().data();
+}
+
+#endif
+
 Range* CreateRange(const EphemeralRange& range) {
   if (range.IsNull())
     return nullptr;
