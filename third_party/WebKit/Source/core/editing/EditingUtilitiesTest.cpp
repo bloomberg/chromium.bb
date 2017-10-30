@@ -121,6 +121,13 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   EXPECT_FALSE(IsEditablePosition(Position(table, 0)));
 }
 
+TEST_F(EditingUtilitiesTest, RepeatString) {
+  EXPECT_EQ("", RepeatString("xyz", 0));
+  EXPECT_EQ("xyz", RepeatString("xyz", 1));
+  EXPECT_EQ("xyzxyz", RepeatString("xyz", 2));
+  EXPECT_EQ("xyzxyzxyz", RepeatString("xyz", 3));
+}
+
 TEST_F(EditingUtilitiesTest, tableElementJustBefore) {
   const char* body_content =
       "<div contenteditable id=host><table "
