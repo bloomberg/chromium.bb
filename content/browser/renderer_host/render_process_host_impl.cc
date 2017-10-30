@@ -224,10 +224,6 @@
 #include "media/audio/android/audio_manager_android.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "content/browser/compositor/image_transport_factory.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
@@ -1829,11 +1825,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&RenderProcessHostImpl::BindCompositingModeReporter,
-                 base::Unretained(this)));
-
-  AddUIThreadInterface(
-      registry.get(),
       base::Bind(&RenderProcessHostImpl::BindSharedBitmapAllocationNotifier,
                  base::Unretained(this)));
 
@@ -2028,12 +2019,6 @@ void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
 void RenderProcessHostImpl::BindFrameSinkProvider(
     mojom::FrameSinkProviderRequest request) {
   frame_sink_provider_.Bind(std::move(request));
-}
-
-void RenderProcessHostImpl::BindCompositingModeReporter(
-    viz::mojom::CompositingModeReporterRequest request) {
-  BrowserMainLoop::GetInstance()->GetCompositingModeReporter(
-      std::move(request));
 }
 
 void RenderProcessHostImpl::BindSharedBitmapAllocationNotifier(
@@ -2547,6 +2532,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDistanceFieldText,
     switches::kDisableFileSystem,
     switches::kDisableGestureRequirementForPresentation,
+    switches::kDisableGpuCompositing,
     switches::kDisableGpuMemoryBufferVideoFrames,
     switches::kDisableGpuVsync,
     switches::kDisableLowResTiling,
@@ -2753,19 +2739,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
-
-#if !defined(OS_ANDROID)
-  // If gpu compositing is not being used, tell the renderer at startup. This
-  // is inherently racey, as it may change while the renderer is being launched,
-  // but the renderer will hear about the correct state eventually. This
-  // optimizes the common case to avoid wasted work.
-  // Note: There is no ImageTransportFactory with Mash or Viz.
-  // TODO(danakj): Get this info somewhere for viz mode.
-  if (!browser_cmd.HasSwitch(switches::kIsRunningInMash) &&
-      !browser_cmd.HasSwitch(switches::kEnableViz) &&
-      ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
-    renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
-#endif
 
   // Add kWaitForDebugger to let renderer process wait for a debugger.
   if (browser_cmd.HasSwitch(switches::kWaitForDebuggerChildren)) {
@@ -3731,8 +3704,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   frame_sink_provider_.Unbind();
   if (renderer_host_binding_.is_bound())
     renderer_host_binding_.Unbind();
-
-  compositing_mode_reporter_.reset();
 
   shared_bitmap_allocation_notifier_impl_.ChildDied();
 

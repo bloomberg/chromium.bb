@@ -53,6 +53,7 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Requests a LayerTreeFrameSink to submit CompositorFrames to.
   virtual void RequestNewLayerTreeFrameSink(
+      bool fallback,
       const LayerTreeFrameSinkCallback& callback) = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.
