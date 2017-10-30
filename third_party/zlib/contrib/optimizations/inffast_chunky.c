@@ -1,4 +1,4 @@
-/* inffast.c -- fast decoding
+/* inffast_chunky.c -- fast decoding
  * Copyright (C) 1995-2017 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -7,7 +7,7 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
-#include "chunkcopy.h"
+#include "contrib/optimizations/chunkcopy.h"
 
 #ifdef ASMINF
 #  pragma message("Assembler code may have bugs -- use at your own risk")

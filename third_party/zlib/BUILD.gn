@@ -8,6 +8,11 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
 
 config("zlib_config") {
   include_dirs = [ "." ]
+  if (current_cpu == "arm" || current_cpu == "arm64") {
+    if (arm_use_neon) {
+      include_dirs += [ "contrib/optimizations/arm" ]
+    }
+  }
 }
 
 config("zlib_adler32_simd_config") {
@@ -130,9 +135,10 @@ static_library("zlib") {
         "inflate.c",
       ]
       sources += [
-        "contrib/arm/chunkcopy.h",
-        "contrib/arm/inffast.c",
-        "contrib/arm/inflate.c",
+        "contrib/optimizations/arm/chunkcopy_arm.h",
+        "contrib/optimizations/chunkcopy.h",
+        "contrib/optimizations/inffast_chunky.c",
+        "contrib/optimizations/inflate.c",
       ]
     }
   }
@@ -162,9 +168,7 @@ static_library("zlib") {
 
   public_configs = [ ":zlib_config" ]
 
-  deps += [
-    ":zlib_x86_simd"
-  ]
+  deps += [ ":zlib_x86_simd" ]
 }
 
 config("minizip_warnings") {
