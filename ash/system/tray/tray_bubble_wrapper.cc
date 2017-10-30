@@ -73,9 +73,19 @@ void TrayBubbleWrapper::OnWindowActivated(ActivationReason reason,
     return;
 
   int container_id = wm::GetContainerForWindow(gained_active)->id();
+  int lost_container_id = lost_active != nullptr
+                              ? wm::GetContainerForWindow(lost_active)->id()
+                              : -1;
 
   // Don't close the bubble if a popup notification is activated.
+  //
+  // When the settings button in a notification popup is clicked,
+  // the notification is activated and hidden almost at the same time.
+  // In such case, the notification is deactivated without OnWindowActivated for
+  // the activation being called.
+  // We also have to ignore such case by checking |lost_container_id|.
   if (container_id == kShellWindowId_StatusContainer ||
+      lost_container_id == kShellWindowId_StatusContainer ||
       container_id == kShellWindowId_SettingBubbleContainer) {
     return;
   }
