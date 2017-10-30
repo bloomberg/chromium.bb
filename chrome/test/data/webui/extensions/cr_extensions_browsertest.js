@@ -384,6 +384,7 @@ var CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
       'extension_keyboard_shortcuts_test.js',
       'extension_shortcut_input_test.js',
     ]);

@@ -4,6 +4,27 @@
 
 /** @fileoverview Suite of tests for extension-keyboard-shortcuts. */
 cr.define('extension_shortcut_input_tests', function() {
+  class DelegateMock extends TestBrowserProxy {
+    constructor() {
+      super(['setShortcutHandlingSuspended', 'updateExtensionCommand']);
+    }
+
+    /** @param {boolean} enable */
+    setShortcutHandlingSuspended(enable) {
+      this.methodCalled('setShortcutHandlingSuspended', enable);
+    }
+
+    /**
+     * @param {string} item
+     * @param {string} commandName
+     * @param {string} keybinding
+     */
+    updateExtensionCommand(item, commandName, keybinding) {
+      this.methodCalled(
+          'updateExtensionCommand', [item, commandName, keybinding]);
+    }
+  }
+
   /** @enum {string} */
   var TestNames = {
     Basic: 'basic',
@@ -15,6 +36,7 @@ cr.define('extension_shortcut_input_tests', function() {
     setup(function() {
       PolymerTest.clearBody();
       input = new extensions.ShortcutInput();
+      input.delegate = new DelegateMock();
       input.commandName = 'Command';
       input.item = 'itemid';
       document.body.appendChild(input);
@@ -32,73 +54,65 @@ cr.define('extension_shortcut_input_tests', function() {
       expectFalse(isClearVisible());
 
       // Click the input. Capture should start.
-      {
-        let startCaptureListener = new extension_test_util.ListenerMock();
-        startCaptureListener.addListener(input, 'shortcut-capture-started');
-        MockInteractions.tap(field);
-        startCaptureListener.verify();
-      }
-      expectEquals('', fieldText());
-      expectTrue(input.capturing_);
-      expectFalse(isClearVisible());
-
-      // Press ctrl.
-      MockInteractions.keyDownOn(field, 17, ['ctrl']);
-      expectEquals('Ctrl', fieldText());
-      expectTrue(input.capturing_);
-      // Add shift.
-      MockInteractions.keyDownOn(field, 16, ['ctrl', 'shift']);
-      expectEquals('Ctrl + Shift', fieldText());
-      expectTrue(input.capturing_);
-      // Remove shift.
-      MockInteractions.keyUpOn(field, 16, ['ctrl']);
-      expectEquals('Ctrl', fieldText());
-      // Add alt (ctrl + alt is invalid).
-      MockInteractions.keyDownOn(field, 18, ['ctrl', 'alt']);
-      expectEquals('invalid', fieldText());
-      expectTrue(input.capturing_);
-      // Remove alt.
-      MockInteractions.keyUpOn(field, 18, ['ctrl']);
-      expectEquals('Ctrl', fieldText());
-      expectTrue(input.capturing_);
-      {
-        // Add 'A'. Once a valid shortcut is typed (like Ctrl + A), it is
-        // committed.
-        let updatedListener = new extension_test_util.ListenerMock();
-        updatedListener.addListener(
-            input, 'shortcut-updated',
-            {keybinding: 'Ctrl+A', item: 'itemid', commandName: 'Command'});
-        updatedListener.addListener(input, 'shortcut-capture-ended');
-        MockInteractions.keyDownOn(field, 65, ['ctrl']);
-        updatedListener.verify();
-      }
-      expectEquals('Ctrl + A', fieldText());
-      expectFalse(input.capturing_);
-      expectEquals('Ctrl+A', input.shortcut);
-      expectTrue(isClearVisible());
-
-      {
-        // Test clearing the shortcut.
-        let updatedListener = new extension_test_util.ListenerMock();
-        updatedListener.addListener(
-            input, 'shortcut-updated',
-            {keybinding: '', item: 'itemid', commandName: 'Command'});
-        MockInteractions.tap(input.$['clear']);
-        updatedListener.verify();
-      }
-      expectEquals('', input.shortcut);
-      expectFalse(isClearVisible());
-
       MockInteractions.tap(field);
-      {
-        // Test ending capture using the escape key.
-        expectTrue(input.capturing_);
-        let captureEndedListener = new extension_test_util.ListenerMock();
-        captureEndedListener.addListener(input, 'shortcut-capture-ended');
-        MockInteractions.keyDownOn(field, 27);  // Escape key.
-        expectFalse(input.capturing_);
-        captureEndedListener.verify();
-      }
+      return input.delegate.whenCalled('setShortcutHandlingSuspended')
+          .then((arg) => {
+            assertTrue(arg);
+            input.delegate.reset();
+
+            expectEquals('', fieldText());
+            expectFalse(isClearVisible());
+
+            // Press ctrl.
+            MockInteractions.keyDownOn(field, 17, ['ctrl']);
+            expectEquals('Ctrl', fieldText());
+            // Add shift.
+            MockInteractions.keyDownOn(field, 16, ['ctrl', 'shift']);
+            expectEquals('Ctrl + Shift', fieldText());
+            // Remove shift.
+            MockInteractions.keyUpOn(field, 16, ['ctrl']);
+            expectEquals('Ctrl', fieldText());
+            // Add alt (ctrl + alt is invalid).
+            MockInteractions.keyDownOn(field, 18, ['ctrl', 'alt']);
+            expectEquals('invalid', fieldText());
+            // Remove alt.
+            MockInteractions.keyUpOn(field, 18, ['ctrl']);
+            expectEquals('Ctrl', fieldText());
+
+            // Add 'A'. Once a valid shortcut is typed (like Ctrl + A), it is
+            // committed.
+            MockInteractions.keyDownOn(field, 65, ['ctrl']);
+            return input.delegate.whenCalled('updateExtensionCommand');
+          })
+          .then((arg) => {
+            input.delegate.reset();
+            expectDeepEquals(['itemid', 'Command', 'Ctrl+A'], arg);
+            expectEquals('Ctrl + A', fieldText());
+            expectEquals('Ctrl+A', input.shortcut);
+            expectTrue(isClearVisible());
+
+            // Test clearing the shortcut.
+            MockInteractions.tap(input.$['clear']);
+            return input.delegate.whenCalled('updateExtensionCommand');
+          })
+          .then((arg) => {
+            input.delegate.reset();
+            expectDeepEquals(['itemid', 'Command', ''], arg);
+            expectEquals('', input.shortcut);
+            expectFalse(isClearVisible());
+
+            MockInteractions.tap(field);
+            return input.delegate.whenCalled('setShortcutHandlingSuspended');
+          })
+          .then((arg) => {
+            input.delegate.reset();
+            expectTrue(arg);
+
+            // Test ending capture using the escape key.
+            MockInteractions.keyDownOn(field, 27);  // Escape key.
+            return input.delegate.whenCalled('setShortcutHandlingSuspended');
+          })
+          .then(expectFalse);
     });
   });
 

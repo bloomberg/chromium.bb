@@ -96,8 +96,8 @@
             <template is="dom-repeat" items="[[item.commands]]" as="command">
               <div class="command-entry" command="[[command]]">
                 <span class="command-name">[[command.description]]</span>
-                <extensions-shortcut-input item="[[item.id]]"
-                    shortcut="[[command.keybinding]]"
+                <extensions-shortcut-input delegate="[[delegate]]"
+                    item="[[item.id]]" shortcut="[[command.keybinding]]"
                     command-name="[[command.name]]">
                 </extensions-shortcut-input>
                 <div class="md-select-wrapper">

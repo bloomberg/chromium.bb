@@ -177,14 +177,6 @@ cr.define('extensions', function() {
       this.navigationListener_ = null;
     },
 
-    get keyboardShortcuts() {
-      return this.$['keyboard-shortcuts'];
-    },
-
-    get errorPage() {
-      return this.$['error-page'];
-    },
-
     /**
      * Initializes the page to reflect what's specified in the url so that if
      * the user visits chrome://extensions/?id=..., we land on the proper page.
@@ -322,27 +314,6 @@ cr.define('extensions', function() {
         dialog.loadError = loadError;
         dialog.show();
       });
-    },
-
-    /**
-     * @param {Page} page
-     * @return {!(extensions.KeyboardShortcuts |
-     *            extensions.DetailView |
-     *            extensions.ItemList)}
-     * @private
-     */
-    getPage_: function(page) {
-      switch (page) {
-        case Page.LIST:
-          return this.$['items-list'];
-        case Page.DETAILS:
-          return this.$['details-view'];
-        case Page.SHORTCUTS:
-          return this.$['keyboard-shortcuts'];
-        case Page.ERRORS:
-          return this.$['error-page'];
-      }
-      assertNotReached();
     },
 
     /**

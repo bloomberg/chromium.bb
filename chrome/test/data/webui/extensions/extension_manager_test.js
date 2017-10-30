@@ -194,7 +194,6 @@ cr.define('extension_manager_tests', function() {
       expectEquals(
           newDescription,
           detailsView.$$('.section .section-content').textContent.trim());
-
     });
   });
 
