@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -210,8 +209,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * Timeout in ms for reading PartnerBrowserCustomizations provider.
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-    private static final String TAG = "ChromeActivity";
-    private static final Rect EMPTY_RECT = new Rect();
 
     private static AppMenuHandlerFactory sAppMenuHandlerFactory =
             (activity, delegate, menuResourceId) -> new AppMenuHandler(activity, delegate,
@@ -295,7 +292,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private boolean mDidAddPolicyChangeListener;
 
     /**
-     * @param factory The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
+     * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
      */
     @VisibleForTesting
     public static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
@@ -443,7 +440,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                             ((ViewStub) findViewById(R.id.control_container_stub));
 
                     toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
-                    View container = toolbarContainerStub.inflate();
+                    toolbarContainerStub.inflate();
                 }
 
                 // It cannot be assumed that the result of toolbarContainerStub.inflate() will be
@@ -1237,8 +1234,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * Called when the accessibility status of this device changes.  This might be triggered by
      * touch exploration or general accessibility status updates.  It is an aggregate of two other
      * accessibility update methods.
-     * @see #onAccessibilityModeChanged(boolean)
-     * @see #onTouchExplorationStateChanged(boolean)
+     *
+     * @see #onAccessibilityStateChanged
+     * @see #mTouchExplorationStateChangeListener
      * @param enabled Whether or not accessibility and touch exploration are currently enabled.
      */
     protected void onAccessibilityModeChanged(boolean enabled) {
