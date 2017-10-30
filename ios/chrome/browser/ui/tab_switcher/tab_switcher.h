@@ -49,6 +49,9 @@
 // Informs the delegate that a TabSwitcher presentation animation has completed.
 - (void)tabSwitcherPresentationAnimationDidEnd:(id<TabSwitcher>)tabSwitcher;
 
+// Informs the delegate that a TabSwitcher dismissal animation has completed.
+- (void)tabSwitcherDismissalAnimationDidEnd:(id<TabSwitcher>)tabSwitcher;
+
 @end
 
 // This protocol describes the common interface between the two implementations

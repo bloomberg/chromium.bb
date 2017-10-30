@@ -121,6 +121,7 @@
 #import "ios/chrome/browser/ui/history/history_panel_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
+#import "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
@@ -1909,11 +1910,32 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   BrowserViewController* targetBVC =
       (tabModel == self.mainTabModel) ? self.mainBVC : self.otrBVC;
   self.currentBVC = targetBVC;
+
+  // The call to set currentBVC above does not actually display the BVC, because
+  // _dismissingStackView is YES.  When the presentation experiment is enabled,
+  // force the BVC transition to start.
+  if (TabSwitcherPresentsBVCEnabled()) {
+    [self displayCurrentBVC];
+  }
 }
 
 - (void)finishDismissingStackView {
-  DCHECK_EQ(self.mainViewController.activeViewController,
-            _tabSwitcherController);
+  // The tab switcher presentation experiment modifies the app's VC hierarchy.
+  // As a result, the "active" VC when the animation completes differs based on
+  // the experiment state.
+  if (TabSwitcherPresentsBVCEnabled()) {
+    // When the experiment is enabled, the tab switcher dismissal animation runs
+    // as part of the BVC presentation process.  The BVC is presented before the
+    // animations begin, so it is the current active VC at this point.
+    DCHECK_EQ(self.mainViewController.activeViewController, self.currentBVC);
+  } else {
+    // Without the experiment, the BVC is added as a child and made visible in
+    // the call to |displayCurrentBVC| below, after the tab switcher dismissal
+    // animation is complete.  At this point in the process, the tab switcher is
+    // still the active VC.
+    DCHECK_EQ(self.mainViewController.activeViewController,
+              _tabSwitcherController);
+  }
 
   if (_modeToDisplayOnStackViewDismissal == StackViewDismissalMode::NORMAL) {
     self.currentBVC = self.mainBVC;
@@ -1924,7 +1946,9 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 
   _modeToDisplayOnStackViewDismissal = StackViewDismissalMode::NONE;
 
-  // Displaying the current BVC dismisses the stack view.
+  // Displaying the current BVC dismisses the stack view.  When the tabswitcher
+  // presentation experiment is enabled, this call does nothing because the BVC
+  // is already presented.
   [self displayCurrentBVC];
 
   ProceduralBlock action = [self completionBlockForTriggeringAction:

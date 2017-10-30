@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/main/transitions/bvc_container_to_tab_switcher_animator.h"
+#import "ios/chrome/browser/ui/main/transitions/tab_switcher_to_bvc_container_animator.h"
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
@@ -11,14 +11,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BVCContainerToTabSwitcherAnimator ()<TabSwitcherAnimationDelegate>
+@interface TabSwitcherToBVCContainerAnimator ()<TabSwitcherAnimationDelegate>
 
 @property(nonatomic, readwrite, weak) id<UIViewControllerContextTransitioning>
     transitionContext;
 
 @end
 
-@implementation BVCContainerToTabSwitcherAnimator
+@implementation TabSwitcherToBVCContainerAnimator
 
 @synthesize tabSwitcher = _tabSwitcher;
 @synthesize transitionContext = _transitionContext;
@@ -28,11 +28,17 @@
   // This value is arbitrary, chosen to roughly match the visual length of the
   // stack view animations.  The returned value does not appear to be used
   // anywhere.  The actual transition does not complete until
-  // |tabSwitcherPresentationAnimationDidEnd:| is called, which happens as a
+  // |tabSwitcherDismissalAnimationDidEnd:| is called, which happens as a
   // result of a CoreAnimation completion block.
   return 0.25;
 }
 
+// Tab switcher dismissal animations are currently driven by the tab switcher
+// itself.  MainController and this animator object are notified of progress
+// through delegate callbacks, but they do not directly participate in the
+// animation.  As a result, this animator is largely along for the ride.  It
+// does not initiate or control any animations, and its main responsibility is
+// to call |completeTransition| when the tab switcher is finished animating.
 - (void)animateTransition:
     (id<UIViewControllerContextTransitioning>)transitionContext {
   UIViewController* fromViewController = [transitionContext
@@ -41,9 +47,6 @@
       viewControllerForKey:UITransitionContextToViewControllerKey];
 
   UIView* containerView = transitionContext.containerView;
-  // For a Dismissal:
-  //      fromView = The presented view.
-  //      toView   = The presenting view.
   UIView* fromView =
       [transitionContext viewForKey:UITransitionContextFromViewKey];
   UIView* toView = [transitionContext viewForKey:UITransitionContextToViewKey];
@@ -53,19 +56,26 @@
       [transitionContext finalFrameForViewController:toViewController];
 
   // This animator is responsible for adding the incoming view to the
-  // containerView for the presentation/dismissal.
+  // containerView for the presentation/dismissal.  Since the animations run in
+  // the tab switcher's view, order the subviews to ensure that the tab
+  // switcher's view remains on top.
   [containerView addSubview:toView];
+  [containerView sendSubviewToBack:toView];
 
-  DCHECK_EQ(toViewController, self.tabSwitcher.parentViewController);
+  DCHECK_EQ(fromViewController, self.tabSwitcher.parentViewController);
   self.tabSwitcher.animationDelegate = self;
-  [self.tabSwitcher showWithSelectedTabAnimation];
-
   self.transitionContext = transitionContext;
 }
 
 #pragma mark - TabSwitcherAnimationDelegate
 
 - (void)tabSwitcherPresentationAnimationDidEnd:(id<TabSwitcher>)tabSwitcher {
+  // This animator does not expect to participate in presentation animations, so
+  // it is an error if this method ever gets called.
+  NOTREACHED();
+}
+
+- (void)tabSwitcherDismissalAnimationDidEnd:(id<TabSwitcher>)tabSwitcher {
   // Calling |completeTransition:| seems to deallocate |self|, so make any
   // necessary changes to |self| here, and be sure not to access |self| after
   // the call to |completeTransition:|.
@@ -77,12 +87,6 @@
   tabSwitcher.animationDelegate = nil;
   BOOL wasCancelled = [transitionContext transitionWasCancelled];
   [transitionContext completeTransition:!wasCancelled];
-}
-
-- (void)tabSwitcherDismissalAnimationDidEnd:(id<TabSwitcher>)tabSwitcher {
-  // This animator does not expect to participate in dismissal animations, so it
-  // is an error if this method ever gets called.
-  NOTREACHED();
 }
 
 @end

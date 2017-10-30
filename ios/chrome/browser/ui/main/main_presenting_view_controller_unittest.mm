@@ -22,6 +22,8 @@ class MainPresentingViewControllerTest : public MainViewControllerTest {
  public:
   MainPresentingViewControllerTest() {
     main_view_controller_ = [[MainPresentingViewController alloc] init];
+    main_view_controller_.animationsDisabledForTesting = YES;
+
     SetRootViewController(main_view_controller_);
     CGRect windowRect = CGRectMake(0, 0, 200, 200);
     main_view_controller_.view.frame = windowRect;
