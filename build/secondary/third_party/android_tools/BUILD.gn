@@ -46,8 +46,9 @@ support_lib_alias("android_gcm_java") {
 }
 support_lib_alias("emma_device_java") {
 }
-java_group("android_arch_lifecycle_common_java") {
-  # TODO(https://crbug.com/769683): Define when rolling to support lib 26+.
+support_lib_alias("android_arch_lifecycle_common_java") {
+}
+support_lib_alias("android_arch_lifecycle_runtime_java") {
 }
 support_lib_alias("android_support_multidex_java") {
 }

@@ -9,8 +9,11 @@ visibility = [
   "//third_party/android_tools:*",
 ]
 
-lib_version = "25.0.1"
+lib_version = "27.0.0"
 lib_path = "//third_party/android_tools/sdk/extras/android/m2repository/com/android/support"
+arch_lib_version = "1.0.0"
+arch_lib_path =
+    "//third_party/android_tools/sdk/extras/android/m2repository/android/arch"
 build_file_dir = "//build/secondary/third_party/android_tools/support"
 
 android_library("android_support_chromium_java") {
@@ -62,6 +65,32 @@ android_aar_prebuilt("android_support_multidex_java") {
   info_path = "$build_file_dir/$target_name.info"
 }
 
+android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
+  aar_path = "$arch_lib_path/lifecycle/runtime/$arch_lib_version/runtime-$arch_lib_version.aar"
+  info_path = "$build_file_dir/$target_name.info"
+  deps = [
+    ":android_arch_core_common_java",
+    ":android_arch_lifecycle_common_java",
+    ":android_support_annotations_java",
+  ]
+}
+
+android_java_prebuilt("android_arch_lifecycle_common_java") {
+  output_name = "arch_lifecycle_common"
+  jar_path = "$arch_lib_path/lifecycle/common/$arch_lib_version/common-$arch_lib_version.jar"
+  deps = [
+    ":android_support_annotations_java",
+  ]
+}
+
+android_java_prebuilt("android_arch_core_common_java") {
+  output_name = "arch_core_common"
+  jar_path = "$arch_lib_path/core/common/$arch_lib_version/common-$arch_lib_version.jar"
+  deps = [
+    ":android_support_annotations_java",
+  ]
+}
+
 android_java_prebuilt("android_support_annotations_java") {
   _lib_name = "support-annotations"
   jar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.jar"
@@ -79,6 +108,7 @@ java_group("android_support_v4_java") {
 
 android_aar_prebuilt("android_support_compat_java") {
   deps = [
+    ":android_arch_lifecycle_runtime_java",
     ":android_support_annotations_java",
   ]
   _lib_name = "support-compat"
@@ -145,6 +175,16 @@ android_aar_prebuilt("android_support_vector_drawable_java") {
   info_path = "$build_file_dir/$target_name.info"
 }
 
+android_aar_prebuilt("android_support_animated_vector_drawable_java") {
+  deps = [
+    ":android_support_core_ui_java",
+    ":android_support_vector_drawable_java",
+  ]
+  _lib_name = "animated-vector-drawable"
+  aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "$build_file_dir/$target_name.info"
+}
+
 android_aar_prebuilt("android_support_v7_appcompat_java_internal") {
   deps = [
     ":android_support_v4_java",
@@ -156,6 +196,7 @@ android_aar_prebuilt("android_support_v7_appcompat_java_internal") {
 
 java_group("android_support_v7_appcompat_java") {
   deps = [
+    ":android_support_animated_vector_drawable_java",
     ":android_support_v4_java",
     ":android_support_v7_appcompat_java_internal",
     ":android_support_vector_drawable_java",

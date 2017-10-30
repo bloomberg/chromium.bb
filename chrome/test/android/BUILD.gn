@@ -91,6 +91,7 @@ android_library("chrome_java_test_support") {
     "//testing/android/reporter:reporter_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_arch_lifecycle_common_java",
     "//third_party/android_tools:android_support_compat_java",
     "//third_party/android_tools:android_support_design_java",
     "//third_party/android_tools:android_support_transition_java",

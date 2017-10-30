@@ -80,6 +80,7 @@ template("remoting_android_client_java_tmpl") {
       "//base:base_java",
       "//remoting/android:remoting_android_client_java_resources",
       "//remoting/android:remoting_apk_manifest",
+      "//third_party/android_tools:android_arch_lifecycle_common_java",
       "//third_party/android_tools:android_support_annotations_java",
       "//third_party/android_tools:android_support_compat_java",
       "//third_party/android_tools:android_support_core_ui_java",
