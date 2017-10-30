@@ -70,19 +70,6 @@ class PlatformNotificationServiceTest : public testing::Test {
   }
 
  protected:
-  // Displays a simple, fake notification. The close closure may be specified if
-  // desired.
-  void CreateSimplePageNotificationWithCloseClosure(
-      base::Closure* close_closure) {
-    PlatformNotificationData notification_data;
-    notification_data.title = base::ASCIIToUTF16("My Notification");
-    notification_data.body = base::ASCIIToUTF16("Hello, world!");
-
-    service()->DisplayNotification(
-        profile_, kNotificationId, GURL("https://chrome.com/"),
-        notification_data, NotificationResources(), close_closure);
-  }
-
   // Returns the Platform Notification Service these unit tests are for.
   PlatformNotificationServiceImpl* service() const {
     return PlatformNotificationServiceImpl::GetInstance();
@@ -110,21 +97,22 @@ class PlatformNotificationServiceTest : public testing::Test {
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 };
 
+TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentClosure) {
+  PlatformNotificationData notification_data;
+  notification_data.title = base::ASCIIToUTF16("My Notification");
+  notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
-TEST_F(PlatformNotificationServiceTest, DisplayPageCloseClosure) {
-  base::Closure close_closure;
-  CreateSimplePageNotificationWithCloseClosure(&close_closure);
+  service()->DisplayNotification(profile_, kNotificationId,
+                                 GURL("https://chrome.com/"), notification_data,
+                                 NotificationResources());
 
   EXPECT_EQ(1u,
             GetNotificationCountForType(NotificationCommon::NON_PERSISTENT));
 
-  ASSERT_FALSE(close_closure.is_null());
-  close_closure.Run();
+  service()->CloseNotification(profile_, kNotificationId);
 
   EXPECT_EQ(0u,
             GetNotificationCountForType(NotificationCommon::NON_PERSISTENT));
-  // Note that we cannot verify whether the closed event was called on the
-  // delegate given that it'd result in a use-after-free.
 }
 
 TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
@@ -163,7 +151,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
 
   service()->DisplayNotification(profile_, kNotificationId,
                                  GURL("https://chrome.com/"), notification_data,
-                                 NotificationResources(), nullptr);
+                                 NotificationResources());
 
   ASSERT_EQ(1u,
             GetNotificationCountForType(NotificationCommon::NON_PERSISTENT));

@@ -455,12 +455,9 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
   // closed.
   if (!sender)
     return;
+
   sender->Send(new PlatformNotificationMsg_DidClose(
       non_persistent_ids_[notification_id]));
-
-  static_cast<RenderProcessHostImpl*>(sender)
-      ->notification_message_filter()
-      ->DidCloseNotification(notification_id);
 }
 
 void NotificationEventDispatcherImpl::RendererGone(int renderer_id) {

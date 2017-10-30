@@ -7,10 +7,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -40,10 +38,6 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       ResourceContext* resource_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
       BrowserContext* browser_context);
-
-  // To be called by non-persistent notification delegates when they are closed,
-  // so that the close closure associated with that notification can be removed.
-  void DidCloseNotification(const std::string& notification_id);
 
   // BrowserMessageFilter implementation. Called on the UI thread.
   void OnDestruct() const override;
@@ -139,10 +133,6 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   BrowserContext* browser_context_;
-
-  // Map mapping notification IDs associated with non-persistent notifications
-  // to the closures that may be used for programmatically closing them.
-  std::unordered_map<std::string, base::Closure> close_closures_;
 
   base::WeakPtrFactory<NotificationMessageFilter> weak_factory_io_;
 

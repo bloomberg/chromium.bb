@@ -75,25 +75,6 @@ namespace {
 // permission without having an associated renderer process yet.
 const int kInvalidRenderProcessId = -1;
 
-void OnCloseNonPersistentNotificationProfileLoaded(
-    const std::string& notification_id,
-    Profile* profile) {
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
-      NotificationCommon::NON_PERSISTENT, notification_id);
-}
-
-// Callback used to close an non-persistent notification from blink.
-void CancelNotification(const std::string& notification_id,
-                        std::string profile_id,
-                        bool incognito) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  DCHECK(profile_manager);
-  profile_manager->LoadProfile(
-      profile_id, incognito,
-      base::Bind(&OnCloseNonPersistentNotificationProfileLoaded,
-                 notification_id));
-}
-
 void ReportNotificationImageOnIOThread(
     scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service,
     Profile* profile,
@@ -310,8 +291,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
     const std::string& notification_id,
     const GURL& origin,
     const content::PlatformNotificationData& notification_data,
-    const content::NotificationResources& notification_resources,
-    base::Closure* cancel_callback) {
+    const content::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Posted tasks can request notifications to be added, which would cause a
@@ -333,16 +313,6 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
       NotificationCommon::NON_PERSISTENT, notification_id, notification);
-  if (cancel_callback) {
-#if defined(OS_WIN)
-    std::string profile_id =
-        base::WideToUTF8(profile->GetPath().BaseName().value());
-#elif defined(OS_POSIX)
-    std::string profile_id = profile->GetPath().BaseName().value();
-#endif
-    *cancel_callback = base::Bind(&CancelNotification, notification_id,
-                                  profile_id, profile->IsOffTheRecord());
-  }
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
@@ -375,6 +345,18 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
       NotificationCommon::PERSISTENT, notification_id, notification,
       std::move(metadata));
   base::RecordAction(base::UserMetricsAction("Notifications.Persistent.Shown"));
+}
+
+void PlatformNotificationServiceImpl::CloseNotification(
+    BrowserContext* browser_context,
+    const std::string& notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+
+  NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
+      NotificationCommon::NON_PERSISTENT, notification_id);
 }
 
 void PlatformNotificationServiceImpl::ClosePersistentNotification(

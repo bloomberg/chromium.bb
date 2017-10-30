@@ -53,16 +53,14 @@ class CONTENT_EXPORT PlatformNotificationService {
       const GURL& origin,
       int render_process_id) = 0;
 
-  // Displays the notification described in |notification_data| to the user. A
-  // closure through which the notification can be closed will be stored in the
-  // |cancel_callback| argument. This method must be called on the UI thread.
+  // Displays the notification described in |notification_data| to the user.
+  // This method must be called on the UI thread.
   virtual void DisplayNotification(
       BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
       const PlatformNotificationData& notification_data,
-      const NotificationResources& notification_resources,
-      base::Closure* cancel_callback) = 0;
+      const NotificationResources& notification_resources) = 0;
 
   // Displays the persistent notification described in |notification_data| to
   // the user. This method must be called on the UI thread.
@@ -74,8 +72,13 @@ class CONTENT_EXPORT PlatformNotificationService {
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources) = 0;
 
-  // Closes the persistent notification identified by
-  // |persistent_notification_id|. This method must be called on the UI thread.
+  // Closes the notification identified by |notification_id|. This method must
+  // be called on the UI thread.
+  virtual void CloseNotification(BrowserContext* browser_context,
+                                 const std::string& notification_id) = 0;
+
+  // Closes the persistent notification identified by |notification_id|. This
+  // method must be called on the UI thread.
   virtual void ClosePersistentNotification(
       BrowserContext* browser_context,
       const std::string& notification_id) = 0;
