@@ -46,11 +46,7 @@ ScriptValue CSSStyleValue::parse(ScriptState* script_state,
 
   CSSStyleValueVector style_value_vector =
       StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
-  if (style_value_vector.size() != 1) {
-    // TODO(meade): Support returning a CSSStyleValueOrCSSStyleValueSequence
-    // from this function.
-    return ScriptValue::CreateNull(script_state);
-  }
+  DCHECK(!style_value_vector.IsEmpty());
 
   v8::Local<v8::Value> wrapped_value =
       ToV8(style_value_vector[0], script_state->GetContext()->Global(),

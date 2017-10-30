@@ -13,7 +13,7 @@ FAIL Calling CSSStyleValue.parseAll with an invalid cssText for the given proper
 FAIL Calling CSSStyleValue.parseAll with a valid cssText for the given property returns a valid CSSStyleValue CSSStyleValue[parseMethod] is not a function
 FAIL Calling CSSStyleValue.parseAll with a mixed case cssText returns a valid CSSStyleValue CSSStyleValue[parseMethod] is not a function
 FAIL Calling CSSStyleValue.parseAll with a custom property returns a valid CSSStyleValue CSSStyleValue[parseMethod] is not a function
-FAIL Calling CSSStyleValue.parse with a list-value property returns first list value Cannot read property 'constructor' of null
+PASS Calling CSSStyleValue.parse with a list-value property returns first list value
 FAIL Calling CSSStyleValue.parseAll with a list-value property returns a sequence of values CSSStyleValue.parseAll is not a function
 Harness: the test ran to completion.
 
