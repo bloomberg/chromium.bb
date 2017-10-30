@@ -43,7 +43,6 @@ class ScopedScrollbarPainter {
                          WebCanvas* canvas,
                          const WebRect& rect)
       : int_rect_(IntRect(IntPoint(), IntSize(rect.width, rect.height))),
-        builder_(int_rect_),
         canvas_(canvas),
         rect_(rect) {
     builder_.Context().SetDeviceScaleFactor(painter->DeviceScaleFactor());

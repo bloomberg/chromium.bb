@@ -69,9 +69,7 @@ static void PaintInternal(Page& page,
   if (rect.IsEmpty())
     return;
 
-  IntRect int_rect(rect);
-  // TODO(enne): intRect is not correct: http://crbug.com/703231
-  PaintRecordBuilder builder(int_rect);
+  PaintRecordBuilder builder;
   {
     GraphicsContext& paint_context = builder.Context();
 

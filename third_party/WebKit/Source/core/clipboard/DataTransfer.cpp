@@ -114,8 +114,7 @@ class DraggedNodeImageBuilder {
     PaintLayerFlags flags = kPaintLayerHaveTransparency |
                             kPaintLayerAppliedTransform |
                             kPaintLayerUncachedClipRects;
-    PaintRecordBuilder builder(
-        DataTransfer::DeviceSpaceRect(bounding_box, *local_frame_));
+    PaintRecordBuilder builder;
 
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kInPaint);

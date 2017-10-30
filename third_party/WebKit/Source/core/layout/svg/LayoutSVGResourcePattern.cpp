@@ -214,7 +214,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
 
   SubtreeContentTransformScope content_transform_scope(content_transform);
 
-  PaintRecordBuilder builder(bounds);
+  PaintRecordBuilder builder;
   for (LayoutObject* child = pattern_layout_object->FirstChild(); child;
        child = child->NextSibling())
     SVGPaintContext::PaintResourceSubtree(builder.Context(), child);

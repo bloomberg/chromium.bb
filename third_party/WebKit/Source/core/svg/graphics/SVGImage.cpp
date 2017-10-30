@@ -340,8 +340,7 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
   FloatRect spaced_tile(tile);
   spaced_tile.Expand(FloatSize(repeat_spacing));
 
-  PaintRecordBuilder builder(spaced_tile, nullptr, &context);
-
+  PaintRecordBuilder builder(nullptr, &context);
   {
     DrawingRecorder recorder(builder.Context(), builder,
                              DisplayItem::Type::kSVGImage);
@@ -493,7 +492,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
   // avoid setting timers from the latter.
   FlushPendingTimelineRewind();
 
-  PaintRecordBuilder builder(bounds, nullptr, nullptr, paint_controller_.get());
+  PaintRecordBuilder builder(nullptr, nullptr, paint_controller_.get());
 
   view->UpdateAllLifecyclePhasesExceptPaint();
   view->PaintWithLifecycleUpdate(builder.Context(), kGlobalPaintNormalPhase,

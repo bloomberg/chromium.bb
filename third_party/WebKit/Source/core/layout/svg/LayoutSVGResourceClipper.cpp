@@ -210,13 +210,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {
   if (cached_paint_record_)
     return cached_paint_record_;
 
-  // Using strokeBoundingBox (instead of visualRectInLocalSVGCoordinates) to
-  // avoid the intersection with local clips/mask, which may yield incorrect
-  // results when mixing objectBoundingBox and userSpaceOnUse units
-  // (http://crbug.com/294900).
-  FloatRect bounds = StrokeBoundingBox();
-
-  PaintRecordBuilder builder(bounds, nullptr, nullptr);
+  PaintRecordBuilder builder(nullptr, nullptr);
   // Switch to a paint behavior where all children of this <clipPath> will be
   // laid out using special constraints:
   // - fill-opacity/stroke-opacity/opacity set to 1

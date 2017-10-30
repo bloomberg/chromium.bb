@@ -31,19 +31,17 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   WTF_MAKE_NONCOPYABLE(PaintRecordBuilder);
 
  public:
-  // Constructs a new builder with the given bounds for the resulting recorded
-  // picture. If |metadata| is specified, that metadata is propagated to the
-  // builder's internal canvas. If |containingContext| is specified, the device
-  // scale factor, printing, and disabled state are propagated to the builder's
-  // internal context.
+  // Constructs a new builder for the resulting recorded picture. If |metadata|
+  // is specified, that metadata is propagated to the builder's internal canvas.
+  // If |containing_context| is specified, the device scale factor, printing,
+  // and disabled state are propagated to the builder's internal context.
   // If a PaintController is passed, it is used as the PaintController for
   // painting the picture (and hence we can use its cache). Otherwise, a new
   // PaintController is used for the duration of the picture building, which
   // therefore has no caching.
-  // In SPv175+ mode, resets paint chunks to PropertyTreeState::root()
+  // In SPv175+ mode, resets paint chunks to PropertyTreeState::Root()
   // before beginning to record.
-  PaintRecordBuilder(const FloatRect& bounds,
-                     SkMetaData* = nullptr,
+  PaintRecordBuilder(SkMetaData* = nullptr,
                      GraphicsContext* containing_context = nullptr,
                      PaintController* = nullptr);
 
@@ -69,7 +67,6 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   PaintController* paint_controller_;
   std::unique_ptr<PaintController> own_paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
-  FloatRect bounds_;
   Optional<DisplayItemCacheSkipper> cache_skipper_;
 };
 

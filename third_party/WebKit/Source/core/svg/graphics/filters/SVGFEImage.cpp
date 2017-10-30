@@ -180,9 +180,7 @@ sk_sp<SkImageFilter> FEImage::CreateImageFilterForLayoutObject(
     transform.Translate(dst_rect.X(), dst_rect.Y());
   }
 
-  // TODO(chrishtr): use tighter bounds for this.
-  FloatRect bounds(LayoutRect::InfiniteIntRect());
-  PaintRecordBuilder builder(bounds);
+  PaintRecordBuilder builder;
   SVGPaintContext::PaintResourceSubtree(builder.Context(), &layout_object);
 
   PaintRecorder paint_recorder;

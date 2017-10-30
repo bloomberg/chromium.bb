@@ -191,7 +191,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
@@ -296,10 +295,10 @@ class ChromePrintContext : public PrintContext {
     // The page rect gets scaled and translated, so specify the entire
     // print content area here as the recording rect.
     IntRect bounds(0, 0, printed_page_height_, printed_page_width_);
-    PaintRecordBuilder builder(bounds, &canvas->getMetaData());
+    PaintRecordBuilder builder(&canvas->getMetaData());
     builder.Context().SetPrinting(true);
     builder.Context().BeginRecording(bounds);
-    float scale = SpoolPage(builder.Context(), page_number, bounds);
+    float scale = SpoolPage(builder.Context(), page_number);
     canvas->drawPicture(builder.Context().EndRecording());
     return scale;
   }
@@ -324,13 +323,13 @@ class ChromePrintContext : public PrintContext {
     int total_height = num_pages * (page_size_in_pixels.Height() + 1) - 1;
     IntRect all_pages_rect(0, 0, page_width, total_height);
 
-    PaintRecordBuilder builder(all_pages_rect, &canvas->getMetaData());
+    PaintRecordBuilder builder(&canvas->getMetaData());
     GraphicsContext& context = builder.Context();
     context.SetPrinting(true);
     context.BeginRecording(all_pages_rect);
 
     // Fill the whole background by white.
-    context.FillRect(FloatRect(0, 0, page_width, total_height), Color::kWhite);
+    context.FillRect(all_pages_rect, Color::kWhite);
 
     int current_height = 0;
     for (size_t page_index = 0; page_index < num_pages; page_index++) {
@@ -356,7 +355,7 @@ class ChromePrintContext : public PrintContext {
       context.Save();
       context.ConcatCTM(transform);
 
-      SpoolPage(context, page_index, all_pages_rect);
+      SpoolPage(context, page_index);
 
       context.Restore();
 
@@ -371,9 +370,7 @@ class ChromePrintContext : public PrintContext {
   // instead. Returns the scale to be applied.
   // On Linux, we don't have the problem with NativeTheme, hence we let WebKit
   // do the scaling and ignore the return value.
-  virtual float SpoolPage(GraphicsContext& context,
-                          int page_number,
-                          const IntRect& bounds) {
+  virtual float SpoolPage(GraphicsContext& context, int page_number) {
     IntRect page_rect = page_rects_[page_number];
     float scale = printed_page_width_ / page_rect.Width();
 
@@ -387,16 +384,10 @@ class ChromePrintContext : public PrintContext {
     context.ConcatCTM(transform);
     context.ClipRect(page_rect);
 
-    PaintRecordBuilder builder(bounds, &context.Canvas()->getMetaData(),
-                               &context);
-
-    // The local scope is so that the cache skipper is destroyed before
-    // we call endRecording().
+    PaintRecordBuilder builder(&context.Canvas()->getMetaData(), &context);
+    GetFrame()->View()->PaintContents(builder.Context(),
+                                      kGlobalPaintNormalPhase, page_rect);
     {
-      DisplayItemCacheSkipper skipper(builder.Context());
-      GetFrame()->View()->PaintContents(builder.Context(),
-                                        kGlobalPaintNormalPhase, page_rect);
-
       DrawingRecorder line_boundary_recorder(
           builder.Context(), builder,
           DisplayItem::kPrintedContentDestinationLocations);
@@ -470,16 +461,9 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   // Spools the printed page, a subrect of frame(). Skip the scale step.
   // NativeTheme doesn't play well with scaling. Scaling is done browser side
   // instead. Returns the scale to be applied.
-  float SpoolPage(GraphicsContext& context,
-                  int page_number,
-                  const IntRect& bounds) override {
-    PaintRecordBuilder builder(bounds, &context.Canvas()->getMetaData());
-    // The local scope is so that the cache skipper is destroyed before
-    // we call endRecording().
-    {
-      DisplayItemCacheSkipper skipper(builder.Context());
-      plugin_->PrintPage(page_number, builder.Context());
-    }
+  float SpoolPage(GraphicsContext& context, int page_number) override {
+    PaintRecordBuilder builder(&context.Canvas()->getMetaData());
+    plugin_->PrintPage(page_number, builder.Context());
     context.DrawRecord(builder.EndRecording());
 
     return 1.0;
