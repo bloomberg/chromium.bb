@@ -194,6 +194,9 @@ void LocalWindowProxy::CreateContext() {
   TRACE_EVENT1("v8", "LocalWindowProxy::CreateContext", "IsMainFrame",
                GetFrame()->IsMainFrame());
 
+  // TODO(yukishiino): Remove this CHECK once crbug.com/713699 gets fixed.
+  CHECK(IsMainThread());
+
   Vector<const char*> extension_names;
   // Dynamically tell v8 about our extensions now.
   if (GetFrame()->Client()->AllowScriptExtensions()) {
