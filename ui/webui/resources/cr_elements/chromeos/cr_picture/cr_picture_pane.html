@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="cr_camera.html">
 <link rel="import" href="cr_picture_types.html">
+<link rel="import" href="cr_png_behavior.html">
 
 <dom-module id="cr-picture-pane">
   <template>
@@ -21,6 +22,7 @@
       }
 
       img {
+        background-size: 100% 100%;
         border-top-left-radius: 2px;
         border-top-right-radius: 2px;
         display: block;
@@ -61,19 +63,16 @@
         border-radius: 50%;
       }
     </style>
-    <template is="dom-if"
-        if="[[showImagePreview_(cameraActive_, imageSrc)]]">
-      <div id="preview">
-        <img alt="[[previewAltText]]" src="[[getImgSrc_(imageUrl)]]"
-            data-show-discard$="[[showDiscard_(imageType)]]">
-        <div id="discard" hidden="[[!showDiscard_(imageType)]]">
-          <button is="paper-icon-button-light" id="discardImage"
-              class="icon-delete-white" title="[[discardImageLabel]]"
-              on-tap="onTapDiscardImage_">
-          </button>
-        </div>
+    <div id="preview" hidden="[[!showImagePreview_(cameraActive_, imageSrc)]]">
+      <img id="image" alt="[[previewAltText]]" src="[[getImgSrc_(imageUrl)]]"
+          data-show-discard$="[[showDiscard_(imageType)]]">
+      <div id="discard" hidden="[[!showDiscard_(imageType)]]">
+        <button is="paper-icon-button-light" id="discardImage"
+            class="icon-delete-white" title="[[discardImageLabel]]"
+            on-tap="onTapDiscardImage_">
+        </button>
       </div>
-    </template>
+    </div>
     <template is="dom-if" if="[[cameraActive_]]">
       <cr-camera id="camera"
           take-photo-label="[[takePhotoLabel]]"

@@ -61,6 +61,7 @@ Polymer({
   /** @override */
   attached: function() {
     this.$.cameraVideo.addEventListener('canplay', function() {
+      this.$.userImageStreamCrop.classList.add('preview');
       this.cameraOnline_ = true;
     }.bind(this));
     this.startCamera();
@@ -97,17 +98,19 @@ Polymer({
 
     /** Start capturing frames at an interval. */
     var capturedFrames = [];
+    this.$.userImageStreamCrop.classList.remove('preview');
     this.$.userImageStreamCrop.classList.add('capture');
     var interval = setInterval(() => {
-      capturedFrames.push(this.captureFrame_(this.$.cameraVideo, frames.pop()));
-
       /** Stop capturing frames when all allocated frames have been consumed. */
-      if (!frames.length) {
-        this.$.userImageStreamCrop.classList.remove('capture');
+      if (frames.length) {
+        capturedFrames.push(
+            this.captureFrame_(this.$.cameraVideo, frames.pop()));
+      } else {
         clearInterval(interval);
         this.fire(
             'photo-taken',
             {photoDataUrl: this.convertFramesToPng_(capturedFrames)});
+        this.$.userImageStreamCrop.classList.remove('capture');
       }
     }, CAPTURE_INTERVAL_MS);
   },
@@ -142,6 +145,7 @@ Polymer({
 
   /** Stops the camera stream capture if it's currently active. */
   stopCamera: function() {
+    this.$.userImageStreamCrop.classList.remove('preview');
     this.cameraOnline_ = false;
     this.$.cameraVideo.src = '';
     if (this.cameraStream_)
