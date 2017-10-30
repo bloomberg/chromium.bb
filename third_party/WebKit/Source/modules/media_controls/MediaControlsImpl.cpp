@@ -1428,7 +1428,12 @@ void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
   DCHECK(GetDocument().domWindow());
   DCHECK(GetDocument().domWindow()->visualViewport());
 
-  DOMRect* bounding_client_rect = MediaElement().getBoundingClientRect();
+  // The legacy text tracks have their own button so they should position
+  // themselves based on that button.
+  DOMRect* bounding_client_rect =
+      (popup_menu == text_track_list_ && !IsModern())
+          ? toggle_closed_captions_button_->getBoundingClientRect()
+          : overflow_menu_->getBoundingClientRect();
   DOMVisualViewport* viewport = GetDocument().domWindow()->visualViewport();
 
   WTF::String bottom_str_value = WTF::String::Number(

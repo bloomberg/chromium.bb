@@ -351,8 +351,10 @@ video::-webkit-media-controls-time-remaining-display {
  * Overflow Menu
  */
 
-video::-internal-media-controls-overflow-menu-list,
-audio::-internal-media-controls-overflow-menu-list {
+audio::-internal-media-controls-text-track-list,
+video::-internal-media-controls-text-track-list,
+audio::-internal-media-controls-overflow-menu-list,
+video::-internal-media-controls-overflow-menu-list {
   position: fixed;
   max-width: 50%;
   max-height: 250px;
@@ -366,8 +368,12 @@ audio::-internal-media-controls-overflow-menu-list {
   border-radius: 2px;
 }
 
-video::-internal-media-controls-overflow-menu-list-item,
-audio::-internal-media-controls-overflow-menu-list-item {
+audio::-internal-media-controls-text-track-list-header,
+video::-internal-media-controls-text-track-list-header,
+audio::-internal-media-controls-text-track-list-item,
+video::-internal-media-controls-text-track-list-item,
+audio::-internal-media-controls-overflow-menu-list-item,
+video::-internal-media-controls-overflow-menu-list-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -386,9 +392,45 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
   margin-right: 2px;
 }
 
+audio::-internal-media-controls-text-track-list-header:hover,
+video::-internal-media-controls-text-track-list-header:hover,
+audio::-internal-media-controls-overflow-menu-list-item:hover,
 video::-internal-media-controls-overflow-menu-list-item:hover,
-audio::-internal-media-controls-overflow-menu-list-item:hover {
+audio::-internal-media-controls-text-track-list-item:hover,
+video::-internal-media-controls-text-track-list-item:hover {
   background-color: #e0e0e0;
+}
+
+audio::-internal-media-controls-text-track-list-header,
+video::-internal-media-controls-text-track-list-header,
+audio::-internal-media-controls-text-track-list-item,
+video::-internal-media-controls-text-track-list-item {
+  padding-left: 58px;
+  display: block;
+}
+
+audio::-internal-media-controls-text-track-list-header,
+video::-internal-media-controls-text-track-list-header {
+  background-size: 18px;
+  background-position: 20px center;
+  background-repeat: no-repeat;
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_arrow_back.png) 1x,
+    url(default_200_percent/modern/ic_arrow_back.png) 2x);
+}
+
+label[pseudo="-internal-media-controls-text-track-list-item"] input {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 15px;
+  float: right;
+}
+
+label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_check_blue.png) 1x,
+    url(default_200_percent/modern/ic_check_blue.png) 2x);
 }
 
 /**
@@ -397,18 +439,21 @@ audio::-internal-media-controls-overflow-menu-list-item:hover {
 
 audio::-webkit-media-controls {
   min-width: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-audio::-webkit-media-controls {
+audio::-webkit-media-controls-overlay-enclosure {
+  display: none;
+}
+
+audio::-webkit-media-controls-enclosure {
   max-height: 54px;
   flex-direction: row;
   background: #F1F3F4;
   border-radius: 100px;
   overflow: hidden;
-}
-
-audio::-webkit-media-controls-overlay-enclosure {
-  display: none;
 }
 
 audio::-webkit-media-controls-panel {
