@@ -2421,6 +2421,8 @@ split_static_library("ui") {
       "network_profile_bubble.cc",
       "network_profile_bubble.h",
       "startup/default_browser_prompt_win.cc",
+      "tabs/tab_strip_model_experimental.cc",
+      "tabs/tab_strip_model_experimental.h",
       "views/certificate_viewer_win.cc",
       "views/chrome_cleaner_dialog_win.cc",
       "views/chrome_cleaner_dialog_win.h",

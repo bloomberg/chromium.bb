@@ -19,7 +19,6 @@
 
 class Profile;
 class TabStripModelDelegate;
-class TabStripModelOrderController;
 
 namespace content {
 class WebContents;
@@ -144,9 +143,6 @@ class TabStripModel {
   // avoid doing meaningless or unhelpful work.
   virtual bool closing_all() const = 0;
 
-  // Access the order controller. Exposed only for unit tests.
-  virtual TabStripModelOrderController* order_controller() const = 0;
-
   // Basic API /////////////////////////////////////////////////////////////////
 
   // Determines if the specified index is contained within the TabStripModel.
@@ -269,16 +265,6 @@ class TabStripModel {
   virtual void SetOpenerOfWebContentsAt(int index,
                                         content::WebContents* opener) = 0;
 
-  // Returns the index of the next WebContents in the sequence of WebContentses
-  // spawned by the specified WebContents after |start_index|. If |use_group| is
-  // true, the group property of the tab is used instead of the opener to find
-  // the next tab. Under some circumstances the group relationship may exist but
-  // the opener may not.
-  virtual int GetIndexOfNextWebContentsOpenedBy(
-      const content::WebContents* opener,
-      int start_index,
-      bool use_group) const = 0;
-
   // Returns the index of the last WebContents in the model opened by the
   // specified opener, starting at |start_index|.
   virtual int GetIndexOfLastWebContentsOpenedBy(
@@ -291,25 +277,6 @@ class TabStripModel {
   // behavior.
   virtual void TabNavigating(content::WebContents* contents,
                              ui::PageTransition transition) = 0;
-
-  // Forget all Opener relationships that are stored (but _not_ group
-  // relationships!) This is to reduce unpredictable tab switching behavior
-  // in complex session states. The exact circumstances under which this method
-  // is called are left up to the implementation of the selected
-  // TabStripModelOrderController.
-  virtual void ForgetAllOpeners() = 0;
-
-  // Forgets the group affiliation of the specified WebContents. This
-  // should be called when a WebContents that is part of a logical group
-  // of tabs is moved to a new logical context by the user (e.g. by typing a new
-  // URL or selecting a bookmark). This also forgets the opener, which is
-  // considered a weaker relationship than group.
-  virtual void ForgetGroup(content::WebContents* contents) = 0;
-
-  // Returns true if the group/opener relationships present for |contents|
-  // should be reset when _any_ selection change occurs in the model.
-  virtual bool ShouldResetGroupOnSelect(
-      content::WebContents* contents) const = 0;
 
   // Changes the blocked state of the tab at |index|.
   virtual void SetTabBlocked(int index, bool blocked) = 0;
@@ -329,13 +296,6 @@ class TabStripModel {
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.
   virtual int IndexOfFirstNonPinnedTab() const = 0;
-
-  // Returns a valid index for inserting a new tab into this model. |index| is
-  // the proposed index and |pinned_tab| is true if inserting a tab will become
-  // pinned (pinned). If |pinned_tab| is true, the returned index is between 0
-  // and IndexOfFirstNonPinnedTab. If |pinned_tab| is false, the returned index
-  // is between IndexOfFirstNonPinnedTab and count().
-  virtual int ConstrainInsertionIndex(int index, bool pinned_tab) = 0;
 
   // Extends the selection from the anchor to |index|.
   virtual void ExtendSelectionTo(int index) = 0;

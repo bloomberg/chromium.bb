@@ -4,6 +4,27 @@
 
 #include "chrome/browser/ui/tabs/tab_features.h"
 
+#include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
+#include "build/build_config.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
+#endif
+
 const base::Feature kExperimentalTabControllerFeature{
     "ExperimentalTabController", base::FEATURE_DISABLED_BY_DEFAULT,
 };
+
+std::unique_ptr<TabStripModel> CreateTabStripModel(
+    TabStripModelDelegate* delegate,
+    Profile* profile) {
+  // The experimental controller currently just crashes so don't inflict it on
+  // people yet who may have accidentally triggered this feature.
+  // #if defined(OS_WIN)
+  // if (base::FeatureList::IsEnabled(kExperimentalTabControllerFeature))
+  //  return base::MakeUnique<TabStripModelExperimental>(delegate, profile);
+  // #endif
+  return base::MakeUnique<TabStripModelImpl>(delegate, profile);
+}
