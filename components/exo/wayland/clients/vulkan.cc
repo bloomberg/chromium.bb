@@ -129,7 +129,10 @@ void VulkanClient::Run(const ClientBase::InitParams& params) {
     if (callback_pending)
       continue;
 
-    Buffer* buffer = buffers_.front().get();
+    Buffer* buffer = DequeueBuffer();
+    if (!buffer)
+      continue;
+
     {
       static const SkColor kColors[] = {SK_ColorRED, SK_ColorBLACK,
                                         SK_ColorGREEN};
