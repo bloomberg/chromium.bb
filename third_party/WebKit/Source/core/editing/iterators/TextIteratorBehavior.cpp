@@ -60,6 +60,12 @@ TextIteratorBehavior::Builder::SetEmitsOriginalText(bool value) {
 }
 
 TextIteratorBehavior::Builder&
+TextIteratorBehavior::Builder::SetEmitsSmallXForTextSecurity(bool value) {
+  behavior_.values_.bits.emits_small_x_for_text_security = value;
+  return *this;
+}
+
+TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetEntersOpenShadowRoots(bool value) {
   behavior_.values_.bits.enters_open_shadow_roots = value;
   return *this;
