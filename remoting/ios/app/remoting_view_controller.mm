@@ -369,15 +369,6 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
       contentViewController.collectionView;
   self.contentViewController = contentViewController;
   self.contentViewController.view.frame = self.view.bounds;
-
-  if (@available(iOS 11.0, *)) {
-    // TODO(crbug.com/766892): This is a workaround for material component bug
-    // https://github.com/material-components/material-components-ios/issues/1962
-    // Remove once it is resolved.
-    self.headerViewController.headerView.trackingScrollView
-        .contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
 }
 
 - (void)handleHostListFetchFailure:(HostListFetchFailureReason)reason {
