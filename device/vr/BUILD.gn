@@ -37,7 +37,7 @@ if (enable_vr) {
       "//ui/gfx",
     ]
 
-    if (enable_daydream) {
+    if (enable_gvr_services) {
       sources += [
         "android/gvr/cardboard_gamepad_data_fetcher.cc",
         "android/gvr/cardboard_gamepad_data_fetcher.h",
@@ -120,7 +120,7 @@ if (enable_vr) {
   }
 }
 
-if (enable_daydream) {
+if (enable_gvr_services) {
   java_sources_needing_jni =
       [ "android/java/src/org/chromium/device/vr/NonPresentingGvrContext.java" ]
 
