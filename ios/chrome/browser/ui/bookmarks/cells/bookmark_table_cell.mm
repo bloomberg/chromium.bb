@@ -200,6 +200,22 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
   [super prepareForReuse];
 }
 
+#pragma mark - Persist placeholder background color
+
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+  // Prevent placeholderLabel's background color from being cleared.
+  UIColor* backgroundColor = self.placeholderLabel.backgroundColor;
+  [super setHighlighted:highlighted animated:animated];
+  self.placeholderLabel.backgroundColor = backgroundColor;
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+  // Prevent placeholderLabel's background color from being cleared.
+  UIColor* backgroundColor = self.placeholderLabel.backgroundColor;
+  [super setSelected:selected animated:animated];
+  self.placeholderLabel.backgroundColor = backgroundColor;
+}
+
 #pragma mark - UITextFieldDelegate
 
 // This method hides the keyboard when the return key is pressed.
