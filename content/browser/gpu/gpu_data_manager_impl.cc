@@ -20,11 +20,43 @@ GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
 }
 
 void GpuDataManagerImpl::BlacklistWebGLForTesting() {
+  // Manually generate the following data instead of going through
+  // gpu/config/process_json.py because this is just one simple instance.
+  static const int kFeatureListForEntry0[1] = {
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL};
+  static const gpu::GpuControlList::Entry kEntry = {
+      1,  // id
+      "ExtensionWebstoreGetWebGLStatusTest.Blocked",
+      arraysize(kFeatureListForEntry0),  // features size
+      kFeatureListForEntry0,             // features
+      0,                                 // DisabledExtensions size
+      nullptr,                           // DisabledExtensions
+      0,                                 // CrBugs size
+      nullptr,                           // CrBugs
+      {
+          gpu::GpuControlList::kOsAny,  // os_type
+          {gpu::GpuControlList::kUnknown,
+           gpu::GpuControlList::kVersionStyleNumerical, nullptr,
+           nullptr},                                   // os_version
+          0x00,                                        // vendor_id
+          0,                                           // DeviceIDs size
+          nullptr,                                     // DeviceIDs
+          gpu::GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+          gpu::GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+          nullptr,                                     // driver info
+          nullptr,                                     // GL strings
+          nullptr,                                     // machine model info
+          nullptr,                                     // more conditions
+      },
+      0,        // exceptions count
+      nullptr,  // exceptions
+  };
+  static const gpu::GpuControlListData kData(1, &kEntry);
+
+  gpu::GPUInfo gpu_info;
+
   base::AutoLock auto_lock(lock_);
-  gpu::GpuFeatureInfo gpu_feature_info;
-  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
-      gpu::kGpuFeatureStatusBlacklisted;
-  private_->UpdateGpuFeatureInfo(gpu_feature_info);
+  private_->InitializeForTesting(kData, gpu_info);
 }
 
 void GpuDataManagerImpl::InitializeForTesting(
@@ -37,6 +69,21 @@ void GpuDataManagerImpl::InitializeForTesting(
 bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
   base::AutoLock auto_lock(lock_);
   return private_->IsFeatureBlacklisted(feature);
+}
+
+bool GpuDataManagerImpl::IsFeatureEnabled(int feature) const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsFeatureEnabled(feature);
+}
+
+bool GpuDataManagerImpl::IsWebGLEnabled() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsWebGLEnabled();
+}
+
+bool GpuDataManagerImpl::IsWebGL2Enabled() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsWebGL2Enabled();
 }
 
 gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
@@ -57,6 +104,11 @@ void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
 bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() const {
   base::AutoLock auto_lock(lock_);
   return private_->IsEssentialGpuInfoAvailable();
+}
+
+bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsCompleteGpuInfoAvailable();
 }
 
 void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate(
@@ -148,17 +200,6 @@ void GpuDataManagerImpl::UpdateGpuFeatureInfo(
 gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfo();
-}
-
-gpu::GpuFeatureStatus GpuDataManagerImpl::GetFeatureStatus(
-    gpu::GpuFeatureType feature) const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetFeatureStatus(feature);
-}
-
-bool GpuDataManagerImpl::IsGpuFeatureInfoAvailable() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsGpuFeatureInfoAvailable();
 }
 
 void GpuDataManagerImpl::AppendRendererCommandLine(

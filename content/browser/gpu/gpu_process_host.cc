@@ -866,10 +866,10 @@ void GpuProcessHost::DidInitialize(
   }
 
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-  // UpdateGpuFeatureInfo() needs to be called before UpdateGpuInfo() because
-  // the latter will trigger registered callbacks waiting for the update.
-  gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info);
-  gpu_data_manager->UpdateGpuInfo(gpu_info);
+  if (!gpu_data_manager->ShouldUseSwiftShader()) {
+    gpu_data_manager->UpdateGpuInfo(gpu_info);
+    gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info);
+  }
   RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
 }
 

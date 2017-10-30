@@ -95,6 +95,9 @@ GPU_BLACKLIST_FEATURE_TEST(FlashStage3DBaseline,
 GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoDecode,
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)
 
+GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoEncode,
+                           GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE)
+
 GPU_BLACKLIST_FEATURE_TEST(PanelFitting,
                            GPU_FEATURE_TYPE_PANEL_FITTING)
 

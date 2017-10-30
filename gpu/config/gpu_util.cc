@@ -166,37 +166,6 @@ GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
   return kGpuFeatureStatusEnabled;
 }
 
-GpuFeatureStatus GetPanelFittingFeatureStatus(
-    const std::set<int>& blacklisted_features,
-    bool use_swift_shader,
-    bool use_swift_shader_for_webgl) {
-#if defined(OS_CHROMEOS)
-  if (use_swift_shader || use_swift_shader_for_webgl)
-    return kGpuFeatureStatusDisabled;
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_PANEL_FITTING))
-    return kGpuFeatureStatusBlacklisted;
-  return kGpuFeatureStatusEnabled;
-#else
-  return kGpuFeatureStatusDisabled;
-#endif
-}
-
-GpuFeatureStatus GetGpuCompositingFeatureStatus(
-    const std::set<int>& blacklisted_features,
-    bool use_swift_shader,
-    bool use_swift_shader_for_webgl) {
-  if (use_swift_shader) {
-    // This is for testing only. Chrome should exercise the GPU accelerated
-    // path on top of SwiftShader driver.
-    return kGpuFeatureStatusEnabled;
-  }
-  if (use_swift_shader_for_webgl)
-    return kGpuFeatureStatusDisabled;
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_GPU_COMPOSITING))
-    return kGpuFeatureStatusBlacklisted;
-  return kGpuFeatureStatusEnabled;
-}
-
 void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
                                     base::CommandLine* command_line) {
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_D3D11)) {
@@ -358,17 +327,6 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       GetAcceleratedVideoDecodeFeatureStatus(
           blacklisted_features, use_swift_shader, use_swift_shader_for_webgl);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_PANEL_FITTING] =
-      GetPanelFittingFeatureStatus(blacklisted_features, use_swift_shader,
-                                   use_swift_shader_for_webgl);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-      GetGpuCompositingFeatureStatus(blacklisted_features, use_swift_shader,
-                                     use_swift_shader_for_webgl);
-#if DCHECK_IS_ON()
-  for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
-    DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
-  }
-#endif
 
   std::set<base::StringPiece> all_disabled_extensions;
   std::string disabled_gl_extensions_value =
