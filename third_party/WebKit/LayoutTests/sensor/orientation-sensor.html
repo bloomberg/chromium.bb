@@ -34,7 +34,7 @@ function verify_sensor_reading(sensor, should_be_null) {
   return true;
 }
 
-function checkPopulateMatrix(sensor, sensorType) {
+async function checkPopulateMatrix(sensor, sensorType) {
   let sensorObject = new sensorType();
 
   // Throws with insufficient buffer space.
@@ -50,39 +50,37 @@ function checkPopulateMatrix(sensor, sensorType) {
 
   sensorObject.start();
 
-  return sensor.mockSensorProvider.getCreatedSensor()
-    .then(mockSensor => mockSensor.setUpdateSensorReadingFunction(update_sensor_reading))
-    .then(mockSensor => {
-      return new Promise((resolve, reject) => {
-        let wrapper = new CallbackWrapper(() => {
-          // Works for all supported types.
-          let rotationMatrix32 = new Float32Array(16);
-          sensorObject.populateMatrix(rotationMatrix32);
-          assert_array_equals(rotationMatrix32, kRotationMatrix);
+  let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+  await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+  await new Promise((resolve, reject) => {
+    let wrapper = new CallbackWrapper(() => {
+      // Works for all supported types.
+      let rotationMatrix32 = new Float32Array(16);
+      sensorObject.populateMatrix(rotationMatrix32);
+      assert_array_equals(rotationMatrix32, kRotationMatrix);
 
-          let rotationMatrix64 = new Float64Array(16);
-          sensorObject.populateMatrix(rotationMatrix64);
-          assert_array_equals(rotationMatrix64, kRotationMatrix);
+      let rotationMatrix64 = new Float64Array(16);
+      sensorObject.populateMatrix(rotationMatrix64);
+      assert_array_equals(rotationMatrix64, kRotationMatrix);
 
-          let rotationDOMMatrix = new DOMMatrix();
-          sensorObject.populateMatrix(rotationDOMMatrix);
-          assert_array_equals(rotationDOMMatrix.toFloat64Array(),
-                              kRotationMatrix);
+      let rotationDOMMatrix = new DOMMatrix();
+      sensorObject.populateMatrix(rotationDOMMatrix);
+      assert_array_equals(rotationDOMMatrix.toFloat64Array(),
+                          kRotationMatrix);
 
-          // Sets every matrix element.
-          rotationMatrix64.fill(123);
-          sensorObject.populateMatrix(rotationMatrix64);
-          assert_array_equals(rotationMatrix64, kRotationMatrix);
+      // Sets every matrix element.
+      rotationMatrix64.fill(123);
+      sensorObject.populateMatrix(rotationMatrix64);
+      assert_array_equals(rotationMatrix64, kRotationMatrix);
 
-          sensorObject.stop();
-          resolve(mockSensor);
-        }, reject);
+      sensorObject.stop();
+      resolve(mockSensor);
+    }, reject);
 
-        sensorObject.onreading = wrapper.callback;
-        sensorObject.onerror = reject;
-      });
-    })
-    .then(mockSensor => mockSensor.removeConfigurationCalled());
+    sensorObject.onreading = wrapper.callback;
+    sensorObject.onerror = reject;
+  });
+  return mockSensor.removeConfigurationCalled();
 }
 
 
