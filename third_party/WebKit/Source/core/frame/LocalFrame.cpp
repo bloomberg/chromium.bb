@@ -787,6 +787,7 @@ WebFrameScheduler* LocalFrame::FrameScheduler() {
 }
 
 scoped_refptr<WebTaskRunner> LocalFrame::GetTaskRunner(TaskType type) {
+  DCHECK(IsMainThread());
   return frame_scheduler_->GetTaskRunner(type);
 }
 
