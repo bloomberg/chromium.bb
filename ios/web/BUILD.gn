@@ -587,6 +587,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
+    "//ios/web/test/fakes:fakes",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
