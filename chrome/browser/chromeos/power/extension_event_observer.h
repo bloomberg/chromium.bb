@@ -95,7 +95,7 @@ class ExtensionEventObserver : public content::NotificationObserver,
                             uint64_t request_id) override;
 
   // PowerManagerClient::Observer overrides.
-  void SuspendImminent() override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void DarkSuspendImminent() override;
   void SuspendDone(const base::TimeDelta& duration) override;
 

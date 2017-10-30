@@ -83,7 +83,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // Emulates the power manager announcing that the system is starting or
   // completing a suspend attempt.
-  void SendSuspendImminent();
+  void SendSuspendImminent(power_manager::SuspendImminent::Reason reason);
   void SendSuspendDone();
   void SendDarkSuspendImminent();
 

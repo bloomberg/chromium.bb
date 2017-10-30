@@ -25,11 +25,11 @@
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager/switch_states.pb.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/device_event_log/device_event_log.h"
@@ -369,6 +369,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
+        power_manager::kScreenIdleStateChangedSignal,
+        base::Bind(&PowerManagerClientImpl::ScreenIdleStateChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
         power_manager::kPeripheralBatteryStatusSignal,
         base::Bind(&PowerManagerClientImpl::PeripheralBatteryStatusReceived,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -510,6 +518,19 @@ class PowerManagerClientImpl : public PowerManagerClient {
                      << ": user initiated " << user_initiated;
     for (auto& observer : observers_)
       observer.KeyboardBrightnessChanged(brightness_level, user_initiated);
+  }
+
+  void ScreenIdleStateChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::ScreenIdleState proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      POWER_LOG(ERROR) << "Unable to decode protocol buffer from "
+                       << power_manager::kScreenIdleStateChangedSignal
+                       << " signal";
+      return;
+    }
+    for (auto& observer : observers_)
+      observer.ScreenIdleStateChanged(proto);
   }
 
   void PeripheralBatteryStatusReceived(dbus::Signal* signal) {
@@ -702,12 +723,13 @@ class PowerManagerClientImpl : public PowerManagerClient {
     // GetSuspendReadinessCallback() and then runs the callback synchonously
     // instead of asynchronously.
     notifying_observers_about_suspend_imminent_ = true;
-    if (suspending_from_dark_resume_)
+    if (suspending_from_dark_resume_) {
       for (auto& observer : observers_)
         observer.DarkSuspendImminent();
-    else
+    } else {
       for (auto& observer : observers_)
-        observer.SuspendImminent();
+        observer.SuspendImminent(proto.reason());
+    }
     notifying_observers_about_suspend_imminent_ = false;
 
     base::PowerMonitorDeviceSource::HandleSystemSuspending();

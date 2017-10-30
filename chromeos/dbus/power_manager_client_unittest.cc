@@ -114,7 +114,7 @@ class TestObserver : public PowerManagerClient::Observer {
   }
 
   // PowerManagerClient::Observer:
-  void SuspendImminent() override {
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override {
     num_suspend_imminent_++;
     if (take_suspend_readiness_callback_)
       suspend_readiness_callback_ = client_->GetSuspendReadinessCallback();
@@ -251,6 +251,7 @@ class PowerManagerClientTest : public testing::Test {
                                  int suspend_id) {
     power_manager::SuspendImminent proto;
     proto.set_suspend_id(suspend_id);
+    proto.set_reason(power_manager::SuspendImminent_Reason_OTHER);
     dbus::Signal signal(kInterface, signal_name);
     dbus::MessageWriter(&signal).AppendProtoAsArrayOfBytes(proto);
     EmitSignal(&signal);

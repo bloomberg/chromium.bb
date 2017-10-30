@@ -70,7 +70,8 @@ void PowerEventObserver::OnLockAnimationsComplete() {
   }
 }
 
-void PowerEventObserver::SuspendImminent() {
+void PowerEventObserver::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   SessionController* controller = Shell::Get()->session_controller();
 
   // This class is responsible for disabling all rendering requests at suspend

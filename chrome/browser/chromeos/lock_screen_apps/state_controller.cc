@@ -416,7 +416,8 @@ void StateController::BrightnessChanged(int level, bool user_initiated) {
   SetScreenState(level == 0 ? ScreenState::kOff : ScreenState::kOn);
 }
 
-void StateController::SuspendImminent() {
+void StateController::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
   ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/,
                                           CloseLockScreenNoteReason::kSuspend);
 }
