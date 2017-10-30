@@ -1679,6 +1679,14 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int mi_rel_row1 = mi_rel_row0 + mi_size_high[bsize];
   const int mi_rel_col1 = mi_rel_col0 + mi_size_wide[bsize];
 
+  const RestorationInfo *rsi = &cm->rst_info[plane];
+  const int size = rsi->restoration_unit_size;
+
+  // Calculate the number of restoration units in this tile (which might be
+  // strictly less than rsi->horz_units_per_tile and rsi->vert_units_per_tile)
+  const int horz_units = count_units_in_tile(size, tile_w);
+  const int vert_units = count_units_in_tile(size, tile_h);
+
 #if CONFIG_FRAME_SUPERRES
   // Write m for the relative mi column or row, D for the superres denominator
   // and N for the superres numerator. If u is the upscaled (called "unscaled"
@@ -1688,35 +1696,36 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   //   MI_SIZE * m = N / D u
   //
   // from which we get u = D * MI_SIZE * m / N
-  const int mi_to_num = MI_SIZE * cm->superres_scale_denominator;
-  const int denom = SCALE_NUMERATOR;
+  const int mi_to_num_x = MI_SIZE * cm->superres_scale_denominator;
+  const int denom_x = size * SCALE_NUMERATOR;
 #else
-  const int mi_to_num = MI_SIZE;
-  const int denom = 1;
+  const int mi_to_num_x = MI_SIZE;
+  const int denom_x = size;
 #endif  // CONFIG_FRAME_SUPERRES
+#if CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
+  const int mi_to_num_y = MI_SIZE;
+  const int denom_y = size;
+#else
+  const int mi_to_num_y = mi_to_num_x;
+  const int denom_y = denom_x;
+#endif  // CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
 
-  const RestorationInfo *rsi = &cm->rst_info[plane];
-  const int size = rsi->restoration_unit_size;
-  const int rnd = size * denom - 1;
-
-  // Calculate the number of restoration units in this tile (which might be
-  // strictly less than rsi->horz_units_per_tile and rsi->vert_units_per_tile)
-  const int horz_units = count_units_in_tile(size, tile_w);
-  const int vert_units = count_units_in_tile(size, tile_h);
+  const int rnd_x = denom_x - 1;
+  const int rnd_y = denom_y - 1;
 
   // rcol0/rrow0 should be the first column/row of restoration units (relative
   // to the top-left of the tile) that doesn't start left/below of
   // mi_col/mi_row. For this calculation, we need to round up the division (if
   // the sb starts at rtile column 10.1, the first matching rtile has column
   // index 11)
-  *rcol0 = (mi_rel_col0 * mi_to_num + rnd) / (size * denom);
-  *rrow0 = (mi_rel_row0 * mi_to_num + rnd) / (size * denom);
+  *rcol0 = (mi_rel_col0 * mi_to_num_x + rnd_x) / denom_x;
+  *rrow0 = (mi_rel_row0 * mi_to_num_y + rnd_y) / denom_y;
 
   // rel_col1/rel_row1 is the equivalent calculation, but for the superblock
   // below-right. If we're at the bottom or right of the tile, this restoration
   // unit might not exist, in which case we'll clamp accordingly.
-  *rcol1 = AOMMIN((mi_rel_col1 * mi_to_num + rnd) / (size * denom), horz_units);
-  *rrow1 = AOMMIN((mi_rel_row1 * mi_to_num + rnd) / (size * denom), vert_units);
+  *rcol1 = AOMMIN((mi_rel_col1 * mi_to_num_x + rnd_x) / denom_x, horz_units);
+  *rrow1 = AOMMIN((mi_rel_row1 * mi_to_num_y + rnd_y) / denom_y, vert_units);
 
   const int tile_idx = tile_col + tile_row * cm->tile_cols;
   *tile_tl_idx = tile_idx * rsi->units_per_tile;
