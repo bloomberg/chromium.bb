@@ -313,7 +313,14 @@ void WEBPImageDecoder::ReadColorProfile() {
       reinterpret_cast<const char*>(chunk_iterator.chunk.bytes);
   size_t profile_size = chunk_iterator.chunk.size;
 
-  SetEmbeddedColorProfile(profile_data, profile_size);
+  sk_sp<SkColorSpace> color_space =
+      SkColorSpace::MakeICC(profile_data, profile_size);
+  if (color_space) {
+    if (color_space->type() == SkColorSpace::kRGB_Type)
+      SetEmbeddedColorSpace(std::move(color_space));
+  } else {
+    DLOG(ERROR) << "Failed to parse image ICC profile";
+  }
 
   WebPDemuxReleaseChunkIterator(&chunk_iterator);
 }
