@@ -930,6 +930,14 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
+  if (IsUseZoomForDSFEnabled()) {
+    // With zoom-for-DSF Blink pixel coordinates are used and zoom is used to
+    // adjusts for the device scale factor. That's why last_scroll_offset_
+    // needs to be scaled to view coordinates.
+    // Without zoom-for-DSF the values are already in view coordinates.
+    last_scroll_offset_.Scale(1.0f / current_device_scale_factor_);
+  }
+
   if (delegated_frame_host_) {
     delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
                                                  std::move(frame));
