@@ -4,10 +4,6 @@
 # Crashed tests that haven't been categorized.
 -AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
 -AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
--BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
--ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
--ChromeServiceWorkerFetchTest.EmbedPdfOtherOrigin
--ChromeSitePerProcessPDFTest.EmbeddedPDFInsideCrossOriginFrame
 -CrExtensionsCodeSectionTest.Layout
 -CrExtensionsDetailViewTest.ClickableElements
 -CrExtensionsDetailViewTest.IndicatorTest
@@ -55,25 +51,10 @@
 -CrExtensionsToolbarTest.Layout
 -CrExtensionsViewManagerTest.EventFiringTest
 -CrExtensionsViewManagerTest.VisibilityTest
--CrSettingsPeoplePageTest.All
 -CredentialManagerBrowserTest.StoreInUnloadHandler_SameSite_OnDemandMojoPipe
--DevToolsExtensionTest.HttpIframeInDevToolsExtensionPanel
--DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnNetwork
--DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnTimeline
 -DiceMigrationBrowserTest.Signin
 -DiceMigrationBrowserTest.Signout
--DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
--DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
--DomDistillerViewerSourceBrowserTest.DistillerJavaScriptNotInMainWorld
--DomDistillerViewerSourceBrowserTest.EarlyTemplateLoad
--DomDistillerViewerSourceBrowserTest.MultiPageArticle
--DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleExists
--DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleNotFound
--DomDistillerViewerSourceBrowserTest.PrefPersist
--DownloadTest.SaveLinkAsReferrerPolicyOrigin
 -ExtensionsA11yTestFixture.BASIC_EXTENSIONS_region
--HotwordInstallerBrowserTest.AbortInstallOnShutdown
--IncognitoWindowTrackerBrowserTest.ShowPromo
 -LocalNTPDoodleTest.ShouldAnimateLogoWhenClicked
 -LocalNTPJavascriptTest.SimpleJavascriptTests
 -LocalNTPVoiceJavascriptTest.MicrophoneTests
@@ -103,11 +84,7 @@
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.Playback_VP9Video_WebM_Fullsample/0
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.Playback_VP9Video_WebM_Subsample/0
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.PolicyCheck/0
--NewTabTrackerBrowserTest.TestShowPromo
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchHistograms/1
--PDFExtensionTest.EnsureCrossOriginRepliesBlocked
--PDFExtensionTest.PostMessageForZeroSizedEmbed
--PDFExtensionTest.TabTitleWithEmbeddedPdf
 -PolicyTest.BookmarkBarEnabled
 -PolicyTest.HomepageLocation
 -PredictorBrowserTest.CrossSiteNoReferrerNoPredictionAfterOneNavigation
@@ -119,14 +96,9 @@
 -PredictorBrowserTest.ForgetBadPrediction
 -PredictorBrowserTest.PreconnectAndFetchCORS
 -PredictorBrowserTest.PreconnectAndFetchNonCORS
--PrintPreviewDialogControllerBrowserTest.PdfPluginDisabled
--PrintPreviewDialogControllerBrowserTest.PrintPreviewPdfAccessibility
 -ProcessMemoryMetricsEmitterTest.FetchAndEmitMetricsWithExtensions
 -ProcessMemoryMetricsEmitterTest.FetchAndEmitMetricsWithExtensionsAndHostReuse
 -ProxySettingsApiTest.SettingsRemovedOnPolicyBlacklist
--ReferrerPolicyTest.ContextMenuRedirect
--ReferrerPolicyTest.HttpsContextMenuOrigin
--ReferrerPolicyTest.HttpsContextMenuRedirect
 -ResourcePrefetchPredictorBrowserTest.AlwaysRevalidate
 -ResourcePrefetchPredictorBrowserTest.CrossSiteNavigation
 -ResourcePrefetchPredictorBrowserTest.HttpToHttpsRedirect
@@ -142,13 +114,6 @@
 -ResourcePrefetchPredictorBrowserTest.TabIdBehavingAsExpected
 -ResourcePrefetchPredictorPrefetchingBrowserTest.Redirect
 -ResourcePrefetchPredictorPrefetchingBrowserTest.Simple
--SBNavigationObserverBrowserTest.AddIPMapping
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithUserGesture
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithoutUserGesture
--SSLUITest.TestInterstitialJavaScriptGoesBack
--SSLUITest.TestInterstitialJavaScriptProceeds
--SSLUITestWithExtendedReporting.TestBadClockReportingWithNoOptIn
--SSLUITestWithExtendedReporting.TestBadClockReportingWithOptIn
 -SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/2
 -SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/3
 -SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting/SafeBrowsingBlockingPageBrowserTest.SecurityStateGoBackOnSubresourceInterstitial/0
@@ -163,20 +128,11 @@
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.MultipleNavigations
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.WarningAllowCreatingNewWindows_LogsToConsole
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.WarningDoNotBlockCreatingNewWindows_LogsToConsole
--SavePageBrowserTest.SavePageBrowserTest_NonMHTML
 -SavePageBrowserTest.SaveUnauthorizedResource
--SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
--SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
 -ServiceWorkerPaymentAppFactoryBrowserTest.AllOringsSupported
 -ServiceWorkerPaymentAppFactoryBrowserTest.SupportedOrigin
 -ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsDifferentMethods
 -ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsSameMethod
--SpellingMenuObserverTest.SuggestionsForceTopSeparator
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP8
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP9
--WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
--WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
--WebstoreInlineInstallerListenerTest.BothListenersTest
 
 # Timed out tests that haven't been categorized.
 -ActivityLogApiTest.TriggerEvent
@@ -2808,3 +2764,81 @@
 -PolicyTest.FileURLBlacklist
 -PolicyTest.URLBlacklist
 -PolicyTest.URLBlacklistSubresources
+
+# crbug.com/751738 Service worker subresource loader doesn't yet support request bodies.
+# crbug.com/778821 Null response body is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
+-WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP8
+-WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP9
+-WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
+-WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
+
+# crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
+-ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
+
+# crbug.com/778842 CHECK_EQ(num_bytes, output_size) failed in ReadData() at web_ui_url_loader_factory.cc.
+-DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnNetwork
+-DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnTimeline
+
+# crbug.com/778846 DCHECK() failed at URLDataManagerBackend::CheckURLIsValid().
+-CrSettingsPeoplePageTest.All
+-DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
+-DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
+-DomDistillerViewerSourceBrowserTest.DistillerJavaScriptNotInMainWorld
+-DomDistillerViewerSourceBrowserTest.EarlyTemplateLoad
+-DomDistillerViewerSourceBrowserTest.MultiPageArticle
+-DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleExists
+-DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleNotFound
+-DomDistillerViewerSourceBrowserTest.PrefPersist
+-PrintPreviewDialogControllerBrowserTest.PdfPluginDisabled
+-PrintPreviewDialogControllerBrowserTest.PrintPreviewPdfAccessibility
+
+# crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
+-BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
+
+# crbug.com/778862 The URL of the extension to navigate to contains non utf-8 character.
+-ChromeSitePerProcessPDFTest.EmbeddedPDFInsideCrossOriginFrame
+-PDFExtensionTest.EnsureCrossOriginRepliesBlocked
+-PDFExtensionTest.PostMessageForZeroSizedEmbed
+-PDFExtensionTest.TabTitleWithEmbeddedPdf
+-SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
+-SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
+
+# crbug.com/779115 The |devtools_extension_panel_rfh| is nullptr.
+-DevToolsExtensionTest.HttpIframeInDevToolsExtensionPanel
+
+# crbug.com/779121 The |url_chain_| contains one empty string at DownloadUrlSBClient::StartCheck().
+-DownloadTest.SaveLinkAsReferrerPolicyOrigin
+
+# crbug.com/779153 DCHECK(browser->IsActive()) fails at GetAppMenuButton().
+-IncognitoWindowTrackerBrowserTest.ShowPromo
+
+# crbug.com/779160 BrowserView::GetBrowserViewForBrowser(browser())->tabstrip()->new_tab_button()->new_tab_promo() is nullptr.
+-NewTabTrackerBrowserTest.TestShowPromo
+
+# crbug.com/779178 The |interstitial_page| is nullptr.
+-SSLUITest.TestInterstitialJavaScriptGoesBack
+-SSLUITest.TestInterstitialJavaScriptProceeds
+-SSLUITestWithExtendedReporting.TestBadClockReportingWithNoOptIn
+-SSLUITestWithExtendedReporting.TestBadClockReportingWithOptIn
+
+# crbug.com/779181 The |ip_map->at(test_server_host)| is empty.
+-SBNavigationObserverBrowserTest.AddIPMapping
+
+# crbug.com/779197 The |state_| is actualy CANCELLED_INTERNAL.
+-SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithUserGesture
+-SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithoutUserGesture
+
+# crbug.com/779210 NOTREACHED() reached at SaveFileManager::OnSaveURL().
+-SavePageBrowserTest.SavePageBrowserTest_NonMHTML
+
+# crbug.com/779215 The extension hasn't been installed when the test runs.
+-WebstoreInlineInstallerListenerTest.BothListenersTest
+
+# crbug.com/779217 The NetworkContext is not created when the network service is enabled.
+-HotwordInstallerBrowserTest.AbortInstallOnShutdown
+-SpellingMenuObserverTest.SuggestionsForceTopSeparator
+
+# crbug.com/779236 DCHECK(!params->url.is_empty()) fails at chrome::Navigate().
+-ReferrerPolicyTest.ContextMenuRedirect
+-ReferrerPolicyTest.HttpsContextMenuOrigin
+-ReferrerPolicyTest.HttpsContextMenuRedirect
