@@ -21,10 +21,12 @@ describe('DIAL ActivityRecords Tests', function() {
     UnitTestUtils.mockMojoApi();
     UnitTestUtils.mockChromeApi();
     let route = new Route(
-        'routeId1', 'sinkId1', null, false, 'description1', 'imageUrl1');
+        'routeId1', 'presentationId1', 'sinkId1', null, false, 'description1',
+        'imageUrl1');
     activity1 = new Activity(route, 'app1');
     route = new Route(
-        'routeId2', 'sinkId2', null, true, 'description2', 'imageUrl2');
+        'routeId2', 'presentationId2', 'sinkId2', null, true, 'description2',
+        'imageUrl2');
     activity2 = new Activity(route, 'app2');
     mockCallbacks = jasmine.createSpyObj(
         'ActivityCallbacks',

@@ -12,7 +12,8 @@ describe('Tests mr.mirror.Session', function() {
   let session;
 
   beforeEach(function() {
-    mirrorRoute = new mr.Route('routeId', 'sinkId', 'tab:47', true, null);
+    mirrorRoute = new mr.Route(
+        'routeId', 'presentationId', 'sinkId', 'tab:47', true, null);
     session = new mr.mirror.Session(mirrorRoute);
     spyOn(session, 'sendMetadataToSinkInternal');
     spyOn(session, 'onRouteUpdated');

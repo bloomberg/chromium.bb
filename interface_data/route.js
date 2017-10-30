@@ -13,18 +13,27 @@ goog.require('mr.RouteId');
 mr.Route = class {
   /**
    * @param {string} id The route ID.
+   * @param {string} presentationId The ID of the associated presentation.
    * @param {string} sinkId The ID of the sink running this route.
    * @param {?string} sourceUrn The media source being sent through this route.
    * @param {boolean} isLocal Whether the route is requested locally.
    * @param {string} description
    * @param {?string} iconUrl
    */
-  constructor(id, sinkId, sourceUrn, isLocal, description, iconUrl) {
+  constructor(
+      id, presentationId, sinkId, sourceUrn, isLocal, description, iconUrl) {
     /**
      * @type {string}
      * @export
      */
     this.id = id;
+
+    /**
+     * The ID of the presentation associated with this route.
+     * @type {string}
+     * @export
+     */
+    this.presentationId = presentationId;
 
     /**
      * The ID of the sink associated with this route.
@@ -141,7 +150,7 @@ mr.Route = class {
       iconUrl) {
     return new mr.Route(
         mr.RouteId.getRouteId(presentationId, providerName, sinkId, source),
-        sinkId, source, isLocal, description, iconUrl);
+        presentationId, sinkId, source, isLocal, description, iconUrl);
   }
 };
 
