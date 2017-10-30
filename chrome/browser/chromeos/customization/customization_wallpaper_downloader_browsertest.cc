@@ -247,8 +247,7 @@ class CustomizationWallpaperDownloaderBrowserTest
 IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
                        OEMWallpaperIsPresent) {
   CreateCmdlineWallpapers();
-  WallpaperManager::Get()->SetDefaultWallpaper(EmptyAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       ash::Shell::Get()->wallpaper_controller()->GetWallpaper(),
@@ -277,8 +276,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
 IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
                        OEMWallpaperRetryFetch) {
   CreateCmdlineWallpapers();
-  WallpaperManager::Get()->SetDefaultWallpaper(EmptyAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       ash::Shell::Get()->wallpaper_controller()->GetWallpaper(),
