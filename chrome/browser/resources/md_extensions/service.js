@@ -37,15 +37,6 @@ cr.define('extensions', function() {
         return;
       }
 
-      const keyboardShortcuts = this.manager_.keyboardShortcuts;
-      keyboardShortcuts.addEventListener(
-          'shortcut-updated', this.onExtensionCommandUpdated_.bind(this));
-      keyboardShortcuts.addEventListener(
-          'shortcut-capture-started',
-          this.onShortcutCaptureChanged_.bind(this, true));
-      keyboardShortcuts.addEventListener(
-          'shortcut-capture-ended',
-          this.onShortcutCaptureChanged_.bind(this, false));
       chrome.developerPrivate.onProfileStateChanged.addListener(
           this.onProfileStateChanged_.bind(this));
       chrome.developerPrivate.onItemStateChanged.addListener(
@@ -135,14 +126,15 @@ cr.define('extensions', function() {
 
     /**
      * Updates an extension command.
-     * @param {!CustomEvent} e
-     * @private
+     * @param {string} extensionId
+     * @param {string} commandName
+     * @param {string} keybinding
      */
-    onExtensionCommandUpdated_(e) {
+    updateExtensionCommand(extensionId, commandName, keybinding) {
       chrome.developerPrivate.updateExtensionCommand({
-        extensionId: e.detail.item,
-        commandName: e.detail.commandName,
-        keybinding: e.detail.keybinding,
+        extensionId: extensionId,
+        commandName: commandName,
+        keybinding: keybinding,
       });
     }
 
@@ -154,10 +146,8 @@ cr.define('extensions', function() {
      * the default handling on the event also does this. Investigate more in the
      * future.
      * @param {boolean} isCapturing
-     * @param {!CustomEvent} e
-     * @private
      */
-    onShortcutCaptureChanged_(isCapturing, e) {
+    setShortcutHandlingSuspended(isCapturing) {
       chrome.developerPrivate.setShortcutHandlingSuspended(isCapturing);
     }
 
