@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/login_bubble.h"
 
+#include "ash/login/ui/login_button.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ui/gfx/font.h"
@@ -21,14 +22,17 @@ namespace {
 // The size of the alert icon in the error bubble.
 constexpr int kAlertIconSizeDp = 20;
 
-// Vertical spacing with the anchor view.
-constexpr int kAnchorViewVerticalSpacingDp = 48;
+// Vertical spacing between the anchor view and error bubble.
+constexpr int kAnchorViewErrorBubbleVerticalSpacingDp = 48;
 
 // An alpha value for the sub message in the user menu.
 constexpr SkAlpha kSubMessageColorAlpha = 0x89;
 
 // Horizontal spacing with the anchor view.
-constexpr int kAnchorViewHorizontalSpacingDp = 100;
+constexpr int kAnchorViewHorizontalSpacingDp = 105;
+
+// Vertical spacing between the anchor view and user menu.
+constexpr int kAnchorViewUserMenuVerticalSpacingDp = 4;
 
 views::Label* CreateLabel(const base::string16& message, SkColor color) {
   views::Label* label = new views::Label(message, views::style::CONTEXT_LABEL,
@@ -46,7 +50,8 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
   LoginErrorBubbleView(views::StyledLabel* label, views::View* anchor_view)
       : LoginBaseBubbleView(anchor_view) {
-    set_anchor_view_insets(gfx::Insets(kAnchorViewVerticalSpacingDp, 0));
+    set_anchor_view_insets(
+        gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
 
     views::View* alert_view = new views::View();
     alert_view->SetLayoutManager(
@@ -83,7 +88,8 @@ class LoginUserMenuView : public LoginBaseBubbleView {
         sub_message, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha));
     AddChildView(label);
     AddChildView(sub_label);
-    set_anchor_view_insets(gfx::Insets(0, kAnchorViewHorizontalSpacingDp));
+    set_anchor_view_insets(gfx::Insets(kAnchorViewUserMenuVerticalSpacingDp,
+                                       kAnchorViewHorizontalSpacingDp));
 
     // TODO: Show remove user in the menu in login screen.
   }
@@ -132,7 +138,7 @@ void LoginBubble::ShowErrorBubble(views::StyledLabel* label,
 void LoginBubble::ShowUserMenu(const base::string16& message,
                                const base::string16& sub_message,
                                views::View* anchor_view,
-                               views::View* bubble_opener,
+                               LoginButton* bubble_opener,
                                bool show_remove_user) {
   DCHECK_EQ(bubble_view_, nullptr);
   bubble_opener_ = bubble_opener;
@@ -151,6 +157,10 @@ void LoginBubble::ShowTooltip(const base::string16& message,
 }
 
 void LoginBubble::Close() {
+  if (bubble_opener_)
+    bubble_opener_->AnimateInkDrop(views::InkDropState::DEACTIVATED,
+                                   nullptr /*event*/);
+
   if (bubble_view_)
     bubble_view_->GetWidget()->Close();
 }
@@ -198,6 +208,10 @@ void LoginBubble::Show() {
   views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();
   bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_view_->GetWidget()->AddObserver(this);
+
+  if (bubble_opener_)
+    bubble_opener_->AnimateInkDrop(views::InkDropState::ACTIVATED,
+                                   nullptr /*event*/);
 }
 
 void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {

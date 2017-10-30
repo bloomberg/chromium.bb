@@ -5,6 +5,7 @@
 #include "ash/login/ui/login_password_view.h"
 
 #include "ash/login/ui/hover_notifier.h"
+#include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_constants.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -401,7 +402,7 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
   capslock_icon_->SetVisible(false);
 
   // Submit button.
-  submit_button_ = new views::ImageButton(this);
+  submit_button_ = new LoginButton(this);
   submit_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kLockScreenArrowIcon, kSubmitButtonSizeDp,
@@ -412,8 +413,6 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
           kLockScreenArrowIcon, kSubmitButtonSizeDp,
           SkColorSetA(login_constants::kButtonEnabledColor,
                       login_constants::kButtonDisabledAlpha)));
-  submit_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                    views::ImageButton::ALIGN_MIDDLE);
   submit_button_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ASH_LOGIN_POD_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   password_row_->AddChildView(submit_button_);
