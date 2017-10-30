@@ -159,8 +159,10 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
   pref_change_registrar_->Init(profile_->GetPrefs());
   pref_change_registrar_->Add(
       password_manager::prefs::kSyncPasswordHash,
-      base::Bind(&ChromePasswordProtectionService::OnGaiaPasswordChanged,
+      base::Bind(&ChromePasswordProtectionService::CheckGaiaPasswordChange,
                  base::Unretained(this)));
+  gaia_password_hash_ = profile_->GetPrefs()->GetString(
+      password_manager::prefs::kSyncPasswordHash);
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
@@ -608,6 +610,15 @@ void ChromePasswordProtectionService::UpdateSecurityState(
   }
   ui_manager_->AddToWhitelistUrlSet(url_with_empty_path, web_contents,
                                     /*is_pending=*/true, threat_type);
+}
+
+void ChromePasswordProtectionService::CheckGaiaPasswordChange() {
+  std::string new_gaia_password_hash = profile_->GetPrefs()->GetString(
+      password_manager::prefs::kSyncPasswordHash);
+  if (gaia_password_hash_ != new_gaia_password_hash) {
+    gaia_password_hash_ = new_gaia_password_hash;
+    OnGaiaPasswordChanged();
+  }
 }
 
 void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
