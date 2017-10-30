@@ -565,6 +565,8 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
 
   content::WebContentsObserver::Observe(contents);
   LogHistogramValue(signin_metrics::HISTOGRAM_SHOWN);
+  UMA_HISTOGRAM_BOOLEAN("Signin.UseDeprecatedGaiaSigninEndpoint",
+                        is_constrained == "1");
 }
 
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {

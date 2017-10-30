@@ -1118,6 +1118,13 @@ const char kReducedReferrerGranularityDescription[] =
     "reduce the amount of information in the 'referer' header for cross-origin "
     "requests.";
 
+const char kRemoveUsageOfDeprecatedGaiaSigninEndpointName[] =
+    "Remove usage of the deprecated GAIA sign-in endpoint";
+const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[] =
+    "The Gaia sign-in endpoint used for full-tab sign-in page is deprecated. "
+    "This flags controls wheter it should no longer be used during a sign-in "
+    " flow.";
+
 const char kRequestTabletSiteName[] =
     "Request tablet site option in the settings menu";
 const char kRequestTabletSiteDescription[] =

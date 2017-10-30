@@ -43,30 +43,43 @@ void SetUserSkippedPromo(Profile* profile);
 // Gets the sign in landing page URL.
 GURL GetLandingURL(signin_metrics::AccessPoint access_point);
 
-// Returns the sign in promo URL wth the given arguments in the query.
+// Returns the sign in promo URL that can be used in a full browser tab with
+// the given arguments in the query.
 // |access_point| indicates where the sign in is being initiated.
 // |reason| indicates the purpose of using this URL.
 // |auto_close| whether to close the sign in promo automatically when done.
-// |is_constrained} whether to load the URL in a constrained window, false
-// by default.
-GURL GetPromoURL(signin_metrics::AccessPoint access_point,
-                 signin_metrics::Reason reason,
-                 bool auto_close);
-GURL GetPromoURL(signin_metrics::AccessPoint access_point,
-                 signin_metrics::Reason reason,
-                 bool auto_close,
-                 bool is_constrained);
+GURL GetPromoURLForTab(signin_metrics::AccessPoint access_point,
+                       signin_metrics::Reason reason,
+                       bool auto_close);
 
-// Returns a sign in promo URL specifically for reauthenticating |account_id|.
-GURL GetReauthURL(signin_metrics::AccessPoint access_point,
-                  signin_metrics::Reason reason,
-                  Profile* profile,
-                  const std::string& account_id);
+// Returns the sign in promo URL that can be used in a modal dialog with
+// the given arguments in the query.
+// |access_point| indicates where the sign in is being initiated.
+// |reason| indicates the purpose of using this URL.
+// |auto_close| whether to close the sign in promo automatically when done.
+GURL GetPromoURLForDialog(signin_metrics::AccessPoint access_point,
+                          signin_metrics::Reason reason,
+                          bool auto_close);
 
-// Returns a sign in promo URL specifically for reauthenticating |email|.
-GURL GetReauthURLWithEmail(signin_metrics::AccessPoint access_point,
+// Returns a sign in promo URL specifically for reauthenticating |account_id|
+// that can be used in a full browser tab.
+GURL GetReauthURLForTab(signin_metrics::AccessPoint access_point,
+                        signin_metrics::Reason reason,
+                        Profile* profile,
+                        const std::string& account_id);
+
+// Returns a sign in promo URL specifically for reauthenticating |account_id|
+// that can be used in a modal dialog.
+GURL GetReauthURLForDialog(signin_metrics::AccessPoint access_point,
                            signin_metrics::Reason reason,
-                           const std::string& email);
+                           Profile* profile,
+                           const std::string& account_id);
+
+// Returns a sign in promo URL specifically for reauthenticating |email| that
+// can be used in a modal dialog.
+GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
+                                    signin_metrics::Reason reason,
+                                    const std::string& email);
 
 // Gets the next page URL from the query portion of the sign in promo URL.
 GURL GetNextPageURLForPromoURL(const GURL& url);

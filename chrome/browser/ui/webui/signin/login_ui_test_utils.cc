@@ -254,7 +254,8 @@ bool SignInWithUI(Browser* browser,
       SigninTrackerFactory::CreateForProfile(browser->profile(),
                                              &signin_observer);
 
-  GURL signin_url = signin::GetPromoURL(access_point, signin_reason, false);
+  GURL signin_url =
+      signin::GetPromoURLForTab(access_point, signin_reason, false);
   DVLOG(1) << "Navigating to " << signin_url;
   // For some tests, the window is not shown yet and this might be the first tab
   // navigation, so GetActiveWebContents() for CURRENT_TAB is NULL. That's why
