@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "ui/aura/client/aura_constants.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
     : public InProcessBrowserTest {
@@ -148,12 +149,17 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        ImmersiveModeStatusTabletMode) {
   ASSERT_FALSE(controller()->IsEnabled());
 
-  // Verify that after entering tablet mode, immersive mode is enabled.
+  aura::Window* window =
+      browser_view()->frame()->GetFrameView()->frame()->GetNativeWindow();
+  // Verify that after entering tablet mode, immersive mode is enabled, and the
+  // the associated window's top inset is 0 (the top of the window is not
+  // visible).
   ash::TabletModeController* tablet_mode_controller =
       ash::Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->EnableTabletModeWindowManager(true);
   tablet_mode_controller->FlushForTesting();
   EXPECT_TRUE(controller()->IsEnabled());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 
   // Verify that after minimizing, immersive mode is disabled.
   browser()->window()->Minimize();
@@ -179,12 +185,14 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that if the browser is not fullscreened, upon exiting tablet mode,
-  // immersive mode is not enabled.
+  // immersive mode is not enabled, and the associated window's top inset is
+  // greater than 0 (the top of the window is visible).
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
   tablet_mode_controller->EnableTabletModeWindowManager(false);
   tablet_mode_controller->FlushForTesting();
   EXPECT_FALSE(controller()->IsEnabled());
+  EXPECT_GT(window->GetProperty(aura::client::kTopViewInset), 0);
 }
 
 // Verify that the frame layout is as expected when using immersive mode in

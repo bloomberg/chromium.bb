@@ -113,6 +113,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
       const gfx::Rect& bounds,
       WindowSelectorItem* ignored_item);
 
+  // Shows or hides the selection widget. To be called by a window selector item
+  // when it is dragged.
+  void SetSelectionWidgetVisibility(bool visible);
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 

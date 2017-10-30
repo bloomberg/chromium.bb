@@ -838,6 +838,8 @@ aura::Window* WindowSelectorItem::GetOverviewWindowForMinimizedStateForTest() {
 }
 
 void WindowSelectorItem::StartDrag() {
+  window_grid_->SetSelectionWidgetVisibility(false);
+
   gfx::Rect scaled_bounds(target_bounds_);
   scaled_bounds.Inset(-target_bounds_.width() * kDragWindowScale,
                       -target_bounds_.height() * kDragWindowScale);
@@ -855,6 +857,8 @@ void WindowSelectorItem::StartDrag() {
 }
 
 void WindowSelectorItem::EndDrag() {
+  window_grid_->SetSelectionWidgetVisibility(true);
+
   // First stack this item's window below the snapped window if split view mode
   // is active.
   aura::Window* dragged_window = GetWindow();
