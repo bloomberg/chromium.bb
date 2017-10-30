@@ -53,8 +53,7 @@ class ClientCertIdentityNSS : public ClientCertIdentity {
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&FetchClientCertPrivateKey, base::Unretained(certificate()),
-                   cert_certificate_.get(),
-                   base::Unretained(password_delegate_.get())),
+                   cert_certificate_.get(), password_delegate_),
         private_key_callback);
   }
 
