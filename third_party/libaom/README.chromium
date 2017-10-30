@@ -1,0 +1,15 @@
+Name: Alliance for Open Media Video Codec
+Short Name: libaom
+URL: https://aomedia.googlesource.com/aom/
+Version: 0
+Date: 15 September 2017
+License: BSD
+License File: source/libaom/LICENSE
+Security Critical: yes
+
+Description:
+Provides tools for:
+ - creating AV1 bitstreams for storage and transmission.
+ - decoding AV1 bitstreams for display.
+
+Local Modifications:

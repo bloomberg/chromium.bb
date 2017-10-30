@@ -98,6 +98,7 @@
 /leakcanary/src
 /leveldatabase/src
 /leveldb
+/libaom/source/libaom
 /libc++-static/libc++.a
 /libaddressinput/src
 /libdrm/src
