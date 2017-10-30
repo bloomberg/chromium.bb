@@ -123,22 +123,18 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         border-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
         border-radius: 2px;
         pointer-events: none;
-        -webkit-transition: background-color 140ms, border-color 140ms;
         transition: background-color 140ms, border-color 140ms;
       }
 
       /* checkbox checked animations */
       #checkbox.checked #checkmark {
-        -webkit-animation: checkmark-expand 140ms ease-out forwards;
         animation: checkmark-expand 140ms ease-out forwards;
       }
 
       @-webkit-keyframes checkmark-expand {
         0% {
-          -webkit-transform: scale(0, 0) rotate(45deg);
         }
         100% {
-          -webkit-transform: scale(1, 1) rotate(45deg);
         }
       }
 
@@ -166,13 +162,11 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         border-right-width: calc(2/15 * var(--calculated-paper-checkbox-size));
         border-bottom-width: calc(2/15 * var(--calculated-paper-checkbox-size));
         border-color: var(--paper-checkbox-checkmark-color, white);
-        -webkit-transform-origin: 97% 86%;
         transform-origin: 97% 86%;
         box-sizing: content-box; /* protect against page-level box-sizing */
       }
 
       :host-context([dir="rtl"]) #checkmark {
-        -webkit-transform-origin: 50% 14%;
         transform-origin: 50% 14%;
       }
 

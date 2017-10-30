@@ -93,7 +93,6 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
         opacity: 0.6;
         pointer-events: none;
-        -webkit-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
       }
 
@@ -119,9 +118,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
 
       #onRadio {
         background-color: var(--paper-radio-button-checked-color, --primary-color);
-        -webkit-transform: scale(0);
         transform: scale(0);
-        transition: -webkit-transform ease 0.28s;
         transition: transform ease 0.28s;
         will-change: transform;
       }
@@ -131,7 +128,6 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       }
 
       :host([checked]) #onRadio {
-        -webkit-transform: scale(0.5);
         transform: scale(0.5);
       }
 

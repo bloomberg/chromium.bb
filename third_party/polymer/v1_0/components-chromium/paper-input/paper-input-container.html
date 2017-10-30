@@ -138,18 +138,14 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
         border-bottom: 2px solid var(--paper-input-container-focus-color, --primary-color);
 
-        -webkit-transform-origin: center center;
         transform-origin: center center;
-        -webkit-transform: scale3d(0,1,1);
         transform: scale3d(0,1,1);
 
         @apply(--paper-input-container-underline-focus);
       }
 
       .underline.is-highlighted .focused-line {
-        -webkit-transform: none;
         transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
 
         @apply(--paper-transition-easing);
@@ -157,9 +153,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
       .underline.is-invalid .focused-line {
         border-color: var(--paper-input-container-invalid-color, --error-color);
-        -webkit-transform: none;
         transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
 
         @apply(--paper-transition-easing);
@@ -204,9 +198,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         width: 100%;
         font: inherit;
         color: var(--paper-input-container-color, --secondary-text-color);
-        -webkit-transition: -webkit-transform 0.25s, width 0.25s;
         transition: transform 0.25s, width 0.25s;
-        -webkit-transform-origin: left top;
         transform-origin: left top;
 
         @apply(--paper-font-common-nowrap);
@@ -217,7 +209,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
       .input-content.label-is-floating ::content label,
       .input-content.label-is-floating ::content .paper-input-label {
-        -webkit-transform: translateY(-75%) scale(0.75);
         transform: translateY(-75%) scale(0.75);
 
         /* Since we scale to 75/100 of the size, we actually have 100/75 of the
@@ -233,7 +224,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
          * actually makes
          * it wider on the right side, not left side, as you would expect in RTL */
         width: 100%;
-        -webkit-transform-origin: right top;
         transform-origin: right top;
       }
 
