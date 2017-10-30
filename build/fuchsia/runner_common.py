@@ -549,7 +549,12 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
       _RunAndCheck(dry_run, ['truncate', '-s100M', img_filename,])
       _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'),
                              img_filename, 'mkfs'])
-      qemu_command.extend(['-drive', 'file=' + img_filename + ',format=raw'])
+      # Specifically set an AHCI drive, otherwise the drive won't be mountable
+      # on ARM64.
+      qemu_command.extend(['-drive', 'file=' + img_filename +
+                               ',if=none,format=raw,id=resultsdisk',
+                           '-device', 'ahci,id=ahci',
+                           '-device', 'ide-drive,drive=resultsdisk,bus=ahci.0'])
 
     if dry_run:
       print 'Run:', ' '.join(qemu_command)
