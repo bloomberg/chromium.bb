@@ -13,8 +13,6 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 class InternalAuthTest : public ::testing::Test {
  public:
   InternalAuthTest() {
@@ -184,5 +182,3 @@ TEST_F(InternalAuthTest, ChangeKey) {
   // Passport should not survive series of key changes.
   ASSERT_FALSE(InternalAuthVerification::VerifyPassport(token, "zapata", map));
 }
-
-}  // namespace chrome

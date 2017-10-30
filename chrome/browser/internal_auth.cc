@@ -193,8 +193,6 @@ void CreatePassport(const std::string& domain,
 
 }  // namespace
 
-namespace chrome {
-
 class InternalAuthVerificationService {
  public:
   InternalAuthVerificationService()
@@ -321,18 +319,14 @@ class InternalAuthVerificationService {
   DISALLOW_COPY_AND_ASSIGN(InternalAuthVerificationService);
 };
 
-}  // namespace chrome
-
 namespace {
 
-static base::LazyInstance<chrome::InternalAuthVerificationService>::
-    DestructorAtExit g_verification_service = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<InternalAuthVerificationService>::DestructorAtExit
+    g_verification_service = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<base::Lock>::Leaky
     g_verification_service_lock = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace chrome {
 
 class InternalAuthGenerationService : public base::ThreadChecker {
  public:
@@ -428,16 +422,12 @@ class InternalAuthGenerationService : public base::ThreadChecker {
   DISALLOW_COPY_AND_ASSIGN(InternalAuthGenerationService);
 };
 
-}  // namespace chrome
-
 namespace {
 
-static base::LazyInstance<chrome::InternalAuthGenerationService>::
-    DestructorAtExit g_generation_service = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<InternalAuthGenerationService>::DestructorAtExit
+    g_generation_service = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace chrome {
 
 // static
 bool InternalAuthVerification::VerifyPassport(
@@ -477,4 +467,3 @@ void InternalAuthGeneration::GenerateNewKey() {
   g_generation_service.Get().GenerateNewKey();
 }
 
-}  // namespace chrome
