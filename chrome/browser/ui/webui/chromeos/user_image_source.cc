@@ -131,8 +131,16 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
 
   if (user) {
     if (user->has_image_bytes()) {
-      return GetUserImageFrame(user->image_bytes(), user->image_format(),
-                               frame);
+      if (user->image_format() == user_manager::UserImage::FORMAT_PNG) {
+        return GetUserImageFrame(user->image_bytes(), user->image_format(),
+                                 frame);
+      } else {
+        scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes);
+        gfx::PNGCodec::EncodeBGRASkBitmap(*user->GetImage().bitmap(),
+                                          false /* discard transparency */,
+                                          &data->data());
+        return data;
+      }
     }
     if (user->image_is_stub()) {
       return LoadUserImageFrameForScaleFactor(IDR_LOGIN_DEFAULT_USER, frame,
