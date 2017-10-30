@@ -26,16 +26,16 @@ class ReadingListModel;
 
 // Changes the constraints of searchField based on its initialFrame and the
 // scroll view's y |offset|. Also adjust the alpha values for |_searchBoxBorder|
-// and |_shadow| and the constant values for the |constraints|.
-// If |width| is > 0, it is used as the width to compute the new fake omnibox
-// width.
+// and |_shadow| and the constant values for the |constraints|.|screenWidth| is
+// the width of the screen, including the space outside the safe area. The
+// |safeAreaInsets| is relative to the view used to calculate the |width|.
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
             subviewConstraints:(NSArray*)constraints
-                 logoIsShowing:(BOOL)logoIsShowing
                      forOffset:(CGFloat)offset
-                         width:(CGFloat)width;
+                   screenWidth:(CGFloat)screenWidth
+                safeAreaInsets:(UIEdgeInsets)safeAreaInsets;
 
 // Initializes |_searchBoxBorder| and |_shadow| and adds them to |searchField|.
 - (void)addViewsToSearchField:(UIView*)searchField;
