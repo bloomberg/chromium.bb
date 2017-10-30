@@ -11,8 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 
-namespace chrome {
-
 // Call InternalAuthVerification methods on any thread.
 class InternalAuthVerification {
  public:
@@ -65,7 +63,5 @@ class InternalAuthGeneration {
   // Used only by tests.
   static void GenerateNewKey();
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_INTERNAL_AUTH_H_
