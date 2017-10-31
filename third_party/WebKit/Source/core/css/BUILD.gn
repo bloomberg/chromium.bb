@@ -294,6 +294,7 @@ blink_core_sources("css") {
     "StyleSheetList.h",
     "TreeScopeStyleSheetCollection.cpp",
     "TreeScopeStyleSheetCollection.h",
+    "ZoomAdjustedPixelValue.h",
     "cssom/CSSKeywordValue.cpp",
     "cssom/CSSKeywordValue.h",
     "cssom/CSSMathMax.h",

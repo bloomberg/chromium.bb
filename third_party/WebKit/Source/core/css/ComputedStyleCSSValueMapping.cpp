@@ -58,7 +58,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/PropertyRegistry.h"
-#include "core/css/zoomAdjustedPixelValue.h"
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
