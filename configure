@@ -499,6 +499,7 @@ post_process_cmdline() {
     if enabled adopted_experiments; then
       soft_enable ext_tx
       soft_enable cdef
+      soft_enable cdef_singlepass
       soft_enable ext_intra
       soft_enable intra_edge
       soft_enable mv_compress
