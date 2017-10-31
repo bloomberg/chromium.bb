@@ -1796,7 +1796,7 @@ int HttpCache::Transaction::DoUpdateCachedResponseComplete(int result) {
   } else if (entry_ && !handling_206_) {
     DCHECK_EQ(READ_WRITE, mode_);
     if ((!partial_ && !cache_->IsWritingInProgress(entry_)) ||
-        partial_->IsLastRange()) {
+        (partial_ && partial_->IsLastRange())) {
       mode_ = READ;
     }
     // We no longer need the network transaction, so destroy it.
