@@ -72,6 +72,17 @@
       opacity: 0;
     }
 
+    /* The name-container font-sizes is to counteract the countainer's
+     * scale(0.8), so that the text still stays legible. */
+    podrow[ncolumns='6'] .pod .name-container {
+      font-size: 1.25em;
+      transition: font-size 180ms;
+    }
+
+    podrow[ncolumns='6'] .pod.focused .name-container {
+      font-size: 1em;
+    }
+
     .pod {
       box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .24),
                   0 0 2px 0 rgba(0, 0, 0, .12);
