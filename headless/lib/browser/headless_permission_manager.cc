@@ -5,11 +5,14 @@
 #include "headless/lib/browser/headless_permission_manager.h"
 
 #include "base/callback.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_type.h"
 
 namespace headless {
 
-HeadlessPermissionManager::HeadlessPermissionManager() : PermissionManager() {}
+HeadlessPermissionManager::HeadlessPermissionManager(
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {}
 
 HeadlessPermissionManager::~HeadlessPermissionManager() {}
 
@@ -20,7 +23,15 @@ int HeadlessPermissionManager::RequestPermission(
     bool user_gesture,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   // In headless mode we just pretent the user "closes" any permission prompt,
-  // without accepting or denying.
+  // without accepting or denying. Push Notifications are the exception to this,
+  // which are explicitly disabled in Incognito mode.
+  if (browser_context_->IsOffTheRecord() &&
+      (permission == content::PermissionType::PUSH_MESSAGING ||
+       permission == content::PermissionType::NOTIFICATIONS)) {
+    callback.Run(blink::mojom::PermissionStatus::DENIED);
+    return kNoPendingOperation;
+  }
+
   callback.Run(blink::mojom::PermissionStatus::ASK);
   return kNoPendingOperation;
 }
