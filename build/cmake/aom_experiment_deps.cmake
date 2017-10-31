@@ -39,6 +39,7 @@ macro (fix_experiment_configs)
   endif ()
 
   if (CONFIG_DAALA_TX)
+     set(CONFIG_HIGHBITDEPTH 1)
      set(CONFIG_DAALA_TX4 1)
      set(CONFIG_DAALA_TX8 1)
      set(CONFIG_DAALA_TX16 1)

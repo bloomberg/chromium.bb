@@ -109,6 +109,8 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/context_tree.h"
     "${AOM_ROOT}/av1/encoder/cost.c"
     "${AOM_ROOT}/av1/encoder/cost.h"
+    "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.c"
+    "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.h"
     "${AOM_ROOT}/av1/encoder/dct.c"
     "${AOM_ROOT}/av1/encoder/encodeframe.c"
     "${AOM_ROOT}/av1/encoder/encodeframe.h"

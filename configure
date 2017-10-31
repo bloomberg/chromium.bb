@@ -560,6 +560,7 @@ post_process_cmdline() {
       disable_feature rawbits
     fi
     if enabled daala_tx; then
+      enable_feature highbitdepth
       enable_feature daala_tx4
       enable_feature daala_tx8
       enable_feature daala_tx16
