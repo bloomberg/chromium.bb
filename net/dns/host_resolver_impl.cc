@@ -2490,8 +2490,9 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
   // the newly started jobs use the new config.
   if (dns_client_.get()) {
     // Make sure that if the update is an initial read, not a change, there
-    // wasn't already a DnsConfig.
-    DCHECK(config_changed || !dns_client_->GetConfig());
+    // wasn't already a DnsConfig or it's the same one.
+    DCHECK(config_changed || !dns_client_->GetConfig() ||
+           dns_client_->GetConfig()->Equals(dns_config));
     dns_client_->SetConfig(dns_config);
     if (dns_client_->GetConfig())
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
