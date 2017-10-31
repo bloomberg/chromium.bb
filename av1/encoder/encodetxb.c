@@ -277,7 +277,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   int c;
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
-  uint16_t update_eob = 0;
+  int update_eob = -1;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   uint8_t levels[MAX_TX_SQUARE];
 
@@ -366,7 +366,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 
   for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
-    update_eob = 0;
     for (c = eob - 1; c >= 0; --c) {
       const tran_low_t level = abs(tcoeff[scan[c]]);
       int ctx;
@@ -1974,7 +1973,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  int eob = p->eobs[block], update_eob = 0;
+  int eob = p->eobs[block], update_eob = -1;
   const PLANE_TYPE plane_type = pd->plane_type;
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
@@ -2068,7 +2067,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 #if !USE_CAUSAL_BASE_CTX
   // Reverse process order to handle coefficient level and sign.
   for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
-    update_eob = 0;
     for (c = eob - 1; c >= 0; --c) {
       const tran_low_t level = abs(tcoeff[scan[c]]);
       int ctx;
