@@ -26,7 +26,6 @@ static_library("renderer") {
     "//ppapi/proxy",
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
-    "//third_party/WebKit/public:blink",
     "//third_party/icu",
     "//v8",
   ]
