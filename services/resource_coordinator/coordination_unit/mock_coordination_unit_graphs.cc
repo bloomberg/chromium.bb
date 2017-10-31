@@ -7,6 +7,9 @@
 #include <string>
 
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
+#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
@@ -16,23 +19,14 @@ class ServiceContextRef;
 
 namespace resource_coordinator {
 
-namespace {
-
-TestCoordinationUnitWrapper CreateCoordinationUnit(CoordinationUnitType type) {
-  CoordinationUnitID cu_id(type, std::string());
-  return TestCoordinationUnitWrapper(
-      CoordinationUnitBase::CreateCoordinationUnit(cu_id, nullptr));
-}
-
-}  // namespace
-
 MockSinglePageInSingleProcessCoordinationUnitGraph::
     MockSinglePageInSingleProcessCoordinationUnitGraph()
-    : frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
-      process(CreateCoordinationUnit(CoordinationUnitType::kProcess)),
-      page(CreateCoordinationUnit(CoordinationUnitType::kPage)) {
-  page->AddChild(frame->id());
-  process->AddChild(frame->id());
+    : frame(TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create()),
+      process(
+          TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create()),
+      page(TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create()) {
+  page->AddFrame(frame->id());
+  process->AddFrame(frame->id());
 }
 
 MockSinglePageInSingleProcessCoordinationUnitGraph::
@@ -40,10 +34,12 @@ MockSinglePageInSingleProcessCoordinationUnitGraph::
 
 MockMultiplePagesInSingleProcessCoordinationUnitGraph::
     MockMultiplePagesInSingleProcessCoordinationUnitGraph()
-    : other_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
-      other_page(CreateCoordinationUnit(CoordinationUnitType::kPage)) {
-  other_page->AddChild(other_frame->id());
-  process->AddChild(other_frame->id());
+    : other_frame(
+          TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create()),
+      other_page(
+          TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create()) {
+  other_page->AddFrame(other_frame->id());
+  process->AddFrame(other_frame->id());
 }
 
 MockMultiplePagesInSingleProcessCoordinationUnitGraph::
@@ -51,11 +47,13 @@ MockMultiplePagesInSingleProcessCoordinationUnitGraph::
 
 MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
     MockSinglePageWithMultipleProcessesCoordinationUnitGraph()
-    : child_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
-      other_process(CreateCoordinationUnit(CoordinationUnitType::kProcess)) {
-  frame->AddChild(child_frame->id());
-  page->AddChild(child_frame->id());
-  other_process->AddChild(child_frame->id());
+    : child_frame(
+          TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create()),
+      other_process(
+          TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create()) {
+  frame->AddChildFrame(child_frame->id());
+  page->AddFrame(child_frame->id());
+  other_process->AddFrame(child_frame->id());
 }
 
 MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
@@ -63,11 +61,13 @@ MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
 
 MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
     MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph()
-    : child_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
-      other_process(CreateCoordinationUnit(CoordinationUnitType::kProcess)) {
-  other_frame->AddChild(child_frame->id());
-  other_page->AddChild(child_frame->id());
-  other_process->AddChild(child_frame->id());
+    : child_frame(
+          TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create()),
+      other_process(
+          TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create()) {
+  other_frame->AddChildFrame(child_frame->id());
+  other_page->AddFrame(child_frame->id());
+  other_process->AddFrame(child_frame->id());
 }
 
 MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::

@@ -215,7 +215,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
-  resource_coordinator::ResourceCoordinatorInterface*
+  resource_coordinator::ProcessResourceCoordinator*
   GetProcessResourceCoordinator() override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -763,7 +763,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // determine if if a process should be backgrounded.
   int media_stream_count_ = 0;
 
-  std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
+  std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
       process_resource_coordinator_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend

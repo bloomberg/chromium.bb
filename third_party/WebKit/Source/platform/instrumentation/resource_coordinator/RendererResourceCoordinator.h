@@ -6,8 +6,7 @@
 #define RendererResourceCoordinator_h
 
 #include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-
-#include "platform/wtf/Noncopyable.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom-blink.h"
 
 namespace service_manager {
 class Connector;
@@ -27,7 +26,9 @@ class PLATFORM_EXPORT RendererResourceCoordinator
   static void SetCurrentRendererResourceCoordinatorForTesting(
       RendererResourceCoordinator*);
 
-  ~RendererResourceCoordinator() override;
+  ~RendererResourceCoordinator();
+
+  void SetExpectedTaskQueueingDuration(base::TimeDelta duration);
 
  protected:
   RendererResourceCoordinator();
@@ -35,6 +36,8 @@ class PLATFORM_EXPORT RendererResourceCoordinator
  private:
   RendererResourceCoordinator(service_manager::Connector*,
                               const std::string& service_name);
+
+  resource_coordinator::mojom::blink::ProcessCoordinationUnitPtr service_;
 };
 
 }  // namespace blink

@@ -8,6 +8,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/service_manager_connection.h"
+#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace resource_coordinator {
@@ -27,17 +28,11 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
 
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     gpu_process_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
-            content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-            resource_coordinator::CoordinationUnitType::kProcess);
+        base::MakeUnique<resource_coordinator::ProcessResourceCoordinator>(
+            content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
-    base::ProcessId pid = base::GetProcId(data.handle);
-    gpu_process_resource_coordinator_->SetProperty(
-        resource_coordinator::mojom::PropertyType::kPID, pid);
-
-    gpu_process_resource_coordinator_->SetProperty(
-        resource_coordinator::mojom::PropertyType::kLaunchTime,
-        base::Time::Now().ToTimeT());
+    gpu_process_resource_coordinator_->SetLaunchTime(base::Time::Now());
+    gpu_process_resource_coordinator_->SetPID(base::GetProcId(data.handle));
   }
 }
 

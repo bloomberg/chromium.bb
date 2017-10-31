@@ -6,7 +6,6 @@ source_set("instrumentation") {
   sources = [
     "PlatformInstrumentation.cpp",
     "PlatformInstrumentation.h",
-    "resource_coordinator/BlinkResourceCoordinatorBase.cpp",
     "resource_coordinator/BlinkResourceCoordinatorBase.h",
     "resource_coordinator/FrameResourceCoordinator.cpp",
     "resource_coordinator/FrameResourceCoordinator.h",

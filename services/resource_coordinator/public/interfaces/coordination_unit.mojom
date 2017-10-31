@@ -21,38 +21,23 @@ struct CoordinationUnitID {
   int64 id;
 };
 
-// TODO(lpy) Remove this interface once the per-type interface is fully in use.
-interface CoordinationUnit {
-  // Mainly used to force a round-trip to the service over the pipe for
-  // a specific unit, so we don't have to deal with possibly-not-yet-created
-  // children in AddChild()
-  GetID() => (CoordinationUnitID id);
-
-  // Add a new binding to an existing CoordinationUnit.
-  AddBinding(CoordinationUnit& request);
-
-  // child_id must represent a CU that already exists service-side,
-  // and can't be a direct ascendent or descendent of the current unit.
-  AddChild(CoordinationUnitID child_id);
-
-  // child_id must represent a CU that already exists service-side
-  // and is a direct descendent of the current unit.
-  RemoveChild(CoordinationUnitID child_id);
-
-  // Sends event signal to CoordinationUnit, an event signal are non-persistent.
-  SendEvent(Event event);
-
-  // Sets a property on the CoordinationUnit's internal key-value store.
-  SetProperty(PropertyType property_type, int64 value);
-};
-
 // A FrameCoordinationUnit has at most one ProcessCoordinationUnit as its
 // parent, at most one PageCoordinationUnit as its parent, at most one
 // FrameCoordinationUnit as parent frame, and can have many child frames.
 interface FrameCoordinationUnit {
+  // Mainly used to force a round-trip to the service over the pipe for
+  // a specific unit, so we don't have to deal with possibly-not-yet-created
+  // children.
+  GetID() => (CoordinationUnitID id);
+
+  // Add a new binding to an existing FrameCoordinationUnit.
+  AddBinding(FrameCoordinationUnit& request);
+  AddChildFrame(CoordinationUnitID cu_id);
+  RemoveChildFrame(CoordinationUnitID cu_id);
+
   // Property signals.
   SetAudibility(bool audible);
-  SetNetworkAlmostIdleness(bool idle);
+  SetNetworkAlmostIdle(bool idle);
 
   // Event signals.
   OnAlertFired();
@@ -60,6 +45,16 @@ interface FrameCoordinationUnit {
 };
 
 interface PageCoordinationUnit {
+  // Mainly used to force a round-trip to the service over the pipe for
+  // a specific unit, so we don't have to deal with possibly-not-yet-created
+  // children.
+  GetID() => (CoordinationUnitID id);
+
+  // Add a new binding to an existing PageCoordinationUnit.
+  AddBinding(PageCoordinationUnit& request);
+  AddFrame(CoordinationUnitID cu_id);
+  RemoveFrame(CoordinationUnitID cu_id);
+
   // Property signals.
   SetVisibility(bool visible);
   SetUKMSourceId(int64 ukm_source_id);
@@ -71,6 +66,16 @@ interface PageCoordinationUnit {
 };
 
 interface ProcessCoordinationUnit {
+  // Mainly used to force a round-trip to the service over the pipe for
+  // a specific unit, so we don't have to deal with possibly-not-yet-created
+  // children.
+  GetID() => (CoordinationUnitID id);
+
+  // Add a new binding to an existing ProcessCoordinationUnit.
+  AddBinding(ProcessCoordinationUnit& request);
+  AddFrame(CoordinationUnitID cu_id);
+  RemoveFrame(CoordinationUnitID cu_id);
+
   // Property signals.
   SetCPUUsage(double cpu_usage);
   SetExpectedTaskQueueingDuration(mojo.common.mojom.TimeDelta duration);
