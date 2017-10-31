@@ -351,8 +351,13 @@ class CommandBufferSetup {
     // Keep a reference to the translators, which keeps them in the cache even
     // after the decoder is reset. They are expensive to initialize, but they
     // don't keep state.
-    decoder_->GetTranslator(GL_VERTEX_SHADER)->AddRef();
-    decoder_->GetTranslator(GL_FRAGMENT_SHADER)->AddRef();
+    scoped_refptr<gles2::ShaderTranslatorInterface> translator =
+        decoder_->GetTranslator(GL_VERTEX_SHADER);
+    if (translator)
+      translator->AddRef();
+    translator = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
+    if (translator)
+      translator->AddRef();
     return decoder_->MakeCurrent();
   }
 
