@@ -38,6 +38,7 @@ static const int base_level_count_to_index[13] = {
   0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
 };
 
+// Note: TX_PAD_2D is dependent to this offset table.
 static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
   { -2, 0 }, { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -2 }, { 0, -1 }, { 0, 1 },
@@ -75,18 +76,23 @@ static INLINE void get_base_count_mag(int *mag, int *count,
   }
 }
 
-static INLINE int get_level_count_mag(
-    int *const mag, const uint8_t *const levels, const int bwl,
-    const int height, const int row, const int col, const int level,
-    const int (*nb_offset)[2], const int nb_num) {
+static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int width) {
+  return levels_buf + TX_PAD_TOP * (width + TX_PAD_HOR);
+}
+
+static INLINE int get_level_count_mag(int *const mag,
+                                      const uint8_t *const levels,
+                                      const int bwl, const int row,
+                                      const int col, const int level,
+                                      const int (*nb_offset)[2],
+                                      const int nb_num) {
   const int stride = 1 << bwl;
   int count = 0;
 
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
-      continue;
+    if (ref_col < 0 || ref_col >= stride) continue;
     const int pos = (ref_row << bwl) + ref_col;
     count += levels[pos] > level;
     if (nb_offset[idx][0] == 0 && nb_offset[idx][1] == 1) mag[0] = levels[pos];
@@ -162,15 +168,14 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
 
 static INLINE int get_base_ctx(const uint8_t *const levels,
                                const int c,  // raster order
-                               const int bwl, const int height,
-                               const int level) {
+                               const int bwl, const int level) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int level_minus_1 = level - 1;
   int mag_count = 0;
   int nb_mag[3] = { 0 };
   const int count =
-      get_level_count_mag(nb_mag, levels, bwl, height, row, col, level_minus_1,
+      get_level_count_mag(nb_mag, levels, bwl, row, col, level_minus_1,
                           base_ref_offset, BASE_CONTEXT_POSITION_NUM);
 
   for (int idx = 0; idx < 3; ++idx) mag_count += nb_mag[idx] > level;
@@ -180,6 +185,7 @@ static INLINE int get_base_ctx(const uint8_t *const levels,
 }
 
 #define BR_CONTEXT_POSITION_NUM 8  // Base range coefficient context
+// Note: TX_PAD_2D is dependent to this offset table.
 static const int br_ref_offset[BR_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
   { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 },
@@ -263,14 +269,14 @@ static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
 
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
-                             const int bwl, const int height) {
+                             const int bwl) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int level_minus_1 = NUM_BASE_LEVELS;
   int mag = 0;
   int nb_mag[3] = { 0 };
   const int count =
-      get_level_count_mag(nb_mag, levels, bwl, height, row, col, level_minus_1,
+      get_level_count_mag(nb_mag, levels, bwl, row, col, level_minus_1,
                           br_ref_offset, BR_CONTEXT_POSITION_NUM);
   for (int idx = 0; idx < 3; ++idx) mag = AOMMAX(mag, nb_mag[idx]);
   const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
@@ -279,6 +285,7 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
 
 #define SIG_REF_OFFSET_NUM 7
 
+// Note: TX_PAD_2D is dependent to these offset tables.
 static const int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { 0, 1 }, { 1, 0 }, { 1, 1 }, { 0, 2 }, { 2, 0 }, { 1, 2 }, { 2, 1 },
 };
@@ -293,9 +300,8 @@ static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
 
 #if USE_CAUSAL_BASE_CTX
 static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
-                                   const int height, const int row,
-                                   const int col, const TX_CLASS tx_class,
-                                   int *const mag) {
+                                   const int row, const int col,
+                                   const TX_CLASS tx_class, int *const mag) {
   int count = 0;
   *mag = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
@@ -311,9 +317,7 @@ static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
                                             : sig_ref_offset_horiz[idx][1]));
     const int ref_row = row + row_offset;
     const int ref_col = col + col_offset;
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
-        ref_col >= (1 << bwl))
-      continue;
+    if (ref_col >= (1 << bwl)) continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
     const int level = levels[nb_pos];
     count += (level != 0);
@@ -327,7 +331,7 @@ static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
 }
 #endif
 static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
-                               const int height, const int row, const int col,
+                               const int row, const int col,
                                const TX_CLASS tx_class) {
   int count = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
@@ -341,9 +345,7 @@ static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
                                    : ((tx_class == TX_CLASS_VERT)
                                           ? sig_ref_offset_vert[idx][1]
                                           : sig_ref_offset_horiz[idx][1]));
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
-        ref_col >= (1 << bwl))
-      continue;
+    if (ref_col >= (1 << bwl)) continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
     count += (levels[nb_pos] != 0);
   }
@@ -436,10 +438,10 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
   int tx_class = get_tx_class(tx_type);
 #if USE_CAUSAL_BASE_CTX
   int mag = 0;
-  int count = get_nz_count_mag(levels, bwl, height, row, col, tx_class, &mag);
+  int count = get_nz_count_mag(levels, bwl, row, col, tx_class, &mag);
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, height, mag, tx_type);
 #else
-  int count = get_nz_count(levels, bwl, height, row, col, tx_class);
+  int count = get_nz_count(levels, bwl, row, col, tx_class);
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, height, tx_type);
 #endif
 }

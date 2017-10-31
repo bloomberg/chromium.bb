@@ -69,9 +69,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       xd->plane[plane].seg_dequant_QTX[mbmi->segment_id];
   const int shift = av1_get_tx_scale(tx_size);
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
   int cul_level = 0;
-  uint8_t levels[MAX_TX_SQUARE];
+  uint8_t levels_buf[TX_PAD_2D];
+  uint8_t *const levels = set_levels(levels_buf, width);
   int8_t signs[MAX_TX_SQUARE];
 
   memset(tcoeffs, 0, sizeof(*tcoeffs) * seg_eob);
@@ -91,8 +93,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     return 0;
   }
 
-  memset(levels, 0, sizeof(levels[0]) * seg_eob);
-  memset(signs, 0, sizeof(signs[0]) * seg_eob);
+  memset(levels_buf, 0,
+         sizeof(*levels_buf) * (seg_eob + TX_PAD_VER * (width + TX_PAD_HOR)));
+  memset(signs, 0, sizeof(*signs) * seg_eob);
 
   (void)blk_row;
   (void)blk_col;
@@ -209,7 +212,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (*level <= i) continue;
 
-      ctx = get_base_ctx(levels, scan[c], bwl, height, i + 1);
+      ctx = get_base_ctx(levels, scan[c], bwl, i + 1);
 
       if (av1_read_record_bin(
               counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx], 2,
@@ -256,7 +259,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     if (*level <= NUM_BASE_LEVELS) continue;
 
-    ctx = get_br_ctx(levels, scan[c], bwl, height);
+    ctx = get_br_ctx(levels, scan[c], bwl);
 
     for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
       if (av1_read_record_bin(
