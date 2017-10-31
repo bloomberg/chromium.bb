@@ -607,8 +607,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   // Create the URLLoaderFactory as needed.
   if (!url_loader_factory_for_browser_process_) {
     GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_for_browser_process_),
-        base::GetUniqueIdForProcess());
+        mojo::MakeRequest(&url_loader_factory_for_browser_process_), 0);
   }
   return url_loader_factory_for_browser_process_.get();
 }
