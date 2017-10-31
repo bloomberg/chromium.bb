@@ -10,20 +10,13 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/ShadowRootInit.h"
 #include "core/layout/LayoutText.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 
 namespace blink {
 
-class WhitespaceAttacherTest : public ::testing::Test {
+class WhitespaceAttacherTest : public PageTestBase {
  protected:
-  void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  }
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   ShadowRoot& AttachShadow(Element& host);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 ShadowRoot& WhitespaceAttacherTest::AttachShadow(Element& host) {

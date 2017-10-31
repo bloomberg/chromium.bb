@@ -7,7 +7,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,14 +42,14 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
   std::vector<MessageSource> message_sources_;
 };
 
-class TouchEventTest : public ::testing::Test {
+class TouchEventTest : public PageTestBase {
  public:
-  TouchEventTest() {
+  void SetUp() override {
     chrome_client_ = new ConsoleCapturingChromeClient();
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
+    SetupPageWithClients(&clients);
   }
 
   const std::vector<String>& Messages() { return chrome_client_->Messages(); }
@@ -57,9 +57,7 @@ class TouchEventTest : public ::testing::Test {
     return chrome_client_->MessageSources();
   }
 
-  LocalDOMWindow& Window() { return *page_holder_->GetFrame().DomWindow(); }
-
-  Document& GetDocument() { return page_holder_->GetDocument(); }
+  LocalDOMWindow& Window() { return *GetFrame().DomWindow(); }
 
   TouchEvent* EventWithDispatchType(WebInputEvent::DispatchType dispatch_type) {
     WebTouchEvent web_touch_event(WebInputEvent::kTouchStart, 0, 0);

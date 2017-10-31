@@ -7,32 +7,21 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class WebNodeTest : public ::testing::Test {
+class WebNodeTest : public PageTestBase {
  protected:
-  Document& GetDocument() { return page_holder_->GetDocument(); }
-
   void SetInnerHTML(const String& html) {
     GetDocument().documentElement()->SetInnerHTMLFromString(html);
   }
 
   WebNode Root() { return WebNode(GetDocument().documentElement()); }
-
- private:
-  void SetUp() override;
-
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
-
-void WebNodeTest::SetUp() {
-  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
 
 TEST_F(WebNodeTest, QuerySelectorMatches) {
   SetInnerHTML("<div id=x><span class=a></span></div>");
