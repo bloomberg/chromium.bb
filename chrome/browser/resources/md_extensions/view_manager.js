@@ -71,19 +71,22 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!Element} element
-     * @param {!string} animation
+     * @param {!Element} view
+     * @param {string} animation
      * @return {!Promise}
      * @private
      */
-    enter_: function(element, animation) {
+    enter_: function(view, animation) {
       const animationFunction = extensions.viewAnimations.get(animation);
       assert(animationFunction);
 
-      element.classList.add('active');
-      element.dispatchEvent(new CustomEvent('view-enter-start'));
-      return animationFunction(element).then(function() {
-        element.dispatchEvent(new CustomEvent('view-enter-finish'));
+      let effectiveView =
+          view.matches('[is=cr-lazy-render]') ? view.get() : view;
+
+      effectiveView.classList.add('active');
+      effectiveView.dispatchEvent(new CustomEvent('view-enter-start'));
+      return animationFunction(effectiveView).then(() => {
+        effectiveView.dispatchEvent(new CustomEvent('view-enter-finish'));
       });
     },
 

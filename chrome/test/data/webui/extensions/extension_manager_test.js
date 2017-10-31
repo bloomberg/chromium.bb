@@ -22,8 +22,9 @@ cr.define('extension_manager_tests', function() {
     /** @type {extensions.Manager} */
     var manager;
 
-    function isActiveView(viewId) {
-      expectEquals(viewId, manager.$.viewManager.querySelector('.active').id);
+    /** @param {string} viewElement */
+    function assertViewActive(tagName) {
+      expectTrue(!!manager.$.viewManager.querySelector(`${tagName}.active`));
     }
 
     setup(function() {
@@ -122,34 +123,34 @@ cr.define('extension_manager_tests', function() {
       // We start on the item list.
       MockInteractions.tap(manager.$$('#sidebar').$['sections-extensions']);
       Polymer.dom.flush();
-      isActiveView(Page.LIST);
+      assertViewActive('extensions-item-list');
 
       // Switch: item list -> keyboard shortcuts.
       MockInteractions.tap(manager.$$('#sidebar').$['sections-shortcuts']);
       Polymer.dom.flush();
-      isActiveView(Page.SHORTCUTS);
+      assertViewActive('extensions-keyboard-shortcuts');
 
       // Switch: item list -> detail view.
       var item = manager.$['items-list'].$$('extensions-item');
       assert(item);
       item.onDetailsTap_();
       Polymer.dom.flush();
-      isActiveView(Page.DETAILS);
+      assertViewActive('extensions-detail-view');
 
       // Switch: detail view -> keyboard shortcuts.
       MockInteractions.tap(manager.$$('#sidebar').$['sections-shortcuts']);
       Polymer.dom.flush();
-      isActiveView(Page.SHORTCUTS);
+      assertViewActive('extensions-keyboard-shortcuts');
 
       // We get back on the item list.
       MockInteractions.tap(manager.$$('#sidebar').$['sections-extensions']);
       Polymer.dom.flush();
-      isActiveView(Page.LIST);
+      assertViewActive('extensions-item-list');
     });
 
     test(assert(TestNames.UrlNavigationToDetails), function() {
-      isActiveView(Page.DETAILS);
-      var detailsView = manager.$['details-view'];
+      assertViewActive('extensions-detail-view');
+      var detailsView = manager.$$('extensions-detail-view');
       expectEquals('ldnnhddmnhbkjipkidpdiheffobcpfmf', detailsView.data.id);
     });
 
@@ -165,11 +166,13 @@ cr.define('extension_manager_tests', function() {
       manager.addItem(extension);
       manager.addItem(secondExtension);
       var data = manager.extensions[0];
+      // The detail view is not present until navigation.
+      expectFalse(!!manager.$$('extensions-detail-view'));
       // TODO(scottchen): maybe testing too many things in a single unit test.
       extensions.navigation.navigateTo(
           {page: Page.DETAILS, extensionId: extension.id});
-      Polymer.dom.flush();
-      var detailsView = manager.$['details-view'];
+      var detailsView = manager.$$('extensions-detail-view');
+      expectTrue(!!detailsView);  // View should now be present.
       expectEquals(extension.id, detailsView.data.id);
       expectEquals(oldDescription, detailsView.data.description);
       expectEquals(
