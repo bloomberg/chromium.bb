@@ -151,12 +151,18 @@ class HWTestList(object):
     # N.B.  The ordering here is coupled with the column order of
     # entries in _paladin_hwtest_assignments, below.  If you change the
     # ordering here you must also change the ordering there.
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    **kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                    **kwargs)]
+    return [
+        config_lib.HWTestConfig(
+            constants.HWTEST_PROVISION_SUITE,
+            blocking=True,
+            suite_args={'num_required': 1},
+            **kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                **kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                **kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                **kwargs)]
 
   def DefaultListCQ(self, **kwargs):
     """Return a default list of HWTestConfigs for a CQ build.
@@ -2601,6 +2607,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
+  # Remove provision suite.
+  sharded_hw_tests.pop(0)
   for board_assignments in _paladin_hwtest_assignments:
     assert len(board_assignments) == len(sharded_hw_tests)
     for board, suite in zip(board_assignments, sharded_hw_tests):
@@ -3622,23 +3630,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'betty-release':
           site_config.templates.tast_vm_canary_tests,
-
-      'auron_paine-paladin': {
-          'hw_tests': [
-              config_lib.HWTestConfig(
-                  constants.HWTEST_PROVISION_SUITE,
-                  pool=constants.HWTEST_PALADIN_POOL,
-                  blocking=True,
-                  timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
-                  file_bugs=False,
-                  priority=constants.HWTEST_CQ_PRIORITY,
-                  minimum_duts=4,
-                  suite_args={
-                      'num_required': 1,
-                  },
-              ),
-          ] + hw_test_list.DefaultListCQ(),
-      },
 
   }
 
