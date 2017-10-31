@@ -136,7 +136,10 @@ float SVGLength::ScaleByPercentage(float input) const {
 }
 
 SVGParsingError SVGLength::SetValueAsString(const String& string) {
-  if (string.IsEmpty()) {
+  // TODO(fs): Preferably we wouldn't need to special-case the null
+  // string (which we'll get for example for removeAttribute.)
+  // Hopefully work on crbug.com/225807 can help here.
+  if (string.IsNull()) {
     value_ =
         CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kUserUnits);
     return SVGParseStatus::kNoError;
