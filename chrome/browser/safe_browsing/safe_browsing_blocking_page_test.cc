@@ -248,10 +248,11 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       net::URLRequestContextGetter* request_context_getter,
       history::HistoryService* history_service,
-      bool trim_to_ad_tags) override {
+      bool trim_to_ad_tags,
+      ThreatDetailsDoneCallback done_callback) override {
     details_ = new ThreatDetails(delegate, web_contents, unsafe_resource,
                                  request_context_getter, history_service,
-                                 trim_to_ad_tags);
+                                 trim_to_ad_tags, done_callback);
     return details_;
   }
 

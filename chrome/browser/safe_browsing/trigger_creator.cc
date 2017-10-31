@@ -30,13 +30,19 @@ void TriggerCreator::MaybeCreateTriggersForWebContents(
     return;
   }
 
+  TriggerManager* trigger_manager =
+      g_browser_process->safe_browsing_service()->trigger_manager();
+
+  // Create the helper for listening to events for this webcontents, created for
+  // all tabs since reports could be triggered from other places besides here.
+  safe_browsing::TriggerManagerWebContentsHelper::CreateForWebContents(
+      web_contents, trigger_manager);
+
   // We only start triggers for this tab if they are eligible to collect data
   // (eg: because of opt-ins, available quota, etc). If we skip a trigger but
   // later opt-in changes or quota becomes available, the trigger won't be
   // running on old tabs, but that's acceptable. The trigger will be started for
   // new tabs.
-  TriggerManager* trigger_manager =
-      g_browser_process->safe_browsing_service()->trigger_manager();
   SBErrorOptions options = TriggerManager::GetSBErrorDisplayOptions(
       *profile->GetPrefs(), *web_contents);
   if (trigger_manager->CanStartDataCollection(options,

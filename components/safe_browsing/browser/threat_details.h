@@ -64,6 +64,10 @@ using KeyToFrameTreeIdMap = base::hash_map<std::string, int>;
 // the Element IDs of the top-level HTML Elements in this frame.
 using FrameTreeIdToChildIdsMap = base::hash_map<int, std::unordered_set<int>>;
 
+// Callback used to notify a caller that ThreatDetails has finished creating and
+// sending a report.
+using ThreatDetailsDoneCallback = base::Callback<void(content::WebContents*)>;
+
 class ThreatDetails : public base::RefCountedThreadSafe<
                           ThreatDetails,
                           content::BrowserThread::DeleteOnUIThread>,
@@ -78,7 +82,8 @@ class ThreatDetails : public base::RefCountedThreadSafe<
       const UnsafeResource& resource,
       net::URLRequestContextGetter* request_context_getter,
       history::HistoryService* history_service,
-      bool trim_to_ad_tags);
+      bool trim_to_ad_tags,
+      ThreatDetailsDoneCallback done_callback);
 
   // Makes the passed |factory| the factory used to instantiate
   // SafeBrowsingBlockingPage objects. Useful for tests.
@@ -111,7 +116,9 @@ class ThreatDetails : public base::RefCountedThreadSafe<
                 const UnsafeResource& resource,
                 net::URLRequestContextGetter* request_context_getter,
                 history::HistoryService* history_service,
-                bool trim_to_ad_tags);
+                bool trim_to_ad_tags,
+                ThreatDetailsDoneCallback done_callback);
+
   // Default constructor for testing only.
   ThreatDetails();
 
@@ -179,6 +186,9 @@ class ThreatDetails : public base::RefCountedThreadSafe<
                      const std::vector<AttributeNameValue>& attributes,
                      const ClientSafeBrowsingReportRequest::Resource* resource);
 
+  // Called when the report is complete. Runs |done_callback_|.
+  void AllDone();
+
   scoped_refptr<BaseUIManager> ui_manager_;
 
   const UnsafeResource resource_;
@@ -240,6 +250,16 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   // Used to collect redirect urls from the history service
   scoped_refptr<ThreatDetailsRedirectsCollector> redirects_collector_;
 
+  // Callback to run when the report is finished.
+  ThreatDetailsDoneCallback done_callback_;
+
+  // Whether this ThreatDetails has begun finalizing the report and is expected
+  // to invoke |done_callback_| when it finishes.
+  bool all_done_expected_;
+
+  // Whether the |done_callback_| has been invoked.
+  bool is_all_done_;
+
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HistoryServiceUrls);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HttpsResourceSanitization);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HTTPCacheNoEntries);
@@ -263,7 +283,8 @@ class ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       net::URLRequestContextGetter* request_context_getter,
       history::HistoryService* history_service,
-      bool trim_to_ad_tags) = 0;
+      bool trim_to_ad_tags,
+      ThreatDetailsDoneCallback done_callback) = 0;
 };
 
 }  // namespace safe_browsing
