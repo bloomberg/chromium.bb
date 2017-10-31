@@ -108,12 +108,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerVersionAttributes)
-  IPC_STRUCT_TRAITS_MEMBER(installing)
-  IPC_STRUCT_TRAITS_MEMBER(waiting)
-  IPC_STRUCT_TRAITS_MEMBER(active)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientInfo)
   IPC_STRUCT_TRAITS_MEMBER(client_uuid)
   IPC_STRUCT_TRAITS_MEMBER(page_visibility_state)
@@ -243,13 +237,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* thread_id */,
                      int /* handle_id */,
                      blink::mojom::ServiceWorkerState)
-
-// Tells the child process to set service workers for the given registration.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetVersionAttributes,
-                     int /* thread_id */,
-                     int /* registration_handle_id */,
-                     int /* changed_mask */,
-                     content::ServiceWorkerVersionAttributes)
 
 // Informs the child process that new ServiceWorker enters the installation
 // phase.

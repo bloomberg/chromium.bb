@@ -239,11 +239,24 @@ void ServiceWorkerRegistrationHandle::SetVersionAttributes(
     ServiceWorkerVersion* active_version) {
   if (!provider_host_)
     return;  // Could be nullptr in some tests.
-  provider_host_->SendSetVersionAttributesMessage(handle_id_,
-                                                  changed_mask,
-                                                  installing_version,
-                                                  waiting_version,
-                                                  active_version);
+  if (!changed_mask.changed())
+    return;
+
+  blink::mojom::ServiceWorkerObjectInfoPtr installing;
+  blink::mojom::ServiceWorkerObjectInfoPtr waiting;
+  blink::mojom::ServiceWorkerObjectInfoPtr active;
+  if (changed_mask.installing_changed()) {
+    installing =
+        provider_host_->GetOrCreateServiceWorkerHandle(installing_version);
+  }
+  if (changed_mask.waiting_changed())
+    waiting = provider_host_->GetOrCreateServiceWorkerHandle(waiting_version);
+  if (changed_mask.active_changed())
+    active = provider_host_->GetOrCreateServiceWorkerHandle(active_version);
+  DCHECK(remote_registration_);
+  remote_registration_->SetVersionAttributes(
+      changed_mask.changed(), std::move(installing), std::move(waiting),
+      std::move(active));
 }
 
 void ServiceWorkerRegistrationHandle::OnConnectionError() {

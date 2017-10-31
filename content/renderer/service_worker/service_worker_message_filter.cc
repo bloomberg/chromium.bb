@@ -6,29 +6,11 @@
 
 #include <stddef.h>
 
-#include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 
 namespace content {
-
-namespace {
-
-// Sends a ServiceWorkerObjectDestroyed message to the browser so it can delete
-// the ServiceWorker handle.
-void SendServiceWorkerObjectDestroyed(
-    ThreadSafeSender* sender,
-    int handle_id) {
-  if (handle_id == blink::mojom::kInvalidServiceWorkerHandleId)
-    return;
-  sender->Send(
-      new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(handle_id));
-}
-
-}  // namespace
 
 ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(ThreadSafeSender* sender)
     : WorkerThreadMessageFilter(sender) {
@@ -52,31 +34,6 @@ bool ServiceWorkerMessageFilter::GetWorkerThreadIdForMessage(
     const IPC::Message& msg,
     int* ipc_thread_id) {
   return base::PickleIterator(msg).ReadInt(ipc_thread_id);
-}
-
-void ServiceWorkerMessageFilter::OnStaleMessageReceived(
-    const IPC::Message& msg) {
-  // Specifically handle some messages in case we failed to post task
-  // to the thread (meaning that the context on the thread is now gone).
-  IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
-                        OnStaleSetVersionAttributes)
-  IPC_END_MESSAGE_MAP()
-}
-
-void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
-    int thread_id,
-    int registration_handle_id,
-    int changed_mask,
-    const ServiceWorkerVersionAttributes& attrs) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.installing.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.waiting.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.active.handle_id);
-  // Don't have to decrement registration refcount because the sender of the
-  // SetVersionAttributes message doesn't increment it.
 }
 
 }  // namespace content

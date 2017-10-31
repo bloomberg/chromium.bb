@@ -83,8 +83,20 @@ interface ServiceWorkerRegistrationObjectHost {
 // ServiceWorkerRegistration JavaScript object. The browser uses it to talk with
 // the corresponding impl of ServiceWorkerRegistration in the renderer.
 interface ServiceWorkerRegistrationObject {
+  // Sets changed service worker objects for this registration object.
+  // |changed_mask| indicates which objects of {|installing|,|waiting|,|active|}
+  // have changed. See ChangedVersionAttributesMask in service_worker_types.h
+  // for details.
+  // Changed objects always have non-null value, which may be invalid value
+  // describing that the object does not exist any more.
+  // Unchanged ones always have null value.
+  // TODO(leonhsl): Use mojofied ChangedVersionAttributesMask directly instead
+  // of an int32 for |changed_mask|.
+  SetVersionAttributes(int32 changed_mask,
+                       ServiceWorkerObjectInfo? installing,
+                       ServiceWorkerObjectInfo? waiting,
+                       ServiceWorkerObjectInfo? active);
+
   // TODO(leonhsl): Implement all methods.
-  // SetVersionAttributes(int32 changed_mask,
-  //                      ServiceWorkerVersionAttributes attrs);
   // UpdateFound();
 };

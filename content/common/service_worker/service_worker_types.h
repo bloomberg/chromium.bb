@@ -177,12 +177,6 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerHeaderList cors_exposed_header_names;
 };
 
-struct CONTENT_EXPORT ServiceWorkerVersionAttributes {
-  blink::mojom::ServiceWorkerObjectInfo installing;
-  blink::mojom::ServiceWorkerObjectInfo waiting;
-  blink::mojom::ServiceWorkerObjectInfo active;
-};
-
 class ChangedVersionAttributesMask {
  public:
   enum {

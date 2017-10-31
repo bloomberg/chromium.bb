@@ -14,7 +14,4 @@ traits_headers = [
 sources = [
   "//content/common/service_worker/service_worker_types_struct_traits.cc",
 ]
-type_mappings = [
-  "content.mojom.ServiceWorkerProviderType=::content::ServiceWorkerProviderType",
-  "content.mojom.ServiceWorkerVersionAttributes=::content::ServiceWorkerVersionAttributes",
-]
+type_mappings = [ "content.mojom.ServiceWorkerProviderType=::content::ServiceWorkerProviderType" ]
