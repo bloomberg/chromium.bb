@@ -27,7 +27,7 @@ ResourceReceiveResponse Properties:
         frame : <string>
         fromCache : false
         fromServiceWorker : false
-        mimeType : <string>
+        mimeType : "application/x-javascript"
         requestId : <string>
         statusCode : 200
         timing : <object>
