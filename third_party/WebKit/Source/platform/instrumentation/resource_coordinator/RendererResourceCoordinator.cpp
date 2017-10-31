@@ -6,7 +6,6 @@
 
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace blink {
 
@@ -40,19 +39,11 @@ RendererResourceCoordinator& RendererResourceCoordinator::Get() {
 
 RendererResourceCoordinator::RendererResourceCoordinator(
     service_manager::Connector* connector,
-    const std::string& service_name) {
-  connector->BindInterface(service_name, &service_);
-}
+    const std::string& service_name)
+    : BlinkResourceCoordinatorBase(connector, service_name) {}
 
 RendererResourceCoordinator::RendererResourceCoordinator() {}
 
 RendererResourceCoordinator::~RendererResourceCoordinator() = default;
-
-void RendererResourceCoordinator::SetExpectedTaskQueueingDuration(
-    base::TimeDelta duration) {
-  if (!service_)
-    return;
-  service_->SetExpectedTaskQueueingDuration(duration);
-}
 
 }  // namespace blink

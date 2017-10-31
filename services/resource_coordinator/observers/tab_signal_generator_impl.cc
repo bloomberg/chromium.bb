@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/values.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -42,9 +43,12 @@ void TabSignalGeneratorImpl::OnFramePropertyChanged(
     if (!frame_cu->IsMainFrame())
       return;
     // TODO(lpy) Combine CPU usage or long task idleness signal.
-    if (auto* page_cu = frame_cu->GetPageCoordinationUnit()) {
-      DISPATCH_TAB_SIGNAL(observers_, OnEventReceived, page_cu,
+    for (auto* parent : frame_cu->parents()) {
+      if (parent->id().type != CoordinationUnitType::kPage)
+        continue;
+      DISPATCH_TAB_SIGNAL(observers_, OnEventReceived, parent,
                           mojom::TabEvent::kDoneLoading);
+      break;
     }
   }
 }

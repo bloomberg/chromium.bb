@@ -196,8 +196,8 @@
 #include "ppapi/features/features.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
 #include "services/device/public/interfaces/constants.mojom.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -691,9 +691,9 @@ void CreateMemoryCoordinatorHandle(
                                                      std::move(request));
 }
 
-void CreateProcessResourceCoordinator(
+void CreateResourceCoordinatorProcessInterface(
     RenderProcessHostImpl* render_process_host,
-    resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
+    resource_coordinator::mojom::CoordinationUnitRequest request) {
   render_process_host->GetProcessResourceCoordinator()->AddBinding(
       std::move(request));
 }
@@ -1853,9 +1853,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
   }
   if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::Bind(&CreateProcessResourceCoordinator, base::Unretained(this)));
+    AddUIThreadInterface(registry.get(),
+                         base::Bind(&CreateResourceCoordinatorProcessInterface,
+                                    base::Unretained(this)));
   }
 
   media::VideoDecodePerfHistory* video_perf_history =
@@ -2129,20 +2129,21 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
 }
 
-resource_coordinator::ProcessResourceCoordinator*
+resource_coordinator::ResourceCoordinatorInterface*
 RenderProcessHostImpl::GetProcessResourceCoordinator() {
   if (process_resource_coordinator_)
     return process_resource_coordinator_.get();
 
   if (!resource_coordinator::IsResourceCoordinatorEnabled()) {
     process_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            nullptr);
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
+            nullptr, resource_coordinator::CoordinationUnitType::kProcess);
   } else {
     auto* connection = ServiceManagerConnection::GetForProcess();
     process_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            connection ? connection->GetConnector() : nullptr);
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
+            connection ? connection->GetConnector() : nullptr,
+            resource_coordinator::CoordinationUnitType::kProcess);
   }
   return process_resource_coordinator_.get();
 }
@@ -3899,8 +3900,13 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       observer.RenderProcessReady(this);
   }
 
-  GetProcessResourceCoordinator()->SetLaunchTime(base::Time::Now());
-  GetProcessResourceCoordinator()->SetPID(base::GetProcId(GetHandle()));
+  GetProcessResourceCoordinator()->SetProperty(
+      resource_coordinator::mojom::PropertyType::kPID,
+      base::GetProcId(GetHandle()));
+
+  GetProcessResourceCoordinator()->SetProperty(
+      resource_coordinator::mojom::PropertyType::kLaunchTime,
+      base::Time::Now().ToTimeT());
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {

@@ -15,22 +15,9 @@ FrameResourceCoordinator* FrameResourceCoordinator::Create(
 }
 
 FrameResourceCoordinator::FrameResourceCoordinator(
-    service_manager::InterfaceProvider* interface_provider) {
-  interface_provider->GetInterface(mojo::MakeRequest(&service_));
-}
+    service_manager::InterfaceProvider* interface_provider)
+    : BlinkResourceCoordinatorBase(interface_provider) {}
 
 FrameResourceCoordinator::~FrameResourceCoordinator() = default;
-
-void FrameResourceCoordinator::SetNetworkAlmostIdle(bool idle) {
-  if (!service_)
-    return;
-  service_->SetNetworkAlmostIdle(idle);
-}
-
-void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {
-  if (!service_)
-    return;
-  service_->OnNonPersistentNotificationCreated();
-}
 
 }  // namespace blink
