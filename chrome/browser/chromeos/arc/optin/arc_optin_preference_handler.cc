@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "components/arc/arc_prefs.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace arc {
@@ -24,13 +24,11 @@ ArcOptInPreferenceHandler::ArcOptInPreferenceHandler(
 }
 
 void ArcOptInPreferenceHandler::Start() {
-  if (g_browser_process->local_state()) {
-    pref_local_change_registrar_.Init(g_browser_process->local_state());
-    pref_local_change_registrar_.Add(
-        metrics::prefs::kMetricsReportingEnabled,
-        base::Bind(&ArcOptInPreferenceHandler::OnMetricsPreferenceChanged,
-                   base::Unretained(this)));
-  }
+  reporting_consent_subscription_ =
+      chromeos::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kStatsReportingPref,
+          base::Bind(&ArcOptInPreferenceHandler::OnMetricsPreferenceChanged,
+                     base::Unretained(this)));
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -65,9 +63,11 @@ void ArcOptInPreferenceHandler::OnLocationServicePreferenceChanged() {
 
 void ArcOptInPreferenceHandler::SendMetricsMode() {
   if (g_browser_process->local_state()) {
-    observer_->OnMetricsModeChanged(
-        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
-        IsMetricsReportingPolicyManaged());
+    bool enabled = false;
+    const bool exists = chromeos::CrosSettings::Get()->GetBoolean(
+        chromeos::kStatsReportingPref, &enabled);
+    DCHECK(exists);
+    observer_->OnMetricsModeChanged(enabled, IsMetricsReportingPolicyManaged());
   }
 }
 
@@ -96,8 +96,8 @@ void ArcOptInPreferenceHandler::SendLocationServicesMode() {
 }
 
 void ArcOptInPreferenceHandler::EnableMetrics(bool is_enabled) {
-  if (g_browser_process->local_state())
-    ChangeMetricsReportingState(is_enabled);
+  chromeos::CrosSettings::Get()->SetBoolean(chromeos::kStatsReportingPref,
+                                            is_enabled);
 }
 
 void ArcOptInPreferenceHandler::EnableBackupRestore(bool is_enabled) {
