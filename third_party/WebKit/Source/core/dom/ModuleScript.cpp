@@ -62,18 +62,21 @@ ModuleScript* ModuleScript::Create(const String& source_text,
   for (const auto& requested :
        modulator->ModuleRequestsFromScriptModule(result)) {
     // Step 7.1. "Let url be the result of resolving a module specifier given
-    // module script and requested."[spec text] Step 7.2. "If url is failure:"
-    // [spec text]
+    // module script and requested." [spec text]
+    // Step 7.2. "If url is failure:" [spec text]
     // TODO(kouhei): Cache the url here instead of issuing
     // ResolveModuleSpecifier later again in ModuleTreeLinker.
-    if (modulator->ResolveModuleSpecifier(requested.specifier, base_url)
+    String failure_reason;
+    if (Modulator::ResolveModuleSpecifier(requested.specifier, base_url,
+                                          &failure_reason)
             .IsValid())
       continue;
 
     // Step 7.2.1. "Let error be a new TypeError exception." [spec text]
-    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
-        isolate,
-        "Failed to resolve module specifier '" + requested.specifier + "'");
+    String error_message = "Failed to resolve module specifier \"" +
+                           requested.specifier + "\". " + failure_reason;
+    v8::Local<v8::Value> error =
+        V8ThrowException::CreateTypeError(isolate, error_message);
 
     // Step 7.2.2. "Set the parse error of script to error." [spec text]
     script->SetErrorAndClearRecord(ScriptValue(script_state, error));
