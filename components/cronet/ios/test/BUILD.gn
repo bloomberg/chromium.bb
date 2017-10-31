@@ -11,6 +11,7 @@ test("cronet_test") {
     "cronet_acceptlang_test.mm",
     "cronet_http_test.mm",
     "cronet_netlog_test.mm",
+    "cronet_performance_test.mm",
     "cronet_pkp_test.mm",
     "cronet_prefs_test.mm",
     "cronet_quic_test.mm",
