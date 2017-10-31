@@ -96,7 +96,8 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
-#import "ios/chrome/browser/ssl/ios_captive_portal_blocking_page_delegate.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -372,11 +373,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 @interface BrowserViewController ()<ActivityServicePresentation,
                                     AppRatingPromptDelegate,
+                                    CaptivePortalDetectorTabHelperDelegate,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
                                     FullScreenControllerDelegate,
-                                    IOSCaptivePortalBlockingPageDelegate,
                                     KeyCommandsPlumbing,
                                     NetExportTabHelperDelegate,
                                     ManageAccountsDelegate,
@@ -2471,7 +2472,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)installDelegatesForTab:(Tab*)tab {
   DCHECK_NE(tab.webState->GetDelegate(), _webStateDelegate.get());
   // Unregistration happens when the Tab is removed from the TabModel.
-  tab.iOSCaptivePortalBlockingPageDelegate = self;
 
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
@@ -2507,6 +2507,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   PrintTabHelper::CreateForWebState(tab.webState, self);
   RepostFormTabHelper::CreateForWebState(tab.webState, self);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
+  CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
 
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
@@ -2517,7 +2518,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
   DCHECK_EQ(tab.webState->GetDelegate(), _webStateDelegate.get());
-  tab.iOSCaptivePortalBlockingPageDelegate = nil;
 
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
@@ -5243,8 +5243,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate
 
-- (void)captivePortalBlockingPage:(IOSCaptivePortalBlockingPage*)blockingPage
-            connectWithLandingURL:(GURL)landingURL {
+- (void)captivePortalDetectorTabHelper:
+            (CaptivePortalDetectorTabHelper*)tabHelper
+                 connectWithLandingURL:(const GURL&)landingURL {
   _captivePortalLoginCoordinator = [[CaptivePortalLoginCoordinator alloc]
       initWithBaseViewController:self
                       landingURL:landingURL];

@@ -15,8 +15,6 @@
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/ssl/ssl_info.h"
@@ -116,15 +114,12 @@ void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
     const GURL& request_url,
     const GURL& landing_url,
     const base::Callback<void(bool)>& callback) {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
-  id<IOSCaptivePortalBlockingPageDelegate> delegate =
-      tab.iOSCaptivePortalBlockingPageDelegate;
   // IOSCaptivePortalBlockingPage deletes itself when it's dismissed.
   auto dismissal_callback(
       base::Bind(&IOSSSLErrorHandler::InterstitialWasDismissed,
                  base::Unretained(web_state), callback));
   IOSCaptivePortalBlockingPage* page = new IOSCaptivePortalBlockingPage(
-      web_state, request_url, landing_url, delegate, dismissal_callback);
+      web_state, request_url, landing_url, dismissal_callback);
   page->Show();
 }
 

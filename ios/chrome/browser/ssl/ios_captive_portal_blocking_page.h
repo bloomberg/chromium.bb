@@ -9,8 +9,6 @@
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
 #include "url/gurl.h"
 
-@protocol IOSCaptivePortalBlockingPageDelegate;
-
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error is caused by the user being behind a captive
 // portal.
@@ -24,14 +22,12 @@ class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
   // interstitial takes ownership when shown. The |web_state| and |request_url|
   // of the request which this interstitial page is associated. |landing_url| is
   // the web page which allows the user to complete their connection to the
-  // network. This blocking page will not take ownership of |delegate|, so it
-  // must externally outlive this blocking page. |callback| will be called after
-  // the user is done interacting with this interstitial.
+  // network. |callback| will be called after the user is done interacting with
+  // this interstitial.
   IOSCaptivePortalBlockingPage(
       web::WebState* web_state,
       const GURL& request_url,
       const GURL& landing_url,
-      id<IOSCaptivePortalBlockingPageDelegate> delegate,
       const base::Callback<void(bool)>& callback);
 
  private:
@@ -44,8 +40,6 @@ class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
 
   // The landing page url for the captive portal network.
   const GURL landing_url_;
-
-  __weak id<IOSCaptivePortalBlockingPageDelegate> delegate_;
 
   // |callback_| is run when the user is done with this interstitial. The
   // parameter will be true if the user has successfully connected to the

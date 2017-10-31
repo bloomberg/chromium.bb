@@ -40,6 +40,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/testing:ios_test_support",
+    "//third_party/ocmock",
     "//url",
   ]
 }

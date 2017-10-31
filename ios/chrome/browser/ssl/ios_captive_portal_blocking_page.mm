@@ -14,7 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
-#include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,11 +24,9 @@ IOSCaptivePortalBlockingPage::IOSCaptivePortalBlockingPage(
     web::WebState* web_state,
     const GURL& request_url,
     const GURL& landing_url,
-    id<IOSCaptivePortalBlockingPageDelegate> delegate,
     const base::Callback<void(bool)>& callback)
     : IOSSecurityInterstitialPage(web_state, request_url),
       landing_url_(landing_url),
-      delegate_(delegate),
       callback_(callback) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
@@ -98,7 +95,8 @@ void IOSCaptivePortalBlockingPage::CommandReceived(const std::string& command) {
   if (command_num == security_interstitials::CMD_OPEN_LOGIN) {
     captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
         captive_portal::CaptivePortalMetrics::OPEN_LOGIN_PAGE);
-    [delegate_ captivePortalBlockingPage:this
-                   connectWithLandingURL:landing_url_];
+
+    CaptivePortalDetectorTabHelper::FromWebState(web_state())
+        ->DisplayCaptivePortalLoginPage(landing_url_);
   }
 }

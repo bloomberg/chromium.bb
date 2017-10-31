@@ -13,6 +13,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,7 +35,10 @@ class IOSSSLErrorHandlerTest : public web::WebTestWithWebState {
   // web::WebTestWithWebState overrides:
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
-    CaptivePortalDetectorTabHelper::CreateForWebState(web_state());
+    id captive_portal_detector_tab_helper_delegate = [OCMockObject
+        mockForProtocol:@protocol(CaptivePortalDetectorTabHelperDelegate)];
+    CaptivePortalDetectorTabHelper::CreateForWebState(
+        web_state(), captive_portal_detector_tab_helper_delegate);
     ASSERT_TRUE(cert_);
     ASSERT_FALSE(web_state()->IsShowingWebInterstitial());
 

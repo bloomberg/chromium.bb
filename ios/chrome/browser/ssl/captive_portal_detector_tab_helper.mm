@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/captive_portal/captive_portal_detector.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -15,14 +16,36 @@
 
 DEFINE_WEB_STATE_USER_DATA_KEY(CaptivePortalDetectorTabHelper);
 
+// static
+void CaptivePortalDetectorTabHelper::CreateForWebState(
+    web::WebState* web_state,
+    id<CaptivePortalDetectorTabHelperDelegate> delegate) {
+  DCHECK(web_state);
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new CaptivePortalDetectorTabHelper(
+                               web_state, delegate)));
+  }
+}
+
+CaptivePortalDetectorTabHelper::CaptivePortalDetectorTabHelper(
+    web::WebState* web_state,
+    id<CaptivePortalDetectorTabHelperDelegate> delegate)
+    : delegate_(delegate),
+      detector_(base::MakeUnique<captive_portal::CaptivePortalDetector>(
+          web_state->GetBrowserState()->GetRequestContext())) {
+  DCHECK(delegate);
+}
+
 captive_portal::CaptivePortalDetector*
 CaptivePortalDetectorTabHelper::detector() {
   return detector_.get();
 }
 
-CaptivePortalDetectorTabHelper::CaptivePortalDetectorTabHelper(
-    web::WebState* web_state)
-    : detector_(base::MakeUnique<captive_portal::CaptivePortalDetector>(
-          web_state->GetBrowserState()->GetRequestContext())) {}
+void CaptivePortalDetectorTabHelper::DisplayCaptivePortalLoginPage(
+    GURL landing_url) {
+  [delegate_ captivePortalDetectorTabHelper:this
+                      connectWithLandingURL:landing_url];
+}
 
 CaptivePortalDetectorTabHelper::~CaptivePortalDetectorTabHelper() = default;
