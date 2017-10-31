@@ -1066,15 +1066,9 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameInternal(
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
     bool zero_initialize_memory) {
-  if (!IsYuvPlanar(format)) {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  // Since we're creating a new YUV frame (and allocating memory for it
-  // ourselves), we can pad the requested |coded_size| if necessary if the
-  // request does not line up on sample boundaries. See discussion at
-  // http://crrev.com/1240833003
+  // Since we're creating a new frame (and allocating memory for it ourselves),
+  // we can pad the requested |coded_size| if necessary if the request does not
+  // line up on sample boundaries. See discussion at http://crrev.com/1240833003
   const gfx::Size new_coded_size = DetermineAlignedSize(format, coded_size);
   const StorageType storage = STORAGE_OWNED_MEMORY;
   if (!IsValidConfig(format, storage, new_coded_size, visible_rect,
@@ -1087,7 +1081,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameInternal(
 
   scoped_refptr<VideoFrame> frame(new VideoFrame(
       format, storage, new_coded_size, visible_rect, natural_size, timestamp));
-  frame->AllocateYUV(zero_initialize_memory);
+  frame->AllocateMemory(zero_initialize_memory);
   return frame;
 }
 
@@ -1203,29 +1197,36 @@ gfx::Size VideoFrame::CommonAlignment(VideoPixelFormat format) {
   return gfx::Size(max_sample_width, max_sample_height);
 }
 
-void VideoFrame::AllocateYUV(bool zero_initialize_memory) {
+void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   DCHECK_EQ(storage_type_, STORAGE_OWNED_MEMORY);
   static_assert(0 == kYPlane, "y plane data must be index 0");
 
   size_t data_size = 0;
   size_t offset[kMaxPlanes];
-  for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
-    // The *2 in alignment for height is because some formats (e.g. h264) allow
-    // interlaced coding, and then the size needs to be a multiple of two
-    // macroblocks (vertically). See
-    // libavcodec/utils.c:avcodec_align_dimensions2().
-    const size_t height = RoundUp(rows(plane), kFrameSizeAlignment * 2);
-    strides_[plane] = RoundUp(row_bytes(plane), kFrameSizeAlignment);
-    offset[plane] = data_size;
-    data_size += height * strides_[plane];
-  }
 
-  // The extra line of UV being allocated is because h264 chroma MC
-  // overreads by one line in some cases, see libavcodec/utils.c:
-  // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
-  // put_h264_chroma_mc4_ssse3().
-  DCHECK(IsValidPlane(kUPlane, format_));
-  data_size += strides_[kUPlane] + kFrameSizePadding;
+  // Tightly pack if it is single planar.
+  if (NumPlanes(format_) == 1) {
+    data_size = AllocationSize(format_, coded_size_);
+    offset[0] = 0;
+  } else {
+    for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
+      // The *2 in alignment for height is because some formats (e.g. h264)
+      // allow interlaced coding, and then the size needs to be a multiple of
+      // two macroblocks (vertically). See
+      // libavcodec/utils.c:avcodec_align_dimensions2().
+      const size_t height = RoundUp(rows(plane), kFrameSizeAlignment * 2);
+      strides_[plane] = RoundUp(row_bytes(plane), kFrameSizeAlignment);
+      offset[plane] = data_size;
+      data_size += height * strides_[plane];
+    }
+
+    // The extra line of UV being allocated is because h264 chroma MC
+    // overreads by one line in some cases, see libavcodec/utils.c:
+    // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
+    // put_h264_chroma_mc4_ssse3().
+    DCHECK(IsValidPlane(kUPlane, format_));
+    data_size += strides_[kUPlane] + kFrameSizePadding;
+  }
 
   uint8_t* data = reinterpret_cast<uint8_t*>(
       base::AlignedAlloc(data_size, kFrameAddressAlignment));

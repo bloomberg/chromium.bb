@@ -100,11 +100,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                             const gfx::Rect& visible_rect,
                             const gfx::Size& natural_size);
 
-  // Creates a new YUV frame in system memory with given parameters (|format|
-  // must be YUV). Buffers for the frame are allocated but not initialized. The
-  // caller most not make assumptions about the actual underlying size(s), but
-  // check the returned VideoFrame instead.
-  // TODO(mcasas): implement the RGB version of this factory method.
+  // Creates a new frame in system memory with given parameters. Buffers for the
+  // frame are allocated but not initialized. The caller most not make
+  // assumptions about the actual underlying size(s), but check the returned
+  // VideoFrame instead.
   static scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
                                                const gfx::Size& coded_size,
                                                const gfx::Rect& visible_rect,
@@ -491,7 +490,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // alignment for each individual plane.
   static gfx::Size CommonAlignment(VideoPixelFormat format);
 
-  void AllocateYUV(bool zero_initialize_memory);
+  void AllocateMemory(bool zero_initialize_memory);
 
   // Frame format.
   const VideoPixelFormat format_;

@@ -12,7 +12,7 @@
 
 namespace media {
 
-class VideoFramePoolTest : public ::testing::Test {
+class VideoFramePoolTest : public ::testing::TestWithParam<VideoPixelFormat> {
  public:
   VideoFramePoolTest() : pool_(new VideoFramePool()) {
     // Seed test clock with some dummy non-zero value to avoid confusion with
@@ -50,13 +50,19 @@ class VideoFramePoolTest : public ::testing::Test {
   std::unique_ptr<VideoFramePool> pool_;
 };
 
-TEST_F(VideoFramePoolTest, FrameInitializedAndZeroed) {
-  scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_YV12, 10);
+TEST_P(VideoFramePoolTest, FrameInitializedAndZeroed) {
+  scoped_refptr<VideoFrame> frame = CreateFrame(GetParam(), 10);
 
   // Verify that frame is initialized with zeros.
   for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
     EXPECT_EQ(0, frame->data(i)[0]);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        VideoFramePoolTest,
+                        testing::Values(PIXEL_FORMAT_YV12,
+                                        PIXEL_FORMAT_NV12,
+                                        PIXEL_FORMAT_ARGB));
 
 TEST_F(VideoFramePoolTest, SimpleFrameReuse) {
   scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_YV12, 10);
