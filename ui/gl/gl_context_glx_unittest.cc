@@ -47,11 +47,9 @@ TEST(GLContextGLXTest, DoNotDesrtroyOnFailedMakeCurrent) {
   ASSERT_TRUE(context->MakeCurrent(surface.get()));
   EXPECT_TRUE(context->GetHandle());
 
-  // Destroy the window, and turn off sync behaviour. We should get no x11
-  // errors so far.
+  // Destroy the window. We should get no x11 errors so far.
   context->ReleaseCurrent(surface.get());
   XDestroyWindow(xdisplay, xwindow);
-  XSynchronize(xdisplay, False);
   ASSERT_FALSE(error_tracker.FoundNewError());
 
   // Now that the window is gone, MakeCurrent() should fail. But the context
@@ -59,6 +57,7 @@ TEST(GLContextGLXTest, DoNotDesrtroyOnFailedMakeCurrent) {
   EXPECT_FALSE(context->MakeCurrent(surface.get()));
   ASSERT_TRUE(context->GetHandle());
   EXPECT_TRUE(error_tracker.FoundNewError());
+  XSynchronize(xdisplay, False);
 }
 
 }  // namespace gl
