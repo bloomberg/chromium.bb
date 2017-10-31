@@ -4489,6 +4489,13 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   }
 }
 
+static int get_search_init_depth(int mi_width, int mi_height,
+                                 const SPEED_FEATURES *sf) {
+  if (sf->tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
+  return (mi_height != mi_width) ? sf->tx_size_search_init_depth_rect
+                                 : sf->tx_size_search_init_depth_sqr;
+}
+
 static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                    RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                    int64_t ref_best_rd, int fast) {
@@ -4510,8 +4517,6 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const int bw = tx_size_wide_unit[max_tx_size];
     int idx, idy;
     int block = 0;
-    int init_depth =
-        (mi_height != mi_width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
     ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
     ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
@@ -4519,6 +4524,7 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     TXFM_CONTEXT tx_left[MAX_MIB_SIZE * 2];
 
     RD_STATS pn_rd_stats;
+    const int init_depth = get_search_init_depth(mi_width, mi_height, &cpi->sf);
     av1_init_rd_stats(&pn_rd_stats);
 
     av1_get_entropy_contexts(bsize, 0, pd, ctxa, ctxl);
@@ -4786,8 +4792,7 @@ int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
-    int init_depth =
-        (mi_height != mi_width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
+    const int init_depth = get_search_init_depth(mi_width, mi_height, &cpi->sf);
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];

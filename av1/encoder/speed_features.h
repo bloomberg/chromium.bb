@@ -312,6 +312,12 @@ typedef struct SPEED_FEATURES {
   // for intra and model coefs for the rest.
   TX_SIZE_SEARCH_METHOD tx_size_search_method;
 
+  // Init search depth for square and rectangular transform partitions.
+  // Values:
+  // 0 - search full tree, 1: search 1 level, 2: search the highest level only
+  int tx_size_search_init_depth_sqr;
+  int tx_size_search_init_depth_rect;
+
   // After looking at the first set of modes (set by index here), skip
   // checking modes for reference frames that don't match the reference frame
   // of the best so far.
