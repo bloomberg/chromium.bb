@@ -6,27 +6,21 @@
 
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/editing/Position.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_layout_test.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class NGOffsetMappingTest : public RenderingTest {
+class NGOffsetMappingTest : public NGLayoutTest {
  protected:
   void SetUp() override {
-    RenderingTest::SetUp();
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
+    NGLayoutTest::SetUp();
     style_ = ComputedStyle::Create();
     style_->GetFont().Update(nullptr);
-  }
-
-  void TearDown() override {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
-    RenderingTest::TearDown();
   }
 
   void SetupHtml(const char* id, String html) {

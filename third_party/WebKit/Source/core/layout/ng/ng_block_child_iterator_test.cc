@@ -4,24 +4,16 @@
 
 #include "core/layout/ng/ng_block_child_iterator.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_layout_test.h"
 #include "platform/runtime_enabled_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {
 
-class NGBlockChildIteratorTest : public RenderingTest {
- public:
-  NGBlockChildIteratorTest() {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
-  }
-  ~NGBlockChildIteratorTest() override {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
-  }
-};
+using NGBlockChildIteratorTest = NGLayoutTest;
 
 TEST_F(NGBlockChildIteratorTest, NullFirstChild) {
   NGBlockChildIterator iterator(nullptr, nullptr);

@@ -4,24 +4,14 @@
 
 #include "core/layout/ng/ng_out_of_flow_layout_part.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_layout_test.h"
 
 namespace blink {
 namespace {
 
-class NGOutOfFlowLayoutPartTest : public RenderingTest {
- public:
-  NGOutOfFlowLayoutPartTest() {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
-    RuntimeEnabledFeatures::SetLayoutNGFragmentCachingEnabled(true);
-  };
-  ~NGOutOfFlowLayoutPartTest() override {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
-    RuntimeEnabledFeatures::SetLayoutNGFragmentCachingEnabled(false);
-  };
-};
+using NGOutOfFlowLayoutPartTest = NGLayoutTest;
 
 // Fixed blocks inside absolute blocks trigger otherwise unused while loop
 // inside NGOutOfFlowLayoutPart::Run.
