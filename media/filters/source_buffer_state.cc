@@ -8,7 +8,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_track.h"
@@ -228,23 +227,6 @@ bool SourceBufferState::Append(const uint8_t* data,
         << __func__ << ": stream parsing failed. Data size=" << length
         << " append_window_start=" << append_window_start.InSecondsF()
         << " append_window_end=" << append_window_end.InSecondsF();
-
-    // Crash with a 1/10 chance to investigate https://crbug.com/778363.
-    // CHECK on different conditions so we can more easily distinguish between
-    // different cases.
-    // TODO(crbug.com/778363): Remove after investigation is done.
-    int n = base::RandInt(1, 10);
-    if (state_ == PARSER_INITIALIZED) {
-      if (encrypted_media_init_data_reported_)
-        CHECK(n != 1);
-      else
-        CHECK(n != 2);
-    } else {
-      if (encrypted_media_init_data_reported_)
-        CHECK(n != 3);
-      else
-        CHECK(n != 4);
-    }
   }
 
   timestamp_offset_during_append_ = NULL;
