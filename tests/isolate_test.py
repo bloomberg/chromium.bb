@@ -252,7 +252,6 @@ class IsolateTest(IsolateBase):
       'algo': 'sha-1',
       'files': {},
       'read_only': 0,
-      'relative_cwd': '.',
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     complete_state = isolate.CompleteState(None, isolate.SavedState(self.cwd))
@@ -673,7 +672,6 @@ class IsolateLoad(IsolateBase):
         },
       },
       'read_only': 1,
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
@@ -720,7 +718,7 @@ class IsolateLoad(IsolateBase):
       'path_variables': {
         'PRODUCT_DIR': os.path.join(u'..', '..', 'third_party'),
       },
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'relative_cwd': u'tests/isolate',
       'root_dir': file_path.get_native_path_case(self.isolate_dir),
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
@@ -1188,6 +1186,7 @@ class IsolateLoad(IsolateBase):
       }
       if not command:
         expected.pop('command')
+        expected.pop('relative_cwd')
       self.assertEqual(expected, c.saved_state.to_isolated())
 
     cwd_name = os.path.basename(self.cwd)

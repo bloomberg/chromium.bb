@@ -566,13 +566,13 @@ class IsolateTempdirBase(unittest.TestCase):
       u'algo': u'sha-1',
       u'files': self._gen_files(read_only, empty_file, False),
       u'read_only': 1,
-      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     if read_only is not None:
       expected[u'read_only'] = read_only
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
+      expected[u'relative_cwd'] = unicode(RELATIVE_CWD[self.case()])
     with open(self.isolated, 'r') as f:
       self.assertEqual(expected, json.load(f))
 

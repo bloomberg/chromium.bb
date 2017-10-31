@@ -13,7 +13,7 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 import datetime
 import itertools
@@ -383,11 +383,14 @@ class SavedState(Flattenable):
       # .isolated file.
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
+    out['read_only'] = self.read_only if self.read_only is not None else 1
     if self.command:
       out['command'] = self.command
-    out['read_only'] = self.read_only if self.read_only is not None else 1
-    if self.relative_cwd:
-      out['relative_cwd'] = self.relative_cwd
+      if self.relative_cwd:
+        # Only set relative_cwd if a command was also specified. This reduce the
+        # noise for Swarming tasks where the command is specified as part of the
+        # Swarming task request and not thru the isolated file.
+        out['relative_cwd'] = self.relative_cwd
     return out
 
   @property

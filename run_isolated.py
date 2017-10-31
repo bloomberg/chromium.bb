@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.9.2'
+__version__ = '0.9.3'
 
 import argparse
 import base64
@@ -573,10 +573,13 @@ def map_and_run(
             outdir=run_dir,
             use_symlinks=use_symlinks)
         change_tree_read_only(run_dir, bundle.read_only)
-        cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
         # Inject the command
         if not raw_cmd and bundle.command:
           command = bundle.command + command
+          # Only set the relative directory if the isolated file specified a
+          # command, and no raw command was specified.
+          if bundle.relative_cwd:
+            cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
 
       if not command:
         # Handle this as a task failure, not an internal failure.
