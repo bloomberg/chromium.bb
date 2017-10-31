@@ -1058,6 +1058,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
                          &new_policy_duration);
   }
 
+  bool previously_stopped_when_backgrounded =
+      main_thread_only().stopped_when_backgrounded;
   bool newly_stopped = false;
   if (main_thread_only().renderer_backgrounded &&
       main_thread_only().stopping_when_backgrounded_enabled) {
@@ -1270,9 +1272,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   // TODO(skyostil): send these notifications after releasing the scheduler
   // lock.
-  if (new_policy.loading_queue_policy().is_stopped !=
-      main_thread_only().current_policy.loading_queue_policy().is_stopped) {
-    SetStoppedInBackground(new_policy.loading_queue_policy().is_stopped);
+  if (main_thread_only().stopping_when_backgrounded_enabled) {
+    if (main_thread_only().stopped_when_backgrounded !=
+        previously_stopped_when_backgrounded) {
+      SetStoppedInBackground(main_thread_only().stopped_when_backgrounded);
+    }
   }
 
   if (new_policy.should_disable_throttling() !=
