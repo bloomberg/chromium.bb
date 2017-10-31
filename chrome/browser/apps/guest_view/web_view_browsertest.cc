@@ -1779,7 +1779,7 @@ IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
 
 // Test makes sure that interstitial pages renders in <webview>.
 // Flaky on Win dbg: crbug.com/779973
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN) && defined(NDEBUG)
 #define MAYBE_InterstitialPage DISABLED_InterstitialPage
 #else
 #define MAYBE_InterstitialPage InterstitialPage
@@ -1809,7 +1809,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPage) {
 // Test makes sure that interstitial pages are registered in the
 // RenderWidgetHostInputEventRouter when inside a <webview>.
 // Flaky on Win dbg: crbug.com/779973
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN) && defined(NDEBUG)
 #define MAYBE_InterstitialPageRouteEvents DISABLED_InterstitialPageRouteEvents
 #else
 #define MAYBE_InterstitialPageRouteEvents InterstitialPageRouteEvents
