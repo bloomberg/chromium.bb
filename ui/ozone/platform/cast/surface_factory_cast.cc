@@ -63,7 +63,6 @@ class CastPixmap : public gfx::NativePixmap {
     return gfx::BufferFormat::BGRA_8888;
   }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
-  uint32_t GetUniqueId() const override { return 0; }
 
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int plane_z_order,
