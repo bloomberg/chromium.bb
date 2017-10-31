@@ -6,7 +6,8 @@
 #define FrameResourceCoordinator_h
 
 #include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom-blink.h"
+
+#include "platform/wtf/Noncopyable.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -20,15 +21,10 @@ class PLATFORM_EXPORT FrameResourceCoordinator final
 
  public:
   static FrameResourceCoordinator* Create(service_manager::InterfaceProvider*);
-  ~FrameResourceCoordinator();
-
-  void SetNetworkAlmostIdle(bool);
-  void OnNonPersistentNotificationCreated();
+  ~FrameResourceCoordinator() override;
 
  private:
   explicit FrameResourceCoordinator(service_manager::InterfaceProvider*);
-
-  resource_coordinator::mojom::blink::FrameCoordinationUnitPtr service_;
 };
 
 }  // namespace blink

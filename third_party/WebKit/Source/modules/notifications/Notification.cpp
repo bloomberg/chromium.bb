@@ -126,7 +126,9 @@ Notification* Notification::Create(ExecutionContext* context,
   if (document && document->GetFrame()) {
     if (auto* frame_resource_coordinator =
             document->GetFrame()->GetFrameResourceCoordinator()) {
-      frame_resource_coordinator->OnNonPersistentNotificationCreated();
+      frame_resource_coordinator->SendEvent(
+          resource_coordinator::mojom::Event::
+              kNonPersistentNotificationCreated);
     }
   }
 

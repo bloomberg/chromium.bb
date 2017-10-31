@@ -7,7 +7,6 @@
 #include "base/process/process.h"
 #include "chrome/browser/resource_coordinator/browser_child_process_watcher.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 ChromeBrowserMainExtraPartsResourceCoordinator::
@@ -22,11 +21,17 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::
     return;
 
   process_resource_coordinator_ =
-      base::MakeUnique<resource_coordinator::ProcessResourceCoordinator>(
-          connection->GetConnector());
+      base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+          connection->GetConnector(),
+          resource_coordinator::CoordinationUnitType::kProcess);
 
-  process_resource_coordinator_->SetLaunchTime(base::Time::Now());
-  process_resource_coordinator_->SetPID(base::Process::Current().Pid());
+  process_resource_coordinator_->SetProperty(
+      resource_coordinator::mojom::PropertyType::kPID,
+      base::Process::Current().Pid());
+
+  process_resource_coordinator_->SetProperty(
+      resource_coordinator::mojom::PropertyType::kLaunchTime,
+      base::Time::Now().ToTimeT());
 
   browser_child_process_watcher_ =
       base::MakeUnique<resource_coordinator::BrowserChildProcessWatcher>();

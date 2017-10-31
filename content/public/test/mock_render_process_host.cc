@@ -356,14 +356,14 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   return renderer_interface_->get();
 }
 
-resource_coordinator::ProcessResourceCoordinator*
+resource_coordinator::ResourceCoordinatorInterface*
 MockRenderProcessHost::GetProcessResourceCoordinator() {
   if (!process_resource_coordinator_) {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     process_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            connector);
+        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
+            connector, resource_coordinator::CoordinationUnitType::kProcess);
   }
   return process_resource_coordinator_.get();
 }

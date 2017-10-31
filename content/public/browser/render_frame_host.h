@@ -32,7 +32,7 @@ class Value;
 }
 
 namespace resource_coordinator {
-class FrameResourceCoordinator;
+class ResourceCoordinatorInterface;
 }
 
 namespace service_manager {
@@ -98,7 +98,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the interface for the Global Resource Coordinator
   // for this frame.
-  virtual resource_coordinator::FrameResourceCoordinator*
+  virtual resource_coordinator::ResourceCoordinatorInterface*
   GetFrameResourceCoordinator() = 0;
 
   // Returns the process for this frame.

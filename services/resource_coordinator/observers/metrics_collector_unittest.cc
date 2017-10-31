@@ -8,7 +8,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
-#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 
 namespace resource_coordinator {
@@ -43,11 +42,10 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
  protected:
   void AdvanceClock(base::TimeDelta delta) { clock_->Advance(delta); }
 
-  TestCoordinationUnitWrapper<PageCoordinationUnitImpl>
-  CreatePageCoordinationUnitWithClock() {
-    auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-    page_cu->SetClockForTest(
-        std::unique_ptr<base::SimpleTestTickClock>(clock_));
+  TestCoordinationUnitWrapper CreatePageCoordinationUnitWithClock() {
+    auto page_cu = CreateCoordinationUnit(CoordinationUnitType::kPage);
+    CoordinationUnitBase::ToPageCoordinationUnit(page_cu.get())
+        ->SetClockForTest(std::unique_ptr<base::SimpleTestTickClock>(clock_));
     return page_cu;
   }
 
@@ -60,50 +58,50 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
-  page_cu->AddFrame(frame_cu->id());
+  page_cu->AddChild(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
-  frame_cu->SetAudibility(true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      0);
-  frame_cu->SetAudibility(false);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, false);
 
-  page_cu->SetVisibility(false);
-  frame_cu->SetAudibility(true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   // The page was recently audible, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      0);
-  frame_cu->SetAudibility(false);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, false);
 
   AdvanceClock(kTestMaxAudioSlientTimeout);
-  page_cu->SetVisibility(true);
-  frame_cu->SetAudibility(true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   // The page was not recently audible but it is not backgrounded, thus no
   // metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      0);
-  frame_cu->SetAudibility(false);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, false);
 
-  page_cu->SetVisibility(false);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
   AdvanceClock(kTestMaxAudioSlientTimeout);
-  frame_cu->SetAudibility(true);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   // The page was not recently audible and it is backgrounded, thus metrics
   // recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      1);
-  frame_cu->SetAudibility(false);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, false);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
   AdvanceClock(kTestMaxAudioSlientTimeout);
-  frame_cu->SetAudibility(true);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   // The page becomes visible and then invisible again, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      2);
@@ -112,22 +110,22 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
 
-  page_cu->AddFrame(frame_cu->id());
+  page_cu->AddChild(frame_cu->id());
 
-  page_cu->SetVisibility(false);
-  page_cu->OnMainFrameNavigationCommitted();
-  frame_cu->SetAudibility(true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      0);
-  frame_cu->SetAudibility(false);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, false);
   AdvanceClock(kTestMetricsReportDelayTimeout);
-  frame_cu->SetAudibility(true);
+  frame_cu->SetProperty(mojom::PropertyType::kAudible, true);
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
                                      1);
 }
@@ -136,29 +134,29 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
-  page_cu->OnTitleUpdated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SendEvent(mojom::Event::kTitleUpdated);
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      0);
 
-  page_cu->SetVisibility(false);
-  page_cu->OnTitleUpdated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kTitleUpdated);
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      1);
-  page_cu->OnTitleUpdated();
+  page_cu->SendEvent(mojom::Event::kTitleUpdated);
   // Metrics should only be recorded once per background period, thus metrics
   // not recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
-  page_cu->OnTitleUpdated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kTitleUpdated);
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      2);
@@ -169,49 +167,49 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
-  page_cu->OnMainFrameNavigationCommitted();
-  page_cu->SetVisibility(false);
-  page_cu->OnTitleUpdated();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kTitleUpdated);
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      0);
   AdvanceClock(kTestMetricsReportDelayTimeout);
-  page_cu->OnTitleUpdated();
+  page_cu->SendEvent(mojom::Event::kTitleUpdated);
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      1);
 }
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
-  page_cu->AddFrame(frame_cu->id());
+  page_cu->AddChild(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
-  frame_cu->OnAlertFired();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  frame_cu->SendEvent(mojom::Event::kAlertFired);
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      0);
 
-  page_cu->SetVisibility(false);
-  frame_cu->OnAlertFired();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SendEvent(mojom::Event::kAlertFired);
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      1);
-  frame_cu->OnAlertFired();
+  frame_cu->SendEvent(mojom::Event::kAlertFired);
   // Metrics should only be recorded once per background period, thus metrics
   // not recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
-  frame_cu->OnAlertFired();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SendEvent(mojom::Event::kAlertFired);
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      2);
@@ -220,20 +218,20 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
-  page_cu->AddFrame(frame_cu->id());
+  page_cu->AddChild(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted();
-  page_cu->SetVisibility(false);
-  frame_cu->OnAlertFired();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SendEvent(mojom::Event::kAlertFired);
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      0);
   AdvanceClock(kTestMetricsReportDelayTimeout);
-  frame_cu->OnAlertFired();
+  frame_cu->SendEvent(mojom::Event::kAlertFired);
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      1);
 }
@@ -241,34 +239,34 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
-  page_cu->AddFrame(frame_cu->id());
+  page_cu->AddChild(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
-  frame_cu->OnNonPersistentNotificationCreated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  frame_cu->SendEvent(mojom::Event::kNonPersistentNotificationCreated);
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 0);
 
-  page_cu->SetVisibility(false);
-  frame_cu->OnNonPersistentNotificationCreated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SendEvent(mojom::Event::kNonPersistentNotificationCreated);
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 1);
-  frame_cu->OnNonPersistentNotificationCreated();
+  frame_cu->SendEvent(mojom::Event::kNonPersistentNotificationCreated);
   // Metrics should only be recorded once per background period, thus metrics
   // not recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
-  frame_cu->OnNonPersistentNotificationCreated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SendEvent(mojom::Event::kNonPersistentNotificationCreated);
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 2);
@@ -278,20 +276,20 @@ TEST_F(
     MAYBE_MetricsCollectorTest,
     FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
-  page_cu->AddFrame(frame_cu->id());
+  page_cu->AddChild(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted();
-  page_cu->SetVisibility(false);
-  frame_cu->OnNonPersistentNotificationCreated();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  frame_cu->SendEvent(mojom::Event::kNonPersistentNotificationCreated);
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 0);
   AdvanceClock(kTestMetricsReportDelayTimeout);
-  frame_cu->OnNonPersistentNotificationCreated();
+  frame_cu->SendEvent(mojom::Event::kNonPersistentNotificationCreated);
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 1);
 }
@@ -300,29 +298,29 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
-  page_cu->OnFaviconUpdated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SendEvent(mojom::Event::kFaviconUpdated);
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 0);
 
-  page_cu->SetVisibility(false);
-  page_cu->OnFaviconUpdated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kFaviconUpdated);
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
-  page_cu->OnFaviconUpdated();
+  page_cu->SendEvent(mojom::Event::kFaviconUpdated);
   // Metrics should only be recorded once per background period, thus metrics
   // not recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
-  page_cu->OnFaviconUpdated();
+  page_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kFaviconUpdated);
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 2);
@@ -333,15 +331,15 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
-  page_cu->OnMainFrameNavigationCommitted();
-  page_cu->SetVisibility(false);
-  page_cu->OnFaviconUpdated();
+  page_cu->SendEvent(mojom::Event::kNavigationCommitted);
+  page_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  page_cu->SendEvent(mojom::Event::kFaviconUpdated);
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 0);
   AdvanceClock(kTestMetricsReportDelayTimeout);
-  page_cu->OnFaviconUpdated();
+  page_cu->SendEvent(mojom::Event::kFaviconUpdated);
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
 }

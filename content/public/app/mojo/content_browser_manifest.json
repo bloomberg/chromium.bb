@@ -52,7 +52,7 @@
           "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
-          "resource_coordinator::mojom::ProcessCoordinationUnit",
+          "resource_coordinator::mojom::CoordinationUnit",
           "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu",
           "viz::mojom::SharedBitmapAllocationNotifier"
@@ -160,7 +160,7 @@
           "network::mojom::RestrictedCookieManager",
           "payments::mojom::PaymentManager",
           "payments::mojom::PaymentRequest",
-          "resource_coordinator::mojom::FrameCoordinationUnit",
+          "resource_coordinator::mojom::CoordinationUnit",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
           "shape_detection::mojom::TextDetection",

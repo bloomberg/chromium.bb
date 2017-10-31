@@ -35,14 +35,8 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
   void OnConnectionError(CoordinationUnitBase* coordination_unit);
 
   // Overridden from mojom::CoordinationUnitProvider:
-  void CreateFrameCoordinationUnit(
-      resource_coordinator::mojom::FrameCoordinationUnitRequest request,
-      const CoordinationUnitID& id) override;
-  void CreatePageCoordinationUnit(
-      resource_coordinator::mojom::PageCoordinationUnitRequest request,
-      const CoordinationUnitID& id) override;
-  void CreateProcessCoordinationUnit(
-      resource_coordinator::mojom::ProcessCoordinationUnitRequest request,
+  void CreateCoordinationUnit(
+      resource_coordinator::mojom::CoordinationUnitRequest request,
       const CoordinationUnitID& id) override;
 
  private:

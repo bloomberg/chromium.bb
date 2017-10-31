@@ -11,10 +11,6 @@
 
 namespace resource_coordinator {
 
-class FrameCoordinationUnitImpl;
-class PageCoordinationUnitImpl;
-class ProcessCoordinationUnitImpl;
-
 // The following coordination unit graph topology is created to emulate a
 // scenario when a single page are executes in a single process:
 //
@@ -29,9 +25,9 @@ class ProcessCoordinationUnitImpl;
 struct MockSinglePageInSingleProcessCoordinationUnitGraph {
   MockSinglePageInSingleProcessCoordinationUnitGraph();
   ~MockSinglePageInSingleProcessCoordinationUnitGraph();
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> frame;
-  TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> process;
-  TestCoordinationUnitWrapper<PageCoordinationUnitImpl> page;
+  TestCoordinationUnitWrapper frame;
+  TestCoordinationUnitWrapper process;
+  TestCoordinationUnitWrapper page;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -51,8 +47,8 @@ struct MockMultiplePagesInSingleProcessCoordinationUnitGraph
     : public MockSinglePageInSingleProcessCoordinationUnitGraph {
   MockMultiplePagesInSingleProcessCoordinationUnitGraph();
   ~MockMultiplePagesInSingleProcessCoordinationUnitGraph();
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> other_frame;
-  TestCoordinationUnitWrapper<PageCoordinationUnitImpl> other_page;
+  TestCoordinationUnitWrapper other_frame;
+  TestCoordinationUnitWrapper other_page;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -75,8 +71,8 @@ struct MockSinglePageWithMultipleProcessesCoordinationUnitGraph
     : public MockSinglePageInSingleProcessCoordinationUnitGraph {
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph();
   ~MockSinglePageWithMultipleProcessesCoordinationUnitGraph();
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> child_frame;
-  TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> other_process;
+  TestCoordinationUnitWrapper child_frame;
+  TestCoordinationUnitWrapper other_process;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -101,8 +97,8 @@ struct MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph
     : public MockMultiplePagesInSingleProcessCoordinationUnitGraph {
   MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph();
   ~MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph();
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> child_frame;
-  TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> other_process;
+  TestCoordinationUnitWrapper child_frame;
+  TestCoordinationUnitWrapper other_process;
 };
 
 }  // namespace resource_coordinator
