@@ -1023,26 +1023,6 @@
             ]
         }
     ],
-    "DataReductionProxyUseQuic": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "enable_quic_non_core_proxies": "true",
-                        "enable_warmup": "true"
-                    }
-                }
-            ]
-        }
-    ],
     "DecoupleTranslateLanguage": [
         {
             "platforms": [
