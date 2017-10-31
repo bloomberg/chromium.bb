@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win.h"
 
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -223,14 +224,14 @@ enum class UwsFoundStatus {
   kUwsFoundNoRebootRequired,
 };
 
+typedef std::
+    tuple<CleanerProcessStatus, CrashPoint, UwsFoundStatus, UserResponse>
+        ChromeCleanerControllerTestParams;
+
 // Test fixture that runs a mock Chrome Cleaner process in various
 // configurations and mocks the user's response.
 class ChromeCleanerControllerTest
-    : public testing::TestWithParam<
-          std::tuple<CleanerProcessStatus,
-                     MockChromeCleanerProcess::CrashPoint,
-                     UwsFoundStatus,
-                     ChromeCleanerController::UserResponse>>,
+    : public testing::TestWithParam<ChromeCleanerControllerTestParams>,
       public ChromeCleanerRunnerTestDelegate,
       public ChromeCleanerControllerDelegate {
  public:
@@ -492,6 +493,8 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
     EXPECT_CALL(mock_observer_, OnIdle(ExpectedIdleReason()))
         .WillOnce(
             InvokeWithoutArgs([&run_loop]() { run_loop.QuitWhenIdle(); }));
+  } else {
+    EXPECT_CALL(mock_observer_, OnIdle(_)).Times(0);
   }
 
   if (ExpectedOnInfectedCalled()) {
@@ -505,17 +508,23 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
     // called only if the user response is kAcceptedWithoutLogs.
     if (user_response_ == UserResponse::kAcceptedWithoutLogs)
       EXPECT_CALL(mock_observer_, OnLogsEnabledChanged(false));
+  } else {
+    EXPECT_CALL(mock_observer_, OnInfected(_)).Times(0);
   }
 
   if (ExpectedOnCleaningCalled()) {
     EXPECT_CALL(mock_observer_, OnCleaning(_))
         .WillOnce(SaveArg<0>(&files_to_delete_on_cleaning));
+  } else {
+    EXPECT_CALL(mock_observer_, OnCleaning(_)).Times(0);
   }
 
   if (ExpectedOnRebootRequiredCalled()) {
     EXPECT_CALL(mock_observer_, OnRebootRequired())
         .WillOnce(
             InvokeWithoutArgs([&run_loop]() { run_loop.QuitWhenIdle(); }));
+  } else {
+    EXPECT_CALL(mock_observer_, OnRebootRequired()).Times(0);
   }
 
   // Assert here that we expect at least one of OnIdle or OnRebootRequired to be
@@ -556,6 +565,86 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   controller_->RemoveObserver(&mock_observer_);
 }
 
+// Make all the test parameter types printable.
+
+std::ostream& operator<<(std::ostream& out, CleanerProcessStatus status) {
+  switch (status) {
+    case CleanerProcessStatus::kFetchFailure:
+      return out << "FetchFailure";
+    case CleanerProcessStatus::kFetchSuccessInvalidProcess:
+      return out << "FetchSuccessInvalidProcess";
+    case CleanerProcessStatus::kFetchSuccessValidProcess:
+      return out << "FetchSuccessValidProcess";
+    default:
+      NOTREACHED();
+      return out << "UnknownProcessStatus" << status;
+  }
+}
+
+std::ostream& operator<<(std::ostream& out, CrashPoint crash_point) {
+  switch (crash_point) {
+    case CrashPoint::kNone:
+      return out << "NoCrash";
+    case CrashPoint::kOnStartup:
+      return out << "CrashOnStartup";
+    case CrashPoint::kAfterConnection:
+      return out << "CrashAfterConnection";
+    case CrashPoint::kAfterRequestSent:
+      return out << "CrashAfterRequestSent";
+    case CrashPoint::kAfterResponseReceived:
+      return out << "CrashAfterResponseReceived";
+    default:
+      NOTREACHED();
+      return out << "UnknownCrashPoint" << crash_point;
+  }
+}
+
+std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
+  switch (status) {
+    case UwsFoundStatus::kNoUwsFound:
+      return out << "NoUwsFound";
+    case UwsFoundStatus::kUwsFoundRebootRequired:
+      return out << "UwsFoundRebootRequired";
+    case UwsFoundStatus::kUwsFoundNoRebootRequired:
+      return out << "UwsFoundNoRebootRequired";
+    default:
+      NOTREACHED();
+      return out << "UnknownFoundStatus" << status;
+  }
+}
+
+std::ostream& operator<<(std::ostream& out, UserResponse response) {
+  switch (response) {
+    case UserResponse::kAcceptedWithLogs:
+      return out << "UserAcceptedWithLogs";
+    case UserResponse::kAcceptedWithoutLogs:
+      return out << "UserAcceptedWithoutLogs";
+    case UserResponse::kDenied:
+      return out << "UserDenied";
+    case UserResponse::kDismissed:
+      return out << "UserDismissed";
+    default:
+      NOTREACHED();
+      return out << "UnknownUserResponse" << response;
+  }
+}
+
+// ::testing::PrintToStringParamName does not format tuples as a valid test
+// name, so this functor can be used to get each element in the tuple
+// explicitly and format them using the above operator<< overrides.
+struct ChromeCleanerControllerTestParamsToString {
+  std::string operator()(
+      const ::testing::TestParamInfo<ChromeCleanerControllerTestParams>& info)
+      const {
+    std::ostringstream param_name;
+    param_name << std::get<0>(info.param) << "_";
+    param_name << std::get<1>(info.param) << "_";
+    param_name << std::get<2>(info.param) << "_";
+    param_name << std::get<3>(info.param);
+    return param_name.str();
+  }
+};
+
 INSTANTIATE_TEST_CASE_P(
     All,
     ChromeCleanerControllerTest,
@@ -575,7 +664,8 @@ INSTANTIATE_TEST_CASE_P(
             Values(UserResponse::kAcceptedWithLogs,
                    UserResponse::kAcceptedWithoutLogs,
                    UserResponse::kDenied,
-                   UserResponse::kDismissed)));
+                   UserResponse::kDismissed)),
+    ChromeCleanerControllerTestParamsToString());
 
 }  // namespace
 }  // namespace safe_browsing
