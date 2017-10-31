@@ -23,6 +23,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -82,10 +83,13 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
   LayerSet excluded_layers;
   // Exclude metalayer-related layers. This will also include other layers
   // under kShellWindowId_OverlayContainer which is fine.
-  aura::Window* overlay_container = ash::Shell::GetContainer(
-      root_window, ash::kShellWindowId_OverlayContainer);
-  if (overlay_container != nullptr)
-    excluded_layers.insert(overlay_container->layer());
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+    aura::Window* overlay_container = ash::Shell::GetContainer(
+        root_window, ash::kShellWindowId_OverlayContainer);
+    if (overlay_container != nullptr)
+      excluded_layers.insert(overlay_container->layer());
+  }
 
   auto layer_tree_owner = ::wm::RecreateLayersWithClosure(
       root_window, base::BindRepeating(
@@ -249,6 +253,11 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
 
   // Since ARC currently only runs in primary display, we restrict
   // the screenshot to it.
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    std::move(callback).Run(std::vector<uint8_t>{});
+    return;
+  }
   aura::Window* window = ash::Shell::GetPrimaryRootWindow();
   DCHECK(window);
 
@@ -307,6 +316,9 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionState(
     highlighter_client_->Exit();
 
   state_ = state;
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
+    return;
   ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(state);
 }
 
@@ -355,6 +367,8 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
 
   // TODO(crbug.com/757012): Avoid using ash::Shell here so that it can work in
   // mash.
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
+    return;
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionEnabled);
   ash::Shell::Get()->NotifyVoiceInteractionEnabled(enabled);
@@ -429,7 +443,9 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionEnabled(
     VoiceInteractionSettingCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ash::Shell::Get()->NotifyVoiceInteractionEnabled(enable);
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() != ash::Config::MASH)
+    ash::Shell::Get()->NotifyVoiceInteractionEnabled(enable);
 
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
 
@@ -453,7 +469,9 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
     bool enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ash::Shell::Get()->NotifyVoiceInteractionContextEnabled(enable);
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() != ash::Config::MASH)
+    ash::Shell::Get()->NotifyVoiceInteractionContextEnabled(enable);
 
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, enable);
@@ -572,8 +590,11 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction(
 
   if (state_ == ash::VoiceInteractionState::NOT_READY) {
     // If the container side is not ready, we will be waiting for a while.
-    ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
-        ash::VoiceInteractionState::NOT_READY);
+    // TODO(crbug.com/757012): Mash support.
+    if (chromeos::GetAshConfig() != ash::Config::MASH) {
+      ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
+          ash::VoiceInteractionState::NOT_READY);
+    }
   }
 
   ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context_);
@@ -595,11 +616,17 @@ void ArcVoiceInteractionFrameworkService::
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, completed);
 
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
+    return;
   ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted(completed);
 }
 
 bool ArcVoiceInteractionFrameworkService::IsHomescreenActive() {
   // Homescreen is considered to be active if there are no active windows.
+  // TODO(crbug.com/757012): Mash support.
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
+    return false;
   return !ash::Shell::Get()->activation_client()->GetActiveWindow();
 }
 
