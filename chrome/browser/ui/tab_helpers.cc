@@ -93,6 +93,7 @@
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/data_usage/data_use_tab_helper.h"
+#include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
@@ -261,6 +262,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   DataUseTabHelper::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog)) {
     JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
+  }
+  if (OomInterventionTabHelper::IsEnabled()) {
+    OomInterventionTabHelper::CreateForWebContents(web_contents);
   }
 
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);

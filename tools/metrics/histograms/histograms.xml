@@ -35667,6 +35667,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Memory.Experimental.OomIntervention.NavigationAfterDetectionTime"
+    units="ms">
+  <owner>bashi@chromium.org</owner>
+  <summary>
+    Records the time elapsed between a near-OOM detection and when a navigation
+    is started.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Experimental.OomIntervention.NearOomDetectionEndReason"
+    enum="NearOomDetectionEndReason">
+  <owner>bashi@chromium.org</owner>
+  <summary>
+    Records the reason for stopping near-OOM detection. This isn't recorded when
+    a near-OOM situation was detected.
+  </summary>
+</histogram>
+
+<histogram
+    name="Memory.Experimental.OomIntervention.OomProtectedCrashAfterDetectionTime"
+    units="ms">
+  <owner>bashi@chromium.org</owner>
+  <summary>
+    Records the time elapsed between a near-OOM detection and when an OOM
+    protected renderer was crashed.
+  </summary>
+</histogram>
+
+<histogram
+    name="Memory.Experimental.OomIntervention.RendererGoneAfterDetectionTime"
+    units="ms">
+  <owner>bashi@chromium.org</owner>
+  <summary>
+    Records the time elapsed between a near-OOM detection and when a foreground
+    renderer process was gone. This histogram does not contain OOM protected
+    crashes.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Memory.Experimental.Renderer" units="MB">
 <!-- Name completed by histogram_suffixes name="RendererMemoryAllocator" -->
 

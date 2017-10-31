@@ -336,6 +336,12 @@ const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
 const base::Feature kOfflinePageDownloadSuggestionsFeature{
     "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Enables or disabled the OOM intervention.
+const base::Feature kOomIntervention{"OomIntervention",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if !defined(OS_ANDROID)
 // Enables or disabled the OneGoogleBar on the local NTP.
 const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
