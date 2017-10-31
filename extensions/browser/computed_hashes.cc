@@ -69,7 +69,6 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
       return false;
     if (block_size <= 0 || ((block_size % 1024) != 0)) {
       LOG(ERROR) << "Invalid block size: " << block_size;
-      block_size = 0;
       return false;
     }
 
