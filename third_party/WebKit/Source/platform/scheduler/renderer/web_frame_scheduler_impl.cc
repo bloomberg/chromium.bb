@@ -528,7 +528,8 @@ void WebFrameSchedulerImpl::UpdateThrottlingState() {
 
 WebFrameScheduler::ThrottlingState
 WebFrameSchedulerImpl::CalculateThrottlingState() const {
-  if (page_stopped_) {
+  if (RuntimeEnabledFeatures::StopLoadingInBackgroundAndroidEnabled() &&
+      page_stopped_) {
     DCHECK(!page_visible_);
     return WebFrameScheduler::ThrottlingState::kStopped;
   }
