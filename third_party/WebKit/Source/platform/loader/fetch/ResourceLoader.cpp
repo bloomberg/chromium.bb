@@ -314,17 +314,23 @@ bool ResourceLoader::WillFollowRedirect(
         source_origin = Context().GetSecurityOrigin();
       WebSecurityOrigin source_web_origin(source_origin.get());
       WrappedResourceRequest new_request_wrapper(new_request);
-      WebString cors_error_msg;
-      if (!WebCORS::HandleRedirect(
+      WTF::Optional<network::mojom::CORSError> cors_error =
+          WebCORS::HandleRedirect(
               source_web_origin, new_request_wrapper, redirect_response.Url(),
               redirect_response.HttpStatusCode(),
               redirect_response.HttpHeaderFields(), fetch_credentials_mode,
-              resource_->MutableOptions(), cors_error_msg)) {
+              resource_->MutableOptions());
+      if (cors_error) {
         resource_->SetCORSStatus(CORSStatus::kFailed);
 
         if (!unused_preload) {
-          Context().AddErrorConsoleMessage(cors_error_msg,
-                                           FetchContext::kJSSource);
+          Context().AddErrorConsoleMessage(
+              WebCORS::GetErrorString(
+                  *cors_error, redirect_response.Url(), new_url,
+                  redirect_response.HttpStatusCode(),
+                  redirect_response.HttpHeaderFields(), source_web_origin,
+                  last_request.GetRequestContext()),
+              FetchContext::kJSSource);
         }
 
         CancelForRedirectAccessCheckError(new_url,
@@ -468,7 +474,7 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
           ? resource_->GetResponse()
           : response;
 
-  base::Optional<network::mojom::CORSAccessError> cors_error =
+  base::Optional<network::mojom::CORSError> cors_error =
       WebCORS::CheckAccess(response_for_access_control.Url(),
                            response_for_access_control.HttpStatusCode(),
                            response_for_access_control.HttpHeaderFields(),
@@ -487,8 +493,9 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   error_msg.Append("' from origin '");
   error_msg.Append(source_origin->ToString());
   error_msg.Append("' has been blocked by CORS policy: ");
-  error_msg.Append(WebCORS::AccessControlErrorString(
-      *cors_error, response_for_access_control.HttpStatusCode(),
+  error_msg.Append(WebCORS::GetErrorString(
+      *cors_error, initial_request.Url(), WebURL(),
+      response_for_access_control.HttpStatusCode(),
       response_for_access_control.HttpHeaderFields(),
       WebSecurityOrigin(source_origin), initial_request.GetRequestContext()));
 
