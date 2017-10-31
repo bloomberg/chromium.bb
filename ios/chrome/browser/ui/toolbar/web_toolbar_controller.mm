@@ -59,9 +59,9 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_frame_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_view_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -102,7 +102,7 @@ using ios::material::TimingFunction;
                                    LocationBarDelegate,
                                    OmniboxPopupPositioner,
                                    ToolbarAssistiveKeyboardDelegate,
-                                   ToolbarFrameDelegate> {
+                                   ToolbarViewDelegate> {
   // Top-level view for web content.
   UIView* _webToolbar;
   UIButton* _backButton;
@@ -139,6 +139,9 @@ using ios::material::TimingFunction;
   // Keeps track of whether or not the forward button's images have been
   // reversed.
   ToolbarButtonMode _forwardButtonMode;
+
+  // Keeps track of the last known toolbar frame.
+  CGRect _lastKnownToolbarFrame;
 
   // Keeps track of last known trait collection used by the subviews.
   UITraitCollection* _lastKnownTraitCollection;
@@ -1201,12 +1204,14 @@ using ios::material::TimingFunction;
 }
 
 #pragma mark -
-#pragma mark ToolbarFrameDelegate methods.
+#pragma mark ToolbarViewDelegate methods.
 
-- (void)frameDidChangeFrame:(CGRect)newFrame fromFrame:(CGRect)oldFrame {
-  if (oldFrame.origin.y == newFrame.origin.y)
+- (void)toolbarDidLayout {
+  CGRect frame = self.view.frame;
+  if (CGRectEqualToRect(_lastKnownToolbarFrame, frame))
     return;
-  [self updateToolbarAlphaForFrame:newFrame];
+  [self updateToolbarAlphaForFrame:frame];
+  _lastKnownToolbarFrame = frame;
 }
 
 - (void)windowDidChange {

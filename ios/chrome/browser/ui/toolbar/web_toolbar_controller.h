@@ -19,7 +19,6 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class Tab;
-@protocol ToolbarFrameDelegate;
 @protocol UrlLoader;
 @protocol WebToolbarDelegate;
 

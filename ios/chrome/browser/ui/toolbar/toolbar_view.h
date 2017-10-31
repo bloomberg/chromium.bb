@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/util/relaxed_bounds_constraints_hittest.h"
 
-@protocol ToolbarFrameDelegate;
+@protocol ToolbarViewDelegate;
 
 @interface ToolbarView : UIView<RelaxedBoundsConstraintsHitTestSupport>
 - (instancetype)initWithNibName:(NSString*)name
@@ -17,7 +17,7 @@
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 
 // The delegate used to handle frame changes and windows events.
-@property(nonatomic, weak) id<ToolbarFrameDelegate> delegate;
+@property(nonatomic, weak) id<ToolbarViewDelegate> delegate;
 // Records whether or not the toolbar is currently involved in a transition
 // animation.
 @property(nonatomic, assign, getter=isAnimatingTransition)
