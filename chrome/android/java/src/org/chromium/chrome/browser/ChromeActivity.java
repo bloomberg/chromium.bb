@@ -137,6 +137,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -307,6 +308,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
+
+        // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR
+        // mode while we prepare for VR rendering.
+        if (VrIntentUtils.isVrIntent(getIntent())) {
+            VrShellDelegate.setVrModeEnabled(this);
+        }
 
         // Force a partner customizations refresh if it has yet to be initialized.  This can happen
         // if Chrome is killed and you refocus a previous activity from Android recents, which does
@@ -925,8 +932,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+        // This should be called before the call to super so that the needed VR flags are set as
+        // soon as the VR intent is received.
         VrShellDelegate.maybeHandleVrIntentPreNative(this, intent);
+        super.onNewIntent(intent);
     }
 
     @Override

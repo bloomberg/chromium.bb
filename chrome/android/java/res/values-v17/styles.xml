@@ -62,6 +62,10 @@
       <item name="android:windowDisablePreview">true</item>
       <item name="android:windowBackground">@android:color/black</item>
     </style>
+    <style name="VrSupportThemeLauncher" parent="@android:style/Theme.NoDisplay">
+      <item name="android:windowDisablePreview">true</item>
+      <item name="android:windowBackground">@android:color/black</item>
+    </style>
 
     <style name="FullscreenWhite" parent="Theme.AppCompat.Light" >
         <item name="android:windowBackground">@android:color/white</item>
