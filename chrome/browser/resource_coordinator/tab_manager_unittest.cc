@@ -942,10 +942,8 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
   EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
 
-  // Simulate memory pressure getting high. TabManager pause loading pending
-  // background tabs.
-  tab_manager->OnMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  // TabManager pauses loading pending background tabs.
+  tab_manager->PauseBackgroundTabOpeningIfNeeded();
   EXPECT_EQ(TabManager::BackgroundTabLoadingMode::kPaused,
             tab_manager->background_tab_loading_mode_);
 
@@ -968,10 +966,8 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
   EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
 
-  // Simulate memory pressure is relieved. TabManager will reset the loading
-  // mode and try to load the next tab.
-  tab_manager->OnMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+  // TabManager resumes loading pending background tabs.
+  tab_manager->ResumeBackgroundTabOpeningIfNeeded();
   EXPECT_EQ(TabManager::BackgroundTabLoadingMode::kStaggered,
             tab_manager->background_tab_loading_mode_);
 
@@ -1059,10 +1055,8 @@ TEST_F(TabManagerTest, PauseAndResumeBackgroundTabOpening) {
   EXPECT_TRUE(
       tab_manager->stats_collector()->is_in_background_tab_opening_session());
 
-  // Simulate memory pressure getting high. TabManager pause loading pending
-  // background tabs, and ends the background tab opening session.
-  tab_manager->OnMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  // TabManager pauses loading pending background tabs.
+  tab_manager->PauseBackgroundTabOpeningIfNeeded();
   EXPECT_EQ(TabManager::BackgroundTabLoadingMode::kPaused,
             tab_manager->background_tab_loading_mode_);
   EXPECT_FALSE(tab_manager->IsInBackgroundTabOpeningSession());
@@ -1082,11 +1076,8 @@ TEST_F(TabManagerTest, PauseAndResumeBackgroundTabOpening) {
   EXPECT_FALSE(
       tab_manager->stats_collector()->is_in_background_tab_opening_session());
 
-  // Simulate memory pressure is relieved. TabManager will reset the loading
-  // mode and try to load the next tab. If there is pending tab, TabManager
-  // starts a new BackgroundTabOpening session.
-  tab_manager->OnMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+  // TabManager resumes loading pending background tabs.
+  tab_manager->ResumeBackgroundTabOpeningIfNeeded();
   EXPECT_EQ(TabManager::BackgroundTabLoadingMode::kStaggered,
             tab_manager->background_tab_loading_mode_);
   EXPECT_TRUE(tab_manager->IsInBackgroundTabOpeningSession());
