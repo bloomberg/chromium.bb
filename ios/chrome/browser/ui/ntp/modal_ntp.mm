@@ -14,3 +14,7 @@
 BOOL PresentNTPPanelModally() {
   return !IsIPadIdiom() || base::FeatureList::IsEnabled(kBookmarkNewGeneration);
 }
+
+BOOL IsBookmarksHostEnabled() {
+  return !PresentNTPPanelModally();
+}

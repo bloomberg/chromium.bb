@@ -11,4 +11,8 @@
 // modally.
 BOOL PresentNTPPanelModally();
 
+// Whether chrome://bookmarks is enabled.  True when panel on the NTP isn't
+// presented modally.
+BOOL IsBookmarksHostEnabled();
+
 #endif  // IOS_CHROME_BROWSER_UI_NTP_MODAL_NTP_H_
