@@ -253,7 +253,6 @@ component("net") {
     "cert/x509_cert_types.h",
     "cert/x509_certificate.cc",
     "cert/x509_certificate.h",
-    "cert/x509_certificate_bytes.cc",
     "cert/x509_certificate_net_log_param.cc",
     "cert/x509_certificate_net_log_param.h",
     "cert/x509_util.cc",
