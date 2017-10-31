@@ -39,6 +39,7 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
+#include "ios/chrome/browser/ui/activity_services/canonical_url_feature.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
@@ -193,6 +194,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"slim-navigation-manager", flag_descriptions::kSlimNavigationManagerName,
      flag_descriptions::kSlimNavigationManagerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSlimNavigationManager)},
+    {"ios-share-canonical-url", flag_descriptions::kShareCanonicalURLName,
+     flag_descriptions::kShareCanonicalURLDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(activity_services::kShareCanonicalURL)},
 };
 
 // Add all switches from experimental flags to |command_line|.

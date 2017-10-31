@@ -78,6 +78,11 @@ extern const char kSafeAreaCompatibleToolbarName[] =
 extern const char kSafeAreaCompatibleToolbarDescription[] =
     "When enabled, the toolbar resizes itself when the safe area changes.";
 
+const char kShareCanonicalURLName[] = "Share Canonical URL";
+const char kShareCanonicalURLDescription[] =
+    "When enabled, the current page's canonical URL is shared (if it exists) "
+    "instead of the visible URL.";
+
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
