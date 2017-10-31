@@ -37,7 +37,7 @@
   if (self) {
     _autocapitalizationType = UITextAutocapitalizationTypeNone;
     _autocorrectionType = UITextAutocorrectionTypeNo;
-    _autocorrectionType = UITextAutocorrectionTypeNo;
+    _keyboardAppearance = UIKeyboardAppearanceDefault;
     _keyboardType = UIKeyboardTypeDefault;
     _spellCheckingType = UITextSpellCheckingTypeNo;
 
