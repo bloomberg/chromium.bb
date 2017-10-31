@@ -10,7 +10,7 @@ sections are placed consecutively in the order specified. This allows us
 to page in less code during start-up.
 
 Example usage:
-  tools/cygprofile/orderfile_generator.py -l 20 -j 1000 --use-goma \
+  tools/cygprofile/orderfile_generator_backend.py -l 20 -j 1000 --use-goma \
     --target-arch=arm
 """
 
@@ -747,14 +747,14 @@ def CreateOrderfile(options, orderfile_updater_class):
   logging.basicConfig(level=logging.INFO)
   devil_chromium.Initialize(adb_path=options.adb_path)
 
-  orderfile_generator = OrderfileGenerator(options, orderfile_updater_class)
+  generator = OrderfileGenerator(options, orderfile_updater_class)
   try:
     if options.verify:
-      orderfile_generator._VerifySymbolOrder()
+      generator._VerifySymbolOrder()
     else:
-      return orderfile_generator.Generate()
+      return generator.Generate()
   finally:
-    json_output = json.dumps(orderfile_generator.GetReportingData(),
+    json_output = json.dumps(generator.GetReportingData(),
                              indent=2) + '\n'
     if options.json_file:
       with open(options.json_file, 'w') as f:
