@@ -32,6 +32,10 @@ const char kTestCrosGaiaIdMigrationStarted[] = "started";
 const base::Feature kVoiceInteractionFeature{"ChromeOSVoiceInteraction",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether enable assistant for locale.
+const base::Feature kAssistantFeatureForLocale{
+    "ChromeOSAssistantForLocale", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
 
 // Please keep the order of these switches synchronized with the header file
@@ -584,6 +588,12 @@ bool IsCellularFirstDevice() {
 }
 
 bool IsVoiceInteractionLocalesSupported() {
+  // We use Chromium variations to control locales for which assistant should
+  // be enabled. But we still keep checking the previously hard-coded locales
+  // for compatibility.
+  if (base::FeatureList::IsEnabled(kAssistantFeatureForLocale))
+    return true;
+
   // TODO(updowndota): Add DCHECK here to make sure the value never changes
   // after all the use case for this method has been moved into user session.
 
