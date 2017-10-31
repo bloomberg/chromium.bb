@@ -55,7 +55,7 @@ class ShellDevToolsBindings : public WebContentsObserver,
 
  protected:
   // content::DevToolsAgentHostClient implementation.
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
 

@@ -64,7 +64,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   void NotifyCreated();
   void NotifyNavigated();
-  void ForceDetachAllClients(bool replaced);
+  void ForceDetachAllClients();
   void ForceDetachSession(DevToolsSession* session);
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 

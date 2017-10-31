@@ -53,9 +53,7 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
     closed_ = true;
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
-    FAIL();
-  }
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override { FAIL(); }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {

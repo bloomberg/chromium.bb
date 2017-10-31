@@ -107,11 +107,10 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   void SendRawDevToolsMessage(const std::string& json_message) override;
   void SendRawDevToolsMessage(const base::DictionaryValue& message) override;
 
-  // content::DevToolstAgentHostClient implementation:
+  // content::DevToolsAgentHostClient implementation:
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
                                const std::string& json_message) override;
-  void AgentHostClosed(content::DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override;
+  void AgentHostClosed(content::DevToolsAgentHost* agent_host) override;
 
   // internal::MessageDispatcher implementation:
   void SendMessage(const char* method,

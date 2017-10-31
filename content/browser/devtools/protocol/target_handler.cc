@@ -83,8 +83,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                                                    agent_host_->GetId());
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
     DCHECK(agent_host == agent_host_.get());
     Detach(true);
   }

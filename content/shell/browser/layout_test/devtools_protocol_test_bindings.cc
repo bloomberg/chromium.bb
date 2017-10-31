@@ -126,8 +126,7 @@ void DevToolsProtocolTestBindings::DispatchProtocolMessage(
 }
 
 void DevToolsProtocolTestBindings::AgentHostClosed(
-    DevToolsAgentHost* agent_host,
-    bool replaced) {
+    DevToolsAgentHost* agent_host) {
   agent_host_ = nullptr;
 }
 

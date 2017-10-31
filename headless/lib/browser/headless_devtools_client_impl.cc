@@ -229,8 +229,7 @@ void HeadlessDevToolsClientImpl::DispatchEventTask(
 }
 
 void HeadlessDevToolsClientImpl::AgentHostClosed(
-    content::DevToolsAgentHost* agent_host,
-    bool replaced_with_another_client) {
+    content::DevToolsAgentHost* agent_host) {
   DCHECK_EQ(agent_host_, agent_host);
   agent_host = nullptr;
   pending_messages_.clear();

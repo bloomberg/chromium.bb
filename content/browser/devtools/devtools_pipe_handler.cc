@@ -265,7 +265,6 @@ void DevToolsPipeHandler::DispatchProtocolMessage(DevToolsAgentHost* agent_host,
       FROM_HERE, base::BindOnce(&WriteIntoPipe, write_fd_, std::move(message)));
 }
 
-void DevToolsPipeHandler::AgentHostClosed(DevToolsAgentHost* agent_host,
-                                          bool replaced_with_another_client) {}
+void DevToolsPipeHandler::AgentHostClosed(DevToolsAgentHost* agent_host) {}
 
 }  // namespace content

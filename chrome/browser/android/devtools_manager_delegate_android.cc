@@ -38,8 +38,7 @@ class ClientProxy : public content::DevToolsAgentHostClient {
     proxy_->DispatchOnClientHost(message);
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
     proxy_->ConnectionClosed();
   }
 

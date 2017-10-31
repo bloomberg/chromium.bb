@@ -24,8 +24,7 @@ class CONTENT_EXPORT DevToolsAgentHostClient {
                                        const std::string& message) = 0;
 
   // This method is called when attached agent host is closed.
-  virtual void AgentHostClosed(DevToolsAgentHost* agent_host,
-                               bool replaced_with_another_client) = 0;
+  virtual void AgentHostClosed(DevToolsAgentHost* agent_host) = 0;
 };
 
 }  // namespace content

@@ -269,8 +269,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   void InfoBarDismissed();
 
   // DevToolsAgentHostClient interface.
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override;
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
 
@@ -366,10 +365,8 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
 
 // DevToolsAgentHostClient implementation.
 void ExtensionDevToolsClientHost::AgentHostClosed(
-    DevToolsAgentHost* agent_host, bool replaced_with_another_client) {
+    DevToolsAgentHost* agent_host) {
   DCHECK(agent_host == agent_host_.get());
-  if (replaced_with_another_client)
-    detach_reason_ = api::debugger::DETACH_REASON_REPLACED_WITH_DEVTOOLS;
   SendDetachedEvent();
   delete this;
 }

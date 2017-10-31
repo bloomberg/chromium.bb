@@ -279,16 +279,13 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
       agent_host_->DetachClient(this);
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
 
-    std::string message = base::StringPrintf(
+    std::string message =
         "{ \"method\": \"Inspector.detached\", "
-        "\"params\": { \"reason\": \"%s\"} }",
-        replaced_with_another_client ?
-            "replaced_with_devtools" : "target_closed");
+        "\"params\": { \"reason\": \"target_closed\"} }";
     DispatchProtocolMessage(agent_host, message);
 
     agent_host_ = nullptr;

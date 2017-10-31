@@ -488,7 +488,7 @@ class FakeDevToolsClient : public content::DevToolsAgentHostClient {
   ~FakeDevToolsClient() override {}
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {}
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {}
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {}
 };
 
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
