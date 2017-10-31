@@ -78,7 +78,6 @@ source_set("fuchsia_filters") {
     "//testing/buildbot/filters/fuchsia.base_unittests.filter",
     "//testing/buildbot/filters/fuchsia.content_unittests.filter",
     "//testing/buildbot/filters/fuchsia.ipc_tests.filter",
-    "//testing/buildbot/filters/fuchsia.mojo_common_unittests.filter",
     "//testing/buildbot/filters/fuchsia.mojo_js_unittests.filter",
     "//testing/buildbot/filters/fuchsia.mojo_system_unittests.filter",
     "//testing/buildbot/filters/fuchsia.net_unittests.filter",
