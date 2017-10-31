@@ -91,7 +91,7 @@ content::mojom::URLLoaderFactory*
 SystemNetworkContextManager::GetURLLoaderFactory() {
   if (!url_loader_factory_) {
     GetContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), base::GetUniqueIdForProcess());
+        mojo::MakeRequest(&url_loader_factory_), 0);
   }
   return url_loader_factory_.get();
 }
