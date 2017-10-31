@@ -16,7 +16,6 @@
 #include "ui/base/page_transition_types.h"
 
 @class AutofillController;
-@protocol IOSCaptivePortalBlockingPageDelegate;
 @class CastController;
 @class ExternalAppLauncher;
 @class FormInputAccessoryViewController;
@@ -113,9 +112,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Whether or not desktop user agent is used for the currently visible page.
 @property(nonatomic, readonly) BOOL usesDesktopUserAgent;
-
-@property(nonatomic, weak) id<IOSCaptivePortalBlockingPageDelegate>
-    iOSCaptivePortalBlockingPageDelegate;
 
 // The delegate to use for the legacy fullscreen controller.  It should not be
 // set if the new fullscreen is enabled.

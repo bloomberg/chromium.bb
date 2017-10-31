@@ -26,7 +26,7 @@ TEST_F(IOSCaptivePortalBlockingPageTest, PresentAndDismiss) {
   __block bool do_not_proceed_callback_called = false;
   IOSCaptivePortalBlockingPage* page =
       new IOSCaptivePortalBlockingPage(web_state(), url, GURL("http://landing"),
-                                       nil, base::BindBlockArc(^(bool proceed) {
+                                       base::BindBlockArc(^(bool proceed) {
                                          EXPECT_FALSE(proceed);
                                          do_not_proceed_callback_called = true;
                                        }));
