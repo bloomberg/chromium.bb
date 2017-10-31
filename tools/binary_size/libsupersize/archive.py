@@ -42,13 +42,11 @@ import paths
 _MAX_SAME_NAME_ALIAS_COUNT = 40  # 50kb is basically negligable.
 
 
-def _OpenMaybeGz(path, mode=None):
+def _OpenMaybeGz(path):
   """Calls `gzip.open()` if |path| ends in ".gz", otherwise calls `open()`."""
   if path.endswith('.gz'):
-    if mode and 'w' in mode:
-      return gzip.GzipFile(path, mode, 1)
-    return gzip.open(path, mode)
-  return open(path, mode or 'r')
+    return gzip.open(path, 'rb')
+  return open(path, 'rb')
 
 
 def _StripLinkerAddedSymbolPrefixes(raw_symbols):
@@ -390,7 +388,7 @@ def _CreateMergeStringsReplacements(merge_string_syms,
   logging.debug('Created %d string literal symbols', sum(len(x) for x in ret))
   logging.debug('Sorting string literals')
   for symbols in ret:
-    symbols.sort(key=lambda x: x.address)
+    symbols.sort(key=lambda x: (x.address, -x.size))
 
   logging.debug('Deduping string literals')
   num_removed = 0
