@@ -45,10 +45,9 @@ class MEDIA_EXPORT BufferReader {
   bool HasBytes(size_t count) {
     // As the size of a box is implementation limited to 2^31, fail if
     // attempting to check for too many bytes.
-    return (pos_ <= buf_size_ &&
-            count <
-                static_cast<uint64_t>(std::numeric_limits<int32_t>::max()) &&
-            buf_size_ - pos_ >= count);
+    const size_t impl_limit = 1 << 31;
+    return pos_ <= buf_size_ && count <= impl_limit &&
+           count <= buf_size_ - pos_;
   }
 
   // Read a value from the stream, perfoming endian correction, and advance the
@@ -84,7 +83,7 @@ class MEDIA_EXPORT BufferReader {
 
  protected:
   const uint8_t* buf_;
-  const size_t buf_size_;
+  size_t buf_size_;
   size_t pos_;
 
   template<typename T> bool Read(T* t) WARN_UNUSED_RESULT;
@@ -268,6 +267,7 @@ bool BoxReader::ReadAllChildrenInternal(std::vector<T>* children,
   // Must know our box size before attempting to parse child boxes.
   RCHECK(box_size_known_);
 
+  DCHECK_LE(pos_, box_size_);
   while (pos_ < box_size_) {
     BoxReader child_reader(&buf_[pos_], box_size_ - pos_, media_log_, is_EOS_);
 
@@ -280,7 +280,7 @@ bool BoxReader::ReadAllChildrenInternal(std::vector<T>* children,
     children->push_back(child);
     pos_ += child_reader.box_size();
   }
-
+  DCHECK_EQ(pos_, box_size_);
   return true;
 }
 
