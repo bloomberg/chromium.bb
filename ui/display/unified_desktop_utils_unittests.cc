@@ -8,8 +8,27 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_layout_builder.h"
+#include "ui/display/types/display_constants.h"
 
 namespace display {
+
+TEST(UnifiedDesktopLayoutTests, ValidateMatrix) {
+  UnifiedDesktopLayoutMatrix matrix;
+
+  // Empty matrix.
+  EXPECT_FALSE(ValidateMatrix(matrix));
+
+  // Matrix with unequal row sizes.
+  matrix.resize(2);
+  matrix[0].emplace_back(1);
+  matrix[0].emplace_back(2);
+  matrix[1].emplace_back(3);
+  EXPECT_FALSE(ValidateMatrix(matrix));
+
+  // Matrix with a hole.
+  matrix[1].emplace_back(display::kInvalidDisplayId);
+  EXPECT_FALSE(ValidateMatrix(matrix));
+}
 
 TEST(UnifiedDesktopLayoutTests, PrimaryIdNotInList) {
   DisplayLayoutBuilder builder(20);

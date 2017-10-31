@@ -144,6 +144,12 @@
 # TODO: Needs virtual keyboard. http://crbug.com/616909
 -TrayIMETest.HidesOnA11yEnabled
 -TrayIMETest.PerformActionOnDetailedView
+# TODO: wire up mirroring and unified display.
+# http://crbug.com/770243.
+-UnifiedMouseWarpControllerTest.BoundaryTest
+-UnifiedMouseWarpControllerTest.BoundaryAndWarpSimpleTest
+-UnifiedMouseWarpControllerTest.BoundaryTestGrid
+-UnifiedMouseWarpControllerTest.WarpMouse
 # TODO: Needs virtual keyboard. http://crbug.com/616909
 -VirtualKeyboardAlwaysOnTopControllerTest.NotifyKeyboardBoundsChanged
 -VirtualKeyboardControllerAlwaysEnabledTest.DoesNotSuppressKeyboard

@@ -166,14 +166,23 @@ UnifiedDesktopLayoutMatrix BuildDisplayMatrix(const DisplayLayout& layout) {
   return matrix;
 }
 
-// Validates that the given |matrix| is neither empty nor have holes (empty
-// display IDs) in it.
+}  // namespace
+
 bool ValidateMatrix(const UnifiedDesktopLayoutMatrix& matrix) {
   if (matrix.empty())
     return false;
 
-  // No holes are allowed.
+  const size_t column_count = matrix[0].size();
+  if (column_count == 0)
+    return false;
+
   for (const auto& row : matrix) {
+    if (row.size() != column_count) {
+      LOG(ERROR) << "Wrong matrix dimensions. Unequal rows sizes.";
+      return false;
+    }
+
+    // No holes or repeated IDs are allowed.
     for (const auto& id : row) {
       if (id == display::kInvalidDisplayId) {
         LOG(ERROR) << "Unified Desktop layout matrix has an empty cell in it.";
@@ -184,8 +193,6 @@ bool ValidateMatrix(const UnifiedDesktopLayoutMatrix& matrix) {
 
   return true;
 }
-
-}  // namespace
 
 bool BuildUnifiedDesktopMatrix(const DisplayIdList& ids_list,
                                const DisplayLayout& layout,

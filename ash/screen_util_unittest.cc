@@ -4,6 +4,7 @@
 
 #include "ash/screen_util.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -11,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/unified_desktop_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -126,6 +128,47 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   UpdateDisplay("600x500");
   EXPECT_EQ("0,0 600x500",
             ScreenUtil::GetDisplayBoundsWithShelf(window).ToString());
+}
+
+TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
+  // TODO: requires unified desktop mode. http://crbug.com/581462.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  UpdateDisplay("500x400,400x600,300x600,200x300,600x200,350x400");
+  display_manager()->SetUnifiedDesktopEnabled(true);
+
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+  aura::Window* window = widget->GetNativeWindow();
+
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(6u, list.size());
+  // Create a 3 x 2 vertical layout matrix and set it.
+  // [500 x 400] [400 x 600]
+  // [300 x 600] [200 x 300]
+  // [600 x 200] [350 x 400]
+  display::UnifiedDesktopLayoutMatrix matrix;
+  matrix.resize(3u);
+  matrix[0].emplace_back(list[0]);
+  matrix[0].emplace_back(list[1]);
+  matrix[1].emplace_back(list[2]);
+  matrix[1].emplace_back(list[3]);
+  matrix[2].emplace_back(list[4]);
+  matrix[2].emplace_back(list[5]);
+  display_manager()->SetUnifiedDesktopMatrix(matrix);
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(gfx::Size(766, 1254), screen->GetPrimaryDisplay().size());
+
+  // Regardless of where the window is, the shelf is always in the top left
+  // display in the matrix.
+  EXPECT_EQ(gfx::Rect(0, 0, 499, 400),
+            ScreenUtil::GetDisplayBoundsWithShelf(window));
+
+  // Move to the bottom right display.
+  widget->SetBounds(gfx::Rect(620, 940, 100, 100));
+  EXPECT_EQ(gfx::Rect(0, 0, 499, 400),
+            ScreenUtil::GetDisplayBoundsWithShelf(window));
 }
 
 }  // namespace ash

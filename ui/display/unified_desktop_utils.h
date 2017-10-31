@@ -17,6 +17,12 @@ namespace display {
 // display is desired to be placed in the actual layout.
 using UnifiedDesktopLayoutMatrix = std::vector<std::vector<int64_t>>;
 
+// Validates that:
+// - The matrix is not empty.
+// - There are no holes (empty display IDs) in the matrix.
+// - All matrix rows have equal non-zero widths.
+bool DISPLAY_EXPORT ValidateMatrix(const UnifiedDesktopLayoutMatrix& matrix);
+
 // Validates that the given display |layout| is convertable to a valid Unified
 // Desktop layout matrix. If yes, then the matrix will be built and filled in
 // |out_matrix| and true is returned. False is returned and |out_matrix| will be

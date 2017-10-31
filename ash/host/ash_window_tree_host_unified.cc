@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/host/ash_window_tree_host_mirroring_delegate.h"
 #include "ash/host/root_window_transformer.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
@@ -20,12 +21,18 @@ namespace ash {
 
 class UnifiedEventTargeter : public aura::WindowTargeter {
  public:
-  UnifiedEventTargeter(aura::Window* src_root, aura::Window* dst_root)
-      : src_root_(src_root), dst_root_(dst_root) {}
+  UnifiedEventTargeter(aura::Window* src_root,
+                       aura::Window* dst_root,
+                       AshWindowTreeHostMirroringDelegate* delegate)
+      : src_root_(src_root), dst_root_(dst_root), delegate_(delegate) {
+    DCHECK(delegate);
+  }
 
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                       ui::Event* event) override {
     if (root == src_root_ && !event->target()) {
+      delegate_->SetCurrentEventTargeterSourceHost(src_root_->GetHost());
+
       if (event->IsLocatedEvent()) {
         ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
         located_event->ConvertLocationToTarget(
@@ -33,6 +40,10 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
       }
       ignore_result(
           dst_root_->GetHost()->event_sink()->OnEventFromSource(event));
+
+      // Reset the source host.
+      delegate_->SetCurrentEventTargeterSourceHost(nullptr);
+
       return nullptr;
     } else {
       NOTREACHED() << "event type:" << event->type();
@@ -40,15 +51,19 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
     }
   }
 
+ private:
   aura::Window* src_root_;
   aura::Window* dst_root_;
+  AshWindowTreeHostMirroringDelegate* delegate_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedEventTargeter);
 };
 
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
-    const gfx::Rect& initial_bounds)
-    : AshWindowTreeHostPlatform() {
+    const gfx::Rect& initial_bounds,
+    AshWindowTreeHostMirroringDelegate* delegate)
+    : AshWindowTreeHostPlatform(), delegate_(delegate) {
+  DCHECK(delegate);
   std::unique_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
   window->SetBounds(initial_bounds);
   SetPlatformWindow(std::move(window));
@@ -70,7 +85,7 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
     AshWindowTreeHost* mirroring_ash_host) {
   aura::Window* src_root = mirroring_ash_host->AsWindowTreeHost()->window();
   src_root->SetEventTargeter(
-      std::make_unique<UnifiedEventTargeter>(src_root, window()));
+      std::make_unique<UnifiedEventTargeter>(src_root, window(), delegate_));
   DCHECK(std::find(mirroring_hosts_.begin(), mirroring_hosts_.end(),
                    mirroring_ash_host) == mirroring_hosts_.end());
   mirroring_hosts_.push_back(mirroring_ash_host);

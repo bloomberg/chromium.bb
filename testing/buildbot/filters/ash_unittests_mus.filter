@@ -7,10 +7,15 @@
 -TouchCalibratorControllerTest.CustomCalibration
 -TouchCalibratorControllerTest.CustomCalibrationInvalidTouchId
 -TouchCalibratorControllerTest.TouchDeviceIdIsSet
-
 # TODO: fix this. It fails because GL_OES_texture_npot is not supported.
 # http://crbug.com/775067.
 -WorkspaceLayoutManagerBackdropTest.BackdropTest
+
+# TODO: wire up mirroring and unified display.
+# http://crbug.com/770243.
+-UnifiedMouseWarpControllerTest.BoundaryTestGrid
+-UnifiedMouseWarpControllerTest.WarpMouse
+-UnifiedMouseWarpControllerTest.BoundaryAndWarpSimpleTest
 
 # When adding new exclusions be sure to file bug with reason. Group with the
 # above if applicable.
