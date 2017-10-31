@@ -4,8 +4,8 @@ Tests the Timeline instrumentation for CompileScript event.
 v8.compile Properties:
 {
     data : {
-        columnNumber : <number>
-        lineNumber : <number>
+        columnNumber : 0
+        lineNumber : 0
         streamed : <boolean>
         url : 
     }
@@ -17,8 +17,8 @@ Text details for v8.compile: undefined
 v8.compile Properties:
 {
     data : {
-        columnNumber : <number>
-        lineNumber : <number>
+        columnNumber : 0
+        lineNumber : 0
         streamed : <boolean>
         url : .../devtools/tracing/timeline-js/resources/timeline-script-tag-2.js
     }

@@ -13,9 +13,9 @@ EvaluateScript Properties:
 EvaluateScript Properties:
 {
     data : {
-        columnNumber : <number>
+        columnNumber : 8
         frame : <string>
-        lineNumber : <number>
+        lineNumber : 2
         url : .../devtools/tracing/resources/timeline-iframe-data.html
     }
     endTime : <number>

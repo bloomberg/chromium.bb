@@ -5,8 +5,8 @@ v8.compile Properties:
 {
     data : {
         cacheProduceOptions : "code"
-        columnNumber : <number>
-        lineNumber : <number>
+        columnNumber : 0
+        lineNumber : 0
         producedCacheSize : <number>
         streamed : <boolean>
         url : .../devtools/service-workers/resources/v8-cache-script.js
@@ -21,9 +21,9 @@ v8.compile Properties:
     data : {
         cacheConsumeOptions : "code"
         cacheRejected : false
-        columnNumber : <number>
+        columnNumber : 0
         consumedCacheSize : <number>
-        lineNumber : <number>
+        lineNumber : 0
         streamed : <boolean>
         url : .../devtools/service-workers/resources/v8-cache-script.js
     }

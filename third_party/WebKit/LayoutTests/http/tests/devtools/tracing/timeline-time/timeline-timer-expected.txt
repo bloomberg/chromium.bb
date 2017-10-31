@@ -85,10 +85,10 @@ Text details for TimerRemove: timeline-timer.html:19
 FunctionCall Properties:
 {
     data : {
-        columnNumber : <number>
+        columnNumber : 30
         frame : <string>
         functionName : "intervalTimerWork"
-        lineNumber : <number>
+        lineNumber : 14
         scriptId : <string>
         url : .../devtools/tracing/timeline-time/timeline-timer.html
     }
@@ -100,10 +100,10 @@ FunctionCall Properties:
 FunctionCall Properties:
 {
     data : {
-        columnNumber : <number>
+        columnNumber : 30
         frame : <string>
         functionName : "intervalTimerWork"
-        lineNumber : <number>
+        lineNumber : 14
         scriptId : <string>
         url : .../devtools/tracing/timeline-time/timeline-timer.html
     }
@@ -124,9 +124,9 @@ Text details for EvaluateScript: undefined
 EvaluateScript Properties:
 {
     data : {
-        columnNumber : <number>
+        columnNumber : 0
         frame : <string>
-        lineNumber : <number>
+        lineNumber : 0
         url : 
     }
     endTime : <number>
