@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import os
 import re
-import tempfile
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -370,16 +369,7 @@ class UprevChromeCommand(command.CliCommand):
 
     build_number = self.ValidatePFQBuild(self.options.pfq_build, db)
 
-    chroot_tmp = os.path.join(constants.SOURCE_ROOT,
-                              constants.DEFAULT_CHROOT_DIR, 'tmp')
-    tmp_override = None if cros_build_lib.IsInsideChroot() else chroot_tmp
-    work_dir = tempfile.mkdtemp(prefix='uprevchrome_', dir=tmp_override)
-
-    try:
+    with osutils.TempDir(prefix='uprevchrome_',
+                         delete=self.options.wipe) as work_dir:
       self.UprevChrome(work_dir, self.options.pfq_build, build_number)
-    finally:
-      if self.options.wipe:
-        osutils.RmDir(work_dir)
-        logging.info('Removed work_dir %s', work_dir)
-      else:
-        logging.info('Leaving working directory at %s', work_dir)
+      logging.info('Used working directory: %s', work_dir)
