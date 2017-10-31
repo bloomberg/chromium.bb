@@ -128,6 +128,8 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response setAdBlockingEnabled(bool) override;
   protocol::Response getResourceTree(
       std::unique_ptr<protocol::Page::FrameResourceTree>* frame_tree) override;
+  protocol::Response getFrameTree(
+      std::unique_ptr<protocol::Page::FrameTree>*) override;
   void getResourceContent(const String& frame_id,
                           const String& url,
                           std::unique_ptr<GetResourceContentCallback>) override;
@@ -216,7 +218,9 @@ class CORE_EXPORT InspectorPageAgent final
   void PageLayoutInvalidated(bool resized);
 
   std::unique_ptr<protocol::Page::Frame> BuildObjectForFrame(LocalFrame*);
-  std::unique_ptr<protocol::Page::FrameResourceTree> BuildObjectForFrameTree(
+  std::unique_ptr<protocol::Page::FrameTree> BuildObjectForFrameTree(
+      LocalFrame*);
+  std::unique_ptr<protocol::Page::FrameResourceTree> BuildObjectForResourceTree(
       LocalFrame*);
   Member<InspectedFrames> inspected_frames_;
   v8_inspector::V8InspectorSession* v8_session_;
