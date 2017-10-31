@@ -43,9 +43,6 @@
 
 namespace blink {
 
-static const int kDefaultFontSize = 10;
-static const char kDefaultFontFamily[] = "sans-serif";
-
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
     : FontFaceSet(document), Supplement<Document>(document) {
   SuspendIfNeeded();
@@ -158,12 +155,12 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 
   FontFamily font_family;
-  font_family.SetFamily(kDefaultFontFamily);
+  font_family.SetFamily(FontFaceSet::kDefaultFontFamily);
 
   FontDescription default_font_description;
   default_font_description.SetFamily(font_family);
-  default_font_description.SetSpecifiedSize(kDefaultFontSize);
-  default_font_description.SetComputedSize(kDefaultFontSize);
+  default_font_description.SetSpecifiedSize(FontFaceSet::kDefaultFontSize);
+  default_font_description.SetComputedSize(FontFaceSet::kDefaultFontSize);
 
   style->SetFontDescription(default_font_description);
 
