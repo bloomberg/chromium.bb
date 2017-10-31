@@ -1,52 +1,61 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 from telemetry.page import page as page_module
 from telemetry import story
 
 _PAGE_TAGS_LIST = [
-    # Audio codecs:
+    # Audio codecs.
     'pcm',
     'mp3',
     'aac',
     'vorbis',
     'opus',
-    # Video codecs:
+    # Video codecs.
     'h264',
     'vp8',
     'vp9',
-    # Test types:
+    # Test types.
     'audio_video',
     'audio_only',
     'video_only',
-    # Other filter tags:
+    # Other filter tags.
     'is_50fps',
     'is_4k',
-    # Play action:
+    # Play action.
     'seek',
     'beginning_to_end',
     'background',
-    # Add javascript load
-    'busyjs'
+    # Add javascript load.
+    'busyjs',
+    # VideoStack API.
+    'src',
+    'mse'
 ]
 
+#
+# The following section contains base classes for pages.
+#
 
-class ToughVideoCasesPage(page_module.Page):
+class MediaPage(page_module.Page):
 
   def __init__(self, url, page_set, tags, extra_browser_args=None):
     if tags:
       for t in tags:
         assert t in _PAGE_TAGS_LIST
-    super(ToughVideoCasesPage, self).__init__(
+    assert not ('src' in tags and 'mse' in tags)
+    super(MediaPage, self).__init__(
         url=url, page_set=page_set, tags=tags, name=url.split('/')[-1],
         extra_browser_args=extra_browser_args)
 
 
-class BeginningToEndPlayPage(ToughVideoCasesPage):
+class BeginningToEndPlayPage(MediaPage):
   """A normal play page simply plays the given media until the end."""
 
   def __init__(self, url, page_set, tags, extra_browser_args=None):
     tags.append('beginning_to_end')
+    tags.append('src')
     self.add_browser_metrics = True
     super(BeginningToEndPlayPage, self).__init__(
         url, page_set, tags, extra_browser_args)
@@ -59,16 +68,16 @@ class BeginningToEndPlayPage(ToughVideoCasesPage):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
-class SeekPage(ToughVideoCasesPage):
+class SeekPage(MediaPage):
   """A seek page seeks twice in the video and measures the seek time."""
 
   def __init__(self, url, page_set, tags, extra_browser_args=None,
                action_timeout_in_seconds=60):
     tags.append('seek')
+    tags.append('src')
     self.skip_basic_metrics = True
     self._action_timeout = action_timeout_in_seconds
-    super(SeekPage, self).__init__(
-        url, page_set, tags, extra_browser_args)
+    super(SeekPage, self).__init__(url, page_set, tags, extra_browser_args)
 
   def RunPageInteractions(self, action_runner):
     timeout = self._action_timeout
@@ -87,7 +96,7 @@ class SeekPage(ToughVideoCasesPage):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
-class BackgroundPlaybackPage(ToughVideoCasesPage):
+class BackgroundPlaybackPage(MediaPage):
   """A Background playback page plays the given media in a background tab.
 
   The motivation for this test case is crbug.com/678663.
@@ -98,6 +107,7 @@ class BackgroundPlaybackPage(ToughVideoCasesPage):
     self._background_time = background_time
     self.skip_basic_metrics = True
     tags.append('background')
+    tags.append('src')
     # disable-media-suspend is required since for Android background playback
     # gets suspended. This flag makes Android work the same way as desktop and
     # not turn off video playback in the background.
@@ -123,6 +133,25 @@ class BackgroundPlaybackPage(ToughVideoCasesPage):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
+
+class MSEPage(MediaPage):
+
+  def __init__(self, url, page_set, tags, extra_browser_args=None):
+    tags.append('mse')
+    super(MSEPage, self).__init__(
+        url, page_set, tags, extra_browser_args)
+
+  def RunPageInteractions(self, action_runner):
+    # The page automatically runs the test at load time.
+    action_runner.WaitForJavaScriptCondition('window.__testDone == true')
+    test_failed = action_runner.EvaluateJavaScript('window.__testFailed')
+    if test_failed:
+      raise RuntimeError(action_runner.EvaluateJavaScript('window.__testError'))
+
+
+#
+# The following section contains concrete test page definitions.
+#
 
 class Page2(BeginningToEndPlayPage):
 
@@ -351,10 +380,50 @@ class Page38(BeginningToEndPlayPage):
       tags=['h264', 'aac', 'audio_video', 'busyjs'])
 
 
+class Page39(MSEPage):
+
+  def __init__(self, page_set):
+    super(Page39, self).__init__(
+      url='file://tough_video_cases/mse.html?media=aac_audio.mp4,h264_video.mp4',
+      page_set=page_set,
+      tags=['h264', 'aac', 'audio_video'])
+
+
+class Page40(MSEPage):
+
+  def __init__(self, page_set):
+    super(Page40, self).__init__(
+      url=('file://tough_video_cases/mse.html?'
+           'media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true'),
+      page_set=page_set,
+      tags=['h264', 'aac', 'audio_video'])
+
+
+class Page41(MSEPage):
+
+  def __init__(self, page_set):
+    super(Page41, self).__init__(
+      url='file://tough_video_cases/mse.html?media=aac_audio.mp4',
+      page_set=page_set,
+      tags=['aac', 'audio_only'])
+
+
+class Page42(MSEPage):
+
+  def __init__(self, page_set):
+    super(Page42, self).__init__(
+      url='file://tough_video_cases/mse.html?media=h264_video.mp4',
+      page_set=page_set,
+      tags=['h264', 'video_only'])
+
+
+
 class ToughVideoCasesPageSet(story.StorySet):
   """
   Description: Video Stack Perf pages that report time_to_play, seek time and
-  many other media-specific and generic metrics.
+  many other media-specific and generic metric.
+
+  TODO(crbug/713335): Rename this to MediaStorySet.
   """
   def __init__(self, measure_memory=False):
     super(ToughVideoCasesPageSet, self).__init__(
@@ -362,7 +431,16 @@ class ToughVideoCasesPageSet(story.StorySet):
 
     self.measure_memory = measure_memory
 
-    # Normal play tests:
+    # TODO(crouleau): Clean up this PageX stuff. Either
+    # 1. Add magic that will add all pages to the StorySet
+    # automatically so that the following is unnecessary. See
+    # https://stackoverflow.com/questions/1796180. Just add all classes with
+    # name like "PageX" where X is a number.
+    # or
+    # 2. Don't use classes at all and instead just have a list containing
+    # configuration for each one.
+
+    # Normal play tests.
     self.AddStory(Page2(self))
     self.AddStory(Page4(self))
     self.AddStory(Page7(self))
@@ -378,7 +456,7 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page32(self))
     self.AddStory(Page34(self))
 
-    # Seek tests:
+    # Seek tests.
     self.AddStory(Page19(self))
     self.AddStory(Page20(self))
     self.AddStory(Page23(self))
@@ -389,8 +467,21 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page33(self))
     self.AddStory(Page36(self))
 
-    # Background playback tests:
+    # Background playback tests.
     self.AddStory(Page37(self))
 
-    # Tests with high JS load
+    # Tests with high JS load.
     self.AddStory(Page38(self))
+
+    # MSE tests.
+    # TODO(crouleau): Figure out a way to make MSE pages provide consistent
+    # data. Currently the data haa a lot of outliers for time_to_play and other
+    # startup metrics. To do this, we must either:
+    # 1. Tell Telemetry to repeat these pages (this requires Telemetry's
+    # providing this option in the API.)
+    # 2. Edit the page to reload and run multiple times (you can clear the cache
+    # with tab.CleanCache). This requires crbug/775264.
+    self.AddStory(Page39(self))
+    self.AddStory(Page40(self))
+    self.AddStory(Page41(self))
+    self.AddStory(Page42(self))
