@@ -5,6 +5,7 @@
 #ifndef ScriptFetchOptions_h
 #define ScriptFetchOptions_h
 
+#include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
@@ -25,14 +26,24 @@ class ScriptFetchOptions final {
         credentials_mode_(network::mojom::FetchCredentialsMode::kOmit) {}
 
   ScriptFetchOptions(const String& nonce,
+                     const IntegrityMetadataSet& integrity_metadata,
+                     const String& integrity_attribute,
                      ParserDisposition parser_state,
                      network::mojom::FetchCredentialsMode credentials_mode)
       : nonce_(nonce),
+        integrity_metadata_(integrity_metadata),
+        integrity_attribute_(integrity_attribute),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode) {}
   ~ScriptFetchOptions() = default;
 
   const String& Nonce() const { return nonce_; }
+  const IntegrityMetadataSet& GetIntegrityMetadata() const {
+    return integrity_metadata_;
+  }
+  const String& GetIntegrityAttributeValue() const {
+    return integrity_attribute_;
+  }
   const ParserDisposition& ParserState() const { return parser_state_; }
   network::mojom::FetchCredentialsMode CredentialsMode() const {
     return credentials_mode_;
@@ -43,7 +54,8 @@ class ScriptFetchOptions final {
   const String nonce_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-integrity
-  // TODO(kouhei): const IntegrityMetadata integrity_metadata_;
+  const IntegrityMetadataSet integrity_metadata_;
+  const String integrity_attribute_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-parser
   const ParserDisposition parser_state_;

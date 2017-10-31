@@ -340,7 +340,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //      Otherwise, let cryptographic nonce be the empty string."
   String nonce = element_->GetNonceForElement();
 
-  // 18. is handled below.
+  // 18. "If the script element has an integrity attribute,
+  //      then let integrity metadata be that attribute's value.
+  //      Otherwise, let integrity metadata be the empty string."
+  String integrity_attr = element_->IntegrityAttributeValue();
+  IntegrityMetadataSet integrity_metadata;
+  if (!integrity_attr.IsEmpty()) {
+    SubresourceIntegrity::ReportInfo report_info;
+    SubresourceIntegrity::ParseIntegrityAttribute(
+        integrity_attr, integrity_metadata, &report_info);
+    SubresourceIntegrityHelper::DoReport(element_document, report_info);
+  }
 
   // 19. "Let parser state be "parser-inserted"
   //      if the script element has been flagged as "parser-inserted",
@@ -362,7 +372,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //      cryptographic nonce, integrity metadata is integrity metadata,
   //      parser metadata is parser metadata, and credentials mode is module
   //      script credentials mode." [spec text]
-  ScriptFetchOptions options(nonce, parser_state, credentials_mode);
+  ScriptFetchOptions options(nonce, integrity_metadata, integrity_attr,
+                             parser_state, credentials_mode);
 
   // 21. "If the element has a src content attribute, run these substeps:"
   if (element_->HasSourceAttribute()) {
@@ -412,22 +423,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       else
         encoding = element_document.Encoding();
 
-      // 18. "If the script element has an integrity attribute,
-      //      then let integrity metadata be that attribute's value.
-      //      Otherwise, let integrity metadata be the empty string."
-      String integrity_attr = element_->IntegrityAttributeValue();
-      IntegrityMetadataSet integrity_metadata;
-      if (!integrity_attr.IsEmpty()) {
-        SubresourceIntegrity::ReportInfo report_info;
-        SubresourceIntegrity::ParseIntegrityAttribute(
-            integrity_attr, integrity_metadata, &report_info);
-        SubresourceIntegrityHelper::DoReport(element_document, report_info);
-      }
-
       // "Fetch a classic script given url, settings object, options, CORS
       // setting, and encoding." [spec text]
-      if (!FetchClassicScript(url, element_document, options,
-                              integrity_metadata, encoding)) {
+      if (!FetchClassicScript(url, element_document, options, encoding)) {
         // TODO(hiroshige): Make this asynchronous. Currently we fire the error
         // event synchronously to keep the existing behavior.
         DispatchErrorEvent();
@@ -675,7 +673,6 @@ bool ScriptLoader::FetchClassicScript(
     const KURL& url,
     Document& element_document,
     const ScriptFetchOptions& options,
-    const IntegrityMetadataSet& integrity_metadata,
     const WTF::TextEncoding& encoding) {
   FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
   if (!parser_inserted_ || element_->AsyncAttributeValue() ||
@@ -683,8 +680,7 @@ bool ScriptLoader::FetchClassicScript(
     defer = FetchParameters::kLazyLoad;
 
   ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
-      url, element_document, options, integrity_metadata, encoding, element_,
-      defer);
+      url, element_document, options, encoding, element_, defer);
 
   if (!pending_script)
     return false;
