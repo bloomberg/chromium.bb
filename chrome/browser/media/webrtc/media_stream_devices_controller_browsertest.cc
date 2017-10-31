@@ -31,6 +31,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -823,4 +824,72 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   ASSERT_EQ(content::MEDIA_DEVICE_KILL_SWITCH_ON, media_stream_result());
   ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
   ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       RequestCamAndMicBlockedByFeaturePolicy) {
+  InitWithUrl(embedded_test_server()->GetURL("/iframe_blank.html"));
+
+  // Create a cross-origin request by using localhost as the iframe origin.
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("localhost");
+  GURL cross_origin_url = embedded_test_server()
+                              ->GetURL("/simple.html")
+                              .ReplaceComponents(replace_host);
+  content::NavigateIframeToURL(GetWebContents(), "test",
+                               GURL(cross_origin_url));
+  content::RenderFrameHost* child_frame =
+      ChildFrameAt(GetWebContents()->GetMainFrame(), 0);
+
+  content::MediaStreamRequest request =
+      CreateRequest(example_audio_id(), example_video_id());
+  // Make the child frame the source of the request.
+  request.render_process_id = child_frame->GetProcess()->GetID();
+  request.render_frame_id = child_frame->GetRoutingID();
+  RequestPermissions(
+      GetWebContents(), request,
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 base::Unretained(this)));
+
+  ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
+
+  ASSERT_EQ(content::MEDIA_DEVICE_PERMISSION_DENIED, media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
+            GetContentSettings()->GetMicrophoneCameraState());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       RequestCamBlockedByFeaturePolicy) {
+  InitWithUrl(embedded_test_server()->GetURL("/iframe_blank.html"));
+
+  // Create a cross-origin request by using localhost as the iframe origin.
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("localhost");
+  GURL cross_origin_url = embedded_test_server()
+                              ->GetURL("/simple.html")
+                              .ReplaceComponents(replace_host);
+  content::NavigateIframeToURL(GetWebContents(), "test",
+                               GURL(cross_origin_url));
+  content::RenderFrameHost* child_frame =
+      ChildFrameAt(GetWebContents()->GetMainFrame(), 0);
+
+  content::MediaStreamRequest request =
+      CreateRequest(std::string(), example_video_id());
+  // Make the child frame the source of the request.
+  request.render_process_id = child_frame->GetProcess()->GetID();
+  request.render_frame_id = child_frame->GetRoutingID();
+  RequestPermissions(
+      GetWebContents(), request,
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 base::Unretained(this)));
+
+  ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
+
+  ASSERT_EQ(content::MEDIA_DEVICE_PERMISSION_DENIED, media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
+            GetContentSettings()->GetMicrophoneCameraState());
 }

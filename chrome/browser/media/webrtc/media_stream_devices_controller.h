@@ -17,6 +17,7 @@
 class MediaStreamDevicesController;
 class Profile;
 class TabSpecificContentSettings;
+enum class PermissionStatusSource;
 
 namespace content {
 class WebContents;
@@ -64,9 +65,6 @@ class MediaStreamDevicesController {
   void PromptAnsweredGroupedRequest(
       const std::vector<ContentSetting>& responses);
 
-  // Called when the request is finished and no prompt is required.
-  void RequestFinishedNoPrompt();
-
  private:
   friend class MediaStreamDevicesControllerTest;
   friend class test::MediaStreamDevicesControllerTestApi;
@@ -88,7 +86,7 @@ class MediaStreamDevicesController {
                                          ContentSetting video_setting);
 
   // Runs |callback_| with the current audio/video permission settings.
-  void RunCallback();
+  void RunCallback(bool blocked_by_feature_policy);
 
   // Called when the permission has been set to update the
   // TabSpecificContentSettings.
@@ -104,6 +102,9 @@ class MediaStreamDevicesController {
   // Returns true if clicking allow on the dialog should give access to the
   // requested devices.
   bool IsUserAcceptAllowed(ContentSettingsType content_type) const;
+
+  bool PermissionIsBlockedForReason(ContentSettingsType content_type,
+                                    PermissionStatusSource reason) const;
 
   // The current state of the audio/video content settings which may be updated
   // through the lifetime of the request.
