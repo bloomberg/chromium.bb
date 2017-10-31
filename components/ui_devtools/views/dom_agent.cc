@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/dom_agent.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -441,37 +441,36 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
 
 }  // namespace
 
-UIDevToolsDOMAgent::UIDevToolsDOMAgent()
+DOMAgent::DOMAgent()
     : is_building_tree_(false),
       show_size_on_canvas_(false),
       highlight_rect_config_(HighlightRectsConfiguration::NO_DRAW) {
   aura::Env::GetInstance()->AddObserver(this);
 }
 
-UIDevToolsDOMAgent::~UIDevToolsDOMAgent() {
+DOMAgent::~DOMAgent() {
   aura::Env::GetInstance()->RemoveObserver(this);
   Reset();
 }
 
-ui_devtools::protocol::Response UIDevToolsDOMAgent::disable() {
+ui_devtools::protocol::Response DOMAgent::disable() {
   Reset();
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response UIDevToolsDOMAgent::getDocument(
+ui_devtools::protocol::Response DOMAgent::getDocument(
     std::unique_ptr<ui_devtools::protocol::DOM::Node>* out_root) {
   *out_root = BuildInitialTree();
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response UIDevToolsDOMAgent::hideHighlight() {
+ui_devtools::protocol::Response DOMAgent::hideHighlight() {
   if (layer_for_highlighting_ && layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(false);
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response
-UIDevToolsDOMAgent::pushNodesByBackendIdsToFrontend(
+ui_devtools::protocol::Response DOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
   *result = protocol::Array<int>::create();
@@ -480,7 +479,7 @@ UIDevToolsDOMAgent::pushNodesByBackendIdsToFrontend(
   return ui_devtools::protocol::Response::OK();
 }
 
-void UIDevToolsDOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
+void DOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
   // When parent is null, only need to update |node_id_to_ui_element_|.
   if (!parent) {
     node_id_to_ui_element_[child->node_id()] = child;
@@ -499,8 +498,7 @@ void UIDevToolsDOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
                                 BuildTreeForUIElement(child));
 }
 
-void UIDevToolsDOMAgent::OnUIElementReordered(UIElement* parent,
-                                              UIElement* child) {
+void DOMAgent::OnUIElementReordered(UIElement* parent, UIElement* child) {
   DCHECK(node_id_to_ui_element_.count(parent->node_id()));
 
   const auto& children = parent->children();
@@ -512,33 +510,32 @@ void UIDevToolsDOMAgent::OnUIElementReordered(UIElement* parent,
                                 BuildDomNodeFromUIElement(child));
 }
 
-void UIDevToolsDOMAgent::OnUIElementRemoved(UIElement* ui_element) {
+void DOMAgent::OnUIElementRemoved(UIElement* ui_element) {
   DCHECK(node_id_to_ui_element_.count(ui_element->node_id()));
 
   RemoveDomNode(ui_element);
   node_id_to_ui_element_.erase(ui_element->node_id());
 }
 
-void UIDevToolsDOMAgent::OnUIElementBoundsChanged(UIElement* ui_element) {
+void DOMAgent::OnUIElementBoundsChanged(UIElement* ui_element) {
   for (auto& observer : observers_)
     observer.OnElementBoundsChanged(ui_element);
 }
 
-void UIDevToolsDOMAgent::AddObserver(UIDevToolsDOMAgentObserver* observer) {
+void DOMAgent::AddObserver(DOMAgentObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void UIDevToolsDOMAgent::RemoveObserver(UIDevToolsDOMAgentObserver* observer) {
+void DOMAgent::RemoveObserver(DOMAgentObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-UIElement* UIDevToolsDOMAgent::GetElementFromNodeId(int node_id) {
+UIElement* DOMAgent::GetElementFromNodeId(int node_id) {
   return node_id_to_ui_element_[node_id];
 }
 
-ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
-    int node_id,
-    bool show_size) {
+ui_devtools::protocol::Response DOMAgent::HighlightNode(int node_id,
+                                                        bool show_size) {
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");
@@ -563,9 +560,8 @@ ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
   return ui_devtools::protocol::Response::OK();
 }
 
-int UIDevToolsDOMAgent::FindElementIdTargetedByPoint(
-    const gfx::Point& p,
-    aura::Window* root_window) const {
+int DOMAgent::FindElementIdTargetedByPoint(const gfx::Point& p,
+                                           aura::Window* root_window) const {
   aura::Window* targeted_window = root_window->GetEventHandlerForPoint(p);
   if (!targeted_window)
     return 0;
@@ -590,8 +586,7 @@ int UIDevToolsDOMAgent::FindElementIdTargetedByPoint(
       targeted_view);
 }
 
-void UIDevToolsDOMAgent::ShowDistancesInHighlightOverlay(int pinned_id,
-                                                         int element_id) {
+void DOMAgent::ShowDistancesInHighlightOverlay(int pinned_id, int element_id) {
   const std::pair<aura::Window*, gfx::Rect> pair_r2(
       node_id_to_ui_element_[element_id]->GetNodeWindowAndBounds());
   const std::pair<aura::Window*, gfx::Rect> pair_r1(
@@ -637,7 +632,7 @@ void UIDevToolsDOMAgent::ShowDistancesInHighlightOverlay(int pinned_id,
   }
 }
 
-int UIDevToolsDOMAgent::GetParentIdOfNodeId(int node_id) const {
+int DOMAgent::GetParentIdOfNodeId(int node_id) const {
   DCHECK(node_id_to_ui_element_.count(node_id));
   const UIElement* element = node_id_to_ui_element_.at(node_id);
   if (element->parent() && element->parent() != window_element_root_.get())
@@ -645,7 +640,7 @@ int UIDevToolsDOMAgent::GetParentIdOfNodeId(int node_id) const {
   return 0;
 }
 
-void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
+void DOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   const gfx::Rect& screen_bounds(layer_for_highlighting_->bounds());
   ui::PaintRecorder recorder(context, screen_bounds.size());
   gfx::Canvas* canvas = recorder.canvas();
@@ -786,17 +781,16 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   }
 }
 
-void UIDevToolsDOMAgent::OnHostInitialized(aura::WindowTreeHost* host) {
+void DOMAgent::OnHostInitialized(aura::WindowTreeHost* host) {
   root_windows_.push_back(host->window());
 }
 
-void UIDevToolsDOMAgent::OnElementBoundsChanged(UIElement* ui_element) {
+void DOMAgent::OnElementBoundsChanged(UIElement* ui_element) {
   for (auto& observer : observers_)
     observer.OnElementBoundsChanged(ui_element);
 }
 
-std::unique_ptr<ui_devtools::protocol::DOM::Node>
-UIDevToolsDOMAgent::BuildInitialTree() {
+std::unique_ptr<ui_devtools::protocol::DOM::Node> DOMAgent::BuildInitialTree() {
   is_building_tree_ = true;
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
@@ -819,7 +813,7 @@ UIDevToolsDOMAgent::BuildInitialTree() {
 }
 
 std::unique_ptr<ui_devtools::protocol::DOM::Node>
-UIDevToolsDOMAgent::BuildTreeForUIElement(UIElement* ui_element) {
+DOMAgent::BuildTreeForUIElement(UIElement* ui_element) {
   if (ui_element->type() == UIElementType::WINDOW) {
     return BuildTreeForWindow(
         ui_element,
@@ -836,7 +830,7 @@ UIDevToolsDOMAgent::BuildTreeForUIElement(UIElement* ui_element) {
   return nullptr;
 }
 
-std::unique_ptr<DOM::Node> UIDevToolsDOMAgent::BuildTreeForWindow(
+std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForWindow(
     UIElement* window_element_root,
     aura::Window* window) {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
@@ -861,7 +855,7 @@ std::unique_ptr<DOM::Node> UIDevToolsDOMAgent::BuildTreeForWindow(
   return node;
 }
 
-std::unique_ptr<DOM::Node> UIDevToolsDOMAgent::BuildTreeForRootWidget(
+std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForRootWidget(
     UIElement* widget_element,
     views::Widget* widget) {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
@@ -878,9 +872,8 @@ std::unique_ptr<DOM::Node> UIDevToolsDOMAgent::BuildTreeForRootWidget(
   return node;
 }
 
-std::unique_ptr<DOM::Node> UIDevToolsDOMAgent::BuildTreeForView(
-    UIElement* view_element,
-    views::View* view) {
+std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForView(UIElement* view_element,
+                                                      views::View* view) {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
   for (auto* child : view->GetChildrenInZOrder()) {
@@ -895,14 +888,14 @@ std::unique_ptr<DOM::Node> UIDevToolsDOMAgent::BuildTreeForView(
   return node;
 }
 
-void UIDevToolsDOMAgent::RemoveDomNode(UIElement* ui_element) {
+void DOMAgent::RemoveDomNode(UIElement* ui_element) {
   for (auto* child_element : ui_element->children())
     RemoveDomNode(child_element);
   frontend()->childNodeRemoved(ui_element->parent()->node_id(),
                                ui_element->node_id());
 }
 
-void UIDevToolsDOMAgent::Reset() {
+void DOMAgent::Reset() {
   is_building_tree_ = false;
   render_text_.reset();
   layer_for_highlighting_.reset();
@@ -911,7 +904,7 @@ void UIDevToolsDOMAgent::Reset() {
   observers_.Clear();
 }
 
-void UIDevToolsDOMAgent::UpdateHighlight(
+void DOMAgent::UpdateHighlight(
     const std::pair<aura::Window*, gfx::Rect>& window_and_bounds) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(

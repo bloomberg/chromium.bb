@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_DOM_AGENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_DOM_AGENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_DOM_AGENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_DOM_AGENT_H_
 
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
@@ -38,19 +38,19 @@ enum RectSide { TOP_SIDE, LEFT_SIDE, RIGHT_SIDE, BOTTOM_SIDE };
 
 class UIElement;
 
-class UIDevToolsDOMAgentObserver {
+class DOMAgentObserver {
  public:
   virtual void OnElementBoundsChanged(UIElement* ui_element) = 0;
 };
 
-class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
-                               ui_devtools::protocol::DOM::Metainfo>,
-                           public UIElementDelegate,
-                           public aura::EnvObserver,
-                           public ui::LayerDelegate {
+class DOMAgent : public ui_devtools::UiDevToolsBaseAgent<
+                     ui_devtools::protocol::DOM::Metainfo>,
+                 public UIElementDelegate,
+                 public aura::EnvObserver,
+                 public ui::LayerDelegate {
  public:
-  UIDevToolsDOMAgent();
-  ~UIDevToolsDOMAgent() override;
+  DOMAgent();
+  ~DOMAgent() override;
 
   // DOM::Backend:
   ui_devtools::protocol::Response disable() override;
@@ -67,8 +67,8 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   void OnUIElementRemoved(UIElement* ui_element) override;
   void OnUIElementBoundsChanged(UIElement* ui_element) override;
 
-  void AddObserver(UIDevToolsDOMAgentObserver* observer);
-  void RemoveObserver(UIDevToolsDOMAgentObserver* observer);
+  void AddObserver(DOMAgentObserver* observer);
+  void RemoveObserver(DOMAgentObserver* observer);
   UIElement* GetElementFromNodeId(int node_id);
   UIElement* window_element_root() const { return window_element_root_.get(); };
   const std::vector<aura::Window*>& root_windows() const {
@@ -139,11 +139,11 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   std::vector<aura::Window*> root_windows_;
   gfx::Rect hovered_rect_;
   gfx::Rect pinned_rect_;
-  base::ObserverList<UIDevToolsDOMAgentObserver> observers_;
+  base::ObserverList<DOMAgentObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(UIDevToolsDOMAgent);
+  DISALLOW_COPY_AND_ASSIGN(DOMAgent);
 };
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_DOM_AGENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DOM_AGENT_H_

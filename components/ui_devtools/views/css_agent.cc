@@ -118,7 +118,7 @@ Response ParseProperties(const std::string& style_text,
 
 }  // namespace
 
-CSSAgent::CSSAgent(UIDevToolsDOMAgent* dom_agent) : dom_agent_(dom_agent) {
+CSSAgent::CSSAgent(DOMAgent* dom_agent) : dom_agent_(dom_agent) {
   DCHECK(dom_agent_);
 }
 

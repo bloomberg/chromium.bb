@@ -6,7 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/views/css_agent.h"
-#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/dom_agent.h"
 #include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
 #include "components/ui_devtools/views/ui_element.h"
 #include "components/ui_devtools/views/view_element.h"
@@ -224,7 +224,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
     fake_frontend_channel_ = base::MakeUnique<FakeFrontendChannel>();
     uber_dispatcher_ =
         base::MakeUnique<UberDispatcher>(fake_frontend_channel_.get());
-    dom_agent_ = base::MakeUnique<ui_devtools::UIDevToolsDOMAgent>();
+    dom_agent_ = base::MakeUnique<ui_devtools::DOMAgent>();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ = base::MakeUnique<ui_devtools::CSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
@@ -363,7 +363,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
   }
 
   ui_devtools::CSSAgent* css_agent() { return css_agent_.get(); }
-  ui_devtools::UIDevToolsDOMAgent* dom_agent() { return dom_agent_.get(); }
+  ui_devtools::DOMAgent* dom_agent() { return dom_agent_.get(); }
   ui_devtools::UIDevToolsOverlayAgent* overlay_agent() {
     return overlay_agent_.get();
   }
@@ -375,7 +375,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
  private:
   std::unique_ptr<UberDispatcher> uber_dispatcher_;
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
-  std::unique_ptr<ui_devtools::UIDevToolsDOMAgent> dom_agent_;
+  std::unique_ptr<ui_devtools::DOMAgent> dom_agent_;
   std::unique_ptr<ui_devtools::CSSAgent> css_agent_;
   std::unique_ptr<ui_devtools::UIDevToolsOverlayAgent> overlay_agent_;
 

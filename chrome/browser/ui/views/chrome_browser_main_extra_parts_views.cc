@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/views/css_agent.h"
-#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/dom_agent.h"
 #include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -113,7 +113,7 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   // Start devtools server
   devtools_server_ = ui_devtools::UiDevToolsServer::Create(nullptr);
   if (devtools_server_) {
-    auto dom_backend = base::MakeUnique<ui_devtools::UIDevToolsDOMAgent>();
+    auto dom_backend = base::MakeUnique<ui_devtools::DOMAgent>();
     auto overlay_backend =
         base::MakeUnique<ui_devtools::UIDevToolsOverlayAgent>(
             dom_backend.get());

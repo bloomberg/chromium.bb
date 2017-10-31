@@ -6,7 +6,7 @@
 #define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_OVERLAY_AGENT_H_
 
 #include "components/ui_devtools/Overlay.h"
-#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/dom_agent.h"
 #include "ui/events/event_handler.h"
 
 namespace ui_devtools {
@@ -15,7 +15,7 @@ class UIDevToolsOverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
                                    ui_devtools::protocol::Overlay::Metainfo>,
                                public ui::EventHandler {
  public:
-  explicit UIDevToolsOverlayAgent(UIDevToolsDOMAgent* dom_agent);
+  explicit UIDevToolsOverlayAgent(DOMAgent* dom_agent);
   ~UIDevToolsOverlayAgent() override;
   int pinned_id() const { return pinned_id_; };
   void SetPinnedNodeId(int pinned_id);
@@ -36,7 +36,7 @@ class UIDevToolsOverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
 
-  UIDevToolsDOMAgent* const dom_agent_;
+  DOMAgent* const dom_agent_;
   int pinned_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UIDevToolsOverlayAgent);

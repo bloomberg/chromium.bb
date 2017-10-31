@@ -9,7 +9,7 @@
 
 namespace ui_devtools {
 
-UIDevToolsOverlayAgent::UIDevToolsOverlayAgent(UIDevToolsDOMAgent* dom_agent)
+UIDevToolsOverlayAgent::UIDevToolsOverlayAgent(DOMAgent* dom_agent)
     : dom_agent_(dom_agent) {
   DCHECK(dom_agent_);
 }

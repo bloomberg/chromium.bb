@@ -13,8 +13,8 @@ source_set("views") {
   sources = [
     "css_agent.cc",
     "css_agent.h",
-    "ui_devtools_dom_agent.cc",
-    "ui_devtools_dom_agent.h",
+    "dom_agent.cc",
+    "dom_agent.h",
     "ui_devtools_overlay_agent.cc",
     "ui_devtools_overlay_agent.h",
     "ui_element.cc",
