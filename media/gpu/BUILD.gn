@@ -27,7 +27,7 @@ if (is_mac) {
 
 if (use_vaapi) {
   action("libva_generate_stubs") {
-    extra_header = "va_stub_header.fragment"
+    extra_header = "vaapi/va_stub_header.fragment"
 
     script = "../../tools/generate_stubs/generate_stubs.py"
     sources = [
