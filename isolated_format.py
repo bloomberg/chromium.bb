@@ -454,6 +454,8 @@ def load_isolated(content, algo):
   - algo: hashlib algorithm class. Used to confirm the algorithm matches the
           algorithm used on the Isolate Server.
   """
+  if not algo:
+    raise IsolatedError('\'algo\' is required')
   try:
     data = json.loads(content)
   except ValueError as v:
@@ -478,12 +480,6 @@ def load_isolated(content, algo):
     raise IsolatedError(
         'Expected compatible \'%s\' version, got %r' %
         (ISOLATED_FILE_VERSION, value))
-
-  if algo is None:
-    # TODO(maruel): Remove the default around Jan 2014.
-    # Default the algorithm used in the .isolated file itself, falls back to
-    # 'sha-1' if unspecified.
-    algo = SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
 
   algo_name = SUPPORTED_ALGOS_REVERSE[algo]
 
