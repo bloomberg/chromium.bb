@@ -72,18 +72,11 @@ public class WebApkValidatorTest {
 
     private RobolectricPackageManager mPackageManager;
 
-    private static boolean sIsGoogleSignedResult = true;
-    private class FakeIsGoogleValidator implements WebApkValidator.ISignatureChecker {
-        public boolean isGoogleSigned(String packageName) {
-            return sIsGoogleSignedResult;
-        }
-    }
-
     @Before
     public void setUp() {
         mPackageManager =
                 (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
-        WebApkValidator.init(EXPECTED_SIGNATURE, PUBLIC_KEY, new FakeIsGoogleValidator());
+        WebApkValidator.init(EXPECTED_SIGNATURE, PUBLIC_KEY);
     }
 
     /**
@@ -268,15 +261,16 @@ public class WebApkValidatorTest {
     public void testIsValidWebApkForMapsLite() {
         mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                 MAPSLITE_PACKAGE_NAME, new Signature(SIGNATURE_1), MAPSLITE_EXAMPLE_STARTURL));
+        mPackageManager.addPackage(
+                newPackageInfoWithBrowserSignature(MAPSLITE_PACKAGE_NAME + ".other",
+                        new Signature(SIGNATURE_1), MAPSLITE_EXAMPLE_STARTURL));
 
-        sIsGoogleSignedResult = true;
         assertTrue(WebApkValidator.isValidWebApk(
                 RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME));
         assertFalse(WebApkValidator.isValidWebApk(
                 RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME + ".other"));
-        sIsGoogleSignedResult = false;
         assertFalse(WebApkValidator.isValidWebApk(
-                RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME));
+                RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME + ".notfound"));
     }
 
     /**
