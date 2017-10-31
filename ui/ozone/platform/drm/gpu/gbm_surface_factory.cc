@@ -160,7 +160,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
 }
 
 scoped_refptr<gfx::NativePixmap>
-GbmSurfaceFactory::CreateNativePixmapFromHandle(
+GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
@@ -176,7 +176,6 @@ GbmSurfaceFactory::CreateNativePixmapFromHandle(
   }
 
   std::vector<gfx::NativePixmapPlane> planes;
-
   for (const auto& plane : handle.planes) {
     planes.push_back(plane);
   }
@@ -185,7 +184,44 @@ GbmSurfaceFactory::CreateNativePixmapFromHandle(
       widget, size, format, std::move(scoped_fds), planes);
   if (!buffer)
     return nullptr;
+
   return base::MakeRefCounted<GbmPixmap>(this, buffer);
+}
+
+scoped_refptr<gfx::NativePixmap>
+GbmSurfaceFactory::CreateNativePixmapFromHandle(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    const gfx::NativePixmapHandle& handle) {
+  // Query the external service (if available), whether it recognizes this
+  // NativePixmapHandle, and whether it can provide a corresponding NativePixmap
+  // backing it. If so, the handle is consumed. Otherwise, the handle remains
+  // valid and can be further importer by standard means.
+  if (!get_protected_native_pixmap_callback_.is_null()) {
+    auto protected_pixmap = get_protected_native_pixmap_callback_.Run(handle);
+    if (protected_pixmap)
+      return protected_pixmap;
+  }
+
+  return CreateNativePixmapFromHandleInternal(widget, size, format, handle);
+}
+
+scoped_refptr<gfx::NativePixmap>
+GbmSurfaceFactory::CreateNativePixmapForProtectedBufferHandle(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    const gfx::NativePixmapHandle& handle) {
+  // Create a new NativePixmap without querying the external service for any
+  // existing mappings.
+  return CreateNativePixmapFromHandleInternal(widget, size, format, handle);
+}
+
+void GbmSurfaceFactory::SetGetProtectedNativePixmapDelegate(
+    const GetProtectedNativePixmapCallback&
+        get_protected_native_pixmap_callback) {
+  get_protected_native_pixmap_callback_ = get_protected_native_pixmap_callback;
 }
 
 }  // namespace ui
