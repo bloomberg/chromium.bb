@@ -84,8 +84,7 @@ class FlagsState {
   void SetFeatureEntryEnabled(FlagsStorage* flags_storage,
                               const std::string& internal_name,
                               bool enable);
-  void RemoveFlagsSwitches(
-      std::map<std::string, base::CommandLine::StringType>* switch_list);
+  void RemoveFlagsSwitches(base::CommandLine::SwitchMap* switch_list);
   void ResetAllFlags(FlagsStorage* flags_storage);
   void Reset();
 

@@ -74,8 +74,7 @@ void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
 
 // Removes all switches that were added to a command line by a previous call to
 // |ConvertFlagsToSwitches()|.
-void RemoveFlagsSwitches(
-    std::map<std::string, base::CommandLine::StringType>* switch_list);
+void RemoveFlagsSwitches(base::CommandLine::SwitchMap* switch_list);
 
 // Reset all flags to the default state by clearing all flags.
 void ResetAllFlags(flags_ui::FlagsStorage* flags_storage);

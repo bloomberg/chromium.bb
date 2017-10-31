@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -177,14 +178,12 @@ CommandLine::CommandLine(const CommandLine& other)
     : argv_(other.argv_),
       switches_(other.switches_),
       begin_args_(other.begin_args_) {
-  ResetStringPieces();
 }
 
 CommandLine& CommandLine::operator=(const CommandLine& other) {
   argv_ = other.argv_;
   switches_ = other.switches_;
   begin_args_ = other.begin_args_;
-  ResetStringPieces();
   return *this;
 }
 
@@ -268,7 +267,6 @@ void CommandLine::InitFromArgv(int argc,
 void CommandLine::InitFromArgv(const StringVector& argv) {
   argv_ = StringVector(1);
   switches_.clear();
-  switches_by_stringpiece_.clear();
   begin_args_ = 1;
   SetProgram(argv.empty() ? FilePath() : FilePath(argv[0]));
   AppendSwitchesAndArguments(this, argv);
@@ -288,8 +286,7 @@ void CommandLine::SetProgram(const FilePath& program) {
 
 bool CommandLine::HasSwitch(const base::StringPiece& switch_string) const {
   DCHECK_EQ(ToLowerASCII(switch_string), switch_string);
-  return switches_by_stringpiece_.find(switch_string) !=
-         switches_by_stringpiece_.end();
+  return ContainsKey(switches_, switch_string);
 }
 
 bool CommandLine::HasSwitch(const char switch_constant[]) const {
@@ -318,9 +315,8 @@ FilePath CommandLine::GetSwitchValuePath(
 CommandLine::StringType CommandLine::GetSwitchValueNative(
     const base::StringPiece& switch_string) const {
   DCHECK_EQ(ToLowerASCII(switch_string), switch_string);
-  auto result = switches_by_stringpiece_.find(switch_string);
-  return result == switches_by_stringpiece_.end() ? StringType()
-                                                  : *(result->second);
+  auto result = switches_.find(switch_string);
+  return result == switches_.end() ? StringType() : result->second;
 }
 
 void CommandLine::AppendSwitch(const std::string& switch_string) {
@@ -346,7 +342,6 @@ void CommandLine::AppendSwitchNative(const std::string& switch_string,
       switches_.insert(make_pair(switch_key.substr(prefix_length), value));
   if (!insertion.second)
     insertion.first->second = value;
-  switches_by_stringpiece_[insertion.first->first] = &(insertion.first->second);
   // Preserve existing switch prefixes in |argv_|; only append one if necessary.
   if (prefix_length == 0)
     combined_switch_string = kSwitchPrefixes[0] + combined_switch_string;
@@ -487,12 +482,6 @@ CommandLine::StringType CommandLine::GetArgumentsStringInternal(
     }
   }
   return params;
-}
-
-void CommandLine::ResetStringPieces() {
-  switches_by_stringpiece_.clear();
-  for (const auto& entry : switches_)
-    switches_by_stringpiece_[entry.first] = &(entry.second);
 }
 
 }  // namespace base

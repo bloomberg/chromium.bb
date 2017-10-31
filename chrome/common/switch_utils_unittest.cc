@@ -21,8 +21,7 @@ TEST(SwitchUtilsTest, RemoveSwitches) {
   base::CommandLine cmd_line(arraysize(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
-  std::map<std::string, base::CommandLine::StringType> switches =
-      cmd_line.GetSwitches();
+  base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
   EXPECT_EQ(5U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
@@ -44,8 +43,7 @@ TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
       L" --bar");
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
-  std::map<std::string, base::CommandLine::StringType> switches =
-      cmd_line.GetSwitches();
+  base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
   EXPECT_EQ(5U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
@@ -63,8 +61,7 @@ TEST(SwitchUtilsTest, RemovePrefetchSwitch) {
   base::CommandLine cmd_line(arraysize(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
-  std::map<std::string, base::CommandLine::StringType> switches =
-      cmd_line.GetSwitches();
+  base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
   EXPECT_EQ(3U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
@@ -83,8 +80,7 @@ TEST(SwitchUtilsTest, RemovePrefetchSwitchAndNormalSwitch) {
   base::CommandLine cmd_line(arraysize(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
-  std::map<std::string, base::CommandLine::StringType> switches =
-      cmd_line.GetSwitches();
+  base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
   EXPECT_EQ(4U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
