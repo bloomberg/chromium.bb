@@ -49,6 +49,17 @@ PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
   return empty_slot;
 }
 
+PadState* GamepadPadStateProvider::GetConnectedPadState(int pad_index) {
+  if (pad_index < 0 || pad_index >= (int)Gamepads::kItemsLengthCap)
+    return nullptr;
+
+  PadState& pad_state = pad_states_.get()[pad_index];
+  if (pad_state.source == GAMEPAD_SOURCE_NONE)
+    return nullptr;
+
+  return &pad_state;
+}
+
 void GamepadPadStateProvider::ClearPadState(PadState& state) {
   memset(&state, 0, sizeof(PadState));
 }

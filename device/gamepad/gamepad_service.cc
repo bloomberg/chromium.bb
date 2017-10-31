@@ -169,6 +169,37 @@ void GamepadService::OnGamepadDisconnected(int index, const Gamepad& pad) {
   }
 }
 
+void GamepadService::PlayVibrationEffectOnce(
+    int pad_index,
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  if (!provider_) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  provider_->PlayVibrationEffectOnce(pad_index, type, std::move(params),
+                                     std::move(callback));
+}
+
+void GamepadService::ResetVibrationActuator(
+    int pad_index,
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  if (!provider_) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  provider_->ResetVibrationActuator(pad_index, std::move(callback));
+}
+
 base::SharedMemoryHandle GamepadService::DuplicateSharedMemoryHandle() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   return provider_->DuplicateSharedMemoryHandle();
