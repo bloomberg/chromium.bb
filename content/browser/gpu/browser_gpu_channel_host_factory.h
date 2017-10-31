@@ -60,6 +60,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   ~BrowserGpuChannelHostFactory() override;
 
   void GpuChannelEstablished();
+  void RestartTimeout();
 
   static void InitializeShaderDiskCacheOnIO(int gpu_client_id,
                                             const base::FilePath& cache_dir);
@@ -71,6 +72,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   std::unique_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks_;
+
+  base::OneShotTimer timeout_;
 
   static BrowserGpuChannelHostFactory* instance_;
 
