@@ -1,3 +1,4 @@
+<script src="../../resources/gc.js"></script>
 <body>
 <p>Test that workers stay reachable via message ports.
 Should print "DONE" when done.</p>
@@ -33,16 +34,6 @@ function testReachable()
         done();
     }
     channel.port2.postMessage("ping");
-}
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collectAll();
-
-    for (var i = 0; i < 10000; i++) { // force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("abc");
-    }
 }
 
 function done()
