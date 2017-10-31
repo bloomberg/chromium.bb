@@ -6,6 +6,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 
@@ -176,10 +177,15 @@ const NGOffsetMappingUnit* NGOffsetMapping::GetMappingUnitForPosition(
   return unit;
 }
 
-NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMOffsetRange(
-    const Node& node,
-    unsigned start_offset,
-    unsigned end_offset) const {
+NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
+    const EphemeralRange& range) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(range.StartPosition()));
+  DCHECK(NGOffsetMapping::AcceptsPosition(range.EndPosition()));
+  DCHECK_EQ(range.StartPosition().AnchorNode(),
+            range.EndPosition().AnchorNode());
+  const Node& node = *range.StartPosition().AnchorNode();
+  const unsigned start_offset = ToNodeOffsetPair(range.StartPosition()).second;
+  const unsigned end_offset = ToNodeOffsetPair(range.EndPosition()).second;
   unsigned range_start;
   unsigned range_end;
   std::tie(range_start, range_end) = ranges_.at(&node);
