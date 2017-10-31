@@ -168,9 +168,14 @@
       <div class="section-container">
         <!-- TODO(rayraymond): Change link to that of new standalone webapp.
           See http://crbug.com/472699 -->
-          The log file can also be loaded using
+          <if expr="not is_ios">
+          The log file can be loaded using
           <a href="chrome://net-internals#import"
              target="_blank">net-internals</a>.
+          </if>
+          <if expr="is_ios">
+          The log file can be loaded using chrome://net-internals/ on desktop.
+          </if>
       </div>
 
       <div class="section-container">
