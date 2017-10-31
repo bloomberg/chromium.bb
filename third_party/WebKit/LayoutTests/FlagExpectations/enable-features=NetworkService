@@ -48,6 +48,17 @@ Bug(none) external/wpt/service-workers/service-worker/shared-worker-controlled.h
 Bug(none) external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout Failure ]
 Bug(none) external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass Crash Failure ]
 Bug(none) external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
+Bug(none) external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Pass Failure ]
+Bug(none) external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/unregister.https.html [ Pass Failure ]
+Bug(none) external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Pass Failure ]
+Bug(none) external/wpt/service-workers/service-worker/ready.https.html [ Pass Crash Failure ]
+Bug(none) http/tests/appcache/top-frame-3.html [ Pass Timeout ]
+Bug(none) http/tests/appcache/top-frame-4.html [ Pass Timeout ]
+Bug(none) http/tests/appcache/local-content.html [ Pass Timeout ]
+Bug(none) http/tests/appcache/offline-access.html [ Pass Timeout ]
+Bug(none) http/tests/appcache/foreign-fallback.html [ Pass Timeout ]
+Bug(none) http/tests/appcache/main-resource-redirect.html [ Pass Timeout ]
+Bug(none) http/tests/appcache/reload.html [ Pass Timeout ]
 
 # NetworkService won't support Foreign Fetch.
 Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Skip ]
