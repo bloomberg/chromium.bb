@@ -190,6 +190,44 @@ TEST_P(GLES2DecoderLostContextTest, LostFromMakeCurrentWithRobustness) {
   ClearCurrentDecoderError();
 }
 
+TEST_P(GLES2DecoderLostContextTest, TextureDestroyAfterLostFromMakeCurrent) {
+  Init(true);
+  // Create a texture and framebuffer, and attach the texture to the
+  // framebuffer.
+  const GLuint kClientTextureId = 4100;
+  const GLuint kServiceTextureId = 4101;
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgPointee<1>(kServiceTextureId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kClientTextureId);
+  DoBindTexture(GL_TEXTURE_2D, kClientTextureId, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 5, 6, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               shared_memory_id_, kSharedMemoryOffset);
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         kClientTextureId, kServiceTextureId, 0, GL_NO_ERROR);
+
+  // The texture should never be deleted at the GL level.
+  EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(kServiceTextureId)))
+      .Times(0)
+      .RetiresOnSaturation();
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);
+  EXPECT_CALL(*gl_, BindTexture(_, 0)).Times(testing::AnyNumber());
+  GenHelper<cmds::DeleteTexturesImmediate>(kClientTextureId);
+
+  // Force context lost for MakeCurrent().
+  EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
+  // Expect the group to be lost.
+  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
+
+  decoder_->MakeCurrent();
+  EXPECT_TRUE(decoder_->WasContextLost());
+  EXPECT_EQ(error::kMakeCurrentFailed, GetContextLostReason());
+  ClearCurrentDecoderError();
+}
+
 TEST_P(GLES2DecoderLostContextTest, LostFromResetAfterMakeCurrent) {
   Init(true); // with robustness
   InSequence seq;

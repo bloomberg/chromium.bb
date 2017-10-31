@@ -230,7 +230,6 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
       reinterpret_cast<GLXDrawable>(surface->GetHandle()),
       static_cast<GLXContext>(context_))) {
     LOG(ERROR) << "Couldn't make context current with X drawable.";
-    Destroy();
     return false;
   }
 
@@ -242,7 +241,6 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";
-    Destroy();
     return false;
   }
 

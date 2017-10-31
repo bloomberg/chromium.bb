@@ -773,8 +773,10 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   // Init the texture manager.
   void Initialize();
 
+  void MarkContextLost();
+
   // Must call before destruction.
-  void Destroy(bool have_context);
+  void Destroy();
 
   // Returns the maximum number of levels.
   GLint MaxLevelsForTarget(GLenum target) const {
