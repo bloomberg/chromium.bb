@@ -19,6 +19,7 @@
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/public/interfaces/gamepad.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace base {
@@ -57,10 +58,17 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // Returns a new mojo::ScopedSharedBufferHandle of the gamepad data.
   mojo::ScopedSharedBufferHandle GetSharedBufferHandle();
 
-  void AddGamepadDataFetcher(GamepadDataFetcher* fetcher);
-  void RemoveGamepadDataFetcher(GamepadDataFetcher* fetcher);
-
   void GetCurrentGamepadData(Gamepads* data);
+
+  void PlayVibrationEffectOnce(
+      int pad_index,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback);
+
+  void ResetVibrationActuator(
+      int pad_index,
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
 
   // Pause and resume the background polling thread. Can be called from any
   // thread.
@@ -89,6 +97,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // of |fetcher|.
   void DoAddGamepadDataFetcher(std::unique_ptr<GamepadDataFetcher> fetcher);
   void DoRemoveSourceGamepadDataFetcher(GamepadSource source);
+
+  GamepadDataFetcher* GetSourceGamepadDataFetcher(GamepadSource source);
 
   // Method for sending pause hints to the low-level data fetcher. Runs on
   // polling_thread_.
@@ -130,7 +140,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
     base::Closure closure;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };
-  typedef std::vector<ClosureAndThread> UserGestureObserverVector;
+  using UserGestureObserverVector = std::vector<ClosureAndThread>;
   UserGestureObserverVector user_gesture_observers_;
 
   // Updated based on notification from SystemMonitor when the system devices
@@ -145,7 +155,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   bool sanitize_;
 
   // Only used on the polling thread.
-  typedef std::vector<std::unique_ptr<GamepadDataFetcher>> GamepadFetcherVector;
+  using GamepadFetcherVector = std::vector<std::unique_ptr<GamepadDataFetcher>>;
   GamepadFetcherVector data_fetchers_;
 
   base::Lock shared_memory_lock_;

@@ -8,6 +8,8 @@
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
+#include "device/gamepad/public/cpp/gamepad.h"
+#include "device/gamepad/public/interfaces/gamepad.mojom.h"
 
 namespace device {
 
@@ -19,6 +21,14 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   virtual ~GamepadDataFetcher() {}
   virtual void GetGamepadData(bool devices_changed_hint) = 0;
   virtual void PauseHint(bool paused) {}
+  virtual void PlayEffect(
+      int source_id,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback);
+  virtual void ResetVibration(
+      int source_id,
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
 
   virtual GamepadSource source() = 0;
   GamepadPadStateProvider* provider() { return provider_; }

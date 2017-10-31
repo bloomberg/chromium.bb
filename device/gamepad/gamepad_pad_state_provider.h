@@ -83,6 +83,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadPadStateProvider {
   // If no slots are available will return NULL.
   PadState* GetPadState(GamepadSource source, int source_id);
 
+  // Gets a PadState object for a connected gamepad by specifying its index in
+  // the pad_states_ array. Returns NULL if there is no connected gamepad at
+  // that index.
+  PadState* GetConnectedPadState(int pad_index);
+
  protected:
   void ClearPadState(PadState& state);
 

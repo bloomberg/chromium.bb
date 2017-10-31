@@ -102,6 +102,49 @@ void GamepadProvider::GetCurrentGamepadData(Gamepads* data) {
   *data = *pads;
 }
 
+void GamepadProvider::PlayVibrationEffectOnce(
+    int pad_index,
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  PadState* pad_state = GetConnectedPadState(pad_index);
+  if (!pad_state) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  GamepadDataFetcher* fetcher = GetSourceGamepadDataFetcher(pad_state->source);
+  if (!fetcher) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  fetcher->PlayEffect(pad_state->source_id, type, std::move(params),
+                      std::move(callback));
+}
+
+void GamepadProvider::ResetVibrationActuator(
+    int pad_index,
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  PadState* pad_state = GetConnectedPadState(pad_index);
+  if (!pad_state) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  GamepadDataFetcher* fetcher = GetSourceGamepadDataFetcher(pad_state->source);
+  if (!fetcher) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  fetcher->ResetVibration(pad_state->source_id, std::move(callback));
+}
+
 void GamepadProvider::Pause() {
   {
     base::AutoLock lock(is_paused_lock_);
@@ -181,6 +224,19 @@ void GamepadProvider::RemoveSourceGamepadDataFetcher(GamepadSource source) {
   polling_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&GamepadProvider::DoRemoveSourceGamepadDataFetcher,
                             base::Unretained(this), source));
+}
+
+GamepadDataFetcher* GamepadProvider::GetSourceGamepadDataFetcher(
+    GamepadSource source) {
+  for (GamepadFetcherVector::iterator it = data_fetchers_.begin();
+       it != data_fetchers_.end();) {
+    if ((*it)->source() == source) {
+      return it->get();
+    } else {
+      ++it;
+    }
+  }
+  return nullptr;
 }
 
 void GamepadProvider::DoAddGamepadDataFetcher(

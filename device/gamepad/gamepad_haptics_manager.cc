@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "device/gamepad/gamepad_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
@@ -27,13 +28,15 @@ void GamepadHapticsManager::PlayVibrationEffectOnce(
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
     PlayVibrationEffectOnceCallback callback) {
-  NOTIMPLEMENTED();
+  GamepadService::GetInstance()->PlayVibrationEffectOnce(
+      pad_index, type, std::move(params), std::move(callback));
 }
 
 void GamepadHapticsManager::ResetVibrationActuator(
     int pad_index,
     ResetVibrationActuatorCallback callback) {
-  NOTIMPLEMENTED();
+  GamepadService::GetInstance()->ResetVibrationActuator(pad_index,
+                                                        std::move(callback));
 }
 
 }  // namespace device
