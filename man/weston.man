@@ -20,9 +20,12 @@ shell.
 When weston is started as the first windowing system (i.e. not under X nor
 under another Wayland server), it should be done with the command
 .B weston-launch
-to set up proper privileged access to devices.
+to set up proper privileged access to devices. If your system supports
+the logind D-Bus API and the support has been built into weston as well,
+it is possible to start weston with just
+.BR weston .
 
-Weston also supports X clients via 
+Weston also supports X clients via
 .BR XWayland ", see below."
 .
 .\" ***************************************************************
@@ -106,7 +109,7 @@ Load
 .I backend.so
 instead of the default backend. The file is searched for in
 .IR "__weston_modules_dir__" ,
-or you can pass an absolute path. The default backend is 
+or you can pass an absolute path. The default backend is
 .I __weston_native_backend__
 unless the environment suggests otherwise, see
 .IR DISPLAY " and " WAYLAND_DISPLAY .
