@@ -889,6 +889,24 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   EXPECT_EQ(0lu, context_->memory_controller().disk_usage());
 }
 
+TEST_F(BlobStorageContextTest, NegativeSlice) {
+  const std::string kId1("id1");
+  const std::string kId2("id2");
+
+  std::unique_ptr<BlobDataHandle> handle = SetupBasicBlob(kId1);
+
+  EXPECT_EQ(1lu, context_->memory_controller().memory_usage());
+
+  BlobDataBuilder builder(kId2);
+  builder.AppendBlob(kId1, static_cast<uint64_t>(-10), 11);
+  std::unique_ptr<BlobDataHandle> handle2 = context_->BuildBlob(
+      builder, BlobStorageContext::TransportAllowedCallback());
+
+  EXPECT_TRUE(handle2->IsBroken());
+  EXPECT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS,
+            handle2->GetBlobStatus());
+}
+
 // TODO(michaeln): tests for the deprecated url stuff
 
 }  // namespace storage
