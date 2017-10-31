@@ -45,7 +45,7 @@ void SetControlSize(NSControl* control, NSControlSize control_size) {
   // The size of this bubble, and the other layout constants elsewhere in this
   // file, were lifted from ContentBlockedPlugins.xib
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
-      initWithContentRect:NSMakeRect(0, 0, 314, 179)
+      initWithContentRect:NSMakeRect(0, 0, 314, 145)
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
