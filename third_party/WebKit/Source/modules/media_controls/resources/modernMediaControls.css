@@ -490,3 +490,17 @@ audio::-webkit-media-controls-mute-button,
 audio::-internal-media-controls-overflow-button {
   flex: 0 0 32px;
 }
+
+/**
+ * Preload state
+ */
+
+.use-default-poster {
+  background: #F1F3F4;
+}
+
+.state-no-source input[pseudo="-webkit-media-controls-overlay-play-button" i],
+.use-default-poster div[pseudo="-internal-media-controls-button-panel" i],
+.use-default-poster input[pseudo="-webkit-media-controls-timeline" i] {
+  display: none;
+}

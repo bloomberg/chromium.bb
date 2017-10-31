@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<title>Test that poster availability is reflected in CSS classes.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../media-file.js"></script>
+<video controls width=400 preload=auto poster="../content/greenbox.png"></video>
+<script>
+async_test(t => {
+  const video = document.querySelector('video');
+
+  checkControlsClassName(video, 'phase-pre-ready state-no-source');
+
+  video.oncanplay = t.step_func_done(() => {
+    checkControlsClassName(video, 'phase-ready state-stopped');
+  });
+
+  video.src = findMediaFile('video', '../content/counting');
+});
+</script>
+</html>

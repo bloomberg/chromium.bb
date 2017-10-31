@@ -11,7 +11,7 @@ async_test(t => {
   const video = document.querySelector('video');
   let was_paused = false;
 
-  checkControlsClassName(video, "phase-pre-ready state-no-source");
+  checkControlsClassName(video, "phase-pre-ready state-no-source use-default-poster");
 
   video.onstalled = t.step_func(() => {
     checkControlsClassName(video, "state-loading-metadata");
