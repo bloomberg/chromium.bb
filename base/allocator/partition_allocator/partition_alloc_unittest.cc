@@ -36,7 +36,10 @@ std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
 const size_t kTestMaxAllocation = 4096;
 
 bool IsLargeMemoryDevice() {
-  return base::SysInfo::AmountOfPhysicalMemory() >= 2LL * 1024 * 1024 * 1024;
+  // Treat any device with 2GiB or more of physical memory as a "large memory
+  // device". We check for slightly less than 2GiB so that devices with a small
+  // amount of memory not accessible to the OS still count as "large".
+  return base::SysInfo::AmountOfPhysicalMemory() >= 2040LL * 1024 * 1024;
 }
 
 bool SetAddressSpaceLimit() {
@@ -178,7 +181,7 @@ class PartitionAllocTest : public testing::Test {
       return;
     }
 
-    EXPECT_TRUE(SetAddressSpaceLimit());
+    ASSERT_TRUE(SetAddressSpaceLimit());
 
     // Work out the number of allocations for 6 GB of memory.
     const int numAllocations = (6 * 1024 * 1024) / (allocSize / 1024);
