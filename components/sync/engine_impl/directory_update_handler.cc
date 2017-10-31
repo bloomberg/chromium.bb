@@ -59,11 +59,6 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     const SyncEntityList& applicable_updates,
     StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
-  if (progress_marker.ByteSize() > 0) {
-    SyncRecordDatatypeBin("DataUse.Sync.ProgressMarker.Bytes",
-                          ModelTypeToHistogramInt(type_),
-                          progress_marker.ByteSize());
-  }
   if (mutated_context.has_context()) {
     sync_pb::DataTypeContext local_context;
     dir_->GetDataTypeContext(&trans, type_, &local_context);

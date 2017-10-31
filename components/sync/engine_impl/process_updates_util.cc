@@ -295,12 +295,6 @@ void ProcessDownloadedUpdates(syncable::Directory* dir,
     if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
       continue;
     ProcessUpdate(*update, dir->GetCryptographer(trans), trans);
-    if (update->ByteSize() > 0) {
-      SyncRecordDatatypeBin("DataUse.Sync.Download.Bytes",
-                            ModelTypeToHistogramInt(type), update->ByteSize());
-    }
-    UMA_HISTOGRAM_SPARSE_SLOWLY("DataUse.Sync.Download.Count",
-                                ModelTypeToHistogramInt(type));
   }
 }
 

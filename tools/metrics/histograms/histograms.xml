@@ -13496,6 +13496,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataUse.Sync.Download.Bytes" enum="SyncModelTypes">
+  <obsolete>
+    Deprecated 10/2017.
+  </obsolete>
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -13506,6 +13509,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataUse.Sync.Download.Count" enum="SyncModelTypes">
+  <obsolete>
+    Deprecated 10/2017.
+  </obsolete>
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -13516,6 +13522,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataUse.Sync.ProgressMarker.Bytes" enum="SyncModelTypes">
+  <obsolete>
+    Deprecated 10/2017.
+  </obsolete>
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -13526,6 +13535,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataUse.Sync.Upload.Bytes" enum="SyncModelTypes">
+  <obsolete>
+    Deprecated 10/2017.
+  </obsolete>
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -13535,6 +13547,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataUse.Sync.Upload.Count" enum="SyncModelTypes">
+  <obsolete>
+    Deprecated 10/2017.
+  </obsolete>
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
