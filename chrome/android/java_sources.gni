@@ -1900,7 +1900,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/KeyboardHideHelperUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/LocationBarLayoutTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/SpannableAutocompleteEditTextModelUnitTest.java",
-  "junit/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeaderTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeaderUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTrackerTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/PlatformNetworksManagerTest.java",
@@ -1926,7 +1926,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappInfoTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkInfoTest.java",
-  "junit/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerTest.java",
+  "junit/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerUnitTest.java",
   "junit/src/org/chromium/chrome/browser/widget/selection/SelectionDelegateTest.java",
 ]
 
