@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_frame_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_view_delegate.h"
 
 @implementation ToolbarView
 
@@ -57,10 +57,9 @@
   return hitView;
 }
 
-- (void)setFrame:(CGRect)frame {
-  CGRect oldFrame = self.frame;
-  [super setFrame:frame];
-  [delegate_ frameDidChangeFrame:frame fromFrame:oldFrame];
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  [delegate_ toolbarDidLayout];
 }
 
 - (void)didMoveToWindow {
