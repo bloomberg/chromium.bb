@@ -3395,7 +3395,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (BOOL)hasControllerForURL:(const GURL&)url {
-  std::string host(url.host());
+  base::StringPiece host = url.host_piece();
   if (host == kChromeUIOfflineHost) {
     // Only allow offline URL that are fully specified.
     return reading_list::IsOfflineURLValid(
@@ -3403,8 +3403,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   if (host == kChromeUIBookmarksHost) {
-    // Only allow bookmark URL on iPad when Bookmarks is not shown modally.
-    return IsIPadIdiom() && !PresentNTPPanelModally();
+    return IsBookmarksHostEnabled();
   }
 
   return host == kChromeUINewTabHost;
@@ -3415,10 +3414,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   DCHECK(url.SchemeIs(kChromeUIScheme));
 
   id<CRWNativeContent> nativeController = nil;
-  std::string url_host = url.host();
+  base::StringPiece url_host = url.host_piece();
   if (url_host == kChromeUINewTabHost ||
-      (IsIPadIdiom() && url_host == kChromeUIBookmarksHost &&
-       !PresentNTPPanelModally())) {
+      (url_host == kChromeUIBookmarksHost && IsBookmarksHostEnabled())) {
     CGFloat fakeStatusBarHeight = _fakeStatusBarView.frame.size.height;
     UIEdgeInsets safeAreaInset = UIEdgeInsetsZero;
     if (@available(iOS 11.0, *)) {
@@ -3443,7 +3441,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // Panel is always NTP for iPhone.
     ntp_home::PanelIdentifier panelType = ntp_home::HOME_PANEL;
 
-    if (IsIPadIdiom() && !PresentNTPPanelModally()) {
+    if (IsBookmarksHostEnabled()) {
       // New Tab Page can have multiple panels. Each panel is addressable
       // by a #fragment, e.g. chrome://newtab/#most_visited takes user to
       // the Most Visited page, chrome://newtab/#bookmarks takes user to
