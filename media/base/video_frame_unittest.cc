@@ -154,6 +154,16 @@ TEST(VideoFrame, CreateFrame) {
   base::MD5Final(&digest, &context);
   EXPECT_EQ(MD5DigestToBase16(digest), "911991d51438ad2e1a40ed5f6fc7c796");
 
+  // Test single planar frame.
+  frame = VideoFrame::CreateFrame(media::PIXEL_FORMAT_ARGB, size,
+                                  gfx::Rect(size), size, kTimestamp);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, frame->format());
+
+  // Test double planar frame.
+  frame = VideoFrame::CreateFrame(media::PIXEL_FORMAT_NV12, size,
+                                  gfx::Rect(size), size, kTimestamp);
+  EXPECT_EQ(media::PIXEL_FORMAT_NV12, frame->format());
+
   // Test an empty frame.
   frame = VideoFrame::CreateEOSFrame();
   EXPECT_TRUE(
