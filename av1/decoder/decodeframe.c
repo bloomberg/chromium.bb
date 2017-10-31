@@ -3852,7 +3852,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    aom_extend_frame_borders((YV12_BUFFER_CONFIG *)xd->cur_buf);
     av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
                                       cm->rst_info, 7, NULL);
   }

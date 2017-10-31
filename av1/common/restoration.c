@@ -281,49 +281,54 @@ static int setup_processing_stripe_boundary(
 
   assert(CONFIG_HIGHBITDEPTH || !use_highbd);
 
-  // Replace the pixels above the top of the stripe, unless this is the top of
-  // the image.
-  // We expand 2 lines from rsb->stripe_boundary_above to fill 3 lines of above
-  // pixels. This is done by duplicating the topmost of the 2 lines.
+  // Replace RESTORATION_BORDER pixels above the top of the stripe, unless this
+  // is the top of the image. We expand 2 lines from rsb->stripe_boundary_above
+  // to fill 3 lines of above pixels. This is done by duplicating the topmost
+  // of the 2 lines (see the AOMMAX call when calculating src_row, which gets
+  // the values 0, 0, 1 for i = -3, -2, -1).
   if (stripe_index > 0) {
     const int above_buf_y = 2 * (stripe_index - 1);
-    uint8_t *data8_tl = data8 + (limits->v_start - 3) * stride + data_x0_off;
+    uint8_t *data8_tl = data8 + limits->v_start * stride + data_x0_off;
 
-    for (int i = 0; i < 3; ++i) {
-      const int src_row = AOMMAX(0, i - 1);
+    for (int i = -RESTORATION_BORDER; i < 0; ++i) {
+      const int src_row = AOMMAX(i + RESTORATION_CTX_VERT, 0);
       const int buf_off = buf_x0_off + (above_buf_y + src_row) * buf_stride;
       const uint8_t *src = rsb->stripe_boundary_above + (buf_off << use_highbd);
       uint8_t *dst8 = data8_tl + i * stride;
-      // Save old pixels, then replace with data from boundary_above_buf
-      memcpy(rlbs->tmp_save_above[i], REAL_PTR(use_highbd, dst8), line_size);
+      // Save old pixels, then replace with data from stripe_boundary_above
+      memcpy(rlbs->tmp_save_above[i + RESTORATION_BORDER],
+             REAL_PTR(use_highbd, dst8), line_size);
       memcpy(REAL_PTR(use_highbd, dst8), src, line_size);
     }
   }
 
-  // Replace the pixels below the bottom of the stripe if necessary. This might
-  // not be needed if the stripe is less than stripe_height high (which might
-  // happen on the bottom of a loop restoration unit), in which case
-  // rows_needed_below might be negative.
-  // Similarly to above, we expand 2 lines from rb->stripe_boundary_below into
-  // 3 lines of below pixels. This time we duplicate the bottommost row.
-  const int stripe_bottom = stripe_height * (1 + stripe_index) - tile_offset;
-  const int rows_needed_below = AOMMIN(limits->v_end + 3 - stripe_bottom, 3);
+  // Replace up to RESTORATION_BORDER pixels below the bottom of the
+  // stripe. When replacing the maximum amount, the second buffer row is
+  // repeated, so src_row gets the values 0, 1, 1 for i = 0, 1, 2.
+  //
+  // We might not write that many rows if the stripe isn't of full height
+  // (which might happen at the bottom of a restoration unit).
+  const int full_stripe_bottom =
+      stripe_height * (1 + stripe_index) - tile_offset;
+  const int stripe_bottom = AOMMIN(limits->v_end, full_stripe_bottom);
+  const int rows_needed_below =
+      RESTORATION_BORDER - (full_stripe_bottom - stripe_bottom);
 
-  const int below_buf_y = 2 * stripe_index;
-  uint8_t *data8_bl = data8 + stripe_bottom * stride + data_x0_off;
+  const int below_buf_y = RESTORATION_CTX_VERT * stripe_index;
+  uint8_t *data8_bl = data8 + full_stripe_bottom * stride + data_x0_off;
 
   for (int i = 0; i < rows_needed_below; ++i) {
-    const int src_row = AOMMIN(1, i);
+    const int src_row = AOMMIN(i, RESTORATION_CTX_VERT - 1);
     const int buf_off = buf_x0_off + (below_buf_y + src_row) * buf_stride;
     const uint8_t *src = rsb->stripe_boundary_below + (buf_off << use_highbd);
     uint8_t *dst8 = data8_bl + i * stride;
-    // Save old pixels, then replace with data from boundary_below_buf
+    // Save old pixels, then replace with data from stripe_boundary_below
     memcpy(rlbs->tmp_save_below[i], REAL_PTR(use_highbd, dst8), line_size);
     memcpy(REAL_PTR(use_highbd, dst8), src, line_size);
   }
 
   // Finally, return the actual height of this stripe.
-  return AOMMIN(limits->v_end, stripe_bottom) - limits->v_start;
+  return AOMMIN(limits->v_end, full_stripe_bottom) - limits->v_start;
 }
 
 // This function restores the boundary lines modified by
@@ -342,26 +347,28 @@ static void restore_processing_stripe_boundary(
   assert(CONFIG_HIGHBITDEPTH || !use_highbd);
 
   if (stripe_index > 0) {
-    uint8_t *data8_tl = data8 + (limits->v_start - 3) * stride + data_x0_off;
-    for (int i = 0; i < 3; ++i) {
+    uint8_t *data8_tl = data8 + limits->v_start * stride + data_x0_off;
+    for (int i = -RESTORATION_BORDER; i < 0; ++i) {
       uint8_t *dst8 = data8_tl + i * stride;
       // Save old pixels, then replace with data from boundary_above_buf
-      memcpy(REAL_PTR(use_highbd, dst8), rlbs->tmp_save_above[i], line_size);
+      memcpy(REAL_PTR(use_highbd, dst8),
+             rlbs->tmp_save_above[i + RESTORATION_BORDER], line_size);
     }
   }
 
-  const int stripe_bottom = stripe_height * (1 + stripe_index) - tile_offset;
-  const int rows_needed_below = AOMMIN(limits->v_end + 3 - stripe_bottom, 3);
+  const int full_stripe_bottom =
+      stripe_height * (1 + stripe_index) - tile_offset;
+  const int stripe_bottom = AOMMIN(limits->v_end, full_stripe_bottom);
+  const int rows_needed_below =
+      RESTORATION_BORDER - (full_stripe_bottom - stripe_bottom);
 
   uint8_t *data8_bl = data8 + stripe_bottom * stride + data_x0_off;
-
   for (int i = 0; i < rows_needed_below; ++i) {
     uint8_t *dst8 = data8_bl + i * stride;
     // Save old pixels, then replace with data from boundary_below_buf
     memcpy(REAL_PTR(use_highbd, dst8), rlbs->tmp_save_below[i], line_size);
   }
 }
-#undef REAL_PTR
 #endif
 
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
@@ -1390,17 +1397,6 @@ void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
   }
 }
 
-struct restore_borders {
-  int hborder, vborder;
-};
-
-static const struct restore_borders restore_borders[RESTORE_TYPES] = {
-  { 0, 0 },
-  { WIENER_BORDER_HORZ, WIENER_BORDER_VERT },
-  { SGRPROJ_BORDER_HORZ, SGRPROJ_BORDER_VERT },
-  { RESTORATION_BORDER_HORZ, RESTORATION_BORDER_VERT }
-};
-
 typedef struct {
   const RestorationInfo *rsi;
 #if CONFIG_STRIPED_LOOP_RESTORATION
@@ -1495,10 +1491,8 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     const int plane_width = frame->crop_widths[is_uv];
     const int plane_height = frame->crop_heights[is_uv];
 
-    const struct restore_borders *borders =
-        &restore_borders[prsi->frame_restoration_type];
     extend_frame(frame->buffers[plane], plane_width, plane_height,
-                 frame->strides[is_uv], borders->hborder, borders->vborder,
+                 frame->strides[is_uv], RESTORATION_BORDER, RESTORATION_BORDER,
                  highbd);
 
     FilterFrameCtxt ctxt;
@@ -1759,57 +1753,58 @@ static void extend_line(uint8_t *buf, int width, int extend,
 // rst_internal.stripe_boundary_lines
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               AV1_COMMON *cm) {
+#if CONFIG_HIGHBITDEPTH
+  const int use_highbd = cm->use_highbitdepth;
+#else
+  const int use_highbd = 0;
+#endif
+
   for (int p = 0; p < MAX_MB_PLANE; ++p) {
     const int is_uv = p > 0;
-    const uint8_t *src_buf = frame->buffers[p];
+    const int ss_y = is_uv && cm->subsampling_y;
+    const uint8_t *src_buf = REAL_PTR(use_highbd, frame->buffers[p]);
     const int src_width = frame->crop_widths[is_uv];
     const int src_height = frame->crop_heights[is_uv];
-    const int src_stride = frame->strides[is_uv];
-    const int stripe_height = 64 >> (is_uv && cm->subsampling_y);
-    const int stripe_offset = (56 >> (is_uv && cm->subsampling_y)) - 2;
+    const int src_stride = frame->strides[is_uv] << use_highbd;
+    const int stripe_height = 64 >> ss_y;
+    const int stripe_offset = (56 >> ss_y) - RESTORATION_CTX_VERT;
 
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
     uint8_t *boundary_above_buf = boundaries->stripe_boundary_above;
     uint8_t *boundary_below_buf = boundaries->stripe_boundary_below;
-    const int boundary_stride = boundaries->stripe_boundary_stride;
-#if CONFIG_HIGHBITDEPTH
-    const int use_highbitdepth = cm->use_highbitdepth;
-    if (use_highbitdepth) {
-      src_buf = (uint8_t *)CONVERT_TO_SHORTPTR(src_buf);
-    }
-#else
-    const int use_highbitdepth = 0;
-#endif
-    src_buf += (stripe_offset * src_stride) << use_highbitdepth;
-    boundary_above_buf += RESTORATION_EXTRA_HORZ << use_highbitdepth;
-    boundary_below_buf += RESTORATION_EXTRA_HORZ << use_highbitdepth;
+    const int boundary_stride = boundaries->stripe_boundary_stride
+                                << use_highbd;
+    const int boundary_bytes = RESTORATION_EXTRA_HORZ << use_highbd;
+
+    src_buf += stripe_offset * src_stride;
+    boundary_above_buf += boundary_bytes;
+    boundary_below_buf += boundary_bytes;
     // Loop over stripes
     for (int stripe_y = stripe_offset; stripe_y < src_height;
          stripe_y += stripe_height) {
       // Save 2 lines above the LR stripe (offset -9, -10)
-      for (int yy = 0; yy < 2; yy++) {
+      for (int yy = 0; yy < RESTORATION_CTX_VERT; yy++) {
         if (stripe_y + yy < src_height) {
-          memcpy(boundary_above_buf, src_buf, src_width << use_highbitdepth);
+          memcpy(boundary_above_buf, src_buf, src_width << use_highbd);
           extend_line(boundary_above_buf, src_width, RESTORATION_EXTRA_HORZ,
-                      use_highbitdepth);
-          src_buf += src_stride << use_highbitdepth;
-          boundary_above_buf += boundary_stride << use_highbitdepth;
+                      use_highbd);
+          src_buf += src_stride;
+          boundary_above_buf += boundary_stride;
         }
       }
       // Save 2 lines below the LR stripe (offset 56,57)
-      for (int yy = 2; yy < 4; yy++) {
+      for (int yy = RESTORATION_CTX_VERT; yy < 2 * RESTORATION_CTX_VERT; yy++) {
         if (stripe_y + yy < src_height) {
-          memcpy(boundary_below_buf, src_buf, src_width << use_highbitdepth);
+          memcpy(boundary_below_buf, src_buf, src_width << use_highbd);
           extend_line(boundary_below_buf, src_width, RESTORATION_EXTRA_HORZ,
-                      use_highbitdepth);
-          src_buf += src_stride << use_highbitdepth;
-          boundary_below_buf += boundary_stride << use_highbitdepth;
+                      use_highbd);
+          src_buf += src_stride;
+          boundary_below_buf += boundary_stride;
         }
       }
       // jump to next stripe
-      src_buf += ((stripe_height - 4) * src_stride) << use_highbitdepth;
+      src_buf += (stripe_height - 2 * RESTORATION_CTX_VERT) * src_stride;
     }
   }
 }
-
 #endif  // CONFIG_STRIPED_LOOP_RESTORATION

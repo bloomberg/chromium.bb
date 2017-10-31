@@ -61,7 +61,14 @@ extern "C" {
 #define RESTORATION_BORDER_HORZ (WIENER_BORDER_HORZ)
 #endif  // SGRPROJ_BORDER_VERT >= WIENER_BORDER_VERT
 
+// How many border pixels do we need for each processing unit?
+#define RESTORATION_BORDER 3
+
 #if CONFIG_STRIPED_LOOP_RESTORATION
+// How many rows of deblocked pixels do we save above/below each processing
+// stripe?
+#define RESTORATION_CTX_VERT 2
+
 // Additional pixels to the left and right in above/below buffers
 // It is RESTORATION_BORDER_HORZ rounded up to get nicer buffer alignment
 #define RESTORATION_EXTRA_HORZ 4
@@ -221,8 +228,8 @@ typedef struct {
 typedef struct {
   // Temporary buffers to save/restore 3 lines above/below the restoration
   // stripe.
-  uint16_t tmp_save_above[3][RESTORATION_LINEBUFFER_WIDTH];
-  uint16_t tmp_save_below[3][RESTORATION_LINEBUFFER_WIDTH];
+  uint16_t tmp_save_above[RESTORATION_BORDER][RESTORATION_LINEBUFFER_WIDTH];
+  uint16_t tmp_save_below[RESTORATION_BORDER][RESTORATION_LINEBUFFER_WIDTH];
 } RestorationLineBuffers;
 
 typedef struct {

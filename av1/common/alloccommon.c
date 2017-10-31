@@ -156,7 +156,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     int stride = ALIGN_POWER_OF_TWO(w + 2 * RESTORATION_EXTRA_HORZ, align_bits);
     int num_stripes = (height + 63) / 64;
     // for each processing stripe: 2 lines above, 2 below
-    int buf_size = num_stripes * 2 * stride;
+    int buf_size = num_stripes * RESTORATION_CTX_VERT * stride;
     uint8_t *above_buf, *below_buf;
 
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;

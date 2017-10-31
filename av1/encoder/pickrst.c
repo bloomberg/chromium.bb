@@ -1137,20 +1137,6 @@ static double search_rest_type(RestSearchCtxt *rsc, RestorationType rtype) {
   static const rest_unit_visitor_t funs[RESTORE_TYPES] = {
     search_norestore, search_wiener, search_sgrproj, search_switchable
   };
-  static const int hborders[RESTORE_TYPES] = { 0, WIENER_HALFWIN,
-                                               SGRPROJ_BORDER_HORZ, 0 };
-  static const int vborders[RESTORE_TYPES] = { 0, WIENER_HALFWIN,
-                                               SGRPROJ_BORDER_VERT, 0 };
-
-  if (hborders[rtype] || vborders[rtype]) {
-#if CONFIG_HIGHBITDEPTH
-    const int highbd = rsc->cm->use_highbitdepth;
-#else
-    const int highbd = 0;
-#endif
-    extend_frame(rsc->dgd_buffer, rsc->plane_width, rsc->plane_height,
-                 rsc->dgd_stride, hborders[rtype], vborders[rtype], highbd);
-  }
 
   reset_rsc(rsc);
   av1_foreach_rest_unit_in_frame(rsc->cm, rsc->plane, rsc_on_tile, funs[rtype],
@@ -1185,6 +1171,15 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
 
     double best_cost = 0;
     RestorationType best_rtype = RESTORE_NONE;
+
+#if CONFIG_HIGHBITDEPTH
+    const int highbd = rsc.cm->use_highbitdepth;
+#else
+    const int highbd = 0;
+#endif
+    extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
+                 rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
+                 highbd);
 
     for (RestorationType r = 0; r < num_rtypes; ++r) {
       if ((force_restore_type != RESTORE_TYPES) && (r != RESTORE_NONE) &&
