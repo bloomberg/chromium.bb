@@ -62,7 +62,8 @@ class ServiceWorkerRequestInterceptor
 
 }  // namespace
 
-// PlzNavigate
+// PlzNavigate:
+// static
 void ServiceWorkerRequestHandler::InitializeForNavigation(
     net::URLRequest* request,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
@@ -173,6 +174,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
   return base::WrapUnique<URLLoaderRequestHandler>(handler.release());
 }
 
+// static
 void ServiceWorkerRequestHandler::InitializeHandler(
     net::URLRequest* request,
     ServiceWorkerContextWrapper* context_wrapper,
@@ -215,12 +217,14 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     request->SetUserData(&kUserDataKey, std::move(handler));
 }
 
+// static
 ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
     const net::URLRequest* request) {
   return static_cast<ServiceWorkerRequestHandler*>(
       request->GetUserData(&kUserDataKey));
 }
 
+// static
 std::unique_ptr<net::URLRequestInterceptor>
 ServiceWorkerRequestHandler::CreateInterceptor(
     ResourceContext* resource_context) {
@@ -228,6 +232,7 @@ ServiceWorkerRequestHandler::CreateInterceptor(
       new ServiceWorkerRequestInterceptor(resource_context));
 }
 
+// static
 bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
     const net::URLRequest* request) {
   ServiceWorkerRequestHandler* handler = GetHandler(request);
@@ -237,6 +242,7 @@ bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
          handler->provider_host_->running_hosted_version();
 }
 
+// static
 ServiceWorkerProviderHost* ServiceWorkerRequestHandler::GetProviderHost(
     const net::URLRequest* request) {
   ServiceWorkerRequestHandler* handler = GetHandler(request);
