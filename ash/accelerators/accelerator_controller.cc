@@ -1049,6 +1049,7 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
       return debug::DebugAcceleratorsEnabled();
+    case DEV_ADD_REMOVE_DISPLAY:
     case DEV_TOGGLE_UNIFIED_DESKTOP:
       return debug::DeveloperAcceleratorsEnabled();
     case DISABLE_CAPS_LOCK:
@@ -1190,6 +1191,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
       debug::PerformDebugActionIfEnabled(action);
+      break;
+    case DEV_ADD_REMOVE_DISPLAY:
+      Shell::Get()->display_manager()->AddRemoveDisplay();
       break;
     case DEV_TOGGLE_UNIFIED_DESKTOP:
       HandleToggleUnifiedDesktop();

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/display/screen_manager.h"
-#include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
+#include "ui/display/mojo/dev_display_controller.mojom.h"
 #include "ui/display/mojo/native_display_delegate.mojom.h"
 #include "ui/display/types/native_display_observer.h"
 
@@ -25,7 +25,7 @@ class NativeDisplayDelegate;
 // This will own a real NativeDisplayDelegate and forwards calls to and
 // responses from it over Mojo.
 class ScreenManagerForwarding : public ScreenManager,
-                                public mojom::TestDisplayController,
+                                public mojom::DevDisplayController,
                                 public NativeDisplayObserver,
                                 public mojom::NativeDisplayDelegate {
  public:
@@ -73,15 +73,15 @@ class ScreenManagerForwarding : public ScreenManager,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix) override;
 
-  // mojom::TestDisplayController:
+  // mojom::DevDisplayController:
   void ToggleAddRemoveDisplay() override;
 
  private:
   void BindNativeDisplayDelegateRequest(
       mojom::NativeDisplayDelegateRequest request,
       const service_manager::BindSourceInfo& source_info);
-  void BindTestDisplayControllerRequest(
-      mojom::TestDisplayControllerRequest request,
+  void BindDevDisplayControllerRequest(
+      mojom::DevDisplayControllerRequest request,
       const service_manager::BindSourceInfo& source_info);
 
   // Forwards results from GetDisplays() back with |callback|.
@@ -103,7 +103,7 @@ class ScreenManagerForwarding : public ScreenManager,
   mojo::Binding<mojom::NativeDisplayDelegate> binding_;
   mojom::NativeDisplayObserverPtr observer_;
 
-  mojo::Binding<mojom::TestDisplayController> test_controller_binding_;
+  mojo::Binding<mojom::DevDisplayController> dev_controller_binding_;
 
   std::unique_ptr<display::NativeDisplayDelegate> native_display_delegate_;
 

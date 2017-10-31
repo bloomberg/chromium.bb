@@ -283,6 +283,11 @@ DisplayManager::~DisplayManager() {
 #endif
 }
 
+void DisplayManager::SetDevDisplayController(
+    mojom::DevDisplayControllerPtr controller) {
+  dev_display_controller_ = std::move(controller);
+}
+
 bool DisplayManager::InitFromCommandLine() {
   DisplayInfoList info_list;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -1203,6 +1208,14 @@ void DisplayManager::SetMirrorMode(bool mirror) {
 
 void DisplayManager::AddRemoveDisplay() {
   DCHECK(!active_display_list_.empty());
+
+  // DevDisplayController will have NativeDisplayDelegate add/remove a display
+  // so that the full display configuration code runs.
+  if (dev_display_controller_.is_bound()) {
+    dev_display_controller_->ToggleAddRemoveDisplay();
+    return;
+  }
+
   DisplayInfoList new_display_info_list;
   const ManagedDisplayInfo& first_display =
       IsInUnifiedMode()
