@@ -37,9 +37,9 @@
 namespace blink {
 
 SelectionPaintRange::SelectionPaintRange(LayoutObject* start_layout_object,
-                                         base::Optional<int> start_offset,
+                                         WTF::Optional<int> start_offset,
                                          LayoutObject* end_layout_object,
-                                         base::Optional<int> end_offset)
+                                         WTF::Optional<int> end_offset)
     : start_layout_object_(start_layout_object),
       start_offset_(start_offset),
       end_layout_object_(end_layout_object),
@@ -57,7 +57,7 @@ LayoutObject* SelectionPaintRange::StartLayoutObject() const {
   return start_layout_object_;
 }
 
-base::Optional<int> SelectionPaintRange::StartOffset() const {
+WTF::Optional<int> SelectionPaintRange::StartOffset() const {
   DCHECK(!IsNull());
   return start_offset_;
 }
@@ -67,7 +67,7 @@ LayoutObject* SelectionPaintRange::EndLayoutObject() const {
   return end_layout_object_;
 }
 
-base::Optional<int> SelectionPaintRange::EndOffset() const {
+WTF::Optional<int> SelectionPaintRange::EndOffset() const {
   DCHECK(!IsNull());
   return end_offset_;
 }
@@ -265,17 +265,17 @@ static void SetShouldInvalidateSelection(
   }
 }
 
-base::Optional<int> LayoutSelection::SelectionStart() const {
+WTF::Optional<int> LayoutSelection::SelectionStart() const {
   DCHECK(!HasPendingSelection());
   if (paint_range_.IsNull())
-    return base::nullopt;
+    return WTF::nullopt;
   return paint_range_.StartOffset();
 }
 
-base::Optional<int> LayoutSelection::SelectionEnd() const {
+WTF::Optional<int> LayoutSelection::SelectionEnd() const {
   DCHECK(!HasPendingSelection());
   if (paint_range_.IsNull())
-    return base::nullopt;
+    return WTF::nullopt;
   return paint_range_.EndOffset();
 }
 
@@ -301,24 +301,23 @@ void LayoutSelection::ClearSelection() {
   paint_range_ = SelectionPaintRange();
 }
 
-static base::Optional<int> ComputeStartOffset(
+static WTF::Optional<int> ComputeStartOffset(
     const LayoutObject& layout_object,
     const PositionInFlatTree& position) {
   Node* const layout_node = layout_object.GetNode();
   if (!layout_node || !layout_node->IsTextNode())
-    return base::nullopt;
+    return WTF::nullopt;
 
   if (layout_node == position.AnchorNode())
     return position.OffsetInContainerNode();
   return 0;
 }
 
-static base::Optional<int> ComputeEndOffset(
-    const LayoutObject& layout_object,
-    const PositionInFlatTree& position) {
+static WTF::Optional<int> ComputeEndOffset(const LayoutObject& layout_object,
+                                           const PositionInFlatTree& position) {
   Node* const layout_node = layout_object.GetNode();
   if (!layout_node || !layout_node->IsTextNode())
-    return base::nullopt;
+    return WTF::nullopt;
 
   if (layout_node == position.AnchorNode())
     return position.OffsetInContainerNode();
@@ -355,14 +354,14 @@ static void MarkSelectedInside(SelectedLayoutObjects* invalidation_set,
 static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInOneNode(
     SelectedLayoutObjects invalidation_set,
     LayoutObject* layout_object,
-    base::Optional<int> start_offset,
-    base::Optional<int> end_offset) {
+    WTF::Optional<int> start_offset,
+    WTF::Optional<int> end_offset) {
   if (!layout_object->GetNode()->IsTextNode()) {
     DCHECK(!start_offset.has_value());
     DCHECK(!end_offset.has_value());
     MarkSelected(&invalidation_set, layout_object,
                  SelectionState::kStartAndEnd);
-    return {{layout_object, base::nullopt, layout_object, base::nullopt},
+    return {{layout_object, WTF::nullopt, layout_object, WTF::nullopt},
             std::move(invalidation_set)};
   }
 
@@ -416,10 +415,10 @@ static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInOneNode(
 struct LayoutObjectAndOffset {
   STACK_ALLOCATED();
   LayoutObject* layout_object;
-  base::Optional<int> offset;
+  WTF::Optional<int> offset;
 
   explicit LayoutObjectAndOffset(LayoutObject* passed_layout_object)
-      : layout_object(passed_layout_object), offset(base::nullopt) {
+      : layout_object(passed_layout_object), offset(WTF::nullopt) {
     DCHECK(passed_layout_object);
     DCHECK(!passed_layout_object->GetNode()->IsTextNode());
   }
@@ -432,7 +431,7 @@ struct LayoutObjectAndOffset {
 
 LayoutObjectAndOffset MarkStart(SelectedLayoutObjects* invalidation_set,
                                 LayoutObject* start_layout_object,
-                                base::Optional<int> start_offset) {
+                                WTF::Optional<int> start_offset) {
   if (!start_layout_object->GetNode()->IsTextNode()) {
     DCHECK(!start_offset.has_value());
     MarkSelected(invalidation_set, start_layout_object, SelectionState::kStart);
@@ -464,7 +463,7 @@ LayoutObjectAndOffset MarkStart(SelectedLayoutObjects* invalidation_set,
 
 LayoutObjectAndOffset MarkEnd(SelectedLayoutObjects* invalidation_set,
                               LayoutObject* end_layout_object,
-                              base::Optional<int> end_offset) {
+                              WTF::Optional<int> end_offset) {
   if (!end_layout_object->GetNode()->IsTextNode()) {
     DCHECK(!end_offset.has_value());
     MarkSelected(invalidation_set, end_layout_object, SelectionState::kEnd);
@@ -501,9 +500,9 @@ LayoutObjectAndOffset MarkEnd(SelectedLayoutObjects* invalidation_set,
 static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInTwoNodes(
     SelectedLayoutObjects invalidation_set,
     LayoutObject* start_layout_object,
-    base::Optional<int> start_offset,
+    WTF::Optional<int> start_offset,
     LayoutObject* end_layout_object,
-    base::Optional<int> end_offset) {
+    WTF::Optional<int> end_offset) {
   const LayoutObjectAndOffset& start =
       MarkStart(&invalidation_set, start_layout_object, start_offset);
   const LayoutObjectAndOffset& end =
@@ -555,9 +554,9 @@ CalcSelectionRangeAndSetSelectionState(const FrameSelection& frame_selection) {
   }
 
   // Compute offset. It has value iff start/end is text.
-  const base::Optional<int> start_offset = ComputeStartOffset(
+  const WTF::Optional<int> start_offset = ComputeStartOffset(
       *start_layout_object, selection.StartPosition().ToOffsetInAnchor());
-  const base::Optional<int> end_offset = ComputeEndOffset(
+  const WTF::Optional<int> end_offset = ComputeEndOffset(
       *end_layout_object, selection.EndPosition().ToOffsetInAnchor());
 
   if (start_layout_object == end_layout_object) {

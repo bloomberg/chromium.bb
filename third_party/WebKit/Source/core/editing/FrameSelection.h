@@ -37,6 +37,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -217,8 +218,8 @@ class CORE_EXPORT FrameSelection final
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
-  base::Optional<int> LayoutSelectionStart() const;
-  base::Optional<int> LayoutSelectionEnd() const;
+  WTF::Optional<int> LayoutSelectionStart() const;
+  WTF::Optional<int> LayoutSelectionEnd() const;
   void ClearLayoutSelection();
 
   void Trace(blink::Visitor*);

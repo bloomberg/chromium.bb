@@ -25,6 +25,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -67,24 +68,24 @@ class SelectionPaintRange {
 
   SelectionPaintRange() = default;
   SelectionPaintRange(LayoutObject* start_layout_object,
-                      base::Optional<int> start_offset,
+                      WTF::Optional<int> start_offset,
                       LayoutObject* end_layout_object,
-                      base::Optional<int> end_offset);
+                      WTF::Optional<int> end_offset);
 
   bool operator==(const SelectionPaintRange& other) const;
 
   LayoutObject* StartLayoutObject() const;
-  base::Optional<int> StartOffset() const;
+  WTF::Optional<int> StartOffset() const;
   LayoutObject* EndLayoutObject() const;
-  base::Optional<int> EndOffset() const;
+  WTF::Optional<int> EndOffset() const;
 
   bool IsNull() const { return !start_layout_object_; }
 
  private:
   LayoutObject* start_layout_object_ = nullptr;
-  base::Optional<int> start_offset_ = base::nullopt;
+  WTF::Optional<int> start_offset_ = WTF::nullopt;
   LayoutObject* end_layout_object_ = nullptr;
-  base::Optional<int> end_offset_ = base::nullopt;
+  WTF::Optional<int> end_offset_ = WTF::nullopt;
 };
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
@@ -101,8 +102,8 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void InvalidatePaintForSelection();
 
   void ClearSelection();
-  base::Optional<int> SelectionStart() const;
-  base::Optional<int> SelectionEnd() const;
+  WTF::Optional<int> SelectionStart() const;
+  WTF::Optional<int> SelectionEnd() const;
   void OnDocumentShutdown();
 
   void Trace(blink::Visitor*);
