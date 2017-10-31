@@ -1778,6 +1778,13 @@ IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
 }
 
 // Test makes sure that interstitial pages renders in <webview>.
+// Flaky on Win dbg: crbug.com/779973
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_InterstitialPage DISABLED_InterstitialPage
+#else
+#define MAYBE_InterstitialPage InterstitialPage
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPage) {
   // This test tests that a inner WebContents' InterstitialPage is properly
   // connected to an outer WebContents through a CrossProcessFrameConnector, it
@@ -1801,6 +1808,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPage) {
 
 // Test makes sure that interstitial pages are registered in the
 // RenderWidgetHostInputEventRouter when inside a <webview>.
+// Flaky on Win dbg: crbug.com/779973
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_InterstitialPageRouteEvents DISABLED_InterstitialPageRouteEvents
+#else
+#define MAYBE_InterstitialPageRouteEvents InterstitialPageRouteEvents
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageRouteEvents) {
   // This test tests that a inner WebContents' InterstitialPage is properly
   // connected to an outer WebContents through a CrossProcessFrameConnector, it
@@ -1824,6 +1838,14 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageRouteEvents) {
 
 // Test makes sure that interstitial pages will receive input events and can be
 // focused.
+// Flaky on Win dbg: crbug.com/779973
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_InterstitialPageFocusedWidget \
+  DISABLED_InterstitialPageFocusedWidget
+#else
+#define MAYBE_InterstitialPageFocusedWidget InterstitialPageFocusedWidget
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageFocusedWidget) {
   // This test tests that a inner WebContents' InterstitialPage is properly
   // connected to an outer WebContents through a CrossProcessFrameConnector, it
@@ -1877,6 +1899,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageFocusedWidget) {
 
 // Test makes sure that the browser does not crash when a <webview> navigates
 // out of an interstitial.
+// Flaky on Win dbg: crbug.com/779973
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_InterstitialPageDetach DISABLED_InterstitialPageDetach
+#else
+#define MAYBE_InterstitialPageDetach InterstitialPageDetach
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageDetach) {
   InterstitialTestHelper();
 
@@ -1894,6 +1923,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageDetach) {
 
 // This test makes sure the browser process does not crash if app is closed
 // while an interstitial page is being shown in guest.
+// Flaky on Win dbg: crbug.com/779973
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_InterstitialTeardown DISABLED_InterstitialTeardown
+#else
+#define MAYBE_InterstitialTeardown InterstitialTeardown
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
   InterstitialTestHelper();
 
