@@ -25,9 +25,9 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderTest.ShadowRecordHistogram;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderTest.ShadowUrlUtilities;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderTest.ShadowWebsitePreferenceBridge;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowRecordHistogram;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowUrlUtilities;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowWebsitePreferenceBridge;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
@@ -46,7 +46,7 @@ import java.util.HashSet;
 @Config(manifest = Config.NONE,
         shadows = {ShadowUrlUtilities.class, ShadowRecordHistogram.class,
                 ShadowWebsitePreferenceBridge.class})
-public class GeolocationHeaderTest {
+public class GeolocationHeaderUnitTest {
     private static final String SEARCH_URL = "https://www.google.com/search?q=potatoes";
 
     private static final double LOCATION_LAT = 20.3;
@@ -136,9 +136,9 @@ public class GeolocationHeaderTest {
 
     @Test
     public void testTrimVisibleNetworksEmptyOrNull() throws ProcessInitException {
-        VisibleNetworks visibleNetworks = VisibleNetworks.create(
-                VisibleWifi.create("whatever", null, null, null),
-                null, new HashSet(), new HashSet());
+        VisibleNetworks visibleNetworks =
+                VisibleNetworks.create(VisibleWifi.create("whatever", null, null, null), null,
+                        new HashSet(), new HashSet());
         assertNull(GeolocationHeader.trimVisibleNetworks(visibleNetworks));
         assertNull(GeolocationHeader.trimVisibleNetworks(null));
     }
