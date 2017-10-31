@@ -4,7 +4,10 @@
 
 #include "content/browser/frame_host/navigation_request.h"
 
+#include <map>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -910,9 +913,15 @@ void NavigationRequest::OnRequestFailedInternal(
   }
   DCHECK(render_frame_host);
 
-  // Don't ask the renderer to commit an URL if the browser will kill it when
-  // it does.
-  DCHECK(render_frame_host->CanCommitURL(common_params_.url));
+  // The check below is not valid in case of blocked requests, because blocked
+  // requests are committed in the old process (which might not pass the
+  // CanCommitURL check, but this is okay because we will commit a
+  // chrome-error:// page).
+  if (net_error != net::ERR_BLOCKED_BY_CLIENT) {
+    // Don't ask the renderer to commit an URL if the browser will kill it when
+    // it does.
+    DCHECK(render_frame_host->CanCommitURL(common_params_.url));
+  }
 
   NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
                                                            common_params_.url);
