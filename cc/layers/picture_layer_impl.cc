@@ -211,7 +211,11 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   if (raster_source_->IsSolidColor()) {
-    float max_contents_scale = GetIdealContentsScale();
+    float max_contents_scale = CanHaveTilings()
+                                   ? ideal_contents_scale_
+                                   : std::min(kMaxIdealContentsScale,
+                                              std::max(GetIdealContentsScale(),
+                                                       MinimumContentsScale()));
 
     // The downstream CA layers use shared_quad_state to generate resources of
     // the right size even if it is a solid color picture layer.
