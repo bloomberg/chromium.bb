@@ -1584,7 +1584,6 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
 void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DVLOG(3) << "MediaStreamManager::WillDestroyCurrentMessageLoop()";
   DCHECK(CalledOnIOThread());
-  DCHECK(requests_.empty());
   if (media_devices_manager_)
     media_devices_manager_->StopMonitoring();
   if (video_capture_manager_)
@@ -1596,6 +1595,7 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   video_capture_manager_ = nullptr;
   media_devices_manager_ = nullptr;
   g_media_stream_manager_tls_ptr.Pointer()->Set(nullptr);
+  requests_.clear();
 }
 
 void MediaStreamManager::NotifyDevicesChanged(
