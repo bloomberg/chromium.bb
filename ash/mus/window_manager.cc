@@ -486,7 +486,9 @@ ui::mojom::EventResult WindowManager::OnAccelerator(
 }
 
 void WindowManager::OnCursorTouchVisibleChanged(bool enabled) {
-  ShellPortMash::Get()->OnCursorTouchVisibleChanged(enabled);
+  // Not applicable to Config::MUS.
+  if (config_ == Config::MASH)
+    ShellPortMash::Get()->OnCursorTouchVisibleChanged(enabled);
 }
 
 void WindowManager::OnWmSetClientArea(
