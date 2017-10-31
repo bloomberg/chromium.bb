@@ -4377,11 +4377,13 @@ TEST_F(DiskCacheEntryTest, SimpleCacheSparseErrorHandling) {
 
   std::string key("a key");
 
-  uint64_t hash = disk_cache::simple_util::GetEntryHashKey(key);
+  disk_cache::SimpleFileTracker::EntryFileKey num_key(
+      disk_cache::simple_util::GetEntryHashKey(key));
   base::FilePath path_0 = cache_path_.AppendASCII(
-      disk_cache::simple_util::GetFilenameFromEntryHashAndFileIndex(hash, 0));
+      disk_cache::simple_util::GetFilenameFromEntryFileKeyAndFileIndex(num_key,
+                                                                       0));
   base::FilePath path_s = cache_path_.AppendASCII(
-      disk_cache::simple_util::GetSparseFilenameFromEntryHash(hash));
+      disk_cache::simple_util::GetSparseFilenameFromEntryFileKey(num_key));
 
   disk_cache::Entry* entry = nullptr;
   ASSERT_THAT(CreateEntry(key, &entry), IsOk());

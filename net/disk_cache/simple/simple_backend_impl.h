@@ -49,15 +49,20 @@ namespace disk_cache {
 
 class BackendCleanupTracker;
 class SimpleEntryImpl;
+class SimpleFileTracker;
 class SimpleIndex;
 
 class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     public SimpleIndexDelegate,
     public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
+  // Note: only pass non-nullptr for |file_tracker| if you don't want the global
+  // one (which things other than tests would want). |file_tracker| must outlive
+  // the backend and all the entries, including their asynchronous close.
   SimpleBackendImpl(
       const base::FilePath& path,
       scoped_refptr<BackendCleanupTracker> cleanup_tracker,
+      SimpleFileTracker* file_tracker,
       int max_bytes,
       net::CacheType cache_type,
       const scoped_refptr<base::SequencedTaskRunner>& cache_runner,
@@ -224,6 +229,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // We want this destroyed after every other field.
   scoped_refptr<BackendCleanupTracker> cleanup_tracker_;
+
+  SimpleFileTracker* const file_tracker_;
 
   const base::FilePath path_;
   const net::CacheType cache_type_;

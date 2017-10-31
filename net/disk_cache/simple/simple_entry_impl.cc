@@ -185,9 +185,11 @@ SimpleEntryImpl::SimpleEntryImpl(
     const uint64_t entry_hash,
     OperationsMode operations_mode,
     SimpleBackendImpl* backend,
+    SimpleFileTracker* file_tracker,
     net::NetLog* net_log)
     : cleanup_tracker_(std::move(cleanup_tracker)),
       backend_(backend->AsWeakPtr()),
+      file_tracker_(file_tracker),
       cache_type_(cache_type),
       worker_pool_(backend->worker_pool()),
       path_(path),
@@ -762,9 +764,9 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
   std::unique_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
-  Closure task =
-      base::Bind(&SimpleSynchronousEntry::OpenEntry, cache_type_, path_, key_,
-                 entry_hash_, have_index, start_time, results.get());
+  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, cache_type_,
+                            path_, key_, entry_hash_, have_index, start_time,
+                            file_tracker_, results.get());
   Closure reply =
       base::Bind(&SimpleEntryImpl::CreationOperationComplete, this, callback,
                  start_time, base::Passed(&results), out_entry,
@@ -804,9 +806,9 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
   std::unique_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
-  Closure task =
-      base::Bind(&SimpleSynchronousEntry::CreateEntry, cache_type_, path_, key_,
-                 entry_hash_, have_index, start_time, results.get());
+  Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, cache_type_,
+                            path_, key_, entry_hash_, have_index, start_time,
+                            file_tracker_, results.get());
   Closure reply =
       base::Bind(&SimpleEntryImpl::CreationOperationComplete, this, callback,
                  start_time, base::Passed(&results), out_entry,

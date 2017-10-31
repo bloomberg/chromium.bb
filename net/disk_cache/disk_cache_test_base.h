@@ -31,6 +31,7 @@ class BackendImpl;
 class Entry;
 class MemBackendImpl;
 class SimpleBackendImpl;
+class SimpleFileTracker;
 
 }  // namespace disk_cache
 
@@ -168,6 +169,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   // initialized. The implementation pointers can be NULL.
   std::unique_ptr<disk_cache::Backend> cache_;
   disk_cache::BackendImpl* cache_impl_;
+  std::unique_ptr<disk_cache::SimpleFileTracker> simple_file_tracker_;
   disk_cache::SimpleBackendImpl* simple_cache_impl_;
   disk_cache::MemBackendImpl* mem_cache_;
 

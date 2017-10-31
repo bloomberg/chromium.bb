@@ -60,13 +60,21 @@ uint64_t GetEntryHashKey(const std::string& key) {
   return u.key_hash;
 }
 
-std::string GetFilenameFromEntryHashAndFileIndex(uint64_t entry_hash,
-                                                 int file_index) {
-  return base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, file_index);
+std::string GetFilenameFromEntryFileKeyAndFileIndex(
+    const SimpleFileTracker::EntryFileKey& key,
+    int file_index) {
+  // TODO(morlovich): create a todelete_..._ file for a non-zero
+  // doom_generation.
+  DCHECK_EQ(0u, key.doom_generation);
+  return base::StringPrintf("%016" PRIx64 "_%1d", key.entry_hash, file_index);
 }
 
-std::string GetSparseFilenameFromEntryHash(uint64_t entry_hash) {
-  return base::StringPrintf("%016" PRIx64 "_s", entry_hash);
+std::string GetSparseFilenameFromEntryFileKey(
+    const SimpleFileTracker::EntryFileKey& key) {
+  // TODO(morlovich): create a todelete_..._ file for a non-zero
+  // doom_generation.
+  DCHECK_EQ(0u, key.doom_generation);
+  return base::StringPrintf("%016" PRIx64 "_s", key.entry_hash);
 }
 
 std::string GetFilenameFromKeyAndFileIndex(const std::string& key,

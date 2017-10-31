@@ -37,8 +37,9 @@ namespace disk_cache {
 
 class BackendCleanupTracker;
 class SimpleBackendImpl;
-class SimpleSynchronousEntry;
 class SimpleEntryStat;
+class SimpleFileTracker;
+class SimpleSynchronousEntry;
 struct SimpleEntryCreationResults;
 
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
@@ -67,6 +68,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                   uint64_t entry_hash,
                   OperationsMode operations_mode,
                   SimpleBackendImpl* backend,
+                  SimpleFileTracker* file_tracker,
                   net::NetLog* net_log);
 
   void SetActiveEntryProxy(
@@ -344,6 +346,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   base::ThreadCheckerImpl io_thread_checker_;
 
   const base::WeakPtr<SimpleBackendImpl> backend_;
+  SimpleFileTracker* const file_tracker_;
   const net::CacheType cache_type_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath path_;

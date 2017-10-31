@@ -402,7 +402,8 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   disk_cache::SimpleBackendImpl* simple_cache =
       new disk_cache::SimpleBackendImpl(
-          cache_path, /* cleanup_tracker = */ nullptr, 0, net::DISK_CACHE,
+          cache_path, /* cleanup_tracker = */ nullptr,
+          /* file_tracker = */ nullptr, 0, net::DISK_CACHE,
           cache_thread.task_runner(), /* net_log = */ nullptr);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
