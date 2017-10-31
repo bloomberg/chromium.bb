@@ -44,17 +44,15 @@ void OnSuspendDisplaysCompleted(const base::Closure& suspend_callback,
 }  // namespace
 
 PowerEventObserver::PowerEventObserver()
-    : screen_locked_(false), waiting_for_lock_screen_animations_(false) {
+    : session_observer_(this),
+      screen_locked_(Shell::Get()->session_controller()->IsScreenLocked()),
+      waiting_for_lock_screen_animations_(false) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(
       this);
 }
 
 PowerEventObserver::~PowerEventObserver() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(
       this);
 }
 
@@ -142,21 +140,21 @@ void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {
   ResumeRenderingRequests();
 }
 
-void PowerEventObserver::ScreenIsLocked() {
-  screen_locked_ = true;
-  waiting_for_lock_screen_animations_ = true;
+void PowerEventObserver::OnLockStateChanged(bool locked) {
+  if (locked) {
+    screen_locked_ = true;
+    waiting_for_lock_screen_animations_ = true;
 
-  // The screen is now locked but the pending suspend, if any, will be blocked
-  // until all the animations have completed.
-  if (!screen_lock_callback_.is_null()) {
-    VLOG(1) << "Screen locked due to suspend";
+    // The screen is now locked but the pending suspend, if any, will be blocked
+    // until all the animations have completed.
+    if (!screen_lock_callback_.is_null()) {
+      VLOG(1) << "Screen locked due to suspend";
+    } else {
+      VLOG(1) << "Screen locked without suspend";
+    }
   } else {
-    VLOG(1) << "Screen locked without suspend";
+    screen_locked_ = false;
   }
-}
-
-void PowerEventObserver::ScreenIsUnlocked() {
-  screen_locked_ = false;
 }
 
 }  // namespace ash
