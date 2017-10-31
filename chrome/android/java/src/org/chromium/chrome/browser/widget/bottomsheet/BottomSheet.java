@@ -150,6 +150,12 @@ public class BottomSheet
     private static final float SWIPE_ALLOWED_FRACTION = 0.2f;
 
     /**
+     * The maximum swipe velocity (dp/ms) that should be considered as a user opening the bottom
+     * sheet intentionally. This is specifically for the 'velocity' swipe logic.
+     */
+    private static final float SHEET_SWIPE_MAX_DP_PER_MS = 0.2f;
+
+    /**
      * Information about the different scroll states of the sheet. Order is important for these,
      * they go from smallest to largest.
      */
@@ -274,6 +280,12 @@ public class BottomSheet
     /** A help bubble that points to the bottom sheet, helping users find bookmarks, et. al. */
     private ViewAnchoredTextBubble mHelpBubble;
 
+    /** Conversion ratio of dp to px. */
+    private float mDpToPx;
+
+    /** Whether or not scroll events are currently being blocked for the 'velocity' swipe logic. */
+    private boolean mVelocityLogicBlockSwipe;
+
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -346,7 +358,7 @@ public class BottomSheet
     private class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
-            return isTouchInSwipableXRange(e);
+            return shouldGestureMoveSheet(e, e);
         }
 
         @Override
@@ -361,7 +373,7 @@ public class BottomSheet
                 return false;
             }
 
-            if (!isTouchInSwipableXRange(e2)) return false;
+            if (!shouldGestureMoveSheet(e1, e2)) return false;
 
             // Only start scrolling if the scroll is up or down. If the user is already scrolling,
             // continue moving the sheet.
@@ -406,7 +418,7 @@ public class BottomSheet
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (!isTouchInSwipableXRange(e2) || !mIsScrolling) return false;
+            if (!shouldGestureMoveSheet(e1, e2) || !mIsScrolling) return false;
 
             cancelAnimation();
 
@@ -444,17 +456,21 @@ public class BottomSheet
     }
 
     /**
-     * Check if a touch event is in the swipable x-axis range of the toolbar when in peeking mode.
-     * If the "chrome-home-swipe-logic" flag is not set to "restrict-area", "button-only" or the
-     * sheet is open, this function returns true.
-     * @param e The touch event.
-     * @return True if the touch is inside the swipable area of the toolbar.
+     * Check if a particular gesture or touch event should move the bottom sheet when in peeking
+     * mode. If the "chrome-home-swipe-logic" flag is not set this function returns true.
+     * @param initialEvent The event that started the scroll.
+     * @param currentEvent The current motion event.
+     * @return True if the bottom sheet should move.
      */
-    private boolean isTouchInSwipableXRange(MotionEvent e) {
+    private boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
         if (mActivity == null || isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
             return true;
+        }
+
+        if (currentEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            mVelocityLogicBlockSwipe = false;
         }
 
         String logicType = FeatureUtilities.getChromeHomeSwipeLogicType();
@@ -469,9 +485,26 @@ public class BottomSheet
             float allowedSwipeWidth = mContainerWidth * SWIPE_ALLOWED_FRACTION;
             startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
             endX = startX + allowedSwipeWidth;
+        } else if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_VELOCITY.equals(logicType)) {
+            if (mVelocityLogicBlockSwipe) return false;
+
+            float scrollDistanceDp = MathUtils.distance(initialEvent.getX(), initialEvent.getY(),
+                                             currentEvent.getX(), currentEvent.getY())
+                    / mDpToPx;
+            long timeDelta = currentEvent.getEventTime() - initialEvent.getDownTime();
+
+            double dpPerMs = scrollDistanceDp / (double) timeDelta;
+
+            if (dpPerMs > SHEET_SWIPE_MAX_DP_PER_MS) {
+                mVelocityLogicBlockSwipe = true;
+                return false;
+            }
+
+            return true;
         }
 
-        return e.getRawX() > startX && e.getRawX() < endX || getSheetState() != SHEET_STATE_PEEK;
+        return currentEvent.getRawX() > startX && currentEvent.getRawX() < endX
+                || getSheetState() != SHEET_STATE_PEEK;
     }
 
     /**
@@ -712,6 +745,8 @@ public class BottomSheet
         mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+
+        mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {

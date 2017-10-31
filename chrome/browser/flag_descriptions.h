@@ -1026,6 +1026,7 @@ extern const char kChromeHomePromoDescription[];
 extern const char kChromeHomeSwipeLogicName[];
 extern const char kChromeHomeSwipeLogicDescription[];
 extern const char kChromeHomeSwipeLogicRestrictArea[];
+extern const char kChromeHomeSwipeLogicVelocity[];
 
 extern const char kChromeHomeName[];
 extern const char kChromeHomeDescription[];
