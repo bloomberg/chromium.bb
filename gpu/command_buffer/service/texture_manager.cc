@@ -443,11 +443,9 @@ TextureManager::~TextureManager() {
       this);
 }
 
-void TextureManager::MarkContextLost() {
-  have_context_ = false;
-}
+void TextureManager::Destroy(bool have_context) {
+  have_context_ = have_context;
 
-void TextureManager::Destroy() {
   // Retreive any outstanding unlocked textures from the discardable manager so
   // we can clean them up here.
   discardable_manager_->OnTextureManagerDestruction(this);
@@ -463,7 +461,7 @@ void TextureManager::Destroy() {
       progress_reporter_->ReportProgress();
   }
 
-  if (have_context_) {
+  if (have_context) {
     glDeleteTextures(arraysize(black_texture_ids_), black_texture_ids_);
   }
 
