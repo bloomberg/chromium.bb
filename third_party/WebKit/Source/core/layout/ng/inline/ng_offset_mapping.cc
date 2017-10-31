@@ -208,38 +208,48 @@ Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
   return unit->ConvertDOMOffsetToTextContent(node_offset_pair.second);
 }
 
-Optional<unsigned> NGOffsetMapping::StartOfNextNonCollapsedCharacter(
-    const Node& node,
-    unsigned offset) const {
+Position NGOffsetMapping::StartOfNextNonCollapsedContent(
+    const Position& position) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
+  const auto node_and_offset = ToNodeOffsetPair(position);
+  const Node& node = node_and_offset.first;
+  const unsigned offset = node_and_offset.second;
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   if (!unit)
-    return WTF::nullopt;
+    return Position();
 
   while (unit != units_.end() && unit->GetOwner() == node) {
     if (unit->DOMEnd() > offset &&
-        unit->GetType() != NGOffsetMappingUnitType::kCollapsed)
-      return std::max(offset, unit->DOMStart());
+        unit->GetType() != NGOffsetMappingUnitType::kCollapsed) {
+      const unsigned result = std::max(offset, unit->DOMStart());
+      return CreatePositionForOffsetMapping(node, result);
+    }
     ++unit;
   }
-  return WTF::nullopt;
+  return Position();
 }
 
-Optional<unsigned> NGOffsetMapping::EndOfLastNonCollapsedCharacter(
-    const Node& node,
-    unsigned offset) const {
+Position NGOffsetMapping::EndOfLastNonCollapsedContent(
+    const Position& position) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
+  const auto node_and_offset = ToNodeOffsetPair(position);
+  const Node& node = node_and_offset.first;
+  const unsigned offset = node_and_offset.second;
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   if (!unit)
-    return WTF::nullopt;
+    return Position();
 
   while (unit->GetOwner() == node) {
     if (unit->DOMStart() < offset &&
-        unit->GetType() != NGOffsetMappingUnitType::kCollapsed)
-      return std::min(offset, unit->DOMEnd());
+        unit->GetType() != NGOffsetMappingUnitType::kCollapsed) {
+      const unsigned result = std::min(offset, unit->DOMEnd());
+      return CreatePositionForOffsetMapping(node, result);
+    }
     if (unit == units_.begin())
       break;
     --unit;
   }
-  return WTF::nullopt;
+  return Position();
 }
 
 bool NGOffsetMapping::IsBeforeNonCollapsedCharacter(const Node& node,

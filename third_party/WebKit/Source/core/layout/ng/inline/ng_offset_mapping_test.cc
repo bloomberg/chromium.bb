@@ -55,14 +55,12 @@ class NGOffsetMappingTest : public NGLayoutTest {
     return GetOffsetMapping().GetTextContentOffset(position);
   }
 
-  Optional<unsigned> StartOfNextNonCollapsedCharacter(const Node& node,
-                                                      unsigned offset) const {
-    return GetOffsetMapping().StartOfNextNonCollapsedCharacter(node, offset);
+  Position StartOfNextNonCollapsedContent(const Position& position) const {
+    return GetOffsetMapping().StartOfNextNonCollapsedContent(position);
   }
 
-  Optional<unsigned> EndOfLastNonCollapsedCharacter(const Node& node,
-                                                    unsigned offset) const {
-    return GetOffsetMapping().EndOfLastNonCollapsedCharacter(node, offset);
+  Position EndOfLastNonCollapsedContent(const Position& position) const {
+    return GetOffsetMapping().EndOfLastNonCollapsedContent(position);
   }
 
   bool IsBeforeNonCollapsedCharacter(const Node& node, unsigned offset) const {
@@ -142,15 +140,21 @@ TEST_F(NGOffsetMappingTest, OneTextNode) {
   EXPECT_EQ(Position(foo_node, 2), GetLastPosition(2));
   EXPECT_EQ(Position(foo_node, 3), GetLastPosition(3));
 
-  EXPECT_EQ(0u, *StartOfNextNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_EQ(1u, *StartOfNextNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_EQ(2u, *StartOfNextNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*foo_node, 3));
+  EXPECT_EQ(Position(foo_node, 0),
+            StartOfNextNonCollapsedContent(Position(foo_node, 0)));
+  EXPECT_EQ(Position(foo_node, 1),
+            StartOfNextNonCollapsedContent(Position(foo_node, 1)));
+  EXPECT_EQ(Position(foo_node, 2),
+            StartOfNextNonCollapsedContent(Position(foo_node, 2)));
+  EXPECT_TRUE(StartOfNextNonCollapsedContent(Position(foo_node, 3)).IsNull());
 
-  EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_EQ(1u, *EndOfLastNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_EQ(2u, *EndOfLastNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_EQ(3u, *EndOfLastNonCollapsedCharacter(*foo_node, 3));
+  EXPECT_TRUE(EndOfLastNonCollapsedContent(Position(foo_node, 0)).IsNull());
+  EXPECT_EQ(Position(foo_node, 1),
+            EndOfLastNonCollapsedContent(Position(foo_node, 1)));
+  EXPECT_EQ(Position(foo_node, 2),
+            EndOfLastNonCollapsedContent(Position(foo_node, 2)));
+  EXPECT_EQ(Position(foo_node, 3),
+            EndOfLastNonCollapsedContent(Position(foo_node, 3)));
 
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
@@ -326,13 +330,16 @@ TEST_F(NGOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_EQ(Position(node, 4), GetFirstPosition(4));
   EXPECT_EQ(Position(node, 5), GetLastPosition(4));
 
-  EXPECT_EQ(3u, *StartOfNextNonCollapsedCharacter(*node, 3));
-  EXPECT_EQ(5u, *StartOfNextNonCollapsedCharacter(*node, 4));
-  EXPECT_EQ(5u, *StartOfNextNonCollapsedCharacter(*node, 5));
+  EXPECT_EQ(Position(node, 3),
+            StartOfNextNonCollapsedContent(Position(node, 3)));
+  EXPECT_EQ(Position(node, 5),
+            StartOfNextNonCollapsedContent(Position(node, 4)));
+  EXPECT_EQ(Position(node, 5),
+            StartOfNextNonCollapsedContent(Position(node, 5)));
 
-  EXPECT_EQ(3u, *EndOfLastNonCollapsedCharacter(*node, 3));
-  EXPECT_EQ(4u, *EndOfLastNonCollapsedCharacter(*node, 4));
-  EXPECT_EQ(4u, *EndOfLastNonCollapsedCharacter(*node, 5));
+  EXPECT_EQ(Position(node, 3), EndOfLastNonCollapsedContent(Position(node, 3)));
+  EXPECT_EQ(Position(node, 4), EndOfLastNonCollapsedContent(Position(node, 4)));
+  EXPECT_EQ(Position(node, 4), EndOfLastNonCollapsedContent(Position(node, 5)));
 
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 0));
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 1));
@@ -412,8 +419,9 @@ TEST_F(NGOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   EXPECT_EQ(Position(foo_node, 4), GetFirstPosition(4));
   EXPECT_EQ(Position(bar_node, 0), GetLastPosition(4));
 
-  EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*space_node, 1u));
-  EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*space_node, 0u));
+  EXPECT_TRUE(EndOfLastNonCollapsedContent(Position(space_node, 1u)).IsNull());
+  EXPECT_TRUE(
+      StartOfNextNonCollapsedContent(Position(space_node, 0u)).IsNull());
 }
 
 TEST_F(NGOffsetMappingTest, ReplacedElement) {
@@ -631,8 +639,8 @@ TEST_F(NGOffsetMappingTest, WhiteSpaceTextNodeWithoutLayoutText) {
   Element* div = GetDocument().getElementById("t");
   const Node* text_node = div->firstChild();
 
-  EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*text_node, 1u));
-  EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*text_node, 0u));
+  EXPECT_TRUE(EndOfLastNonCollapsedContent(Position(text_node, 1u)).IsNull());
+  EXPECT_TRUE(StartOfNextNonCollapsedContent(Position(text_node, 0u)).IsNull());
 }
 
 }  // namespace blink

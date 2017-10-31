@@ -138,17 +138,12 @@ class CORE_EXPORT NGOffsetMapping {
   // Returns nullopt when the position is not laid out in this block.
   Optional<unsigned> GetTextContentOffset(const Position&) const;
 
-  // Starting from the given DOM offset in the node, finds the first non-
-  // collapsed character and returns the offset before it; Or returns nullopt if
-  // such a character does not exist.
-  Optional<unsigned> StartOfNextNonCollapsedCharacter(const Node&,
-                                                      unsigned offset) const;
-
-  // Starting from the given DOM offset in the node, reversely finds the first
-  // non-collapsed character and returns the offset after it; Or returns nullopt
-  // if such a character does not exist.
-  Optional<unsigned> EndOfLastNonCollapsedCharacter(const Node&,
-                                                    unsigned offset) const;
+  // Starting from the given position, searches for non-collapsed content in
+  // the same node in forward/backward direction and returns the position
+  // before/after it; Returns null if there is no more non-collapsed content in
+  // the same node.
+  Position StartOfNextNonCollapsedContent(const Position&) const;
+  Position EndOfLastNonCollapsedContent(const Position&) const;
 
   // Returns true if the offset is right before a non-collapsed character. If
   // the offset is at the end of the node, returns false.

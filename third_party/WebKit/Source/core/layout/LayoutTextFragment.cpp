@@ -179,43 +179,21 @@ Position LayoutTextFragment::PositionForCaretOffset(unsigned offset) const {
   const Text* node = AssociatedTextNode();
   if (!node)
     return Position();
+  // TODO(layout-dev): Support offset change due to text-transform.
   return Position(node, Start() + offset);
 }
 
-int LayoutTextFragment::CaretMinOffset() const {
-  auto* mapping = GetNGOffsetMapping();
-  if (!mapping)
-    return LayoutText::CaretMinOffset();
-
-  const Node* node = AssociatedTextNode();
-  if (!node)
-    return 0;
-
-  Optional<unsigned> candidate =
-      mapping->StartOfNextNonCollapsedCharacter(*node, Start());
-  DCHECK(!candidate || *candidate >= Start());
-  // Align with the legacy behavior that 0 is returned if the entire layout
-  // object contains only collapsed whitespaces.
-  const bool fully_collapsed =
-      !candidate || *candidate >= Start() + FragmentLength();
-  return fully_collapsed ? 0 : *candidate - Start();
-}
-
-int LayoutTextFragment::CaretMaxOffset() const {
-  auto* mapping = GetNGOffsetMapping();
-  if (!mapping)
-    return LayoutText::CaretMaxOffset();
-
-  const Node* node = AssociatedTextNode();
-  if (!node)
-    return 0;
-
-  Optional<unsigned> candidate = mapping->EndOfLastNonCollapsedCharacter(
-      *node, Start() + FragmentLength());
-  // Align with the legacy behavior that FragmentLength() is returned if the
-  // entire layout object contains only collapsed whitespaces.
-  const bool fully_collapsed = !candidate || *candidate <= Start();
-  return fully_collapsed ? FragmentLength() : *candidate - Start();
+Optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
+    const Position& position) const {
+  if (position.IsNull() || position.AnchorNode() != AssociatedTextNode())
+    return WTF::nullopt;
+  // TODO(xiaochengh): Consider Before/AfterAnchor.
+  DCHECK(position.IsOffsetInAnchor()) << position;
+  // TODO(layout-dev): Support offset change due to text-transform.
+  unsigned dom_offset = position.OffsetInContainerNode();
+  if (dom_offset < Start() || dom_offset > Start() + FragmentLength())
+    return WTF::nullopt;
+  return dom_offset - Start();
 }
 
 bool LayoutTextFragment::ContainsCaretOffset(int text_offset) const {
