@@ -77,7 +77,7 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   static void MaybeAddUnregisteredAntiVirusProducts(
       std::vector<AvProduct>* products);
 
-  static std::vector<AvProduct> GetAntiVirusProductsOnFileThread();
+  static std::vector<AvProduct> GetAntiVirusProductsOnCOMSTAThread();
 
   // Removes anything extraneous from the end of the product name such as
   // versions, years, or anything containing numbers to make it more constant.
