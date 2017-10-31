@@ -174,10 +174,37 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     levels[scan[c]] = is_nz;
 
     if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
+
+#if USE_CAUSAL_BASE_CTX
+    if (is_nz) {
+      int k;
+      for (k = 0; k < NUM_BASE_LEVELS; ++k) {
+        int ctx = coeff_ctx;
+#if 0  // USE_CAUSAL_BASE_CTX read_coeffs
+        int is_k = av1_read_record_bit(counts, r, ACCT_STR);
+#else
+        int is_k = av1_read_record_bin(
+            counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][k][ctx], 2,
+            ACCT_STR);
+        if (counts) ++counts->coeff_base[txs_ctx][plane_type][k][ctx][is_k];
+
+#endif
+        // is_k = 1 if level > (k+1)
+        if (is_k == 0) {
+          cul_level += k + 1;
+          break;
+        }
+      }
+      levels[scan[c]] = k + 1;
+    }
+#endif
   }
 
   *max_scan_line = *eob;
 
+#if USE_CAUSAL_BASE_CTX
+  update_eob = *eob - 1;
+#else
   int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
     update_eob = 0;
@@ -206,6 +233,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       update_eob = AOMMAX(update_eob, c);
     }
   }
+#endif
 
   // Loop to decode all signs in the transform block,
   // starting with the sign of the DC (if applicable)
