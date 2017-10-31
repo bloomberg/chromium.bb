@@ -129,12 +129,14 @@ class CORE_EXPORT FlatTreeTraversal {
   // |NodeTraversal|:
   //   - AncestorsOf()
   //   - DescendantsOf()
-  //   - InclusiveAncestorsOf()
   //   - InclusiveDescendantsOf()
   //   - StartsAt()
   //   - StartsAfter()
   static TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
   ChildrenOf(const Node&);
+
+  static TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>
+  InclusiveAncestorsOf(const Node&);
 
  private:
   enum TraversalDirection {
@@ -342,6 +344,12 @@ inline Node* FlatTreeTraversal::TraverseLastChild(const Node& node) {
 inline TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
 FlatTreeTraversal::ChildrenOf(const Node& parent) {
   return TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>(&parent);
+}
+
+inline TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>
+FlatTreeTraversal::InclusiveAncestorsOf(const Node& node) {
+  return TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>(
+      &node);
 }
 
 }  // namespace blink

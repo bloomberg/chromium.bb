@@ -330,6 +330,23 @@ TEST_F(FlatTreeTraversalTest, nextSkippingChildren) {
   EXPECT_EQ(*m1, FlatTreeTraversal::PreviousSkippingChildren(*m2));
 }
 
+TEST_F(FlatTreeTraversalTest, InclusiveAncestorsOf) {
+  SetupDocumentTree("<div><div><div id=sample></div></div></div>");
+  Element* const sample = GetDocument().getElementById("sample");
+
+  HeapVector<Member<Node>> expected_nodes;
+  for (Node* parent = sample; parent;
+       parent = FlatTreeTraversal::Parent(*parent)) {
+    expected_nodes.push_back(parent);
+  }
+
+  HeapVector<Member<Node>> actual_nodes;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*sample))
+    actual_nodes.push_back(&ancestor);
+
+  EXPECT_EQ(expected_nodes, actual_nodes);
+}
+
 // Test case for
 //  - lastWithin
 //  - lastWithinOrSelf
