@@ -5,6 +5,7 @@
 #include "content/browser/media/session/media_session_android.h"
 
 #include "base/android/jni_array.h"
+#include "base/time/time.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -132,6 +133,26 @@ void MediaSessionAndroid::Stop(
     const base::android::JavaParamRef<jobject>& j_obj) {
   DCHECK(media_session());
   media_session()->Stop(MediaSession::SuspendType::UI);
+}
+
+void MediaSessionAndroid::SeekForward(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_obj,
+    const jlong millis) {
+  DCHECK(media_session());
+  DCHECK_GE(millis, 0)
+      << "Attempted to seek by a negative number of milliseconds";
+  media_session()->SeekForward(base::TimeDelta::FromMilliseconds(millis));
+}
+
+void MediaSessionAndroid::SeekBackward(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_obj,
+    const jlong millis) {
+  DCHECK(media_session());
+  DCHECK_GE(millis, 0)
+      << "Attempted to seek by a negative number of milliseconds";
+  media_session()->SeekBackward(base::TimeDelta::FromMilliseconds(millis));
 }
 
 void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,

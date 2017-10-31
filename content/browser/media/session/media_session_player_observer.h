@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_PLAYER_OBSERVER_H_
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_PLAYER_OBSERVER_H_
 
+#include "base/time/time.h"
+
 namespace content {
 
 class RenderFrameHost;
@@ -19,6 +21,12 @@ class MediaSessionPlayerObserver {
 
   // The given |player_id| has been resumed by the MediaSession.
   virtual void OnResume(int player_id) = 0;
+
+  // The given |player_id| has been seeked forward by the MediaSession.
+  virtual void OnSeekForward(int player_id, base::TimeDelta seek_time) = 0;
+
+  // The given |player_id| has been seeked backward by the MediaSession.
+  virtual void OnSeekBackward(int player_id, base::TimeDelta seek_time) = 0;
 
   // The given |player_id| has been set a new volume multiplier by
   // the MediaSession.

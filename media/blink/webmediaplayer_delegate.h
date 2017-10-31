@@ -52,6 +52,8 @@ class WebMediaPlayerDelegate {
     // Called when external controls are activated.
     virtual void OnPlay() = 0;
     virtual void OnPause() = 0;
+    virtual void OnSeekForward(double seconds) = 0;
+    virtual void OnSeekBackward(double seconds) = 0;
 
     // Called to control audio ducking. Output volume should be set to
     // |player_volume| * |multiplier|. The range of |multiplier| is [0, 1],

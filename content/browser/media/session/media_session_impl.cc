@@ -395,6 +395,16 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   AbandonSystemAudioFocusIfNeeded();
 }
 
+void MediaSessionImpl::SeekForward(base::TimeDelta seek_time) {
+  for (const auto& it : normal_players_)
+    it.observer->OnSeekForward(it.player_id, seek_time);
+}
+
+void MediaSessionImpl::SeekBackward(base::TimeDelta seek_time) {
+  for (const auto& it : normal_players_)
+    it.observer->OnSeekBackward(it.player_id, seek_time);
+}
+
 bool MediaSessionImpl::IsControllable() const {
   // Only media session having focus Gain can be controllable unless it is
   // inactive. Also, the session will be uncontrollable if it contains one-shot

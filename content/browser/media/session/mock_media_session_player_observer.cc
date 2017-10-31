@@ -30,6 +30,20 @@ void MockMediaSessionPlayerObserver::OnResume(int player_id) {
   players_[player_id].is_playing_ = true;
 }
 
+void MockMediaSessionPlayerObserver::OnSeekForward(int player_id,
+                                                   base::TimeDelta seek_time) {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  ++received_seek_forward_calls_;
+}
+
+void MockMediaSessionPlayerObserver::OnSeekBackward(int player_id,
+                                                    base::TimeDelta seek_time) {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  ++received_seek_backward_calls_;
+}
+
 void MockMediaSessionPlayerObserver::OnSetVolumeMultiplier(
     int player_id,
     double volume_multiplier) {
@@ -73,6 +87,14 @@ int MockMediaSessionPlayerObserver::received_suspend_calls() const {
 
 int MockMediaSessionPlayerObserver::received_resume_calls() const {
   return received_resume_calls_;
+}
+
+int MockMediaSessionPlayerObserver::received_seek_forward_calls() const {
+  return received_seek_forward_calls_;
+}
+
+int MockMediaSessionPlayerObserver::received_seek_backward_calls() const {
+  return received_seek_backward_calls_;
 }
 
 }  // namespace content
