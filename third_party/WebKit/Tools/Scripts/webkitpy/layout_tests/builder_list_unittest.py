@@ -44,6 +44,12 @@ class BuilderListTest(unittest.TestCase):
             'Try B': {'port_name': 'port-b', 'specifiers': ['B', 'Release'], 'is_try_builder': True},
         })
 
+    def test_constructor_validates_list(self):
+        with self.assertRaises(AssertionError):
+            BuilderList({'Blink A': {}})
+        with self.assertRaises(AssertionError):
+            BuilderList({'Blink A': {'port_name': 'port-a', 'specifiers': []}})
+
     def test_all_builder_names(self):
         builders = self.sample_builder_list()
         self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)', 'Try A', 'Try B'], builders.all_builder_names())
@@ -67,6 +73,10 @@ class BuilderListTest(unittest.TestCase):
     def test_specifiers_for_builder(self):
         builders = self.sample_builder_list()
         self.assertEqual(['B', 'Release'], builders.specifiers_for_builder('Blink B'))
+
+    def test_platform_specifier_for_builder(self):
+        builders = self.sample_builder_list()
+        self.assertEqual('B', builders.platform_specifier_for_builder('Blink B'))
 
     def test_port_name_for_builder_name_with_missing_builder(self):
         builders = self.sample_builder_list()
