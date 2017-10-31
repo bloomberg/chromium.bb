@@ -180,7 +180,7 @@ bool WASAPIAudioOutputStream::Open() {
 
     const int preferred_frames_per_buffer = static_cast<int>(
         format_.Format.nSamplesPerSec *
-            CoreAudioUtil::RefererenceTimeToTimeDelta(device_period)
+            CoreAudioUtil::ReferenceTimeToTimeDelta(device_period)
                 .InSecondsF() +
         0.5);
 
