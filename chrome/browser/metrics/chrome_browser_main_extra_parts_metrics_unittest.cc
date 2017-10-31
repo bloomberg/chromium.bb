@@ -9,8 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_service_manager_context.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/test_screen.h"
@@ -35,8 +34,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
  private:
   // Provides a message loop and allows the use of the task scheduler
-  content::TestBrowserThreadBundle thread_bundle_;
-  content::TestServiceManagerContext service_manager_context_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Dummy screen required by a ChromeBrowserMainExtraPartsMetrics test target.
   display::test::TestScreen test_screen_;
@@ -44,8 +42,8 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetricsTest);
 };
 
-ChromeBrowserMainExtraPartsMetricsTest::
-    ChromeBrowserMainExtraPartsMetricsTest() {
+ChromeBrowserMainExtraPartsMetricsTest::ChromeBrowserMainExtraPartsMetricsTest()
+    : device_data_manager_test_api_() {
   display::Screen::SetScreenInstance(&test_screen_);
 }
 

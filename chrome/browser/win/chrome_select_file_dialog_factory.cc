@@ -14,11 +14,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/win_util.h"
+#include "chrome/common/shell_handler_win.mojom.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/util_win/public/interfaces/constants.mojom.h"
-#include "chrome/services/util_win/public/interfaces/shell_util_win.mojom.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/open_file_name_win.h"
 #include "ui/shell_dialogs/select_file_dialog_win.h"
@@ -29,12 +27,23 @@ namespace {
 constexpr base::Feature kIsolateShellOperations{
     "IsolateShellOperations", base::FEATURE_DISABLED_BY_DEFAULT};
 
-chrome::mojom::ShellUtilWinPtr BindShellUtilWin() {
-  chrome::mojom::ShellUtilWinPtr shell_util_win_ptr;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(chrome::mojom::kUtilWinServiceName, &shell_util_win_ptr);
-  return shell_util_win_ptr;
+using UtilityProcessClient =
+    content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>;
+
+std::unique_ptr<UtilityProcessClient> StartUtilityProcess() {
+  auto utility_process_client = base::MakeUnique<UtilityProcessClient>(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_FILE_DIALOG_NAME));
+
+  // TODO(crbug.com/618459): should we change the mojo utility client
+  // to allow an empty error callback?  Currently, the client DCHECKs
+  // if no error callback is set when Start() is called.
+  utility_process_client->set_error_callback(base::Bind(&base::DoNothing));
+
+  utility_process_client->set_disable_sandbox();
+
+  utility_process_client->Start();
+
+  return utility_process_client;
 }
 
 }  // namespace
@@ -57,14 +66,13 @@ bool ChromeSelectFileDialogFactory::BlockingGetOpenFileName(OPENFILENAME* ofn) {
   if (!base::FeatureList::IsEnabled(kIsolateShellOperations))
     return ::GetOpenFileName(ofn) == TRUE;
 
+  auto utility_process_client = StartUtilityProcess();
+
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   std::vector<base::FilePath> files;
   base::FilePath directory;
 
-  // Sync operation, it's OK for the shell_util_win_ptr to go out of scope right
-  // after the call.
-  chrome::mojom::ShellUtilWinPtr shell_util_win_ptr = BindShellUtilWin();
-  shell_util_win_ptr->CallGetOpenFileName(
+  utility_process_client->service()->CallGetOpenFileName(
       base::win::HandleToUint32(ofn->hwndOwner),
       static_cast<uint32_t>(ofn->Flags & ~OFN_ENABLEHOOK),
       ui::win::OpenFileName::GetFilters(ofn),
@@ -84,15 +92,13 @@ bool ChromeSelectFileDialogFactory::BlockingGetSaveFileName(OPENFILENAME* ofn) {
   if (!base::FeatureList::IsEnabled(kIsolateShellOperations))
     return ::GetSaveFileName(ofn) == TRUE;
 
+  auto utility_process_client = StartUtilityProcess();
 
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   uint32_t filter_index = 0;
   base::FilePath path;
 
-  // Sync operation, it's OK for the shell_util_win_ptr to go out of scope right
-  // after the call.
-  chrome::mojom::ShellUtilWinPtr shell_util_win_ptr = BindShellUtilWin();
-  shell_util_win_ptr->CallGetSaveFileName(
+  utility_process_client->service()->CallGetSaveFileName(
       base::win::HandleToUint32(ofn->hwndOwner),
       static_cast<uint32_t>(ofn->Flags & ~OFN_ENABLEHOOK),
       ui::win::OpenFileName::GetFilters(ofn), ofn->nFilterIndex,

@@ -53,8 +53,7 @@
           "ime_registrar",
           "input_device_controller",
           "window_manager"
-        ],
-        "util_win" : [ "shell_util_win" ]
+        ]
       }
     },
     "navigation:frame": {
