@@ -166,17 +166,7 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
 void ResourceLoader::SetDefersLoading(bool defers) {
   DCHECK(loader_);
   loader_->SetDefersLoading(defers);
-
-  // Inform the scheduler if the resource load is deferred / undeferred. Note
-  // duplicate calls don't matter.
-  WebFrameScheduler* scheduler = fetcher_->Context().GetFrameScheduler();
-  if (scheduler) {
-    if (defers) {
-      scheduler->DidStopLoading(resource_->Identifier());
-    } else {
-      scheduler->DidStartLoading(resource_->Identifier());
-    }
-  }
+  resource_->VirtualTimePauser().PauseVirtualTime(!defers);
 }
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
@@ -381,6 +371,12 @@ bool ResourceLoader::WillFollowRedirect(
 
   Context().PrepareRequest(new_request,
                            FetchContext::RedirectType::kForRedirect);
+  if (Context().GetFrameScheduler()) {
+    ScopedVirtualTimePauser virtual_time_pauser =
+        Context().GetFrameScheduler()->CreateScopedVirtualTimePauser();
+    virtual_time_pauser.PauseVirtualTime(true);
+    resource_->VirtualTimePauser() = std::move(virtual_time_pauser);
+  }
   Context().DispatchWillSendRequest(resource_->Identifier(), new_request,
                                     redirect_response, resource_->GetType(),
                                     options.initiator_info);

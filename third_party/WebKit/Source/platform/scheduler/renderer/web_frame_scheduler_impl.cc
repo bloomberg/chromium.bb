@@ -379,36 +379,22 @@ blink::WebViewScheduler* WebFrameSchedulerImpl::GetWebViewScheduler() {
   return parent_web_view_scheduler_;
 }
 
-void WebFrameSchedulerImpl::WillNavigateBackForwardSoon() {
-  parent_web_view_scheduler_->WillNavigateBackForwardSoon(this);
-}
-
 void WebFrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
-  parent_web_view_scheduler_->DidBeginProvisionalLoad(this);
   renderer_scheduler_->DidStartProvisionalLoad(is_main_frame);
-}
-
-void WebFrameSchedulerImpl::DidFailProvisionalLoad() {
-  parent_web_view_scheduler_->DidEndProvisionalLoad(this);
 }
 
 void WebFrameSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
     bool is_reload,
     bool is_main_frame) {
-  parent_web_view_scheduler_->DidEndProvisionalLoad(this);
   renderer_scheduler_->DidCommitProvisionalLoad(is_web_history_inert_commit,
                                                 is_reload, is_main_frame);
 }
 
-void WebFrameSchedulerImpl::DidStartLoading(unsigned long identifier) {
+ScopedVirtualTimePauser WebFrameSchedulerImpl::CreateScopedVirtualTimePauser() {
   if (parent_web_view_scheduler_)
-    parent_web_view_scheduler_->DidStartLoading(identifier);
-}
-
-void WebFrameSchedulerImpl::DidStopLoading(unsigned long identifier) {
-  if (parent_web_view_scheduler_)
-    parent_web_view_scheduler_->DidStopLoading(identifier);
+    return ScopedVirtualTimePauser(parent_web_view_scheduler_->CreateWeakPtr());
+  return ScopedVirtualTimePauser(nullptr);
 }
 
 void WebFrameSchedulerImpl::DidOpenActiveConnection() {
@@ -422,14 +408,6 @@ void WebFrameSchedulerImpl::DidCloseActiveConnection() {
   --active_connection_count_;
   if (parent_web_view_scheduler_)
     parent_web_view_scheduler_->OnConnectionUpdated();
-}
-
-void WebFrameSchedulerImpl::SetDocumentParsingInBackground(
-    bool background_parser_active) {
-  if (background_parser_active)
-    parent_web_view_scheduler_->IncrementBackgroundParserCount();
-  else
-    parent_web_view_scheduler_->DecrementBackgroundParserCount();
 }
 
 void WebFrameSchedulerImpl::AsValueInto(

@@ -42,6 +42,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
+#include "platform/ScopedVirtualTimePauser.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -366,6 +367,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void ScrollRectToVisibleInParentFrame(
       const WebRect&,
       const WebRemoteScrollProperties&) {}
+
+  virtual void SetVirtualTimePauser(
+      ScopedVirtualTimePauser virtual_time_pauser) {}
 };
 
 }  // namespace blink

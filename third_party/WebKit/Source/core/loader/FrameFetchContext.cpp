@@ -466,8 +466,6 @@ void FrameFetchContext::DispatchWillSendRequest(
                          initiator_info, resource_type);
   if (IdlenessDetector* idleness_detector = GetFrame()->GetIdlenessDetector())
     idleness_detector->OnWillSendRequest(MasterDocumentLoader()->Fetcher());
-  if (GetFrame()->FrameScheduler())
-    GetFrame()->FrameScheduler()->DidStartLoading(identifier);
 }
 
 void FrameFetchContext::DispatchDidReceiveResponse(
@@ -575,8 +573,6 @@ void FrameFetchContext::DispatchDidFinishLoading(unsigned long identifier,
   probe::didFinishLoading(GetFrame()->GetDocument(), identifier,
                           MasterDocumentLoader(), finish_time,
                           encoded_data_length, decoded_body_length);
-  if (GetFrame()->FrameScheduler())
-    GetFrame()->FrameScheduler()->DidStopLoading(identifier);
 }
 
 void FrameFetchContext::DispatchDidFail(unsigned long identifier,
@@ -593,8 +589,6 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
   // call, DevTools front-end relies on this.
   if (!is_internal_request)
     GetFrame()->Console().DidFailLoading(identifier, error);
-  if (GetFrame()->FrameScheduler())
-    GetFrame()->FrameScheduler()->DidStopLoading(identifier);
 }
 
 void FrameFetchContext::DispatchDidLoadResourceFromMemoryCache(

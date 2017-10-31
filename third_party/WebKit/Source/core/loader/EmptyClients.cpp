@@ -89,16 +89,13 @@ class EmptyFrameScheduler : public WebFrameScheduler {
     return WebFrameScheduler::FrameType::kSubframe;
   }
   WebViewScheduler* GetWebViewScheduler() override { return nullptr; }
-  void DidStartLoading(unsigned long identifier) override {}
-  void DidStopLoading(unsigned long identifier) override {}
-  void WillNavigateBackForwardSoon() override {}
+  ScopedVirtualTimePauser CreateScopedVirtualTimePauser() {
+    return ScopedVirtualTimePauser();
+  }
   void DidStartProvisionalLoad(bool is_main_frame) override {}
-  void DidFailProvisionalLoad() override {}
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                 bool is_reload,
                                 bool is_main_frame) override {}
-  void SetDocumentParsingInBackground(
-      bool background_parsing_enabled) override {}
   void OnFirstMeaningfulPaint() override {}
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
     return nullptr;

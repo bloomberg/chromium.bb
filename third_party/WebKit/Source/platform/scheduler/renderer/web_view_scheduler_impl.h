@@ -75,15 +75,10 @@ class PLATFORM_EXPORT WebViewSchedulerImpl
       base::trace_event::BlameContext* blame_context,
       WebFrameScheduler::FrameType frame_type);
 
-  void DidStartLoading(unsigned long identifier);
-  void DidStopLoading(unsigned long identifier);
-  void IncrementBackgroundParserCount();
-  void DecrementBackgroundParserCount();
+  void IncrementVirtualTimePauseCount();
+  void DecrementVirtualTimePauseCount();
   void Unregister(WebFrameSchedulerImpl* frame_scheduler);
   void OnNavigation();
-  void WillNavigateBackForwardSoon(WebFrameSchedulerImpl* frame_scheduler);
-  void DidBeginProvisionalLoad(WebFrameSchedulerImpl* frame_scheduler);
-  void DidEndProvisionalLoad(WebFrameSchedulerImpl* frame_scheduler);
 
   void OnBeginNestedRunLoop();
   void OnExitNestedRunLoop();
@@ -98,6 +93,10 @@ class PLATFORM_EXPORT WebViewSchedulerImpl
   size_t FrameCount() const;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
+
+  WTF::WeakPtr<WebViewSchedulerImpl> CreateWeakPtr() {
+    return weak_factory_.CreateWeakPtr();
+  }
 
  private:
   friend class WebFrameSchedulerImpl;
@@ -125,15 +124,12 @@ class PLATFORM_EXPORT WebViewSchedulerImpl
   void NotifyVirtualTimePaused();
 
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
-  std::set<unsigned long> pending_loads_;
-  std::set<WebFrameSchedulerImpl*> provisional_loads_;
-  std::set<WebFrameSchedulerImpl*> expect_backward_forwards_navigation_;
   WebScheduler::InterventionReporter* intervention_reporter_;  // Not owned.
   RendererSchedulerImpl* renderer_scheduler_;
   VirtualTimePolicy virtual_time_policy_;
   scoped_refptr<WebTaskRunnerImpl> virtual_time_control_task_queue_;
   TaskHandle virtual_time_budget_expired_task_handle_;
-  int background_parser_count_;
+  int virtual_time_pause_count_;
 
   // The maximum number amount of delayed task starvation we will allow in
   // VirtualTimePolicy::ADVANCE or VirtualTimePolicy::DETERMINISTIC_LOADING
@@ -153,6 +149,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl
   WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
   base::ObserverList<VirtualTimeObserver> virtual_time_observers_;
   base::TimeTicks initial_virtual_time_;
+  WTF::WeakPtrFactory<WebViewSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };
