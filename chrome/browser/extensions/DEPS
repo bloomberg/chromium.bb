@@ -1,7 +1,6 @@
 include_rules = [
-  # TODO(mash): Remove. http://crbug.com/678705
-  "+ash",
-
+  # Only public interfaces allowed. See //ash/README.md
+  "+ash/public/cpp",
   "+components/chrome_apps",
   "+components/crx_file",
   "+components/strings/grit/components_strings.h",
@@ -14,3 +13,21 @@ include_rules = [
   # For access to testing command line switches.
   "+ppapi/shared_impl",
 ]
+specific_include_rules = {
+  "bookmark_app_helper\.cc": [
+    # TODO(mash): Remove. http://crbug.com/678705
+    "+ash/shell.h",
+  ],
+  "display_info_provider_chromeos(|_unittest)\.cc": [
+    # TODO(mash): Remove. http://crbug.com/678705
+    "+ash/display",
+    "+ash/shell.h",
+    "+ash/test",
+    "+ash/touch",
+    "+ash/wm/tablet_mode/tablet_mode_controller.h",
+  ],
+  "launch_util\.cc": [
+    # TODO(mash): Remove. http://crbug.com/678705
+    "+ash/shell.h",
+  ],
+}
