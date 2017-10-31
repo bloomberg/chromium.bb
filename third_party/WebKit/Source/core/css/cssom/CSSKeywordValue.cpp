@@ -58,6 +58,16 @@ const String& CSSKeywordValue::value() const {
   return keyword_value_;
 }
 
+void CSSKeywordValue::setValue(const String& keyword,
+                               ExceptionState& exception_state) {
+  if (keyword.IsEmpty()) {
+    exception_state.ThrowTypeError(
+        "CSSKeywordValue does not support empty strings");
+    return;
+  }
+  keyword_value_ = keyword;
+}
+
 CSSValueID CSSKeywordValue::KeywordValueID() const {
   return CssValueKeywordID(keyword_value_);
 }

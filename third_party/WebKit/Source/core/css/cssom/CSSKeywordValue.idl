@@ -10,5 +10,5 @@
     Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM),
     RaisesException=Constructor
 ] interface CSSKeywordValue : CSSStyleValue {
-    attribute DOMString value;
+    [RaisesException=Setter] attribute DOMString value;
 };
