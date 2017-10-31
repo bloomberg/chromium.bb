@@ -15,48 +15,98 @@
 #pragma mark
 
 @implementation TestDelegate {
-  // Completion semaphore for this TestDelegate. When the request this delegate
-  // is attached to finishes (either successfully or with an error), this
-  // delegate signals this semaphore.
-  dispatch_semaphore_t _semaphore;
+  // Dictionary which maps tasks to completion semaphores for this TestDelegate.
+  // When a request this delegate is attached to finishes (either successfully
+  // or with an error), this delegate signals that task's semaphore.
+  NSMutableDictionary<NSURLSessionTask*, dispatch_semaphore_t>* _semaphores;
+
+  NSMutableDictionary<NSURLSessionDataTask*, NSMutableArray<NSData*>*>*
+      _responseDataPerTask;
 }
 
-@synthesize error = _error;
-@synthesize totalBytesReceived = _totalBytesReceived;
-
-NSMutableArray<NSData*>* _responseData;
+@synthesize errorPerTask = _errorPerTask;
+@synthesize totalBytesReceivedPerTask = _totalBytesReceivedPerTask;
+@synthesize expectedContentLengthPerTask = _expectedContentLengthPerTask;
 
 - (id)init {
   if (self = [super init]) {
-    _semaphore = dispatch_semaphore_create(0);
+    _semaphores = [NSMutableDictionary dictionaryWithCapacity:0];
   }
   return self;
 }
 
 - (void)reset {
-  _responseData = nil;
-  _error = nil;
-  _totalBytesReceived = 0;
+  _responseDataPerTask = [NSMutableDictionary dictionaryWithCapacity:0];
+  _errorPerTask = [NSMutableDictionary dictionaryWithCapacity:0];
+  _totalBytesReceivedPerTask = [NSMutableDictionary dictionaryWithCapacity:0];
+  _expectedContentLengthPerTask =
+      [NSMutableDictionary dictionaryWithCapacity:0];
+}
+
+- (NSError*)error {
+  if ([_errorPerTask count] == 0)
+    return nil;
+
+  DCHECK([_errorPerTask count] == 1);
+  return [[_errorPerTask objectEnumerator] nextObject];
+}
+
+- (long)totalBytesReceived {
+  DCHECK([_totalBytesReceivedPerTask count] == 1);
+  return [[[_totalBytesReceivedPerTask objectEnumerator] nextObject] intValue];
+}
+
+- (long)expectedContentLength {
+  DCHECK([_expectedContentLengthPerTask count] == 1);
+  return
+      [[[_expectedContentLengthPerTask objectEnumerator] nextObject] intValue];
 }
 
 - (NSString*)responseBody {
-  if (_responseData == nil) {
+  if ([_responseDataPerTask count] == 0)
+    return nil;
+
+  DCHECK([_responseDataPerTask count] == 1);
+  NSURLSessionDataTask* task =
+      [[_responseDataPerTask keyEnumerator] nextObject];
+
+  return [self responseBody:task];
+}
+
+- (NSString*)responseBody:(NSURLSessionDataTask*)task {
+  if (_responseDataPerTask[task] == nil) {
     return nil;
   }
   NSMutableString* body = [NSMutableString string];
-  for (NSData* data in _responseData) {
+  for (NSData* data in _responseDataPerTask[task]) {
     [body appendString:[[NSString alloc] initWithData:data
                                              encoding:NSUTF8StringEncoding]];
   }
   VLOG(3) << "responseBody size:" << [body length]
-          << " chunks:" << [_responseData count];
+          << " chunks:" << [_responseDataPerTask[task] count];
   return body;
 }
 
-- (BOOL)waitForDone {
-  int64_t deadline_ns = 20 * NSEC_PER_SEC;
-  return dispatch_semaphore_wait(
-             _semaphore, dispatch_time(DISPATCH_TIME_NOW, deadline_ns)) == 0;
+- (dispatch_semaphore_t)getSemaphoreForTask:(NSURLSessionTask*)task {
+  @synchronized(_semaphores) {
+    if (!_semaphores[task]) {
+      _semaphores[task] = dispatch_semaphore_create(0);
+    }
+    return _semaphores[task];
+  }
+}
+
+// |timeout_ns|, if positive, specifies how long to wait before timing out in
+// nanoseconds, a value of 0 or less means do not ever time out.
+- (BOOL)waitForDone:(NSURLSessionDataTask*)task
+        withTimeout:(int64_t)timeout_ns {
+  dispatch_semaphore_t _semaphore = [self getSemaphoreForTask:task];
+  if (timeout_ns > 0) {
+    return dispatch_semaphore_wait(
+               _semaphore, dispatch_time(DISPATCH_TIME_NOW, timeout_ns)) == 0;
+  } else {
+    return dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER) == 0;
+  }
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -66,7 +116,10 @@ NSMutableArray<NSData*>* _responseData;
 - (void)URLSession:(NSURLSession*)session
                     task:(NSURLSessionTask*)task
     didCompleteWithError:(NSError*)error {
-  [self setError:error];
+  if (error)
+    _errorPerTask[task] = error;
+
+  dispatch_semaphore_t _semaphore = [self getSemaphoreForTask:task];
   dispatch_semaphore_signal(_semaphore);
 }
 
@@ -84,17 +137,27 @@ NSMutableArray<NSData*>* _responseData;
     didReceiveResponse:(NSURLResponse*)response
      completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))
                            completionHandler {
+  _expectedContentLengthPerTask[dataTask] =
+      [NSNumber numberWithInt:[response expectedContentLength]];
   completionHandler(NSURLSessionResponseAllow);
 }
 
 - (void)URLSession:(NSURLSession*)session
           dataTask:(NSURLSessionDataTask*)dataTask
     didReceiveData:(NSData*)data {
-  _totalBytesReceived += [data length];
-  if (_responseData == nil) {
-    _responseData = [[NSMutableArray alloc] init];
+  if (_totalBytesReceivedPerTask[dataTask]) {
+    _totalBytesReceivedPerTask[dataTask] = [NSNumber
+        numberWithInt:[_totalBytesReceivedPerTask[dataTask] intValue] +
+                      [data length]];
+  } else {
+    _totalBytesReceivedPerTask[dataTask] =
+        [NSNumber numberWithInt:[data length]];
   }
-  [_responseData addObject:data];
+
+  if (_responseDataPerTask[dataTask] == nil) {
+    _responseDataPerTask[dataTask] = [[NSMutableArray alloc] init];
+  }
+  [_responseDataPerTask[dataTask] addObject:data];
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -120,13 +183,15 @@ void CronetTestBase::TearDown() {
   ::testing::Test::TearDown();
 }
 
-// Launches the supplied |task| and blocks until it completes, with a timeout
-// of 1 second.
-void CronetTestBase::StartDataTaskAndWaitForCompletion(
-    NSURLSessionDataTask* task) {
+// Launches the supplied |task| and blocks until it completes, with a default
+// timeout of 20 seconds.  |deadline_ns|, if specified, is in nanoseconds.
+// If |deadline_ns| is 0 or negative, the request will not time out.
+bool CronetTestBase::StartDataTaskAndWaitForCompletion(
+    NSURLSessionDataTask* task,
+    int64_t deadline_ns) {
   [delegate_ reset];
   [task resume];
-  CHECK([delegate_ waitForDone]);
+  return [delegate_ waitForDone:task withTimeout:deadline_ns];
 }
 
 ::testing::AssertionResult CronetTestBase::IsResponseSuccessful() {

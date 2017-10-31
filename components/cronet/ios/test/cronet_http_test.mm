@@ -105,38 +105,6 @@ TEST_F(HttpTest, NSURLSessionReceivesData) {
                base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
 }
 
-TEST_F(HttpTest, NSURLSessionReceivesBigHttpDataLoop) {
-  int iterations = 50;
-  long size = 10 * 1024 * 1024;
-  LOG(INFO) << "Downloading " << size << " bytes " << iterations << " times.";
-  NSTimeInterval elapsed_avg = 0;
-  NSTimeInterval elapsed_max = 0;
-  NSURL* url = net::NSURLWithGURL(GURL(TestServer::PrepareBigDataURL(size)));
-  for (int i = 0; i < iterations; ++i) {
-    [delegate_ reset];
-    __block BOOL block_used = NO;
-    NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
-    [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
-      block_used = YES;
-      EXPECT_EQ([request URL], url);
-      return YES;
-    }];
-    NSDate* start = [NSDate date];
-    StartDataTaskAndWaitForCompletion(task);
-    NSTimeInterval elapsed = -[start timeIntervalSinceNow];
-    elapsed_avg += elapsed;
-    if (elapsed > elapsed_max)
-      elapsed_max = elapsed;
-    EXPECT_TRUE(block_used);
-    EXPECT_EQ(nil, [delegate_ error]);
-    EXPECT_EQ(size, [delegate_ totalBytesReceived]);
-  }
-  // Release the response buffer.
-  TestServer::ReleaseBigDataURL();
-  LOG(INFO) << "Elapsed Average:" << elapsed_avg * 1000 / iterations
-            << "ms Max:" << elapsed_max * 1000 << "ms";
-}
-
 TEST_F(HttpTest, GetGlobalMetricsDeltas) {
   NSData* delta1 = [Cronet getGlobalMetricsDeltas];
 

@@ -31,21 +31,33 @@ class Thread;
 @interface TestDelegate : NSObject<NSURLSessionDataDelegate>
 
 // Error the request this delegate is attached to failed with, if any.
-@property(retain, atomic) NSError* error;
+@property(retain, atomic)
+    NSMutableDictionary<NSURLSessionTask*, NSError*>* errorPerTask;
 
 // Contains total amount of received data.
-@property(readonly) long totalBytesReceived;
+@property(readonly) NSMutableDictionary<NSURLSessionDataTask*, NSNumber*>*
+    totalBytesReceivedPerTask;
+
+@property(readonly) NSMutableDictionary<NSURLSessionDataTask*, NSNumber*>*
+    expectedContentLengthPerTask;
 
 // Resets the delegate, so it can be used again for another request.
 - (void)reset;
 
 // Contains the response body.
-- (NSString*)responseBody;
+- (NSString*)responseBody:(NSURLSessionDataTask*)task;
 
-/// Waits for request to complete.
+/// Waits for a single request to complete.
 
 /// @return  |NO| if the request didn't complete and the method timed-out.
-- (BOOL)waitForDone;
+- (BOOL)waitForDone:(NSURLSessionDataTask*)task
+        withTimeout:(int64_t)deadline_ns;
+
+// Convenience functions for single-task delegates
+- (NSError*)error;
+- (long)totalBytesReceived;
+- (long)expectedContentLength;
+- (NSString*)responseBody;
 
 @end
 
@@ -65,7 +77,9 @@ class CronetTestBase : public ::testing::Test {
 
   void SetUp() override;
   void TearDown() override;
-  void StartDataTaskAndWaitForCompletion(NSURLSessionDataTask* task);
+  bool StartDataTaskAndWaitForCompletion(NSURLSessionDataTask* task,
+                                         int64_t deadline_ns = 20 *
+                                                               NSEC_PER_SEC);
   std::unique_ptr<net::MockCertVerifier> CreateMockCertVerifier(
       const std::vector<std::string>& certs,
       bool known_root);
