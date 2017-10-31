@@ -1227,24 +1227,9 @@ static CSSValue* ParseSimpleTransform(CSSPropertyID property_id,
   return ParseSimpleTransformList(string.Characters16(), string.length());
 }
 
-// This is a blacklist for common properties that require fast parsing but
-// cannot be parsed via a fast path. Blacklisting them will reduce extra
-// work when their values are not suitable for the fast paths.
-static bool IsFastPathPossibleForProperty(CSSPropertyID property_id) {
-  switch (property_id) {
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyFilter:
-      return false;
-    default:
-      return true;
-  }
-}
-
 CSSValue* CSSParserFastPaths::MaybeParseValue(CSSPropertyID property_id,
                                               const String& string,
                                               CSSParserMode parser_mode) {
-  if (!IsFastPathPossibleForProperty(property_id))
-    return nullptr;
   if (CSSValue* length =
           ParseSimpleLengthValue(property_id, string, parser_mode))
     return length;
