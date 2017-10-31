@@ -37,7 +37,7 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
 
     def fake_builder_list(self):
         return BuilderList({
-            'Dummy builder name': {'port_name': 'dummy-port', 'specifiers': []},
+            'Dummy builder name': {'port_name': 'dummy-port', 'specifiers': ['dummy', 'release']},
         })
 
     def fake_results_json_for_builder(self, builder):

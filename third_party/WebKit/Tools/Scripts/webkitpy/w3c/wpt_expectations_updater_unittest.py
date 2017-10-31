@@ -343,17 +343,31 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             ['Mac10.10', 'Win7', 'Win10'], 'external/wpt/test.html'))
 
     def test_simplify_specifiers(self):
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
         macros = {
             'mac': ['Mac10.10', 'mac10.11'],
             'win': ['Win7', 'win10'],
             'Linux': ['Trusty'],
         }
-        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
-        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty'], macros), ['Linux', 'Mac'])
-        self.assertEqual(
-            WPTExpectationsUpdater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
-        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['a', 'b', 'c'], {}), ['A', 'B', 'C'])
-        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['Mac', 'Win', 'Linux'], macros), [])
+        self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
+        self.assertEqual(updater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty'], macros), ['Linux', 'Mac'])
+        self.assertEqual(updater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
+        self.assertEqual(updater.simplify_specifiers(['Mac', 'Win', 'Linux'], macros), [])
+
+    def test_simplify_specifiers_uses_specifiers_in_builder_list(self):
+        # Even if there are extra specifiers in the macro dictionary, we can simplify specifier
+        # lists if they contain all of the specifiers the are represented in the builder list.
+        # This way specifier simplification can still be done while a new platform is being added.
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        macros = {
+            'mac': ['Mac10.10', 'mac10.11', 'mac10.14'],
+            'win': ['Win7', 'win10'],
+            'Linux': ['Trusty'],
+        }
+        self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
+        self.assertEqual(updater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
 
     def test_specifier_part_with_skipped_test(self):
         host = self.mock_host()
