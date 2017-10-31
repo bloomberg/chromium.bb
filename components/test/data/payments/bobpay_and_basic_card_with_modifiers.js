@@ -72,13 +72,13 @@ function buyWithBobPayDiscount() {  // eslint-disable-line no-unused-vars
         .show()
         .then(function(resp) {
           resp.complete('success')
-              .then(function() {
-                print(JSON.stringify(resp, undefined, 2));
-              })
-              .catch(function(error) {
-                print(error.message);
-              });
-        })
+            .then(function() {
+              print(JSON.stringify(resp, undefined, 2));
+            })
+            .catch(function(error) {
+              print(error.message);
+            });
+          })
         .catch(function(error) {
           print(error.message);
         });
@@ -137,40 +137,40 @@ function creditSupportedType() {  // eslint-disable-line no-unused-vars
 function debitSupportedType() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'basic-card']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          modifiers: [{
-            supportedMethods: ['basic-card'],
-            total: {
-              label: 'Total',
-              amount: {currency: 'USD', value: '4.00'},
-            },
-            additionalDisplayItems: [{
-              label: 'basic-card discount',
-              amount: {currency: 'USD', value: '-1.00'},
-            }],
-            data: {
-              discountProgramParticipantId: '86328764873265',
-              supportedTypes: ['debit'],
-            },
+      [{supportedMethods: ['https://bobpay.com', 'basic-card']}], {
+        total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+        modifiers: [{
+          supportedMethods: ['basic-card'],
+          total: {
+            label: 'Total',
+            amount: {currency: 'USD', value: '4.00'},
+          },
+          additionalDisplayItems: [{
+            label: 'basic-card discount',
+            amount: {currency: 'USD', value: '-1.00'},
           }],
-        })
-        .show()
-        .then(function(resp) {
-          resp.complete('success')
-              .then(function() {
-                print(JSON.stringify(resp, undefined, 2));
-              })
-              .catch(function(error) {
-                print(error.message);
-              });
+          data: {
+            discountProgramParticipantId: '86328764873265',
+            supportedTypes: ['debit'],
+          },
+        }],
+      })
+      .show()
+      .then(function(resp) {
+        resp.complete('success')
+        .then(function() {
+          print(JSON.stringify(resp, undefined, 2));
         })
         .catch(function(error) {
           print(error.message);
         });
-  } catch (error) {
-    print(error.message);
-  }
+      })
+      .catch(function(error) {
+        print(error.message);
+      });
+    } catch (error) {
+      print(error.message);
+    }
 }
 
 /**

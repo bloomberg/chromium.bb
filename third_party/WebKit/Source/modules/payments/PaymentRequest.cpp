@@ -29,6 +29,7 @@
 #include "modules/event_target_modules_names.h"
 #include "modules/payments/AndroidPayMethodData.h"
 #include "modules/payments/AndroidPayTokenization.h"
+#include "modules/payments/BasicCardHelper.h"
 #include "modules/payments/BasicCardRequest.h"
 #include "modules/payments/HTMLIFrameElementPayments.h"
 #include "modules/payments/PaymentAddress.h"
@@ -133,20 +134,6 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
 
 namespace blink {
 namespace {
-
-using ::payments::mojom::blink::BasicCardNetwork;
-
-const struct {
-  const BasicCardNetwork code;
-  const char* const name;
-} kBasicCardNetworks[] = {{BasicCardNetwork::AMEX, "amex"},
-                          {BasicCardNetwork::DINERS, "diners"},
-                          {BasicCardNetwork::DISCOVER, "discover"},
-                          {BasicCardNetwork::JCB, "jcb"},
-                          {BasicCardNetwork::MASTERCARD, "mastercard"},
-                          {BasicCardNetwork::MIR, "mir"},
-                          {BasicCardNetwork::UNIONPAY, "unionpay"},
-                          {BasicCardNetwork::VISA, "visa"}};
 
 // If the website does not call complete() 60 seconds after show() has been
 // resolved, then behave as if the website called complete("fail").
@@ -435,54 +422,8 @@ void SetAndroidPayMethodData(const ScriptValue& input,
 void SetBasicCardMethodData(const ScriptValue& input,
                             PaymentMethodDataPtr& output,
                             ExceptionState& exception_state) {
-  BasicCardRequest basic_card;
-  V8BasicCardRequest::ToImpl(input.GetIsolate(), input.V8Value(), basic_card,
-                             exception_state);
-  if (exception_state.HadException())
-    return;
-
-  if (basic_card.hasSupportedNetworks()) {
-    if (basic_card.supportedNetworks().size() > kMaxListSize) {
-      exception_state.ThrowTypeError(
-          "basic-card supportedNetworks cannot be longer than 1024 elements");
-      return;
-    }
-
-    for (const String& network : basic_card.supportedNetworks()) {
-      for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
-        if (network == kBasicCardNetworks[i].name) {
-          output->supported_networks.push_back(kBasicCardNetworks[i].code);
-          break;
-        }
-      }
-    }
-  }
-
-  if (basic_card.hasSupportedTypes()) {
-    using ::payments::mojom::blink::BasicCardType;
-
-    if (basic_card.supportedTypes().size() > kMaxListSize) {
-      exception_state.ThrowTypeError(
-          "basic-card supportedTypes cannot be longer than 1024 elements");
-      return;
-    }
-
-    const struct {
-      const BasicCardType code;
-      const char* const name;
-    } kBasicCardTypes[] = {{BasicCardType::CREDIT, "credit"},
-                           {BasicCardType::DEBIT, "debit"},
-                           {BasicCardType::PREPAID, "prepaid"}};
-
-    for (const String& type : basic_card.supportedTypes()) {
-      for (size_t i = 0; i < arraysize(kBasicCardTypes); ++i) {
-        if (type == kBasicCardTypes[i].name) {
-          output->supported_types.push_back(kBasicCardTypes[i].code);
-          break;
-        }
-      }
-    }
-  }
+  BasicCardHelper::parseBasiccardData(input, output->supported_networks,
+                                      output->supported_types, exception_state);
 }
 
 void StringifyAndParseMethodSpecificData(
@@ -530,13 +471,10 @@ void StringifyAndParseMethodSpecificData(
 void CountPaymentRequestNetworkNameInSupportedMethods(
     const Vector<String>& supported_methods,
     ExecutionContext& execution_context) {
-  for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
-    if (supported_methods.Contains(kBasicCardNetworks[i].name)) {
-      Deprecation::CountDeprecation(
-          &execution_context,
-          WebFeature::kPaymentRequestNetworkNameInSupportedMethods);
-      break;
-    }
+  if (BasicCardHelper::containsNetworkNames(supported_methods)) {
+    Deprecation::CountDeprecation(
+        &execution_context,
+        WebFeature::kPaymentRequestNetworkNameInSupportedMethods);
   }
 }
 

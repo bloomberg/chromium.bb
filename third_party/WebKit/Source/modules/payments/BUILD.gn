@@ -10,6 +10,8 @@ blink_modules_sources("payments") {
     "AbortPaymentEvent.h",
     "AbortPaymentRespondWithObserver.cpp",
     "AbortPaymentRespondWithObserver.h",
+    "BasicCardHelper.cpp",
+    "BasicCardHelper.h",
     "CanMakePaymentEvent.cpp",
     "CanMakePaymentEvent.h",
     "CanMakePaymentRespondWithObserver.cpp",

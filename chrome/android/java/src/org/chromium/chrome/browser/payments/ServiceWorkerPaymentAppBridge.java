@@ -166,9 +166,22 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
+    private static Object[] createCapabilities(int count) {
+        return new ServiceWorkerPaymentApp.Capabilities[count];
+    }
+
+    @CalledByNative
+    private static void addCapabilities(Object[] capabilities, int index,
+            int[] supportedCardNetworks, int[] supportedCardTypes) {
+        assert index < capabilities.length;
+        capabilities[index] =
+                new ServiceWorkerPaymentApp.Capabilities(supportedCardNetworks, supportedCardTypes);
+    }
+
+    @CalledByNative
     private static void onPaymentAppCreated(long registrationId, String scope, String label,
             @Nullable String sublabel, @Nullable String tertiarylabel, @Nullable Bitmap icon,
-            String[] methodNameArray, String[] preferredRelatedApplications,
+            String[] methodNameArray, Object[] capabilities, String[] preferredRelatedApplications,
             WebContents webContents, Object callback) {
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return;
@@ -181,7 +194,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, registrationId,
                         scopeUri, label, sublabel, tertiarylabel,
                         icon == null ? null : new BitmapDrawable(context.getResources(), icon),
-                        methodNameArray, preferredRelatedApplications));
+                        methodNameArray, (ServiceWorkerPaymentApp.Capabilities[]) capabilities,
+                        preferredRelatedApplications));
     }
 
     @CalledByNative
