@@ -246,6 +246,17 @@ viz::FrameSinkManagerImpl* VizProcessTransportFactory::GetFrameSinkManager() {
   return nullptr;
 }
 
+bool VizProcessTransportFactory::IsGpuCompositingDisabled() {
+  // TODO(crbug.com/730660): Needs to listen to CompositingModeReporter.
+  // TODO(crbug.com/730660): And needs to be false if --disable-gpu-compositing,
+  // which in non-viz land blacklists it via GpuDataManagerImplPrivate's
+  // CanUseGpuBrowserCompositor(). We'll need to pass the flag to the viz
+  // process probably when we try to get CanUseGpuBrowserCompositor() to be
+  // decided there.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 ui::ContextFactory* VizProcessTransportFactory::GetContextFactory() {
   return this;
 }

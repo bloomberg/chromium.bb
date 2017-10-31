@@ -49,7 +49,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   // shutdown.
   void EstablishGpuChannel(
       const gpu::GpuChannelEstablishedCallback& callback) override;
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(
+      bool* connection_error) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
