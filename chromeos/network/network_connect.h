@@ -38,9 +38,6 @@ class CHROMEOS_EXPORT NetworkConnect {
     // and returns true, otherwise returns false.
     virtual bool ShowEnrollNetwork(const std::string& network_id) = 0;
 
-    // Shows UI to unlock a mobile sim.
-    virtual void ShowMobileSimDialog() = 0;
-
     // Shows UI to setup a mobile network.
     virtual void ShowMobileSetupDialog(const std::string& network_id) = 0;
 

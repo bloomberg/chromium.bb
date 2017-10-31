@@ -146,7 +146,6 @@
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/power_ui.h"
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
-#include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
@@ -464,8 +463,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::InternetDetailDialogUI>;
   if (url.host_piece() == chrome::kChromeUISetTimeHost)
     return &NewWebUI<chromeos::SetTimeUI>;
-  if (url.host_piece() == chrome::kChromeUISimUnlockHost)
-    return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host_piece() == chrome::kChromeUISlowHost)
     return &NewWebUI<chromeos::SlowUI>;
   if (url.host_piece() == chrome::kChromeUISlowTraceHost)
