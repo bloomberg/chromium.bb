@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // IPC messages for printing.
-// Multiply-included message file, hence no include guard.
+#ifndef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
+#define COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -30,8 +31,8 @@
 // Force multiple inclusion of the param traits file to generate all methods.
 #undef COMPONENTS_PRINTING_COMMON_PRINTING_PARAM_TRAITS_MACROS_H_
 
-#ifndef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
-#define COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
+#ifndef INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
+#define INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
 struct PrintMsg_Print_Params {
   PrintMsg_Print_Params();
@@ -97,7 +98,7 @@ struct PrintHostMsg_SetOptionsFromDocument_Params {
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-#endif  // COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
+#endif  // INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
 #define IPC_MESSAGE_START PrintMsgStart
 
@@ -485,3 +486,5 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_ShowScriptedPrintPreview,
 IPC_MESSAGE_ROUTED1(PrintHostMsg_SetOptionsFromDocument,
                     PrintHostMsg_SetOptionsFromDocument_Params /* params */)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+#endif  // COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
