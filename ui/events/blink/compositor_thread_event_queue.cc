@@ -44,7 +44,6 @@ void CompositorThreadEventQueue::Queue(
   DCHECK_LE(last_event->latency_info().trace_id(),
             new_event->latency_info().trace_id());
   LatencyInfo oldest_latency = last_event->latency_info();
-  oldest_latency.set_coalesced();
   base::TimeTicks oldest_creation_timestamp = last_event->creation_timestamp();
   auto combined_original_events =
       std::make_unique<EventWithCallback::OriginalEventList>();
@@ -63,7 +62,6 @@ void CompositorThreadEventQueue::Queue(
     DCHECK_LE(second_last_event->latency_info().trace_id(),
               oldest_latency.trace_id());
     oldest_latency = second_last_event->latency_info();
-    oldest_latency.set_coalesced();
     oldest_creation_timestamp = second_last_event->creation_timestamp();
     combined_original_events->splice(combined_original_events->begin(),
                                      second_last_event->original_events());
