@@ -29,6 +29,10 @@
 #include "device/hid/public/interfaces/hid.mojom.h"
 #endif
 
+#if defined(OS_LINUX) && defined(USE_UDEV)
+#include "device/hid/public/interfaces/input_service.mojom.h"
+#endif
+
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -78,6 +82,10 @@ class DeviceService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   void BindFingerprintRequest(mojom::FingerprintRequest request);
+
+#if defined(OS_LINUX) && defined(USE_UDEV)
+  void BindInputDeviceManagerRequest(mojom::InputDeviceManagerRequest request);
+#endif
 
 #if !defined(OS_ANDROID)
   void BindBatteryMonitorRequest(mojom::BatteryMonitorRequest request);

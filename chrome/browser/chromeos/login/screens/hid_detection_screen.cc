@@ -14,7 +14,12 @@
 #include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -69,18 +74,18 @@ HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
                                        HIDDetectionView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_HID_DETECTION),
       view_(view),
+      binding_(this),
       weak_ptr_factory_(this) {
-  DCHECK(view_);
   if (view_)
     view_->Bind(this);
 
   device::BluetoothAdapterFactory::GetAdapter(base::Bind(
       &HIDDetectionScreen::InitializeAdapter, weak_ptr_factory_.GetWeakPtr()));
+  ConnectToInputDeviceManager();
 }
 
 HIDDetectionScreen::~HIDDetectionScreen() {
   adapter_initially_powered_.reset();
-  input_service_proxy_.RemoveObserver(this);
   if (view_)
     view_->Unbind();
   if (discovery_session_.get())
@@ -121,7 +126,8 @@ void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {
 
 void HIDDetectionScreen::CheckIsScreenRequired(
     const base::Callback<void(bool)>& on_check_done) {
-  input_service_proxy_.GetDevices(
+  DCHECK(input_device_manager_);
+  input_device_manager_->GetDevices(
       base::BindOnce(&HIDDetectionScreen::OnGetInputDevicesListForCheck,
                      weak_ptr_factory_.GetWeakPtr(), on_check_done));
 }
@@ -385,7 +391,7 @@ void HIDDetectionScreen::DeviceRemoved(device::BluetoothAdapter* adapter,
           << " name = " << device->GetNameForDisplay();
 }
 
-void HIDDetectionScreen::OnInputDeviceAdded(InputDeviceInfoPtr info) {
+void HIDDetectionScreen::InputDeviceAdded(InputDeviceInfoPtr info) {
   VLOG(1) << "Input device added id = " << info->id << " name = " << info->name;
   const InputDeviceInfoPtr& info_ref = devices_[info->id] = std::move(info);
   if (!showing_)
@@ -409,7 +415,7 @@ void HIDDetectionScreen::OnInputDeviceAdded(InputDeviceInfoPtr info) {
   }
 }
 
-void HIDDetectionScreen::OnInputDeviceRemoved(const std::string& id) {
+void HIDDetectionScreen::InputDeviceRemoved(const std::string& id) {
   devices_.erase(id);
   if (!showing_)
     return;
@@ -488,6 +494,15 @@ void HIDDetectionScreen::TryInitiateBTDevicesUpdate() {
   }
 }
 
+void HIDDetectionScreen::ConnectToInputDeviceManager() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&input_device_manager_));
+}
+
 void HIDDetectionScreen::OnGetInputDevicesListForCheck(
     const base::Callback<void(bool)>& on_check_done,
     std::vector<InputDeviceInfoPtr> devices) {
@@ -522,10 +537,14 @@ void HIDDetectionScreen::OnGetInputDevicesList(
 }
 
 void HIDDetectionScreen::GetInputDevicesList() {
-  input_service_proxy_.AddObserver(this);
-  input_service_proxy_.GetDevices(
-      base::Bind(&HIDDetectionScreen::OnGetInputDevicesList,
-                 weak_ptr_factory_.GetWeakPtr()));
+  device::mojom::InputDeviceManagerClientAssociatedPtrInfo client;
+  binding_.Bind(mojo::MakeRequest(&client));
+
+  DCHECK(input_device_manager_);
+  input_device_manager_->GetDevicesAndSetClient(
+      std::move(client),
+      base::BindOnce(&HIDDetectionScreen::OnGetInputDevicesList,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HIDDetectionScreen::UpdateDevices() {

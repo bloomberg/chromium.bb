@@ -16,12 +16,12 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/hid/fake_input_service_linux.h"
-#include "device/hid/input_service_linux.h"
 #include "device/hid/public/interfaces/input_service.mojom.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserThread;
-using device::InputServiceLinux;
 using testing::_;
 
 namespace {
@@ -49,16 +49,16 @@ class HidDetectionTest : public OobeBaseTest {
   typedef device::mojom::InputDeviceInfoPtr InputDeviceInfoPtr;
 
   HidDetectionTest() : weak_ptr_factory_(this) {
-    InputServiceProxy::SetUseUIThreadForTesting(true);
-    HidDetectionTest::InitInputService();
+    fake_input_service_manager_ =
+        std::make_unique<device::FakeInputServiceLinux>();
+
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::InputDeviceManager::Name_,
+        base::Bind(&device::FakeInputServiceLinux::Bind,
+                   base::Unretained(fake_input_service_manager_.get())));
   }
 
   ~HidDetectionTest() override {}
-
-  void InitInputService() {
-    InputServiceLinux::SetForTesting(
-        base::MakeUnique<device::FakeInputServiceLinux>());
-  }
 
   void SetUpOnMainThread() override { OobeBaseTest::SetUpOnMainThread(); }
 
@@ -75,7 +75,7 @@ class HidDetectionTest : public OobeBaseTest {
     mouse->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
     mouse->type = device::mojom::InputDeviceType::TYPE_USB;
     mouse->is_mouse = true;
-    AddDeviceForTesting(std::move(mouse));
+    fake_input_service_manager_->AddDevice(std::move(mouse));
   }
 
   void AddUsbKeyboard(const std::string& keyboard_id) {
@@ -84,16 +84,11 @@ class HidDetectionTest : public OobeBaseTest {
     keyboard->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
     keyboard->type = device::mojom::InputDeviceType::TYPE_USB;
     keyboard->is_keyboard = true;
-    AddDeviceForTesting(std::move(keyboard));
+    fake_input_service_manager_->AddDevice(std::move(keyboard));
   }
 
  private:
-  void AddDeviceForTesting(InputDeviceInfoPtr info) {
-    static_cast<device::FakeInputServiceLinux*>(
-        device::InputServiceLinux::GetInstance())
-        ->AddDeviceForTesting(std::move(info));
-  }
-
+  std::unique_ptr<device::FakeInputServiceLinux> fake_input_service_manager_;
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
 
   base::WeakPtrFactory<HidDetectionTest> weak_ptr_factory_;

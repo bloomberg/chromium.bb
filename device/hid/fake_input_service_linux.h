@@ -5,26 +5,40 @@
 #ifndef DEVICE_HID_FAKE_INPUT_SERVICE_LINUX_H_
 #define DEVICE_HID_FAKE_INPUT_SERVICE_LINUX_H_
 
+#include <map>
 #include <string>
 
-#include "base/macros.h"
-#include "device/hid/input_service_linux.h"
+#include "device/hid/public/interfaces/input_service.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace device {
 
-class FakeInputServiceLinux : public InputServiceLinux {
+class FakeInputServiceLinux : public mojom::InputDeviceManager {
  public:
+  using DeviceMap = std::map<std::string, mojom::InputDeviceInfoPtr>;
+
   FakeInputServiceLinux();
   ~FakeInputServiceLinux() override;
 
-  void AddDeviceForTesting(device::mojom::InputDeviceInfoPtr info);
-  void RemoveDeviceForTesting(const std::string& id);
-  void ClearDeviceList();
+  // mojom::InputDeviceManager implementation:
+  void GetDevicesAndSetClient(
+      mojom::InputDeviceManagerClientAssociatedPtrInfo client,
+      GetDevicesCallback callback) override;
+  void GetDevices(GetDevicesCallback callback) override;
+
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info);
+  void AddDevice(mojom::InputDeviceInfoPtr info);
+  void RemoveDevice(const std::string& id);
+
+  DeviceMap devices_;
 
  private:
-  // InputServiceLinux override:
-  void GetDevices(
-      std::vector<device::mojom::InputDeviceInfoPtr>* devices) override;
+  mojo::BindingSet<mojom::InputDeviceManager> bindings_;
+  mojo::AssociatedInterfacePtrSet<mojom::InputDeviceManagerClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInputServiceLinux);
 };

@@ -15,20 +15,25 @@
 
 namespace device {
 
+namespace {
+void OnGetDevices(base::OnceClosure quit_closure,
+                  std::vector<device::mojom::InputDeviceInfoPtr> devices) {
+  for (size_t i = 0; i < devices.size(); ++i)
+    ASSERT_TRUE(!devices[i]->id.empty());
+
+  std::move(quit_closure).Run();
+}
+}  // namespace
+
 TEST(InputServiceLinux, Simple) {
   base::MessageLoopForIO message_loop;
   base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 
   InputServiceLinux* service = InputServiceLinux::GetInstance();
-
-  // Allow the FileDescriptorWatcher in DeviceMonitorLinux to start watching.
-  base::RunLoop().RunUntilIdle();
-
   ASSERT_TRUE(service);
-  std::vector<device::mojom::InputDeviceInfoPtr> devices;
-  service->GetDevices(&devices);
-  for (size_t i = 0; i < devices.size(); ++i)
-    ASSERT_TRUE(!devices[i]->id.empty());
+  base::RunLoop run_loop;
+  service->GetDevices(base::BindOnce(&OnGetDevices, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 }  // namespace device

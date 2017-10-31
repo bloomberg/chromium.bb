@@ -12,30 +12,25 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/public/interfaces/input_service.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace device {
 
 // This class provides information and notifications about
 // connected/disconnected input/HID devices. This class is *NOT*
 // thread-safe and all methods must be called from the FILE thread.
-// TODO(ke.he@intel.com): We'll move the InputServiceLinux into
-// device service, and run it in the FILE thread.
-class InputServiceLinux {
+class InputServiceLinux : public mojom::InputDeviceManager {
  public:
-  using DeviceMap = std::map<std::string, device::mojom::InputDeviceInfoPtr>;
-
-  class Observer {
-   public:
-    virtual ~Observer() {}
-    virtual void OnInputDeviceAdded(device::mojom::InputDeviceInfoPtr info) = 0;
-    virtual void OnInputDeviceRemoved(const std::string& id) = 0;
-  };
+  using DeviceMap = std::map<std::string, mojom::InputDeviceInfoPtr>;
 
   InputServiceLinux();
-  virtual ~InputServiceLinux();
+  ~InputServiceLinux() override;
+
+  // Binds the |request| to an InputServiceLinux instance.
+  static void BindRequest(mojom::InputDeviceManagerRequest request);
 
   // Returns the InputServiceLinux instance for the current process. Creates one
   // if none has been set.
@@ -51,24 +46,26 @@ class InputServiceLinux {
   // current process. |service| will never be deleted.
   static void SetForTesting(std::unique_ptr<InputServiceLinux> service);
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddBinding(mojom::InputDeviceManagerRequest request);
 
-  // Returns list of all currently connected input/hid devices.
-  virtual void GetDevices(
-      std::vector<device::mojom::InputDeviceInfoPtr>* devices);
+  // mojom::InputDeviceManager implementation:
+  void GetDevicesAndSetClient(
+      mojom::InputDeviceManagerClientAssociatedPtrInfo client,
+      GetDevicesCallback callback) override;
+  void GetDevices(GetDevicesCallback callback) override;
 
  protected:
-  void AddDevice(device::mojom::InputDeviceInfoPtr info);
+  void AddDevice(mojom::InputDeviceInfoPtr info);
   void RemoveDevice(const std::string& id);
 
   bool CalledOnValidThread() const;
 
   DeviceMap devices_;
-  base::ObserverList<Observer> observers_;
 
  private:
   base::ThreadChecker thread_checker_;
+  mojo::BindingSet<mojom::InputDeviceManager> bindings_;
+  mojo::AssociatedInterfacePtrSet<mojom::InputDeviceManagerClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(InputServiceLinux);
 };

@@ -12,14 +12,15 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
 #include "chromeos/system/devicetype.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
 #include "components/pairing/pairing_api.pb.h"
 #include "components/pairing/proto_decoder.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/io_buffer.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace pairing_chromeos {
 
@@ -79,19 +80,15 @@ pairing_api::HostStatusParameters::EnrollmentStatus PairingApiEnrollmentStatus(
   }
 }
 
-std::vector<BluetoothHostPairingController::InputDeviceInfoPtr> GetDevices() {
-  std::vector<BluetoothHostPairingController::InputDeviceInfoPtr> devices;
-  if (device::InputServiceLinux::HasInstance())
-    device::InputServiceLinux::GetInstance()->GetDevices(&devices);
-  return devices;
-}
-
 }  // namespace
 
 BluetoothHostPairingController::BluetoothHostPairingController(
-    scoped_refptr<base::TaskRunner> input_service_task_runner)
-    : proto_decoder_(base::MakeUnique<ProtoDecoder>(this)),
-      input_service_task_runner_(std::move(input_service_task_runner)) {}
+    service_manager::Connector* connector)
+    : proto_decoder_(std::make_unique<ProtoDecoder>(this)) {
+  DCHECK(connector);
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&input_device_manager_));
+}
 
 BluetoothHostPairingController::~BluetoothHostPairingController() {
   Reset();
@@ -369,10 +366,9 @@ void BluetoothHostPairingController::OnForget() {
                                 base::Bind(&base::DoNothing));
     }
 
-    base::PostTaskAndReplyWithResult(
-        input_service_task_runner_.get(), FROM_HERE, base::Bind(&GetDevices),
-        base::Bind(&BluetoothHostPairingController::PowerOffAdapterIfApplicable,
-                   ptr_factory_.GetWeakPtr()));
+    input_device_manager_->GetDevices(base::BindOnce(
+        &BluetoothHostPairingController::PowerOffAdapterIfApplicable,
+        ptr_factory_.GetWeakPtr()));
   }
   ChangeStage(STAGE_NONE);
 }

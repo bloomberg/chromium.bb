@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "components/pairing/host_pairing_controller.h"
 
-namespace base {
-class TaskRunner;
+namespace service_manager {
+class Connector;
 }
 
 namespace pairing_chromeos {
@@ -28,9 +28,8 @@ class SharkConnectionListener : public HostPairingController::Observer {
   using OnConnectedCallback =
       base::Callback<void(std::unique_ptr<HostPairingController>)>;
 
-  SharkConnectionListener(
-      scoped_refptr<base::TaskRunner> input_service_task_runner,
-      OnConnectedCallback callback);
+  SharkConnectionListener(service_manager::Connector* connector,
+                          OnConnectedCallback callback);
   ~SharkConnectionListener() override;
 
   void ResetController();

@@ -60,7 +60,10 @@ source_set("hid") {
       "input_service_linux.cc",
       "input_service_linux.h",
     ]
-    deps += [ "//device/udev_linux" ]
+    deps += [
+      "//device/udev_linux",
+      "//services/service_manager/public/cpp",
+    ]
   }
 
   if (is_chromeos) {
