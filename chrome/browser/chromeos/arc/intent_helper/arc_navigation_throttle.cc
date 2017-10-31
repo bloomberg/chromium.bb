@@ -214,8 +214,9 @@ GURL ArcNavigationThrottle::GetStartingGURL() const {
   return navigation_handle()->GetStartingSiteInstance()->GetSiteURL();
 }
 
-// We received the array of app candidates to handle this URL (even the Chrome
-// app is included).
+// Receives the array of app candidates to handle this URL and decides whether a
+// preferred app should be triggered right away or ask the browser to display
+// the intent picker.
 void ArcNavigationThrottle::OnAppCandidatesReceived(
     std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -223,7 +224,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
   const GURL& url = handle->GetURL();
 
   if (!IsAppAvailable(handlers)) {
-    // This scenario shouldn't be accessed as ArcNavigatinoThrottle is created
+    // This scenario shouldn't be accessed as ArcNavigationThrottle is created
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     ui_displayed_ = false;
