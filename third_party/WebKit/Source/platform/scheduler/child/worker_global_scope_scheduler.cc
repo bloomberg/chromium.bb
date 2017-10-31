@@ -60,7 +60,7 @@ scoped_refptr<WebTaskRunner> WorkerGlobalScopeScheduler::GetTaskRunner(
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
-      return WebTaskRunnerImpl::Create(task_queue_);
+      return WebTaskRunnerImpl::Create(task_queue_, type);
   }
   NOTREACHED();
   return nullptr;
