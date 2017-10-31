@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/notifications.h"

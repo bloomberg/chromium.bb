@@ -575,8 +575,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationDoubleClose) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnableFullscreenNotifications(&scoped_feature_list);
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Creates a simple notification.
@@ -600,8 +598,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 #if defined(OS_MACOSX)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnableFullscreenNotifications(&scoped_feature_list);
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Creates a simple notification.
@@ -634,51 +630,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
       (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreenOff) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
-  base::test::ScopedFeatureList scoped_feature_list;
-  DisableFullscreenNotifications(&scoped_feature_list);
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Creates a simple notification.
-  AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-
-  std::string result = CreateSimpleNotification(browser(), true);
-  EXPECT_NE("-1", result);
-
-  // Set the page fullscreen
-  browser()->exclusive_access_manager()->fullscreen_controller()->
-      ToggleBrowserFullscreenMode();
-
-  {
-    FullscreenStateWaiter fs_state(browser(), true);
-    fs_state.Wait();
-  }
-
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      browser()->window()->GetNativeWindow()));
-
-  ASSERT_TRUE(browser()->window()->IsActive());
-
-  ASSERT_EQ(1, GetNotificationCount());
-  message_center::NotificationList::Notifications notifications =
-      message_center::MessageCenter::Get()->GetVisibleNotifications();
-
-  // When the experiment flag is off, then ShouldDisplayOverFullscreen should
-  // return false.
-  EXPECT_FALSE(
-      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
-}
-
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnableFullscreenNotifications(&scoped_feature_list);
   ASSERT_TRUE(embedded_test_server()->Start());
   AllowAllOrigins();
 
@@ -729,8 +684,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
 #if defined(OS_MACOSX)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnableFullscreenNotifications(&scoped_feature_list);
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Creates a simple notification.

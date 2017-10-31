@@ -13,7 +13,6 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/notifications.h"
-#include "chrome/common/features.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -24,9 +23,6 @@
 namespace extensions {
 
 namespace notifications = api::notifications;
-
-const base::Feature kAllowFullscreenAppNotificationsFeature{
-    "FSNotificationsApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -123,20 +119,8 @@ bool ExtensionNotificationHandler::ShouldDisplayOnFullScreen(
           GetExtensionId(origin));
   for (auto* window : windows) {
     // Window must be fullscreen and visible
-    if (window->IsFullscreen() && window->GetBaseWindow()->IsActive()) {
-      bool enabled =
-          base::FeatureList::IsEnabled(kAllowFullscreenAppNotificationsFeature);
-      if (enabled) {
-        UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Shown",
-                                  message_center::NotifierId::APPLICATION,
-                                  message_center::NotifierId::SIZE);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Suppressed",
-                                  message_center::NotifierId::APPLICATION,
-                                  message_center::NotifierId::SIZE);
-      }
-      return enabled;
-    }
+    if (window->IsFullscreen() && window->GetBaseWindow()->IsActive())
+      return true;
   }
 
   return false;
