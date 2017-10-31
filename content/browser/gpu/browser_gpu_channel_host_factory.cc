@@ -38,11 +38,13 @@
 
 namespace content {
 
+#if defined(OS_ANDROID)
 namespace {
 void TimedOut() {
   LOG(FATAL) << "Timed out waiting for GPU channel.";
 }
 }  // namespace
+#endif  // OS_ANDROID
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
@@ -351,15 +353,12 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
 
 void BrowserGpuChannelHostFactory::RestartTimeout() {
   DCHECK(IsMainThread());
+// Only implement timeout on Android, which does not have a software fallback.
 #if defined(OS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableTimeoutsForProfiling)) {
     return;
   }
-#else
-  // Only implement timeout on Android, which does not have a software fallback.
-  return;
-#endif
 
   if (!pending_request_)
     return;
@@ -376,6 +375,7 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
   timeout_.Start(FROM_HERE,
                  base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
                  base::Bind(&TimedOut));
+#endif  // OS_ANDROID
 }
 
 // static
