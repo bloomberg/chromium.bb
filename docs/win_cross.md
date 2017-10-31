@@ -6,7 +6,7 @@ current restrictions.
 
 What does *not* work:
 
-* goma. Sorry. ([internal bug](b/64390790)) You can use the
+* goma. Sorry. ([internal bug](http://b/64390790)) You can use the
   [jumbo build](jumbo.md) for faster build times.
 * mini_installer ([bug](https://crbug.com/762073))
 * linking on Mac ([bug](https://crbug.com/774209)), should change soon
