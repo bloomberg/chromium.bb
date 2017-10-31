@@ -1,4 +1,5 @@
 <html><head>
+    <script src="../../resources/gc.js"></script>
     <script>
         if (window.testRunner)
             testRunner.dumpAsText();
@@ -7,16 +8,6 @@
                       XPathResult.ORDERED_NODE_ITERATOR_TYPE,
                       XPathResult.UNORDERED_NODE_ITERATOR_TYPE
                     ];
-
-        function gc()
-        {
-            if (window.GCController)
-                return GCController.collect();
-
-            for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-                var s = new String("abc");
-            }
-        }
 
         function test(type)
         {
