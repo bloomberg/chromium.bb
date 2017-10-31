@@ -544,25 +544,11 @@ bool IndefiniteSizeStrategy::RecomputeUsedFlexFractionIfNeeded(
 
 LayoutUnit IndefiniteSizeStrategy::FreeSpaceForStretchAutoTracksStep() const {
   DCHECK(!algorithm_.FreeSpace(Direction()));
-  LayoutUnit min_size;
+  if (Direction() == kForColumns)
+    return LayoutUnit();
 
-  if (Direction() == kForColumns) {
-    // TODO(rego): Review intrinsic sizes in follow-up patches. For flexible
-    // tracks we will need to do something similar if we want to have accurate
-    // intrinsic sizes. Even in ComputeGridContainerIntrinsicSizes() we should
-    // consider this.
-    Length min_width = GetLayoutGrid()->StyleRef().LogicalMinWidth();
-    if (min_width.IsFixed() && min_width.Value() > 0) {
-      min_size = GetLayoutGrid()->AdjustContentBoxLogicalWidthForBoxSizing(
-          LayoutUnit(min_width.Value()));
-    } else {
-      return LayoutUnit();
-    }
-  } else {
-    min_size = GetLayoutGrid()->ComputeContentLogicalHeight(
-        kMinSize, GetLayoutGrid()->StyleRef().LogicalMinHeight(),
-        LayoutUnit(-1));
-  }
+  LayoutUnit min_size = GetLayoutGrid()->ComputeContentLogicalHeight(
+      kMinSize, GetLayoutGrid()->StyleRef().LogicalMinHeight(), LayoutUnit(-1));
   return min_size - ComputeTrackBasedSize();
 }
 

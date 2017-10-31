@@ -4206,6 +4206,40 @@ TEST_P(WebViewTest, PreferredSizeWithGrid) {
   EXPECT_EQ(100, size.height);
 }
 
+TEST_P(WebViewTest, PreferredSizeWithGridMinWidth) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   R"HTML(<!DOCTYPE html>
+    <body style="margin: 0px;">
+      <div style="display: inline-grid; min-width: 200px;">
+        <div>item</div>
+      </div>
+    </body>
+                                   )HTML",
+                                   base_url);
+
+  WebSize size = web_view->ContentsPreferredMinimumSize();
+  EXPECT_EQ(200, size.width);
+}
+
+TEST_P(WebViewTest, PreferredSizeWithGridMinWidthFlexibleTracks) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   R"HTML(<!DOCTYPE html>
+    <body style="margin: 0px;">
+      <div style="display: inline-grid; min-width: 200px; grid-template-columns: 1fr;">
+        <div>item</div>
+      </div>
+    </body>
+                                   )HTML",
+                                   base_url);
+
+  WebSize size = web_view->ContentsPreferredMinimumSize();
+  EXPECT_EQ(200, size.width);
+}
+
 class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
   void ShowUnhandledTapUIIfNeeded(const WebTappedInfo& tapped_info) override {
