@@ -96,8 +96,7 @@ class SyncedPrintersManagerTest : public testing::Test {
       : manager_(SyncedPrintersManager::Create(
             &profile_,
             base::MakeUnique<PrintersSyncBridge>(
-                base::Bind(&syncer::ModelTypeStore::CreateInMemoryStoreForTest,
-                           syncer::PRINTERS),
+                base::Bind(&syncer::ModelTypeStore::CreateInMemoryStoreForTest),
                 base::BindRepeating(
                     base::IgnoreResult(&base::debug::DumpWithoutCrashing))))) {
     base::RunLoop().RunUntilIdle();

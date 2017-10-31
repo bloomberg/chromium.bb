@@ -23,6 +23,7 @@ class ReadingListModel;
 // A ReadingListModelStorage storing and syncing data in protobufs.
 class ReadingListStore : public ReadingListModelStorage {
   using StoreFactoryFunction = base::Callback<void(
+      syncer::ModelType type,
       const syncer::ModelTypeStore::InitCallback& callback)>;
 
  public:

@@ -21,6 +21,7 @@
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/model/model_type_store_test_util.h"
 
 using browser_sync::ProfileSyncService;
 
@@ -54,6 +55,8 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   init_params.url_request_context = profile->GetRequestContext();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
+  init_params.model_type_store_factory =
+      syncer::ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest();
 
   return init_params;
 }

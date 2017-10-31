@@ -191,6 +191,12 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       current_version.substr(0, current_version.find('.'))) {
     passphrase_prompt_triggered_by_version_ = true;
   }
+
+  if (init_params.model_type_store_factory.is_null()) {
+    model_type_store_factory_ = GetModelTypeStoreFactory(base_directory_);
+  } else {
+    model_type_store_factory_ = init_params.model_type_store_factory;
+  }
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -235,10 +241,8 @@ void ProfileSyncService::Initialize() {
                  sync_enabled_weak_factory_.GetWeakPtr(),
                  syncer::ModelTypeSet(syncer::SESSIONS)));
 
-  const syncer::ModelTypeStoreFactory& store_factory =
-      GetModelTypeStoreFactory(syncer::DEVICE_INFO, base_directory_);
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
-      local_device_.get(), store_factory,
+      local_device_.get(), model_type_store_factory_,
       base::BindRepeating(
           &ModelTypeChangeProcessor::Create,
           base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
@@ -1622,13 +1626,12 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
 
 // static
 syncer::ModelTypeStoreFactory ProfileSyncService::GetModelTypeStoreFactory(
-    ModelType type,
     const base::FilePath& base_path) {
   // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
   // as the Local State file is guaranteed to be UTF-8.
   const std::string path =
       FormatSharedModelTypeStorePath(base_path).AsUTF8Unsafe();
-  return base::Bind(&ModelTypeStore::CreateStore, type, path);
+  return base::Bind(&ModelTypeStore::CreateStore, path);
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {

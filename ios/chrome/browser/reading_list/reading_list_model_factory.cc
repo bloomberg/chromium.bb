@@ -63,7 +63,7 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
 
   const syncer::ModelTypeStoreFactory& store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-          syncer::READING_LIST, chrome_browser_state->GetStatePath());
+          chrome_browser_state->GetStatePath());
   std::unique_ptr<ReadingListStore> store = base::MakeUnique<ReadingListStore>(
       store_factory,
       base::Bind(&syncer::ModelTypeChangeProcessor::Create,
