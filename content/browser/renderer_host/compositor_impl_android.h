@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/timer/timer.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -136,7 +135,6 @@ class CONTENT_EXPORT CompositorImpl
 #endif
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
-  void OnGpuChannelTimeout();
   void InitializeDisplay(
       std::unique_ptr<viz::OutputSurface> display_output_surface,
       scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
@@ -180,8 +178,6 @@ class CONTENT_EXPORT CompositorImpl
   // The number of SubmitFrame calls that have not returned and ACK'd from
   // the GPU thread.
   unsigned int pending_frames_;
-
-  base::OneShotTimer establish_gpu_channel_timeout_;
 
   // Whether there is a LayerTreeFrameSink request pending from the current
   // |host_|. Becomes |true| if RequestNewLayerTreeFrameSink is called, and

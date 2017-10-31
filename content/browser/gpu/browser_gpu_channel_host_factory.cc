@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_channel_handle.h"
@@ -35,6 +37,12 @@
 #endif
 
 namespace content {
+
+namespace {
+void TimedOut() {
+  LOG(FATAL) << "Timed out waiting for GPU channel.";
+}
+}  // namespace
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
@@ -54,8 +62,9 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 
  private:
   friend class base::RefCountedThreadSafe<EstablishRequest>;
-  explicit EstablishRequest(int gpu_client_id, uint64_t gpu_client_tracing_id);
+  EstablishRequest(int gpu_client_id, uint64_t gpu_client_tracing_id);
   ~EstablishRequest() {}
+  void RestartTimeout();
   void EstablishOnIO();
   void OnEstablishedOnIO(const IPC::ChannelHandle& channel_handle,
                          const gpu::GPUInfo& gpu_info,
@@ -101,6 +110,12 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
       finished_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
+void BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout() {
+  BrowserGpuChannelHostFactory* factory =
+      BrowserGpuChannelHostFactory::instance();
+  factory->RestartTimeout();
+}
+
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
@@ -129,6 +144,11 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
       status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID) {
     DVLOG(1) << "Failed to create channel on existing GPU process. Trying to "
                 "restart GPU process.";
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout,
+            this));
     EstablishOnIO();
     return;
   }
@@ -267,6 +287,7 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     // We should only get here if the context was lost.
     pending_request_ =
         EstablishRequest::Create(gpu_client_id_, gpu_client_tracing_id_);
+    RestartTimeout();
   }
 
   if (!callback.is_null()) {
@@ -320,11 +341,41 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
         gpu_memory_buffer_manager_.get());
   }
   pending_request_ = NULL;
+  timeout_.Stop();
 
   std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
   established_callbacks_.swap(established_callbacks);
   for (auto& callback : established_callbacks)
     callback.Run(gpu_channel_);
+}
+
+void BrowserGpuChannelHostFactory::RestartTimeout() {
+  DCHECK(IsMainThread());
+#if defined(OS_ANDROID)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableTimeoutsForProfiling)) {
+    return;
+  }
+#else
+  // Only implement timeout on Android, which does not have a software fallback.
+  return;
+#endif
+
+  if (!pending_request_)
+    return;
+
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
+  constexpr int64_t kGpuChannelTimeoutInSeconds = 40;
+#else
+  // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to
+  // logic in GpuWatchdogThread). Make this slightly longer to give the GPU a
+  // chance to crash itself before crashing the browser.
+  constexpr int64_t kGpuChannelTimeoutInSeconds = 20;
+#endif
+  timeout_.Start(FROM_HERE,
+                 base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
+                 base::Bind(&TimedOut));
 }
 
 // static

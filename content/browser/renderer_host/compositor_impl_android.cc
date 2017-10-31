@@ -61,7 +61,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
@@ -690,34 +689,11 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
     return;
 #endif
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTimeoutsForProfiling)) {
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
-    const int64_t kGpuChannelTimeoutInSeconds = 40;
-#else
-    // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to
-    // logic in GpuWatchdogThread). Make this slightly longer to give the GPU a
-    // chance to crash itself before crashing the browser.
-    const int64_t kGpuChannelTimeoutInSeconds = 20;
-#endif
-
-    // Start the timer first, if the result comes synchronously, we want it to
-    // stop in the callback.
-    establish_gpu_channel_timeout_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
-        this, &CompositorImpl::OnGpuChannelTimeout);
-  }
-
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
       ->EstablishGpuChannel(base::Bind(&CompositorImpl::OnGpuChannelEstablished,
                                        weak_factory_.GetWeakPtr()));
-}
-
-void CompositorImpl::OnGpuChannelTimeout() {
-  LOG(FATAL) << "Timed out waiting for GPU channel.";
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -744,8 +720,6 @@ void CompositorImpl::CreateVulkanOutputSurface() {
 
 void CompositorImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  establish_gpu_channel_timeout_.Stop();
-
   // We might end up queing multiple GpuChannel requests for the same
   // LayerTreeFrameSink request as the visibility of the compositor changes, so
   // the LayerTreeFrameSink request could have been handled already.
