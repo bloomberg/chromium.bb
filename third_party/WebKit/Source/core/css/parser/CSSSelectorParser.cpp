@@ -1012,7 +1012,7 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
       }
       if (feature != WebFeature::kNumberOfFeatures) {
         if (!Deprecation::DeprecationMessage(feature).IsEmpty() &&
-            style_sheet_->AnyOwnerDocument()) {
+            style_sheet_ && style_sheet_->AnyOwnerDocument()) {
           Deprecation::CountDeprecation(*style_sheet_->AnyOwnerDocument(),
                                         feature);
         } else {
