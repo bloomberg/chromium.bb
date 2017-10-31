@@ -301,6 +301,20 @@ void ServiceWorkerProviderContext::SetController(
   }
 }
 
+void ServiceWorkerProviderContext::PostMessageToClient(
+    blink::mojom::ServiceWorkerObjectInfoPtr source,
+    const base::string16& message,
+    std::vector<mojo::ScopedMessagePipeHandle> message_pipes) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  ControlleeState* state = controllee_state_.get();
+  DCHECK(state);
+
+  if (state->web_service_worker_provider) {
+    state->web_service_worker_provider->PostMessageToClient(
+        std::move(source), message, std::move(message_pipes));
+  }
+}
+
 void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
   container_host_.reset();
   if (controllee_state_ && controllee_state_->controller_connector)

@@ -82,8 +82,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSetVersionAttributes)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_UpdateFound,
                         OnUpdateFound)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
-                        OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -384,33 +382,6 @@ void ServiceWorkerDispatcher::OnUpdateFound(
       registrations_.find(registration_handle_id);
   if (found != registrations_.end())
     found->second->OnUpdateFound();
-}
-
-void ServiceWorkerDispatcher::OnPostMessage(
-    const ServiceWorkerMsg_MessageToDocument_Params& params) {
-  // Make sure we're on the main document thread. (That must be the only
-  // thread we get this message)
-  DCHECK_EQ(kDocumentMainThreadId, params.thread_id);
-  TRACE_EVENT1("ServiceWorker", "ServiceWorkerDispatcher::OnPostMessage",
-               "Thread ID", params.thread_id);
-
-  // Adopt the reference sent from the browser process and get the corresponding
-  // worker object.
-  scoped_refptr<WebServiceWorkerImpl> worker =
-      GetOrCreateServiceWorker(Adopt(params.service_worker_info.Clone()));
-
-  ProviderClientMap::iterator found =
-      provider_clients_.find(params.provider_id);
-  if (found == provider_clients_.end()) {
-    // For now we do no queueing for messages sent to nonexistent / unattached
-    // client.
-    return;
-  }
-
-  found->second->DispatchMessageEvent(
-      WebServiceWorkerImpl::CreateHandle(worker),
-      blink::WebString::FromUTF16(params.message),
-      std::move(params.message_ports));
 }
 
 void ServiceWorkerDispatcher::OnCountFeature(int thread_id,

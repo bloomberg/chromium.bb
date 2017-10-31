@@ -142,10 +142,6 @@ class ServiceWorkerDispatcherTest : public testing::Test {
     return ContainsKey(dispatcher_->registrations_, registration_handle_id);
   }
 
-  void OnPostMessage(const ServiceWorkerMsg_MessageToDocument_Params& params) {
-    dispatcher_->OnPostMessage(params);
-  }
-
   std::unique_ptr<ServiceWorkerHandleReference> Adopt(
       blink::mojom::ServiceWorkerObjectInfoPtr info) {
     return dispatcher_->Adopt(std::move(info));
@@ -188,61 +184,17 @@ class MockWebServiceWorkerProviderClientImpl
   void DispatchMessageEvent(
       std::unique_ptr<blink::WebServiceWorker::Handle> handle,
       const blink::WebString& message,
-      blink::WebVector<blink::MessagePortChannel> ports) override {
-    // WebPassOwnPtr cannot be owned in Chromium, so drop the handle here.
-    // The destruction releases ServiceWorkerHandleReference.
-    is_dispatch_message_event_called_ = true;
-  }
+      blink::WebVector<blink::MessagePortChannel> ports) override {}
 
   void CountFeature(uint32_t feature) override {
     used_features_.insert(feature);
   }
 
-  bool is_dispatch_message_event_called() const {
-    return is_dispatch_message_event_called_;
-  }
-
  private:
   const int provider_id_;
-  bool is_dispatch_message_event_called_ = false;
   ServiceWorkerDispatcher* dispatcher_;
   std::set<uint32_t> used_features_;
 };
-
-TEST_F(ServiceWorkerDispatcherTest, OnPostMessage) {
-  const int kProviderId = 10;
-
-  // Assume that these objects are passed from the browser process and own
-  // references to browser-side registration/worker representations.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
-      CreateServiceWorkerRegistrationObjectInfo();
-
-  ServiceWorkerMsg_MessageToDocument_Params params;
-  params.thread_id = kDocumentMainThreadId;
-  params.provider_id = kProviderId;
-  params.service_worker_info = *(info->active);
-
-  // The passed reference should be adopted but immediately released because
-  // there is no provider client.
-  OnPostMessage(params);
-  ASSERT_EQ(1UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
-            ipc_sink()->GetMessageAt(0)->type());
-  ipc_sink()->ClearMessages();
-
-  std::unique_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
-      new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
-  ASSERT_FALSE(provider_client->is_dispatch_message_event_called());
-
-  // The passed reference should be owned by the provider client (but the
-  // reference is immediately released due to limitation of the mock provider
-  // client. See the comment on dispatchMessageEvent() of the mock).
-  OnPostMessage(params);
-  EXPECT_TRUE(provider_client->is_dispatch_message_event_called());
-  ASSERT_EQ(1UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
-            ipc_sink()->GetMessageAt(0)->type());
-}
 
 TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
