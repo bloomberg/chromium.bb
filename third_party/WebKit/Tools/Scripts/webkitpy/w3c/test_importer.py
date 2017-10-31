@@ -433,16 +433,23 @@ class TestImporter(object):
         directory_owners = self.get_directory_owners()
         description = self._cl_description(directory_owners)
         sheriff_email = self.tbr_reviewer()
+
+        temp_file, temp_path = self.fs.open_text_tempfile()
+        temp_file.write(description)
+        temp_file.close()
+
         self.git_cl.run([
             'upload',
             '-f',
             '--gerrit',
-            '-m', description,
+            '--message-file', temp_path,
             '--tbrs', sheriff_email,
             # Note: we used to CC all the directory owners, but have stopped
             # in search of a better notification mechanism. (crbug.com/765334)
             '--cc', 'robertma@chromium.org',
         ])
+
+        self.fs.remove(temp_path)
 
     def get_directory_owners(self):
         """Returns a mapping of email addresses to owners of changed tests."""
