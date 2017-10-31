@@ -3447,6 +3447,19 @@ checkNumericMode(const TranslationTableHeader *table, int *src, int *dest, int s
 					transRule, inputPositions, outputPositions, cursorPosition,
 					cursorStatus, compbrlStart, compbrlEnd);
 		} else if (checkAttr(currentInput[*src], CTC_NumericMode, 0, table)) {
+			for(i = *src - 1; i >= 0; i--)
+			{
+				if(checkAttr(currentInput[i], CTC_SeqBefore, 0, table))
+					continue;
+				if(!checkAttr(currentInput[i], CTC_Space | CTC_SeqDelimiter, 0, table))
+					break;
+				else
+				{
+					i = -1;
+					break;
+				}
+			}
+			if(i == -1)
 			for (i = *src + 1; i < srcmax; i++) {
 				if (checkAttr(currentInput[i], CTC_Digit | CTC_LitDigit, 0, table)) {
 					*numericMode = 1;
