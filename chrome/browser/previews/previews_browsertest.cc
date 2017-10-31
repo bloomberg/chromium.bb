@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -77,10 +78,17 @@ IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
   EXPECT_FALSE(noscript_css_requested());
 }
 
+// Flaky on Win/Mac. See crbug.com/779934 for detail.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
+#else
+#define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
+#endif
+
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the
 // script resource is not loaded.
-IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsEnabled) {
+IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, MAYBE_NoScriptPreviewsEnabled) {
   EnableNoScriptPreviews();
   ui_test_utils::NavigateToURL(browser(), test_url());
 
