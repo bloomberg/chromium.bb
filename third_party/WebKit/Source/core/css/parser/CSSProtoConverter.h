@@ -18,6 +18,9 @@ class Converter {
 
  private:
   std::string string_;
+
+  static const int kAtRuleDepthLimit;
+  static const int kSupportsConditionDepthLimit;
   static const std::string kPseudoLookupTable[];
   static const std::string kMediaTypeLookupTable[];
   static const std::string kMfNameLookupTable[];
@@ -49,7 +52,7 @@ class Converter {
   void Visit(const FunctionToken&);
   void Visit(const StyleSheet&);
   void Visit(const CharsetDeclaration&);
-  void Visit(const NestedAtRule&);
+  void Visit(const NestedAtRule&, int depth = 0);
   void Visit(const Import&);
   void Visit(const Namespace&);
   void Visit(const NamespacePrefix&);
@@ -63,7 +66,7 @@ class Converter {
   void Visit(const Ruleset&);
   void Visit(const SelectorList&);
   void Visit(const Declaration&);
-  void Visit(const NonEmptyDeclaration&);
+  void Visit(const PropertyAndValue&);
   void Visit(const Expr&, int declaration_value_id = 0);
   void Visit(const OperatorTerm&);
   void Visit(const Term&);
@@ -89,6 +92,15 @@ class Converter {
   void Visit(const PseudoPage&);
   void Visit(const ViewportValue&);
   void Visit(const Viewport&);
+  void Visit(const SupportsRule&, int depth);
+  void Visit(const SupportsCondition&, int depth);
+  void AppendBinarySupportsCondition(
+      const BinarySupportsCondition& binary_condition,
+      std::string binary_operator,
+      int depth);
+  void Visit(const AtRuleOrRulesets&, int depth);
+  void Visit(const AtRuleOrRuleset&, int depth);
+
   void Reset();
   template <class T, size_t TableSize>
   void AppendPropertyAndValue(T property_and_value,

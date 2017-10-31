@@ -11,6 +11,9 @@
 
 namespace css_proto_converter {
 
+const int Converter::kAtRuleDepthLimit = 5;
+const int Converter::kSupportsConditionDepthLimit = 5;
+
 const std::string Converter::kViewportPropertyLookupTable[] = {
     "",  // This is just to fill the zeroth spot. It should not be used.
     "min-width",  "max-width", "width",       "min-height",
@@ -1633,8 +1636,8 @@ void Converter::Visit(const ViewportValue& viewport_value) {
 
 void Converter::Visit(const Viewport& viewport) {
   string_ += " @viewport {";
-  for (auto& prop_and_val : viewport.props_and_vals())
-    AppendPropertyAndValue(prop_and_val, kViewportPropertyLookupTable);
+  for (auto& property_and_value : viewport.properties_and_values())
+    AppendPropertyAndValue(property_and_value, kViewportPropertyLookupTable);
   string_ += " } ";
 }
 
@@ -1645,15 +1648,76 @@ void Converter::Visit(const CharsetDeclaration& charset_declaration) {
   string_ += "\"; ";
 }
 
-void Converter::Visit(const NestedAtRule& nested_at_rule) {
+void Converter::Visit(const AtRuleOrRulesets& at_rule_or_rulesets, int depth) {
+  Visit(at_rule_or_rulesets.first(), depth);
+  for (auto& later : at_rule_or_rulesets.laters())
+    Visit(later, depth);
+}
+
+void Converter::Visit(const AtRuleOrRuleset& at_rule_or_ruleset, int depth) {
+  if (at_rule_or_ruleset.has_at_rule())
+    Visit(at_rule_or_ruleset.at_rule(), depth);
+  else  // Default.
+    Visit(at_rule_or_ruleset.ruleset());
+}
+
+void Converter::Visit(const NestedAtRule& nested_at_rule, int depth) {
+  if (++depth > kAtRuleDepthLimit)
+    return;
+
   if (nested_at_rule.has_ruleset())
     Visit(nested_at_rule.ruleset());
   else if (nested_at_rule.has_media())
     Visit(nested_at_rule.media());
   else if (nested_at_rule.has_viewport())
     Visit(nested_at_rule.viewport());
+  else if (nested_at_rule.has_supports_rule())
+    Visit(nested_at_rule.supports_rule(), depth);
   // Else apppend nothing.
   // TODO(metzman): Support pages and font-faces.
+}
+
+void Converter::Visit(const SupportsRule& supports_rule, int depth) {
+  string_ += "@supports ";
+  Visit(supports_rule.supports_condition(), depth);
+  string_ += " { ";
+  for (auto& at_rule_or_ruleset : supports_rule.at_rule_or_rulesets())
+    Visit(at_rule_or_ruleset, depth);
+  string_ += " } ";
+}
+
+void Converter::AppendBinarySupportsCondition(
+    const BinarySupportsCondition& binary_condition,
+    std::string binary_operator,
+    int depth) {
+  Visit(binary_condition.condition_1(), depth);
+  string_ += " " + binary_operator + " ";
+  Visit(binary_condition.condition_2(), depth);
+}
+
+void Converter::Visit(const SupportsCondition& supports_condition, int depth) {
+  bool under_depth_limit = ++depth <= kSupportsConditionDepthLimit;
+
+  if (supports_condition.not_condition())
+    string_ += " not ";
+
+  string_ += "(";
+
+  if (under_depth_limit && supports_condition.has_and_supports_condition()) {
+    AppendBinarySupportsCondition(supports_condition.or_supports_condition(),
+                                  "and", depth);
+  } else if (under_depth_limit &&
+             supports_condition.has_or_supports_condition()) {
+    AppendBinarySupportsCondition(supports_condition.or_supports_condition(),
+                                  "or", depth);
+  } else {
+    // Use the required property_and_value field if the or_supports_condition
+    // and and_supports_condition are unset or if we have reached the depth
+    // limit and don't want another nested condition.
+    Visit(supports_condition.property_and_value());
+  }
+
+  string_ += ")";
 }
 
 void Converter::Visit(const Import& import) {
@@ -1912,20 +1976,20 @@ void Converter::Visit(const Selector& selector, bool is_first) {
 }
 
 void Converter::Visit(const Declaration& declaration) {
-  if (declaration.has_nonempty_declaration())
-    Visit(declaration.nonempty_declaration());
+  if (declaration.has_property_and_value())
+    Visit(declaration.property_and_value());
   // else empty
 }
 
-void Converter::Visit(const NonEmptyDeclaration& nonempty_declaration) {
-  Visit(nonempty_declaration.property());
+void Converter::Visit(const PropertyAndValue& property_and_value) {
+  Visit(property_and_value.property());
   string_ += " : ";
   int value_id = 0;
-  if (nonempty_declaration.has_value_id())
-    value_id = nonempty_declaration.value_id();
-  Visit(nonempty_declaration.expr(), value_id);
-  if (nonempty_declaration.has_prio())
-    string_ += " !important";
+  if (property_and_value.has_value_id())
+    value_id = property_and_value.value_id();
+  Visit(property_and_value.expr(), value_id);
+  if (property_and_value.has_prio())
+    string_ += " !important ";
 }
 
 void Converter::Visit(const Expr& expr, int declaration_value_id) {
@@ -2015,7 +2079,7 @@ void Converter::Visit(const HexcolorThree& hexcolor_three) {
 }
 
 void Converter::Reset() {
-  string_ = "";
+  string_.clear();
 }
 
 template <size_t TableSize>
