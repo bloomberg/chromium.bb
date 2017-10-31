@@ -121,6 +121,12 @@ typedef enum {
 @property(nonatomic, strong) UIColor* selectedTextBackgroundColor;
 @property(nonatomic, strong) UIColor* placeholderTextColor;
 @property(nonatomic, assign) BOOL incognito;
+// UIViewPropertyAnimator for expanding the location bar.
+@property(nonatomic, strong)
+    UIViewPropertyAnimator* omniboxExpanderAnimator API_AVAILABLE(ios(10.0));
+// UIViewPropertyAnimator for contracting the location bar.
+@property(nonatomic, strong)
+    UIViewPropertyAnimator* omniboxContractorAnimator API_AVAILABLE(ios(10.0));
 
 @end
 
