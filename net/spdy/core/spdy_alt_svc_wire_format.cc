@@ -78,7 +78,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
     }
     // Check for IETF format for advertising QUIC:
     // hq=":443";quic=51303338;quic=51303334
-    const bool is_ietf_format_quic = (protocol_id.compare("hq") == 0);
+    const bool is_ietf_format_quic = (protocol_id == "hq");
     c = percent_encoded_protocol_id_end;
     if (c == value.end()) {
       return false;
@@ -145,11 +145,11 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
       if (c == parameter_value_begin) {
         return false;
       }
-      if (parameter_name.compare("ma") == 0) {
+      if (parameter_name == "ma") {
         if (!ParsePositiveInteger32(parameter_value_begin, c, &max_age)) {
           return false;
         }
-      } else if (!is_ietf_format_quic && parameter_name.compare("v") == 0) {
+      } else if (!is_ietf_format_quic && parameter_name == "v") {
         // Version is a comma separated list of positive integers enclosed in
         // quotation marks.  Since it can contain commas, which are not
         // delineating alternative service entries, |parameters_end| and |c| can
@@ -180,7 +180,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
             return false;
           }
         }
-      } else if (is_ietf_format_quic && parameter_name.compare("quic") == 0) {
+      } else if (is_ietf_format_quic && parameter_name == "quic") {
         // IETF format for advertising QUIC. Version is hex encoding of QUIC
         // version tag. Hex-encoded string should not include leading "0x" or
         // leading zeros.
@@ -223,7 +223,7 @@ SpdyString SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       value.push_back(',');
     }
     // Check for IETF format for advertising QUIC.
-    const bool is_ietf_format_quic = (altsvc.protocol_id.compare("hq") == 0);
+    const bool is_ietf_format_quic = (altsvc.protocol_id == "hq");
     // Percent escape protocol id according to
     // http://tools.ietf.org/html/rfc7230#section-3.2.6.
     for (char c : altsvc.protocol_id) {
