@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "modules/EventTargetModules.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -208,8 +208,7 @@ void NetworkInformation::StartObserving() {
     DCHECK(!connection_observer_handle_);
     connection_observer_handle_ =
         GetNetworkStateNotifier().AddConnectionObserver(
-            this, TaskRunnerHelper::Get(TaskType::kNetworking,
-                                        GetExecutionContext()));
+            this, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
 }
 

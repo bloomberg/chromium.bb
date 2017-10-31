@@ -33,7 +33,6 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -42,6 +41,7 @@
 #include "platform/ContentSettingCallbacks.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebFileSystem.h"
 
 namespace blink {
@@ -130,7 +130,7 @@ void LocalFileSystem::RequestFileSystemAccessInternal(ExecutionContext* context,
 
 void LocalFileSystem::FileSystemNotAvailable(ExecutionContext* context,
                                              CallbackWrapper* callbacks) {
-  TaskRunnerHelper::Get(TaskType::kFileReading, context)
+  context->GetTaskRunner(TaskType::kFileReading)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
                            FileError::kAbortErr));
@@ -138,7 +138,7 @@ void LocalFileSystem::FileSystemNotAvailable(ExecutionContext* context,
 
 void LocalFileSystem::FileSystemNotAllowedInternal(ExecutionContext* context,
                                                    CallbackWrapper* callbacks) {
-  TaskRunnerHelper::Get(TaskType::kFileReading, context)
+  context->GetTaskRunner(TaskType::kFileReading)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
                            FileError::kAbortErr));

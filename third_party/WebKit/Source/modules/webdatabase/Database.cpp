@@ -29,7 +29,6 @@
 #include "bindings/modules/v8/v8_database_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/probe/CoreProbes.h"
@@ -57,6 +56,7 @@
 #include "platform/wtf/Atomics.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebDatabaseObserver.h"
 #include "public/platform/WebSecurityOrigin.h"
 
@@ -263,7 +263,7 @@ Database::Database(DatabaseContext* database_context,
   DCHECK(database_context_->GetDatabaseThread());
   DCHECK(database_context_->IsContextThread());
   database_task_runner_ =
-      TaskRunnerHelper::Get(TaskType::kDatabaseAccess, GetExecutionContext());
+      GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess);
 }
 
 Database::~Database() {
@@ -310,7 +310,8 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
           << "Scheduling DatabaseCreationCallbackTask for database " << this;
       probe::AsyncTaskScheduled(GetExecutionContext(), "openDatabase",
                                 creation_callback_);
-      TaskRunnerHelper::Get(TaskType::kDatabaseAccess, GetExecutionContext())
+      GetExecutionContext()
+          ->GetTaskRunner(TaskType::kDatabaseAccess)
           ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
                                                 WrapPersistent(this)));
     } else {

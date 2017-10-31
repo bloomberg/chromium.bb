@@ -29,13 +29,13 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 
 namespace blink {
@@ -90,10 +90,9 @@ RTCDataChannel::RTCDataChannel(
       handler_(std::move(handler)),
       ready_state_(kReadyStateConnecting),
       binary_type_(kBinaryTypeArrayBuffer),
-      scheduled_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kNetworking, context),
-          this,
-          &RTCDataChannel::ScheduledEventTimerFired),
+      scheduled_event_timer_(context->GetTaskRunner(TaskType::kNetworking),
+                             this,
+                             &RTCDataChannel::ScheduledEventTimerFired),
       buffered_amount_low_threshold_(0U),
       stopped_(false) {
   handler_->SetClient(this);

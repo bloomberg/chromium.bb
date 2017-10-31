@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -27,6 +26,7 @@
 #include "modules/presentation/PresentationRequest.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -257,7 +257,8 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
   // Fire onconnectionavailable event asynchronously.
   auto* event = PresentationConnectionAvailableEvent::Create(
       EventTypeNames::connectionavailable, connection);
-  TaskRunnerHelper::Get(TaskType::kPresentation, request->GetExecutionContext())
+  request->GetExecutionContext()
+      ->GetTaskRunner(TaskType::kPresentation)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&PresentationConnection::DispatchEventAsync,
                            WrapPersistent(request), WrapPersistent(event)));
@@ -640,7 +641,8 @@ void PresentationConnection::DidFailLoadingBlob(
 }
 
 void PresentationConnection::DispatchStateChangeEvent(Event* event) {
-  TaskRunnerHelper::Get(TaskType::kPresentation, GetExecutionContext())
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kPresentation)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&PresentationConnection::DispatchEventAsync,
                            WrapPersistent(this), WrapPersistent(event)));

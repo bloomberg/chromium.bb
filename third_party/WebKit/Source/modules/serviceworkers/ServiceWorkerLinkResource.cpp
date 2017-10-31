@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -19,6 +18,7 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/modules/serviceworker/service_worker_error_type.mojom-blink.h"
 
 namespace blink {
@@ -33,13 +33,15 @@ class RegistrationCallback
 
   void OnSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, &owner_->GetDocument())
+    owner_->GetDocument()
+        .GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&LinkLoaderClient::LinkLoaded, owner_));
   }
 
   void OnError(const WebServiceWorkerError& error) override {
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, &owner_->GetDocument())
+    owner_->GetDocument()
+        .GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&LinkLoaderClient::LinkLoadingErrored, owner_));
   }

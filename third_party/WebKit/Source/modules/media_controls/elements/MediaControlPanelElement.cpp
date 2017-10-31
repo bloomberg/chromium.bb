@@ -4,11 +4,11 @@
 
 #include "modules/media_controls/elements/MediaControlPanelElement.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -22,10 +22,10 @@ const double kFadeOutDuration = 0.3;
 MediaControlPanelElement::MediaControlPanelElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaControlsPanel),
-      transition_timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                                              &media_controls.GetDocument()),
-                        this,
-                        &MediaControlPanelElement::TransitionTimerFired) {
+      transition_timer_(
+          media_controls.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
+          this,
+          &MediaControlPanelElement::TransitionTimerFired) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-panel"));
 }
 

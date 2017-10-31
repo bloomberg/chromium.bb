@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/Blob.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
@@ -48,6 +47,7 @@
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -405,7 +405,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   // content check must synchronously be conducted.
   WebSocketChannelSyncHelper sync_helper;
   scoped_refptr<WebTaskRunner> worker_networking_task_runner =
-      TaskRunnerHelper::Get(TaskType::kNetworking, worker_global_scope_.Get());
+      worker_global_scope_->GetTaskRunner(TaskType::kNetworking);
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
 
   // Dedicated workers are a special case as they always have an associated

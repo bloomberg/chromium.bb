@@ -5,7 +5,8 @@
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 
 #include <memory>
-#include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/ExecutionContext.h"
+#include "public/platform/TaskType.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -16,10 +17,9 @@ TimedCanvasDrawListener::TimedCanvasDrawListener(
     ExecutionContext* context)
     : CanvasDrawListener(std::move(handler)),
       frame_interval_(1 / frame_rate),
-      request_frame_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, context),
-          this,
-          &TimedCanvasDrawListener::RequestFrameTimerFired) {}
+      request_frame_timer_(context->GetTaskRunner(TaskType::kUnthrottled),
+                           this,
+                           &TimedCanvasDrawListener::RequestFrameTimerFired) {}
 
 TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
 

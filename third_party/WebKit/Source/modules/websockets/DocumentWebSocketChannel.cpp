@@ -31,7 +31,6 @@
 #include "modules/websockets/DocumentWebSocketChannel.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
@@ -61,6 +60,7 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebSocketHandshakeThrottle.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebURL.h"
@@ -237,7 +237,8 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
   // failure blocks the worker thread which should be avoided. Note that
   // returning "true" just indicates that this was not a mixed content error.
   if (ShouldDisallowConnection(url)) {
-    TaskRunnerHelper::Get(TaskType::kNetworking, GetDocument())
+    GetDocument()
+        ->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(
             BLINK_FROM_HERE,
             WTF::Bind(&DocumentWebSocketChannel::TearDownFailedConnection,
@@ -246,13 +247,13 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
   }
 
   handle_->Initialize(std::move(socket_ptr));
-  handle_->Connect(
-      url, protocols, loading_context_->GetFetchContext()->GetSecurityOrigin(),
-      loading_context_->GetFetchContext()->GetSiteForCookies(),
-      loading_context_->GetExecutionContext()->UserAgent(), this,
-      TaskRunnerHelper::Get(TaskType::kNetworking,
-                            loading_context_->GetExecutionContext())
-          .get());
+  handle_->Connect(url, protocols,
+                   loading_context_->GetFetchContext()->GetSecurityOrigin(),
+                   loading_context_->GetFetchContext()->GetSiteForCookies(),
+                   loading_context_->GetExecutionContext()->UserAgent(), this,
+                   loading_context_->GetExecutionContext()
+                       ->GetTaskRunner(TaskType::kNetworking)
+                       .get());
 
   // TODO(ricea): Maybe lookup GetDocument()->GetFrame() less often?
   if (handshake_throttle_ && GetDocument() && GetDocument()->GetFrame() &&

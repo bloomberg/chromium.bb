@@ -30,10 +30,10 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/peerconnection/RTCDTMFToneChangeEvent.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
@@ -73,10 +73,9 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
       inter_tone_gap_(kDefaultInterToneGapMs),
       handler_(std::move(handler)),
       stopped_(false),
-      scheduled_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kNetworking, context),
-          this,
-          &RTCDTMFSender::ScheduledEventTimerFired) {
+      scheduled_event_timer_(context->GetTaskRunner(TaskType::kNetworking),
+                             this,
+                             &RTCDTMFSender::ScheduledEventTimerFired) {
   handler_->SetClient(this);
 }
 

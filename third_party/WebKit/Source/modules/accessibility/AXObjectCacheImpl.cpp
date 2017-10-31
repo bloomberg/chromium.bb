@@ -30,7 +30,6 @@
 
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -87,6 +86,7 @@
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "public/web/WebFrameClient.h"
@@ -105,10 +105,9 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       document_(document),
       modification_count_(0),
       relation_cache_(new AXRelationCache(this)),
-      notification_post_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
-          this,
-          &AXObjectCacheImpl::NotificationPostTimerFired),
+      notification_post_timer_(document.GetTaskRunner(TaskType::kUnspecedTimer),
+                               this,
+                               &AXObjectCacheImpl::NotificationPostTimerFired),
       accessibility_event_permission_(mojom::PermissionStatus::ASK),
       permission_observer_binding_(this) {
   if (document_->LoadEventFinished())

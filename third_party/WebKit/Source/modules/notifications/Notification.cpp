@@ -37,7 +37,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/Deprecation.h"
@@ -57,6 +56,7 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
@@ -204,7 +204,8 @@ void Notification::close() {
   // Schedule the "close" event to be fired for non-persistent notifications.
   // Persistent notifications won't get such events for programmatic closes.
   if (type_ == Type::kNonPersistent) {
-    TaskRunnerHelper::Get(TaskType::kUserInteraction, GetExecutionContext())
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kUserInteraction)
         ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Notification::DispatchCloseEvent,
                                               WrapPersistent(this)));
     state_ = State::kClosing;

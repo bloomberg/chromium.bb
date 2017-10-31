@@ -42,7 +42,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
@@ -68,6 +67,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace blink {
@@ -116,18 +116,15 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
       context_restorable_(true),
       try_restore_context_attempt_count_(0),
       dispatch_context_lost_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                &canvas->GetDocument()),
+          canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &CanvasRenderingContext2D::DispatchContextLostEvent),
       dispatch_context_restored_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                &canvas->GetDocument()),
+          canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &CanvasRenderingContext2D::DispatchContextRestoredEvent),
       try_restore_context_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                &canvas->GetDocument()),
+          canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &CanvasRenderingContext2D::TryRestoreContextEvent),
       should_prune_local_font_cache_(false) {
