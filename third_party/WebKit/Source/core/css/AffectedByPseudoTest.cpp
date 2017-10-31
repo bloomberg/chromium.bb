@@ -78,14 +78,15 @@ TEST_F(AffectedByPseudoTest, FocusedAscendant) {
                               {divTag, false},
                               {spanTag, false}};
 
-  SetHtmlInnerHTML(
-      "<head>"
-      "<style>:focus div { background-color: pink }</style>"
-      "</head>"
-      "<body>"
-      "<div><div></div></div>"
-      "<div><span></span></div>"
-      "</body>");
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+    <style>:focus div { background-color: pink }</style>
+    </head>
+    <body>
+    <div><div></div></div>
+    <div><span></span></div>
+    </body>
+  )HTML");
 
   CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
@@ -99,14 +100,15 @@ TEST_F(AffectedByPseudoTest, FocusedAscendantWithType) {
                               {divTag, false},
                               {spanTag, false}};
 
-  SetHtmlInnerHTML(
-      "<head>"
-      "<style>body:focus div { background-color: pink }</style>"
-      "</head>"
-      "<body>"
-      "<div><div></div></div>"
-      "<div><span></span></div>"
-      "</body>");
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+    <style>body:focus div { background-color: pink }</style>
+    </head>
+    <body>
+    <div><div></div></div>
+    <div><span></span></div>
+    </body>
+  )HTML");
 
   CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
@@ -123,14 +125,15 @@ TEST_F(AffectedByPseudoTest, FocusedAscendantWithNegatedType) {
                               {divTag, false},
                               {spanTag, false}};
 
-  SetHtmlInnerHTML(
-      "<head>"
-      "<style>:not(body):focus div { background-color: pink }</style>"
-      "</head>"
-      "<body>"
-      "<div><div></div></div>"
-      "<div><span></span></div>"
-      "</body>");
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+    <style>:not(body):focus div { background-color: pink }</style>
+    </head>
+    <body>
+    <div><div></div></div>
+    <div><span></span></div>
+    </body>
+  )HTML");
 
   CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
@@ -145,16 +148,17 @@ TEST_F(AffectedByPseudoTest, FocusedSibling) {
   ElementResult expected[] = {
       {bodyTag, false}, {divTag, true}, {spanTag, false}, {divTag, false}};
 
-  SetHtmlInnerHTML(
-      "<head>"
-      "<style>:focus + div { background-color: pink }</style>"
-      "</head>"
-      "<body>"
-      "<div>"
-      "  <span></span>"
-      "</div>"
-      "<div></div>"
-      "</body>");
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+    <style>:focus + div { background-color: pink }</style>
+    </head>
+    <body>
+    <div>
+      <span></span>
+    </div>
+    <div></div>
+    </body>
+  )HTML");
 
   CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
@@ -163,20 +167,21 @@ TEST_F(AffectedByPseudoTest, AffectedByFocusUpdate) {
   // Check that when focussing the outer div in the document below, you only
   // get a single element style recalc.
 
-  SetHtmlInnerHTML(
-      "<style>:focus { border: 1px solid lime; }</style>"
-      "<div id=d tabIndex=1>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>:focus { border: 1px solid lime; }</style>
+    <div id=d tabIndex=1>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -195,20 +200,21 @@ TEST_F(AffectedByPseudoTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the whole subtree.
 
-  SetHtmlInnerHTML(
-      "<style>:focus div { border: 1px solid lime; }</style>"
-      "<div id=d tabIndex=1>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>:focus div { border: 1px solid lime; }</style>
+    <div id=d tabIndex=1>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -227,20 +233,21 @@ TEST_F(AffectedByPseudoTest, InvalidationSetFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the outer div and the class=a div only.
 
-  SetHtmlInnerHTML(
-      "<style>:focus .a { border: 1px solid lime; }</style>"
-      "<div id=d tabIndex=1>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div class='a'></div>"
-      "</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>:focus .a { border: 1px solid lime; }</style>
+    <div id=d tabIndex=1>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div class='a'></div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -261,20 +268,21 @@ TEST_F(AffectedByPseudoTest, NoInvalidationSetFocusUpdate) {
   // include 'a', but the id=d div should be affectedByFocus, not
   // childrenOrSiblingsAffectedByFocus.
 
-  SetHtmlInnerHTML(
-      "<style>#nomatch:focus .a { border: 1px solid lime; }</style>"
-      "<div id=d tabIndex=1>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div></div>"
-      "<div class='a'></div>"
-      "</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>#nomatch:focus .a { border: 1px solid lime; }</style>
+    <div id=d tabIndex=1>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div class='a'></div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -293,14 +301,15 @@ TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
   // Check that when changing the focus between 2 elements we don't need a style
   // recalc for all the ancestors affected by ":focus-within".
 
-  SetHtmlInnerHTML(
-      "<style>div:focus-within { background-color: lime; }</style>"
-      "<div>"
-      "  <div>"
-      "    <div id=focusme1 tabIndex=1></div>"
-      "    <div id=focusme2 tabIndex=2></div>"
-      "  <div>"
-      "</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>div:focus-within { background-color: lime; }</style>
+    <div>
+      <div>
+        <div id=focusme1 tabIndex=1></div>
+        <div id=focusme2 tabIndex=2></div>
+      <div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 

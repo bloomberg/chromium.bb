@@ -35,16 +35,17 @@ class LayoutBoxModelObjectTest : public RenderingTest {
 
 // Verifies that the sticky constraints are correctly computed.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
-  SetBodyInnerHTML(
-      "<style>#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
-      "}"
-      "#container { box-sizing: border-box; position: relative; top: 100px; "
-      "height: 400px; width: 200px; padding: 10px; border: 5px solid black; }"
-      "#scroller { width: 400px; height: 100px; overflow: auto; "
-      "position: relative; top: 200px; border: 2px solid black; }"
-      ".spacer { height: 1000px; }</style>"
-      "<div id='scroller'><div id='container'><div "
-      "id='sticky'></div></div><div class='spacer'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#sticky { position: sticky; top: 0; width: 100px; height: 100px;
+    }
+    #container { box-sizing: border-box; position: relative; top: 100px;
+    height: 400px; width: 200px; padding: 10px; border: 5px solid black; }
+    #scroller { width: 400px; height: 100px; overflow: auto;
+    position: relative; top: 200px; border: 2px solid black; }
+    .spacer { height: 1000px; }</style>
+    <div id='scroller'><div id='container'><div
+    id='sticky'></div></div><div class='spacer'></div></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -76,17 +77,18 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
 
 // Verifies that the sticky constraints are correctly computed in right to left.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
-  SetBodyInnerHTML(
-      "<style> html { -webkit-writing-mode: vertical-rl; } "
-      "#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
-      "}"
-      "#container { box-sizing: border-box; position: relative; top: 100px; "
-      "height: 400px; width: 200px; padding: 10px; border: 5px solid black; }"
-      "#scroller { width: 400px; height: 100px; overflow: auto; "
-      "position: relative; top: 200px; border: 2px solid black; }"
-      ".spacer { height: 1000px; }</style>"
-      "<div id='scroller'><div id='container'><div "
-      "id='sticky'></div></div><div class='spacer'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> html { -webkit-writing-mode: vertical-rl; }
+    #sticky { position: sticky; top: 0; width: 100px; height: 100px;
+    }
+    #container { box-sizing: border-box; position: relative; top: 100px;
+    height: 400px; width: 200px; padding: 10px; border: 5px solid black; }
+    #scroller { width: 400px; height: 100px; overflow: auto;
+    position: relative; top: 200px; border: 2px solid black; }
+    .spacer { height: 1000px; }</style>
+    <div id='scroller'><div id='container'><div
+    id='sticky'></div></div><div class='spacer'></div></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -118,17 +120,18 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
 
 // Verifies that the sticky constraints are not affected by transforms
 TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
-  SetBodyInnerHTML(
-      "<style>#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
-      "transform: scale(2); transform-origin: top left; }"
-      "#container { box-sizing: border-box; position: relative; top: 100px; "
-      "height: 400px; width: 200px; padding: 10px; border: 5px solid black; "
-      "transform: scale(2); transform-origin: top left; }"
-      "#scroller { height: 100px; overflow: auto; position: relative; top: "
-      "200px; }"
-      ".spacer { height: 1000px; }</style>"
-      "<div id='scroller'><div id='container'><div "
-      "id='sticky'></div></div><div class='spacer'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#sticky { position: sticky; top: 0; width: 100px; height: 100px;
+    transform: scale(2); transform-origin: top left; }
+    #container { box-sizing: border-box; position: relative; top: 100px;
+    height: 400px; width: 200px; padding: 10px; border: 5px solid black;
+    transform: scale(2); transform-origin: top left; }
+    #scroller { height: 100px; overflow: auto; position: relative; top:
+    200px; }
+    .spacer { height: 1000px; }</style>
+    <div id='scroller'><div id='container'><div
+    id='sticky'></div></div><div class='spacer'></div></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -156,16 +159,17 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
 
 // Verifies that the sticky constraints are correctly computed.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles) {
-  SetBodyInnerHTML(
-      "<style>#sticky { position: sticky; margin-top: 10%; top: 0; width: "
-      "100px; height: 100px; }"
-      "#container { box-sizing: border-box; position: relative; top: 100px; "
-      "height: 400px; width: 250px; padding: 5%; border: 5px solid black; }"
-      "#scroller { width: 400px; height: 100px; overflow: auto; position: "
-      "relative; top: 200px; }"
-      ".spacer { height: 1000px; }</style>"
-      "<div id='scroller'><div id='container'><div "
-      "id='sticky'></div></div><div class='spacer'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#sticky { position: sticky; margin-top: 10%; top: 0; width:
+    100px; height: 100px; }
+    #container { box-sizing: border-box; position: relative; top: 100px;
+    height: 400px; width: 250px; padding: 5%; border: 5px solid black; }
+    #scroller { width: 400px; height: 100px; overflow: auto; position:
+    relative; top: 200px; }
+    .spacer { height: 1000px; }</style>
+    <div id='scroller'><div id='container'><div
+    id='sticky'></div></div><div class='spacer'></div></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -192,14 +196,15 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles) {
 // Verifies that the sticky constraints are correct when the sticky position
 // container is also the ancestor scroller.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
-  SetBodyInnerHTML(
-      "<style>#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
-      "}"
-      "#scroller { height: 100px; width: 400px; overflow: auto; position: "
-      "relative; top: 200px; border: 2px solid black; }"
-      ".spacer { height: 1000px; }</style>"
-      "<div id='scroller'><div id='sticky'></div><div "
-      "class='spacer'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#sticky { position: sticky; top: 0; width: 100px; height: 100px;
+    }
+    #scroller { height: 100px; width: 400px; overflow: auto; position:
+    relative; top: 200px; border: 2px solid black; }
+    .spacer { height: 1000px; }</style>
+    <div id='scroller'><div id='sticky'></div><div
+    class='spacer'></div></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -224,17 +229,18 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
 // Verifies that the sticky constraints are correct when the sticky position
 // object has an anonymous containing block.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
-  SetBodyInnerHTML(
-      "<style>#sticky { display: inline-block; position: sticky; top: 0; "
-      "width: 100px; height: 100px; }"
-      "#container { box-sizing: border-box; position: relative; top: 100px; "
-      "height: 400px; width: 200px; padding: 10px; border: 5px solid black; }"
-      "#scroller { height: 100px; overflow: auto; position: relative; top: "
-      "200px; }"
-      ".header { height: 50px; }"
-      ".spacer { height: 1000px; }</style>"
-      "<div id='scroller'><div id='container'><div class='header'></div><div "
-      "id='sticky'></div></div><div class='spacer'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#sticky { display: inline-block; position: sticky; top: 0;
+    width: 100px; height: 100px; }
+    #container { box-sizing: border-box; position: relative; top: 100px;
+    height: 400px; width: 200px; padding: 10px; border: 5px solid black; }
+    #scroller { height: 100px; overflow: auto; position: relative; top:
+    200px; }
+    .header { height: 50px; }
+    .spacer { height: 1000px; }</style>
+    <div id='scroller'><div id='container'><div class='header'></div><div
+    id='sticky'></div></div><div class='spacer'></div></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -257,17 +263,18 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
 }
 
 TEST_F(LayoutBoxModelObjectTest, StickyPositionTableContainers) {
-  SetBodyInnerHTML(
-      "<style> td, th { height: 50px; width: 50px; } "
-      "#sticky { position: sticky; left: 0; will-change: transform; }"
-      "table {border: none; }"
-      "#scroller { overflow: auto; }"
-      "</style>"
-      "<div id='scroller'>"
-      "<table cellspacing='0' cellpadding='0'>"
-      "    <thead><tr><td></td></tr></thead>"
-      "    <tr><td id='sticky'></td></tr>"
-      "</table></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> td, th { height: 50px; width: 50px; }
+    #sticky { position: sticky; left: 0; will-change: transform; }
+    table {border: none; }
+    #scroller { overflow: auto; }
+    </style>
+    <div id='scroller'>
+    <table cellspacing='0' cellpadding='0'>
+        <thead><tr><td></td></tr></thead>
+        <tr><td id='sticky'></td></tr>
+    </table></div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -287,21 +294,22 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTableContainers) {
 // Tests that when a non-layer changes size it invalidates the constraints for
 // sticky position elements within the same scroller.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
-  SetBodyInnerHTML(
-      "<style>"
-      "#scroller { overflow: auto; display: flex; width: 200px; }"
-      "#target { width: 50px; }"
-      "#sticky { position: sticky; top: 0; }"
-      ".container { width: 100px; margin-left: auto; margin-right: auto; }"
-      ".hide { display: none; }"
-      "</style>"
-      "<div id='scroller'>"
-      "  <div style='flex: 1'>"
-      "    <div class='container'><div id='sticky'></div>"
-      "  </div>"
-      "</div>"
-      "<div class='spacer' id='target'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #scroller { overflow: auto; display: flex; width: 200px; }
+    #target { width: 50px; }
+    #sticky { position: sticky; top: 0; }
+    .container { width: 100px; margin-left: auto; margin-right: auto; }
+    .hide { display: none; }
+    </style>
+    <div id='scroller'>
+      <div style='flex: 1'>
+        <div class='container'><div id='sticky'></div>
+      </div>
+    </div>
+    <div class='spacer' id='target'></div>
+    </div>
+  )HTML");
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -343,22 +351,23 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
 // cells can be sticky in CSS2.1, but we can test the former.
 TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectStickyBoxShiftingAncestor) {
-  SetBodyInnerHTML(
-      "<style>#stickyOuterDiv { position: sticky; top: 0;}"
-      "#stickyOuterInline { position: sticky; top: 0; display: inline; }"
-      "#unanchoredSticky { position: sticky; display: inline; }"
-      ".inline { display: inline; }"
-      "#stickyInnerInline { position: sticky; top: 0; display: inline; "
-      "}</style>"
-      "<div id='stickyOuterDiv'>"
-      "  <div id='stickyOuterInline'>"
-      "   <div id='unanchoredSticky'>"
-      "      <div class='inline'>"
-      "        <div id='stickyInnerInline'></div>"
-      "      </div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#stickyOuterDiv { position: sticky; top: 0;}
+    #stickyOuterInline { position: sticky; top: 0; display: inline; }
+    #unanchoredSticky { position: sticky; display: inline; }
+    .inline { display: inline; }
+    #stickyInnerInline { position: sticky; top: 0; display: inline;
+    }</style>
+    <div id='stickyOuterDiv'>
+      <div id='stickyOuterInline'>
+       <div id='unanchoredSticky'>
+          <div class='inline'>
+            <div id='stickyInnerInline'></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   PaintLayer* sticky_outer_div = GetPaintLayerByElementId("stickyOuterDiv");
   PaintLayer* sticky_outer_inline =
@@ -402,20 +411,21 @@ TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectContainingBlockShiftingAncestor) {
   // We make the scroller itself sticky in order to check that elements do not
   // detect it as their containing-block shifting ancestor.
-  SetBodyInnerHTML(
-      "<style>#scroller { overflow-y: scroll; position: sticky; top: 0;}"
-      "#stickyParent { position: sticky; top: 0;}"
-      "#stickyChild { position: sticky; top: 0;}"
-      "#unanchoredSticky { position: sticky; }"
-      "#stickyNestedChild { position: sticky; top: 0;}</style>"
-      "<div id='scroller'>"
-      "  <div id='stickyParent'>"
-      "    <div id='unanchoredSticky'>"
-      "      <div id='stickyChild'></div>"
-      "      <div><div id='stickyNestedChild'></div></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { overflow-y: scroll; position: sticky; top: 0;}
+    #stickyParent { position: sticky; top: 0;}
+    #stickyChild { position: sticky; top: 0;}
+    #unanchoredSticky { position: sticky; }
+    #stickyNestedChild { position: sticky; top: 0;}</style>
+    <div id='scroller'>
+      <div id='stickyParent'>
+        <div id='unanchoredSticky'>
+          <div id='stickyChild'></div>
+          <div><div id='stickyNestedChild'></div></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   PaintLayer* scroller = GetPaintLayerByElementId("scroller");
   PaintLayer* sticky_parent = GetPaintLayerByElementId("stickyParent");
@@ -454,11 +464,12 @@ TEST_F(LayoutBoxModelObjectTest,
 // not make a difference for containing-block shifting ancestor calculations.
 TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectContainingBlockShiftingAncestorRoot) {
-  SetBodyInnerHTML(
-      "<style>#stickyParent { position: sticky; top: 0;}"
-      "#stickyGrandchild { position: sticky; top: 0;}</style>"
-      "<div id='stickyParent'><div><div id='stickyGrandchild'></div></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#stickyParent { position: sticky; top: 0;}
+    #stickyGrandchild { position: sticky; top: 0;}</style>
+    <div id='stickyParent'><div><div id='stickyGrandchild'></div></div>
+    </div>
+  )HTML");
 
   PaintLayer* sticky_parent = GetPaintLayerByElementId("stickyParent");
   PaintLayer* sticky_grandchild = GetPaintLayerByElementId("stickyGrandchild");
@@ -484,12 +495,13 @@ TEST_F(LayoutBoxModelObjectTest,
 // we have to skip over elements to find the correct ancestor.
 TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectContainingBlockShiftingAncestorTable) {
-  SetBodyInnerHTML(
-      "<style>#scroller { overflow-y: scroll; }"
-      "#stickyOuter { position: sticky; top: 0;}"
-      "#stickyTh { position: sticky; top: 0;}</style>"
-      "<div id='scroller'><div id='stickyOuter'><table><thead><tr>"
-      "<th id='stickyTh'></th></tr></thead></table></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { overflow-y: scroll; }
+    #stickyOuter { position: sticky; top: 0;}
+    #stickyTh { position: sticky; top: 0;}</style>
+    <div id='scroller'><div id='stickyOuter'><table><thead><tr>
+    <th id='stickyTh'></th></tr></thead></table></div></div>
+  )HTML");
 
   PaintLayer* scroller = GetPaintLayerByElementId("scroller");
   PaintLayer* sticky_outer = GetPaintLayerByElementId("stickyOuter");
@@ -513,14 +525,15 @@ TEST_F(LayoutBoxModelObjectTest,
 // Verifies that the calculated position:sticky offsets are correct when we have
 // a simple case of nested sticky elements.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionNested) {
-  SetBodyInnerHTML(
-      "<style>#scroller { height: 100px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px }"
-      "#stickyParent { position: sticky; top: 0; height: 50px; }"
-      "#stickyChild { position: sticky; top: 0; height: 25px; }"
-      "#postPadding { height: 200px }</style>"
-      "<div id='scroller'><div id='prePadding'></div><div id='stickyParent'>"
-      "<div id='stickyChild'></div></div><div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { height: 100px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px }
+    #stickyParent { position: sticky; top: 0; height: 50px; }
+    #stickyChild { position: sticky; top: 0; height: 25px; }
+    #postPadding { height: 200px }</style>
+    <div id='scroller'><div id='prePadding'></div><div id='stickyParent'>
+    <div id='stickyChild'></div></div><div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* sticky_parent =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
@@ -555,14 +568,15 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNested) {
 // Verifies that the calculated position:sticky offsets are correct when the
 // child has a larger edge constraint value than the parent.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionChildHasLargerTop) {
-  SetBodyInnerHTML(
-      "<style>#scroller { height: 100px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px }"
-      "#stickyParent { position: sticky; top: 0; height: 50px; }"
-      "#stickyChild { position: sticky; top: 25px; height: 25px; }"
-      "#postPadding { height: 200px }</style>"
-      "<div id='scroller'><div id='prePadding'></div><div id='stickyParent'>"
-      "<div id='stickyChild'></div></div><div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { height: 100px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px }
+    #stickyParent { position: sticky; top: 0; height: 50px; }
+    #stickyChild { position: sticky; top: 25px; height: 25px; }
+    #postPadding { height: 200px }</style>
+    <div id='scroller'><div id='prePadding'></div><div id='stickyParent'>
+    <div id='stickyChild'></div></div><div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* sticky_parent =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
@@ -597,14 +611,15 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionChildHasLargerTop) {
 // Verifies that the calculated position:sticky offsets are correct when the
 // child has a smaller edge constraint value than the parent.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionParentHasLargerTop) {
-  SetBodyInnerHTML(
-      "<style>#scroller { height: 100px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px }"
-      "#stickyParent { position: sticky; top: 25px; height: 50px; }"
-      "#stickyChild { position: sticky; top: 0; height: 25px; }"
-      "#postPadding { height: 200px }</style>"
-      "<div id='scroller'><div id='prePadding'></div><div id='stickyParent'>"
-      "<div id='stickyChild'></div></div><div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { height: 100px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px }
+    #stickyParent { position: sticky; top: 25px; height: 50px; }
+    #stickyChild { position: sticky; top: 0; height: 25px; }
+    #postPadding { height: 200px }</style>
+    <div id='scroller'><div id='prePadding'></div><div id='stickyParent'>
+    <div id='stickyChild'></div></div><div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* sticky_parent =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
@@ -639,14 +654,15 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionParentHasLargerTop) {
 // Verifies that the calculated position:sticky offsets are correct when the
 // child has a large enough edge constraint value to push outside of its parent.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionChildPushingOutsideParent) {
-  SetBodyInnerHTML(
-      "<style> #scroller { height: 100px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px; }"
-      "#stickyParent { position: sticky; top: 0; height: 50px; }"
-      "#stickyChild { position: sticky; top: 50px; height: 25px; }"
-      "#postPadding { height: 200px }</style>"
-      "<div id='scroller'><div id='prePadding'></div><div id='stickyParent'>"
-      "<div id='stickyChild'></div></div><div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> #scroller { height: 100px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px; }
+    #stickyParent { position: sticky; top: 0; height: 50px; }
+    #stickyChild { position: sticky; top: 50px; height: 25px; }
+    #postPadding { height: 200px }</style>
+    <div id='scroller'><div id='prePadding'></div><div id='stickyParent'>
+    <div id='stickyChild'></div></div><div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* sticky_parent =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
@@ -683,16 +699,17 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionChildPushingOutsideParent) {
 // sticky must correct both its sticky box constraint rect and its containing
 // block constaint rect.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionTripleNestedDiv) {
-  SetBodyInnerHTML(
-      "<style>#scroller { height: 200px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px; }"
-      "#outmostSticky { position: sticky; top: 0; height: 100px; }"
-      "#middleSticky { position: sticky; top: 0; height: 75px; }"
-      "#innerSticky { position: sticky; top: 25px; height: 25px; }"
-      "#postPadding { height: 400px }</style>"
-      "<div id='scroller'><div id='prePadding'></div><div id='outmostSticky'>"
-      "<div id='middleSticky'><div id='innerSticky'></div></div></div>"
-      "<div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { height: 200px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px; }
+    #outmostSticky { position: sticky; top: 0; height: 100px; }
+    #middleSticky { position: sticky; top: 0; height: 75px; }
+    #innerSticky { position: sticky; top: 25px; height: 25px; }
+    #postPadding { height: 400px }</style>
+    <div id='scroller'><div id='prePadding'></div><div id='outmostSticky'>
+    <div id='middleSticky'><div id='innerSticky'></div></div></div>
+    <div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* outmost_sticky =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("outmostSticky"));
@@ -739,18 +756,19 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTripleNestedDiv) {
 // of tables. Tables are special as the containing block for table elements is
 // always the root level <table>.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedStickyTable) {
-  SetBodyInnerHTML(
-      "<style>table { border-collapse: collapse; }"
-      "td, th { height: 25px; width: 25px; padding: 0; }"
-      "#scroller { height: 100px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px; }"
-      "#stickyDiv { position: sticky; top: 0; height: 200px; }"
-      "#stickyTh { position: sticky; top: 0; }"
-      "#postPadding { height: 200px; }</style>"
-      "<div id='scroller'><div id='prePadding'></div><div id='stickyDiv'>"
-      "<table><thead><tr><th id='stickyTh'></th></tr></thead><tbody><tr><td>"
-      "</td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr></tbody>"
-      "</table></div><div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>table { border-collapse: collapse; }
+    td, th { height: 25px; width: 25px; padding: 0; }
+    #scroller { height: 100px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px; }
+    #stickyDiv { position: sticky; top: 0; height: 200px; }
+    #stickyTh { position: sticky; top: 0; }
+    #postPadding { height: 200px; }</style>
+    <div id='scroller'><div id='prePadding'></div><div id='stickyDiv'>
+    <table><thead><tr><th id='stickyTh'></th></tr></thead><tbody><tr><td>
+    </td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr></tbody>
+    </table></div><div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* sticky_div =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyDiv"));
@@ -809,20 +827,21 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedStickyTable) {
 // This is a rare case that can be replicated by nesting tables so that a sticky
 // cell contains another table that has sticky elements. See the HTML below.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionComplexTableNesting) {
-  SetBodyInnerHTML(
-      "<style>table { border-collapse: collapse; }"
-      "td, th { height: 25px; width: 25px; padding: 0; }"
-      "#scroller { height: 100px; width: 100px; overflow-y: auto; }"
-      "#prePadding { height: 50px; }"
-      "#outerStickyTh { height: 50px; position: sticky; top: 0; }"
-      "#innerStickyTh { position: sticky; top: 25px; }"
-      "#postPadding { height: 200px; }</style>"
-      "<div id='scroller'><div id='prePadding'></div>"
-      "<table><thead><tr><th id='outerStickyTh'><table><thead><tr>"
-      "<th id='innerStickyTh'></th></tr></thead><tbody><tr><td></td></tr>"
-      "</tbody></table></th></tr></thead><tbody><tr><td></td></tr><tr><td></td>"
-      "</tr><tr><td></td></tr><tr><td></td></tr></tbody></table>"
-      "<div id='postPadding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>table { border-collapse: collapse; }
+    td, th { height: 25px; width: 25px; padding: 0; }
+    #scroller { height: 100px; width: 100px; overflow-y: auto; }
+    #prePadding { height: 50px; }
+    #outerStickyTh { height: 50px; position: sticky; top: 0; }
+    #innerStickyTh { position: sticky; top: 25px; }
+    #postPadding { height: 200px; }</style>
+    <div id='scroller'><div id='prePadding'></div>
+    <table><thead><tr><th id='outerStickyTh'><table><thead><tr>
+    <th id='innerStickyTh'></th></tr></thead><tbody><tr><td></td></tr>
+    </tbody></table></th></tr></thead><tbody><tr><td></td></tr><tr><td></td>
+    </tr><tr><td></td></tr><tr><td></td></tr></tbody></table>
+    <div id='postPadding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* outer_sticky_th =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerStickyTh"));
@@ -853,25 +872,26 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionComplexTableNesting) {
 // Verifies that the calculated position:sticky offsets are correct in the case
 // of nested inline elements.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedInlineElements) {
-  SetBodyInnerHTML(
-      "<style>#scroller { width: 100px; height: 100px; overflow-y: scroll; }"
-      "#paddingBefore { height: 50px; }"
-      "#outerInline { display: inline; position: sticky; top: 0; }"
-      "#unanchoredSticky { position: sticky; display: inline; }"
-      ".inline {display: inline;}"
-      "#innerInline { display: inline; position: sticky; top: 25px; }"
-      "#paddingAfter { height: 200px; }</style>"
-      "<div id='scroller'>"
-      "  <div id='paddingBefore'></div>"
-      "  <div id='outerInline'>"
-      "    <div id='unanchoredSticky'>"
-      "      <div class='inline'>"
-      "        <div id='innerInline'></div>"
-      "      </div>"
-      "    </div>"
-      "  </div>"
-      "  <div id='paddingAfter'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#scroller { width: 100px; height: 100px; overflow-y: scroll; }
+    #paddingBefore { height: 50px; }
+    #outerInline { display: inline; position: sticky; top: 0; }
+    #unanchoredSticky { position: sticky; display: inline; }
+    .inline {display: inline;}
+    #innerInline { display: inline; position: sticky; top: 25px; }
+    #paddingAfter { height: 200px; }</style>
+    <div id='scroller'>
+      <div id='paddingBefore'></div>
+      <div id='outerInline'>
+        <div id='unanchoredSticky'>
+          <div class='inline'>
+            <div id='innerInline'></div>
+          </div>
+        </div>
+      </div>
+      <div id='paddingAfter'></div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* outer_inline =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerInline"));
@@ -893,16 +913,17 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedInlineElements) {
 // Verifies that the calculated position:sticky offsets are correct in the case
 // of an intermediate position:fixed element.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedFixedPos) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }"
-      "#scroller { height: 200px; width: 100px; overflow-y: auto; }"
-      "#outerSticky { position: sticky; top: 0; height: 50px; }"
-      "#fixedDiv { position: fixed; top: 0; left: 300px; height: 100px; "
-      "width: 100px; }"
-      "#innerSticky { position: sticky; top: 25px; height: 25px; }"
-      "#padding { height: 400px }</style>"
-      "<div id='scroller'><div id='outerSticky'><div id='fixedDiv'>"
-      "<div id='innerSticky'></div></div></div><div id='padding'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }
+    #scroller { height: 200px; width: 100px; overflow-y: auto; }
+    #outerSticky { position: sticky; top: 0; height: 50px; }
+    #fixedDiv { position: fixed; top: 0; left: 300px; height: 100px;
+    width: 100px; }
+    #innerSticky { position: sticky; top: 25px; height: 25px; }
+    #padding { height: 400px }</style>
+    <div id='scroller'><div id='outerSticky'><div id='fixedDiv'>
+    <div id='innerSticky'></div></div></div><div id='padding'></div></div>
+  )HTML");
 
   LayoutBoxModelObject* outer_sticky =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerSticky"));
@@ -951,14 +972,15 @@ TEST_F(LayoutBoxModelObjectTest, NoCrashStackingContextChangeNonRooted) {
 }
 
 TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  .stacked { background: red; position: relative; height: 2000px; }"
-      "  .non-stacked { all: inherit }"
-      "</style>"
-      "<div style='height: 100px; backface-visibility: hidden'>"
-      "  <div id='target' class='stacked'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .stacked { background: red; position: relative; height: 2000px; }
+      .non-stacked { all: inherit }
+    </style>
+    <div style='height: 100px; backface-visibility: hidden'>
+      <div id='target' class='stacked'></div>
+    </div>
+  )HTML");
 
   auto* target_element = GetDocument().getElementById("target");
   auto* target = target_element->GetLayoutBoxModelObject();
@@ -993,15 +1015,16 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
 // Tests that when a sticky object is removed from the root scroller it
 // correctly clears its viewport constrained position: https://crbug.com/755307.
 TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
-  SetBodyInnerHTML(
-      "<style>"
-      "body { height: 5000px; }"
-      "#scroller { height: 100px; }"
-      "#sticky { position: sticky; top: 0; height: 50px; width: 50px; }"
-      "</style>"
-      "<div id='scroller'>"
-      "  <div id='sticky'></div>"
-      "  </div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    body { height: 5000px; }
+    #scroller { height: 100px; }
+    #sticky { position: sticky; top: 0; height: 50px; width: 50px; }
+    </style>
+    <div id='scroller'>
+      <div id='sticky'></div>
+      </div>
+  )HTML");
 
   LayoutBoxModelObject* sticky =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));

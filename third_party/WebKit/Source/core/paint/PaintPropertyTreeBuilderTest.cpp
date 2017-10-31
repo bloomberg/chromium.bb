@@ -279,13 +279,14 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
-  SetBodyInnerHTML(
-      "<style>::-webkit-scrollbar {width: 15px; height: 15px}</style>"
-      "<div id='scroller'"
-      "     style='width: 100px; height: 100px; overflow: scroll; "
-      "            writing-mode: vertical-rl; border: 10px solid blue'>"
-      "  <div style='width: 400px; height: 400px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>
+    <div id='scroller'
+         style='width: 100px; height: 100px; overflow: scroll;
+                writing-mode: vertical-rl; border: 10px solid blue'>
+      <div style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
 
   const auto* properties = PaintPropertiesForElement("scroller");
   const auto* overflow_clip = properties->OverflowClip();
@@ -309,13 +310,14 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
-  SetBodyInnerHTML(
-      "<style>::-webkit-scrollbar {width: 15px; height: 15px}</style>"
-      "<div id='scroller'"
-      "     style='width: 100px; height: 100px; overflow: scroll; "
-      "            direction: rtl; border: 10px solid blue'>"
-      "  <div style='width: 400px; height: 400px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>
+    <div id='scroller'
+         style='width: 100px; height: 100px; overflow: scroll;
+                direction: rtl; border: 10px solid blue'>
+      <div style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
 
   const auto* properties = PaintPropertiesForElement("scroller");
   const auto* overflow_clip = properties->OverflowClip();
@@ -363,25 +365,26 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #perspective {"
-      "    position: absolute;"
-      "    left: 50px;"
-      "    top: 100px;"
-      "    width: 400px;"
-      "    height: 300px;"
-      "    perspective: 100px;"
-      "  }"
-      "  #inner {"
-      "    transform: translateZ(0);"
-      "    width: 100px;"
-      "    height: 200px;"
-      "  }"
-      "</style>"
-      "<div id='perspective'>"
-      "  <div id='inner'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #perspective {
+        position: absolute;
+        left: 50px;
+        top: 100px;
+        width: 400px;
+        height: 300px;
+        perspective: 100px;
+      }
+      #inner {
+        transform: translateZ(0);
+        width: 100px;
+        height: 200px;
+      }
+    </style>
+    <div id='perspective'>
+      <div id='inner'></div>
+    </div>
+  )HTML");
   Element* perspective = GetDocument().getElementById("perspective");
   const ObjectPaintProperties* perspective_properties =
       perspective->GetLayoutObject()
@@ -430,12 +433,13 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Transform) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0 } </style>"
-      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
-      "    width: 400px; height: 300px;"
-      "    transform: translate3d(123px, 456px, 789px)'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0 } </style>
+    <div id='transform' style='margin-left: 50px; margin-top: 100px;
+        width: 400px; height: 300px;
+        transform: translate3d(123px, 456px, 789px)'>
+    </div>
+  )HTML");
 
   Element* transform = GetDocument().getElementById("transform");
   const ObjectPaintProperties* transform_properties =
@@ -480,14 +484,15 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Preserve3D3DTransformedDescendant) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0 } </style>"
-      "<div id='preserve' style='transform-style: preserve-3d'>"
-      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
-      "    width: 400px; height: 300px;"
-      "    transform: translate3d(123px, 456px, 789px)'>"
-      "</div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0 } </style>
+    <div id='preserve' style='transform-style: preserve-3d'>
+    <div id='transform' style='margin-left: 50px; margin-top: 100px;
+        width: 400px; height: 300px;
+        transform: translate3d(123px, 456px, 789px)'>
+    </div>
+    </div>
+  )HTML");
 
   Element* preserve = GetDocument().getElementById("preserve");
   const ObjectPaintProperties* preserve_properties =
@@ -498,14 +503,15 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3D3DTransformedDescendant) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Perspective3DTransformedDescendant) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0 } </style>"
-      "<div id='perspective' style='perspective: 800px;'>"
-      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
-      "    width: 400px; height: 300px;"
-      "    transform: translate3d(123px, 456px, 789px)'>"
-      "</div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0 } </style>
+    <div id='perspective' style='perspective: 800px;'>
+    <div id='transform' style='margin-left: 50px; margin-top: 100px;
+        width: 400px; height: 300px;
+        transform: translate3d(123px, 456px, 789px)'>
+    </div>
+    </div>
+  )HTML");
 
   Element* perspective = GetDocument().getElementById("perspective");
   const ObjectPaintProperties* perspective_properties =
@@ -539,12 +545,13 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0 } </style>"
-      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
-      "    width: 400px; height: 300px;"
-      "    will-change: transform'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0 } </style>
+    <div id='transform' style='margin-left: 50px; margin-top: 100px;
+        width: 400px; height: 300px;
+        will-change: transform'>
+    </div>
+  )HTML");
 
   Element* transform = GetDocument().getElementById("transform");
   const ObjectPaintProperties* transform_properties =
@@ -583,12 +590,13 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0 } </style>"
-      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
-      "    width: 400px; height: 300px;"
-      "    will-change: transform, contents'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0 } </style>
+    <div id='transform' style='margin-left: 50px; margin-top: 100px;
+        width: 400px; height: 300px;
+        will-change: transform, contents'>
+    </div>
+  )HTML");
 
   Element* transform = GetDocument().getElementById("transform");
   EXPECT_EQ(nullptr,
@@ -614,17 +622,18 @@ TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
-  SetBodyInnerHTML(
-      "<div id='nodeWithoutOpacity' style='width: 100px; height: 200px'>"
-      "  <div id='childWithOpacity'"
-      "      style='opacity: 0.5; width: 50px; height: 60px;'>"
-      "    <div id='grandChildWithoutOpacity'"
-      "        style='width: 20px; height: 30px'>"
-      "      <div id='greatGrandChildWithOpacity'"
-      "          style='opacity: 0.2; width: 10px; height: 15px'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='nodeWithoutOpacity' style='width: 100px; height: 200px'>
+      <div id='childWithOpacity'
+          style='opacity: 0.5; width: 50px; height: 60px;'>
+        <div id='grandChildWithoutOpacity'
+            style='width: 20px; height: 30px'>
+          <div id='greatGrandChildWithOpacity'
+              style='opacity: 0.2; width: 10px; height: 15px'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* node_without_opacity =
       GetLayoutObjectByElementId("nodeWithoutOpacity");
@@ -669,29 +678,30 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #nodeWithOpacity {"
-      "    opacity: 0.6;"
-      "    width: 100px;"
-      "    height: 200px;"
-      "  }"
-      "  #childWithTransform {"
-      "    transform: translate3d(10px, 10px, 0px);"
-      "    width: 50px;"
-      "    height: 60px;"
-      "  }"
-      "  #grandChildWithOpacity {"
-      "    opacity: 0.4;"
-      "    width: 20px;"
-      "    height: 30px;"
-      "  }"
-      "</style>"
-      "<div id='nodeWithOpacity'>"
-      "  <div id='childWithTransform'>"
-      "    <div id='grandChildWithOpacity'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #nodeWithOpacity {
+        opacity: 0.6;
+        width: 100px;
+        height: 200px;
+      }
+      #childWithTransform {
+        transform: translate3d(10px, 10px, 0px);
+        width: 50px;
+        height: 60px;
+      }
+      #grandChildWithOpacity {
+        opacity: 0.4;
+        width: 20px;
+        height: 30px;
+      }
+    </style>
+    <div id='nodeWithOpacity'>
+      <div id='childWithTransform'>
+        <div id='grandChildWithOpacity'></div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* node_with_opacity =
       GetLayoutObjectByElementId("nodeWithOpacity");
@@ -729,15 +739,16 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
-  SetBodyInnerHTML(
-      "<div id='nodeWithOpacity'"
-      "    style='opacity: 0.6; width: 100px; height: 200px'>"
-      "  <div id='childWithStackingContext'"
-      "      style='position:absolute; width: 50px; height: 60px;'>"
-      "    <div id='grandChildWithOpacity'"
-      "        style='opacity: 0.4; width: 20px; height: 30px'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='nodeWithOpacity'
+        style='opacity: 0.6; width: 100px; height: 200px'>
+      <div id='childWithStackingContext'
+          style='position:absolute; width: 50px; height: 60px;'>
+        <div id='grandChildWithOpacity'
+            style='opacity: 0.4; width: 20px; height: 30px'></div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* node_with_opacity =
       GetLayoutObjectByElementId("nodeWithOpacity");
@@ -775,16 +786,17 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
-  SetBodyInnerHTML(
-      "<svg id='svgRoot'>"
-      "  <g id='groupWithOpacity' opacity='0.6'>"
-      "    <rect id='rectWithoutOpacity' />"
-      "    <rect id='rectWithOpacity' opacity='0.4' />"
-      "    <text id='textWithOpacity' opacity='0.2'>"
-      "      <tspan id='tspanWithOpacity' opacity='0.1' />"
-      "    </text>"
-      "  </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svgRoot'>
+      <g id='groupWithOpacity' opacity='0.6'>
+        <rect id='rectWithoutOpacity' />
+        <rect id='rectWithOpacity' opacity='0.4' />
+        <text id='textWithOpacity' opacity='0.2'>
+          <tspan id='tspanWithOpacity' opacity='0.1' />
+        </text>
+      </g>
+    </svg>
+  )HTML");
   LayoutObject* group_with_opacity =
       GetLayoutObjectByElementId("groupWithOpacity");
   const ObjectPaintProperties* group_with_opacity_properties =
@@ -832,12 +844,13 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
-  SetBodyInnerHTML(
-      "<div id='divWithOpacity' style='opacity: 0.2;'>"
-      "  <svg id='svgRootWithOpacity' style='opacity: 0.3;'>"
-      "    <rect id='rectWithOpacity' opacity='0.4' />"
-      "  </svg>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='divWithOpacity' style='opacity: 0.2;'>
+      <svg id='svgRootWithOpacity' style='opacity: 0.3;'>
+        <rect id='rectWithOpacity' opacity='0.4' />
+      </svg>
+    </div>
+  )HTML");
 
   LayoutObject& div_with_opacity =
       *GetLayoutObjectByElementId("divWithOpacity");
@@ -867,14 +880,15 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
-  SetBodyInnerHTML(
-      "<svg id='svgRootWithOpacity' style='opacity: 0.3;'>"
-      "  <foreignObject id='foreignObjectWithOpacity' opacity='0.4'>"
-      "    <body>"
-      "      <span id='spanWithOpacity' style='opacity: 0.5'/>"
-      "    </body>"
-      "  </foreignObject>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svgRootWithOpacity' style='opacity: 0.3;'>
+      <foreignObject id='foreignObjectWithOpacity' opacity='0.4'>
+        <body>
+          <span id='spanWithOpacity' style='opacity: 0.5'/>
+        </body>
+      </foreignObject>
+    </svg>
+  )HTML");
 
   LayoutObject& svg_root_with_opacity =
       *GetLayoutObjectByElementId("svgRootWithOpacity");
@@ -907,26 +921,27 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInSVG) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0px;"
-      "  }"
-      "  svg {"
-      "    margin-left: 50px;"
-      "    transform: translate3d(1px, 2px, 3px);"
-      "    position: absolute;"
-      "    left: 20px;"
-      "    top: 25px;"
-      "  }"
-      "  rect {"
-      "    transform: translate(100px, 100px) rotate(45deg);"
-      "    transform-origin: 50px 25px;"
-      "  }"
-      "</style>"
-      "<svg id='svgRootWith3dTransform' width='100px' height='100px'>"
-      "  <rect id='rectWith2dTransform' width='100px' height='100px' />"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0px;
+      }
+      svg {
+        margin-left: 50px;
+        transform: translate3d(1px, 2px, 3px);
+        position: absolute;
+        left: 20px;
+        top: 25px;
+      }
+      rect {
+        transform: translate(100px, 100px) rotate(45deg);
+        transform-origin: 50px 25px;
+      }
+    </style>
+    <svg id='svgRootWith3dTransform' width='100px' height='100px'>
+      <rect id='rectWith2dTransform' width='100px' height='100px' />
+    </svg>
+  )HTML");
 
   LayoutObject& svg_root_with3d_transform =
       *GetDocument()
@@ -965,26 +980,27 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInSVG) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGViewBoxTransform) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0px;"
-      "  }"
-      "  #svgWithViewBox {"
-      "    transform: translate3d(1px, 2px, 3px);"
-      "    position: absolute;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "  #rect {"
-      "    transform: translate(100px, 100px);"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "</style>"
-      "<svg id='svgWithViewBox' viewBox='50 50 100 100'>"
-      "  <rect id='rect' />"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0px;
+      }
+      #svgWithViewBox {
+        transform: translate3d(1px, 2px, 3px);
+        position: absolute;
+        width: 100px;
+        height: 100px;
+      }
+      #rect {
+        transform: translate(100px, 100px);
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <svg id='svgWithViewBox' viewBox='50 50 100 100'>
+      <rect id='rect' />
+    </svg>
+  )HTML");
 
   LayoutObject& svg_with_view_box =
       *GetLayoutObjectByElementId("svgWithViewBox");
@@ -1009,17 +1025,18 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewBoxTransform) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0px; }"
-      "  #svg {"
-      "    margin-left: 50px;"
-      "    margin-top: 25px;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "</style>"
-      "<svg id='svg' />");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0px; }
+      #svg {
+        margin-left: 50px;
+        margin-top: 25px;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <svg id='svg' />
+  )HTML");
 
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
@@ -1034,19 +1051,20 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0px; }"
-      "  svg {"
-      "    margin-left: 2px;"
-      "    margin-top: 3px;"
-      "    transform: translate(5px, 7px);"
-      "    border: 11px solid green;"
-      "  }"
-      "</style>"
-      "<svg id='svg' width='100px' height='100px' viewBox='0 0 13 13'>"
-      "  <rect id='rect' transform='translate(17 19)' />"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0px; }
+      svg {
+        margin-left: 2px;
+        margin-top: 3px;
+        transform: translate(5px, 7px);
+        border: 11px solid green;
+      }
+    </style>
+    <svg id='svg' width='100px' height='100px' viewBox='0 0 13 13'>
+      <rect id='rect' transform='translate(17 19)' />
+    </svg>
+  )HTML");
 
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
@@ -1074,14 +1092,15 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGNestedViewboxTransforms) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0px; } </style>"
-      "<svg id='svg' width='100px' height='100px' viewBox='0 0 50 50'"
-      "    style='transform: translate(11px, 11px);'>"
-      "  <svg id='nestedSvg' width='50px' height='50px' viewBox='0 0 5 5'>"
-      "    <rect id='rect' transform='translate(13 13)' />"
-      "  </svg>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0px; } </style>
+    <svg id='svg' width='100px' height='100px' viewBox='0 0 50 50'
+        style='transform: translate(11px, 11px);'>
+      <svg id='nestedSvg' width='50px' height='50px' viewBox='0 0 5 5'>
+        <rect id='rect' transform='translate(13 13)' />
+      </svg>
+    </svg>
+  )HTML");
 
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
@@ -1110,17 +1129,18 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGNestedViewboxTransforms) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSVGHTMLBoundary) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0px; } </style>"
-      "<svg id='svgWithTransform'"
-      "    style='transform: translate3d(1px, 2px, 3px);'>"
-      "  <foreignObject>"
-      "    <body>"
-      "      <div id='divWithTransform'"
-      "          style='transform: translate3d(3px, 4px, 5px);'></div>"
-      "    </body>"
-      "  </foreignObject>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0px; } </style>
+    <svg id='svgWithTransform'
+        style='transform: translate3d(1px, 2px, 3px);'>
+      <foreignObject>
+        <body>
+          <div id='divWithTransform'
+              style='transform: translate3d(3px, 4px, 5px);'></div>
+        </body>
+      </foreignObject>
+    </svg>
+  )HTML");
 
   LayoutObject& svg_with_transform =
       *GetLayoutObjectByElementId("svgWithTransform");
@@ -1141,15 +1161,16 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSVGHTMLBoundary) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
-  SetBodyInnerHTML(
-      "<svg id='svg'"
-      "  <foreignObject>"
-      "    <body>"
-      "      <div id='divWithTransform'"
-      "          style='transform: translate3d(3px, 4px, 5px);'></div>"
-      "    </body>"
-      "  </foreignObject>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg'
+      <foreignObject>
+        <body>
+          <div id='divWithTransform'
+              style='transform: translate3d(3px, 4px, 5px);'></div>
+        </body>
+      </foreignObject>
+    </svg>
+  )HTML");
 
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
@@ -1174,16 +1195,17 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetTranslationSVGHTMLBoundaryMulticol) {
-  SetBodyInnerHTML(
-      "<svg id='svg'>"
-      "  <foreignObject>"
-      "    <body>"
-      "      <div id='divWithColumns' style='columns: 2'>"
-      "        <div style='width: 5px; height: 5px; background: blue'>"
-      "      </div>"
-      "    </body>"
-      "  </foreignObject>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg'>
+      <foreignObject>
+        <body>
+          <div id='divWithColumns' style='columns: 2'>
+            <div style='width: 5px; height: 5px; background: blue'>
+          </div>
+        </body>
+      </foreignObject>
+    </svg>
+  )HTML");
 
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
@@ -1198,18 +1220,19 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        FixedTransformAncestorAcrossSVGHTMLBoundary) {
-  SetBodyInnerHTML(
-      "<style> body { margin: 0px; } </style>"
-      "<svg id='svg' style='transform: translate3d(1px, 2px, 3px);'>"
-      "  <g id='container' transform='translate(20 30)'>"
-      "    <foreignObject>"
-      "      <body>"
-      "        <div id='fixed'"
-      "            style='position: fixed; left: 200px; top: 150px;'></div>"
-      "      </body>"
-      "    </foreignObject>"
-      "  </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0px; } </style>
+    <svg id='svg' style='transform: translate3d(1px, 2px, 3px);'>
+      <g id='container' transform='translate(20 30)'>
+        <foreignObject>
+          <body>
+            <div id='fixed'
+                style='position: fixed; left: 200px; top: 150px;'></div>
+          </body>
+        </foreignObject>
+      </g>
+    </svg>
+  )HTML");
 
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
@@ -1236,19 +1259,20 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0;"
-      "  }"
-      "  input {"
-      "    border-radius: 0;"
-      "    border-width: 5px;"
-      "    padding: 0;"
-      "  }"
-      "</style>"
-      "<input id='button' type='button'"
-      "    style='width:345px; height:123px' value='some text'/>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+      }
+      input {
+        border-radius: 0;
+        border-width: 5px;
+        padding: 0;
+      }
+    </style>
+    <input id='button' type='button'
+        style='width:345px; height:123px' value='some text'/>
+  )HTML");
 
   LayoutObject& button = *GetLayoutObjectByElementId("button");
   const ObjectPaintProperties* button_properties =
@@ -1266,17 +1290,18 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ControlClipInsideForeignObject) {
-  SetBodyInnerHTML(
-      "<div style='column-count:2;'>"
-      "  <div style='columns: 2'>"
-      "    <svg style='width: 500px; height: 500px;'>"
-      "      <foreignObject>"
-      "        <input id='button' style='width:345px; height:123px'"
-      "             value='some text'/>"
-      "      </foreignObject>"
-      "    </svg>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='column-count:2;'>
+      <div style='columns: 2'>
+        <svg style='width: 500px; height: 500px;'>
+          <foreignObject>
+            <input id='button' style='width:345px; height:123px'
+                 value='some text'/>
+          </foreignObject>
+        </svg>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject& button = *GetLayoutObjectByElementId("button");
   const ObjectPaintProperties* button_properties =
@@ -1291,23 +1316,24 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClipInsideForeignObject) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
-  SetBodyInnerHTML(
-      "<style>"
-      " body {"
-      "   margin: 0px;"
-      " }"
-      " #div {"
-      "   border-radius: 12px 34px 56px 78px;"
-      "   border-top: 45px solid;"
-      "   border-right: 50px solid;"
-      "   border-bottom: 55px solid;"
-      "   border-left: 60px solid;"
-      "   width: 500px;"
-      "   height: 400px;"
-      "   overflow: scroll;"
-      " }"
-      "</style>"
-      "<div id='div'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+     body {
+       margin: 0px;
+     }
+     #div {
+       border-radius: 12px 34px 56px 78px;
+       border-top: 45px solid;
+       border-right: 50px solid;
+       border-bottom: 55px solid;
+       border-left: 60px solid;
+       width: 500px;
+       height: 400px;
+       overflow: scroll;
+     }
+    </style>
+    <div id='div'></div>
+  )HTML");
 
   LayoutObject& div = *GetLayoutObjectByElementId("div");
   const ObjectPaintProperties* div_properties =
@@ -1348,26 +1374,28 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  #divWithTransform {"
-      "    transform: translate3d(1px, 2px, 3px);"
-      "  }"
-      "</style>"
-      "<div id='divWithTransform'>"
-      "  <iframe style='border: 7px solid black'></iframe>"
-      "</div>");
-  SetChildFrameHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  #innerDivWithTransform {"
-      "    transform: translate3d(4px, 5px, 6px);"
-      "    width: 100px;"
-      "    height: 200px;"
-      "  }"
-      "</style>"
-      "<div id='innerDivWithTransform'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #divWithTransform {
+        transform: translate3d(1px, 2px, 3px);
+      }
+    </style>
+    <div id='divWithTransform'>
+      <iframe style='border: 7px solid black'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #innerDivWithTransform {
+        transform: translate3d(4px, 5px, 6px);
+        width: 100px;
+        height: 200px;
+      }
+    </style>
+    <div id='innerDivWithTransform'></div>
+  )HTML");
 
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
@@ -1417,31 +1445,33 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  #divWithTransform {"
-      "    transform: translate3d(1px, 2px, 3px);"
-      "  }"
-      "  iframe {"
-      "    transform: translate3d(4px, 5px, 6px);"
-      "    border: 42px solid;"
-      "    margin: 7px;"
-      "  }"
-      "</style>"
-      "<div id='divWithTransform'>"
-      "  <iframe></iframe>"
-      "</div>");
-  SetChildFrameHTML(
-      "<style>"
-      "  body { margin: 31px; }"
-      "  #transform {"
-      "    transform: translate3d(7px, 8px, 9px);"
-      "    width: 100px;"
-      "    height: 200px;"
-      "  }"
-      "</style>"
-      "<div id='transform'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #divWithTransform {
+        transform: translate3d(1px, 2px, 3px);
+      }
+      iframe {
+        transform: translate3d(4px, 5px, 6px);
+        border: 42px solid;
+        margin: 7px;
+      }
+    </style>
+    <div id='divWithTransform'>
+      <iframe></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      body { margin: 31px; }
+      #transform {
+        transform: translate3d(7px, 8px, 9px);
+        width: 100px;
+        height: 200px;
+      }
+    </style>
+    <div id='transform'></div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
 
@@ -1498,13 +1528,14 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
   // This test verifies the tree builder correctly computes and records the
   // property tree context for a (pseudo) stacking context that is scrolled by a
   // containing block that is not one of the painting ancestors.
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='scroller' style='overflow:scroll; width:400px; height:300px;'>"
-      "  <div id='child'"
-      "      style='position:relative; width:100px; height: 200px;'></div>"
-      "  <div style='height:10000px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='scroller' style='overflow:scroll; width:400px; height:300px;'>
+      <div id='child'
+          style='position:relative; width:100px; height: 200px;'></div>
+      <div style='height:10000px;'></div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
@@ -1539,25 +1570,26 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // painting ancestor that is not its containing block (thus should not be
   // scrolled by it).
 
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  #scroller {"
-      "    overflow:scroll;"
-      "    opacity:0.5;"
-      "  }"
-      "  #child {"
-      "    position:absolute;"
-      "    left:0;"
-      "    top:0;"
-      "    width: 100px;"
-      "    height: 200px;"
-      "  }"
-      "</style>"
-      "<div id='scroller'>"
-      "  <div id='child'></div>"
-      "  <div id='forceScroll' style='height:10000px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #scroller {
+        overflow:scroll;
+        opacity:0.5;
+      }
+      #child {
+        position:absolute;
+        left:0;
+        top:0;
+        width: 100px;
+        height: 200px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='child'></div>
+      <div id='forceScroll' style='height:10000px;'></div>
+    </div>
+  )HTML");
 
   auto& scroller = *GetLayoutObjectByElementId("scroller");
   const ObjectPaintProperties* scroller_properties =
@@ -1586,32 +1618,33 @@ TEST_P(PaintPropertyTreeBuilderTest, TableCellLayoutLocation) {
   // This test verifies that the border box space of a table cell is being
   // correctly computed.  Table cells have weird location adjustment in our
   // layout/paint implementation.
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0;"
-      "  }"
-      "  table {"
-      "    border-spacing: 0;"
-      "    margin: 20px;"
-      "    padding: 40px;"
-      "    border: 10px solid black;"
-      "  }"
-      "  td {"
-      "    width: 100px;"
-      "    height: 100px;"
-      "    padding: 0;"
-      "  }"
-      "  #target {"
-      "    position: relative;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "</style>"
-      "<table>"
-      "  <tr><td></td><td></td></tr>"
-      "  <tr><td></td><td><div id='target'></div></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+      }
+      table {
+        border-spacing: 0;
+        margin: 20px;
+        padding: 40px;
+        border: 10px solid black;
+      }
+      td {
+        width: 100px;
+        height: 100px;
+        padding: 0;
+      }
+      #target {
+        position: relative;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <table>
+      <tr><td></td><td></td></tr>
+      <tr><td></td><td><div id='target'></div></td></tr>
+    </table>
+  )HTML");
 
   LayoutObject& target = *GetLayoutObjectByElementId("target");
   EXPECT_EQ(LayoutPoint(170, 170), target.FirstFragment().PaintOffset());
@@ -1627,25 +1660,26 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
   // This test verifies that clip tree hierarchy being generated correctly for
   // the hard case such that a fixed position element getting clipped by an
   // absolute position CSS clip.
-  SetBodyInnerHTML(
-      "<style>"
-      "  #clip {"
-      "    position: absolute;"
-      "    left: 123px;"
-      "    top: 456px;"
-      "    clip: rect(10px, 80px, 70px, 40px);"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "  #fixed {"
-      "    position: fixed;"
-      "    left: 654px;"
-      "    top: 321px;"
-      "    width: 10px;"
-      "    height: 20px"
-      "  }"
-      "</style>"
-      "<div id='clip'><div id='fixed'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #clip {
+        position: absolute;
+        left: 123px;
+        top: 456px;
+        clip: rect(10px, 80px, 70px, 40px);
+        width: 100px;
+        height: 100px;
+      }
+      #fixed {
+        position: fixed;
+        left: 654px;
+        top: 321px;
+        width: 10px;
+        height: 20px
+      }
+    </style>
+    <div id='clip'><div id='fixed'></div></div>
+  )HTML");
   LayoutRect local_clip_rect(40, 10, 40, 60);
   LayoutRect absolute_clip_rect = local_clip_rect;
   absolute_clip_rect.Move(123, 456);
@@ -1685,25 +1719,26 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
   // This test verifies that clip tree hierarchy being generated correctly for
   // the hard case such that a fixed position element getting clipped by an
   // absolute position CSS clip.
-  SetBodyInnerHTML(
-      "<style>"
-      "  #clip {"
-      "    position: absolute;"
-      "    left: 123px;"
-      "    top: 456px;"
-      "    clip: rect(10px, 80px, 70px, 40px);"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "  #absolute {"
-      "    position: absolute;"
-      "    left: 654px;"
-      "    top: 321px;"
-      "    width: 10px;"
-      "    heght: 20px"
-      "  }"
-      "</style>"
-      "<div id='clip'><div id='absolute'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #clip {
+        position: absolute;
+        left: 123px;
+        top: 456px;
+        clip: rect(10px, 80px, 70px, 40px);
+        width: 100px;
+        height: 100px;
+      }
+      #absolute {
+        position: absolute;
+        left: 654px;
+        top: 321px;
+        width: 10px;
+        heght: 20px
+      }
+    </style>
+    <div id='clip'><div id='absolute'></div></div>
+  )HTML");
 
   LayoutRect local_clip_rect(40, 10, 40, 60);
   LayoutRect absolute_clip_rect = local_clip_rect;
@@ -1748,32 +1783,33 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
   // This test is similar to CSSClipFixedPositionDescendant above, except that
   // now we have a parent overflow clip that should be escaped by the fixed
   // descendant.
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0;"
-      "  }"
-      "  #overflow {"
-      "    position: relative;"
-      "    width: 50px;"
-      "    height: 50px;"
-      "    overflow: scroll;"
-      "  }"
-      "  #clip {"
-      "    position: absolute;"
-      "    left: 123px;"
-      "    top: 456px;"
-      "    clip: rect(10px, 80px, 70px, 40px);"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "  #fixed {"
-      "    position: fixed;"
-      "    left: 654px;"
-      "    top: 321px;"
-      "  }"
-      "</style>"
-      "<div id='overflow'><div id='clip'><div id='fixed'></div></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+      }
+      #overflow {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        overflow: scroll;
+      }
+      #clip {
+        position: absolute;
+        left: 123px;
+        top: 456px;
+        clip: rect(10px, 80px, 70px, 40px);
+        width: 100px;
+        height: 100px;
+      }
+      #fixed {
+        position: fixed;
+        left: 654px;
+        top: 321px;
+      }
+    </style>
+    <div id='overflow'><div id='clip'><div id='fixed'></div></div></div>
+  )HTML");
   LayoutRect local_clip_rect(40, 10, 40, 60);
   LayoutRect absolute_clip_rect = local_clip_rect;
   absolute_clip_rect.Move(123, 456);
@@ -1826,20 +1862,21 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #spanner {"
-      "    column-span: all;"
-      "    opacity: 0.5;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "</style>"
-      "<div style='columns: 3; position: absolute; top: 44px; left: 55px;'>"
-      "  <div style='position: relative; top: 100px; left: 100px'>"
-      "    <div id='spanner'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #spanner {
+        column-span: all;
+        opacity: 0.5;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div style='columns: 3; position: absolute; top: 44px; left: 55px;'>
+      <div style='position: relative; top: 100px; left: 100px'>
+        <div id='spanner'></div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* spanner = GetLayoutObjectByElementId("spanner");
   EXPECT_EQ(LayoutPoint(55, 44), spanner->FirstFragment().PaintOffset());
@@ -1848,26 +1885,27 @@ TEST_P(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FractionalPaintOffset) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  div { position: absolute; }"
-      "  #a {"
-      "    width: 70px;"
-      "    height: 70px;"
-      "    left: 0.1px;"
-      "    top: 0.3px;"
-      "  }"
-      "  #b {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    left: 0.5px;"
-      "    top: 11.1px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: absolute; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.1px;
+        top: 0.3px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        left: 0.5px;
+        top: 11.1px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'></div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -1887,33 +1925,34 @@ TEST_P(PaintPropertyTreeBuilderTest, FractionalPaintOffset) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  div { position: relative; }"
-      "  #a {"
-      "    width: 70px;"
-      "    height: 70px;"
-      "    left: 0.3px;"
-      "    top: 0.3px;"
-      "  }"
-      "  #b {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    transform: translateZ(0);"
-      "  }"
-      "  #c {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "   left: 0.1px;"
-      "   top: 0.1px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'>"
-      "    <div id='c'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: relative; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.3px;
+        top: 0.3px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        transform: translateZ(0);
+      }
+      #c {
+        width: 40px;
+        height: 40px;
+       left: 0.1px;
+       top: 0.1px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='c'></div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetLayoutObjectByElementId("b");
@@ -1944,33 +1983,34 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetWithPixelSnappingThroughTransform) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  div { position: relative; }"
-      "  #a {"
-      "    width: 70px;"
-      "    height: 70px;"
-      "    left: 0.7px;"
-      "    top: 0.7px;"
-      "  }"
-      "  #b {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    transform: translateZ(0);"
-      "  }"
-      "  #c {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    left: 0.7px;"
-      "    top: 0.7px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'>"
-      "    <div id='c'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: relative; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.7px;
+        top: 0.7px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        transform: translateZ(0);
+      }
+      #c {
+        width: 40px;
+        height: 40px;
+        left: 0.7px;
+        top: 0.7px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='c'></div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetLayoutObjectByElementId("b");
@@ -2005,34 +2045,35 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        NonTranslationTransformShouldResetSubpixelPaintOffset) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  div { position: relative; }"
-      "  #a {"
-      "    width: 70px;"
-      "    height: 70px;"
-      "    left: 0.9px;"
-      "    top: 0.9px;"
-      "  }"
-      "  #b {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    transform: scale(10);"
-      "    transform-origin: 0 0;"
-      "  }"
-      "  #c {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    left: 0.6px;"
-      "    top: 0.6px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'>"
-      "    <div id='c'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: relative; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.9px;
+        top: 0.9px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        transform: scale(10);
+        transform-origin: 0 0;
+      }
+      #c {
+        width: 40px;
+        height: 40px;
+        left: 0.6px;
+        top: 0.6px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='c'></div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetLayoutObjectByElementId("b");
@@ -2067,40 +2108,41 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetWithPixelSnappingThroughMultipleTransforms) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  div { position: relative; }"
-      "  #a {"
-      "    width: 70px;"
-      "    height: 70px;"
-      "    left: 0.7px;"
-      "    top: 0.7px;"
-      "  }"
-      "  #b {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    transform: translate3d(5px, 7px, 0);"
-      "  }"
-      "  #c {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    transform: translate3d(11px, 13px, 0);"
-      "  }"
-      "  #d {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    left: 0.7px;"
-      "    top: 0.7px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'>"
-      "    <div id='c'>"
-      "      <div id='d'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: relative; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.7px;
+        top: 0.7px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        transform: translate3d(5px, 7px, 0);
+      }
+      #c {
+        width: 40px;
+        height: 40px;
+        transform: translate3d(11px, 13px, 0);
+      }
+      #d {
+        width: 40px;
+        height: 40px;
+        left: 0.7px;
+        top: 0.7px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='c'>
+          <div id='d'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetLayoutObjectByElementId("b");
@@ -2150,40 +2192,41 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  #a {"
-      "    width: 70px;"
-      "    height: 70px;"
-      "    left: 0.7px;"
-      "    position: relative;"
-      "  }"
-      "  #b {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    transform: translateZ(0);"
-      "    position: relative;"
-      "  }"
-      "  #fixed {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    position: fixed;"
-      "  }"
-      "  #d {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    left: 0.7px;"
-      "    position: relative;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'>"
-      "    <div id='fixed'>"
-      "      <div id='d'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.7px;
+        position: relative;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        transform: translateZ(0);
+        position: relative;
+      }
+      #fixed {
+        width: 40px;
+        height: 40px;
+        position: fixed;
+      }
+      #d {
+        width: 40px;
+        height: 40px;
+        left: 0.7px;
+        position: relative;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='fixed'>
+          <div id='d'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* b = GetLayoutObjectByElementId("b");
@@ -2223,17 +2266,18 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #svg {"
-      "    position: relative;"
-      "    left: 0.1px;"
-      "    transform: matrix(1, 0, 0, 1, 0, 0);"
-      "  }"
-      "</style>"
-      "<svg id='svg'>"
-      "    <rect id='rect' transform='translate(1, 1)'/>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #svg {
+        position: relative;
+        left: 0.1px;
+        transform: matrix(1, 0, 0, 1, 0, 0);
+      }
+    </style>
+    <svg id='svg'>
+        <rect id='rect' transform='translate(1, 1)'/>
+    </svg>
+  )HTML");
 
   LayoutObject& svg_with_transform = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_with_transform_properties =
@@ -2258,13 +2302,14 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
-  SetBodyInnerHTML(
-      "<svg id=svg style='position: relative; left: 0.6px; top: 0.3px'>"
-      "  <foreignObject id=foreign x='3.5' y='5.4' transform='translate(1, 1)'>"
-      "    <div id=div style='position: absolute; left: 5.6px; top: 7.3px'>"
-      "    </div>"
-      "  </foreignObject>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id=svg style='position: relative; left: 0.6px; top: 0.3px'>
+      <foreignObject id=foreign x='3.5' y='5.4' transform='translate(1, 1)'>
+        <div id=div style='position: absolute; left: 5.6px; top: 7.3px'>
+        </div>
+      </foreignObject>
+    </svg>
+  )HTML");
 
   const auto* svg = GetLayoutObjectByElementId("svg");
   const auto* svg_properties = svg->FirstFragment().PaintProperties();
@@ -2305,13 +2350,14 @@ TEST_P(PaintPropertyTreeBuilderTest, NoRenderingContextByDefault) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
-  SetBodyInnerHTML(
-      "<div style='transform-style: preserve-3d'>"
-      "  <div id='a'"
-      "      style='transform: translateZ(0); width: 30px; height: 40px'></div>"
-      "  <div id='b'"
-      "      style='transform: translateZ(0); width: 20px; height: 10px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='transform-style: preserve-3d'>
+      <div id='a' style='transform: translateZ(0); width: 30px; height: 40px'>
+      </div>
+      <div id='b' style='transform: translateZ(0); width: 20px; height: 10px'>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2333,24 +2379,25 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #a {"
-      "    transform: translateZ(0);"
-      "    width: 30px;"
-      "    height: 40px;"
-      "  }"
-      "  #b {"
-      "    transform: translateZ(0);"
-      "    width: 10px;"
-      "    height: 20px;"
-      "  }"
-      "</style>"
-      "<div style='transform-style: preserve-3d'>"
-      "  <div id='a'>"
-      "    <div id='b'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #a {
+        transform: translateZ(0);
+        width: 30px;
+        height: 40px;
+      }
+      #b {
+        transform: translateZ(0);
+        width: 10px;
+        height: 20px;
+      }
+    </style>
+    <div style='transform-style: preserve-3d'>
+      <div id='a'>
+        <div id='b'></div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2374,17 +2421,17 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedRenderingContexts) {
-  SetBodyInnerHTML(
-      "<div style='transform-style: preserve-3d'>"
-      "  <div id='a'"
-      "      style='transform: translateZ(0); width: 50px; height: 60px'>"
-      "    <div"
-      "        style='transform-style: preserve-3d; width: 30px; height: 40px'>"
-      "      <div id='b'"
-      "          style='transform: translateZ(0); width: 10px; height: 20px'>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='transform-style: preserve-3d'>
+      <div id='a' style='transform: translateZ(0); width: 50px; height: 60px'>
+        <div style='transform-style: preserve-3d; width: 30px; height: 40px'>
+          <div id='b'
+              style='transform: translateZ(0); width: 10px; height: 20px'>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2435,23 +2482,24 @@ static bool SomeNodeFlattensTransform(
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStylePropagatesToChildren) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #a {"
-      "    transform: translateZ(0);"
-      "    transform-style: flat;"
-      "    width: 30px;"
-      "    height: 40px;"
-      "  }"
-      "  #b {"
-      "    transform: translateZ(0);"
-      "    width: 10px;"
-      "    height: 10px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #a {
+        transform: translateZ(0);
+        transform-style: flat;
+        width: 30px;
+        height: 40px;
+      }
+      #b {
+        transform: translateZ(0);
+        width: 10px;
+        height: 10px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'></div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2473,23 +2521,24 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStylePropagatesToChildren) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        Preserve3DTransformStylePropagatesToChildren) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #a {"
-      "    transform: translateZ(0);"
-      "    transform-style: preserve-3d;"
-      "    width: 30px;"
-      "    height: 40px;"
-      "  }"
-      "  #b {"
-      "    transform: translateZ(0);"
-      "    width: 10px;"
-      "    height: 10px;"
-      "  }"
-      "</style>"
-      "<div id='a'>"
-      "  <div id='b'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #a {
+        transform: translateZ(0);
+        transform-style: preserve-3d;
+        width: 30px;
+        height: 40px;
+      }
+      #b {
+        transform: translateZ(0);
+        width: 10px;
+        height: 10px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'></div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2513,12 +2562,12 @@ TEST_P(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened) {
   // It's necessary to make nodes from the one that applies perspective to
   // ones that combine with it preserve 3D. Otherwise, the perspective doesn't
   // do anything.
-  SetBodyInnerHTML(
-      "<div id='a'"
-      "    style='perspective: 800px; width: 30px; height: 40px'>"
-      "  <div id='b'"
-      "      style='transform: translateZ(0); width: 10px; height: 20px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='a' style='perspective: 800px; width: 30px; height: 40px'>
+      <div id='b'
+          style='transform: translateZ(0); width: 10px; height: 20px'></div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2544,12 +2593,12 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // It's necessary to make nodes from the one that applies perspective to
   // ones that combine with it preserve 3D. Otherwise, the perspective doesn't
   // do anything.
-  SetBodyInnerHTML(
-      "<div id='a'"
-      "    style='perspective: 800px; width: 30px; height: 40px'>"
-      "  <div id='b'"
-      "      style='transform: translateZ(0); width: 10px; height: 20px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='a' style='perspective: 800px; width: 30px; height: 40px'>
+      <div id='b'
+          style='transform: translateZ(0); width: 10px; height: 20px'></div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   LayoutObject* a = GetLayoutObjectByElementId("a");
@@ -2571,16 +2620,17 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0 }</style>"
-      "<div id='a' style='transform: translate(33px, 44px); width: 50px; "
-      "    height: 60px'>"
-      "  <div id='b' style='transform: translate(55px, 66px); width: 30px; "
-      "      height: 40px'>"
-      "    <div id='c' style='transform: translate(77px, 88px); width: 10px; "
-      "        height: 20px'>C<div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div id='a' style='transform: translate(33px, 44px); width: 50px;
+        height: 60px'>
+      <div id='b' style='transform: translate(55px, 66px); width: 30px;
+          height: 40px'>
+        <div id='c' style='transform: translate(77px, 88px); width: 10px;
+            height: 20px'>C<div>
+      </div>
+    </div>
+  )HTML");
   LocalFrameView* frame_view = GetDocument().View();
 
   Element* a = GetDocument().getElementById("a");
@@ -2701,13 +2751,14 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   // This test verifies the tree builder correctly computes and records the
   // property tree context for a (pseudo) stacking context that is scrolled by a
   // containing block that is not one of the painting ancestors.
-  SetBodyInnerHTML(
-      "<style>body { margin: 20px 30px; }</style>"
-      "<div id='clipper'"
-      "    style='overflow: hidden; width: 400px; height: 300px;'>"
-      "  <div id='child'"
-      "      style='position: relative; width: 500px; height: 600px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 20px 30px; }</style>
+    <div id='clipper'
+        style='overflow: hidden; width: 400px; height: 300px;'>
+      <div id='child'
+          style='position: relative; width: 500px; height: 600px;'></div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* clipper =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("clipper"));
@@ -2750,13 +2801,14 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 20px 30px; }</style>"
-      "<div id='clipper'"
-      "    style='contain: paint; width: 300px; height: 200px;'>"
-      "  <div id='child'"
-      "      style='position: relative; width: 400px; height: 500px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 20px 30px; }</style>
+    <div id='clipper'
+        style='contain: paint; width: 300px; height: 200px;'>
+      <div id='child'
+          style='position: relative; width: 400px; height: 500px;'></div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* clipper =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("clipper"));
@@ -2802,14 +2854,15 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
   // This test verifies the tree builder correctly computes and records the
   // property tree context for a (pseudo) stacking context that is scrolled by a
   // containing block that is not one of the painting ancestors.
-  SetBodyInnerHTML(
-      "<style>body { margin: 20px 30px; }</style>"
-      "<div id='clipper' style='overflow:scroll; width:400px; height:300px;'>"
-      "  <div id='child'"
-      "      style='position:relative; width:500px; height: 600px;'></div>"
-      "  <div style='width: 200px; height: 10000px'></div>"
-      "</div>"
-      "<div id='forceScroll' style='height: 4000px;'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 20px 30px; }</style>
+    <div id='clipper' style='overflow:scroll; width:400px; height:300px;'>
+      <div id='child'
+          style='position:relative; width:500px; height: 600px;'></div>
+      <div style='width: 200px; height: 10000px'></div>
+    </div>
+    <div id='forceScroll' style='height: 4000px;'></div>
+  )HTML");
 
   Element* clipper_element = GetDocument().getElementById("clipper");
   clipper_element->scrollTo(1, 2);
@@ -2859,30 +2912,31 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  ::-webkit-scrollbar {"
-      "    width: 13px;"
-      "    height: 13px;"
-      "  }"
-      "  #roundedBox {"
-      "    width: 200px;"
-      "    height: 200px;"
-      "    border-radius: 100px;"
-      "    background-color: red;"
-      "    border: 50px solid green;"
-      "    overflow: scroll;"
-      "  }"
-      "  #roundedBoxChild {"
-      "    width: 200px;"
-      "    height: 200px;"
-      "    background-color: orange;"
-      "  }"
-      "</style>"
-      "<div id='roundedBox'>"
-      "  <div id='roundedBoxChild'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      ::-webkit-scrollbar {
+        width: 13px;
+        height: 13px;
+      }
+      #roundedBox {
+        width: 200px;
+        height: 200px;
+        border-radius: 100px;
+        background-color: red;
+        border: 50px solid green;
+        overflow: scroll;
+      }
+      #roundedBoxChild {
+        width: 200px;
+        height: 200px;
+        background-color: orange;
+      }
+    </style>
+    <div id='roundedBox'>
+      <div id='roundedBoxChild'></div>
+    </div>
+  )HTML");
 
   LayoutObject& rounded_box = *GetLayoutObjectByElementId("roundedBox");
   const ObjectPaintProperties* rounded_box_properties =
@@ -2906,13 +2960,14 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
   // This test verifies the tree builder correctly computes and records the
   // property tree context for a (pseudo) stacking context that is scrolled by a
   // containing block that is not one of the painting ancestors.
-  SetBodyInnerHTML(
-      "<style>body { margin: 20px 30px; }</style>"
-      "<div id='clipper' style='position: absolute; clip: rect(10px, 80px, "
-      "70px, 40px); width:300px; height:200px;'>"
-      "  <div id='child' style='position:relative; width:400px; height: "
-      "500px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 20px 30px; }</style>
+    <div id='clipper' style='position: absolute;
+        clip: rect(10px, 80px, 70px, 40px); width:300px; height:200px;'>
+      <div id='child' style='position:relative; width:400px; height: 500px;'>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* clipper =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("clipper"));
@@ -2944,22 +2999,23 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        SvgLocalToBorderBoxTransformContentsTreeState) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 20px 30px;"
-      "  }"
-      "  svg {"
-      "    position: absolute;"
-      "  }"
-      "  rect {"
-      "    transform: translate(100px, 100px);"
-      "  }"
-      "</style>"
-      "<svg id='svgWithViewBox' width='100px' height='100px' viewBox='50 50 "
-      "100 100'>"
-      "  <rect id='rect' width='100px' height='100px' />"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 20px 30px;
+      }
+      svg {
+        position: absolute;
+      }
+      rect {
+        transform: translate(100px, 100px);
+      }
+    </style>
+    <svg id='svgWithViewBox' width='100px' height='100px'
+        viewBox='50 50 100 100'>
+      <rect id='rect' width='100px' height='100px' />
+    </svg>
+  )HTML");
 
   LayoutObject& svg_with_view_box =
       *GetLayoutObjectByElementId("svgWithViewBox");
@@ -2987,23 +3043,24 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0px;"
-      "  }"
-      "  #overflowHidden {"
-      "    overflow: hidden;"
-      "    width: 5px;"
-      "    height: 3px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 79px;"
-      "  }"
-      "</style>"
-      "<div id='overflowHidden'>"
-      "  <div class='forceScroll'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0px;
+      }
+      #overflowHidden {
+        overflow: hidden;
+        width: 5px;
+        height: 3px;
+      }
+      .forceScroll {
+        height: 79px;
+      }
+    </style>
+    <div id='overflowHidden'>
+      <div class='forceScroll'></div>
+    </div>
+  )HTML");
 
   Element* overflow_hidden = GetDocument().getElementById("overflowHidden");
   overflow_hidden->setScrollTop(37);
@@ -3024,19 +3081,20 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FrameOverflowHiddenScrollProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  html {"
-      "    margin: 0px;"
-      "    overflow: hidden;"
-      "    width: 300px;"
-      "    height: 300px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 5000px;"
-      "  }"
-      "</style>"
-      "<div class='forceScroll'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html {
+        margin: 0px;
+        overflow: hidden;
+        width: 300px;
+        height: 300px;
+      }
+      .forceScroll {
+        height: 5000px;
+      }
+    </style>
+    <div class='forceScroll'></div>
+  )HTML");
 
   GetDocument().domWindow()->scrollTo(0, 37);
 
@@ -3051,31 +3109,32 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameOverflowHiddenScrollProperties) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * {"
-      "    margin: 0px;"
-      "  }"
-      "  #overflowA {"
-      "    overflow: scroll;"
-      "    width: 5px;"
-      "    height: 3px;"
-      "  }"
-      "  #overflowB {"
-      "    overflow: scroll;"
-      "    width: 9px;"
-      "    height: 7px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 100px;"
-      "  }"
-      "</style>"
-      "<div id='overflowA'>"
-      "  <div id='overflowB'>"
-      "    <div class='forceScroll'></div>"
-      "  </div>"
-      "  <div class='forceScroll'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0px;
+      }
+      #overflowA {
+        overflow: scroll;
+        width: 5px;
+        height: 3px;
+      }
+      #overflowB {
+        overflow: scroll;
+        width: 9px;
+        height: 7px;
+      }
+      .forceScroll {
+        height: 100px;
+      }
+    </style>
+    <div id='overflowA'>
+      <div id='overflowB'>
+        <div class='forceScroll'></div>
+      </div>
+      <div class='forceScroll'></div>
+    </div>
+  )HTML");
 
   Element* overflow_a = GetDocument().getElementById("overflowA");
   overflow_a->setScrollTop(37);
@@ -3118,46 +3177,47 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * {"
-      "    margin: 0px;"
-      "  }"
-      "  #overflow {"
-      "    overflow: scroll;"
-      "    width: 5px;"
-      "    height: 3px;"
-      "  }"
-      "  #absposOverflow {"
-      "    position: absolute;"
-      "    top: 0;"
-      "    left: 0;"
-      "    overflow: scroll;"
-      "    width: 9px;"
-      "    height: 7px;"
-      "  }"
-      "  #fixedOverflow {"
-      "    position: fixed;"
-      "    top: 0;"
-      "    left: 0;"
-      "    overflow: scroll;"
-      "    width: 13px;"
-      "    height: 11px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 4000px;"
-      "  }"
-      "</style>"
-      "<div id='overflow'>"
-      "  <div id='absposOverflow'>"
-      "    <div class='forceScroll'></div>"
-      "  </div>"
-      "  <div id='fixedOverflow'>"
-      "    <div class='forceScroll'></div>"
-      "  </div>"
-      "  <div class='forceScroll'></div>"
-      "</div>"
-      "<div class='forceScroll'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0px;
+      }
+      #overflow {
+        overflow: scroll;
+        width: 5px;
+        height: 3px;
+      }
+      #absposOverflow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: scroll;
+        width: 9px;
+        height: 7px;
+      }
+      #fixedOverflow {
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow: scroll;
+        width: 13px;
+        height: 11px;
+      }
+      .forceScroll {
+        height: 4000px;
+      }
+    </style>
+    <div id='overflow'>
+      <div id='absposOverflow'>
+        <div class='forceScroll'></div>
+      </div>
+      <div id='fixedOverflow'>
+        <div class='forceScroll'></div>
+      </div>
+      <div class='forceScroll'></div>
+    </div>
+    <div class='forceScroll'></div>
+  )HTML");
 
   Element* overflow = GetDocument().getElementById("overflow");
   overflow->setScrollTop(37);
@@ -3216,37 +3276,38 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * {"
-      "    margin: 0px;"
-      "  }"
-      "  #overflowA {"
-      "    position: absolute;"
-      "    top: 7px;"
-      "    left: 11px;"
-      "    overflow: scroll;"
-      "    width: 20px;"
-      "    height: 20px;"
-      "  }"
-      "  #overflowB {"
-      "    position: absolute;"
-      "    top: 1px;"
-      "    left: 3px;"
-      "    overflow: scroll;"
-      "    width: 5px;"
-      "    height: 3px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 100px;"
-      "  }"
-      "</style>"
-      "<div id='overflowA'>"
-      "  <div id='overflowB'>"
-      "    <div class='forceScroll'></div>"
-      "  </div>"
-      "  <div class='forceScroll'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0px;
+      }
+      #overflowA {
+        position: absolute;
+        top: 7px;
+        left: 11px;
+        overflow: scroll;
+        width: 20px;
+        height: 20px;
+      }
+      #overflowB {
+        position: absolute;
+        top: 1px;
+        left: 3px;
+        overflow: scroll;
+        width: 5px;
+        height: 3px;
+      }
+      .forceScroll {
+        height: 100px;
+      }
+    </style>
+    <div id='overflowA'>
+      <div id='overflowB'>
+        <div class='forceScroll'></div>
+      </div>
+      <div class='forceScroll'></div>
+    </div>
+  )HTML");
 
   Element* overflow_a = GetDocument().getElementById("overflowA");
   overflow_a->setScrollTop(37);
@@ -3289,10 +3350,11 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootClip) {
-  SetBodyInnerHTML(
-      "<svg id='svg' width='100px' height='100px'>"
-      "  <rect width='200' height='200' fill='red' />"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' width='100px' height='100px'>
+      <rect width='200' height='200' fill='red' />
+    </svg>
+  )HTML");
 
   const ClipPaintPropertyNode* clip = GetLayoutObjectByElementId("svg")
                                           ->FirstFragment()
@@ -3309,11 +3371,12 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootNoClip) {
-  SetBodyInnerHTML(
-      "<svg id='svg' xmlns='http://www.w3.org/2000/svg' width='100px' "
-      "height='100px' style='overflow: visible'>"
-      "  <rect width='200' height='200' fill='red' />"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' xmlns='http://www.w3.org/2000/svg' width='100px'
+        height='100px' style='overflow: visible'>
+      <rect width='200' height='200' fill='red' />
+    </svg>
+  )HTML");
 
   EXPECT_FALSE(GetLayoutObjectByElementId("svg")
                    ->FirstFragment()
@@ -3322,27 +3385,28 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootNoClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #overflow {"
-      "    overflow: scroll;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "  .backgroundAttachmentFixed {"
-      "    background-image: url('foo');"
-      "    background-attachment: fixed;"
-      "    width: 10px;"
-      "    height: 10px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 4000px;"
-      "  }"
-      "</style>"
-      "<div id='overflow'>"
-      "  <div class='backgroundAttachmentFixed'></div>"
-      "</div>"
-      "<div class='forceScroll'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #overflow {
+        overflow: scroll;
+        width: 100px;
+        height: 100px;
+      }
+      .backgroundAttachmentFixed {
+        background-image: url('foo');
+        background-attachment: fixed;
+        width: 10px;
+        height: 10px;
+      }
+      .forceScroll {
+        height: 4000px;
+      }
+    </style>
+    <div id='overflow'>
+      <div class='backgroundAttachmentFixed'></div>
+    </div>
+    <div class='forceScroll'></div>
+  )HTML");
   Element* overflow = GetDocument().getElementById("overflow");
   EXPECT_TRUE(FrameScroll()->HasBackgroundAttachmentFixedDescendants());
   // No scroll node is needed.
@@ -3373,15 +3437,15 @@ static const FragmentData& FragmentAt(LayoutObject* obj, unsigned count) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
-  SetBodyInnerHTML(
-      "<!doctype HTML>"
-      "<div style='columns: 1;'>"
-      "   <div id=scroller style='height: 400px; width: 400px; overflow: "
-      "auto;'>"
-      "     <div style='width: 50px; height: 1000px; background: lightgray'>"
-      "   </div>"
-      " </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <!doctype HTML>
+    <div style='columns: 1;'>
+       <div id=scroller style='height: 400px; width: 400px; overflow: auto;'>
+         <div style='width: 50px; height: 1000px; background: lightgray'>
+       </div>
+     </div>
+    </div>
+  )HTML");
 
   LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
   ToLayoutBoxModelObject(scroller)->Layer()->GetScrollableArea()->ScrollBy(
@@ -3397,12 +3461,13 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetUnderMulticolumnScrollFixedPos) {
-  SetBodyInnerHTML(
-      "<div id=fixed style='position: fixed; columns: 2'>"
-      "  <div style='width: 50px; height: 20px; background: lightblue'></div>"
-      "  <div style='width: 50px; height: 20px; background: lightgray'></div>"
-      "</div>"
-      "<div style='height: 2000px'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id=fixed style='position: fixed; columns: 2'>
+      <div style='width: 50px; height: 20px; background: lightblue'></div>
+      <div style='width: 50px; height: 20px; background: lightgray'></div>
+    </div>
+    <div style='height: 2000px'></div>
+  )HTML");
   LayoutObject* fixed = GetLayoutObjectByElementId("fixed");
   LayoutObject* multicol_container = fixed->SlowFirstChild();
 
@@ -3428,25 +3493,26 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  .space { height: 30px; }"
-      "  .abs { position: absolute; width: 20px; height: 20px; }"
-      "</style>"
-      "<div style='columns:2; width: 200px; column-gap: 0'>"
-      "  <div id=relpos style='position: relative'>"
-      "    <div id=space1 class=space></div>"
-      "    <div id=space2 class=space></div>"
-      "    <div id=spanner style='column-span: all'>"
-      "      <div id=normal style='height: 50px'></div>"
-      "      <div id=top-left class=abs style='top: 0; left: 0'></div>"
-      "      <div id=bottom-right class=abs style='bottom: 0; right: 0'></div>"
-      "    </div>"
-      "    <div id=space3 class=space></div>"
-      "    <div id=space4 class=space></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .space { height: 30px; }
+      .abs { position: absolute; width: 20px; height: 20px; }
+    </style>
+    <div style='columns:2; width: 200px; column-gap: 0'>
+      <div id=relpos style='position: relative'>
+        <div id=space1 class=space></div>
+        <div id=space2 class=space></div>
+        <div id=spanner style='column-span: all'>
+          <div id=normal style='height: 50px'></div>
+          <div id=top-left class=abs style='top: 0; left: 0'></div>
+          <div id=bottom-right class=abs style='bottom: 0; right: 0'></div>
+        </div>
+        <div id=space3 class=space></div>
+        <div id=space4 class=space></div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* relpos = GetLayoutObjectByElementId("relpos");
   EXPECT_EQ(4u, NumFragments(relpos));
@@ -3568,25 +3634,27 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
 // spanner with absolute-position children.
 TEST_P(PaintPropertyTreeBuilderTest,
        MultiColumnInlineRelativeAndSpannerAndAbsPos) {
-  SetBodyInnerHTML(
-      "<div style='columns:2; width: 200px; column-gap: 0'>"
-      "  <span style='position: relative'>"
-      "    <span id=spanner style='column-span: all'>"
-      "      <div id=absolute style='position: absolute'>absolute</div>"
-      "    </span>"
-      "  </span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='columns:2; width: 200px; column-gap: 0'>
+      <span style='position: relative'>
+        <span id=spanner style='column-span: all'>
+          <div id=absolute style='position: absolute'>absolute</div>
+        </span>
+      </span>
+    </div>
+  )HTML");
   // The "spanner" isn't a real spanner because it's an inline.
   EXPECT_FALSE(GetLayoutObjectByElementId("spanner")->IsColumnSpanAll());
 
-  SetBodyInnerHTML(
-      "<div style='columns:2; width: 200px; column-gap: 0'>"
-      "  <span style='position: relative'>"
-      "    <div id=spanner style='column-span: all'>"
-      "      <div id=absolute style='position: absolute'>absolute</div>"
-      "    </div>"
-      "  </span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='columns:2; width: 200px; column-gap: 0'>
+      <span style='position: relative'>
+        <div id=spanner style='column-span: all'>
+          <div id=absolute style='position: absolute'>absolute</div>
+        </div>
+      </span>
+    </div>
+  )HTML");
   // There should be anonymous block created containing the inline "relative",
   // serving as the container of "absolute".
   EXPECT_TRUE(
@@ -3620,12 +3688,13 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
-  SetBodyInnerHTML(
-      "<div id='clip' style='overflow:hidden;'>"
-      "  <div id='filter' style='filter:opacity(0.5); height:1000px;'>"
-      "    <div id='child' style='position:fixed;'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='clip' style='overflow:hidden;'>
+      <div id='filter' style='filter:opacity(0.5); height:1000px;'>
+        <div id='child' style='position:fixed;'></div>
+      </div>
+    </div>
+  )HTML");
   const ObjectPaintProperties* clip_properties =
       GetLayoutObjectByElementId("clip")->FirstFragment().PaintProperties();
   const ObjectPaintProperties* filter_properties =
@@ -3650,24 +3719,25 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  div {"
-      "    width: 400px;"
-      "    height: 100px;"
-      "  }"
-      "  #transform {"
-      "    transform: translate(100px, 200px);"
-      "    transform-origin: 75% 75% 0;"
-      "  }"
-      "  #willChange {"
-      "    will-change: opacity;"
-      "    transform-origin: 75% 75% 0;"
-      "  }"
-      "</style>"
-      "<div id='transform'></div>"
-      "<div id='willChange'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      div {
+        width: 400px;
+        height: 100px;
+      }
+      #transform {
+        transform: translate(100px, 200px);
+        transform-origin: 75% 75% 0;
+      }
+      #willChange {
+        will-change: opacity;
+        transform-origin: 75% 75% 0;
+      }
+    </style>
+    <div id='transform'></div>
+    <div id='willChange'></div>
+  )HTML");
 
   auto* transform = GetLayoutObjectByElementId("transform");
   EXPECT_EQ(
@@ -3690,27 +3760,28 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  div {"
-      "    width: 100px;"
-      "    height: 100px;"
-      "  }"
-      "  #motionPath {"
-      "    position: absolute;"
-      "    offset-path: path('M0 0 L 200 400');"
-      "    offset-distance: 50%;"
-      "    offset-rotate: 0deg;"
-      "    transform-origin: 50% 50% 0;"
-      "  }"
-      "  #willChange {"
-      "    will-change: opacity;"
-      "    transform-origin: 50% 50% 0;"
-      "  }"
-      "</style>"
-      "<div id='motionPath'></div>"
-      "<div id='willChange'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      div {
+        width: 100px;
+        height: 100px;
+      }
+      #motionPath {
+        position: absolute;
+        offset-path: path('M0 0 L 200 400');
+        offset-distance: 50%;
+        offset-rotate: 0deg;
+        transform-origin: 50% 50% 0;
+      }
+      #willChange {
+        will-change: opacity;
+        transform-origin: 50% 50% 0;
+      }
+    </style>
+    <div id='motionPath'></div>
+    <div id='willChange'></div>
+  )HTML");
 
   auto* motion_path = GetLayoutObjectByElementId("motionPath");
   EXPECT_EQ(
@@ -3733,15 +3804,16 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  #ancestor { position: absolute; overflow: hidden }"
-      "  #descendant { position: absolute }"
-      "</style>"
-      "<div id='ancestor'>"
-      "  <div id='descendant'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #ancestor { position: absolute; overflow: hidden }
+      #descendant { position: absolute }
+    </style>
+    <div id='ancestor'>
+      <div id='descendant'></div>
+    </div>
+  )HTML");
 
   LayoutObject* ancestor = GetLayoutObjectByElementId("ancestor");
   LayoutObject* descendant = GetLayoutObjectByElementId("descendant");
@@ -3799,15 +3871,16 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
-  SetBodyInnerHTML(
-      "<div style='position: absolute; top: 55px; left: 66px'>"
-      "  <span id='span'"
-      "      style='position: relative; top: 100px; left: 200px; opacity: 0.5'>"
-      "    <div id='target'"
-      "         style='overflow: hidden; float: left; width: 3px; height: 4px'>"
-      "    </div>"
-      "  </span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; top: 55px; left: 66px'>
+      <span id='span'
+          style='position: relative; top: 100px; left: 200px; opacity: 0.5'>
+        <div id='target'
+             style='overflow: hidden; float: left; width: 3px; height: 4px'>
+        </div>
+      </span>
+    </div>
+  )HTML");
 
   LayoutObject* span = GetLayoutObjectByElementId("span");
   const auto* effect = span->FirstFragment().PaintProperties()->Effect();
@@ -3825,10 +3898,11 @@ TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ScrollNodeHasCompositorElementId) {
-  SetBodyInnerHTML(
-      "<div id='target' style='overflow: auto; width: 100px; height: 100px'>"
-      "  <div style='width: 200px; height: 200px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='overflow: auto; width: 100px; height: 100px'>
+      <div style='width: 200px; height: 200px'></div>
+    </div>
+  )HTML");
 
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   // The scroll translation node should not have the element id as it should be
@@ -3840,12 +3914,13 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollNodeHasCompositorElementId) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 20px 30px; }</style>"
-      "<div id='clipper'"
-      "    style='position: relative; overflow: hidden; "
-      "           width: 400px; height: 300px; left: 1.5px'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 20px 30px; }</style>
+    <div id='clipper'
+        style='position: relative; overflow: hidden;
+               width: 400px; height: 300px; left: 1.5px'>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* clipper =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("clipper"));
@@ -3859,11 +3934,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
-  SetBodyInnerHTML(
-      "<div id='target' style='width:300px; height:200px; "
-      "-webkit-mask:linear-gradient(red,red)'>"
-      "  Lorem ipsum"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='width:300px; height:200px;
+        -webkit-mask:linear-gradient(red,red)'>
+      Lorem ipsum
+    </div>
+  )HTML");
 
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   const ClipPaintPropertyNode* output_clip = properties->MaskClip();
@@ -3890,12 +3966,13 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskWithOutset) {
-  SetBodyInnerHTML(
-      "<div id='target' style='width:300px; height:200px; "
-      "-webkit-mask-box-image-source:linear-gradient(red,red);"
-      "-webkit-mask-box-image-outset:10px 20px;'>"
-      "  Lorem ipsum"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='width:300px; height:200px;
+        -webkit-mask-box-image-source:linear-gradient(red,red);
+        -webkit-mask-box-image-outset:10px 20px;'>
+      Lorem ipsum
+    </div>
+  )HTML");
 
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   const ClipPaintPropertyNode* output_clip = properties->MaskClip();
@@ -3924,15 +4001,17 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskWithOutset) {
 TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
   // This test verifies an abs-pos element still escape the scroll of a
   // static-pos ancestor, but gets clipped due to the presence of a mask.
-  SetBodyInnerHTML(
-      "<div id='scroll' style='width:300px; height:200px; overflow:scroll;'>"
-      "  <div id='target' style='width:200px; height:300px; "
-      "-webkit-mask:linear-gradient(red,red); border:10px dashed black; "
-      "overflow:hidden;'>"
-      "    <div id='absolute' style='position:absolute; left:0; top:0;'>Lorem "
-      "ipsum</div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroll' style='width:300px; height:200px; overflow:scroll;'>
+      <div id='target' style='width:200px; height:300px;
+          -webkit-mask:linear-gradient(red,red); border:10px dashed black;
+          overflow:hidden;'>
+        <div id='absolute' style='position:absolute; left:0; top:0;'>
+          Lorem ipsum
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   const ObjectPaintProperties* target_properties =
       PaintPropertiesForElement("target");
@@ -3996,16 +4075,17 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
   // This test verifies CSS mask applied on an inline element is clipped to
   // the line box of the said element. In this test the masked element has
   // only one box, and one of the child element overflows the box.
-  SetBodyInnerHTML(
-      "<style>* { font-family:Ahem; font-size:16px; }</style>"
-      "Lorem"
-      "<span id='target' style='-webkit-mask:linear-gradient(red,red);'>"
-      "  ipsum"
-      "  <span id='overflowing' style='position:relative; font-size:32px;'>"
-      "    dolor"
-      "  </span>"
-      "  sit amet,"
-      "</span>");
+  SetBodyInnerHTML(R"HTML(
+    <style>* { font-family:Ahem; font-size:16px; }</style>
+    Lorem
+    <span id='target' style='-webkit-mask:linear-gradient(red,red);'>
+      ipsum
+      <span id='overflowing' style='position:relative; font-size:32px;'>
+        dolor
+      </span>
+      sit amet,
+    </span>
+  )HTML");
 
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   const ClipPaintPropertyNode* output_clip = properties->MaskClip();
@@ -4016,7 +4096,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
                              ->LocalBorderBoxProperties()
                              ->Clip());
   EXPECT_EQ(FrameContentClip(), output_clip->Parent());
-  EXPECT_EQ(FloatRoundedRect(88, 21, 448, 16), output_clip->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(104, 21, 432, 16), output_clip->ClipRect());
 
   EXPECT_EQ(properties->Effect(), target->FirstFragment()
                                       .GetRarePaintData()
@@ -4042,22 +4122,23 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGResource) {
-  SetBodyInnerHTML(
-      "<svg id='svg' xmlns='http://www.w3.org/2000/svg' >"
-      " <g transform='scale(1000)'>"
-      "   <marker id='markerMiddle'  markerWidth='2' markerHeight='2' refX='5' "
-      "       refY='5' markerUnits='strokeWidth'>"
-      "     <g id='transformInsideMarker' transform='scale(4)'>"
-      "       <circle cx='5' cy='5' r='7' fill='green'/>"
-      "     </g>"
-      "   </marker>"
-      " </g>"
-      " <g id='transformOutsidePath' transform='scale(2)'>"
-      "   <path d='M 130 135 L 180 135 L 180 185' "
-      "       marker-mid='url(#markerMiddle)' fill='none' stroke-width='8px' "
-      "       stroke='black'/>"
-      " </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' xmlns='http://www.w3.org/2000/svg' >
+     <g transform='scale(1000)'>
+       <marker id='markerMiddle'  markerWidth='2' markerHeight='2' refX='5'
+           refY='5' markerUnits='strokeWidth'>
+         <g id='transformInsideMarker' transform='scale(4)'>
+           <circle cx='5' cy='5' r='7' fill='green'/>
+         </g>
+       </marker>
+     </g>
+     <g id='transformOutsidePath' transform='scale(2)'>
+       <path d='M 130 135 L 180 135 L 180 185'
+           marker-mid='url(#markerMiddle)' fill='none' stroke-width='8px'
+           stroke='black'/>
+     </g>
+    </svg>
+  )HTML");
 
   const ObjectPaintProperties* transform_inside_marker_properties =
       PaintPropertiesForElement("transformInsideMarker");
@@ -4077,19 +4158,20 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGResource) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
-  SetBodyInnerHTML(
-      "<svg id='svg' xmlns='http://www.w3.org/2000/svg' >"
-      " <g transform='scale(1000)'>"
-      "   <symbol id='symbol'>"
-      "     <g id='transformInsideSymbol' transform='scale(4)'>"
-      "       <circle cx='5' cy='5' r='7' fill='green'/>"
-      "     </g>"
-      "   </symbol>"
-      " </g>"
-      " <g id='transformOutsideUse' transform='scale(2)'>"
-      "   <use x='25' y='25' width='400' height='400' xlink:href='#symbol'/>"
-      " </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' xmlns='http://www.w3.org/2000/svg' >
+     <g transform='scale(1000)'>
+       <symbol id='symbol'>
+         <g id='transformInsideSymbol' transform='scale(4)'>
+           <circle cx='5' cy='5' r='7' fill='green'/>
+         </g>
+       </symbol>
+     </g>
+     <g id='transformOutsideUse' transform='scale(2)'>
+       <use x='25' y='25' width='400' height='400' xlink:href='#symbol'/>
+     </g>
+    </svg>
+  )HTML");
 
   const ObjectPaintProperties* transform_inside_symbol_properties =
       PaintPropertiesForElement("transformInsideSymbol");
@@ -4109,12 +4191,13 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
-  SetBodyInnerHTML(
-      "<svg id='svgroot' 'width=100' height='100'"
-      "    style='position: relative; z-index: 0'>"
-      " <rect width='100' height='100' fill='#00FF00'"
-      "     style='mix-blend-mode: difference'/>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svgroot' 'width=100' height='100'
+        style='position: relative; z-index: 0'>
+     <rect width='100' height='100' fill='#00FF00'
+         style='mix-blend-mode: difference'/>
+    </svg>
+  )HTML");
 
   LayoutObject& svg_root = *GetLayoutObjectByElementId("svgroot");
   const ObjectPaintProperties* svg_root_properties =
@@ -4125,25 +4208,26 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body {"
-      "    margin: 0px;"
-      "  }"
-      "  #scroller {"
-      "    overflow-y: scroll;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "    margin-left: 7px;"
-      "    margin-top: 11px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 200px;"
-      "  }"
-      "</style>"
-      "<div id='scroller'>"
-      "  <div class='forceScroll'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0px;
+      }
+      #scroller {
+        overflow-y: scroll;
+        width: 100px;
+        height: 100px;
+        margin-left: 7px;
+        margin-top: 11px;
+      }
+      .forceScroll {
+        height: 200px;
+      }
+    </style>
+    <div id='scroller'>
+      <div class='forceScroll'></div>
+    </div>
+  )HTML");
 
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(42);

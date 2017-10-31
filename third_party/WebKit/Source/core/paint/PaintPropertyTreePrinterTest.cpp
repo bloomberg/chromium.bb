@@ -121,10 +121,11 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
-  SetBodyInnerHTML(
-      "<div id='scroll' style='overflow: scroll; height: 100px;'>"
-      "  <div id='forceScroll' style='height: 4000px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroll' style='overflow: scroll; height: 100px;'>
+      <div id='forceScroll' style='height: 4000px;'></div>
+    </div>
+  )HTML");
   LayoutObject* scroll_object =
       GetDocument().getElementById("scroll")->GetLayoutObject();
   const auto* scroll_object_properties =

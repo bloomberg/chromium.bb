@@ -317,13 +317,14 @@ static Vector<IntSize> ComputeSizesOfQuads(const Vector<FloatQuad>& quads) {
 }
 
 TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<style>"
-      "  body { font-size: 20px; }"
-      "  #sample::first-letter { font-size: 500%; }"
-      "</style>"
-      "<p id=sample>abc</p>"
-      "<p id=expected><span style='font-size: 500%'>a</span>bc</p>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      body { font-size: 20px; }
+      #sample::first-letter { font-size: 500%; }
+    </style>
+    <p id=sample>abc</p>
+    <p id=expected><span style='font-size: 500%'>a</span>bc</p>
+  )HTML");
   GetDocument().UpdateStyleAndLayout();
 
   Element* const expected = GetDocument().getElementById("expected");
@@ -361,13 +362,14 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
 }
 
 TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterThree) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<style>"
-      "  body { font-size: 20px; }"
-      "  #sample::first-letter { font-size: 500%; }"
-      "</style>"
-      "<p id=sample>(a)bc</p>"
-      "<p id=expected><span style='font-size: 500%'>(a)</span>bc</p>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      body { font-size: 20px; }
+      #sample::first-letter { font-size: 500%; }
+    </style>
+    <p id=sample>(a)bc</p>
+    <p id=expected><span style='font-size: 500%'>(a)</span>bc</p>
+  )HTML");
   GetDocument().UpdateStyleAndLayout();
 
   Element* const expected = GetDocument().getElementById("expected");

@@ -42,15 +42,16 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
 }
 
 TEST_F(LayoutInlineTest, RegionHitTest) {
-  SetBodyInnerHTML(
-      "<div><span id='lotsOfBoxes'>"
-      "This is a test line<br>This is a test line<br>This is a test line<br>"
-      "This is a test line<br>This is a test line<br>This is a test line<br>"
-      "This is a test line<br>This is a test line<br>This is a test line<br>"
-      "This is a test line<br>This is a test line<br>This is a test line<br>"
-      "This is a test line<br>This is a test line<br>This is a test line<br>"
-      "This is a test line<br>This is a test line<br>This is a test line<br>"
-      "</span></div>");
+  SetBodyInnerHTML(R"HTML(
+    <div><span id='lotsOfBoxes'>
+    This is a test line<br>This is a test line<br>This is a test line<br>
+    This is a test line<br>This is a test line<br>This is a test line<br>
+    This is a test line<br>This is a test line<br>This is a test line<br>
+    This is a test line<br>This is a test line<br>This is a test line<br>
+    This is a test line<br>This is a test line<br>This is a test line<br>
+    This is a test line<br>This is a test line<br>This is a test line<br>
+    </span></div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 

@@ -229,13 +229,14 @@ TEST_F(PrintContextTest, LinkTargetUnderRelativelyPositionedInline) {
 
 TEST_F(PrintContextTest, LinkTargetSvg) {
   MockPageContextCanvas canvas;
-  SetBodyInnerHTML(
-      "<svg width='100' height='100'>"
-      "<a xlink:href='http://www.w3.org'><rect x='20' y='20' width='50' "
-      "height='50'/></a>"
-      "<text x='10' y='90'><a "
-      "xlink:href='http://www.google.com'><tspan>google</tspan></a></text>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg width='100' height='100'>
+    <a xlink:href='http://www.w3.org'><rect x='20' y='20' width='50'
+    height='50'/></a>
+    <text x='10' y='90'><a
+    xlink:href='http://www.google.com'><tspan>google</tspan></a></text>
+    </svg>
+  )HTML");
   PrintSinglePage(canvas);
 
   const Vector<MockPageContextCanvas::Operation>& operations =
@@ -305,11 +306,12 @@ TEST_F(PrintContextTest, LinkTargetBoundingBox) {
 
 TEST_F(PrintContextFrameTest, WithSubframe) {
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
-  SetBodyInnerHTML(
-      "<style>::-webkit-scrollbar { display: none }</style>"
-      "<iframe src='http://b.com/' width='500' height='500'"
-      " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; "
-      "left: 90px'></iframe>");
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar { display: none }</style>
+    <iframe src='http://b.com/' width='500' height='500'
+     style='border-width: 5px; margin: 5px; position: absolute; top: 90px;
+    left: 90px'></iframe>
+  )HTML");
   SetChildFrameHTML(
       AbsoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
       AbsoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
@@ -330,11 +332,12 @@ TEST_F(PrintContextFrameTest, WithSubframe) {
 
 TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
-  SetBodyInnerHTML(
-      "<style>::-webkit-scrollbar { display: none }</style>"
-      "<iframe src='http://b.com/' width='500' height='500'"
-      " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; "
-      "left: 90px'></iframe>");
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar { display: none }</style>
+    <iframe src='http://b.com/' width='500' height='500'
+     style='border-width: 5px; margin: 5px; position: absolute; top: 90px;
+    left: 90px'></iframe>
+  )HTML");
   SetChildFrameHTML(
       AbsoluteBlockHtmlForLink(10, 10, 20, 20, "http://invisible.com") +
       AbsoluteBlockHtmlForLink(50, 60, 70, 80, "http://partly.visible.com") +

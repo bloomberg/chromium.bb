@@ -102,13 +102,14 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
-  SetBodyInnerHTML(
-      "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
-      "  <div style='width: 100px; height: 100px; background-color: "
-      "blue'></div>"
-      "  <div style='width: 100px; height: 100px; background-color: "
-      "blue'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='div' style='width: 200px; height: 200px; opacity: 0.5'>
+      <div style='width: 100px; height: 100px; background-color:
+    blue'></div>
+      <div style='width: 100px; height: 100px; background-color:
+    blue'></div>
+    </div>
+  )HTML");
   LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
   LayoutObject& sub_div2 = *sub_div.NextSibling();
@@ -139,11 +140,12 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
-  SetBodyInnerHTML(
-      "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
-      "  <div style='width: 100px; height: 100px; background-color: "
-      "blue'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='div' style='width: 200px; height: 200px; opacity: 0.5'>
+      <div style='width: 100px; height: 100px; background-color:
+    blue'></div>
+    </div>
+  )HTML");
   LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
 
@@ -158,17 +160,18 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0; width: 10000px; height: 1000px }"
-      "  div { position: absolute; width: 100px; height: 100px;"
-      "        background: blue; }"
-      "</style>"
-      "<div id='div1' style='top: 0; left: 0'></div>"
-      "<div id='div2' style='top: 3000px; left: 3000px'></div>"
-      "<div id='div3' style='top: 6000px; left: 6000px'></div>"
-      "<div id='div4' style='top: 9000px; left: 9000px'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0; width: 10000px; height: 1000px }
+      div { position: absolute; width: 100px; height: 100px;
+            background: blue; }
+    </style>
+    <div id='div1' style='top: 0; left: 0'></div>
+    <div id='div2' style='top: 3000px; left: 3000px'></div>
+    <div id='div3' style='top: 6000px; left: 6000px'></div>
+    <div id='div4' style='top: 9000px; left: 9000px'></div>
+  )HTML");
 
   auto& div1 = *GetLayoutObjectByElementId("div1");
   auto& div2 = *GetLayoutObjectByElementId("div2");
@@ -199,20 +202,21 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
 // overflow clip and add a test case.
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
        BlockScrollingNonLayeredContents) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0 }"
-      "  div { width: 100px; height: 100px; background: blue; }"
-      "  container { display: block; width: 200px; height: 200px;"
-      "              overflow: scroll }"
-      "</style>"
-      "<container id='container'>"
-      "  <div id='div1'></div>"
-      "  <div id='div2' style='margin-top: 2900px; margin-left: 3000px'></div>"
-      "  <div id='div3' style='margin-top: 2900px; margin-left: 6000px'></div>"
-      "  <div id='div4' style='margin-top: 2900px; margin-left: 9000px'></div>"
-      "</container>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0 }
+      div { width: 100px; height: 100px; background: blue; }
+      container { display: block; width: 200px; height: 200px;
+                  overflow: scroll }
+    </style>
+    <container id='container'>
+      <div id='div1'></div>
+      <div id='div2' style='margin-top: 2900px; margin-left: 3000px'></div>
+      <div id='div3' style='margin-top: 2900px; margin-left: 6000px'></div>
+      <div id='div4' style='margin-top: 2900px; margin-left: 9000px'></div>
+    </container>
+  )HTML");
 
   auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
   auto& div1 = *GetLayoutObjectByElementId("div1");
@@ -241,19 +245,20 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ScrollHitTestOrder) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0 }"
-      "  #container { width: 200px; height: 200px;"
-      "              overflow: scroll; background: red; }"
-      "  #child { width: 100px; height: 300px; background: green; }"
-      "  #forceDocumentScroll { height: 1000px; }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "</div>"
-      "<div id='forceDocumentScroll'/>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0 }
+      #container { width: 200px; height: 200px;
+                  overflow: scroll; background: red; }
+      #child { width: 100px; height: 300px; background: green; }
+      #forceDocumentScroll { height: 1000px; }
+    </style>
+    <div id='container'>
+      <div id='child'></div>
+    </div>
+    <div id='forceDocumentScroll'/>
+  )HTML");
 
   auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
@@ -271,24 +276,25 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ScrollHitTestOrder) {
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
        NonStackingScrollHitTestOrder) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0 }"
-      "  #container { width: 200px; height: 200px;"
-      "              overflow: scroll; background: blue;"
-      "              position: relative; z-index: auto; }"
-      "  #child { width: 80px; height: 20px; background: white; }"
-      "  #negZChild { width: 60px; height: 300px; background: purple;"
-      "               position: absolute; z-index: -1; top: 0; }"
-      "  #posZChild { width: 40px; height: 300px; background: yellow;"
-      "               position: absolute; z-index: 1; top: 0; }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "  <div id='negZChild'></div>"
-      "  <div id='posZChild'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0 }
+      #container { width: 200px; height: 200px;
+                  overflow: scroll; background: blue;
+                  position: relative; z-index: auto; }
+      #child { width: 80px; height: 20px; background: white; }
+      #negZChild { width: 60px; height: 300px; background: purple;
+                   position: absolute; z-index: -1; top: 0; }
+      #posZChild { width: 40px; height: 300px; background: yellow;
+                   position: absolute; z-index: 1; top: 0; }
+    </style>
+    <div id='container'>
+      <div id='child'></div>
+      <div id='negZChild'></div>
+      <div id='posZChild'></div>
+    </div>
+  )HTML");
 
   auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
@@ -311,24 +317,25 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, StackingScrollHitTestOrder) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0 }"
-      "  #container { width: 200px; height: 200px;"
-      "              overflow: scroll; background: blue;"
-      "              position: relative; z-index: 0; }"
-      "  #child { width: 80px; height: 20px; background: white; }"
-      "  #negZChild { width: 60px; height: 300px; background: purple;"
-      "               position: absolute; z-index: -1; top: 0; }"
-      "  #posZChild { width: 40px; height: 300px; background: yellow;"
-      "               position: absolute; z-index: 1; top: 0; }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "  <div id='negZChild'></div>"
-      "  <div id='posZChild'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0 }
+      #container { width: 200px; height: 200px;
+                  overflow: scroll; background: blue;
+                  position: relative; z-index: 0; }
+      #child { width: 80px; height: 20px; background: white; }
+      #negZChild { width: 60px; height: 300px; background: purple;
+                   position: absolute; z-index: -1; top: 0; }
+      #posZChild { width: 40px; height: 300px; background: yellow;
+                   position: absolute; z-index: 1; top: 0; }
+    </style>
+    <div id='container'>
+      <div id='child'></div>
+      <div id='negZChild'></div>
+      <div id='posZChild'></div>
+    </div>
+  )HTML");
 
   auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
@@ -350,24 +357,25 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, StackingScrollHitTestOrder) {
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
        NonStackingScrollHitTestOrderWithoutBackground) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0 }"
-      "  #container { width: 200px; height: 200px;"
-      "              overflow: scroll; background: transparent;"
-      "              position: relative; z-index: auto; }"
-      "  #child { width: 80px; height: 20px; background: white; }"
-      "  #negZChild { width: 60px; height: 300px; background: purple;"
-      "               position: absolute; z-index: -1; top: 0; }"
-      "  #posZChild { width: 40px; height: 300px; background: yellow;"
-      "               position: absolute; z-index: 1; top: 0; }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "  <div id='negZChild'></div>"
-      "  <div id='posZChild'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0 }
+      #container { width: 200px; height: 200px;
+                  overflow: scroll; background: transparent;
+                  position: relative; z-index: auto; }
+      #child { width: 80px; height: 20px; background: white; }
+      #negZChild { width: 60px; height: 300px; background: purple;
+                   position: absolute; z-index: -1; top: 0; }
+      #posZChild { width: 40px; height: 300px; background: yellow;
+                   position: absolute; z-index: 1; top: 0; }
+    </style>
+    <div id='container'>
+      <div id='child'></div>
+      <div id='negZChild'></div>
+      <div id='posZChild'></div>
+    </div>
+  )HTML");
 
   auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");

@@ -35,11 +35,12 @@ class DataTransferTest
 INSTANTIATE_TEST_CASE_P(All, DataTransferTest, ::testing::Bool());
 
 TEST_P(DataTransferTest, NodeImage) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #sample { width: 100px; height: 100px; }"
-      "</style>"
-      "<div id=sample></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #sample { width: 100px; height: 100px; }
+    </style>
+    <div id=sample></div>
+  )HTML");
   Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image =
       DataTransfer::NodeImage(GetFrame(), *sample);
@@ -47,12 +48,13 @@ TEST_P(DataTransferTest, NodeImage) {
 }
 
 TEST_P(DataTransferTest, NodeImageWithNestedElement) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  div { -webkit-user-drag: element }"
-      "  span:-webkit-drag { color: #0F0 }"
-      "</style>"
-      "<div id=sample><span>Green when dragged</span></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div { -webkit-user-drag: element }
+      span:-webkit-drag { color: #0F0 }
+    </style>
+    <div id=sample><span>Green when dragged</span></div>
+  )HTML");
   Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image =
       DataTransfer::NodeImage(GetFrame(), *sample);
@@ -63,12 +65,13 @@ TEST_P(DataTransferTest, NodeImageWithNestedElement) {
 }
 
 TEST_P(DataTransferTest, NodeImageWithPsuedoClassWebKitDrag) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #sample { width: 100px; height: 100px; }"
-      "  #sample:-webkit-drag { width: 200px; height: 200px; }"
-      "</style>"
-      "<div id=sample></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #sample { width: 100px; height: 100px; }
+      #sample:-webkit-drag { width: 200px; height: 200px; }
+    </style>
+    <div id=sample></div>
+  )HTML");
   Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image =
       DataTransfer::NodeImage(GetFrame(), *sample);
@@ -77,12 +80,13 @@ TEST_P(DataTransferTest, NodeImageWithPsuedoClassWebKitDrag) {
 }
 
 TEST_P(DataTransferTest, NodeImageWithoutDraggedLayoutObject) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #sample { width: 100px; height: 100px; }"
-      "  #sample:-webkit-drag { display:none }"
-      "</style>"
-      "<div id=sample></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #sample { width: 100px; height: 100px; }
+      #sample:-webkit-drag { display:none }
+    </style>
+    <div id=sample></div>
+  )HTML");
   Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image =
       DataTransfer::NodeImage(GetFrame(), *sample);
@@ -90,12 +94,13 @@ TEST_P(DataTransferTest, NodeImageWithoutDraggedLayoutObject) {
 }
 
 TEST_P(DataTransferTest, NodeImageWithChangingLayoutObject) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #sample { color: blue; }"
-      "  #sample:-webkit-drag { display: inline-block; color: red; }"
-      "</style>"
-      "<span id=sample>foo</span>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #sample { color: blue; }
+      #sample:-webkit-drag { display: inline-block; color: red; }
+    </style>
+    <span id=sample>foo</span>
+  )HTML");
   Element* sample = GetDocument().getElementById("sample");
   UpdateAllLifecyclePhases();
   LayoutObject* before_layout_object = sample->GetLayoutObject();
@@ -117,26 +122,28 @@ TEST_P(DataTransferTest, NodeImageWithChangingLayoutObject) {
 }
 
 TEST_P(DataTransferTest, NodeImageExceedsViewportBounds) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  #node { width: 2000px; height: 2000px; }"
-      "</style>"
-      "<div id='node'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #node { width: 2000px; height: 2000px; }
+    </style>
+    <div id='node'></div>
+  )HTML");
   Element& node = *GetDocument().getElementById("node");
   const auto image = DataTransfer::NodeImage(GetFrame(), node);
   EXPECT_EQ(IntSize(800, 600), image->Size());
 }
 
 TEST_P(DataTransferTest, NodeImageUnderScrollOffset) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  #first { width: 500px; height: 500px; }"
-      "  #second { width: 300px; height: 200px; }"
-      "</style>"
-      "<div id='first'></div>"
-      "<div id='second'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #first { width: 500px; height: 500px; }
+      #second { width: 300px; height: 200px; }
+    </style>
+    <div id='first'></div>
+    <div id='second'></div>
+  )HTML");
 
   const int scroll_amount = 10;
   LocalFrameView* frame_view = GetDocument().View();
@@ -159,13 +166,14 @@ TEST_P(DataTransferTest, NodeImageUnderScrollOffset) {
 }
 
 TEST_P(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  html, body { height: 2000px; }"
-      "  #node { width: 200px; height: 141px; }"
-      "</style>"
-      "<div id='node'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      #node { width: 200px; height: 141px; }
+    </style>
+    <div id='node'></div>
+  )HTML");
   const int page_scale_factor = 2;
   GetPage().SetPageScaleFactor(page_scale_factor);
   Element& node = *GetDocument().getElementById("node");
@@ -191,18 +199,19 @@ TEST_P(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
 TEST_P(DataTransferTest, NodeImageWithPageScaleFactor) {
   // #bluegreen is a 2x1 rectangle where the left pixel is blue and the right
   // pixel is green. The element is offset by a margin of 1px.
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  #bluegreen {"
-      "    width: 1px;"
-      "    height: 1px;"
-      "    background: #0f0;"
-      "    border-left: 1px solid #00f;"
-      "    margin: 1px;"
-      "  }"
-      "</style>"
-      "<div id='bluegreen'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #bluegreen {
+        width: 1px;
+        height: 1px;
+        background: #0f0;
+        border-left: 1px solid #00f;
+        margin: 1px;
+      }
+    </style>
+    <div id='bluegreen'></div>
+  )HTML");
   const int page_scale_factor = 2;
   GetPage().SetPageScaleFactor(page_scale_factor);
   Element& blue_green = *GetDocument().getElementById("bluegreen");

@@ -19,16 +19,17 @@ INSTANTIATE_TEST_CASE_P(All,
                         ::testing::Values(0, kRootLayerScrolling));
 
 TEST_P(TablePainterTest, Background) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  td { width: 200px; height: 200px; padding: 0; border: none; }"
-      "  tr { background-color: blue; }"
-      "  table { border: none; border-spacing: 0 }"
-      "</style>"
-      "<table>"
-      "  <tr id='row1'><td></td></tr>"
-      "  <tr id='row2'><td></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      td { width: 200px; height: 200px; padding: 0; border: none; }
+      tr { background-color: blue; }
+      table { border: none; border-spacing: 0 }
+    </style>
+    <table>
+      <tr id='row1'><td></td></tr>
+      <tr id='row2'><td></td></tr>
+    </table>
+  )HTML");
 
   LayoutObject& row1 = *GetLayoutObjectByElementId("row1");
   LayoutObject& row2 = *GetLayoutObjectByElementId("row2");
@@ -64,19 +65,20 @@ TEST_P(TablePainterTest, Background) {
 }
 
 TEST_P(TablePainterTest, BackgroundWithCellSpacing) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  td { width: 200px; height: 150px; border: 0; background-color: green; "
-      "  }"
-      "  tr { background-color: blue; }"
-      "  table { border: none; border-spacing: 100px; border-collapse: "
-      "separate; }"
-      "</style>"
-      "<table>"
-      "  <tr id='row1'><td id='cell1'></td></tr>"
-      "  <tr id='row2'><td id='cell2'></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      td { width: 200px; height: 150px; border: 0; background-color: green;
+      }
+      tr { background-color: blue; }
+      table { border: none; border-spacing: 100px; border-collapse:
+    separate; }
+    </style>
+    <table>
+      <tr id='row1'><td id='cell1'></td></tr>
+      <tr id='row2'><td id='cell2'></td></tr>
+    </table>
+  )HTML");
 
   LayoutObject& row1 = *GetLayoutObjectByElementId("row1");
   LayoutObject& row2 = *GetLayoutObjectByElementId("row2");
@@ -128,18 +130,19 @@ TEST_P(TablePainterTest, BackgroundWithCellSpacing) {
 }
 
 TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  td { width: 200px; height: 200px; border: 0; background-color: green; "
-      "}"
-      "  tr { background-color: blue; opacity: 0.5; }"
-      "  table { border: none; border-spacing: 100px; border-collapse: "
-      "separate; }"
-      "</style>"
-      "<table>"
-      "  <tr id='row'><td id='cell1'><td id='cell2'></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      td { width: 200px; height: 200px; border: 0; background-color: green;
+    }
+      tr { background-color: blue; opacity: 0.5; }
+      table { border: none; border-spacing: 100px; border-collapse:
+    separate; }
+    </style>
+    <table>
+      <tr id='row'><td id='cell1'><td id='cell2'></td></tr>
+    </table>
+  )HTML");
 
   LayoutObject& cell1 = *GetLayoutObjectByElementId("cell1");
   LayoutObject& cell2 = *GetLayoutObjectByElementId("cell2");
@@ -193,16 +196,17 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
 }
 
 TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  td { width: 100px; height: 100px; border: 100px solid blue; outline: "
-      "100px solid yellow; background: green; }"
-      "  table { margin: 100px; border-collapse: collapse; }"
-      "</style>"
-      "<table>"
-      "  <tr><td id='cell'></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      td { width: 100px; height: 100px; border: 100px solid blue; outline:
+    100px solid yellow; background: green; }
+      table { margin: 100px; border-collapse: collapse; }
+    </style>
+    <table>
+      <tr><td id='cell'></td></tr>
+    </table>
+  )HTML");
 
   auto& cell = *ToLayoutTableCell(GetLayoutObjectByElementId("cell"));
 

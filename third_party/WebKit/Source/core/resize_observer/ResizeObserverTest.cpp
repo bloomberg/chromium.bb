@@ -60,11 +60,12 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   LoadURL("https://example.com/");
 
   main_resource.Start();
-  main_resource.Write(
-      "<div id='domTarget' style='width:100px;height:100px'>yo</div>"
-      "<svg height='200' width='200'>"
-      "<circle id='svgTarget' cx='100' cy='100' r='100'/>"
-      "</svg>");
+  main_resource.Write(R"HTML(
+    <div id='domTarget' style='width:100px;height:100px'>yo</div>
+    <svg height='200' width='200'>
+    <circle id='svgTarget' cx='100' cy='100' r='100'/>
+    </svg>
+  )HTML");
   main_resource.Finish();
 
   ResizeObserver::Delegate* delegate =

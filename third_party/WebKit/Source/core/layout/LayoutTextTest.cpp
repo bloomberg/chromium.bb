@@ -86,16 +86,17 @@ TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
 TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
   // The test case from http://crbug.com/647820 uses a 288-length string, so for
   // posterity we follow that closely.
-  SetBodyInnerHTML(
-      "<div "
-      "id='target'>"
-      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      "xxxx"
-      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div
+    id='target'>
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    xxxx
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    </div>
+  )HTML");
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
   const float width = GetBasicText()->Width(

@@ -16,15 +16,17 @@ class StyleAdjusterTest : public RenderingTest {
 
 TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; } iframe { display: block; } </style>"
-      "<iframe id='owner' src='http://test.com' width='500' height='500' "
-      "style='touch-action: none'>"
-      "</iframe>");
-  SetChildFrameHTML(
-      "<style>body { margin: 0; } #target { width: 200px; height: 200px; } "
-      "</style>"
-      "<div id='target' style='touch-action: pinch-zoom'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; } iframe { display: block; } </style>
+    <iframe id='owner' src='http://test.com' width='500' height='500'
+    style='touch-action: none'>
+    </iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body { margin: 0; } #target { width: 200px; height: 200px; }
+    </style>
+    <div id='target' style='touch-action: pinch-zoom'></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* target = ChildDocument().getElementById("target");
@@ -40,12 +42,13 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
 
 TEST_F(StyleAdjusterTest, TouchActionPanningReEnabledByScrollers) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>#ancestor { margin: 0; touch-action: pinch-zoom; } "
-      "#scroller { overflow: scroll; width: 100px; height: 100px; } "
-      "#target { width: 200px; height: 200px; } </style>"
-      "<div id='ancestor'><div id='scroller'><div id='target'>"
-      "</div></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#ancestor { margin: 0; touch-action: pinch-zoom; }
+    #scroller { overflow: scroll; width: 100px; height: 100px; }
+    #target { width: 200px; height: 200px; } </style>
+    <div id='ancestor'><div id='scroller'><div id='target'>
+    </div></div></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* target = GetDocument().getElementById("target");
@@ -55,12 +58,13 @@ TEST_F(StyleAdjusterTest, TouchActionPanningReEnabledByScrollers) {
 
 TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>#ancestor { margin: 0; touch-action: pan-x; } "
-      "#potential-scroller { width: 100px; height: 100px; overflow: hidden; } "
-      "#target { width: 200px; height: 200px; }</style>"
-      "<div id='ancestor'><div id='potential-scroller'><div id='target'>"
-      "</div></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#ancestor { margin: 0; touch-action: pan-x; }
+    #potential-scroller { width: 100px; height: 100px; overflow: hidden; }
+    #target { width: 200px; height: 200px; }</style>
+    <div id='ancestor'><div id='potential-scroller'><div id='target'>
+    </div></div></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* target = GetDocument().getElementById("target");
@@ -83,11 +87,12 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
 
 TEST_F(StyleAdjusterTest, TouchActionRestrictedByLowerAncestor) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<div id='ancestor' style='touch-action: pan'>"
-      "<div id='parent' style='touch-action: pan-right pan-y'>"
-      "<div id='target' style='touch-action: pan-x'>"
-      "</div></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='ancestor' style='touch-action: pan'>
+    <div id='parent' style='touch-action: pan-right pan-y'>
+    <div id='target' style='touch-action: pan-x'>
+    </div></div></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* target = GetDocument().getElementById("target");

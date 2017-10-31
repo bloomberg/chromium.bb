@@ -13,13 +13,14 @@ using LayoutTableColTest = RenderingTest;
 
 TEST_F(LayoutTableColTest, LocalVisualRectSPv1) {
   ScopedSlimmingPaintV175ForTest spv175(false);
-  SetBodyInnerHTML(
-      "<table id='table' style='width: 200px; height: 200px'>"
-      "  <col id='col1' style='visibility: hidden'>"
-      "  <col id='col2' style='visibility: collapse'>"
-      "  <col id='col3'>"
-      "  <tr><td></td><td></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table' style='width: 200px; height: 200px'>
+      <col id='col1' style='visibility: hidden'>
+      <col id='col2' style='visibility: collapse'>
+      <col id='col3'>
+      <tr><td></td><td></td></tr>
+    </table>
+  )HTML");
 
   auto table_local_visual_rect =
       GetLayoutObjectByElementId("table")->LocalVisualRect();
@@ -34,13 +35,14 @@ TEST_F(LayoutTableColTest, LocalVisualRectSPv1) {
 
 TEST_F(LayoutTableColTest, LocalVisualRectSPv175) {
   ScopedSlimmingPaintV175ForTest spv175(true);
-  SetBodyInnerHTML(
-      "<table style='width: 200px; height: 200px'>"
-      "  <col id='col1' style='visibility: hidden'>"
-      "  <col id='col2' style='visibility: collapse'>"
-      "  <col id='col3'>"
-      "  <tr><td></td><td></td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table style='width: 200px; height: 200px'>
+      <col id='col1' style='visibility: hidden'>
+      <col id='col2' style='visibility: collapse'>
+      <col id='col3'>
+      <tr><td></td><td></td></tr>
+    </table>
+  )HTML");
 
   EXPECT_EQ(LayoutRect(),
             GetLayoutObjectByElementId("col1")->LocalVisualRect());

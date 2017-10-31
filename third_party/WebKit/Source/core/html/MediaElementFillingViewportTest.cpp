@@ -43,14 +43,15 @@ class MediaElementFillingViewportTest : public SimTest {
 
 TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
-  main_resource->Complete(
-      "<!DOCTYPE html>"
-      "<html>"
-      "<video id='video' style = 'position:fixed; left:0; top:0; width:100%; "
-      "height:100%;'>"
-      "source src='test.webm'"
-      "</video>"
-      "</html>");
+  main_resource->Complete(R"HTML(
+    <!DOCTYPE html>
+    <html>
+    <video id='video' style = 'position:fixed; left:0; top:0; width:100%;
+    height:100%;'>
+    source src='test.webm'
+    </video>
+    </html>
+  )HTML");
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
@@ -61,14 +62,15 @@ TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
 
 TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
-  main_resource->Complete(
-      "<!DOCTYPE html>"
-      "<html>"
-      "<video id='video' style = 'position:fixed; left:0; top:0; width:80%; "
-      "height:80%;'>"
-      "source src='test.webm'"
-      "</video>"
-      "</html>");
+  main_resource->Complete(R"HTML(
+    <!DOCTYPE html>
+    <html>
+    <video id='video' style = 'position:fixed; left:0; top:0; width:80%;
+    height:80%;'>
+    source src='test.webm'
+    </video>
+    </html>
+  )HTML");
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
@@ -79,14 +81,15 @@ TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
 
 TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
-  main_resource->Complete(
-      "<!DOCTYPE html>"
-      "<html>"
-      "<video id='video' style = 'position:fixed; left:0; top:0; width:100%; "
-      "height:100%;'>"
-      "source src='test.webm'"
-      "</video>"
-      "</html>");
+  main_resource->Complete(R"HTML(
+    <!DOCTYPE html>
+    <html>
+    <video id='video' style = 'position:fixed; left:0; top:0; width:100%;
+    height:100%;'>
+    source src='test.webm'
+    </video>
+    </html>
+  )HTML");
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
@@ -105,14 +108,15 @@ TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
 
 TEST_F(MediaElementFillingViewportTest, LargeVideo) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
-  main_resource->Complete(
-      "<!DOCTYPE html>"
-      "<html>"
-      "<video id='video' style = 'position:fixed; left:0; top:0; width:200%; "
-      "height:200%;'>"
-      "source src='test.webm'"
-      "</video>"
-      "</html>");
+  main_resource->Complete(R"HTML(
+    <!DOCTYPE html>
+    <html>
+    <video id='video' style = 'position:fixed; left:0; top:0; width:200%;
+    height:200%;'>
+    source src='test.webm'
+    </video>
+    </html>
+  )HTML");
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
@@ -123,14 +127,15 @@ TEST_F(MediaElementFillingViewportTest, LargeVideo) {
 
 TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
-  main_resource->Complete(
-      "<!DOCTYPE html>"
-      "<html>"
-      "<video id='video' style = 'position:fixed; left:0; top:0; width:100%; "
-      "height:100%;'>"
-      "source src='test.webm'"
-      "</video>"
-      "</html>");
+  main_resource->Complete(R"HTML(
+    <!DOCTYPE html>
+    <html>
+    <video id='video' style = 'position:fixed; left:0; top:0; width:100%;
+    height:100%;'>
+    source src='test.webm'
+    </video>
+    </html>
+  )HTML");
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =

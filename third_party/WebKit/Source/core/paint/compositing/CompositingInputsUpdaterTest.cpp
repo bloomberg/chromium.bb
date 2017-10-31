@@ -25,14 +25,15 @@ TEST_F(CompositingInputsUpdaterTest,
   // making them positioned), and the previous ancestor overflow must change
   // from being scrollable to non-scrollable (achieved by setting its overflow
   // property to visible at the same time as we change the inner scroller.)
-  SetBodyInnerHTML(
-      "<style>#outerScroller { position: relative; overflow: scroll; "
-      "height: 500px; width: 100px; }"
-      "#innerScroller { position: relative; height: 100px; }"
-      "#sticky { position: sticky; top: 0; height: 50px; width: 50px; }"
-      "#padding { height: 200px; }</style>"
-      "<div id='outerScroller'><div id='innerScroller'><div id='sticky'></div>"
-      "<div id='padding'></div></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#outerScroller { position: relative; overflow: scroll;
+    height: 500px; width: 100px; }
+    #innerScroller { position: relative; height: 100px; }
+    #sticky { position: sticky; top: 0; height: 50px; width: 50px; }
+    #padding { height: 200px; }</style>
+    <div id='outerScroller'><div id='innerScroller'><div id='sticky'></div>
+    <div id='padding'></div></div></div>
+  )HTML");
 
   LayoutBoxModelObject* outer_scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerScroller"));

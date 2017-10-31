@@ -40,21 +40,22 @@ INSTANTIATE_TEST_CASE_P(All, PaintInvalidationTest, ::testing::Bool());
 // revealed additional background that can be scrolled into view.
 TEST_P(PaintInvalidationTest, RecalcOverflowInvalidatesBackground) {
   GetDocument().GetPage()->GetSettings().SetViewportEnabled(true);
-  SetBodyInnerHTML(
-      "<!DOCTYPE html>"
-      "<style type='text/css'>"
-      "  body, html {"
-      "    width: 100%;"
-      "    height: 100%;"
-      "    margin: 0px;"
-      "  }"
-      "  #container {"
-      "    will-change: transform;"
-      "    width: 100%;"
-      "    height: 100%;"
-      "  }"
-      "</style>"
-      "<div id='container'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style type='text/css'>
+      body, html {
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+      }
+      #container {
+        will-change: transform;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <div id='container'></div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -77,12 +78,13 @@ TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 10px }"
-      "  iframe { width: 100px; height: 100px; border: none; }"
-      "</style>"
-      "<iframe id='iframe'></iframe>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 10px }
+      iframe { width: 100px; height: 100px; border: none; }
+    </style>
+    <iframe id='iframe'></iframe>
+  )HTML");
 
   Element* iframe = GetDocument().getElementById("iframe");
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
@@ -103,28 +105,29 @@ TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
 // on transform change causing no visual change.
 TEST_P(PaintInvalidationTest, InvisibleTransformUnderFixedOnScroll) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>"
-      "  #fixed {"
-      "    position: fixed;"
-      "    top: 0;"
-      "    left: 0;"
-      "    width: 100px;"
-      "    height: 100px;"
-      "    background-color: blue;"
-      "  }"
-      "  #transform {"
-      "    width: 100px;"
-      "    height: 100px;"
-      "    background-color: yellow;"
-      "    will-change: transform;"
-      "    transform: translate(10px, 20px);"
-      "  }"
-      "</style>"
-      "<div style='height: 2000px'></div>"
-      "<div id='fixed' style='visibility: hidden'>"
-      "  <div id='transform'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #fixed {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100px;
+        height: 100px;
+        background-color: blue;
+      }
+      #transform {
+        width: 100px;
+        height: 100px;
+        background-color: yellow;
+        will-change: transform;
+        transform: translate(10px, 20px);
+      }
+    </style>
+    <div style='height: 2000px'></div>
+    <div id='fixed' style='visibility: hidden'>
+      <div id='transform'></div>
+    </div>
+  )HTML");
 
   auto& fixed = *GetDocument().getElementById("fixed");
   const auto& fixed_object = ToLayoutBox(*fixed.GetLayoutObject());
@@ -171,11 +174,12 @@ TEST_P(PaintInvalidationTest, InvisibleTransformUnderFixedOnScroll) {
 
 TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>body { margin: 0 }</style>"
-      "<div style='height: 4000px'></div>"
-      "<div id='target' style='width: 100px; height: 100px; background: blue'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div style='height: 4000px'></div>
+    <div id='target' style='width: 100px; height: 100px; background: blue'>
+    </div>
+  )HTML");
 
   auto* target = GetLayoutObjectByElementId("target");
   target->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
@@ -209,16 +213,17 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
 
 TEST_P(PaintInvalidationTest, SVGHiddenContainer) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<svg style='position: absolute; top: 100px; left: 100px'>"
-      "  <mask id='mask'>"
-      "    <g transform='scale(2)'>"
-      "      <rect id='mask-rect' x='11' y='22' width='33' height='44'/>"
-      "    </g>"
-      "  </mask>"
-      "  <rect id='real-rect' x='55' y='66' width='7' height='8'"
-      "      mask='url(#mask)'/>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg style='position: absolute; top: 100px; left: 100px'>
+      <mask id='mask'>
+        <g transform='scale(2)'>
+          <rect id='mask-rect' x='11' y='22' width='33' height='44'/>
+        </g>
+      </mask>
+      <rect id='real-rect' x='55' y='66' width='7' height='8'
+          mask='url(#mask)'/>
+    </svg>
+  )HTML");
 
   // mask_rect's visual rect is in coordinates of the mask.
   auto* mask_rect = GetLayoutObjectByElementId("mask-rect");

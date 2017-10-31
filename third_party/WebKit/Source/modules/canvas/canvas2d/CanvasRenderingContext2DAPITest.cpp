@@ -295,10 +295,11 @@ TEST_F(CanvasRenderingContext2DAPITest, GetImageDataTooBig) {
 }
 
 void ResetCanvasForAccessibilityRectTest(Document& document) {
-  document.documentElement()->SetInnerHTMLFromString(
-      "<canvas id='canvas' style='position:absolute; top:0px; left:0px; "
-      "padding:10px; margin:5px;'>"
-      "<button id='button'></button></canvas>");
+  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+    <canvas id='canvas' style='position:absolute; top:0px; left:0px;
+    padding:10px; margin:5px;'>
+    <button id='button'></button></canvas>
+  )HTML");
   document.GetSettings()->SetAccessibilityEnabled(true);
   HTMLCanvasElement* canvas =
       ToHTMLCanvasElement(document.getElementById("canvas"));

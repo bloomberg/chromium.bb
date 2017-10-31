@@ -11,13 +11,14 @@ namespace blink {
 class LayoutViewTest : public RenderingTest {};
 
 TEST_F(LayoutViewTest, UpdateCountersLayout) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  div.incX { counter-increment: x }"
-      "  div.incY { counter-increment: y }"
-      "  div::before { content: counter(y) }"
-      "</style>"
-      "<div id=inc></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div.incX { counter-increment: x }
+      div.incY { counter-increment: y }
+      div::before { content: counter(y) }
+    </style>
+    <div id=inc></div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   Element* inc = GetDocument().getElementById("inc");

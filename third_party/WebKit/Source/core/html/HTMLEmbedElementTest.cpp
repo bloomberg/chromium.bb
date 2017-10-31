@@ -44,15 +44,16 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
   // Load <object> element with a <embed> child.
   // This can be seen on sites with Flash cookies,
   // for example on www.yandex.ru
-  SetHtmlInnerHTML(
-      "<div>"
-      "<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='1' "
-      "height='1' id='fco'>"
-      "<param name='movie' value='//site.com/flash-cookie.swf'>"
-      "<param name='allowScriptAccess' value='Always'>"
-      "<embed src='//site.com/flash-cookie.swf' allowscriptaccess='Always' "
-      "width='1' height='1' id='fce'>"
-      "</object></div>");
+  SetHtmlInnerHTML(R"HTML(
+    <div>
+    <object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='1'
+    height='1' id='fco'>
+    <param name='movie' value='//site.com/flash-cookie.swf'>
+    <param name='allowScriptAccess' value='Always'>
+    <embed src='//site.com/flash-cookie.swf' allowscriptaccess='Always'
+    width='1' height='1' id='fce'>
+    </object></div>
+  )HTML");
 
   auto* object_element = GetDocument().getElementById("fco");
   ASSERT_TRUE(object_element);

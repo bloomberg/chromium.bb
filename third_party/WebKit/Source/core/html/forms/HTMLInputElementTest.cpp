@@ -73,13 +73,14 @@ TEST_F(HTMLInputElementTest, FilteredDataListOptionsContain) {
 }
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsForMultipleEmail) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      "<input id=test value='foo@example.com, tkent' list=dl3 type=email "
-      "multiple>"
-      "<datalist id=dl3>"
-      "<option>keishi@chromium.org</option>"
-      "<option>tkent@chromium.org</option>"
-      "</datalist>");
+  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+    <input id=test value='foo@example.com, tkent' list=dl3 type=email
+    multiple>
+    <datalist id=dl3>
+    <option>keishi@chromium.org</option>
+    <option>tkent@chromium.org</option>
+    </datalist>
+  )HTML");
   auto options = TestElement().FilteredDataListOptions();
   EXPECT_EQ(1u, options.size());
   EXPECT_EQ("tkent@chromium.org", options[0]->value().Utf8());

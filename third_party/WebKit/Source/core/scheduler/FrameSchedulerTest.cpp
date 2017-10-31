@@ -17,11 +17,12 @@ class WebFrameSchedulerFrameTypeTest : public SimTest {};
 TEST_F(WebFrameSchedulerFrameTypeTest, GetFrameType) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<!DOCTYPE HTML>"
-      "<body>"
-      "<iframe src=\"about:blank\"></iframe>"
-      "</body>");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE HTML>
+    <body>
+    <iframe src="about:blank"></iframe>
+    </body>
+  )HTML");
 
   EXPECT_EQ(WebFrameScheduler::FrameType::kMainFrame,
             MainFrame().GetFrame()->FrameScheduler()->GetFrameType());

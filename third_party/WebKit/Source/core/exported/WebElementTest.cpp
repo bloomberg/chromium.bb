@@ -132,16 +132,18 @@ TEST_F(WebElementTest, IsEditable) {
   InsertHTML("<div id=testElement contenteditable=true></div>");
   EXPECT_TRUE(TestElement().IsEditable());
 
-  InsertHTML(
-      "<div style='-webkit-user-modify: read-write'>"
-      "  <div id=testElement></div>"
-      "</div>");
+  InsertHTML(R"HTML(
+    <div style='-webkit-user-modify: read-write'>
+      <div id=testElement></div>
+    </div>
+  )HTML");
   EXPECT_TRUE(TestElement().IsEditable());
 
-  InsertHTML(
-      "<div style='-webkit-user-modify: read-write'>"
-      "  <div id=testElement style='-webkit-user-modify: read-only'></div>"
-      "</div>");
+  InsertHTML(R"HTML(
+    <div style='-webkit-user-modify: read-write'>
+      <div id=testElement style='-webkit-user-modify: read-only'></div>
+    </div>
+  )HTML");
   EXPECT_FALSE(TestElement().IsEditable());
 
   InsertHTML("<input id=testElement>");

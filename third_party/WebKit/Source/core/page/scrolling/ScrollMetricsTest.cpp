@@ -123,15 +123,16 @@ void ScrollMetricsTest::SetUpHtml(const char* html_content) {
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
        TouchAndWheelGeneralTest) {
-  SetUpHtml(
-      "<style>"
-      " .box { overflow:scroll; width: 100px; height: 100px; }"
-      " .translucent { opacity: 0.5; }"
-      " .spacer { height: 1000px; }"
-      "</style>"
-      "<div id='box' class='translucent box'>"
-      " <div class='spacer'></div>"
-      "</div>");
+  SetUpHtml(R"HTML(
+    <style>
+     .box { overflow:scroll; width: 100px; height: 100px; }
+     .translucent { opacity: 0.5; }
+     .spacer { height: 1000px; }
+    </style>
+    <div id='box' class='translucent box'>
+     <div class='spacer'></div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -157,16 +158,17 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
        CompositedScrollableAreaTest) {
-  SetUpHtml(
-      "<style>"
-      " .box { overflow:scroll; width: 100px; height: 100px; }"
-      " .translucent { opacity: 0.5; }"
-      " .composited { will-change: transform; }"
-      " .spacer { height: 1000px; }"
-      "</style>"
-      "<div id='box' class='translucent box'>"
-      " <div class='spacer'></div>"
-      "</div>");
+  SetUpHtml(R"HTML(
+    <style>
+     .box { overflow:scroll; width: 100px; height: 100px; }
+     .translucent { opacity: 0.5; }
+     .composited { will-change: transform; }
+     .spacer { height: 1000px; }
+    </style>
+    <div id='box' class='translucent box'>
+     <div class='spacer'></div>
+    </div>
+  )HTML");
 
   WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   GetDocument().View()->SetParentVisible(true);
@@ -194,15 +196,16 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
        NotScrollableAreaTest) {
-  SetUpHtml(
-      "<style>.box { overflow:scroll; width: 100px; height: 100px; }"
-      " .translucent { opacity: 0.5; }"
-      " .hidden { overflow: hidden; }"
-      " .spacer { height: 1000px; }"
-      "</style>"
-      "<div id='box' class='translucent box'>"
-      " <div class='spacer'></div>"
-      "</div>");
+  SetUpHtml(R"HTML(
+    <style>.box { overflow:scroll; width: 100px; height: 100px; }
+     .translucent { opacity: 0.5; }
+     .hidden { overflow: hidden; }
+     .spacer { height: 1000px; }
+    </style>
+    <div id='box' class='translucent box'>
+     <div class='spacer'></div>
+    </div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -223,25 +226,26 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
-  SetUpHtml(
-      "<style>"
-      " .container { overflow:scroll; width: 200px; height: 200px; }"
-      " .box { overflow:scroll; width: 100px; height: 100px; }"
-      " .translucent { opacity: 0.5; }"
-      " .transform { transform: scale(0.8); }"
-      " .with-border-radius { border: 5px solid; border-radius: 5px; }"
-      " .spacer { height: 1000px; }"
-      " .composited { will-change: transform; }"
-      "</style>"
-      "<div id='container' class='container with-border-radius'>"
-      "  <div class='translucent box'>"
-      "    <div id='inner' class='composited transform box'>"
-      "      <div class='spacer'></div>"
-      "    </div>"
-      "    <div class='spacer'></div>"
-      "  </div>"
-      "  <div class='spacer'></div>"
-      "</div>");
+  SetUpHtml(R"HTML(
+    <style>
+     .container { overflow:scroll; width: 200px; height: 200px; }
+     .box { overflow:scroll; width: 100px; height: 100px; }
+     .translucent { opacity: 0.5; }
+     .transform { transform: scale(0.8); }
+     .with-border-radius { border: 5px solid; border-radius: 5px; }
+     .spacer { height: 1000px; }
+     .composited { will-change: transform; }
+    </style>
+    <div id='container' class='container with-border-radius'>
+      <div class='translucent box'>
+        <div id='inner' class='composited transform box'>
+          <div class='spacer'></div>
+        </div>
+        <div class='spacer'></div>
+      </div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
 
   WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   GetDocument().View()->SetParentVisible(true);

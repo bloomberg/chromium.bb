@@ -197,13 +197,14 @@ TEST_F(AccessibilityObjectModelTest, ListItem) {
 TEST_F(AccessibilityObjectModelTest, Grid) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<div role=grid id=grid>"
-      "  <div role=row id=row>"
-      "    <div role=gridcell id=cell></div>"
-      "    <div role=gridcell id=cell2></div>"
-      "  </div>"
-      "</div>");
+  main_resource.Complete(R"HTML(
+    <div role=grid id=grid>
+      <div role=row id=row>
+        <div role=gridcell id=cell></div>
+        <div role=gridcell id=cell2></div>
+      </div>
+    </div>
+  )HTML");
 
   auto* grid = GetDocument().getElementById("grid");
   ASSERT_NE(nullptr, grid);
@@ -279,19 +280,20 @@ class SparseAttributeAdapter : public AXSparseAttributeClient {
 TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<input id=target"
-      " aria-keyshortcuts=Ctrl+K"
-      " aria-roledescription=Widget"
-      " aria-activedescendant=active"
-      " aria-details=details"
-      " aria-errormessage=error>"
-      "<div id=active role=option></div>"
-      "<div id=active2 role=gridcell></div>"
-      "<div id=details role=contentinfo></div>"
-      "<div id=details2 role=form></div>"
-      "<div id=error role=article>Error</div>"
-      "<div id=error2 role=banner>Error 2</div>");
+  main_resource.Complete(R"HTML(
+    <input id=target
+     aria-keyshortcuts=Ctrl+K
+     aria-roledescription=Widget
+     aria-activedescendant=active
+     aria-details=details
+     aria-errormessage=error>
+    <div id=active role=option></div>
+    <div id=active2 role=gridcell></div>
+    <div id=details role=contentinfo></div>
+    <div id=details2 role=form></div>
+    <div id=error role=article>Error</div>
+    <div id=error2 role=banner>Error 2</div>
+  )HTML");
 
   auto* target = GetDocument().getElementById("target");
   auto* cache = AXObjectCache();
@@ -353,11 +355,12 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
 TEST_F(AccessibilityObjectModelTest, LabeledBy) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<input id=target aria-labelledby='l1 l2'>"
-      "<label id=l1>Label 1</label>"
-      "<label id=l2>Label 2</label>"
-      "<label id=l3>Label 3</label>");
+  main_resource.Complete(R"HTML(
+    <input id=target aria-labelledby='l1 l2'>
+    <label id=l1>Label 1</label>
+    <label id=l2>Label 2</label>
+    <label id=l3>Label 3</label>
+  )HTML");
 
   auto* target = GetDocument().getElementById("target");
   auto* l1 = GetDocument().getElementById("l1");

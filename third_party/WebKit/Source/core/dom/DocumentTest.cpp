@@ -372,24 +372,25 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
 // This tests that we properly resize and re-layout pages for printing in the
 // presence of media queries effecting elements in a subtree layout boundary
 TEST_F(DocumentTest, PrintRelayout) {
-  SetHtmlInnerHTML(
-      "<style>"
-      "    div {"
-      "        width: 100px;"
-      "        height: 100px;"
-      "        overflow: hidden;"
-      "    }"
-      "    span {"
-      "        width: 50px;"
-      "        height: 50px;"
-      "    }"
-      "    @media screen {"
-      "        span {"
-      "            width: 20px;"
-      "        }"
-      "    }"
-      "</style>"
-      "<p><div><span></span></div></p>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+        div {
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+        }
+        span {
+            width: 50px;
+            height: 50px;
+        }
+        @media screen {
+            span {
+                width: 20px;
+            }
+        }
+    </style>
+    <p><div><span></span></div></p>
+  )HTML");
   FloatSize page_size(400, 400);
   float maximum_shrink_ratio = 1.6;
 
@@ -539,12 +540,13 @@ TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
 }
 
 TEST_F(DocumentTest, StyleVersion) {
-  SetHtmlInnerHTML(
-      "<style>"
-      "    .a * { color: green }"
-      "    .b .c { color: green }"
-      "</style>"
-      "<div id='x'><span class='c'></span></div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+        .a * { color: green }
+        .b .c { color: green }
+    </style>
+    <div id='x'><span class='c'></span></div>
+  )HTML");
 
   Element* element = GetDocument().getElementById("x");
   EXPECT_TRUE(element);
@@ -880,13 +882,14 @@ TEST_F(DocumentTest, SuboriginDisablesAppCache) {
 // as it is more expensive than just doing layout.
 TEST_F(DocumentTest,
        EnsurePaintLocationDataValidForNodeCompositingInputsOnlyWhenNecessary) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div id='ancestor'>"
-      "  <div id='sticky' style='position:sticky;'>"
-      "    <div id='stickyChild'></div>"
-      "  </div>"
-      "  <div id='nonSticky'></div>"
-      "</div>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id='ancestor'>
+      <div id='sticky' style='position:sticky;'>
+        <div id='stickyChild'></div>
+      </div>
+      <div id='nonSticky'></div>
+    </div>
+  )HTML");
   EXPECT_EQ(DocumentLifecycle::kStyleClean,
             GetDocument().Lifecycle().GetState());
 
@@ -924,10 +927,11 @@ TEST_F(DocumentTest,
 // elements does not trigger a style recalc for viewport style propagation when
 // the computed style for another element in the document is recalculated.
 TEST_F(DocumentTest, ViewportPropagationNoRecalc) {
-  SetHtmlInnerHTML(
-      "<body style='direction:rtl'>"
-      "  <div id=recalc></div>"
-      "</body>");
+  SetHtmlInnerHTML(R"HTML(
+    <body style='direction:rtl'>
+      <div id=recalc></div>
+    </body>
+  )HTML");
 
   int old_element_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
@@ -957,11 +961,12 @@ TEST_P(ParameterizedDocumentTest, ElementFromPointOnScrollbar) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
 
-  SetHtmlInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "</style>"
-      "<div id='content'>content</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+    </style>
+    <div id='content'>content</div>
+  )HTML");
 
   // A hit test close to the bottom of the page without scrollbars should hit
   // the body element.
@@ -983,11 +988,12 @@ TEST_P(ParameterizedDocumentTest, ElementFromPointWithPageZoom) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
 
-  SetHtmlInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "</style>"
-      "<div id='content' style='height: 10px;'>content</div>");
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+    </style>
+    <div id='content' style='height: 10px;'>content</div>
+  )HTML");
 
   // A hit test on the content div should hit it.
   auto* content = GetDocument().getElementById("content");

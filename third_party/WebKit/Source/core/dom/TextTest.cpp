@@ -175,10 +175,11 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_Whitespace) {
 }
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_PreserveNewLine) {
-  SetBodyContent(
-      "<div id=pre style='white-space:pre'></div>"
-      "<div id=pre-line style='white-space:pre-line'></div>"
-      "<div id=pre-wrap style='white-space:pre-wrap'></div>");
+  SetBodyContent(R"HTML(
+    <div id=pre style='white-space:pre'></div>
+    <div id=pre-line style='white-space:pre-line'></div>
+    <div id=pre-wrap style='white-space:pre-wrap'></div>
+  )HTML");
   UpdateAllLifecyclePhases();
 
   Text* text = Text::Create(GetDocument(), " ");

@@ -105,14 +105,15 @@ TEST_F(ShadowDOMVTest, FeatureSetMultipleSelectors) {
 TEST_F(ShadowDOMVTest, FeatureSetSubtree) {
   LoadURL("about:blank");
   auto* host = GetDocument().createElement("div");
-  host->CreateShadowRootInternal().SetInnerHTMLFromString(
-      "<div>"
-      "  <div></div>"
-      "  <content select='*'></content>"
-      "  <div>"
-      "    <content select='div[foo=piyo]'></content>"
-      "  </div>"
-      "</div>");
+  host->CreateShadowRootInternal().SetInnerHTMLFromString(R"HTML(
+    <div>
+      <div></div>
+      <content select='*'></content>
+      <div>
+        <content select='div[foo=piyo]'></content>
+      </div>
+    </div>
+  )HTML");
   EXPECT_FALSE(HasSelectorForIdInShadow(host, "foo"));
   EXPECT_FALSE(HasSelectorForClassInShadow(host, "foo"));
   EXPECT_TRUE(HasSelectorForAttributeInShadow(host, "foo"));

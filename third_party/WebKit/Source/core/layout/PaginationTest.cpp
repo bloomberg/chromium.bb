@@ -38,22 +38,24 @@ class PaginationStrutTest : public RenderingTest {
 };
 
 TEST_F(PaginationStrutTest, LineWithStrut) {
-  SetBodyInnerHTML(
-      "<div id='paged' style='overflow:-webkit-paged-y; height:200px; "
-      "line-height:150px;'>"
-      "    line1<br>"
-      "    line2<br>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='paged' style='overflow:-webkit-paged-y; height:200px;
+    line-height:150px;'>
+        line1<br>
+        line2<br>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForLine("paged", 0));
   EXPECT_EQ(50, StrutForLine("paged", 1));
 }
 
 TEST_F(PaginationStrutTest, BlockWithStrut) {
-  SetBodyInnerHTML(
-      "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
-      "    <div id='block1'>line1</div>"
-      "    <div id='block2'>line2</div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>
+        <div id='block1'>line1</div>
+        <div id='block2'>line2</div>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForBox("block1"));
   EXPECT_EQ(0, StrutForLine("block1", 0));
   EXPECT_EQ(50, StrutForBox("block2"));
@@ -61,33 +63,36 @@ TEST_F(PaginationStrutTest, BlockWithStrut) {
 }
 
 TEST_F(PaginationStrutTest, FloatWithStrut) {
-  SetBodyInnerHTML(
-      "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
-      "    <div style='height:120px;'></div>"
-      "    <div id='float' style='float:left;'>line</div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>
+        <div style='height:120px;'></div>
+        <div id='float' style='float:left;'>line</div>
+    </div>
+  )HTML");
   EXPECT_EQ(80, StrutForBox("float"));
   EXPECT_EQ(0, StrutForLine("float", 0));
 }
 
 TEST_F(PaginationStrutTest, UnbreakableBlockWithStrut) {
-  SetBodyInnerHTML(
-      "<style>img { display:block; width:100px; height:150px; outline:4px "
-      "solid blue; padding:0; border:none; margin:0; }</style>"
-      "<div style='overflow:-webkit-paged-y; height:200px;'>"
-      "    <img id='img1'>"
-      "    <img id='img2'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>img { display:block; width:100px; height:150px; outline:4px
+    solid blue; padding:0; border:none; margin:0; }</style>
+    <div style='overflow:-webkit-paged-y; height:200px;'>
+        <img id='img1'>
+        <img id='img2'>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForBox("img1"));
   EXPECT_EQ(50, StrutForBox("img2"));
 }
 
 TEST_F(PaginationStrutTest, BreakBefore) {
-  SetBodyInnerHTML(
-      "<div style='overflow:-webkit-paged-y; height:400px; line-height:50px;'>"
-      "    <div id='block1'>line1</div>"
-      "    <div id='block2' style='break-before:page;'>line2</div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='overflow:-webkit-paged-y; height:400px; line-height:50px;'>
+        <div id='block1'>line1</div>
+        <div id='block2' style='break-before:page;'>line2</div>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForBox("block1"));
   EXPECT_EQ(0, StrutForLine("block1", 0));
   EXPECT_EQ(350, StrutForBox("block2"));
@@ -95,13 +100,14 @@ TEST_F(PaginationStrutTest, BreakBefore) {
 }
 
 TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromInnerBlock) {
-  SetBodyInnerHTML(
-      "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
-      "    <div id='block1'>line1</div>"
-      "    <div id='block2' style='padding-top:2px;'>"
-      "        <div id='innerBlock' style='padding-top:2px;'>line2</div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>
+        <div id='block1'>line1</div>
+        <div id='block2' style='padding-top:2px;'>
+            <div id='innerBlock' style='padding-top:2px;'>line2</div>
+        </div>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForBox("block1"));
   EXPECT_EQ(0, StrutForLine("block1", 0));
   EXPECT_EQ(50, StrutForBox("block2"));
@@ -110,17 +116,18 @@ TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromInnerBlock) {
 }
 
 TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromUnbreakableInnerBlock) {
-  SetBodyInnerHTML(
-      "<div style='overflow:-webkit-paged-y; height:400px; line-height:150px;'>"
-      "    <div id='block1'>line1</div>"
-      "    <div id='block2' style='padding-top:2px;'>"
-      "        <div id='innerBlock' style='padding-top:2px; "
-      "break-inside:avoid;'>"
-      "            line2<br>"
-      "            line3<br>"
-      "        </div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='overflow:-webkit-paged-y; height:400px; line-height:150px;'>
+        <div id='block1'>line1</div>
+        <div id='block2' style='padding-top:2px;'>
+            <div id='innerBlock' style='padding-top:2px;
+    break-inside:avoid;'>
+                line2<br>
+                line3<br>
+            </div>
+        </div>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForBox("block1"));
   EXPECT_EQ(0, StrutForLine("block1", 0));
   EXPECT_EQ(250, StrutForBox("block2"));
@@ -130,14 +137,15 @@ TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromUnbreakableInnerBlock) {
 }
 
 TEST_F(PaginationStrutTest, InnerBlockWithBreakBefore) {
-  SetBodyInnerHTML(
-      "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
-      "    <div id='block1'>line1</div>"
-      "    <div id='block2' style='padding-top:2px;'>"
-      "        <div id='innerBlock' style='padding-top:2px; "
-      "break-before:page;'>line2</div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>
+        <div id='block1'>line1</div>
+        <div id='block2' style='padding-top:2px;'>
+            <div id='innerBlock' style='padding-top:2px;
+    break-before:page;'>line2</div>
+        </div>
+    </div>
+  )HTML");
   EXPECT_EQ(0, StrutForBox("block1"));
   EXPECT_EQ(0, StrutForLine("block1", 0));
   // There's no class A break point before #innerBlock (they only exist

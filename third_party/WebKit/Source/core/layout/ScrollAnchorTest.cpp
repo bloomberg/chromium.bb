@@ -79,10 +79,11 @@ INSTANTIATE_TEST_CASE_P(All, ScrollAnchorTest, ::testing::Bool());
 // failure when running with other tests. Dig into this more and fix.
 TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
   HistogramTester histogram_tester;
-  SetBodyInnerHTML(
-      "<style> body { height: 1000px } div { height: 100px } </style>"
-      "<div id='block1'>abc</div>"
-      "<div id='block2'>def</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { height: 1000px } div { height: 100px } </style>
+    <div id='block1'>abc</div>
+    <div id='block2'>def</div>
+  )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
 
@@ -104,13 +105,14 @@ TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
 // TODO(skobes): Convert this to web-platform-tests when visual viewport API is
 // launched (http://crbug.com/635031).
 TEST_P(ScrollAnchorTest, VisualViewportAnchors) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    * { font-size: 1.2em; font-family: sans-serif; }"
-      "    div { height: 100px; width: 20px; background-color: pink; }"
-      "</style>"
-      "<div id='div'></div>"
-      "<div id='text'><b>This is a scroll anchoring test</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        * { font-size: 1.2em; font-family: sans-serif; }
+        div { height: 100px; width: 20px; background-color: pink; }
+    </style>
+    <div id='div'></div>
+    <div id='text'><b>This is a scroll anchoring test</div>
+  )HTML");
 
   ScrollableArea* l_viewport = LayoutViewport();
   VisualViewport& v_viewport = GetVisualViewport();
@@ -143,14 +145,15 @@ TEST_P(ScrollAnchorTest, VisualViewportAnchors) {
 // Test that a non-anchoring scroll on scroller clears scroll anchors for all
 // parent scrollers.
 TEST_P(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    body { height: 1000px } div { height: 200px }"
-      "    #scroller { height: 100px; width: 200px; overflow: scroll; }"
-      "</style>"
-      "<div id='changer'>abc</div>"
-      "<div id='anchor'>def</div>"
-      "<div id='scroller'><div></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        body { height: 1000px } div { height: 200px }
+        #scroller { height: 100px; width: 200px; overflow: scroll; }
+    </style>
+    <div id='changer'>abc</div>
+    <div id='anchor'>def</div>
+    <div id='scroller'><div></div></div>
+  )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
 
@@ -169,24 +172,25 @@ TEST_P(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
 }
 
 TEST_P(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
-  SetBodyInnerHTML(
-      "<style>"
-      ".scroller {"
-      "  overflow: scroll;"
-      "  width: 400px;"
-      "  height: 400px;"
-      "}"
-      ".space {"
-      "  width: 100px;"
-      "  height: 600px;"
-      "}"
-      "</style>"
-      "<div id='s1' class='scroller'>"
-      "  <div id='anchor' class='space'></div>"
-      "</div>"
-      "<div id='s2' class='scroller'>"
-      "  <div class='space'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .scroller {
+      overflow: scroll;
+      width: 400px;
+      height: 400px;
+    }
+    .space {
+      width: 100px;
+      height: 600px;
+    }
+    </style>
+    <div id='s1' class='scroller'>
+      <div id='anchor' class='space'></div>
+    </div>
+    <div id='s2' class='scroller'>
+      <div class='space'></div>
+    </div>
+  )HTML");
   Element* s1 = GetDocument().getElementById("s1");
   Element* s2 = GetDocument().getElementById("s2");
   Element* anchor = GetDocument().getElementById("anchor");
@@ -210,10 +214,11 @@ TEST_P(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
 }
 
 TEST_P(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
-  SetBodyInnerHTML(
-      "<style> body { height: 1000px } </style>"
-      "<div id='block1' style='height: 50.4px'>abc</div>"
-      "<div id='block2' style='height: 100px'>def</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { height: 1000px } </style>
+    <div id='block1' style='height: 50.4px'>abc</div>
+    <div id='block2' style='height: 100px'>def</div>
+  )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 100));
@@ -226,11 +231,12 @@ TEST_P(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
 }
 
 TEST_P(ScrollAnchorTest, AvoidStickyAnchorWhichMovesWithScroll) {
-  SetBodyInnerHTML(
-      "<style> body { height: 1000px } </style>"
-      "<div id='block1' style='height: 50px'>abc</div>"
-      "<div id='block2' style='height: 100px; position: sticky; top: 0;'>"
-      "    def</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { height: 1000px } </style>
+    <div id='block1' style='height: 50px'>abc</div>
+    <div id='block2' style='height: 100px; position: sticky; top: 0;'>
+        def</div>
+  )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 60));
@@ -243,17 +249,18 @@ TEST_P(ScrollAnchorTest, AvoidStickyAnchorWhichMovesWithScroll) {
 }
 
 TEST_P(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    #scroller { overflow: scroll; width: 500px; height: 400px; }"
-      "    div { height: 100px }"
-      "    #block2 { overflow: hidden }"
-      "    #space { height: 1000px; }"
-      "</style>"
-      "<div id='scroller'><div id='space'>"
-      "<div id='block1'>abc</div>"
-      "<div id='block2'>def</div>"
-      "</div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        #scroller { overflow: scroll; width: 500px; height: 400px; }
+        div { height: 100px }
+        #block2 { overflow: hidden }
+        #space { height: 1000px; }
+    </style>
+    <div id='scroller'><div id='space'>
+    <div id='block1'>abc</div>
+    <div id='block2'>def</div>
+    </div></div>
+  )HTML");
 
   ScrollableArea* scroller =
       ScrollerForElement(GetDocument().getElementById("scroller"));
@@ -278,19 +285,20 @@ TEST_P(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
 // Verify that a nested scroller with a div that has its own PaintLayer can be
 // removed without causing a crash. This test passes if it doesn't crash.
 TEST_P(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    body { height: 2000px }"
-      "    #scroller { overflow: scroll; width: 500px; height: 400px}"
-      "    #block1 { height: 100px; width: 100px; overflow: hidden}"
-      "    #anchor { height: 1000px; }"
-      "</style>"
-      "<div id='changer1'></div>"
-      "<div id='scroller'>"
-      "  <div id='changer2'></div>"
-      "  <div id='block1'></div>"
-      "  <div id='anchor'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        body { height: 2000px }
+        #scroller { overflow: scroll; width: 500px; height: 400px}
+        #block1 { height: 100px; width: 100px; overflow: hidden}
+        #anchor { height: 1000px; }
+    </style>
+    <div id='changer1'></div>
+    <div id='scroller'>
+      <div id='changer2'></div>
+      <div id='block1'></div>
+      <div id='anchor'></div>
+    </div>
+  )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
   ScrollableArea* scroller =
@@ -318,27 +326,28 @@ TEST_P(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
 }
 
 TEST_P(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    html { overflow: hidden; }"
-      "    body {"
-      "        position: absolute; display: flex;"
-      "        top: 0; bottom: 0; margin: 0;"
-      "    }"
-      "    #scroller { overflow: auto; }"
-      "    #spacer { width: 600px; height: 1200px; }"
-      "    #before { height: 50px; }"
-      "    #anchor {"
-      "        width: 100px; height: 100px;"
-      "        background-color: #8f8;"
-      "    }"
-      "</style>"
-      "<div id='scroller'>"
-      "    <div id='spacer'>"
-      "        <div id='before'></div>"
-      "        <div id='anchor'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        html { overflow: hidden; }
+        body {
+            position: absolute; display: flex;
+            top: 0; bottom: 0; margin: 0;
+        }
+        #scroller { overflow: auto; }
+        #spacer { width: 600px; height: 1200px; }
+        #before { height: 50px; }
+        #anchor {
+            width: 100px; height: 100px;
+            background-color: #8f8;
+        }
+    </style>
+    <div id='scroller'>
+        <div id='spacer'>
+            <div id='before'></div>
+            <div id='anchor'></div>
+        </div>
+    </div>
+  )HTML");
 
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(100);
@@ -348,26 +357,27 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment) {
 }
 
 TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    html { overflow: hidden; }"
-      "    body {"
-      "        position: absolute; display: flex;"
-      "        top: 0; bottom: 0; margin: 0;"
-      "    }"
-      "    #scroller { overflow: auto; }"
-      "    #spacer { width: 600px; height: 1200px; }"
-      "    #anchor {"
-      "        position: relative; top: 50px;"
-      "        width: 100px; height: 100px;"
-      "        background-color: #8f8;"
-      "    }"
-      "</style>"
-      "<div id='scroller'>"
-      "    <div id='spacer'>"
-      "        <div id='anchor'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        html { overflow: hidden; }
+        body {
+            position: absolute; display: flex;
+            top: 0; bottom: 0; margin: 0;
+        }
+        #scroller { overflow: auto; }
+        #spacer { width: 600px; height: 1200px; }
+        #anchor {
+            position: relative; top: 50px;
+            width: 100px; height: 100px;
+            background-color: #8f8;
+        }
+    </style>
+    <div id='scroller'>
+        <div id='spacer'>
+            <div id='anchor'></div>
+        </div>
+    </div>
+  )HTML");
 
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(100);
@@ -381,30 +391,31 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
 // TODO(skobes): Convert this to web-platform-tests when document.rootScroller
 // is launched (http://crbug.com/505516).
 TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
-  SetBodyInnerHTML(
-      "<style>"
-      "    ::-webkit-scrollbar {"
-      "      width: 0px; height: 0px;"
-      "    }"
-      "    body, html {"
-      "      margin: 0px; width: 100%; height: 100%;"
-      "    }"
-      "    #rootscroller {"
-      "      overflow: scroll; width: 100%; height: 100%;"
-      "    }"
-      "    .spacer {"
-      "      height: 600px; width: 100px;"
-      "    }"
-      "    #target {"
-      "      height: 100px; width: 100px; background-color: red;"
-      "    }"
-      "</style>"
-      "<div id='rootscroller'>"
-      "    <div id='firstChild' class='spacer'></div>"
-      "    <div id='target'></div>"
-      "    <div class='spacer'></div>"
-      "</div>"
-      "<div class='spacer'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+        ::-webkit-scrollbar {
+          width: 0px; height: 0px;
+        }
+        body, html {
+          margin: 0px; width: 100%; height: 100%;
+        }
+        #rootscroller {
+          overflow: scroll; width: 100%; height: 100%;
+        }
+        .spacer {
+          height: 600px; width: 100px;
+        }
+        #target {
+          height: 100px; width: 100px; background-color: red;
+        }
+    </style>
+    <div id='rootscroller'>
+        <div id='firstChild' class='spacer'></div>
+        <div id='target'></div>
+        <div class='spacer'></div>
+    </div>
+    <div class='spacer'></div>
+  )HTML");
 
   Element* root_scroller_element = GetDocument().getElementById("rootscroller");
 
@@ -438,10 +449,11 @@ TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
 // This test verifies that scroll anchoring is disabled when the document is in
 // printing mode.
 TEST_P(ScrollAnchorTest, AnchoringDisabledForPrinting) {
-  SetBodyInnerHTML(
-      "<style> body { height: 1000px } div { height: 100px } </style>"
-      "<div id='block1'>abc</div>"
-      "<div id='block2'>def</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style> body { height: 1000px } div { height: 100px } </style>
+    <div id='block1'>abc</div>
+    <div id='block2'>def</div>
+  )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 150));

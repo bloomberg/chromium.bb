@@ -54,21 +54,22 @@ INSTANTIATE_TEST_CASE_P(All,
                         ::testing::ValuesIn(kDefaultPaintTestConfigurations));
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence) {
-  SetBodyInnerHTML(
-      "<div id='container1' style='position: relative; z-index: 1;"
-      "    width: 200px; height: 200px; background-color: blue'>"
-      "  <div id='content1' style='position: absolute; width: 100px;"
-      "      height: 100px; background-color: red'></div>"
-      "</div>"
-      "<div id='filler1' style='position: relative; z-index: 2;"
-      "    width: 20px; height: 20px; background-color: gray'></div>"
-      "<div id='container2' style='position: relative; z-index: 3;"
-      "    width: 200px; height: 200px; background-color: blue'>"
-      "  <div id='content2' style='position: absolute; width: 100px;"
-      "      height: 100px; background-color: green;'></div>"
-      "</div>"
-      "<div id='filler2' style='position: relative; z-index: 4;"
-      "    width: 20px; height: 20px; background-color: gray'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container1' style='position: relative; z-index: 1;
+        width: 200px; height: 200px; background-color: blue'>
+      <div id='content1' style='position: absolute; width: 100px;
+          height: 100px; background-color: red'></div>
+    </div>
+    <div id='filler1' style='position: relative; z-index: 2;
+        width: 20px; height: 20px; background-color: gray'></div>
+    <div id='container2' style='position: relative; z-index: 3;
+        width: 200px; height: 200px; background-color: blue'>
+      <div id='content2' style='position: absolute; width: 100px;
+          height: 100px; background-color: green;'></div>
+    </div>
+    <div id='filler2' style='position: relative; z-index: 4;
+        width: 20px; height: 20px; background-color: gray'></div>
+  )HTML");
 
   auto& container1 = *GetLayoutObjectByElementId("container1");
   auto& content1 = *GetLayoutObjectByElementId("content1");
@@ -158,25 +159,26 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  SetBodyInnerHTML(
-      "<div id='container1' style='position: relative; z-index: 1;"
-      "   width: 200px; height: 200px; background-color: blue'>"
-      "  <div id='content1' style='position: absolute; width: 100px;"
-      "      height: 100px; background-color: green'></div>"
-      "</div>"
-      "<div id='container2' style='position: relative; z-index: 1;"
-      "    width: 200px; height: 200px; background-color: blue'>"
-      "  <div id='content2a' style='position: absolute; width: 100px;"
-      "      height: 100px; background-color: green'></div>"
-      "  <div id='content2b' style='position: absolute; top: 200px;"
-      "      width: 100px; height: 100px; background-color: green'></div>"
-      "</div>"
-      "<div id='container3' style='position: absolute; z-index: 2;"
-      "    left: 300px; top: 0; width: 200px; height: 200px;"
-      "    background-color: blue'>"
-      "  <div id='content3' style='position: absolute; width: 200px;"
-      "      height: 200px; background-color: green'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container1' style='position: relative; z-index: 1;
+       width: 200px; height: 200px; background-color: blue'>
+      <div id='content1' style='position: absolute; width: 100px;
+          height: 100px; background-color: green'></div>
+    </div>
+    <div id='container2' style='position: relative; z-index: 1;
+        width: 200px; height: 200px; background-color: blue'>
+      <div id='content2a' style='position: absolute; width: 100px;
+          height: 100px; background-color: green'></div>
+      <div id='content2b' style='position: absolute; top: 200px;
+          width: 100px; height: 100px; background-color: green'></div>
+    </div>
+    <div id='container3' style='position: absolute; z-index: 2;
+        left: 300px; top: 0; width: 200px; height: 200px;
+        background-color: blue'>
+      <div id='content3' style='position: absolute; width: 200px;
+          height: 200px; background-color: green'></div>
+    </div>
+  )HTML");
   InvalidateAll(RootPaintController());
 
   LayoutObject& container1 =
@@ -252,11 +254,12 @@ TEST_P(PaintLayerPainterTest,
        CachedSubsequenceOnInterestRectChangeUnderInvalidationChecking) {
   ScopedPaintUnderInvalidationCheckingForTest under_invalidation_checking(true);
 
-  SetBodyInnerHTML(
-      "<style>p { width: 200px; height: 50px; background: green }</style>"
-      "<div id='target' style='position: relative; z-index: 1'>"
-      "  <p></p><p></p><p></p><p></p>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>p { width: 200px; height: 50px; background: green }</style>
+    <div id='target' style='position: relative; z-index: 1'>
+      <p></p><p></p><p></p><p></p>
+    </div>
+  )HTML");
   InvalidateAll(RootPaintController());
 
   // |target| will be fully painted.
@@ -273,17 +276,18 @@ TEST_P(PaintLayerPainterTest,
 
 TEST_P(PaintLayerPainterTest,
        CachedSubsequenceOnStyleChangeWithInterestRectClipping) {
-  SetBodyInnerHTML(
-      "<div id='container1' style='position: relative; z-index: 1;"
-      "    width: 200px; height: 200px; background-color: blue'>"
-      "  <div id='content1' style='position: absolute; width: 100px;"
-      "      height: 100px; background-color: red'></div>"
-      "</div>"
-      "<div id='container2' style='position: relative; z-index: 1;"
-      "    width: 200px; height: 200px; background-color: blue'>"
-      "  <div id='content2' style='position: absolute; width: 100px;"
-      "      height: 100px; background-color: green'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container1' style='position: relative; z-index: 1;
+        width: 200px; height: 200px; background-color: blue'>
+      <div id='content1' style='position: absolute; width: 100px;
+          height: 100px; background-color: red'></div>
+    </div>
+    <div id='container2' style='position: relative; z-index: 1;
+        width: 200px; height: 200px; background-color: blue'>
+      <div id='content2' style='position: absolute; width: 100px;
+          height: 100px; background-color: green'></div>
+    </div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // PaintResult of all subsequences will be MayBeClippedByPaintDirtyRect.
   IntRect interest_rect(0, 0, 50, 300);
@@ -342,14 +346,15 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
       "width: 50px; height: 50px; background-color: green";
   AtomicString style_with_outline =
       "outline: 1px solid blue; " + style_without_outline;
-  SetBodyInnerHTML(
-      "<div id='self-painting-layer' style='position: absolute'>"
-      "  <div id='non-self-painting-layer' style='overflow: hidden'>"
-      "    <div>"
-      "      <div id='outline'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='self-painting-layer' style='position: absolute'>
+      <div id='non-self-painting-layer' style='overflow: hidden'>
+        <div>
+          <div id='outline'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LayoutObject& outline_div =
       *GetDocument().getElementById("outline")->GetLayoutObject();
   ToHTMLElement(outline_div.GetNode())
@@ -407,15 +412,16 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
   AtomicString style_without_float =
       "width: 50px; height: 50px; background-color: green";
   AtomicString style_with_float = "float: left; " + style_without_float;
-  SetBodyInnerHTML(
-      "<div id='self-painting-layer' style='position: absolute'>"
-      "  <div id='non-self-painting-layer' style='overflow: hidden'>"
-      "    <div>"
-      "      <div id='float' style='width: 10px; height: 10px; "
-      "          background-color: blue'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='self-painting-layer' style='position: absolute'>
+      <div id='non-self-painting-layer' style='overflow: hidden'>
+        <div>
+          <div id='float' style='width: 10px; height: 10px;
+              background-color: blue'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LayoutObject& float_div =
       *GetDocument().getElementById("float")->GetLayoutObject();
   ToHTMLElement(float_div.GetNode())
@@ -458,15 +464,16 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
-  SetBodyInnerHTML(
-      "<div id='self-painting-layer' style='position: absolute'>"
-      "  <div id='non-self-painting-layer' style='overflow: hidden'>"
-      "    <span id='span' style='position: relative'>"
-      "      <div id='float' style='width: 10px; height: 10px; "
-      "          background-color: blue; float: left'></div>"
-      "    </span>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='self-painting-layer' style='position: absolute'>
+      <div id='non-self-painting-layer' style='overflow: hidden'>
+        <span id='span' style='position: relative'>
+          <div id='float' style='width: 10px; height: 10px;
+              background-color: blue; float: left'></div>
+        </span>
+      </div>
+    </div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutObject& float_div =
@@ -499,14 +506,15 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   AtomicString style_without_background = "width: 50px; height: 50px";
   AtomicString style_with_background =
       "background: blue; " + style_without_background;
-  SetBodyInnerHTML(
-      "<div id='self-painting-layer' style='position: absolute'>"
-      "  <div id='non-self-painting-layer' style='overflow: hidden'>"
-      "    <div>"
-      "      <div id='background'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='self-painting-layer' style='position: absolute'>
+      <div id='non-self-painting-layer' style='overflow: hidden'>
+        <div>
+          <div id='background'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LayoutObject& background_div =
       *GetDocument().getElementById("background")->GetLayoutObject();
   ToHTMLElement(background_div.GetNode())
@@ -570,14 +578,15 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval) {
-  SetBodyInnerHTML(
-      "<div id='layer' style='position: relative'>"
-      "  <div style='height: 100px'>"
-      "    <div style='height: 20px; outline: 1px solid red;"
-      "        background-color: green'>outline and background</div>"
-      "    <div style='float: left'>float</div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='layer' style='position: relative'>
+      <div style='height: 100px'>
+        <div style='height: 20px; outline: 1px solid red;
+            background-color: green'>outline and background</div>
+        <div style='float: left'>float</div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
       GetDocument().getElementById("layer")->GetLayoutObject());
@@ -605,14 +614,15 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval) {
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
-  SetBodyInnerHTML(
-      "<div id='will-be-layer'>"
-      "  <div style='height: 100px'>"
-      "    <div style='height: 20px; outline: 1px solid red;"
-      "        background-color: green'>outline and background</div>"
-      "    <div style='float: left'>float</div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='will-be-layer'>
+      <div style='height: 100px'>
+        <div style='height: 20px; outline: 1px solid red;
+            background-color: green'>outline and background</div>
+        <div style='float: left'>float</div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
       GetDocument().getElementById("will-be-layer")->GetLayoutObject());
@@ -638,15 +648,16 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
-  SetBodyInnerHTML(
-      "<div id='will-be-self-painting' style='width: 100px; height: 100px; "
-      "overflow: hidden'>"
-      "  <div>"
-      "    <div style='outline: 1px solid red; background-color: green'>"
-      "      outline and background"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='will-be-self-painting' style='width: 100px; height: 100px;
+    overflow: hidden'>
+      <div>
+        <div style='outline: 1px solid red; background-color: green'>
+          outline and background
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
       GetDocument().getElementById("will-be-self-painting")->GetLayoutObject());
@@ -672,15 +683,16 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
-  SetBodyInnerHTML(
-      "<div id='will-be-non-self-painting' style='width: 100px; height: 100px; "
-      "overflow: hidden; position: relative'>"
-      "  <div>"
-      "    <div style='outline: 1px solid red; background-color: green'>"
-      "      outline and background"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='will-be-non-self-painting' style='width: 100px; height: 100px;
+    overflow: hidden; position: relative'>
+      <div>
+        <div style='outline: 1px solid red; background-color: green'>
+          outline and background
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject& layer_div =
       *ToLayoutBoxModelObject(GetDocument()
@@ -713,12 +725,13 @@ TEST_P(PaintLayerPainterTest,
   // "position: relative" makes the table and td self-painting layers.
   // The table's layer should be marked needsPaintPhaseDescendantBlockBackground
   // because it will paint collapsed borders in the phase.
-  SetBodyInnerHTML(
-      "<table id='table' style='position: relative; border-collapse: collapse'>"
-      "  <tr><td style='position: relative; border: 1px solid green'>"
-      "    Cell"
-      "  </td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table' style='position: relative; border-collapse: collapse'>
+      <tr><td style='position: relative; border: 1px solid green'>
+        Cell
+      </td></tr>
+    </table>
+  )HTML");
 
   LayoutBoxModelObject& table =
       *ToLayoutBoxModelObject(GetLayoutObjectByElementId("table"));
@@ -730,12 +743,13 @@ TEST_P(PaintLayerPainterTest,
 
 TEST_P(PaintLayerPainterTest,
        TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgroundsDynamic) {
-  SetBodyInnerHTML(
-      "<table id='table' style='position: relative'>"
-      "  <tr><td style='position: relative; border: 1px solid green'>"
-      "    Cell"
-      "  </td></tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table' style='position: relative'>
+      <tr><td style='position: relative; border: 1px solid green'>
+        Cell
+      </td></tr>
+    </table>
+  )HTML");
 
   LayoutBoxModelObject& table =
       *ToLayoutBoxModelObject(GetLayoutObjectByElementId("table"));
@@ -793,98 +807,104 @@ TEST_P(PaintLayerPainterTest, DoPaintWithNonTinyOpacity) {
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
-  SetBodyInnerHTML(
-      "<style> "
-      "div { "
-      "  width: 100px; "
-      "  height: 100px; "
-      "  animation-name: example; "
-      "  animation-duration: 4s; "
-      "} "
-      "@keyframes example { "
-      "  from { opacity: 0.0;} "
-      "  to { opacity: 1.0;} "
-      "} "
-      "</style> "
-      "<div id='target'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+      animation-name: example;
+      animation-duration: 4s;
+    }
+    @keyframes example {
+      from { opacity: 0.0;}
+      to { opacity: 1.0;}
+    }
+    </style>
+    <div id='target'></div>
+  )HTML");
   ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
-  SetBodyInnerHTML(
-      "<style> "
-      "div#target { "
-      "  animation-name: example; "
-      "  animation-duration: 4s; "
-      "  opacity: 0.0; "
-      "} "
-      "@keyframes example { "
-      "  from { transform: translate(0px, 0px); } "
-      "  to { transform: translate(3em, 0px); } "
-      "} "
-      "</style> "
-      "<div id='target'>x</div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div#target {
+      animation-name: example;
+      animation-duration: 4s;
+      opacity: 0.0;
+    }
+    @keyframes example {
+      from { transform: translate(0px, 0px); }
+      to { transform: translate(3em, 0px); }
+    }
+    </style>
+    <div id='target'>x</div></div>
+  )HTML");
   ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest,
        DoPaintWithTransformAnimationZeroOpacityWillChangeOpacity) {
-  SetBodyInnerHTML(
-      "<style> "
-      "div#target { "
-      "  animation-name: example; "
-      "  animation-duration: 4s; "
-      "  opacity: 0.0; "
-      "  will-change: opacity; "
-      "} "
-      "@keyframes example { "
-      "  from { transform: translate(0px, 0px); } "
-      "  to { transform: translate(3em, 0px); } "
-      "} "
-      "</style> "
-      "<div id='target'>x</div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div#target {
+      animation-name: example;
+      animation-duration: 4s;
+      opacity: 0.0;
+      will-change: opacity;
+    }
+    @keyframes example {
+      from { transform: translate(0px, 0px); }
+      to { transform: translate(3em, 0px); }
+    }
+    </style>
+    <div id='target'>x</div></div>
+  )HTML");
   ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
-  SetBodyInnerHTML(
-      "<style> "
-      "div { "
-      "  width: 100px; "
-      "  height: 100px; "
-      "  will-change: opacity;"
-      "}"
-      "</style> "
-      "<div id='target'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+      will-change: opacity;
+    }
+    </style>
+    <div id='target'></div>
+  )HTML");
   ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
-  SetBodyInnerHTML(
-      "<style> "
-      "div { "
-      "  width: 100px; "
-      "  height: 100px; "
-      "  opacity: 0; "
-      "  will-change: opacity;"
-      "}"
-      "</style> "
-      "<div id='target'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+      opacity: 0;
+      will-change: opacity;
+    }
+    </style>
+    <div id='target'></div>
+  )HTML");
   ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest,
        DoPaintWithNoContentAndZeroOpacityAndWillChangeOpacity) {
-  SetBodyInnerHTML(
-      "<style> "
-      "div { "
-      "  width: 100px; "
-      "  height: 100px; "
-      "  opacity: 0; "
-      "  will-change: opacity;"
-      "}"
-      "</style> "
-      "<div id='target'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+      opacity: 0;
+      will-change: opacity;
+    }
+    </style>
+    <div id='target'></div>
+  )HTML");
   ExpectPaintedOutputInvisible("target", false);
 }
 

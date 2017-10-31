@@ -35,13 +35,14 @@ class LayoutTableSectionTest : public RenderingTest {
 
 TEST_F(LayoutTableSectionTest,
        BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBorder) {
-  SetBodyInnerHTML(
-      "<table style='border-collapse: collapse'>"
-      "  <thead id='section' style='will-change: transform;"
-      "       background-color: blue'>"
-      "    <tr><td>Cell</td></tr>"
-      "  </thead>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table style='border-collapse: collapse'>
+      <thead id='section' style='will-change: transform;
+           background-color: blue'>
+        <tr><td>Cell</td></tr>
+      </thead>
+    </table>
+  )HTML");
 
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
@@ -50,12 +51,13 @@ TEST_F(LayoutTableSectionTest,
 }
 
 TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
-  SetBodyInnerHTML(
-      "<table style='border-spacing: 10px'>"
-      "  <thead id='section' style='background-color: blue'>"
-      "    <tr><td>Cell</td></tr>"
-      "  </thead>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table style='border-spacing: 10px'>
+      <thead id='section' style='background-color: blue'>
+        <tr><td>Cell</td></tr>
+      </thead>
+    </table>
+  )HTML");
 
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
@@ -64,13 +66,14 @@ TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
 }
 
 TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
-  SetBodyInnerHTML(
-      "<table style='border-spacing: 10px'>"
-      "  <thead id='section' style='background-color: blue'>"
-      "    <tr><td>Cell</td></tr>"
-      "    <tr><td>Cell</td><td>Cell</td></tr>"
-      "  </thead>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table style='border-spacing: 10px'>
+      <thead id='section' style='background-color: blue'>
+        <tr><td>Cell</td></tr>
+        <tr><td>Cell</td><td>Cell</td></tr>
+      </thead>
+    </table>
+  )HTML");
 
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
@@ -79,10 +82,11 @@ TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
 }
 
 TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRowsAndEffeciveColumns) {
-  SetBodyInnerHTML(
-      "<table style='border: 100px solid red'>"
-      "  <thead id='section'></thead>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table style='border: 100px solid red'>
+      <thead id='section'></thead>
+    </table>
+  )HTML");
 
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
@@ -99,18 +103,19 @@ TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRowsAndEffeciveColumns) {
 }
 
 TEST_F(LayoutTableSectionTest, PrimaryCellAtAndOriginatingCellAt) {
-  SetBodyInnerHTML(
-      "<table>"
-      "  <tbody id='section'>"
-      "    <tr>"
-      "      <td id='cell00'></td>"
-      "      <td id='cell01' rowspan='2'></td>"
-      "    </tr>"
-      "    <tr>"
-      "      <td id='cell10' colspan='2'></td>"
-      "    </tr>"
-      "  </tbody>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <tbody id='section'>
+        <tr>
+          <td id='cell00'></td>
+          <td id='cell01' rowspan='2'></td>
+        </tr>
+        <tr>
+          <td id='cell10' colspan='2'></td>
+        </tr>
+      </tbody>
+    </table>
+  )HTML");
 
   // x,yO: A cell originates from this grid slot.
   // x,yS: A cell originating from x,y spans into this slot.
@@ -133,26 +138,27 @@ TEST_F(LayoutTableSectionTest, PrimaryCellAtAndOriginatingCellAt) {
 }
 
 TEST_F(LayoutTableSectionTest, DirtiedRowsAndEffectiveColumnsWithSpans) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  td { width: 100px; height: 100px; padding: 0 }"
-      "  table { border-spacing: 0 }"
-      "</style>"
-      "<table>"
-      "  <tbody id='section'>"
-      "    <tr>"
-      "      <td></td>"
-      "      <td rowspan='2'></td>"
-      "      <td rowspan='2'></td>"
-      "    </tr>"
-      "    <tr>"
-      "      <td colspan='2'></td>"
-      "    </tr>"
-      "    <tr>"
-      "      <td colspan='3'></td>"
-      "    </tr>"
-      "  </tbody>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      td { width: 100px; height: 100px; padding: 0 }
+      table { border-spacing: 0 }
+    </style>
+    <table>
+      <tbody id='section'>
+        <tr>
+          <td></td>
+          <td rowspan='2'></td>
+          <td rowspan='2'></td>
+        </tr>
+        <tr>
+          <td colspan='2'></td>
+        </tr>
+        <tr>
+          <td colspan='3'></td>
+        </tr>
+      </tbody>
+    </table>
+  )HTML");
 
   // x,yO: A cell originates from this grid slot.
   // x,yS: A cell originating from x,y spans into this slot.
@@ -220,19 +226,20 @@ TEST_F(LayoutTableSectionTest, DirtiedRowsAndEffectiveColumnsWithSpans) {
 
 TEST_F(LayoutTableSectionTest,
        DirtiedRowsAndEffectiveColumnsWithCollapsedBorders) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  td { width: 100px; height: 100px; padding: 0; border: 2px solid; }"
-      "  table { border-collapse: collapse }"
-      "</style>"
-      "<table>"
-      "  <tbody id='section'>"
-      "    <tr><td></td><td></td><td></td><td></td></tr>"
-      "    <tr><td></td><td></td><td></td><td></td></tr>"
-      "    <tr><td></td><td></td><td></td><td></td></tr>"
-      "    <tr><td></td><td></td><td></td><td></td></tr>"
-      "  </tbody>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      td { width: 100px; height: 100px; padding: 0; border: 2px solid; }
+      table { border-collapse: collapse }
+    </style>
+    <table>
+      <tbody id='section'>
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  )HTML");
 
   // Dirtied rows and columns are expanded by 1 cell in each side to ensure
   // collapsed borders are covered.
@@ -274,22 +281,23 @@ TEST_F(LayoutTableSectionTest,
 }
 
 TEST_F(LayoutTableSectionTest, VisualOverflowWithCollapsedBorders) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  table { border-collapse: collapse }"
-      "  td { border: 0px solid blue; padding: 0 }"
-      "  div { width: 100px; height: 100px }"
-      "</style>"
-      "<table>"
-      "  <tbody id='section'>"
-      "    <tr>"
-      "      <td style='border-bottom-width: 10px;"
-      "          outline: 3px solid blue'><div></div></td>"
-      "      <td style='border-width: 3px 15px'><div></div></td>"
-      "    </tr>"
-      "    <tr style='outline: 8px solid green'><td><div></div></td></tr>"
-      "  </tbody>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      table { border-collapse: collapse }
+      td { border: 0px solid blue; padding: 0 }
+      div { width: 100px; height: 100px }
+    </style>
+    <table>
+      <tbody id='section'>
+        <tr>
+          <td style='border-bottom-width: 10px;
+              outline: 3px solid blue'><div></div></td>
+          <td style='border-width: 3px 15px'><div></div></td>
+        </tr>
+        <tr style='outline: 8px solid green'><td><div></div></td></tr>
+      </tbody>
+    </table>
+  )HTML");
 
   auto* section = GetSectionByElementId("section");
 
@@ -313,11 +321,12 @@ static void SetCellsOverflowInRow(LayoutTableRow* row) {
 }
 
 TEST_F(LayoutTableSectionTest, OverflowingCells) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  td { width: 10px; height: 10px }"
-      "  td.overflow { outline: 10px solid blue }"
-      "</style>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      td { width: 10px; height: 10px }
+      td.overflow { outline: 10px solid blue }
+    </style>
+  )HTML");
 
   LayoutRect paint_rect(50, 50, 50, 50);
   auto* small_section = CreateSection(20, 20);

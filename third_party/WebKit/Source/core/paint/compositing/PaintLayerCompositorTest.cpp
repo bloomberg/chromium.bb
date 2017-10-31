@@ -46,11 +46,12 @@ TEST_F(PaintLayerCompositorTest, AdvancingToCompositingInputsClean) {
 
 TEST_F(PaintLayerCompositorTest,
        CompositingInputsCleanDoesNotTriggerAnimations) {
-  SetBodyInnerHTML(
-      "<style>@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }"
-      ".animate { animation: fadeOut 2s; }</style>"
-      "<div id='box'></div>"
-      "<div id='otherBox'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    .animate { animation: fadeOut 2s; }</style>
+    <div id='box'></div>
+    <div id='otherBox'></div>
+  )HTML");
 
   Element* box = GetDocument().getElementById("box");
   Element* otherBox = GetDocument().getElementById("otherBox");

@@ -245,29 +245,30 @@ TEST_P(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  ::-webkit-scrollbar {"
-      "      height: 16px;"
-      "      width: 16px"
-      "  }"
-      "  ::-webkit-scrollbar-thumb {"
-      "      background-color: rgba(0,0,0,.2);"
-      "  }"
-      "  html, body{"
-      "    margin: 0;"
-      "    height: 100%;"
-      "  }"
-      "  .box {"
-      "    width: 100%;"
-      "    height: 100%;"
-      "  }"
-      "  .transformed {"
-      "    transform: translateY(100px);"
-      "  }"
-      "</style>"
-      "<div id='box' class='box'></div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      ::-webkit-scrollbar {
+          height: 16px;
+          width: 16px
+      }
+      ::-webkit-scrollbar-thumb {
+          background-color: rgba(0,0,0,.2);
+      }
+      html, body{
+        margin: 0;
+        height: 100%;
+      }
+      .box {
+        width: 100%;
+        height: 100%;
+      }
+      .transformed {
+        transform: translateY(100px);
+      }
+    </style>
+    <div id='box' class='box'></div>
+  )HTML");
 
   ScrollableArea* layout_viewport =
       GetDocument().View()->LayoutViewportScrollableArea();
@@ -301,13 +302,14 @@ TEST_P(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
   WebView().SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  body{"
-      "    height: 300%;"
-      "  }"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body{
+        height: 300%;
+      }
+    </style>
+  )HTML");
   Compositor().BeginFrame();
 
   // This test is specifically checking the behavior when overlay scrollbars
@@ -326,20 +328,21 @@ TEST_P(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
   WebView().Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      ".noscrollbars::-webkit-scrollbar { display: none; }"
-      "#div{ height: 100px; width:100px; overflow:scroll; }"
-      ".big{ height: 2000px; }"
-      "body { overflow:scroll; }"
-      "</style>"
-      "<div id='div'>"
-      "  <div class='big'>"
-      "  </div>"
-      "</div>"
-      "<div class='big'>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    .noscrollbars::-webkit-scrollbar { display: none; }
+    #div{ height: 100px; width:100px; overflow:scroll; }
+    .big{ height: 2000px; }
+    body { overflow:scroll; }
+    </style>
+    <div id='div'>
+      <div class='big'>
+      </div>
+    </div>
+    <div class='big'>
+    </div>
+  )HTML");
   Compositor().BeginFrame();
 
   // This test is specifically checking the behavior when overlay scrollbars
@@ -397,15 +400,16 @@ TEST_P(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   WebView().Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      " #scrollable { height: 100px; width: 100px; overflow: scroll; }"
-      " #content { height: 200px; width: 200px;}"
-      "</style>"
-      "<div id='scrollable'>"
-      " <div id='content'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+     #scrollable { height: 100px; width: 100px; overflow: scroll; }
+     #content { height: 200px; width: 200px;}
+    </style>
+    <div id='scrollable'>
+     <div id='content'></div>
+    </div>
+  )HTML");
   Compositor().BeginFrame();
 
   Document& document = GetDocument();
@@ -436,15 +440,16 @@ TEST_P(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  #scroller { overflow: scroll; width: 1000px; height: 1000px }"
-      "  #spacer { width: 2000px; height: 2000px }"
-      "</style>"
-      "<div id='scroller'>"
-      "  <div id='spacer'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #scroller { overflow: scroll; width: 1000px; height: 1000px }
+      #spacer { width: 2000px; height: 2000px }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
   Compositor().BeginFrame();
 
   Document& document = GetDocument();
@@ -501,25 +506,26 @@ TEST_P(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  margin: 0;"
-      "}"
-      "#d1 {"
-      "  width: 200px;"
-      "  height: 200px;"
-      "  overflow: auto;"
-      "  cursor: move;"
-      "}"
-      "#d2 {"
-      "  height: 400px;"
-      "}"
-      "</style>"
-      "<div id='d1'>"
-      "    <div id='d2'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
   Compositor().BeginFrame();
 
   Document& document = GetDocument();
@@ -545,16 +551,17 @@ TEST_P(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<a id='a' href='javascript:void(0);'>"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "</a>"
-      "<div style='position: absolute; top: 1000px'>"
-      "  end"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <a id='a' href='javascript:void(0);'>
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    </a>
+    <div style='position: absolute; top: 1000px'>
+      end
+    </div>
+  )HTML");
 
   Compositor().BeginFrame();
 
@@ -619,29 +626,30 @@ TEST_P(ScrollbarsTest, MouseOverCustomScrollbar) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "#scrollbar {"
-      "  position: absolute;"
-      "  top: 0;"
-      "  left: 0;"
-      "  height: 180px;"
-      "  width: 180px;"
-      "  overflow-x: auto;"
-      "}"
-      "::-webkit-scrollbar {"
-      "  width: 8px;"
-      "}"
-      "::-webkit-scrollbar-thumb {"
-      "  background-color: hsla(0, 0%, 56%, 0.6);"
-      "}"
-      "</style>"
-      "<div id='scrollbar'>"
-      "  <div style='position: absolute; top: 1000px;'>"
-      "    make scrollbar show"
-      "  </div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #scrollbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 180px;
+      width: 180px;
+      overflow-x: auto;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: hsla(0, 0%, 56%, 0.6);
+    }
+    </style>
+    <div id='scrollbar'>
+      <div style='position: absolute; top: 1000px;'>
+        make scrollbar show
+      </div>
+    </div>
+  )HTML");
 
   Compositor().BeginFrame();
 
@@ -686,20 +694,21 @@ TEST_P(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  margin: 0;"
-      "  height: 2000px;"
-      "}"
-      "iframe {"
-      "  height: 200px;"
-      "  width: 200px;"
-      "}"
-      "</style>"
-      "<iframe id='iframe' src='iframe.html'>"
-      "</iframe>");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+      height: 2000px;
+    }
+    iframe {
+      height: 200px;
+      width: 200px;
+    }
+    </style>
+    <iframe id='iframe' src='iframe.html'>
+    </iframe>
+  )HTML");
   Compositor().BeginFrame();
 
   frame_resource.Complete("<!DOCTYPE html>");
@@ -761,23 +770,24 @@ TEST_P(ScrollbarsTest, MouseOverScrollbarAndParentElement) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "#parent {"
-      "  position: absolute;"
-      "  top: 0;"
-      "  left: 0;"
-      "  height: 180px;"
-      "  width: 180px;"
-      "  overflow-y: scroll;"
-      "}"
-      "</style>"
-      "<div id='parent'>"
-      "  <div id='child' style='position: absolute; top: 1000px;'>"
-      "    make scrollbar enabled"
-      "  </div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #parent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 180px;
+      width: 180px;
+      overflow-y: scroll;
+    }
+    </style>
+    <div id='parent'>
+      <div id='child' style='position: absolute; top: 1000px;'>
+        make scrollbar enabled
+      </div>
+    </div>
+  )HTML");
 
   Compositor().BeginFrame();
 
@@ -848,13 +858,14 @@ TEST_P(ScrollbarsTest, MouseOverRootScrollbar) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  overflow: scroll;"
-      "}"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      overflow: scroll;
+    }
+    </style>
+  )HTML");
 
   Compositor().BeginFrame();
 
@@ -879,28 +890,29 @@ TEST_P(ScrollbarsTest, MouseReleaseUpdatesScrollbarHoveredPart) {
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "#scrollbar {"
-      "  position: absolute;"
-      "  top: 0;"
-      "  left: 0;"
-      "  height: 180px;"
-      "  width: 180px;"
-      "  overflow-x: auto;"
-      "}"
-      "::-webkit-scrollbar {"
-      "  width: 8px;"
-      "}"
-      "::-webkit-scrollbar-thumb {"
-      "  background-color: hsla(0, 0%, 56%, 0.6);"
-      "}"
-      "</style>"
-      "<div id='scrollbar'>"
-      "  <div style='position: absolute; top: 1000px;'>make scrollbar "
-      "shows</div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #scrollbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 180px;
+      width: 180px;
+      overflow-x: auto;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: hsla(0, 0%, 56%, 0.6);
+    }
+    </style>
+    <div id='scrollbar'>
+      <div style='position: absolute; top: 1000px;'>make scrollbar
+    shows</div>
+    </div>
+  )HTML");
 
   Compositor().BeginFrame();
 
@@ -944,21 +956,22 @@ TEST_P(ScrollbarsTest,
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style type='text/css'>"
-      "   ::-webkit-scrollbar {"
-      "    width: 16px;"
-      "    height: 16px;"
-      "    overflow: visible;"
-      "  }"
-      "  div {"
-      "    width: 1000px;"
-      "  }"
-      "</style>"
-      "<div style='position: absolute; top: 1000px;'>"
-      "  end"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style type='text/css'>
+       ::-webkit-scrollbar {
+        width: 16px;
+        height: 16px;
+        overflow: visible;
+      }
+      div {
+        width: 1000px;
+      }
+    </style>
+    <div style='position: absolute; top: 1000px;'>
+      end
+    </div>
+  )HTML");
 
   // No DCHECK Fails. Issue 676678.
   Compositor().BeginFrame();
@@ -997,26 +1010,27 @@ TEST_P(ScrollbarsTestWithVirtualTimer,
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  #space {"
-      "    width: 1000px;"
-      "    height: 1000px;"
-      "  }"
-      "  #container {"
-      "    width: 200px;"
-      "    height: 200px;"
-      "    overflow: scroll;"
-      "    /* Ensure the scroller is non-composited. */"
-      "    border: border: 2px solid;"
-      "    border-radius: 25px;"
-      "  }"
-      "  div { height:1000px; width: 200px; }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='space'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #space {
+        width: 1000px;
+        height: 1000px;
+      }
+      #container {
+        width: 200px;
+        height: 200px;
+        overflow: scroll;
+        /* Ensure the scroller is non-composited. */
+        border: border: 2px solid;
+        border-radius: 25px;
+      }
+      div { height:1000px; width: 200px; }
+    </style>
+    <div id='container'>
+      <div id='space'></div>
+    </div>
+  )HTML");
   Compositor().BeginFrame();
   // This test is specifically checking the behavior when overlay scrollbars
   // are enabled.
@@ -1197,15 +1211,16 @@ TEST_P(ScrollbarsTest, WideBodyShouldNotHaveScrollbars) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  margin: 0;"
-      "  background: blue;"
-      "  height: 10px;"
-      "  width: 799px;"
-      "}");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+      background: blue;
+      height: 10px;
+      width: 799px;
+    }
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
@@ -1220,15 +1235,16 @@ TEST_P(ScrollbarsTest, TallBodyShouldNotHaveScrollbars) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  margin: 0;"
-      "  background: blue;"
-      "  height: 599px;"
-      "  width: 10px;"
-      "}");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+      background: blue;
+      height: 599px;
+      width: 10px;
+    }
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
@@ -1244,15 +1260,16 @@ TEST_P(ScrollbarsTest, TallAndWideBodyShouldNotHaveScrollbars) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  margin: 0;"
-      "  background: blue;"
-      "  height: 599px;"
-      "  width: 799px;"
-      "}");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+      background: blue;
+      height: 599px;
+      width: 799px;
+    }
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
@@ -1268,15 +1285,16 @@ TEST_P(ScrollbarsTest, BodySizeEqualWindowSizeShouldNotHaveScrollbars) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "body {"
-      "  margin: 0;"
-      "  background: blue;"
-      "  height: 600px;"
-      "  width: 800px;"
-      "}");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+      background: blue;
+      height: 600px;
+      width: 800px;
+    }
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
@@ -1292,16 +1310,17 @@ TEST_P(ScrollbarsTest, WidePercentageBodyShouldHaveScrollbar) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  html { height: 100%; }"
-      "  body {"
-      "    margin: 0;"
-      "    width: 101%;"
-      "    height: 10px;"
-      "  }"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      html { height: 100%; }
+      body {
+        margin: 0;
+        width: 101%;
+        height: 10px;
+      }
+    </style>
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
@@ -1317,16 +1336,17 @@ TEST_P(ScrollbarsTest, WidePercentageAndTallBodyShouldHaveScrollbar) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  html { height: 100%; }"
-      "  body {"
-      "    margin: 0;"
-      "    width: 101%;"
-      "    height: 100%;"
-      "  }"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      html { height: 100%; }
+      body {
+        margin: 0;
+        width: 101%;
+        height: 100%;
+      }
+    </style>
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
@@ -1342,16 +1362,17 @@ TEST_P(ScrollbarsTest, TallPercentageBodyShouldHaveScrollbar) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  html { height: 100%; }"
-      "  body {"
-      "    margin: 0;"
-      "    width: 10px;"
-      "    height: 101%;"
-      "  }"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      html { height: 100%; }
+      body {
+        margin: 0;
+        width: 10px;
+        height: 101%;
+      }
+    </style>
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());
@@ -1367,16 +1388,17 @@ TEST_P(ScrollbarsTest, TallPercentageAndWideBodyShouldHaveScrollbar) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  html { height: 100%; }"
-      "  body {"
-      "    margin: 0;"
-      "    width: 100%;"
-      "    height: 101%;"
-      "  }"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      html { height: 100%; }
+      body {
+        margin: 0;
+        width: 100%;
+        height: 101%;
+      }
+    </style>
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());
@@ -1392,16 +1414,17 @@ TEST_P(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  html { height: 100%; }"
-      "  body {"
-      "    margin: 0;"
-      "    width: 101%;"
-      "    height: 101%;"
-      "  }"
-      "</style>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      html { height: 100%; }
+      body {
+        margin: 0;
+        width: 101%;
+        height: 101%;
+      }
+    </style>
+  )HTML");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());

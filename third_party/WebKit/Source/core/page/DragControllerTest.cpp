@@ -137,23 +137,24 @@ TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
 }
 
 TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  html, body { height: 2000px; }"
-      "  div {"
-      "    width: 20px;"
-      "    height: 1000px;"
-      "    font-size: 30px;"
-      "    overflow: hidden;"
-      "    margin-top: 2px;"
-      "  }"
-      "</style>"
-      "<div>"
-      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
-      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
-      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      div {
+        width: 20px;
+        height: 1000px;
+        font-size: 30px;
+        overflow: hidden;
+        margin-top: 2px;
+      }
+    </style>
+    <div>
+      a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>
+      a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>
+      a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>
+    </div>
+  )HTML");
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   GetFrame().Selection().SelectAll();
@@ -205,32 +206,34 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
 }
 
 TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  html, body { height: 2000px; }"
-      "  iframe {"
-      "    margin-top: 200px;"
-      "    border: none;"
-      "    width: 50px;"
-      "    height: 50px;"
-      "  }"
-      "</style>"
-      "<iframe></iframe>");
-  SetChildFrameHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  html, body { height: 2000px; }"
-      "  div {"
-      "    width: 30px;"
-      "    height: 20px;"
-      "    font-size: 30px;"
-      "    overflow: hidden;"
-      "    margin-top: 5px;"
-      "    margin-bottom: 500px;"
-      "  }"
-      "</style>"
-      "<div>abcdefg</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      iframe {
+        margin-top: 200px;
+        border: none;
+        width: 50px;
+        height: 50px;
+      }
+    </style>
+    <iframe></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      div {
+        width: 30px;
+        height: 20px;
+        font-size: 30px;
+        overflow: hidden;
+        margin-top: 5px;
+        margin-bottom: 500px;
+      }
+    </style>
+    <div>abcdefg</div>
+  )HTML");
   UpdateAllLifecyclePhases();
   auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
@@ -281,32 +284,34 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
 
 TEST_P(DragControllerTest,
        DragImageForSelectionClipsChildFrameToViewportWithPageScaleFactor) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  html, body { height: 2000px; }"
-      "  iframe {"
-      "    margin-top: 200px;"
-      "    border: none;"
-      "    width: 50px;"
-      "    height: 50px;"
-      "  }"
-      "</style>"
-      "<iframe></iframe>");
-  SetChildFrameHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  html, body { height: 2000px; }"
-      "  div {"
-      "    width: 30px;"
-      "    height: 20px;"
-      "    font-size: 30px;"
-      "    overflow: hidden;"
-      "    margin-top: 5px;"
-      "    margin-bottom: 500px;"
-      "  }"
-      "</style>"
-      "<div>abcdefg</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      iframe {
+        margin-top: 200px;
+        border: none;
+        width: 50px;
+        height: 50px;
+      }
+    </style>
+    <iframe></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      div {
+        width: 30px;
+        height: 20px;
+        font-size: 30px;
+        overflow: hidden;
+        margin-top: 5px;
+        margin-bottom: 500px;
+      }
+    </style>
+    <div>abcdefg</div>
+  )HTML");
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   UpdateAllLifecyclePhases();
@@ -362,18 +367,19 @@ TEST_P(DragControllerTest,
 }
 
 TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  div {"
-      "    width: 50px;"
-      "    height: 40px;"
-      "    font-size: 30px;"
-      "    overflow: hidden;"
-      "    margin-top: 2px;"
-      "  }"
-      "</style>"
-      "<div id='drag'>abcdefg<br>abcdefg<br>abcdefg</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div {
+        width: 50px;
+        height: 40px;
+        font-size: 30px;
+        overflow: hidden;
+        margin-top: 2px;
+      }
+    </style>
+    <div id='drag'>abcdefg<br>abcdefg<br>abcdefg</div>
+  )HTML");
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   GetFrame().Selection().SelectAll();
@@ -403,18 +409,19 @@ TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
 }
 
 TEST_P(DragControllerTest, DragLinkWithPageScaleFactor) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; } "
-      "  a {"
-      "    width: 50px;"
-      "    height: 40px;"
-      "    font-size: 30px;"
-      "    margin-top: 2px;"
-      "    display: block;"
-      "  }"
-      "</style>"
-      "<a id='drag' href='https://foobarbaz.com'>foobarbaz</a>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      a {
+        width: 50px;
+        height: 40px;
+        font-size: 30px;
+        margin-top: 2px;
+        display: block;
+      }
+    </style>
+    <a id='drag' href='https://foobarbaz.com'>foobarbaz</a>
+  )HTML");
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   GetFrame().Selection().SelectAll();

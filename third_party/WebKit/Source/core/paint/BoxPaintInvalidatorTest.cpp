@@ -80,40 +80,41 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     RenderingTest::SetUp();
     GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
     EnableCompositing();
-    SetBodyInnerHTML(
-        "<style>"
-        "  body {"
-        "    margin: 0;"
-        "    height: 0;"
-        "  }"
-        "  ::-webkit-scrollbar { display: none }"
-        "  #target {"
-        "    width: 50px;"
-        "    height: 100px;"
-        "    transform-origin: 0 0;"
-        "  }"
-        "  .border {"
-        "    border-width: 20px 10px;"
-        "    border-style: solid;"
-        "    border-color: red;"
-        "  }"
-        "  .solid-composited-scroller {"
-        "    overflow: scroll;"
-        "    will-change: transform;"
-        "    background: #ccc;"
-        "  }"
-        "  .local-background {"
-        "    background-attachment: local;"
-        "    overflow: scroll;"
-        "  }"
-        "  .gradient {"
-        "    background-image: linear-gradient(blue, yellow)"
-        "  }"
-        "  .transform {"
-        "    transform: scale(2);"
-        "  }"
-        "</style>"
-        "<div id='target' class='border'></div>");
+    SetBodyInnerHTML(R"HTML(
+      <style>
+        body {
+          margin: 0;
+          height: 0;
+        }
+        ::-webkit-scrollbar { display: none }
+        #target {
+          width: 50px;
+          height: 100px;
+          transform-origin: 0 0;
+        }
+        .border {
+          border-width: 20px 10px;
+          border-style: solid;
+          border-color: red;
+        }
+        .solid-composited-scroller {
+          overflow: scroll;
+          will-change: transform;
+          background: #ccc;
+        }
+        .local-background {
+          background-attachment: local;
+          overflow: scroll;
+        }
+        .gradient {
+          background-image: linear-gradient(blue, yellow)
+        }
+        .transform {
+          transform: scale(2);
+        }
+      </style>
+      <div id='target' class='border'></div>
+    )HTML");
   }
   FragmentData fragment_data_;
 };
@@ -543,18 +544,20 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  iframe { display: block; width: 100px; height: 100px; border: none; }"
-      "</style>"
-      "<iframe id='iframe'></iframe>");
-  SetChildFrameHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body { margin: 0; background: green; height: 0 }"
-      "</style>"
-      "<div id='content' style='width: 200px; height: 200px'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      iframe { display: block; width: 100px; height: 100px; border: none; }
+    </style>
+    <iframe id='iframe'></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body { margin: 0; background: green; height: 0 }
+    </style>
+    <div id='content' style='width: 200px; height: 200px'></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Element* iframe = GetDocument().getElementById("iframe");
   Element* content = ChildDocument().getElementById("content");
@@ -591,22 +594,24 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  iframe { display: block; width: 100px; height: 100px; border: none; }"
-      "</style>"
-      "<iframe id='iframe'></iframe>");
-  SetChildFrameHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none }"
-      "  body {"
-      "    margin: 0;"
-      "    height: 0;"
-      "    background-image: linear-gradient(blue, yellow);"
-      "  }"
-      "</style>"
-      "<div id='content' style='width: 200px; height: 200px'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      iframe { display: block; width: 100px; height: 100px; border: none; }
+    </style>
+    <iframe id='iframe'></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none }
+      body {
+        margin: 0;
+        height: 0;
+        background-image: linear-gradient(blue, yellow);
+      }
+    </style>
+    <div id='content' style='width: 200px; height: 200px'></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Element* iframe = GetDocument().getElementById("iframe");
   Element* content = ChildDocument().getElementById("content");

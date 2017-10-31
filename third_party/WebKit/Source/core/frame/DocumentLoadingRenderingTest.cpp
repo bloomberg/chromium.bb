@@ -233,26 +233,28 @@ TEST_F(DocumentLoadingRenderingTest,
 
   WebView().Resize(WebSize(800, 600));
 
-  main_resource.Complete(
-      "<!DOCTYPE html>"
-      "<body style='background: red'>"
-      "<iframe id=frame src=frame.html style='border: none'></iframe>"
-      "<p style='transform: translateZ(0)'>Hello World</p>");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body style='background: red'>
+    <iframe id=frame src=frame.html style='border: none'></iframe>
+    <p style='transform: translateZ(0)'>Hello World</p>
+  )HTML");
 
   // Main page is ready to begin painting as there's no pending sheets.
   // The frame is not yet loaded, so we only paint the top level page.
   auto frame1 = Compositor().BeginFrame();
   EXPECT_TRUE(frame1.Contains(SimCanvas::kText));
 
-  frame_resource.Complete(
-      "<!DOCTYPE html>"
-      "<style>html { background: pink }</style>"
-      "<link rel=stylesheet href=test.css>"
-      "<p style='background: yellow;'>Hello World</p>"
-      "<div style='transform: translateZ(0); background: green;'>"
-      "    <p style='background: blue;'>Hello Layer</p>"
-      "    <div style='position: relative; background: red;'>Hello World</div>"
-      "</div>");
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>html { background: pink }</style>
+    <link rel=stylesheet href=test.css>
+    <p style='background: yellow;'>Hello World</p>
+    <div style='transform: translateZ(0); background: green;'>
+        <p style='background: blue;'>Hello Layer</p>
+        <div style='position: relative; background: red;'>Hello World</div>
+    </div>
+  )HTML");
 
   // Trigger a layout with pending sheets. For example a page could trigger
   // this by doing offsetTop in a setTimeout, or by a parent frame executing
@@ -309,15 +311,17 @@ TEST_F(DocumentLoadingRenderingTest,
 
   WebView().Resize(WebSize(800, 600));
 
-  main_resource.Complete(
-      "<!DOCTYPE html>"
-      "<body style='background: red'>"
-      "<iframe id=frame src=frame.html></iframe>");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body style='background: red'>
+    <iframe id=frame src=frame.html></iframe>
+  )HTML");
 
-  frame_resource.Complete(
-      "<!DOCTYPE html>"
-      "<link rel=stylesheet href=frame.css>"
-      "<body style='background: blue'>");
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <link rel=stylesheet href=frame.css>
+    <body style='background: blue'>
+  )HTML");
 
   auto* child_frame =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
@@ -395,15 +399,16 @@ TEST_F(DocumentLoadingRenderingTest,
 
   main_resource.Start();
 
-  main_resource.Write(
-      "<html><body>"
-      "  <div id='test' style='font-size: 16px'>test</div>"
-      "  <script>"
-      "    var link = document.createElement('link');"
-      "    link.rel = 'import';"
-      "    link.href = 'import.css';"
-      "    document.head.appendChild(link);"
-      "  </script>");
+  main_resource.Write(R"HTML(
+    <html><body>
+      <div id='test' style='font-size: 16px'>test</div>
+      <script>
+        var link = document.createElement('link');
+        link.rel = 'import';
+        link.href = 'import.css';
+        document.head.appendChild(link);
+      </script>
+  )HTML");
   import_resource.Start();
 
   // Import loader isn't finish, shoudn't paint.

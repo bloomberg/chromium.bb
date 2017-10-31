@@ -30,28 +30,29 @@ class SnapCoordinatorTest
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create();
 
-    SetHTML(
-        "<style>"
-        "    #snap-container {"
-        "        height: 1000px;"
-        "        width: 1000px;"
-        "        overflow: scroll;"
-        "        scroll-snap-type: both mandatory;"
-        "    }"
-        "    #snap-element-fixed-position {"
-        "         position: fixed;"
-        "    }"
-        "</style>"
-        "<body>"
-        "  <div id='snap-container'>"
-        "    <div id='snap-element'></div>"
-        "    <div id='intermediate'>"
-        "       <div id='nested-snap-element'></div>"
-        "    </div>"
-        "    <div id='snap-element-fixed-position'></div>"
-        "    <div style='width:2000px; height:2000px;'></div>"
-        "  </div>"
-        "</body>");
+    SetHTML(R"HTML(
+      <style>
+          #snap-container {
+              height: 1000px;
+              width: 1000px;
+              overflow: scroll;
+              scroll-snap-type: both mandatory;
+          }
+          #snap-element-fixed-position {
+               position: fixed;
+          }
+      </style>
+      <body>
+        <div id='snap-container'>
+          <div id='snap-element'></div>
+          <div id='intermediate'>
+             <div id='nested-snap-element'></div>
+          </div>
+          <div id='snap-element-fixed-position'></div>
+          <div style='width:2000px; height:2000px;'></div>
+        </div>
+      </body>
+    )HTML");
     GetDocument().UpdateStyleAndLayout();
   }
 
@@ -139,34 +140,36 @@ TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement) {
 
   // Add a new snap element
   Element& container = *GetDocument().getElementById("snap-container");
-  container.SetInnerHTMLFromString(
-      "<div style='scroll-snap-align: start;'>"
-      "    <div style='width:2000px; height:2000px;'></div>"
-      "</div>");
+  container.SetInnerHTMLFromString(R"HTML(
+    <div style='scroll-snap-align: start;'>
+        <div style='width:2000px; height:2000px;'></div>
+    </div>
+  )HTML");
   GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
 
 TEST_P(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
-  SetHTML(
-      "<style>"
-      "body {"
-      "    overflow: scroll;"
-      "    scroll-snap-type: both mandatory;"
-      "    height: 1000px;"
-      "    width: 1000px;"
-      "    margin: 5px;"
-      "}"
-      "</style>"
-      "<body>"
-      "    <div id='snap-element' style='scroll-snap-align: start;></div>"
-      "    <div id='intermediate'>"
-      "        <div id='nested-snap-element'"
-      "            style='scroll-snap-align: start;'></div>"
-      "    </div>"
-      "    <div style='width:2000px; height:2000px;'></div>"
-      "</body>");
+  SetHTML(R"HTML(
+    <style>
+    body {
+        overflow: scroll;
+        scroll-snap-type: both mandatory;
+        height: 1000px;
+        width: 1000px;
+        margin: 5px;
+    }
+    </style>
+    <body>
+        <div id='snap-element' style='scroll-snap-align: start;></div>
+        <div id='intermediate'>
+            <div id='nested-snap-element'
+                style='scroll-snap-align: start;'></div>
+        </div>
+        <div style='width:2000px; height:2000px;'></div>
+    </body>
+  )HTML");
 
   GetDocument().UpdateStyleAndLayout();
 
@@ -182,28 +185,29 @@ TEST_P(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
 
 TEST_P(SnapCoordinatorTest,
        LayoutViewCapturesWhenDocumentElementViewportDefining) {
-  SetHTML(
-      "<style>"
-      ":root {"
-      "    overflow: scroll;"
-      "    scroll-snap-type: both mandatory;"
-      "    height: 500px;"
-      "    width: 500px;"
-      "}"
-      "body {"
-      "    margin: 5px;"
-      "}"
-      "</style>"
-      "<html>"
-      "   <body>"
-      "       <div id='snap-element' style='scroll-snap-align: start;></div>"
-      "       <div id='intermediate'>"
-      "         <div id='nested-snap-element'"
-      "             style='scroll-snap-align: start;'></div>"
-      "      </div>"
-      "      <div style='width:2000px; height:2000px;'></div>"
-      "   </body>"
-      "</html>");
+  SetHTML(R"HTML(
+    <style>
+    :root {
+        overflow: scroll;
+        scroll-snap-type: both mandatory;
+        height: 500px;
+        width: 500px;
+    }
+    body {
+        margin: 5px;
+    }
+    </style>
+    <html>
+       <body>
+           <div id='snap-element' style='scroll-snap-align: start;></div>
+           <div id='intermediate'>
+             <div id='nested-snap-element'
+                 style='scroll-snap-align: start;'></div>
+          </div>
+          <div style='width:2000px; height:2000px;'></div>
+       </body>
+    </html>
+  )HTML");
 
   GetDocument().UpdateStyleAndLayout();
 
@@ -221,33 +225,34 @@ TEST_P(SnapCoordinatorTest,
 
 TEST_P(SnapCoordinatorTest,
        BodyCapturesWhenBodyOverflowAndDocumentElementViewportDefining) {
-  SetHTML(
-      "<style>"
-      ":root {"
-      "    overflow: scroll;"
-      "    scroll-snap-type: both mandatory;"
-      "    height: 500px;"
-      "    width: 500px;"
-      "}"
-      "body {"
-      "    overflow: scroll;"
-      "    scroll-snap-type: both mandatory;"
-      "    height: 1000px;"
-      "    width: 1000px;"
-      "    margin: 5px;"
-      "}"
-      "</style>"
-      "<html>"
-      "   <body style='overflow: scroll; scroll-snap-type: both mandatory; "
-      "height:1000px; width:1000px;'>"
-      "       <div id='snap-element' style='scroll-snap-align: start;></div>"
-      "       <div id='intermediate'>"
-      "         <div id='nested-snap-element'"
-      "             style='scroll-snap-align: start;'></div>"
-      "      </div>"
-      "      <div style='width:2000px; height:2000px;'></div>"
-      "   </body>"
-      "</html>");
+  SetHTML(R"HTML(
+    <style>
+    :root {
+        overflow: scroll;
+        scroll-snap-type: both mandatory;
+        height: 500px;
+        width: 500px;
+    }
+    body {
+        overflow: scroll;
+        scroll-snap-type: both mandatory;
+        height: 1000px;
+        width: 1000px;
+        margin: 5px;
+    }
+    </style>
+    <html>
+       <body style='overflow: scroll; scroll-snap-type: both mandatory;
+    height:1000px; width:1000px;'>
+           <div id='snap-element' style='scroll-snap-align: start;></div>
+           <div id='intermediate'>
+             <div id='nested-snap-element'
+                 style='scroll-snap-align: start;'></div>
+          </div>
+          <div style='width:2000px; height:2000px;'></div>
+       </body>
+    </html>
+  )HTML");
 
   GetDocument().UpdateStyleAndLayout();
 
