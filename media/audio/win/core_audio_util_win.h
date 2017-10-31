@@ -43,7 +43,7 @@ class MEDIA_EXPORT CoreAudioUtil {
   // Converts between reference time to base::TimeDelta.
   // One reference-time unit is 100 nanoseconds.
   // Example: double s = RefererenceTimeToTimeDelta(t).InMillisecondsF();
-  static base::TimeDelta RefererenceTimeToTimeDelta(REFERENCE_TIME time);
+  static base::TimeDelta ReferenceTimeToTimeDelta(REFERENCE_TIME time);
 
   // Returns AUDCLNT_SHAREMODE_EXCLUSIVE if --enable-exclusive-mode is used
   // as command-line flag and AUDCLNT_SHAREMODE_SHARED otherwise (default).

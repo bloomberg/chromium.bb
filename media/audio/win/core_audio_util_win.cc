@@ -34,6 +34,8 @@ const GUID kCommunicationsSessionId = {
   0xbe39af4f, 0x87c, 0x423f, { 0x93, 0x3, 0x23, 0x4e, 0xc1, 0xe5, 0xb8, 0xee }
 };
 
+namespace {
+
 enum { KSAUDIO_SPEAKER_UNSUPPORTED = 0 };
 
 // Converts Microsoft's channel configuration to ChannelLayout.
@@ -44,7 +46,7 @@ enum { KSAUDIO_SPEAKER_UNSUPPORTED = 0 };
 // As an example: KSAUDIO_SPEAKER_7POINT1_SURROUND is mapped to
 // CHANNEL_LAYOUT_7_1 but the positions of Back L, Back R and Side L, Side R
 // speakers are different in these two definitions.
-static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
+ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
   switch (config) {
     case KSAUDIO_SPEAKER_MONO:
       DVLOG(2) << "KSAUDIO_SPEAKER_MONO=>CHANNEL_LAYOUT_MONO";
@@ -77,7 +79,7 @@ static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
 }
 
 // TODO(henrika): add mapping for all types in the ChannelLayout enumerator.
-static ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
+ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
   switch (layout) {
     case CHANNEL_LAYOUT_MONO:
       DVLOG(2) << "CHANNEL_LAYOUT_MONO=>KSAUDIO_SPEAKER_MONO";
@@ -109,8 +111,7 @@ static ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
   }
 }
 
-static std::ostream& operator<<(std::ostream& os,
-                                const WAVEFORMATPCMEX& format) {
+std::ostream& operator<<(std::ostream& os, const WAVEFORMATPCMEX& format) {
   os << "wFormatTag: 0x" << std::hex << format.Format.wFormatTag
      << ", nChannels: " << std::dec << format.Format.nChannels
      << ", nSamplesPerSec: " << format.Format.nSamplesPerSec
@@ -123,7 +124,7 @@ static std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-static bool LoadAudiosesDll() {
+bool LoadAudiosesDll() {
   static const wchar_t* const kAudiosesDLL =
       L"%WINDIR%\\system32\\audioses.dll";
 
@@ -132,7 +133,7 @@ static bool LoadAudiosesDll() {
   return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
 }
 
-static std::string GetDeviceID(IMMDevice* device) {
+std::string GetDeviceID(IMMDevice* device) {
   ScopedCoMem<WCHAR> device_id_com;
   std::string device_id;
   if (SUCCEEDED(device->GetId(&device_id_com)))
@@ -140,18 +141,18 @@ static std::string GetDeviceID(IMMDevice* device) {
   return device_id;
 }
 
-static bool IsDefaultDeviceId(const std::string& device_id) {
+bool IsDefaultDeviceId(const std::string& device_id) {
   return device_id.empty() ||
          device_id == AudioDeviceDescription::kDefaultDeviceId;
 }
 
-static bool IsDeviceActive(IMMDevice* device) {
+bool IsDeviceActive(IMMDevice* device) {
   DWORD state = DEVICE_STATE_DISABLED;
   return SUCCEEDED(device->GetState(&state)) && (state & DEVICE_STATE_ACTIVE);
 }
 
-static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
-                                             std::string* friendly_name) {
+HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
+                                      std::string* friendly_name) {
   // Retrieve user-friendly name of endpoint device.
   // Example: "Microphone (Realtek High Definition Audio)".
   ComPtr<IPropertyStore> properties;
@@ -174,7 +175,7 @@ static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
   return hr;
 }
 
-static ComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
+ComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
     bool allow_reinitialize) {
   ComPtr<IMMDeviceEnumerator> device_enumerator;
   HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
@@ -196,27 +197,70 @@ static ComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
   return device_enumerator;
 }
 
-static bool IsSupportedInternal() {
-  // It is possible to force usage of WaveXxx APIs by using a command line flag.
+ChannelLayout GetChannelLayout(const WAVEFORMATPCMEX& mix_format) {
+  // Get the integer mask which corresponds to the channel layout the
+  // audio engine uses for its internal processing/mixing of shared-mode
+  // streams. This mask indicates which channels are present in the multi-
+  // channel stream. The least significant bit corresponds with the Front
+  // Left speaker, the next least significant bit corresponds to the Front
+  // Right speaker, and so on, continuing in the order defined in KsMedia.h.
+  // See
+  // http://msdn.microsoft.com/en-us/library/windows/hardware/ff537083.aspx
+  // for more details.
+  ChannelConfig channel_config = mix_format.dwChannelMask;
+
+  // Convert Microsoft's channel configuration to genric ChannelLayout.
+  ChannelLayout channel_layout = ChannelConfigToChannelLayout(channel_config);
+
+  // Some devices don't appear to set a valid channel layout, so guess based
+  // on the number of channels.  See http://crbug.com/311906.
+  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
+    DVLOG(1) << "Unsupported channel config: " << std::hex << channel_config
+             << ".  Guessing layout by channel count: " << std::dec
+             << mix_format.Format.nChannels;
+    channel_layout = GuessChannelLayout(mix_format.Format.nChannels);
+  }
+
+  return channel_layout;
+}
+
+ComPtr<IMMDevice> CreateDeviceInternal(const std::string& device_id,
+                                       bool is_output_device) {
+  EDataFlow data_flow = is_output_device ? eRender : eCapture;
+  if (device_id == AudioDeviceDescription::kDefaultDeviceId) {
+    return CoreAudioUtil::CreateDefaultDevice(data_flow, eConsole);
+  } else if (device_id == AudioDeviceDescription::kLoopbackInputDeviceId ||
+             device_id == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
+    DCHECK(!is_output_device);
+    return CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
+  } else if (device_id == AudioDeviceDescription::kCommunicationsDeviceId) {
+    return CoreAudioUtil::CreateDefaultDevice(data_flow, eCommunications);
+  } else {
+    return CoreAudioUtil::CreateDevice(device_id);
+  }
+}
+
+bool IsSupportedInternal() {
+  // It is possible to force usage of WaveXxx APIs by using a command line
+  // flag.
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kForceWaveAudio)) {
     DVLOG(1) << "Forcing usage of Windows WaveXxx APIs";
     return false;
   }
 
-  // The audio core APIs are implemented in the Mmdevapi.dll and Audioses.dll
-  // system components.
-  // Dependency Walker shows that it is enough to verify possibility to load
-  // the Audioses DLL since it depends on Mmdevapi.dll.
-  // See http://crbug.com/166397 why this extra step is required to guarantee
-  // Core Audio support.
+  // The audio core APIs are implemented in the Mmdevapi.dll and
+  // Audioses.dll system components. Dependency Walker shows that it is
+  // enough to verify possibility to load the Audioses DLL since it depends
+  // on Mmdevapi.dll. See http://crbug.com/166397 why this extra step is
+  // required to guarantee Core Audio support.
   if (!LoadAudiosesDll())
     return false;
 
   // Being able to load the Audioses.dll does not seem to be sufficient for
   // all devices to guarantee Core Audio support. To be 100%, we also verify
-  // that it is possible to a create the IMMDeviceEnumerator interface. If this
-  // works as well we should be home free.
+  // that it is possible to a create the IMMDeviceEnumerator interface. If
+  // this works as well we should be home free.
   ComPtr<IMMDeviceEnumerator> device_enumerator =
       CreateDeviceEnumeratorInternal(false);
   if (!device_enumerator) {
@@ -228,13 +272,14 @@ static bool IsSupportedInternal() {
 
   return true;
 }
+}  // namespace
 
 bool CoreAudioUtil::IsSupported() {
   static bool g_is_supported = IsSupportedInternal();
   return g_is_supported;
 }
 
-base::TimeDelta CoreAudioUtil::RefererenceTimeToTimeDelta(REFERENCE_TIME time) {
+base::TimeDelta CoreAudioUtil::ReferenceTimeToTimeDelta(REFERENCE_TIME time) {
   // Each unit of reference time is 100 nanoseconds <=> 0.1 microsecond.
   return base::TimeDelta::FromMicroseconds(0.1 * time + 0.5);
 }
@@ -626,7 +671,7 @@ HRESULT CoreAudioUtil::GetDevicePeriod(IAudioClient* client,
   *device_period = (share_mode == AUDCLNT_SHAREMODE_SHARED) ? default_period :
       minimum_period;
   DVLOG(2) << "device_period: "
-           << RefererenceTimeToTimeDelta(*device_period).InMillisecondsF()
+           << ReferenceTimeToTimeDelta(*device_period).InMillisecondsF()
            << " [ms]";
   return hr;
 }
@@ -643,28 +688,7 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
   if (FAILED(hr))
     return hr;
 
-  // Get the integer mask which corresponds to the channel layout the
-  // audio engine uses for its internal processing/mixing of shared-mode
-  // streams. This mask indicates which channels are present in the multi-
-  // channel stream. The least significant bit corresponds with the Front Left
-  // speaker, the next least significant bit corresponds to the Front Right
-  // speaker, and so on, continuing in the order defined in KsMedia.h.
-  // See http://msdn.microsoft.com/en-us/library/windows/hardware/ff537083.aspx
-  // for more details.
-  ChannelConfig channel_config = mix_format.dwChannelMask;
-
-  // Convert Microsoft's channel configuration to genric ChannelLayout.
-  ChannelLayout channel_layout = ChannelConfigToChannelLayout(channel_config);
-
-  // Some devices don't appear to set a valid channel layout, so guess based on
-  // the number of channels.  See http://crbug.com/311906.
-  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
-    DVLOG(1) << "Unsupported channel config: "
-             << std::hex << channel_config
-             << ".  Guessing layout by channel count: "
-             << std::dec << mix_format.Format.nChannels;
-    channel_layout = GuessChannelLayout(mix_format.Format.nChannels);
-  }
+  ChannelLayout channel_layout = GetChannelLayout(mix_format);
 
   // Preferred sample rate.
   int sample_rate = mix_format.Format.nSamplesPerSec;
@@ -678,8 +702,9 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
   // buffer size in shared mode. Note that the actual endpoint buffer will be
   // larger than this size but it will be possible to fill it up in two calls.
   // TODO(henrika): ensure that this scheme works for capturing as well.
-  int frames_per_buffer = static_cast<int>(sample_rate *
-      RefererenceTimeToTimeDelta(default_period).InSecondsF() + 0.5);
+  int frames_per_buffer = static_cast<int>(
+      sample_rate * ReferenceTimeToTimeDelta(default_period).InSecondsF() +
+      0.5);
 
   DVLOG(1) << "channel_layout   : " << channel_layout;
   DVLOG(1) << "sample_rate      : " << sample_rate;
@@ -699,21 +724,7 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
 HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
                                                    bool is_output_device,
                                                    AudioParameters* params) {
-  ComPtr<IMMDevice> device;
-  if (device_id == AudioDeviceDescription::kDefaultDeviceId) {
-    device = CoreAudioUtil::CreateDefaultDevice(
-        is_output_device ? eRender : eCapture, eConsole);
-  } else if (device_id == AudioDeviceDescription::kLoopbackInputDeviceId ||
-      device_id == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
-    DCHECK(!is_output_device);
-    device = CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
-  } else if (device_id == AudioDeviceDescription::kCommunicationsDeviceId) {
-    device = CoreAudioUtil::CreateDefaultDevice(
-        is_output_device ? eRender : eCapture, eCommunications);
-  } else {
-    device = CreateDevice(device_id);
-  }
-
+  ComPtr<IMMDevice> device = CreateDeviceInternal(device_id, is_output_device);
   if (!device.Get()) {
     // Map NULL-pointer to new error code which can be different from the
     // actual error code. The exact value is not important here.
@@ -812,7 +823,7 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
   REFERENCE_TIME  latency = 0;
   hr = client->GetStreamLatency(&latency);
   DVLOG(2) << "stream latency: "
-           << RefererenceTimeToTimeDelta(latency).InMillisecondsF() << " [ms]";
+           << ReferenceTimeToTimeDelta(latency).InMillisecondsF() << " [ms]";
   return hr;
 }
 
