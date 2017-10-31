@@ -17,28 +17,7 @@
 
 namespace media {
 
-VaapiDrmPicture::VaapiDrmPicture(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
-    const BindGLImageCallback& bind_image_cb,
-    int32_t picture_buffer_id,
-    const gfx::Size& size,
-    uint32_t texture_id,
-    uint32_t client_texture_id)
-    : VaapiPicture(vaapi_wrapper,
-                   make_context_current_cb,
-                   bind_image_cb,
-                   picture_buffer_id,
-                   size,
-                   texture_id,
-                   client_texture_id) {}
-
-VaapiDrmPicture::~VaapiDrmPicture() {
-  if (gl_image_ && make_context_current_cb_.Run()) {
-    gl_image_->ReleaseTexImage(GL_TEXTURE_EXTERNAL_OES);
-    DCHECK_EQ(glGetError(), static_cast<GLenum>(GL_NO_ERROR));
-  }
-}
+namespace {
 
 static unsigned BufferFormatToInternalFormat(gfx::BufferFormat format) {
   switch (format) {
@@ -57,7 +36,36 @@ static unsigned BufferFormatToInternalFormat(gfx::BufferFormat format) {
   }
 }
 
+}  // anonymous namespace
+
+VaapiDrmPicture::VaapiDrmPicture(
+    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    int32_t picture_buffer_id,
+    const gfx::Size& size,
+    uint32_t texture_id,
+    uint32_t client_texture_id)
+    : VaapiPicture(vaapi_wrapper,
+                   make_context_current_cb,
+                   bind_image_cb,
+                   picture_buffer_id,
+                   size,
+                   texture_id,
+                   client_texture_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+VaapiDrmPicture::~VaapiDrmPicture() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (gl_image_ && make_context_current_cb_.Run()) {
+    gl_image_->ReleaseTexImage(GL_TEXTURE_EXTERNAL_OES);
+    DCHECK_EQ(glGetError(), static_cast<GLenum>(GL_NO_ERROR));
+  }
+}
+
 bool VaapiDrmPicture::Initialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pixmap_);
 
   va_surface_ = vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap_);
@@ -100,6 +108,7 @@ bool VaapiDrmPicture::Initialize() {
 }
 
 bool VaapiDrmPicture::Allocate(gfx::BufferFormat format) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   pixmap_ = factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size_,
@@ -115,6 +124,7 @@ bool VaapiDrmPicture::Allocate(gfx::BufferFormat format) {
 bool VaapiDrmPicture::ImportGpuMemoryBufferHandle(
     gfx::BufferFormat format,
     const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   // CreateNativePixmapFromHandle() will take ownership of the handle.
@@ -131,10 +141,12 @@ bool VaapiDrmPicture::ImportGpuMemoryBufferHandle(
 
 bool VaapiDrmPicture::DownloadFromSurface(
     const scoped_refptr<VASurface>& va_surface) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return vaapi_wrapper_->BlitSurface(va_surface, va_surface_);
 }
 
 bool VaapiDrmPicture::AllowOverlay() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return true;
 }
 
