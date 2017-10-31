@@ -262,28 +262,18 @@ class Function<R(Args...), threadAffinity> {
   base::Callback<R(Args...)> callback_;
 };
 
-template <FunctionThreadAffinity threadAffinity,
-          typename FunctionType,
-          typename... BoundParameters>
+template <typename FunctionType, typename... BoundParameters>
 Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>,
-         threadAffinity>
-BindInternal(FunctionType function, BoundParameters&&... bound_parameters) {
+         kSameThreadAffinity>
+Bind(FunctionType function, BoundParameters&&... bound_parameters) {
   static_assert(internal::CheckGCedTypeRestrictions<
                     std::index_sequence_for<BoundParameters...>,
                     std::decay_t<BoundParameters>...>::ok,
                 "A bound argument uses a bad pattern.");
   using UnboundRunType =
       base::MakeUnboundRunType<FunctionType, BoundParameters...>;
-  return Function<UnboundRunType, threadAffinity>(
+  return Function<UnboundRunType, kSameThreadAffinity>(
       base::Bind(function, std::forward<BoundParameters>(bound_parameters)...));
-}
-
-template <typename FunctionType, typename... BoundParameters>
-Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>,
-         kSameThreadAffinity>
-Bind(FunctionType function, BoundParameters&&... bound_parameters) {
-  return BindInternal<kSameThreadAffinity>(
-      function, std::forward<BoundParameters>(bound_parameters)...);
 }
 
 // TODO(tzik): Replace WTF::Function with base::OnceCallback, and
