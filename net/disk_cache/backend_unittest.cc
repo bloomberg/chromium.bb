@@ -3907,7 +3907,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOverBlockfileCache) {
 
   // Check that the |SimpleBackendImpl| does not favor this structure.
   disk_cache::SimpleBackendImpl* simple_cache =
-      new disk_cache::SimpleBackendImpl(cache_path_, nullptr, 0,
+      new disk_cache::SimpleBackendImpl(cache_path_, nullptr, nullptr, 0,
                                         net::DISK_CACHE, nullptr, nullptr);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());

@@ -11,6 +11,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/disk_cache/simple/simple_file_tracker.h"
 
 namespace base {
 class FilePath;
@@ -46,14 +47,14 @@ NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndFileIndex(
     const std::string& key,
     int file_index);
 
-// Same as |GetFilenameFromKeyAndIndex| above, but using a hex string.
-NET_EXPORT_PRIVATE std::string GetFilenameFromEntryHashAndFileIndex(
-    uint64_t entry_hash,
+// Same as |GetFilenameFromKeyAndIndex| above, but using a numeric key.
+NET_EXPORT_PRIVATE std::string GetFilenameFromEntryFileKeyAndFileIndex(
+    const SimpleFileTracker::EntryFileKey& key,
     int file_index);
 
 // Given a |key| for an entry, returns the name of the sparse data file.
-NET_EXPORT_PRIVATE std::string GetSparseFilenameFromEntryHash(
-    uint64_t entry_hash);
+NET_EXPORT_PRIVATE std::string GetSparseFilenameFromEntryFileKey(
+    const SimpleFileTracker::EntryFileKey& key);
 
 // Given the size of a key, the size in bytes of the header at the beginning
 // of a simple cache file.
