@@ -1,4 +1,14 @@
 <!DOCTYPE html>
+<!-- This page is used to test media src= (video and audio) performance.
+
+  This can be used for src= (but not for MSE or EME) for content of any format
+  that Chrome supports playing.
+
+  TODO(crouleau): Rename file to contrast with mse.html. "video.html" doesn't
+  make sense because sometimes we play audio-only content. Note that this will
+  require a data migration on the chromeperf dashboard since "video.html" is
+  included in the metrics' page names.
+-->
 <html>
   <body>
   </body>
@@ -27,7 +37,8 @@
     netConfig['dsl'] = [1536, 50];
     netConfig['wifi'] = [1024, 60];
     netConfig['none'] = null;
-    // Constrained network server URL.
+    // Constrained network server URL. Note that this is currently broken. A fix
+    // is forthcoming. See crbug.com/676345.
     var CNS_BASE_URL = 'http://cns.chrome:9000/ServeConstrained?';
 
     function getNetsimURL(net) {
