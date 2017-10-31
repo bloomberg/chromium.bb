@@ -547,7 +547,7 @@ static uint32_t i915_resolve_format(uint32_t format, uint64_t use_flags)
 	}
 }
 
-struct backend backend_i915 = {
+const struct backend backend_i915 = {
 	.name = "i915",
 	.init = i915_init,
 	.close = i915_close,

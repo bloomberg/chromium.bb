@@ -21,7 +21,7 @@ static int udl_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-struct backend backend_udl = {
+const struct backend backend_udl = {
 	.name = "udl",
 	.init = udl_init,
 	.bo_create = drv_dumb_bo_create,

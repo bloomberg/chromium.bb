@@ -21,40 +21,40 @@
 #include "util.h"
 
 #ifdef DRV_AMDGPU
-extern struct backend backend_amdgpu;
+extern const struct backend backend_amdgpu;
 #endif
-extern struct backend backend_evdi;
+extern const struct backend backend_evdi;
 #ifdef DRV_EXYNOS
-extern struct backend backend_exynos;
+extern const struct backend backend_exynos;
 #endif
-extern struct backend backend_gma500;
+extern const struct backend backend_gma500;
 #ifdef DRV_I915
-extern struct backend backend_i915;
+extern const struct backend backend_i915;
 #endif
 #ifdef DRV_MARVELL
-extern struct backend backend_marvell;
+extern const struct backend backend_marvell;
 #endif
 #ifdef DRV_MEDIATEK
-extern struct backend backend_mediatek;
+extern const struct backend backend_mediatek;
 #endif
-extern struct backend backend_nouveau;
+extern const struct backend backend_nouveau;
 #ifdef DRV_RADEON
-extern struct backend backend_radeon;
+extern const struct backend backend_radeon;
 #endif
 #ifdef DRV_ROCKCHIP
-extern struct backend backend_rockchip;
+extern const struct backend backend_rockchip;
 #endif
 #ifdef DRV_TEGRA
-extern struct backend backend_tegra;
+extern const struct backend backend_tegra;
 #endif
-extern struct backend backend_udl;
+extern const struct backend backend_udl;
 #ifdef DRV_VC4
-extern struct backend backend_vc4;
+extern const struct backend backend_vc4;
 #endif
-extern struct backend backend_vgem;
-extern struct backend backend_virtio_gpu;
+extern const struct backend backend_vgem;
+extern const struct backend backend_virtio_gpu;
 
-static struct backend *drv_get_backend(int fd)
+static const struct backend *drv_get_backend(int fd)
 {
 	drmVersionPtr drm_version;
 	unsigned int i;
@@ -64,7 +64,7 @@ static struct backend *drv_get_backend(int fd)
 	if (!drm_version)
 		return NULL;
 
-	struct backend *backend_list[] = {
+	const struct backend *backend_list[] = {
 #ifdef DRV_AMDGPU
 		&backend_amdgpu,
 #endif

@@ -21,7 +21,7 @@ static int gma500_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-struct backend backend_gma500 = {
+const struct backend backend_gma500 = {
 	.name = "gma500",
 	.init = gma500_init,
 	.bo_create = drv_dumb_bo_create,

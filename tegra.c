@@ -353,7 +353,7 @@ static int tegra_bo_flush(struct bo *bo, struct map_info *data)
 	return 0;
 }
 
-struct backend backend_tegra = {
+const struct backend backend_tegra = {
 	.name = "tegra",
 	.init = tegra_init,
 	.bo_create = tegra_bo_create,

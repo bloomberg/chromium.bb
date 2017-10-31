@@ -60,7 +60,7 @@ static uint32_t virtio_gpu_resolve_format(uint32_t format, uint64_t use_flags)
 	}
 }
 
-struct backend backend_virtio_gpu = {
+const struct backend backend_virtio_gpu = {
 	.name = "virtio_gpu",
 	.init = virtio_gpu_init,
 	.bo_create = virtio_gpu_bo_create,

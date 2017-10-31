@@ -21,7 +21,7 @@ static int nouveau_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-struct backend backend_nouveau = {
+const struct backend backend_nouveau = {
 	.name = "nouveau",
 	.init = nouveau_init,
 	.bo_create = drv_dumb_bo_create,

@@ -21,7 +21,7 @@ static int radeon_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-struct backend backend_radeon = {
+const struct backend backend_radeon = {
 	.name = "radeon",
 	.init = radeon_init,
 	.bo_create = drv_dumb_bo_create,

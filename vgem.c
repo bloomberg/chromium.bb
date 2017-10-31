@@ -60,7 +60,7 @@ static uint32_t vgem_resolve_format(uint32_t format, uint64_t flags)
 	}
 }
 
-struct backend backend_vgem = {
+const struct backend backend_vgem = {
 	.name = "vgem",
 	.init = vgem_init,
 	.bo_create = vgem_bo_create,

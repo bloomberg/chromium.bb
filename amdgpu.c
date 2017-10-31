@@ -426,7 +426,7 @@ static uint32_t amdgpu_resolve_format(uint32_t format, uint64_t use_flags)
 	}
 }
 
-struct backend backend_amdgpu = {
+const struct backend backend_amdgpu = {
 	.name = "amdgpu",
 	.init = amdgpu_init,
 	.close = amdgpu_close,

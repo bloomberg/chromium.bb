@@ -145,7 +145,7 @@ static uint32_t mediatek_resolve_format(uint32_t format, uint64_t use_flags)
 	}
 }
 
-struct backend backend_mediatek = {
+const struct backend backend_mediatek = {
 	.name = "mediatek",
 	.init = mediatek_init,
 	.bo_create = mediatek_bo_create,

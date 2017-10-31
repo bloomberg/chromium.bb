@@ -57,7 +57,7 @@ struct combinations {
 
 struct driver {
 	int fd;
-	struct backend *backend;
+	const struct backend *backend;
 	void *priv;
 	void *buffer_table;
 	void *map_table;

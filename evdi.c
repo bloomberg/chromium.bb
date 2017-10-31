@@ -21,7 +21,7 @@ static int evdi_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-struct backend backend_evdi = {
+const struct backend backend_evdi = {
 	.name = "evdi",
 	.init = evdi_init,
 	.bo_create = drv_dumb_bo_create,

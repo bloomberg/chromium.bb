@@ -81,7 +81,7 @@ static void *vc4_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint
 		    bo_map.offset);
 }
 
-struct backend backend_vc4 = {
+const struct backend backend_vc4 = {
 	.name = "vc4",
 	.init = vc4_init,
 	.bo_create = vc4_bo_create,

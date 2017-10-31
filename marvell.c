@@ -24,7 +24,7 @@ static int marvell_init(struct driver *drv)
 					   ARRAY_SIZE(render_target_formats));
 }
 
-struct backend backend_marvell = {
+const struct backend backend_marvell = {
 	.name = "marvell",
 	.init = marvell_init,
 	.bo_create = drv_dumb_bo_create,

@@ -314,7 +314,7 @@ static uint32_t rockchip_resolve_format(uint32_t format, uint64_t use_flags)
 	}
 }
 
-struct backend backend_rockchip = {
+const struct backend backend_rockchip = {
 	.name = "rockchip",
 	.init = rockchip_init,
 	.bo_create = rockchip_bo_create,

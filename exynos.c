@@ -105,7 +105,7 @@ cleanup_planes:
  * Use dumb mapping with exynos even though a GEM buffer is created.
  * libdrm does the same thing in exynos_drm.c
  */
-struct backend backend_exynos = {
+const struct backend backend_exynos = {
 	.name = "exynos",
 	.init = exynos_init,
 	.bo_create = exynos_bo_create,
