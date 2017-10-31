@@ -30,6 +30,10 @@ std::pair<const Node&, unsigned> ToNodeOffsetPair(const Position& position) {
   return {*position.AnchorNode(), 1};
 }
 
+// TODO(xiaochengh): Introduce predicates for comparing Position and
+// NGOffsetMappingUnit, to reduce position-offset conversion and ad-hoc
+// predicates below.
+
 }  // namespace
 
 NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
@@ -150,9 +154,12 @@ NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
 
 NGOffsetMapping::~NGOffsetMapping() = default;
 
-const NGOffsetMappingUnit* NGOffsetMapping::GetMappingUnitForDOMOffset(
-    const Node& node,
-    unsigned offset) const {
+const NGOffsetMappingUnit* NGOffsetMapping::GetMappingUnitForPosition(
+    const Position& position) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position));
+  const auto node_and_offset = ToNodeOffsetPair(position);
+  const Node& node = node_and_offset.first;
+  const unsigned offset = node_and_offset.second;
   unsigned range_start;
   unsigned range_end;
   std::tie(range_start, range_end) = ranges_.at(&node);
@@ -200,24 +207,22 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMOffsetRange(
 Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
-  const auto node_offset_pair = ToNodeOffsetPair(position);
-  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(
-      node_offset_pair.first, node_offset_pair.second);
+  const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(position);
   if (!unit)
     return WTF::nullopt;
-  return unit->ConvertDOMOffsetToTextContent(node_offset_pair.second);
+  return unit->ConvertDOMOffsetToTextContent(ToNodeOffsetPair(position).second);
 }
 
 Position NGOffsetMapping::StartOfNextNonCollapsedContent(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
-  const auto node_and_offset = ToNodeOffsetPair(position);
-  const Node& node = node_and_offset.first;
-  const unsigned offset = node_and_offset.second;
-  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
+  const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(position);
   if (!unit)
     return Position();
 
+  const auto node_and_offset = ToNodeOffsetPair(position);
+  const Node& node = node_and_offset.first;
+  const unsigned offset = node_and_offset.second;
   while (unit != units_.end() && unit->GetOwner() == node) {
     if (unit->DOMEnd() > offset &&
         unit->GetType() != NGOffsetMappingUnitType::kCollapsed) {
@@ -232,13 +237,13 @@ Position NGOffsetMapping::StartOfNextNonCollapsedContent(
 Position NGOffsetMapping::EndOfLastNonCollapsedContent(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
-  const auto node_and_offset = ToNodeOffsetPair(position);
-  const Node& node = node_and_offset.first;
-  const unsigned offset = node_and_offset.second;
-  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
+  const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(position);
   if (!unit)
     return Position();
 
+  const auto node_and_offset = ToNodeOffsetPair(position);
+  const Node& node = node_and_offset.first;
+  const unsigned offset = node_and_offset.second;
   while (unit->GetOwner() == node) {
     if (unit->DOMStart() < offset &&
         unit->GetType() != NGOffsetMappingUnitType::kCollapsed) {
@@ -254,7 +259,8 @@ Position NGOffsetMapping::EndOfLastNonCollapsedContent(
 
 bool NGOffsetMapping::IsBeforeNonCollapsedCharacter(const Node& node,
                                                     unsigned offset) const {
-  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
+  const NGOffsetMappingUnit* unit =
+      GetMappingUnitForPosition(CreatePositionForOffsetMapping(node, offset));
   return unit && offset < unit->DOMEnd() &&
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
@@ -265,8 +271,8 @@ bool NGOffsetMapping::IsAfterNonCollapsedCharacter(const Node& node,
     return false;
   // In case we have one unit ending at |offset| and another starting at
   // |offset|, we need to find the former. Hence, search with |offset - 1|.
-  const NGOffsetMappingUnit* unit =
-      GetMappingUnitForDOMOffset(node, offset - 1);
+  const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(
+      CreatePositionForOffsetMapping(node, offset - 1));
   return unit && offset > unit->DOMStart() &&
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
