@@ -13,13 +13,16 @@
 
 namespace ash {
 
+class AshWindowTreeHostMirroringDelegate;
+
 // A WTH used for unified desktop mode. This creates an offscreen
 // compositor whose texture will be copied into each displays'
 // compositor.
 class AshWindowTreeHostUnified : public AshWindowTreeHostPlatform,
                                  public aura::WindowObserver {
  public:
-  explicit AshWindowTreeHostUnified(const gfx::Rect& initial_bounds);
+  AshWindowTreeHostUnified(const gfx::Rect& initial_bounds,
+                           AshWindowTreeHostMirroringDelegate* delegate);
   ~AshWindowTreeHostUnified() override;
 
  private:
@@ -37,6 +40,8 @@ class AshWindowTreeHostUnified : public AshWindowTreeHostPlatform,
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
+
+  AshWindowTreeHostMirroringDelegate* delegate_;  // Not owned.
 
   std::vector<AshWindowTreeHost*> mirroring_hosts_;
 

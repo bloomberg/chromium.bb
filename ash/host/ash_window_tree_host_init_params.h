@@ -12,10 +12,15 @@
 
 namespace ash {
 
+class AshWindowTreeHostMirroringDelegate;
+
 struct ASH_EXPORT AshWindowTreeHostInitParams {
+  // Not owned.
+  AshWindowTreeHostMirroringDelegate* mirroring_delegate = nullptr;
   // This corresponds to display::ManagedDisplayInfo::bounds_in_native.
   gfx::Rect initial_bounds;
   bool offscreen = false;
+  bool mirroring_unified = false;
   int64_t display_id = 0;
   float device_scale_factor = 0.0f;
   float ui_scale_factor = 0.0f;

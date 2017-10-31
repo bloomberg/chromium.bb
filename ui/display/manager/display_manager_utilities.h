@@ -5,7 +5,7 @@
 #ifndef UI_DISPLAY_MANAGER_DISPLAY_MANAGER_UTILITIES_H_
 #define UI_DISPLAY_MANAGER_DISPLAY_MANAGER_UTILITIES_H_
 
-#include <set>
+#include <vector>
 
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -26,12 +26,24 @@ class ManagedDisplayMode;
 DISPLAY_MANAGER_EXPORT ManagedDisplayInfo::ManagedDisplayModeList
 CreateInternalManagedDisplayModeList(const ManagedDisplayMode& native_mode);
 
+// Defines parameters needed to construct a ManagedDisplayMode for Unified
+// Desktop.
+struct UnifiedDisplayModeParam {
+  UnifiedDisplayModeParam(float dsf, float scale, bool is_default);
+
+  float device_scale_factor = 1.0f;
+
+  float display_bounds_scale = 1.0f;
+
+  bool is_default_mode = false;
+};
+
 // Creates the display mode list for unified display
 // based on |native_mode| and |scales|.
 DISPLAY_MANAGER_EXPORT ManagedDisplayInfo::ManagedDisplayModeList
 CreateUnifiedManagedDisplayModeList(
     const ManagedDisplayMode& native_mode,
-    const std::set<std::pair<float, float>>& dsf_scale_list);
+    const std::vector<UnifiedDisplayModeParam>& modes_param_list);
 
 // Tests if the |info| has display mode that matches |ui_scale|.
 bool HasDisplayModeForUIScale(const ManagedDisplayInfo& info, float ui_scale);

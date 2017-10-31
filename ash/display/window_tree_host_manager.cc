@@ -756,8 +756,10 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
       GetDisplayManager()->GetDisplayInfo(display.id());
   AshWindowTreeHostInitParams params_with_bounds(init_params);
   params_with_bounds.initial_bounds = display_info.bounds_in_native();
-  params_with_bounds.offscreen =
-      display.id() == display::DisplayManager::kUnifiedDisplayId;
+  if (display.id() == display::DisplayManager::kUnifiedDisplayId) {
+    params_with_bounds.offscreen = true;
+    params_with_bounds.mirroring_delegate = mirror_window_controller();
+  }
   params_with_bounds.display_id = display.id();
   params_with_bounds.device_scale_factor = display.device_scale_factor();
   params_with_bounds.ui_scale_factor = display_info.configured_ui_scale();

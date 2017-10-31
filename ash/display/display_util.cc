@@ -148,23 +148,21 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
   host->MoveCursorToLocationInPixels(point_in_host);
 
   if (update_last_location_now) {
-    gfx::Point new_point_in_screen;
+    gfx::Point new_point_in_screen = point_in_native;
+    host->ConvertScreenInPixelsToDIP(&new_point_in_screen);
+    ::wm::ConvertPointToScreen(host->window(), &new_point_in_screen);
+
     if (Shell::Get()->display_manager()->IsInUnifiedMode()) {
-      new_point_in_screen = point_in_host;
-      // First convert to the unified host.
-      host->ConvertPixelsToDIP(&new_point_in_screen);
-      // Then convert to the unified screen.
-      Shell::GetPrimaryRootWindow()->GetHost()->ConvertPixelsToDIP(
+      // In unified desktop mode, the mirroring host converts the point to the
+      // unified host's pixel coordinates, so we also need to apply the unified
+      // host transform to get a point in the unified screen coordinates to take
+      // into account any device scale factors or ui scaling.
+      Shell::GetPrimaryRootWindow()->GetHost()->ConvertScreenInPixelsToDIP(
           &new_point_in_screen);
-    } else {
-      new_point_in_screen = point_in_native;
-      host->ConvertScreenInPixelsToDIP(&new_point_in_screen);
-      ::wm::ConvertPointToScreen(host->window(), &new_point_in_screen);
     }
     aura::Env::GetInstance()->set_last_mouse_location(new_point_in_screen);
   }
 }
-
 
 void ShowDisplayErrorNotification(const base::string16& message,
                                   bool allow_feedback) {

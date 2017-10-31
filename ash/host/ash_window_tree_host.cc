@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/host/ash_window_tree_host_init_params.h"
+#include "ash/host/ash_window_tree_host_mirroring_unified.h"
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/shell_port.h"
@@ -47,6 +48,7 @@ void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
     screen_position_client->ConvertHostPointToScreen(root_window, &location);
     screen_position_client->ConvertPointFromScreen(root_window, &location);
     wth->ConvertDIPToPixels(&location);
+
     event->set_location(location);
     event->set_root_location(location);
   }
@@ -60,9 +62,14 @@ std::unique_ptr<AshWindowTreeHost> AshWindowTreeHost::Create(
   if (ash_window_tree_host)
     return ash_window_tree_host;
 
+  if (init_params.mirroring_unified) {
+    return std::make_unique<AshWindowTreeHostMirroringUnified>(
+        init_params.initial_bounds, init_params.display_id,
+        init_params.mirroring_delegate);
+  }
   if (init_params.offscreen) {
     return std::make_unique<AshWindowTreeHostUnified>(
-        init_params.initial_bounds);
+        init_params.initial_bounds, init_params.mirroring_delegate);
   }
   return std::make_unique<AshWindowTreeHostPlatform>(
       init_params.initial_bounds);

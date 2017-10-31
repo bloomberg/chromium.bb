@@ -138,6 +138,22 @@ class DisplayManagerTest : public AshTestBase,
     root_window_destroyed_ = true;
   }
 
+  // Returns true if there exists any overlapping mirroring displays.
+  bool OverlappingMirroringDisplaysExist() {
+    const auto& mirroring_displays =
+        display_manager()->software_mirroring_display_list();
+    for (size_t i = 0; i < mirroring_displays.size() - 1; ++i) {
+      for (size_t j = i + 1; j < mirroring_displays.size(); ++j) {
+        const gfx::Rect& bounds_1 = mirroring_displays[i].bounds();
+        const gfx::Rect& bounds_2 = mirroring_displays[j].bounds();
+        if (bounds_1.Intersects(bounds_2))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
  private:
   vector<display::Display> changed_;
   vector<display::Display> added_;
@@ -2695,6 +2711,346 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
 
   UpdateDisplay("400x500");
   EXPECT_EQ("400x500", screen->GetPrimaryDisplay().size().ToString());
+}
+
+// Validate that setting an invalid matrix will fall back to the default
+// horizontal unified desktop layout.
+TEST_F(DisplayManagerTest, UnifiedDesktopInvalidMatrices) {
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  UpdateDisplay("400x500,300x200");
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  display::Screen* screen = display::Screen::GetScreen();
+
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(2u, list.size());
+  {
+    // Create an empty matrix.
+    display::UnifiedDesktopLayoutMatrix matrix;
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // The result is still a valid default horizontal layout.
+    EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
+
+    // 2 x 1 empty matrix.
+    matrix.resize(2u);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // The result is still a valid default horizontal layout.
+    EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
+  }
+
+  {
+    // 2 x 1 vertical matrix with invalid IDs.
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(2u);
+    matrix[0].emplace_back(list[0]);
+    matrix[1].emplace_back(-100);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // The result is still a valid default horizontal layout.
+    EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
+  }
+
+  {
+    // Matrix with a missing ID.
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(2u);
+    matrix[0].emplace_back(list[0]);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // The result is still a valid default horizontal layout.
+    EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
+  }
+
+  // Switch to 3 displays.
+  UpdateDisplay("500x300,400x500,500x300");
+  list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(3u, list.size());
+  {
+    // Create a matrix with unequal rows
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(3u);
+    matrix[0].emplace_back(list[0]);
+    matrix[1].emplace_back(list[1]);
+    matrix[1].emplace_back(list[2]);  // Typo; meant to say matrix[2].
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // The result is still a valid default horizontal layout.
+    EXPECT_EQ(gfx::Size(1239, 300), screen->GetPrimaryDisplay().size());
+  }
+
+  {
+    // Create a matrix with repeated IDs.
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(3u);
+    matrix[0].emplace_back(list[0]);
+    matrix[1].emplace_back(list[1]);
+    matrix[2].emplace_back(list[1]);  // Typo; meant to say list[2].
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // The result is still a valid default horizontal layout.
+    EXPECT_EQ(gfx::Size(1239, 300), screen->GetPrimaryDisplay().size());
+  }
+}
+
+TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout2x1) {
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  UpdateDisplay("400x500,300x200");
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  display::Screen* screen = display::Screen::GetScreen();
+  // This is still a horizontal layout.
+  EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
+
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(2u, list.size());
+  {
+    // Create a 2 x 1 vertical layout matrix and set it.
+    // [400 x 500]
+    // [300 x 200]
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(2u);
+    matrix[0].emplace_back(list[0]);
+    matrix[1].emplace_back(list[1]);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // 500 + 400 * 200 / 300 ~= 766.
+    EXPECT_EQ(gfx::Size(400, 766), screen->GetPrimaryDisplay().size());
+    // Display in top-left cell is considered primary.
+    EXPECT_EQ(
+        list[0],
+        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+    // Validate display rows and max heights.
+    EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[0]));
+    EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[1]));
+    EXPECT_EQ(500, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+    EXPECT_EQ(400 * 200 / 300,
+              display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+    EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+  }
+
+  {
+    // Change the order of the displays such that the [300 x 200] is on top,
+    // which should make its bounds used for the default mode.
+    // [300 x 200]
+    // [400 x 500]
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(2u);
+    matrix[0].emplace_back(list[1]);
+    matrix[1].emplace_back(list[0]);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    // 200 + 300 * 500 / 400 ~= 574 (Note that we actually scale the max unified
+    // bounds).
+    EXPECT_EQ(gfx::Size(300, 574), screen->GetPrimaryDisplay().size());
+    // Display in top-left cell is considered primary.
+    EXPECT_EQ(
+        list[1],
+        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+    // Validate display rows and max heights.
+    EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[0]));
+    EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[1]));
+    EXPECT_EQ(199, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+    // 300 * 500 / 400.
+    EXPECT_EQ(375, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+    EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+  }
+
+  {
+    // Revert to the first matrix, but mark the [300 x 200] display as internal.
+    // [400 x 500]
+    // [300 x 200] : Internal
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(2u);
+    matrix[0].emplace_back(list[0]);
+    matrix[1].emplace_back(list[1]);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    std::vector<display::ManagedDisplayInfo> display_info_list;
+    display_info_list.emplace_back(
+        CreateDisplayInfo(list[0], gfx::Rect(0, 0, 400, 500)));
+    display_info_list.emplace_back(
+        CreateDisplayInfo(list[1], gfx::Rect(400, 0, 300, 200)));
+    display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                           list[1]);
+    display_manager()->OnNativeDisplaysChanged(display_info_list);
+    EXPECT_EQ(gfx::Size(300, 574), screen->GetPrimaryDisplay().size());
+    // Display in top-left cell is considered primary.
+    EXPECT_EQ(
+        list[0],
+        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+    // Validate display rows and max heights.
+    EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[0]));
+    EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[1]));
+    // 300 * 500 / 400.
+    EXPECT_EQ(375, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+    EXPECT_EQ(199, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+    EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+  }
+}
+
+TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout3x1) {
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  UpdateDisplay("500x300,400x500,500x300");
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  display::Screen* screen = display::Screen::GetScreen();
+
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(3u, list.size());
+  {
+    // Create a 3 x 1 vertical layout matrix and set it.
+    // [500 x 300]
+    // [400 x 500]
+    // [500 x 300]
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(3u);
+    matrix[0].emplace_back(list[0]);
+    matrix[1].emplace_back(list[1]);
+    matrix[2].emplace_back(list[2]);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    EXPECT_EQ(gfx::Size(500, 1225), screen->GetPrimaryDisplay().size());
+    // Display in top-left cell is considered primary.
+    EXPECT_EQ(
+        list[0],
+        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+    // Validate display rows and max heights.
+    EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[0]));
+    EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[1]));
+    EXPECT_EQ(2, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[2]));
+    EXPECT_EQ(300, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+    // 500 * 500 / 400 = 625.
+    EXPECT_EQ(625, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+    EXPECT_EQ(300, display_manager()->GetUnifiedDesktopRowMaxHeight(2));
+    EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+  }
+
+  {
+    // We can change the order however we want.
+    // [400 x 500]
+    // [500 x 300]
+    // [500 x 300]
+    display::UnifiedDesktopLayoutMatrix matrix;
+    matrix.resize(3u);
+    matrix[0].emplace_back(list[1]);
+    matrix[1].emplace_back(list[0]);
+    matrix[2].emplace_back(list[2]);
+    display_manager()->SetUnifiedDesktopMatrix(matrix);
+    EXPECT_EQ(gfx::Size(400, 980), screen->GetPrimaryDisplay().size());
+    // Display in top-left cell is considered primary.
+    EXPECT_EQ(
+        list[1],
+        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+    // Validate display rows and max heights.
+    EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[0]));
+    EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[1]));
+    EXPECT_EQ(2, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                     list[2]));
+    EXPECT_EQ(500, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+    // 400 * 300 / 500 = 240.
+    EXPECT_EQ(240, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+    EXPECT_EQ(240, display_manager()->GetUnifiedDesktopRowMaxHeight(2));
+    EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+  }
+}
+
+TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout2x2) {
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  UpdateDisplay("500x300,400x500,300x600,200x300");
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  display::Screen* screen = display::Screen::GetScreen();
+
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(4u, list.size());
+  // Create a 2 x 2 vertical layout matrix and set it.
+  // [500 x 300] [400 x 500]
+  // [300 x 600] [200 x 300]
+  display::UnifiedDesktopLayoutMatrix matrix;
+  matrix.resize(2u);
+  matrix[0].emplace_back(list[0]);
+  matrix[0].emplace_back(list[1]);
+  matrix[1].emplace_back(list[2]);
+  matrix[1].emplace_back(list[3]);
+  display_manager()->SetUnifiedDesktopMatrix(matrix);
+  EXPECT_EQ(gfx::Size(739, 933), screen->GetPrimaryDisplay().size());
+  // Display in top-left cell is considered primary.
+  EXPECT_EQ(
+      list[0],
+      display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+  // Validate display rows and max heights.
+  EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[0]));
+  EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[1]));
+  EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[2]));
+  EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[3]));
+  EXPECT_EQ(300, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+  EXPECT_EQ(633, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+  EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+}
+
+TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  UpdateDisplay("500x300,400x500,300x600,200x300,700x200,350x480");
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  display::Screen* screen = display::Screen::GetScreen();
+
+  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(6u, list.size());
+  // Create a 3 x 2 vertical layout matrix and set it.
+  // [500 x 300] [400 x 500]
+  // [300 x 600] [200 x 300]
+  // [700 x 200] [350 x 480]
+  display::UnifiedDesktopLayoutMatrix matrix;
+  matrix.resize(3u);
+  matrix[0].emplace_back(list[0]);
+  matrix[0].emplace_back(list[1]);
+  matrix[1].emplace_back(list[2]);
+  matrix[1].emplace_back(list[3]);
+  matrix[2].emplace_back(list[4]);
+  matrix[2].emplace_back(list[5]);
+  display_manager()->SetUnifiedDesktopMatrix(matrix);
+  EXPECT_EQ(gfx::Size(739, 1108), screen->GetPrimaryDisplay().size());
+  // Display in top-left cell is considered primary.
+  EXPECT_EQ(
+      list[0],
+      display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+  // Validate display rows and max heights.
+  EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[0]));
+  EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[1]));
+  EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[2]));
+  EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[3]));
+  EXPECT_EQ(2, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[4]));
+  EXPECT_EQ(2, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
+                   list[5]));
+  EXPECT_EQ(300, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
+  EXPECT_EQ(633, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
+  EXPECT_EQ(175, display_manager()->GetUnifiedDesktopRowMaxHeight(2));
+  EXPECT_FALSE(OverlappingMirroringDisplaysExist());
 }
 
 TEST_F(DisplayManagerTest, DockMode) {

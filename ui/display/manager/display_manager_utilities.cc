@@ -5,7 +5,6 @@
 #include "ui/display/manager/display_manager_utilities.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "base/sys_info.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -115,19 +114,27 @@ ManagedDisplayInfo::ManagedDisplayModeList CreateInternalManagedDisplayModeList(
   return display_mode_list;
 }
 
+UnifiedDisplayModeParam::UnifiedDisplayModeParam(float dsf,
+                                                 float scale,
+                                                 bool is_default)
+    : device_scale_factor(dsf),
+      display_bounds_scale(scale),
+      is_default_mode(is_default) {}
+
 ManagedDisplayInfo::ManagedDisplayModeList CreateUnifiedManagedDisplayModeList(
     const ManagedDisplayMode& native_mode,
-    const std::set<std::pair<float, float>>& dsf_scale_list) {
+    const std::vector<UnifiedDisplayModeParam>& modes_param_list) {
   ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
+  display_mode_list.reserve(modes_param_list.size());
 
-  for (auto& pair : dsf_scale_list) {
+  for (auto& param : modes_param_list) {
     gfx::SizeF scaled_size(native_mode.size());
-    scaled_size.Scale(pair.second);
-    ManagedDisplayMode mode(
+    scaled_size.Scale(param.display_bounds_scale);
+    display_mode_list.emplace_back(
         gfx::ToFlooredSize(scaled_size), native_mode.refresh_rate(),
-        native_mode.is_interlaced(), false /* native */, native_mode.ui_scale(),
-        pair.first /* device_scale_factor */);
-    display_mode_list.push_back(mode);
+        native_mode.is_interlaced(),
+        param.is_default_mode ? true : false /* native */,
+        native_mode.ui_scale(), param.device_scale_factor);
   }
   // Sort the mode by the size in DIP.
   std::sort(display_mode_list.begin(), display_mode_list.end(),

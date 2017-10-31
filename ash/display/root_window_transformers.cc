@@ -221,14 +221,33 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
  public:
   PartialBoundsRootWindowTransformer(const gfx::Rect& screen_bounds,
                                      const display::Display& display) {
+    const display::DisplayManager* display_manager =
+        Shell::Get()->display_manager();
+    display::ManagedDisplayInfo display_info =
+        display_manager->GetDisplayInfo(display.id());
+    // Physical root bounds.
+    root_bounds_ = gfx::Rect(display_info.bounds_in_native().size());
+
+    // |screen_bounds| is the unified desktop logical bounds.
+    // Calculate the unified height scale value, and apply the same scale on the
+    // row physical height to get the row logical height.
     display::Display unified_display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
-    display::ManagedDisplayInfo display_info =
-        Shell::Get()->display_manager()->GetDisplayInfo(display.id());
-    root_bounds_ = gfx::Rect(display_info.bounds_in_native().size());
-    float scale = root_bounds_.height() /
-                  static_cast<float>(screen_bounds.height()) /
-                  unified_display.device_scale_factor();
+    const int unified_physical_height =
+        unified_display.GetSizeInPixel().height();
+    const int unified_logical_height = screen_bounds.height();
+    const float unified_height_scale =
+        static_cast<float>(unified_logical_height) / unified_physical_height;
+
+    const int row_index =
+        display_manager->GetMirroringDisplayRowIndexInUnifiedMatrix(
+            display.id());
+    const int row_physical_height =
+        display_manager->GetUnifiedDesktopRowMaxHeight(row_index);
+    const int row_logical_height = row_physical_height * unified_height_scale;
+    const float dsf = unified_display.device_scale_factor();
+    const float scale = root_bounds_.height() / (dsf * row_logical_height);
+
     transform_.Scale(scale, scale);
     transform_.Translate(-SkIntToMScalar(display.bounds().x()),
                          -SkIntToMScalar(display.bounds().y()));
