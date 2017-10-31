@@ -84,9 +84,9 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTitle_: function() {
-    return this.networkProperties_.Name ||
-        this.i18n('OncType' + this.networkProperties_.Type);
+  getDialogTitle_: function() {
+    var type = this.i18n('OncType' + this.networkProperties_.Type);
+    return this.i18n('internetJoinType', type);
   },
 
   /** @private */

@@ -5,23 +5,33 @@
 <dom-module id="network-config-select">
   <template>
     <style include="network-shared md-select">
+      #label {
+        color: var(--secondary-text-color);
+      }
+
       .md-select {
-        -webkit-margin-end: calc(
-            var(--network-control-margin) - var(--cr-icon-ripple-padding) * 2);
+        color: var(--primary-text-color);
+      }
+
+      .md-select-wrapper {
+        -webkit-margin-start: calc(var(--md-select-side-padding) * -1);
       }
     </style>
 
-    <div class="property-box hr">
-      <div id="label" class="start">[[label]]</div>
-      <select class="md-select" disabled="[[disabled]]"
-          value="{{value::change}}" aria-label$="[[label]]">
-        <template is="dom-repeat" items="[[items]]">
-          <option value="[[getItemValue_(item)]]"
-              disabled="[[!getItemEnabled_(item)]]">
-            [[getItemLabel_(item, oncPrefix)]]
-          </option>
-        </template>
-      </select>
+    <div class="property-box two-line single-column">
+      <div id="label">[[label]]</div>
+      <div class="md-select-wrapper">
+        <select class="md-select" disabled="[[disabled]]"
+            value="{{value::change}}" aria-label$="[[label]]">
+          <template is="dom-repeat" items="[[items]]">
+            <option value="[[getItemValue_(item)]]"
+                disabled="[[!getItemEnabled_(item)]]">
+              [[getItemLabel_(item, oncPrefix)]]
+            </option>
+          </template>
+        </select>
+        <span class="md-select-underline"></span>
+      </div>
     </div>
 
   </template>

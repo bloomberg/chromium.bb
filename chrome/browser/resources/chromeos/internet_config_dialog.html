@@ -28,16 +28,14 @@
   <template>
     <style include="network-shared iron-flex">
       .button-strip {
+        border-top: var(--cr-separator-line);
         justify-content: flex-end;
       }
 
       .section {
         @apply(--cr-section);
-        margin-bottom: 10px;
-      }
-
-      .section.first {
         border-top: none;
+        margin-bottom: 10px;
       }
 
       .section.single-column {
@@ -56,15 +54,18 @@
         font-size: 107.69%;  /* 14px / 13px */
         font-weight: 500;
       }
+
+      network-config {
+        /* Give the network-config section some extra padding for the dialog. */
+        -webkit-padding-start: 20px;
+      }
     </style>
 
     <!-- Title section: Icon + name. -->
-    <div class="section first">
-      <div class="start layout horizontal center">
-        <cr-network-icon network-state="[[networkProperties_]]" is-list-item>
-        </cr-network-icon>
-        <div class="title">[[getTitle_(networkProperties_.*)]]</div>
-      </div>
+    <div class="section layout horizontal center">
+      <cr-network-icon network-state="[[networkProperties_]]" is-list-item>
+      </cr-network-icon>
+      <div class="title">[[getDialogTitle_(networkProperties_)]]</div>
     </div>
 
     <div class="section single-column">

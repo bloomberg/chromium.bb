@@ -234,7 +234,7 @@ Polymer({
    */
   showConfig_: function(type, guid, name) {
     var configDialog =
-        /** @type {!InternetConfigDialogElement} */ (this.$.configDialog);
+        /** @type {!InternetConfigElement} */ (this.$.configDialog);
     configDialog.type =
         /** @type {chrome.networkingPrivate.NetworkType} */ (type);
     configDialog.guid = guid || '';
