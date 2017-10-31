@@ -54,7 +54,7 @@ static bool RecordsEqual(sk_sp<const PaintRecord> record1,
 }
 
 static SkBitmap RecordToBitmap(sk_sp<const PaintRecord> record,
-                               const FloatRect& bounds) {
+                               const IntRect& bounds) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(bounds.Width(), bounds.Height()));
@@ -67,20 +67,22 @@ static SkBitmap RecordToBitmap(sk_sp<const PaintRecord> record,
 
 static bool BitmapsEqual(sk_sp<const PaintRecord> record1,
                          sk_sp<const PaintRecord> record2,
-                         const FloatRect& bounds) {
+                         const IntRect& bounds) {
   SkBitmap bitmap1 = RecordToBitmap(record1, bounds);
   SkBitmap bitmap2 = RecordToBitmap(record2, bounds);
   int mismatch_count = 0;
-  const int kMaxMismatches = 10;
-  for (int y = 0; y < bounds.Height() && mismatch_count < kMaxMismatches; ++y) {
-    for (int x = 0; x < bounds.Width() && mismatch_count < kMaxMismatches;
-         ++x) {
+  constexpr int kMaxMismatches = 10;
+  for (int y = 0; y < bounds.Height(); ++y) {
+    for (int x = 0; x < bounds.Width(); ++x) {
       SkColor pixel1 = bitmap1.getColor(x, y);
       SkColor pixel2 = bitmap2.getColor(x, y);
       if (pixel1 != pixel2) {
+        if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+          return false;
         LOG(ERROR) << "x=" << x << " y=" << y << " " << std::hex << pixel1
                    << " vs " << std::hex << pixel2;
-        ++mismatch_count;
+        if (++mismatch_count >= kMaxMismatches)
+          return false;
       }
     }
   }
@@ -91,28 +93,28 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
   if (!DisplayItem::Equals(other))
     return false;
 
-  const sk_sp<const PaintRecord>& record = this->GetPaintRecord();
-  const FloatRect bounds(this->VisualRect());
-  const sk_sp<const PaintRecord>& other_record =
+  const auto& record = GetPaintRecord();
+  const auto& other_record =
       static_cast<const DrawingDisplayItem&>(other).GetPaintRecord();
-  const FloatRect other_bounds(other.VisualRect());
-
   if (!record && !other_record)
     return true;
   if (!record || !other_record)
     return false;
+
+  const auto& bounds = this->VisualRect();
+  const auto& other_bounds = other.VisualRect();
   if (bounds != other_bounds)
     return false;
 
-  if (RecordsEqual(record, other_record, bounds))
+  if (RecordsEqual(record, other_record, FloatRect(bounds)))
     return true;
 
   // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  return BitmapsEqual(
-      std::move(record), std::move(other_record),
-      // Limit the bounds to prevent OOM.
-      Intersection(bounds, FloatRect(bounds.X(), bounds.Y(), 6000, 6000)));
+  IntRect int_bounds = EnclosingIntRect(bounds);
+  // Limit the bounds to prevent OOM.
+  int_bounds.Intersect(IntRect(int_bounds.X(), int_bounds.Y(), 6000, 6000));
+  return BitmapsEqual(std::move(record), std::move(other_record), int_bounds);
 }
 
 }  // namespace blink
