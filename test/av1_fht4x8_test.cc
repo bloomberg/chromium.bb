@@ -23,6 +23,7 @@
 
 using libaom_test::ACMRandom;
 
+#if !CONFIG_DAALA_TX
 namespace {
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                         const TxfmParam *txfm_param);
@@ -139,3 +140,4 @@ INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans4x8HT,
 #endif  // HAVE_SSE2
 
 }  // namespace
+#endif  // !CONFIG_DAALA_TX

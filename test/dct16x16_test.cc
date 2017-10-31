@@ -30,6 +30,7 @@
 
 using libaom_test::ACMRandom;
 
+#if !CONFIG_DAALA_TX
 namespace {
 
 const int kNumCoeffs = 256;
@@ -873,3 +874,4 @@ INSTANTIATE_TEST_CASE_P(MSA, Trans16x16DCT,
                                                      DCT_DCT, AOM_BITS_8)));
 #endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace
+#endif  // !CONFIG_DAALA_TX

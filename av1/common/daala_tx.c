@@ -5218,6 +5218,38 @@ void od_bin_fidtx64(od_coeff y[64], const od_coeff *x, int xstride) {
 }
 #endif
 
+void od_bin_iidtx4(od_coeff *x, int xstride, const od_coeff y[4]) {
+  int i;
+  for (i = 0; i < 4; i++)
+    x[i*xstride] = y[i];
+}
+
+void od_bin_iidtx8(od_coeff *x, int xstride, const od_coeff y[8]) {
+  int i;
+  for (i = 0; i < 8; i++)
+    x[i*xstride] = y[i];
+}
+
+void od_bin_iidtx16(od_coeff *x, int xstride, const od_coeff y[16]) {
+  int i;
+  for (i = 0; i < 16; i++)
+    x[i*xstride] = y[i];
+}
+
+void od_bin_iidtx32(od_coeff *x, int xstride, const od_coeff y[32]) {
+  int i;
+  for (i = 0; i < 32; i++)
+    x[i*xstride] = y[i];
+}
+
+#if CONFIG_TX64X64
+void od_bin_iidtx64(od_coeff *x, int xstride, const od_coeff y[64]) {
+  int i;
+  for (i = 0; i < 64; i++)
+    x[i*xstride] = y[i];
+}
+#endif
+
 // Below are intermediate wrappers that handle the case when
 // tran_low_t is a smaller type than od_coeff
 void daala_fdct4(const tran_low_t *input, tran_low_t *output) {

@@ -35,26 +35,31 @@ void daala_idtx64(const tran_low_t *input, tran_low_t *output);
 void od_bin_fdct4(od_coeff y[4], const od_coeff *x, int xstride);
 void od_bin_idct4(od_coeff *x, int xstride, const od_coeff y[4]);
 void od_bin_fdst4(od_coeff y[4], const od_coeff *x, int xstride);
-void od_bin_fidtx4(od_coeff y[4], const od_coeff *x, int xstride);
 void od_bin_idst4(od_coeff *x, int xstride, const od_coeff y[4]);
+void od_bin_fidtx4(od_coeff y[4], const od_coeff *x, int xstride);
+void od_bin_iidtx4(od_coeff *x, int xstride, const od_coeff y[4]);
 void od_bin_fdct8(od_coeff y[8], const od_coeff *x, int xstride);
 void od_bin_idct8(od_coeff *x, int xstride, const od_coeff y[8]);
 void od_bin_fdst8(od_coeff y[8], const od_coeff *x, int xstride);
-void od_bin_fidtx8(od_coeff y[8], const od_coeff *x, int xstride);
 void od_bin_idst8(od_coeff *x, int xstride, const od_coeff y[8]);
+void od_bin_fidtx8(od_coeff y[8], const od_coeff *x, int xstride);
+void od_bin_iidtx8(od_coeff *x, int xstride, const od_coeff y[8]);
 void od_bin_fdct16(od_coeff y[16], const od_coeff *x, int xstride);
 void od_bin_idct16(od_coeff *x, int xstride, const od_coeff y[16]);
 void od_bin_fdst16(od_coeff y[16], const od_coeff *x, int xstride);
-void od_bin_fidtx16(od_coeff y[16], const od_coeff *x, int xstride);
 void od_bin_idst16(od_coeff *x, int xstride, const od_coeff y[16]);
+void od_bin_fidtx16(od_coeff y[16], const od_coeff *x, int xstride);
+void od_bin_iidtx16(od_coeff *x, int xstride, const od_coeff y[16]);
 void od_bin_fdct32(od_coeff y[32], const od_coeff *x, int xstride);
 void od_bin_idct32(od_coeff *x, int xstride, const od_coeff y[32]);
 void od_bin_fdst32(od_coeff y[32], const od_coeff *x, int xstride);
+void od_bin_idst32(od_coeff *x, int xstride, const od_coeff y[32]);
 void od_bin_fidtx32(od_coeff y[32], const od_coeff *x, int xstride);
+void od_bin_iidtx32(od_coeff *x, int xstride, const od_coeff y[32]);
 #if CONFIG_TX64X64
 void od_bin_fdct64(od_coeff y[64], const od_coeff *x, int xstride);
 void od_bin_idct64(od_coeff *x, int xstride, const od_coeff y[64]);
 void od_bin_fidtx64(od_coeff y[64], const od_coeff *x, int xstride);
-
+void od_bin_iidtx64(od_coeff *x, int xstride, const od_coeff y[64]);
 #endif
 #endif
