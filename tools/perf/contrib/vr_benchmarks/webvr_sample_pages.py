@@ -18,6 +18,10 @@ class WebVrSamplePage(VrSamplePage):
   def RunPageInteractions(self, action_runner):
     action_runner.TapElement(selector='canvas[id="webgl-canvas"]')
     action_runner.MeasureMemory(True)
+    # We don't want to be in VR or on a page with a WebGL canvas at the end of
+    # the test, as this generates unnecessary heat while the trace data is being
+    # processed, so navigate to a blank page.
+    action_runner.Navigate("about:blank")
 
 
 class WebVrSamplePageSet(story.StorySet):
