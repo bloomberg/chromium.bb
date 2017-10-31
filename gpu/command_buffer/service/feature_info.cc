@@ -1749,18 +1749,8 @@ bool FeatureInfo::IsWebGL2OrES3Context() const {
   return IsWebGL2OrES3ContextType(context_type_);
 }
 
-void FeatureInfo::AddExtensionString(const char* s) {
-  std::string str(s);
-  size_t pos = extensions_.find(str);
-  while (pos != std::string::npos &&
-         pos + str.length() < extensions_.length() &&
-         extensions_.substr(pos + str.length(), 1) != " ") {
-    // This extension name is a substring of another.
-    pos = extensions_.find(str, pos + str.length());
-  }
-  if (pos == std::string::npos) {
-    extensions_ += (extensions_.empty() ? "" : " ") + str;
-  }
+void FeatureInfo::AddExtensionString(const base::StringPiece& extension) {
+  extensions_.insert(extension);
 }
 
 FeatureInfo::~FeatureInfo() {

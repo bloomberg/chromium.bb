@@ -25,6 +25,8 @@ inline bool HasExtension(const ExtensionSet& extension_set,
   return HasExtension(extension_set, base::StringPiece(extension, N - 1));
 }
 
+GL_EXPORT std::string MakeExtensionString(const ExtensionSet& extension_set);
+
 }  // namespace gl
 
 #endif  // UI_GL_EXTENSION_SET_H_

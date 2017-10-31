@@ -1656,22 +1656,29 @@ error::Error GLES2DecoderPassthroughImpl::DoGetShaderSource(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetString(GLenum name,
-                                                      const char** result) {
+                                                      uint32_t bucket_id) {
+  std::string extensions;
+  const char* str = nullptr;
+
   switch (name) {
     case GL_VERSION:
-      *result = GetServiceVersionString(feature_info_.get());
+      str = GetServiceVersionString(feature_info_.get());
       break;
     case GL_SHADING_LANGUAGE_VERSION:
-      *result = GetServiceShadingLanguageVersionString(feature_info_.get());
+      str = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
-    case GL_EXTENSIONS:
-      *result = feature_info_->extensions().c_str();
+    case GL_EXTENSIONS: {
+      extensions = gl::MakeExtensionString(feature_info_->extensions());
+      str = extensions.c_str();
       break;
+    }
     default:
-      *result = reinterpret_cast<const char*>(api()->glGetStringFn(name));
+      str = reinterpret_cast<const char*>(api()->glGetStringFn(name));
       break;
   }
 
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetFromString(str);
   return error::kNoError;
 }
 
