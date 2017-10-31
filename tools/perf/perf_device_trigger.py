@@ -51,8 +51,8 @@ def modify_args(all_args, bot_id, temp_file):
   dash_ind = all_args.index('--')
 
   return all_args[:dash_ind] + [
-      '--dump_json', temp_file, '--dimension', 'id', bot_id] + all_args[
-          dash_ind:] + ['--bot', bot_id]
+      '--dump-json', temp_file, '--dimension', 'id', bot_id] + all_args[
+          dash_ind:] + ['--id', bot_id]
 
 
 def trigger_tasks(args, remaining):
@@ -75,8 +75,7 @@ def trigger_tasks(args, remaining):
     try:
       args_to_pass = modify_args(remaining[:], bot_id, json_temp)
 
-      ret = subprocess.call(
-          sys.executable, [get_swarming_py_path()] + args_to_pass)
+      ret = subprocess.call([get_swarming_py_path()] + args_to_pass)
       if ret:
         sys.stderr.write('Failed to trigger a task, aborting\n')
         return ret

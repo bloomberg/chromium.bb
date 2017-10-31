@@ -6,7 +6,6 @@ import json
 import os
 import tempfile
 import unittest
-import sys
 
 import mock
 
@@ -40,9 +39,8 @@ class PerfDeviceTriggerUnittest(unittest.TestCase):
 
             called_args, keyword = call_mock.call_args
             self.assertEqual(keyword, {})
-            self.assertEqual(called_args[0], sys.executable)
-            python_args = called_args[1]
-            json_ind = python_args.index('--dump_json')
+            python_args = called_args[0]
+            json_ind = python_args.index('--dump-json')
             # Remove --dump_json and its arg
             python_args.pop(json_ind)
             temp_json_path = python_args.pop(json_ind)
@@ -59,7 +57,7 @@ class PerfDeviceTriggerUnittest(unittest.TestCase):
               '/path/to/swarming.py', 'trigger',
               '--some', '--test',
               '--dimension', 'id', 'build1', '--',
-              'args', '--bot', 'build1'])
+              'args', '--id', 'build1'])
           finally:
             os.close(temp_fd)
             os.remove(json_temp)
