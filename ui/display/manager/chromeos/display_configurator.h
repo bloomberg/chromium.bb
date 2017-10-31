@@ -110,6 +110,9 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
     // Called when the hardware mirroring failed.
     virtual void SetSoftwareMirroring(bool enabled) = 0;
+
+    // Returns true when software mirroring mode is requested, but it does
+    // not guarantee that the mode is active.
     virtual bool SoftwareMirroringEnabled() const = 0;
   };
 

@@ -127,7 +127,7 @@ class RootWindowTransformersTest : public AshTestBase {
     DCHECK(display_manager()->IsInMirrorMode());
     const display::ManagedDisplayInfo& mirror_display_info =
         display_manager()->GetDisplayInfo(
-            display_manager()->mirroring_display_id());
+            display_manager()->GetMirroringDstDisplayIdList()[0]);
     const display::ManagedDisplayInfo& source_display_info =
         display_manager()->GetDisplayInfo(
             display::Screen::GetScreen()->GetPrimaryDisplay().id());

@@ -259,7 +259,7 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
-  EXPECT_EQ(external_id, display_manager()->mirroring_display_id());
+  EXPECT_EQ(external_id, display_manager()->GetMirroringDstDisplayIdList()[0]);
 
   // dock mode.
   display_info_list.clear();
@@ -277,14 +277,14 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
-  EXPECT_EQ(external_id, display_manager()->mirroring_display_id());
+  EXPECT_EQ(external_id, display_manager()->GetMirroringDstDisplayIdList()[0]);
 }
 
 TEST_F(MirrorOnBootTest, MirrorOnBoot) {
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
   RunAllPendingInMessageLoop();
   MirrorWindowTestApi test_api;
-  EXPECT_TRUE(test_api.GetHost());
+  EXPECT_EQ(1U, test_api.GetHosts().size());
 }
 
 }  // namespace ash

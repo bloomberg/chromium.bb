@@ -531,7 +531,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
 
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(base::Int64ToString(display_id_primary), result[0].id);
-  EXPECT_EQ(base::Int64ToString(display_id_secondary),
+  EXPECT_EQ(base::Int64ToString(display_id_primary),
             result[0].mirroring_source_id);
 
   GetDisplayManager()->SetMirrorMode(false);

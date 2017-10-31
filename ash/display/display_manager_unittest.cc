@@ -1350,7 +1350,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_EQ(11U, display_manager()->mirroring_display_id());
+  EXPECT_EQ(11U, display_manager()->GetMirroringDstDisplayIdList()[0]);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
   // Test display name.
@@ -2147,13 +2147,13 @@ class TestDisplayObserver : public display::DisplayObserver {
   void OnDisplayAdded(const display::Display& new_display) override {
     // Mirror window should already be delete before restoring
     // the external display.
-    EXPECT_FALSE(test_api.GetHost());
+    EXPECT_TRUE(test_api.GetHosts().empty());
     changed_ = true;
   }
   void OnDisplayRemoved(const display::Display& old_display) override {
     // Mirror window should not be created until the external display
     // is removed.
-    EXPECT_FALSE(test_api.GetHost());
+    EXPECT_TRUE(test_api.GetHosts().empty());
     changed_ = true;
   }
 
@@ -2174,7 +2174,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   UpdateDisplay("300x400,400x500");
 
   MirrorWindowTestApi test_api;
-  EXPECT_EQ(nullptr, test_api.GetHost());
+  EXPECT_TRUE(test_api.GetHosts().empty());
 
   TestDisplayObserver display_observer;
   display::Screen::GetScreen()->AddObserver(&display_observer);
@@ -2187,15 +2187,15 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   EXPECT_EQ(
       "0,0 300x400",
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("400x500",
-            test_api.GetHost()->GetBoundsInPixels().size().ToString());
-  EXPECT_EQ("300x400",
-            test_api.GetHost()->window()->bounds().size().ToString());
+  std::vector<aura::WindowTreeHost*> hosts = test_api.GetHosts();
+  EXPECT_EQ(1U, hosts.size());
+  EXPECT_EQ("400x500", hosts[0]->GetBoundsInPixels().size().ToString());
+  EXPECT_EQ("300x400", hosts[0]->window()->bounds().size().ToString());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
   display_manager()->SetMirrorMode(false);
   EXPECT_TRUE(display_observer.changed_and_reset());
-  EXPECT_EQ(nullptr, test_api.GetHost());
+  EXPECT_TRUE(test_api.GetHosts().empty());
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
@@ -2207,28 +2207,28 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   UpdateDisplay("300x400@0.5,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("300x400",
-            test_api.GetHost()->window()->bounds().size().ToString());
+            test_api.GetHosts()[0]->window()->bounds().size().ToString());
 
   UpdateDisplay("310x410*2,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("310x410",
-            test_api.GetHost()->window()->bounds().size().ToString());
+            test_api.GetHosts()[0]->window()->bounds().size().ToString());
 
   UpdateDisplay("320x420/r,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("320x420",
-            test_api.GetHost()->window()->bounds().size().ToString());
+            test_api.GetHosts()[0]->window()->bounds().size().ToString());
 
   UpdateDisplay("330x440/r,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("330x440",
-            test_api.GetHost()->window()->bounds().size().ToString());
+            test_api.GetHosts()[0]->window()->bounds().size().ToString());
 
   // Overscan insets are ignored.
   UpdateDisplay("400x600/o,600x800/o");
   EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("400x600",
-            test_api.GetHost()->window()->bounds().size().ToString());
+            test_api.GetHosts()[0]->window()->bounds().size().ToString());
 
   display::Screen::GetScreen()->RemoveObserver(&display_observer);
 }
@@ -2255,14 +2255,16 @@ TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   WindowTreeHostManager* window_tree_host_manager =
       ash::Shell::Get()->window_tree_host_manager();
-  EXPECT_TRUE(
-      window_tree_host_manager->mirror_window_controller()->GetWindow());
+  EXPECT_EQ(1U, window_tree_host_manager->mirror_window_controller()
+                    ->GetAllRootWindows()
+                    .size());
 
   UpdateDisplay("600x400");
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
-  EXPECT_FALSE(
-      window_tree_host_manager->mirror_window_controller()->GetWindow());
+  EXPECT_TRUE(window_tree_host_manager->mirror_window_controller()
+                  ->GetAllRootWindows()
+                  .empty());
 }
 
 // Make sure this does not cause any crashes. See http://crbug.com/412910
@@ -2270,7 +2272,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
   UpdateDisplay("300x400,400x500");
 
   MirrorWindowTestApi test_api;
-  EXPECT_EQ(nullptr, test_api.GetHost());
+  EXPECT_TRUE(test_api.GetHosts().empty());
 
   display::ManagedDisplayInfo secondary_info =
       display_manager()->GetDisplayInfo(
