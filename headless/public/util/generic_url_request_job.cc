@@ -299,6 +299,12 @@ bool GenericURLRequestJob::IsAsync() const {
   return true;
 }
 
+bool GenericURLRequestJob::IsBrowserSideFetch() const {
+  if (!request_resource_info_)
+    return false;
+  return request_resource_info_->GetFrameTreeNodeId() != -1;
+}
+
 namespace {
 void CompletionCallback(int* dest, base::Closure* quit_closure, int value) {
   *dest = value;

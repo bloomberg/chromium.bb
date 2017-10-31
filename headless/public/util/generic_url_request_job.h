@@ -56,6 +56,9 @@ class HEADLESS_EXPORT Request {
   // Returns the size of the POST data, if any, from the net::URLRequest.
   virtual uint64_t GetPostDataSize() const = 0;
 
+  // Returns true if the fetch was issues by the browser.
+  virtual bool IsBrowserSideFetch() const = 0;
+
   enum class ResourceType {
     MAIN_FRAME = 0,
     SUB_FRAME = 1,
@@ -159,6 +162,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   uint64_t GetPostDataSize() const override;
   ResourceType GetResourceType() const override;
   bool IsAsync() const override;
+  bool IsBrowserSideFetch() const override;
 
  private:
   void PrepareCookies(const GURL& rewritten_url,
