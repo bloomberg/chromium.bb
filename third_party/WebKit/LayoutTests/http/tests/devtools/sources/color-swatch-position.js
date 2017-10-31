@@ -11,53 +11,54 @@
   SourcesTestRunner.showScriptSource('color.css', onSourceFrame);
 
   function onSourceFrame(sourceFrame) {
+    var cssPlugin = sourceFrame._plugins.find(plugin => plugin instanceof Sources.CSSPlugin);
     TestRunner.addResult('Initial swatch positions:');
-    SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+    SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
 
     TestRunner.runTestSuite([
       function testEditSpectrum(next) {
         var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector('span[is=color-swatch]');
         swatch.shadowRoot.querySelector('.color-swatch-inner').click();
-        sourceFrame._spectrum._innerSetColor(
+        cssPlugin._spectrum._innerSetColor(
             Common.Color.parse('#008000').hsva(), '', Common.Color.Format.HEX,
             ColorPicker.Spectrum._ChangeSource.Other);
-        sourceFrame._swatchPopoverHelper.hide(true);
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        cssPlugin._swatchPopoverHelper.hide(true);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testAddLine(next) {
         var start = TextUtils.TextRange.createFromLocation(0, 0);
         sourceFrame.textEditor.editRange(start, '/* New line */\n');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testDeleteLine(next) {
         var bodyLine = new TextUtils.TextRange(2, 0, 3, 0);
         sourceFrame.textEditor.editRange(bodyLine, '');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testAddColor(next) {
         var emptyBodyLine = new TextUtils.TextRange(2, 0, 2, 0);
         sourceFrame.textEditor.editRange(emptyBodyLine, 'color: hsl(300, 100%, 35%);');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testInvalidateColor(next) {
         var endParenthesis = new TextUtils.TextRange(2, 25, 2, 26);
         sourceFrame.textEditor.editRange(endParenthesis, ']');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testBookmarksAtLineStart(next) {
         var lineStart = new TextUtils.TextRange(5, 0, 5, 0);
         sourceFrame.textEditor.editRange(lineStart, 'background color:\n#ff0;\n');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       }
     ]);
