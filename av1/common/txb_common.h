@@ -80,20 +80,22 @@ static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int width) {
   return levels_buf + TX_PAD_TOP * (width + TX_PAD_HOR);
 }
 
+static INLINE int get_paded_idx(const int idx, const int bwl) {
+  return idx + TX_PAD_HOR * (idx >> bwl);
+}
+
 static INLINE int get_level_count_mag(int *const mag,
                                       const uint8_t *const levels,
-                                      const int bwl, const int row,
+                                      const int stride, const int row,
                                       const int col, const int level,
                                       const int (*nb_offset)[2],
                                       const int nb_num) {
-  const int stride = 1 << bwl;
   int count = 0;
 
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
-    if (ref_col < 0 || ref_col >= stride) continue;
-    const int pos = (ref_row << bwl) + ref_col;
+    const int pos = ref_row * stride + ref_col;
     count += levels[pos] > level;
     if (nb_offset[idx][0] == 0 && nb_offset[idx][1] == 1) mag[0] = levels[pos];
     if (nb_offset[idx][0] == 1 && nb_offset[idx][1] == 0) mag[1] = levels[pos];
@@ -171,11 +173,12 @@ static INLINE int get_base_ctx(const uint8_t *const levels,
                                const int bwl, const int level) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
+  const int stride = (1 << bwl) + TX_PAD_HOR;
   const int level_minus_1 = level - 1;
   int mag_count = 0;
   int nb_mag[3] = { 0 };
   const int count =
-      get_level_count_mag(nb_mag, levels, bwl, row, col, level_minus_1,
+      get_level_count_mag(nb_mag, levels, stride, row, col, level_minus_1,
                           base_ref_offset, BASE_CONTEXT_POSITION_NUM);
 
   for (int idx = 0; idx < 3; ++idx) mag_count += nb_mag[idx] > level;
@@ -272,11 +275,12 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int bwl) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
+  const int stride = (1 << bwl) + TX_PAD_HOR;
   const int level_minus_1 = NUM_BASE_LEVELS;
   int mag = 0;
   int nb_mag[3] = { 0 };
   const int count =
-      get_level_count_mag(nb_mag, levels, bwl, row, col, level_minus_1,
+      get_level_count_mag(nb_mag, levels, stride, row, col, level_minus_1,
                           br_ref_offset, BR_CONTEXT_POSITION_NUM);
   for (int idx = 0; idx < 3; ++idx) mag = AOMMAX(mag, nb_mag[idx]);
   const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
@@ -302,6 +306,7 @@ static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
 static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
                                    const int row, const int col,
                                    const TX_CLASS tx_class, int *const mag) {
+  const int stride = (1 << bwl) + TX_PAD_HOR;
   int count = 0;
   *mag = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
@@ -318,7 +323,7 @@ static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
     const int ref_row = row + row_offset;
     const int ref_col = col + col_offset;
     if (ref_col >= (1 << bwl)) continue;
-    const int nb_pos = (ref_row << bwl) + ref_col;
+    const int nb_pos = ref_row * stride + ref_col;
     const int level = levels[nb_pos];
     count += (level != 0);
 #if 1
@@ -333,6 +338,7 @@ static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
 static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
                                const int row, const int col,
                                const TX_CLASS tx_class) {
+  const int stride = (1 << bwl) + TX_PAD_HOR;
   int count = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     const int ref_row = row + ((tx_class == TX_CLASS_2D)
@@ -345,8 +351,7 @@ static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
                                    : ((tx_class == TX_CLASS_VERT)
                                           ? sig_ref_offset_vert[idx][1]
                                           : sig_ref_offset_horiz[idx][1]));
-    if (ref_col >= (1 << bwl)) continue;
-    const int nb_pos = (ref_row << bwl) + ref_col;
+    const int nb_pos = ref_row * stride + ref_col;
     count += (levels[nb_pos] != 0);
   }
   return count;

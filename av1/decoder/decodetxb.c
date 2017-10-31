@@ -94,7 +94,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 
   memset(levels_buf, 0,
-         sizeof(*levels_buf) * (seg_eob + TX_PAD_VER * (width + TX_PAD_HOR)));
+         sizeof(*levels_buf) *
+             ((width + TX_PAD_HOR) * (height + TX_PAD_VER) + TX_PAD_END));
   memset(signs, 0, sizeof(*signs) * seg_eob);
 
   (void)blk_row;
@@ -174,7 +175,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
 
     // set non-zero coefficient map.
-    levels[scan[c]] = is_nz;
+    levels[get_paded_idx(scan[c], bwl)] = is_nz;
 
     if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
 
@@ -194,7 +195,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
           break;
         }
       }
-      levels[scan[c]] = k + 1;
+      levels[get_paded_idx(scan[c], bwl)] = k + 1;
     }
 #endif
   }
@@ -207,7 +208,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
     for (c = *eob - 1; c >= 0; --c) {
-      uint8_t *const level = &levels[scan[c]];
+      uint8_t *const level = &levels[get_paded_idx(scan[c], bwl)];
       int ctx;
 
       if (*level <= i) continue;
@@ -237,7 +238,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   // starting with the sign of the DC (if applicable)
   for (c = 0; c < *eob; ++c) {
     int8_t *const sign = &signs[scan[c]];
-    if (levels[scan[c]] == 0) continue;
+    if (levels[get_paded_idx(scan[c], bwl)] == 0) continue;
     if (c == 0) {
       int dc_sign_ctx = txb_ctx->dc_sign_ctx;
 #if LV_MAP_PROB
@@ -253,7 +254,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 
   for (c = update_eob; c >= 0; --c) {
-    uint8_t *const level = &levels[scan[c]];
+    uint8_t *const level = &levels[get_paded_idx(scan[c], bwl)];
     int idx;
     int ctx;
 
@@ -302,7 +303,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   for (c = 0; c < *eob; ++c) {
     const int16_t dqv = (c == 0) ? dequant[0] : dequant[1];
-    const int level = levels[scan[c]];
+    const int level = levels[get_paded_idx(scan[c], bwl)];
     const tran_low_t t = ((level + tcoeffs[scan[c]]) * dqv) >> shift;
 #if CONFIG_SYMBOLRATE
     av1_record_coeff(counts, level);

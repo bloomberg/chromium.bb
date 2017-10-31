@@ -245,7 +245,8 @@ void get_dist_cost_stats(LevelDownStats *stats, int scan_idx,
 static INLINE void update_qcoeff(const int coeff_idx, const tran_low_t qc,
                                  const TxbInfo *const txb_info) {
   txb_info->qcoeff[coeff_idx] = qc;
-  txb_info->levels[coeff_idx] = (uint8_t)clamp(abs(qc), 0, UINT8_MAX);
+  txb_info->levels[get_paded_idx(coeff_idx, txb_info->bwl)] =
+      (uint8_t)clamp(abs(qc), 0, UINT8_MAX);
 }
 
 static INLINE void update_coeff(const int coeff_idx, const tran_low_t qc,
@@ -256,16 +257,23 @@ static INLINE void update_coeff(const int coeff_idx, const tran_low_t qc,
 }
 
 static INLINE void av1_txb_init_levels(const tran_low_t *const coeff,
-                                       const int width, const int size,
+                                       const int width, const int height,
                                        uint8_t *const levels) {
   const int stride = width + TX_PAD_HOR;
+  uint8_t *ls = levels;
 
   memset(levels - TX_PAD_TOP * stride, 0,
          sizeof(*levels) * TX_PAD_TOP * stride);
-  memset(levels + size, 0, sizeof(*levels) * TX_PAD_BOTTOM * stride);
+  memset(levels + stride * height, 0,
+         sizeof(*levels) * (TX_PAD_BOTTOM * stride + TX_PAD_END));
 
-  for (int i = 0; i < size; i++) {
-    levels[i] = (uint8_t)clamp(abs(coeff[i]), 0, UINT8_MAX);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      *ls++ = (uint8_t)clamp(abs(coeff[i * width + j]), 0, UINT8_MAX);
+    }
+    for (int j = 0; j < TX_PAD_HOR; j++) {
+      *ls++ = 0;
+    }
   }
 }
 
@@ -298,7 +306,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   if (eob == 0) return;
 
-  av1_txb_init_levels(tcoeff, width, seg_eob, levels);
+  av1_txb_init_levels(tcoeff, width, height, levels);
 
 #if CONFIG_TXK_SEL
   av1_write_tx_type(cm, xd, blk_row, blk_col, block, plane,
@@ -500,19 +508,17 @@ static INLINE void get_base_ctx_set(const uint8_t *const levels,
                                     int ctx_set[NUM_BASE_LEVELS]) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
-  const int stride = 1 << bwl;
+  const int width = 1 << bwl;
+  const int stride = width + TX_PAD_HOR;
   int mag_count[NUM_BASE_LEVELS] = { 0 };
   int nb_mag[NUM_BASE_LEVELS][3] = { { 0 } };
   int idx;
   int i;
 
   for (idx = 0; idx < BASE_CONTEXT_POSITION_NUM; ++idx) {
-    int ref_row = row + base_ref_offset[idx][0];
-    int ref_col = col + base_ref_offset[idx][1];
-    int pos = (ref_row << bwl) + ref_col;
-
-    if (ref_col < 0 || ref_col >= stride) continue;
-
+    const int ref_row = row + base_ref_offset[idx][0];
+    const int ref_col = col + base_ref_offset[idx][1];
+    const int pos = ref_row * stride + ref_col;
     const uint8_t abs_coeff = levels[pos];
 
     for (i = 0; i < NUM_BASE_LEVELS; ++i) {
@@ -593,7 +599,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   }
   cost = coeff_costs->txb_skip_cost[txb_skip_ctx][0];
 
-  av1_txb_init_levels(qcoeff, width, tx_size_2d[tx_size], levels);
+  av1_txb_init_levels(qcoeff, width, height, levels);
 
 #if CONFIG_TXK_SEL
   cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
@@ -1106,10 +1112,10 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
     for (int i = 0; i < ref_num; ++i) {
       const int nb_row = row - ref_offset[i][0];
       const int nb_col = col - ref_offset[i][1];
-      const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+      const int nb_coeff_idx = nb_row * txb_info->width + nb_col;
 
       if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
-          nb_col >= txb_info->stride)
+          nb_col >= txb_info->width)
         continue;
 
       const int nb_scan_idx = iscan[nb_coeff_idx];
@@ -1142,10 +1148,10 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
     for (int i = 0; i < ref_num; ++i) {
       const int nb_row = row - ref_offset[i][0];
       const int nb_col = col - ref_offset[i][1];
-      const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+      const int nb_coeff_idx = nb_row * txb_info->width + nb_col;
 
       if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
-          nb_col >= txb_info->stride)
+          nb_col >= txb_info->width)
         continue;
 
       const int nb_scan_idx = iscan[nb_coeff_idx];
@@ -1178,10 +1184,10 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
     for (int i = 0; i < ref_num; ++i) {
       const int nb_row = row - ref_offset[i][0];
       const int nb_col = col - ref_offset[i][1];
-      const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+      const int nb_coeff_idx = nb_row * txb_info->width + nb_col;
 
       if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
-          nb_col >= txb_info->stride)
+          nb_col >= txb_info->width)
         continue;
 
       const int nb_scan_idx = iscan[nb_coeff_idx];
@@ -1302,10 +1308,10 @@ void update_level_down(const int coeff_idx, TxbCache *const txb_cache,
     const int nb_col = col - sig_ref_offset[i][1];
 
     if (!(nb_row >= 0 && nb_col >= 0 && nb_row < txb_info->height &&
-          nb_col < txb_info->stride))
+          nb_col < txb_info->width))
       continue;
 
-    const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+    const int nb_coeff_idx = nb_row * txb_info->width + nb_col;
     const int nb_scan_idx = iscan[nb_coeff_idx];
     if (nb_scan_idx < eob) {
       const int scan_idx = iscan[coeff_idx];
@@ -1336,10 +1342,10 @@ void update_level_down(const int coeff_idx, TxbCache *const txb_cache,
   for (int i = 0; i < BASE_CONTEXT_POSITION_NUM; ++i) {
     const int nb_row = row - base_ref_offset[i][0];
     const int nb_col = col - base_ref_offset[i][1];
-    const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+    const int nb_coeff_idx = nb_row * txb_info->width + nb_col;
 
     if (!(nb_row >= 0 && nb_col >= 0 && nb_row < txb_info->height &&
-          nb_col < txb_info->stride))
+          nb_col < txb_info->width))
       continue;
 
     const tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
@@ -1373,10 +1379,10 @@ void update_level_down(const int coeff_idx, TxbCache *const txb_cache,
   for (int i = 0; i < BR_CONTEXT_POSITION_NUM; ++i) {
     const int nb_row = row - br_ref_offset[i][0];
     const int nb_col = col - br_ref_offset[i][1];
-    const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+    const int nb_coeff_idx = nb_row * txb_info->width + nb_col;
 
     if (!(nb_row >= 0 && nb_col >= 0 && nb_row < txb_info->height &&
-          nb_col < txb_info->stride))
+          nb_col < txb_info->width))
       continue;
 
     const int nb_scan_idx = iscan[nb_coeff_idx];
@@ -1483,10 +1489,10 @@ static int try_level_down_ref(int coeff_idx, const LV_MAP_COEFF_COST *txb_costs,
   for (int i = 0; i < ALL_REF_OFFSET_NUM; ++i) {
     int nb_row = row - all_ref_offset[i][0];
     int nb_col = col - all_ref_offset[i][1];
-    int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+    int nb_coeff_idx = nb_row * txb_info->width + nb_col;
     int nb_scan_idx = txb_info->scan_order->iscan[nb_coeff_idx];
     if (nb_scan_idx < txb_info->eob && nb_row >= 0 && nb_col >= 0 &&
-        nb_row < txb_info->height && nb_col < txb_info->stride) {
+        nb_row < txb_info->height && nb_col < txb_info->width) {
       tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
       int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_costs);
       if (cost_map)
@@ -1500,10 +1506,10 @@ static int try_level_down_ref(int coeff_idx, const LV_MAP_COEFF_COST *txb_costs,
   for (int i = 0; i < ALL_REF_OFFSET_NUM; ++i) {
     int nb_row = row - all_ref_offset[i][0];
     int nb_col = col - all_ref_offset[i][1];
-    int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+    int nb_coeff_idx = nb_row * txb_info->width + nb_col;
     int nb_scan_idx = txb_info->scan_order->iscan[nb_coeff_idx];
     if (nb_scan_idx < txb_info->eob && nb_row >= 0 && nb_col >= 0 &&
-        nb_row < txb_info->height && nb_col < txb_info->stride) {
+        nb_row < txb_info->height && nb_col < txb_info->width) {
       tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
       int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_costs);
       if (cost_map)
@@ -1658,14 +1664,17 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   tran_low_t tmp_qcoeff[MAX_TX_SQUARE];
   tran_low_t tmp_dqcoeff[MAX_TX_SQUARE];
   uint8_t tmp_levels_buf[TX_PAD_2D];
-  uint8_t *const tmp_levels = set_levels(tmp_levels_buf, txb_info->stride);
+  uint8_t *const tmp_levels = set_levels(tmp_levels_buf, txb_info->width);
   const int org_eob = txb_info->eob;
   if (dry_run) {
-    const int stride = txb_info->stride + TX_PAD_HOR;
+    const int stride = txb_info->width + TX_PAD_HOR;
+    const int levels_size =
+
+        (stride * (txb_info->height + TX_PAD_VER) + TX_PAD_END);
     memcpy(tmp_qcoeff, org_qcoeff, sizeof(org_qcoeff[0]) * max_eob);
     memcpy(tmp_dqcoeff, org_dqcoeff, sizeof(org_dqcoeff[0]) * max_eob);
     memcpy(tmp_levels, org_levels - TX_PAD_TOP * stride,
-           sizeof(org_levels[0]) * stride * (txb_info->height + TX_PAD_VER));
+           sizeof(org_levels[0]) * levels_size);
     txb_info->qcoeff = tmp_qcoeff;
     txb_info->dqcoeff = tmp_dqcoeff;
     txb_info->levels = tmp_levels;
@@ -1800,14 +1809,17 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   tran_low_t tmp_qcoeff[MAX_TX_SQUARE];
   tran_low_t tmp_dqcoeff[MAX_TX_SQUARE];
   uint8_t tmp_levels_buf[TX_PAD_2D];
-  uint8_t *const tmp_levels = set_levels(tmp_levels_buf, txb_info->stride);
+  uint8_t *const tmp_levels = set_levels(tmp_levels_buf, txb_info->width);
   const int org_eob = txb_info->eob;
   if (dry_run) {
-    const int stride = txb_info->stride + TX_PAD_HOR;
+    const int stride = txb_info->width + TX_PAD_HOR;
+    const int levels_size =
+
+        (stride * (txb_info->height + TX_PAD_VER) + TX_PAD_END);
     memcpy(tmp_qcoeff, org_qcoeff, sizeof(org_qcoeff[0]) * max_eob);
     memcpy(tmp_dqcoeff, org_dqcoeff, sizeof(org_dqcoeff[0]) * max_eob);
     memcpy(tmp_levels, org_levels - TX_PAD_TOP * stride,
-           sizeof(org_levels[0]) * stride * (txb_info->height + TX_PAD_VER));
+           sizeof(org_levels[0]) * levels_size);
     txb_info->qcoeff = tmp_qcoeff;
     txb_info->dqcoeff = tmp_dqcoeff;
     txb_info->levels = tmp_levels;
@@ -1910,7 +1922,6 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const int16_t *dequant = p->dequant_QTX;
   const int seg_eob = tx_size_2d[tx_size];
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
-  const int stride = 1 << bwl;
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
   const int is_inter = is_inter_block(mbmi);
@@ -1923,13 +1934,14 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
 
+  assert(width == (1 << bwl));
   TxbInfo txb_info = {
     qcoeff,  levels,  dqcoeff,    tcoeff,  dequant, shift,
-    tx_size, txs_ctx, tx_type,    bwl,     stride,  height,
+    tx_size, txs_ctx, tx_type,    bwl,     width,   height,
     eob,     seg_eob, scan_order, txb_ctx, rdmult,  &cm->coeff_ctx_table
   };
 
-  av1_txb_init_levels(qcoeff, width, tx_size_2d[tx_size], levels);
+  av1_txb_init_levels(qcoeff, width, height, levels);
 
   const int update = optimize_txb(&txb_info, &txb_costs, NULL, 0, fast_mode);
 
@@ -2028,7 +2040,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     return;
   }
 
-  av1_txb_init_levels(tcoeff, width, tx_size_2d[tx_size], levels);
+  av1_txb_init_levels(tcoeff, width, height, levels);
 
 #if CONFIG_TXK_SEL
   av1_update_tx_type_count(cm, xd, blk_row, blk_col, block, plane,

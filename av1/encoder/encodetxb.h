@@ -34,7 +34,7 @@ typedef struct TxbInfo {
   TX_SIZE txs_ctx;
   TX_TYPE tx_type;
   int bwl;
-  int stride;
+  int width;
   int height;
   int eob;
   int seg_eob;
