@@ -6,15 +6,13 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
 
 #include <memory>
-#include <set>
 
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
@@ -22,114 +20,132 @@
 
 namespace resource_coordinator {
 
-class CoordinationUnitGraphObserver;
-class FrameCoordinationUnitImpl;
-class PageCoordinationUnitImpl;
-
 // CoordinationUnitBase implements shared functionality among different types of
 // coordination units. A specific type of coordination unit will derive from
 // this class and can override shared funtionality when needed.
-class CoordinationUnitBase : public mojom::CoordinationUnit {
+class CoordinationUnitBase {
  public:
-  CoordinationUnitBase(
-      const CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-
-  ~CoordinationUnitBase() override;
-
-  static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
-      const CoordinationUnitBase* coordination_unit);
-  static PageCoordinationUnitImpl* ToPageCoordinationUnit(
-      CoordinationUnitBase* coordination_unit);
-  static const PageCoordinationUnitImpl* ToPageCoordinationUnit(
-      const CoordinationUnitBase* coordination_unit);
-
-  static std::vector<CoordinationUnitBase*> GetCoordinationUnitsOfType(
-      CoordinationUnitType type);
-
-  static CoordinationUnitBase* CreateCoordinationUnit(
-      const CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-
+  // Add the newly created coordination unit to the global coordination unit
+  // storage.
+  static CoordinationUnitBase* AddNewCoordinationUnit(
+      std::unique_ptr<CoordinationUnitBase> new_cu);
   static void AssertNoActiveCoordinationUnits();
   static void ClearAllCoordinationUnits();
 
-  void Destruct();
-  void Bind(mojom::CoordinationUnitRequest request);
-
-  // Overridden from mojom::CoordinationUnit:
-  void GetID(const GetIDCallback& callback) override;
-  void AddBinding(mojom::CoordinationUnitRequest request) override;
-  void AddChild(const CoordinationUnitID& child_id) override;
-  void RemoveChild(const CoordinationUnitID& child_id) override;
-  void SendEvent(mojom::Event event) override;
-  void SetProperty(mojom::PropertyType property_type, int64_t value) override;
-
-  // Return all of the reachable |CoordinationUnitBase| instances
-  // of type |CoordinationUnitType|. Note that a callee should
-  // never be associated with itself.
-  virtual std::set<CoordinationUnitBase*> GetAssociatedCoordinationUnitsOfType(
-      CoordinationUnitType type) const = 0;
   // Recalculate property internally.
   virtual void RecalculateProperty(const mojom::PropertyType property_type) {}
 
-  // Operations performed on the internal key-value store.
-  bool GetProperty(const mojom::PropertyType property_type,
-                   int64_t* result) const;
+  CoordinationUnitBase(const CoordinationUnitID& id);
+  virtual ~CoordinationUnitBase();
 
-  // Methods utilized by the |CoordinationUnitGraphObserver| framework.
+  void Destruct();
   void BeforeDestroyed();
   void AddObserver(CoordinationUnitGraphObserver* observer);
   void RemoveObserver(CoordinationUnitGraphObserver* observer);
+  bool GetProperty(const mojom::PropertyType property_type,
+                   int64_t* result) const;
 
-  // Coordination unit graph traversal helper functions.
-  std::set<CoordinationUnitBase*> GetChildCoordinationUnitsOfType(
-      CoordinationUnitType type) const;
-  std::set<CoordinationUnitBase*> GetParentCoordinationUnitsOfType(
-      CoordinationUnitType type) const;
-
-  // Getters and setters.
   const CoordinationUnitID& id() const { return id_; }
-  const std::set<CoordinationUnitBase*>& children() const { return children_; }
-  const std::set<CoordinationUnitBase*>& parents() const { return parents_; }
-  const std::map<mojom::PropertyType, int64_t>& properties_for_testing() const {
-    return properties_;
-  }
-  mojo::Binding<mojom::CoordinationUnit>& binding() { return binding_; }
-
- protected:
-  virtual void OnEventReceived(const mojom::Event event);
-  virtual void OnPropertyChanged(const mojom::PropertyType property_type,
-                                 int64_t value);
-  // Propagate property change to relevant |CoordinationUnitBase| instances.
-  virtual void PropagateProperty(mojom::PropertyType property_type,
-                                 int64_t value) {}
-
   const base::ObserverList<CoordinationUnitGraphObserver>& observers() const {
     return observers_;
   }
 
+  void SetPropertyForTesting(int64_t value) {
+    SetProperty(mojom::PropertyType::kTest, value);
+  }
+
+  const std::map<mojom::PropertyType, int64_t>& properties_for_testing() const {
+    return properties_;
+  }
+
+ protected:
+  static CoordinationUnitBase* GetCoordinationUnitByID(
+      const CoordinationUnitID cu_id);
+  static std::vector<CoordinationUnitBase*> GetCoordinationUnitsOfType(
+      CoordinationUnitType cu_type);
+
+  // Propagate property change to relevant |CoordinationUnitBase| instances.
+  virtual void PropagateProperty(mojom::PropertyType property_type,
+                                 int64_t value) {}
+  virtual void OnEventReceived(mojom::Event event);
+  virtual void OnPropertyChanged(mojom::PropertyType property_type,
+                                 int64_t value);
+
+  void SendEvent(mojom::Event event);
+  void SetProperty(mojom::PropertyType property_type, int64_t value);
+
   const CoordinationUnitID id_;
-  std::set<CoordinationUnitBase*> children_;
-  std::set<CoordinationUnitBase*> parents_;
 
  private:
-  bool AddChild(CoordinationUnitBase* child);
-  bool RemoveChild(CoordinationUnitBase* child);
-  void AddParent(CoordinationUnitBase* parent);
-  void RemoveParent(CoordinationUnitBase* parent);
-  bool HasAncestor(CoordinationUnitBase* unit);
-  bool HasDescendant(CoordinationUnitBase* unit);
-
+  base::ObserverList<CoordinationUnitGraphObserver> observers_;
   std::map<mojom::PropertyType, int64_t> properties_;
 
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
-  mojo::BindingSet<mojom::CoordinationUnit> bindings_;
-
-  base::ObserverList<CoordinationUnitGraphObserver> observers_;
-  mojo::Binding<mojom::CoordinationUnit> binding_;
-
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitBase);
+};
+
+template <class CoordinationUnitClass,
+          class MojoInterfaceClass,
+          class MojoRequestClass>
+class CoordinationUnitInterface : public CoordinationUnitBase,
+                                  public MojoInterfaceClass {
+ public:
+  static CoordinationUnitClass* Create(
+      const CoordinationUnitID& id,
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+    std::unique_ptr<CoordinationUnitClass> new_cu =
+        base::MakeUnique<CoordinationUnitClass>(id, std::move(service_ref));
+    return static_cast<CoordinationUnitClass*>(
+        CoordinationUnitBase::AddNewCoordinationUnit(std::move(new_cu)));
+  }
+
+  static const CoordinationUnitClass* FromCoordinationUnitBase(
+      const CoordinationUnitBase* cu) {
+    DCHECK(cu->id().type == CoordinationUnitClass::Type());
+    return static_cast<const CoordinationUnitClass*>(cu);
+  }
+
+  static CoordinationUnitClass* FromCoordinationUnitBase(
+      CoordinationUnitBase* cu) {
+    DCHECK(cu->id().type == CoordinationUnitClass::Type());
+    return static_cast<CoordinationUnitClass*>(cu);
+  }
+
+  CoordinationUnitInterface(
+      const CoordinationUnitID& id,
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+      : CoordinationUnitBase(id), binding_(this) {
+    service_ref_ = std::move(service_ref);
+  }
+
+  ~CoordinationUnitInterface() override = default;
+
+  void Bind(MojoRequestClass request) { binding_.Bind(std::move(request)); }
+
+  void GetID(
+      const typename MojoInterfaceClass::GetIDCallback& callback) override {
+    callback.Run(id_);
+  }
+  void AddBinding(MojoRequestClass request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  mojo::Binding<MojoInterfaceClass>& binding() { return binding_; }
+
+ protected:
+  static CoordinationUnitClass* GetCoordinationUnitByID(
+      const CoordinationUnitID cu_id) {
+    DCHECK(cu_id.type == CoordinationUnitClass::Type());
+    auto* cu = CoordinationUnitBase::GetCoordinationUnitByID(cu_id);
+    DCHECK(cu->id().type == CoordinationUnitClass::Type());
+    return static_cast<CoordinationUnitClass*>(cu);
+  }
+
+ private:
+  mojo::BindingSet<MojoInterfaceClass> bindings_;
+  mojo::Binding<MojoInterfaceClass> binding_;
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+
+  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitInterface);
 };
 
 }  // namespace resource_coordinator

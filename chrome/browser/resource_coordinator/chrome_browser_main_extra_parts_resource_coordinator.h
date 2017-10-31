@@ -9,7 +9,12 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/resource_coordinator/browser_child_process_watcher.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
+
+namespace resource_coordinator {
+
+class ProcessResourceCoordinator;
+
+}  // namespace resource_coordinator
 
 class ChromeBrowserMainExtraPartsResourceCoordinator
     : public ChromeBrowserMainExtraParts {
@@ -22,7 +27,7 @@ class ChromeBrowserMainExtraPartsResourceCoordinator
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) override;
 
-  std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
+  std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
       process_resource_coordinator_;
 
   std::unique_ptr<resource_coordinator::BrowserChildProcessWatcher>

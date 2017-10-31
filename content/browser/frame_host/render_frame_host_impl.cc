@@ -139,8 +139,8 @@
 #include "services/device/public/interfaces/vibration_manager.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
@@ -290,9 +290,9 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
 };
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
-void CreateResourceCoordinatorFrameInterface(
+void CreateFrameResourceCoordinator(
     RenderFrameHostImpl* render_frame_host,
-    resource_coordinator::mojom::CoordinationUnitRequest request) {
+    resource_coordinator::mojom::FrameCoordinationUnitRequest request) {
   render_frame_host->GetFrameResourceCoordinator()->AddBinding(
       std::move(request));
 }
@@ -1286,8 +1286,7 @@ void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
     GetProcess()->OnMediaStreamRemoved();
   is_audible_ = is_audible;
 
-  GetFrameResourceCoordinator()->SetProperty(
-      resource_coordinator::mojom::PropertyType::kAudible, is_audible_);
+  GetFrameResourceCoordinator()->SetAudibility(is_audible_);
 }
 
 void RenderFrameHostImpl::OnDidAddMessageToConsole(
@@ -2004,10 +2003,8 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
     const GURL& frame_url,
     JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
-  if (dialog_type == JavaScriptDialogType::JAVASCRIPT_DIALOG_TYPE_ALERT) {
-    GetFrameResourceCoordinator()->SendEvent(
-        resource_coordinator::mojom::Event::kAlertFired);
-  }
+  if (dialog_type == JavaScriptDialogType::JAVASCRIPT_DIALOG_TYPE_ALERT)
+    GetFrameResourceCoordinator()->OnAlertFired();
 
   if (IsWaitingForUnloadACK()) {
     SendJavaScriptDialogReply(reply_msg, true, base::string16());
@@ -3035,8 +3032,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-    registry_->AddInterface(base::Bind(&CreateResourceCoordinatorFrameInterface,
-                                       base::Unretained(this)));
+    registry_->AddInterface(
+        base::Bind(&CreateFrameResourceCoordinator, base::Unretained(this)));
   }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -3640,24 +3637,23 @@ RenderFrameHostImpl::GetMojoImageDownloader() {
   return mojo_image_downloader_;
 }
 
-resource_coordinator::ResourceCoordinatorInterface*
+resource_coordinator::FrameResourceCoordinator*
 RenderFrameHostImpl::GetFrameResourceCoordinator() {
   if (frame_resource_coordinator_)
     return frame_resource_coordinator_.get();
 
   if (!resource_coordinator::IsResourceCoordinatorEnabled()) {
     frame_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
-            nullptr, resource_coordinator::CoordinationUnitType::kFrame);
+        std::make_unique<resource_coordinator::FrameResourceCoordinator>(
+            nullptr);
   } else {
     auto* connection = ServiceManagerConnection::GetForProcess();
     frame_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ResourceCoordinatorInterface>(
-            connection ? connection->GetConnector() : nullptr,
-            resource_coordinator::CoordinationUnitType::kFrame);
+        std::make_unique<resource_coordinator::FrameResourceCoordinator>(
+            connection ? connection->GetConnector() : nullptr);
   }
   if (parent_) {
-    parent_->GetFrameResourceCoordinator()->AddChild(
+    parent_->GetFrameResourceCoordinator()->AddChildFrame(
         *frame_resource_coordinator_);
   }
   return frame_resource_coordinator_.get();

@@ -7,58 +7,48 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace resource_coordinator {
 
-class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
-    ResourceCoordinatorInterface {
+template <class CoordinationUnitMojoPtr, class CoordinationUnitMojoRequest>
+class ResourceCoordinatorInterface {
  public:
-  ResourceCoordinatorInterface(service_manager::Connector* connector,
-                               const CoordinationUnitType& type);
-  ResourceCoordinatorInterface(service_manager::Connector* connector,
-                               const CoordinationUnitType& type,
-                               const std::string& id);
-  ResourceCoordinatorInterface(service_manager::Connector* connector,
-                               const CoordinationUnitType& type,
-                               uint64_t id);
+  ResourceCoordinatorInterface() = default;
+  virtual ~ResourceCoordinatorInterface() = default;
 
-  ~ResourceCoordinatorInterface();
-
-  void SendEvent(const mojom::Event event);
-  void SetProperty(mojom::PropertyType property_type, int64_t value);
-  void AddBinding(mojom::CoordinationUnitRequest request);
-  void AddChild(const ResourceCoordinatorInterface& child);
-  void RemoveChild(const ResourceCoordinatorInterface& child);
+  void AddBinding(CoordinationUnitMojoRequest request) {
+    if (!service_)
+      return;
+    service_->AddBinding(std::move(request));
+  }
 
   CoordinationUnitID id() const { return cu_id_; }
+  const CoordinationUnitMojoPtr& service() const { return service_; }
 
- private:
+ protected:
+  virtual void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
+                                const CoordinationUnitID& cu_id) = 0;
+
   void ConnectToService(service_manager::Connector* connector,
-                        const CoordinationUnitID& cu_id);
-  void AddChildByID(const CoordinationUnitID& child_id);
-  void RemoveChildByID(const CoordinationUnitID& child_id);
+                        const CoordinationUnitID& cu_id) {
+    if (!connector)
+      return;
+    cu_id_ = cu_id;
+    mojom::CoordinationUnitProviderPtr provider;
+    connector->BindInterface(mojom::kServiceName, mojo::MakeRequest(&provider));
+    ConnectToService(provider, cu_id);
+  }
 
-  const mojom::CoordinationUnitPtr& service() const { return service_; }
-
-  mojom::CoordinationUnitPtr service_;
+  CoordinationUnitMojoPtr service_;
   CoordinationUnitID cu_id_;
 
-  base::ThreadChecker thread_checker_;
-
-  // The WeakPtrFactory should come last so the weak ptrs are invalidated
-  // before the rest of the member variables.
-  base::WeakPtrFactory<ResourceCoordinatorInterface> weak_ptr_factory_;
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorInterface);
 };
 

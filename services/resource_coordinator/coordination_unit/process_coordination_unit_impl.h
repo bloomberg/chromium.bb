@@ -5,35 +5,50 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
 
-#include <set>
-
 #include "base/macros.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 
 namespace resource_coordinator {
 
-class ProcessCoordinationUnitImpl : public CoordinationUnitBase,
-                                    public mojom::ProcessCoordinationUnit {
+class FrameCoordinationUnitImpl;
+class ProcessCoordinationUnitImpl;
+
+class ProcessCoordinationUnitImpl
+    : public CoordinationUnitInterface<ProcessCoordinationUnitImpl,
+                                       mojom::ProcessCoordinationUnit,
+                                       mojom::ProcessCoordinationUnitRequest> {
  public:
+  static std::vector<ProcessCoordinationUnitImpl*>
+  GetAllProcessCoordinationUnits();
+  static CoordinationUnitType Type() { return CoordinationUnitType::kProcess; }
+
   ProcessCoordinationUnitImpl(
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~ProcessCoordinationUnitImpl() override;
 
-  // CoordinationUnitBase implementation.
   // mojom::ProcessCoordinationUnit implementation.
+  void AddFrame(const CoordinationUnitID& cu_id) override;
+  void RemoveFrame(const CoordinationUnitID& cu_id) override;
   void SetCPUUsage(double cpu_usage) override;
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetLaunchTime(base::Time launch_time) override;
   void SetPID(int64_t pid) override;
 
-  std::set<CoordinationUnitBase*> GetAssociatedCoordinationUnitsOfType(
-      CoordinationUnitType type) const override;
+  std::set<PageCoordinationUnitImpl*> GetAssociatedPageCoordinationUnits()
+      const;
 
  private:
-  // CoordinationUnitBase implementation.
+  friend class FrameCoordinationUnitImpl;
+
+  // CoordinationUnitInterface implementation.
   void PropagateProperty(mojom::PropertyType property_type,
                          int64_t value) override;
+
+  bool AddFrame(FrameCoordinationUnitImpl* frame_cu);
+  bool RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
+
+  std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCoordinationUnitImpl);
 };

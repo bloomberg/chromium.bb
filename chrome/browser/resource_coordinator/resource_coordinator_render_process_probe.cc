@@ -13,8 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
+#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -54,8 +54,8 @@ class ResourceCoordinatorRenderProcessMetricsHandler
       auto& render_process_info = render_process_info_map_entry.second;
       // TODO(oysteine): Move the multiplier used to avoid precision loss
       // into a shared location, when this property gets used.
-      render_process_info.host->GetProcessResourceCoordinator()->SetProperty(
-          mojom::PropertyType::kCPUUsage, render_process_info.cpu_usage * 1000);
+      render_process_info.host->GetProcessResourceCoordinator()->SetCPUUsage(
+          render_process_info.cpu_usage);
     }
 
     return true;
