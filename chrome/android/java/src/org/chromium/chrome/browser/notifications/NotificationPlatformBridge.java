@@ -21,7 +21,6 @@ import android.text.TextUtils;
 import android.text.style.StyleSpan;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -31,7 +30,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
@@ -701,8 +699,6 @@ public class NotificationPlatformBridge {
      * Determines whether to use standard notification layouts, using NotificationCompat.Builder,
      * or custom layouts using Chrome's own templates.
      *
-     * The --{enable,disable}-web-notification-custom-layouts command line flags take precedence.
-     *
      * Normally a standard layout is used on Android N+, and a custom layout is used on older
      * versions of Android. But if the notification has a content image, there isn't enough room for
      * the Site Settings button to go on its own line when showing an image, nor is there enough
@@ -713,20 +709,7 @@ public class NotificationPlatformBridge {
      */
     @VisibleForTesting
     static boolean useCustomLayouts(boolean hasImage) {
-        CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
-            return true;
-        }
-        if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
-            return false;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return false;
-        }
-        if (hasImage) {
-            return false;
-        }
-        return true;
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.N && !hasImage;
     }
 
     /**

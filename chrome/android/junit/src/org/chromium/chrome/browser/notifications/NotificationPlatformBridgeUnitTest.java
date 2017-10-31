@@ -5,21 +5,16 @@
 package org.chromium.chrome.browser.notifications;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Notification;
-import android.os.Build;
 
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -32,52 +27,6 @@ import java.util.Arrays;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NotificationPlatformBridgeUnitTest {
-    @After
-    public void tearDown() {
-        // Clean up static state for subsequent tests.
-        CommandLine.reset();
-    }
-
-    @Test
-    @Feature({"Browser", "Notifications"})
-    public void testUseCustomLayouts() {
-        CommandLine.init(null);
-        CommandLine.getInstance().appendSwitch(
-                ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS);
-        assertTrue(NotificationPlatformBridge.useCustomLayouts(false /* hasImage */));
-        assertTrue(NotificationPlatformBridge.useCustomLayouts(true /* hasImage */));
-        CommandLine.reset();
-
-        CommandLine.init(null);
-        CommandLine.getInstance().appendSwitch(
-                ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS);
-        assertFalse(NotificationPlatformBridge.useCustomLayouts(false /* hasImage */));
-        assertFalse(NotificationPlatformBridge.useCustomLayouts(true /* hasImage */));
-        CommandLine.reset();
-
-        // Enable flag takes precedence over disable flag (arbitrarily).
-        CommandLine.init(null);
-        CommandLine.getInstance().appendSwitch(
-                ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS);
-        CommandLine.getInstance().appendSwitch(
-                ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS);
-        assertTrue(NotificationPlatformBridge.useCustomLayouts(false /* hasImage */));
-        assertTrue(NotificationPlatformBridge.useCustomLayouts(true /* hasImage */));
-        CommandLine.reset();
-
-        CommandLine.init(null);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            // Without comand line flags, custom layouts are always disabled on Nougat+.
-            assertFalse(NotificationPlatformBridge.useCustomLayouts(false /* hasImage */));
-            assertFalse(NotificationPlatformBridge.useCustomLayouts(true /* hasImage */));
-        } else {
-            // On older versions of Android, custom layouts are enabled unless an image is provided.
-            assertTrue(NotificationPlatformBridge.useCustomLayouts(false /* hasImage */));
-            assertFalse(NotificationPlatformBridge.useCustomLayouts(true /* hasImage */));
-        }
-        CommandLine.reset();
-    }
-
     /**
      * Verifies that the getOriginFromTag method returns the origin for valid input, and null for
      * invalid input.

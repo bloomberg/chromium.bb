@@ -523,12 +523,6 @@ const char kEnableWasmStreamingName[] =
 const char kEnableWasmStreamingDescription[] =
     "WebAssembly.{compile|instantiate} taking a Response as parameter.";
 
-const char kEnableWebNotificationCustomLayoutsName[] =
-    "Enable custom layouts for Web Notifications.";
-const char kEnableWebNotificationCustomLayoutsDescription[] =
-    "Enable custom layouts for Web Notifications. They will have subtle layout "
-    "improvements that are otherwise not possible.";
-
 const char kExpensiveBackgroundTimerThrottlingName[] =
     "Throttle expensive background timers";
 const char kExpensiveBackgroundTimerThrottlingDescription[] =

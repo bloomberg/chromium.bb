@@ -261,10 +261,6 @@ const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
 const char kDisableSearchGeolocationDisclosure[] =
     "disable-search-geolocation-disclosure";
 
-// Disables Web Notification custom layouts.
-const char kDisableWebNotificationCustomLayouts[] =
-    "disable-web-notification-custom-layouts";
-
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".
@@ -382,10 +378,6 @@ const char kEnableSiteSettings[] = "enable-site-settings";
 
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
-
-// Enables Web Notification custom layouts.
-const char kEnableWebNotificationCustomLayouts[] =
-    "enable-web-notification-custom-layouts";
 
 // If the WebRTC logging private API is active, enables WebRTC event logging.
 const char kEnableWebRtcEventLoggingFromExtension[] =

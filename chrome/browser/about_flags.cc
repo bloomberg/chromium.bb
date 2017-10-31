@@ -2372,14 +2372,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosRegionsModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
-#if defined(OS_ANDROID)
-    {"enable-web-notification-custom-layouts",
-     flag_descriptions::kEnableWebNotificationCustomLayoutsName,
-     flag_descriptions::kEnableWebNotificationCustomLayoutsDescription,
-     kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableWebNotificationCustomLayouts,
-                               switches::kDisableWebNotificationCustomLayouts)},
-#endif  // OS_ANDROID
 #if defined(OS_WIN)
     {"enable-appcontainer", flag_descriptions::kEnableAppcontainerName,
      flag_descriptions::kEnableAppcontainerDescription, kOsWin,
