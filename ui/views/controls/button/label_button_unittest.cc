@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -384,7 +385,14 @@ TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
 
 // Ensure the label gets the correct style for default buttons (e.g. bolding)
 // and button size updates correctly. Regression test for crbug.com/578722.
-TEST_F(LabelButtonTest, ButtonStyleIsDefaultStyle) {
+// Disabled on Mac. The system bold font on 10.10 doesn't get wide enough to
+// change the size, but we don't use styled buttons on Mac, just MdTextButton.
+#if defined(OS_MACOSX)
+#define MAYBE_ButtonStyleIsDefaultStyle DISABLED_ButtonStyleIsDefaultStyle
+#else
+#define MAYBE_ButtonStyleIsDefaultStyle ButtonStyleIsDefaultStyle
+#endif
+TEST_F(LabelButtonTest, MAYBE_ButtonStyleIsDefaultStyle) {
   TestLabelButton* button = AddStyledButton("Save", false);
   gfx::Size non_default_size = button->label()->size();
   EXPECT_EQ(button->label()->GetPreferredSize().width(),
