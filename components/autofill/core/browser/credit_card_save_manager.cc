@@ -407,43 +407,38 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
 
 void CreditCardSaveManager::OnUserDidAcceptUpload() {
   user_did_accept_upload_prompt_ = true;
-  if (!upload_request_.risk_data.empty()) {
-    upload_request_.app_locale = app_locale_;
-    // If the upload request does not have card CVC, populate it with the
-    // value provided by the user:
-    if (upload_request_.cvc.empty()) {
-      DCHECK(client_->GetSaveCardBubbleController());
-      upload_request_.cvc =
-          client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
-    }
-    if (IsAutofillSendBillingCustomerNumberExperimentEnabled()) {
-      upload_request_.billing_customer_number =
-          static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-              prefs::kAutofillBillingCustomerNumber));
-    }
-    payments_client_->UploadCard(upload_request_);
-  }
+  // Populating risk data and offering upload occur asynchronously.
+  // If |risk_data| has already been loaded, send the upload card request.
+  // Otherwise, continue to wait and let OnDidGetUploadRiskData handle it.
+  if (!upload_request_.risk_data.empty())
+    SendUploadCardRequest();
 }
 
 void CreditCardSaveManager::OnDidGetUploadRiskData(
     const std::string& risk_data) {
   upload_request_.risk_data = risk_data;
-  if (user_did_accept_upload_prompt_) {
-    upload_request_.app_locale = app_locale_;
-    // If the upload request does not have card CVC, populate it with the
-    // value provided by the user:
-    if (upload_request_.cvc.empty()) {
-      DCHECK(client_->GetSaveCardBubbleController());
-      upload_request_.cvc =
-          client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
-    }
-    if (IsAutofillSendBillingCustomerNumberExperimentEnabled()) {
-      upload_request_.billing_customer_number =
-          static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-              prefs::kAutofillBillingCustomerNumber));
-    }
-    payments_client_->UploadCard(upload_request_);
+  // Populating risk data and offering upload occur asynchronously.
+  // If the dialog has already been accepted, send the upload card request.
+  // Otherwise, continue to wait for the user to accept the save dialog.
+  if (user_did_accept_upload_prompt_)
+    SendUploadCardRequest();
+}
+
+void CreditCardSaveManager::SendUploadCardRequest() {
+  upload_request_.app_locale = app_locale_;
+  // If the upload request does not have card CVC, populate it with the value
+  // provided by the user:
+  if (upload_request_.cvc.empty()) {
+    DCHECK(client_->GetSaveCardBubbleController());
+    upload_request_.cvc =
+        client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
   }
+  if (IsAutofillSendBillingCustomerNumberExperimentEnabled()) {
+    upload_request_.billing_customer_number =
+        static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
+            prefs::kAutofillBillingCustomerNumber));
+  }
+  payments_client_->UploadCard(upload_request_);
 }
 
 AutofillMetrics::CardUploadDecisionMetric
