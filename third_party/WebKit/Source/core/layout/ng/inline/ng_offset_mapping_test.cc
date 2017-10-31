@@ -63,12 +63,12 @@ class NGOffsetMappingTest : public NGLayoutTest {
     return GetOffsetMapping().EndOfLastNonCollapsedContent(position);
   }
 
-  bool IsBeforeNonCollapsedCharacter(const Node& node, unsigned offset) const {
-    return GetOffsetMapping().IsBeforeNonCollapsedCharacter(node, offset);
+  bool IsBeforeNonCollapsedContent(const Position& position) const {
+    return GetOffsetMapping().IsBeforeNonCollapsedContent(position);
   }
 
-  bool IsAfterNonCollapsedCharacter(const Node& node, unsigned offset) const {
-    return GetOffsetMapping().IsAfterNonCollapsedCharacter(node, offset);
+  bool IsAfterNonCollapsedContent(const Position& position) const {
+    return GetOffsetMapping().IsAfterNonCollapsedContent(position);
   }
 
   Position GetFirstPosition(unsigned offset) const {
@@ -156,17 +156,17 @@ TEST_F(NGOffsetMappingTest, OneTextNode) {
   EXPECT_EQ(Position(foo_node, 3),
             EndOfLastNonCollapsedContent(Position(foo_node, 3)));
 
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(foo_node, 0)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(foo_node, 1)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(foo_node, 2)));
   EXPECT_FALSE(
-      IsBeforeNonCollapsedCharacter(*foo_node, 3));  // false at node end
+      IsBeforeNonCollapsedContent(Position(foo_node, 3)));  // false at node end
 
   // false at node start
-  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 3));
+  EXPECT_FALSE(IsAfterNonCollapsedContent(Position(foo_node, 0)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(foo_node, 1)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(foo_node, 2)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(foo_node, 3)));
 }
 
 TEST_F(NGOffsetMappingTest, TwoTextNodes) {
@@ -210,29 +210,29 @@ TEST_F(NGOffsetMappingTest, TwoTextNodes) {
   EXPECT_EQ(Position(foo_node, 3), GetFirstPosition(3));
   EXPECT_EQ(Position(bar_node, 0), GetLastPosition(3));
 
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(foo_node, 0)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(foo_node, 1)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(foo_node, 2)));
   EXPECT_FALSE(
-      IsBeforeNonCollapsedCharacter(*foo_node, 3));  // false at node end
+      IsBeforeNonCollapsedContent(Position(foo_node, 3)));  // false at node end
 
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*bar_node, 0));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*bar_node, 1));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*bar_node, 2));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(bar_node, 0)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(bar_node, 1)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(bar_node, 2)));
   EXPECT_FALSE(
-      IsBeforeNonCollapsedCharacter(*bar_node, 3));  // false at node end
+      IsBeforeNonCollapsedContent(Position(bar_node, 3)));  // false at node end
 
   // false at node start
-  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 3));
+  EXPECT_FALSE(IsAfterNonCollapsedContent(Position(foo_node, 0)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(foo_node, 1)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(foo_node, 2)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(foo_node, 3)));
 
   // false at node start
-  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*bar_node, 0));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 1));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 2));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 3));
+  EXPECT_FALSE(IsAfterNonCollapsedContent(Position(bar_node, 0)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(bar_node, 1)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(bar_node, 2)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(bar_node, 3)));
 }
 
 TEST_F(NGOffsetMappingTest, BRBetweenTextNodes) {
@@ -342,25 +342,25 @@ TEST_F(NGOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_EQ(Position(node, 4), EndOfLastNonCollapsedContent(Position(node, 4)));
   EXPECT_EQ(Position(node, 4), EndOfLastNonCollapsedContent(Position(node, 5)));
 
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 0));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 1));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 2));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 3));
-  EXPECT_FALSE(IsBeforeNonCollapsedCharacter(*node, 4));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 5));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 6));
-  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 7));
-  EXPECT_FALSE(IsBeforeNonCollapsedCharacter(*node, 8));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 0)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 1)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 2)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 3)));
+  EXPECT_FALSE(IsBeforeNonCollapsedContent(Position(node, 4)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 5)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 6)));
+  EXPECT_TRUE(IsBeforeNonCollapsedContent(Position(node, 7)));
+  EXPECT_FALSE(IsBeforeNonCollapsedContent(Position(node, 8)));
 
-  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*node, 0));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 1));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 2));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 3));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 4));
-  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*node, 5));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 6));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 7));
-  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 8));
+  EXPECT_FALSE(IsAfterNonCollapsedContent(Position(node, 0)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 1)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 2)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 3)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 4)));
+  EXPECT_FALSE(IsAfterNonCollapsedContent(Position(node, 5)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 6)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 7)));
+  EXPECT_TRUE(IsAfterNonCollapsedContent(Position(node, 8)));
 }
 
 TEST_F(NGOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {

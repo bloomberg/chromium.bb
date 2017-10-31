@@ -257,16 +257,21 @@ Position NGOffsetMapping::EndOfLastNonCollapsedContent(
   return Position();
 }
 
-bool NGOffsetMapping::IsBeforeNonCollapsedCharacter(const Node& node,
-                                                    unsigned offset) const {
-  const NGOffsetMappingUnit* unit =
-      GetMappingUnitForPosition(CreatePositionForOffsetMapping(node, offset));
+bool NGOffsetMapping::IsBeforeNonCollapsedContent(
+    const Position& position) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position));
+  const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(position);
+  const unsigned offset = ToNodeOffsetPair(position).second;
   return unit && offset < unit->DOMEnd() &&
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
-bool NGOffsetMapping::IsAfterNonCollapsedCharacter(const Node& node,
-                                                   unsigned offset) const {
+bool NGOffsetMapping::IsAfterNonCollapsedContent(
+    const Position& position) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position));
+  const auto node_and_offset = ToNodeOffsetPair(position);
+  const Node& node = node_and_offset.first;
+  const unsigned offset = node_and_offset.second;
   if (!offset)
     return false;
   // In case we have one unit ending at |offset| and another starting at
@@ -277,10 +282,10 @@ bool NGOffsetMapping::IsAfterNonCollapsedCharacter(const Node& node,
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
-Optional<UChar> NGOffsetMapping::GetCharacterBefore(const Node& node,
-                                                    unsigned offset) const {
-  Optional<unsigned> text_content_offset =
-      GetTextContentOffset(CreatePositionForOffsetMapping(node, offset));
+Optional<UChar> NGOffsetMapping::GetCharacterBefore(
+    const Position& position) const {
+  DCHECK(NGOffsetMapping::AcceptsPosition(position));
+  Optional<unsigned> text_content_offset = GetTextContentOffset(position);
   if (!text_content_offset || !*text_content_offset)
     return WTF::nullopt;
   return text_[*text_content_offset - 1];

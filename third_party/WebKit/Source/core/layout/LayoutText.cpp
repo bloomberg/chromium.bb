@@ -2038,16 +2038,17 @@ bool LayoutText::HasNonCollapsedText() const {
 bool LayoutText::ContainsCaretOffset(int text_offset) const {
   DCHECK_GE(text_offset, 0);
   if (auto* mapping = GetNGOffsetMapping()) {
-    // ::first-letter handling should be done by LayoutTextFragment override.
-    DCHECK(!IsTextFragment());
-    if (!GetNode())
+    if (text_offset > static_cast<int>(TextLength()))
       return false;
-    if (mapping->IsBeforeNonCollapsedCharacter(*GetNode(), text_offset))
+    const Position position = PositionForCaretOffset(text_offset);
+    if (position.IsNull())
+      return false;
+    if (text_offset < static_cast<int>(TextLength()) &&
+        mapping->IsBeforeNonCollapsedContent(position))
       return true;
-    if (!mapping->IsAfterNonCollapsedCharacter(*GetNode(), text_offset))
+    if (!text_offset || !mapping->IsAfterNonCollapsedContent(position))
       return false;
-    return *mapping->GetCharacterBefore(*GetNode(), text_offset) !=
-           kNewlineCharacter;
+    return *mapping->GetCharacterBefore(position) != kNewlineCharacter;
   }
 
   for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
@@ -2100,11 +2101,12 @@ static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
 
 bool LayoutText::IsBeforeNonCollapsedCharacter(unsigned text_offset) const {
   if (auto* mapping = GetNGOffsetMapping()) {
-    // ::first-letter handling should be done by LayoutTextFragment override.
-    DCHECK(!IsTextFragment());
-    if (!GetNode())
+    if (text_offset >= TextLength())
       return false;
-    return mapping->IsBeforeNonCollapsedCharacter(*GetNode(), text_offset);
+    const Position position = PositionForCaretOffset(text_offset);
+    if (position.IsNull())
+      return false;
+    return mapping->IsBeforeNonCollapsedContent(position);
   }
 
   InlineTextBox* const last_text_box = LastTextBox();
@@ -2132,11 +2134,12 @@ bool LayoutText::IsBeforeNonCollapsedCharacter(unsigned text_offset) const {
 
 bool LayoutText::IsAfterNonCollapsedCharacter(unsigned text_offset) const {
   if (auto* mapping = GetNGOffsetMapping()) {
-    // ::first-letter handling should be done by LayoutTextFragment override.
-    DCHECK(!IsTextFragment());
-    if (!GetNode())
+    if (!text_offset)
       return false;
-    return mapping->IsAfterNonCollapsedCharacter(*GetNode(), text_offset);
+    const Position position = PositionForCaretOffset(text_offset);
+    if (position.IsNull())
+      return false;
+    return mapping->IsAfterNonCollapsedContent(position);
   }
 
   InlineTextBox* const last_text_box = LastTextBox();
