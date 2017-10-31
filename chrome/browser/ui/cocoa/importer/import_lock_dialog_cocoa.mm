@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;
@@ -27,8 +28,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   base::scoped_nsobject<NSAlert> lock_alert([[NSAlert alloc] init]);
   [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_OK)];
-  [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
-      IDS_IMPORTER_LOCK_CANCEL)];
+  [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
   [lock_alert setInformativeText:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_TEXT)];
   [lock_alert setMessageText:l10n_util::GetNSStringWithFixup(
