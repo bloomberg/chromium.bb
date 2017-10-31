@@ -29544,6 +29544,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     histogram is emitted to each time a condition affecting Instant Tethering's
     state, e.g. the user enabling or disabling the feature, or Bluetooth
     becoming enabled or disabled.
+
+    Note: The &quot;Screen locked&quot; bucket is obsolete, and should not have
+    any reports.
   </summary>
 </histogram>
 

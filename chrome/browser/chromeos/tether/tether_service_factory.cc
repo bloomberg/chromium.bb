@@ -49,7 +49,6 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
     FakeTetherService* fake_tether_service = new FakeTetherService(
         Profile::FromBrowserContext(context),
         chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
-        chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
         ChromeCryptAuthServiceFactory::GetForBrowserContext(
             Profile::FromBrowserContext(context)),
         chromeos::NetworkHandler::Get()->network_state_handler());
@@ -66,7 +65,6 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
   return new TetherService(
       Profile::FromBrowserContext(context),
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
       ChromeCryptAuthServiceFactory::GetForBrowserContext(
           Profile::FromBrowserContext(context)),
       chromeos::NetworkHandler::Get()->network_state_handler());

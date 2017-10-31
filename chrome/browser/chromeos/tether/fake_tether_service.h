@@ -14,7 +14,6 @@ class FakeTetherService : public TetherService {
  public:
   FakeTetherService(Profile* profile,
                     chromeos::PowerManagerClient* power_manager_client,
-                    chromeos::SessionManagerClient* session_manager_client,
                     cryptauth::CryptAuthService* cryptauth_service,
                     chromeos::NetworkStateHandler* network_state_handler);
 
