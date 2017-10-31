@@ -21,6 +21,9 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "amdgpu.h"
 #include "amdgpu_drm.h"
