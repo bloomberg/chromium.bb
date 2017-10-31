@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
@@ -445,7 +446,15 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
   EXPECT_EQ(4, results.active_match_ordinal);
 }
 
-IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue627799)) {
+// TODO(crbug.com/615291): These tests frequently fail on Android.
+// TODO(crbug.com/779912): Flaky timeout on Win7 (dbg).
+#if defined(OS_ANDROID) || (defined(OS_WIN) && !defined(NDEBUG))
+#define MAYBE_FindInPage_Issue627799 DISABLED_FindInPage_Issue627799
+#else
+#define MAYBE_FindInPage_Issue627799 FindInPage_Issue627799
+#endif
+
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindInPage_Issue627799) {
   LoadAndWait("/find_in_long_page.html");
 
   blink::WebFindOptions options;
