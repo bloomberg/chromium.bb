@@ -14,14 +14,13 @@
 #include "av1/common/onyxc_int.h"
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
-  if (!((cm->subsampling_x == 0 && cm->subsampling_y == 0) ||
-        (cm->subsampling_x == 1 && cm->subsampling_y == 1) ||
-        (cm->subsampling_x == 1 && cm->subsampling_y == 0))) {
-    aom_internal_error(
-        &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-        "Only 4:4:4, 4:2:2 and 4:2:0 are currently supported by CfL, %d %d "
-        "subsampling is not supported.\n",
-        cm->subsampling_x, cm->subsampling_y);
+  if ((cm->subsampling_x != 0 && cm->subsampling_x != 1) ||
+      (cm->subsampling_y != 0 && cm->subsampling_y != 1)) {
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Only 4:4:4, 4:4:0, 4:2:2 and 4:2:0 are currently "
+                       "supported by CfL, %d %d "
+                       "subsampling is not supported.\n",
+                       cm->subsampling_x, cm->subsampling_y);
   }
   memset(&cfl->pred_buf_q3, 0, sizeof(cfl->pred_buf_q3));
   cfl->subsampling_x = cm->subsampling_x;
@@ -341,6 +340,18 @@ static void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
   }
 }
 
+static void cfl_luma_subsampling_440_lbd(const uint8_t *input, int input_stride,
+                                         int16_t *output_q3, int width,
+                                         int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      output_q3[i] = (input[i] + input[i + input_stride]) << 2;
+    }
+    input += input_stride << 1;
+    output_q3 += MAX_SB_SIZE;
+  }
+}
+
 static void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
                                          int16_t *output_q3, int width,
                                          int height) {
@@ -378,6 +389,19 @@ static void cfl_luma_subsampling_422_hbd(const uint16_t *input,
       output_q3[i] = (input[left] + input[left + 1]) << 2;
     }
     input += input_stride;
+    output_q3 += MAX_SB_SIZE;
+  }
+}
+
+static void cfl_luma_subsampling_440_hbd(const uint16_t *input,
+                                         int input_stride, int16_t *output_q3,
+                                         int width, int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      int top = i << 1;
+      output_q3[i] = (input[top] + input[top + input_stride]) << 2;
+    }
+    input += input_stride << 1;
     output_q3 += MAX_SB_SIZE;
   }
 }
@@ -423,6 +447,21 @@ static void cfl_luma_subsampling_422(const uint8_t *input, int input_stride,
 #endif  // CONFIG_HIGHBITDEPTH
   (void)use_hbd;
   cfl_luma_subsampling_422_lbd(input, input_stride, output_q3, width, height);
+}
+
+static void cfl_luma_subsampling_440(const uint8_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height,
+                                     int use_hbd) {
+#if CONFIG_HIGHBITDEPTH
+  if (use_hbd) {
+    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
+    cfl_luma_subsampling_440_hbd(input_16, input_stride, output_q3, width,
+                                 height);
+    return;
+  }
+#endif  // CONFIG_HIGHBITDEPTH
+  (void)use_hbd;
+  cfl_luma_subsampling_440_lbd(input, input_stride, output_q3, width, height);
 }
 
 static void cfl_luma_subsampling_444(const uint8_t *input, int input_stride,
@@ -482,10 +521,13 @@ static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
   } else if (sub_y == 0 && sub_x == 1) {
     cfl_luma_subsampling_422(input, input_stride, pred_buf_q3, store_width,
                              store_height, use_hbd);
+  } else if (sub_y == 1 && sub_x == 0) {
+    cfl_luma_subsampling_440(input, input_stride, pred_buf_q3, store_width,
+                             store_height, use_hbd);
   } else {
     fprintf(stderr,
-            "Only 4:4:4, 4:2:2 and 4:2:0 are currently supported by CfL, %d %d "
-            "subsampling is not supported.\n",
+            "Only 4:4:4, 4:4:0, 4:2:2 and 4:2:0 are currently supported by "
+            "CfL, %d %d subsampling is not supported.\n",
             sub_x, sub_y);
     abort();
   }
