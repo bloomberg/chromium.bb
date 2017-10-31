@@ -194,7 +194,7 @@ class FileSystem(object):
     def normpath(self, path):
         return os.path.normpath(path)
 
-    def open_binary_tempfile(self, suffix):
+    def open_binary_tempfile(self, suffix=''):
         """Create, open, and return a binary temp file. Returns a tuple of the file and the name."""
         temp_fd, temp_name = tempfile.mkstemp(suffix)
         f = os.fdopen(temp_fd, 'wb')
@@ -214,6 +214,12 @@ class FileSystem(object):
     def write_binary_file(self, path, contents):
         with file(path, 'wb') as f:
             f.write(contents)
+
+    def open_text_tempfile(self, suffix=''):
+        """Create, open, and return a text temp file. Returns a tuple of the file and the name."""
+        _, temp_name = tempfile.mkstemp(suffix)
+        f = codecs.open(temp_name, 'w', 'utf8')
+        return f, temp_name
 
     def open_text_file_for_reading(self, path):
         # Note: There appears to be an issue with the returned file objects

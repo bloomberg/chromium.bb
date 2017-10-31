@@ -337,6 +337,10 @@ class MockFileSystem(object):
         self.files[path] = contents
         self.written_files[path] = contents
 
+    def open_text_tempfile(self, suffix=''):
+        path = self.mktemp(suffix)
+        return (WritableTextFileObject(self, path), path)
+
     def open_text_file_for_reading(self, path):
         if self.files[path] is None:
             self._raise_not_found(path)
