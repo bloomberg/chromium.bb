@@ -14,7 +14,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -24,15 +23,9 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 public class ChromeWebApkHost {
     private static ApplicationStatus.ApplicationStateListener sListener;
 
-    private static class SignatureChecker implements WebApkValidator.ISignatureChecker {
-        public boolean isGoogleSigned(String packageName) {
-            return ExternalAuthUtils.getInstance().isGoogleSigned(packageName);
-        }
-    }
-
     public static void init() {
         WebApkValidator.init(ChromeWebApkHostSignature.EXPECTED_SIGNATURE,
-                ChromeWebApkHostSignature.PUBLIC_KEY, new SignatureChecker());
+                ChromeWebApkHostSignature.PUBLIC_KEY);
         if (ChromeVersionInfo.isLocalBuild()
                 && CommandLine.getInstance().hasSwitch(SKIP_WEBAPK_VERIFICATION)) {
             // Tell the WebApkValidator to work for all WebAPKs.

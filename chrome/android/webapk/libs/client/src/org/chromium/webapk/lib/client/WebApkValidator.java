@@ -46,12 +46,8 @@ public class WebApkValidator {
 
     private static byte[] sExpectedSignature;
     private static byte[] sCommentSignedPublicKeyBytes;
-    private static ISignatureChecker sSignatureChecker;
     private static PublicKey sCommentSignedPublicKey;
     private static boolean sOverrideValidationForTesting;
-
-    /** Interface to support callback to verify if a goole package name is Google signed. */
-    public interface ISignatureChecker { public boolean isGoogleSigned(String packageName); }
 
     /**
      * Queries the PackageManager to determine whether a WebAPK can handle the URL. Ignores whether
@@ -239,14 +235,6 @@ public class WebApkValidator {
             Log.d(TAG, "mapslite invalid scope prefix");
             return false;
         }
-        if (sSignatureChecker == null) {
-            Log.d(TAG, "sSignatureChecker not set");
-            return false;
-        }
-        if (!sSignatureChecker.isGoogleSigned(webappPackageName)) {
-            Log.d(TAG, "mapslite not Google signed");
-            return false;
-        }
         return true;
     }
 
@@ -319,16 +307,12 @@ public class WebApkValidator {
      * @param v2PublicKeyBytes New comment signed public key bytes as x509 encoded public key.
      */
     @SuppressFBWarnings("EI_EXPOSE_STATIC_REP2")
-    public static void init(byte[] expectedSignature, byte[] v2PublicKeyBytes,
-            ISignatureChecker googleSignedCallback) {
+    public static void init(byte[] expectedSignature, byte[] v2PublicKeyBytes) {
         if (sExpectedSignature == null) {
             sExpectedSignature = expectedSignature;
         }
         if (sCommentSignedPublicKeyBytes == null) {
             sCommentSignedPublicKeyBytes = v2PublicKeyBytes;
-        }
-        if (sSignatureChecker == null) {
-            sSignatureChecker = googleSignedCallback;
         }
     }
 
