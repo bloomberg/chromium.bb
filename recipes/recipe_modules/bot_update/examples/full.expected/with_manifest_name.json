@@ -18,7 +18,6 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--with_branch_heads",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {
@@ -27,7 +26,7 @@
       ]
     },
     "infra_step": true,
-    "name": "bot_update - with branch heads",
+    "name": "bot_update",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",

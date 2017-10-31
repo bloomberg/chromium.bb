@@ -34,14 +34,23 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         'properties': properties,
         'step_text': 'Some step text'
     })
-
     output.update({
       'manifest': {
-        project_name: {
-          'repository': 'https://fake.org/%s.git' % project_name,
-          'revision': self.gen_revision(project_name),
+				project_name: {
+					'repository': 'https://fake.org/%s.git' % project_name,
+					'revision': self.gen_revision(project_name),
+				}
+			for project_name in set(revision_mapping.values())}})
+
+    output.update({
+      'source_manifest': {
+        'version': 0,
+        'git_checkout': {
+          project_name: {
+            'repo_url': 'https://fake.org/%s.git' % project_name,
+            'revision': self.gen_revision(project_name),
+          } for project_name in set(revision_mapping.values())
         }
-        for project_name in set(revision_mapping.values())
       }
     })
 
