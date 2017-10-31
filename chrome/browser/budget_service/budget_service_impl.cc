@@ -20,12 +20,11 @@ BudgetServiceImpl::BudgetServiceImpl(int render_process_id)
 BudgetServiceImpl::~BudgetServiceImpl() = default;
 
 // static
-void BudgetServiceImpl::Create(
-    int render_process_id,
-    blink::mojom::BudgetServiceRequest request) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<BudgetServiceImpl>(render_process_id),
-      std::move(request));
+void BudgetServiceImpl::Create(blink::mojom::BudgetServiceRequest request,
+                               content::RenderProcessHost* host,
+                               const url::Origin& origin) {
+  mojo::MakeStrongBinding(base::MakeUnique<BudgetServiceImpl>(host->GetID()),
+                          std::move(request));
 }
 
 void BudgetServiceImpl::GetCost(blink::mojom::BudgetOperationType type,

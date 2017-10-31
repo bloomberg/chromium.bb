@@ -12,6 +12,7 @@
 #include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/worker_interface_binders.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -262,7 +263,8 @@ void SharedWorkerHost::GetInterface(
   if (!process)
     return;
 
-  // TODO(sammc): Dispatch interface requests.
+  BindWorkerInterface(interface_name, std::move(interface_pipe), process,
+                      url::Origin::Create(instance()->url()));
 }
 
 }  // namespace content

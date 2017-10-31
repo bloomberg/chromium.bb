@@ -8,5 +8,5 @@
     ImplementedAs=NavigatorBudget,
     RuntimeEnabled=Budget
 ] partial interface Navigator {
-    [SameObject] readonly attribute BudgetService budget;
+    [SameObject, CallWith=ExecutionContext] readonly attribute BudgetService budget;
 };

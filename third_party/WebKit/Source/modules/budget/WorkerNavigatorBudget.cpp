@@ -37,8 +37,7 @@ WorkerNavigatorBudget& WorkerNavigatorBudget::From(
 
 BudgetService* WorkerNavigatorBudget::budget(ExecutionContext* context) {
   if (!budget_) {
-    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
-    budget_ = BudgetService::Create(&thread->GetInterfaceProvider());
+    budget_ = BudgetService::Create(context->GetInterfaceProvider());
   }
   return budget_.Get();
 }
