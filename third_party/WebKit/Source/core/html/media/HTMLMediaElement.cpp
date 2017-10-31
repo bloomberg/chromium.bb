@@ -653,6 +653,9 @@ void HTMLMediaElement::ParseAttribute(
 void HTMLMediaElement::FinishParsingChildren() {
   HTMLElement::FinishParsingChildren();
 
+  if (FastHasAttribute(mutedAttr))
+    muted_ = true;
+
   if (Traversal<HTMLTrackElement>::FirstChild(*this))
     ScheduleTextTrackResourceLoad();
 }
@@ -1145,9 +1148,6 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
   SetDisplayMode(kUnknown);
 
   SetPlayerPreload();
-
-  if (FastHasAttribute(mutedAttr))
-    muted_ = true;
 
   DCHECK(!media_source_);
 
