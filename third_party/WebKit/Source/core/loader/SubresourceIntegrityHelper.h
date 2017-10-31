@@ -6,6 +6,7 @@
 #define SubresourceIntegrityHelper_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/loader/SubresourceIntegrity.h"
 #include "platform/wtf/Allocator.h"
 
@@ -19,6 +20,9 @@ class CORE_EXPORT SubresourceIntegrityHelper final {
  public:
   static void DoReport(ExecutionContext&,
                        const SubresourceIntegrity::ReportInfo&);
+
+  static void GetConsoleMessages(const SubresourceIntegrity::ReportInfo&,
+                                 HeapVector<Member<ConsoleMessage>>*);
 };
 
 }  // namespace blink

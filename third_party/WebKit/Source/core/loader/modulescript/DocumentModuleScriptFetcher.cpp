@@ -6,6 +6,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/SubresourceIntegrityHelper.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 
@@ -21,8 +22,15 @@ bool WasModuleLoadSuccessful(
 
   DCHECK(error_messages);
 
+  if (resource) {
+    SubresourceIntegrityHelper::GetConsoleMessages(
+        resource->IntegrityReportInfo(), error_messages);
+  }
+
   // - response's type is "error"
-  if (!resource || resource->ErrorOccurred()) {
+  if (!resource || resource->ErrorOccurred() ||
+      resource->IntegrityDisposition() !=
+          ResourceIntegrityDisposition::kPassed) {
     return false;
   }
 

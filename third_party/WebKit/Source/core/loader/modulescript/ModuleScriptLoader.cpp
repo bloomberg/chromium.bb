@@ -100,10 +100,6 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // [SMSR]
   // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-module-script-request
 
-  // [SMSR] "... its integrity metadata to options's integrity metadata, ..."
-  // [spec text]
-  // TODO(kouhei): Implement.
-
   // [SMSR] "... its parser metadata to options's parser metadata, ..."
   // [spec text]
   options.parser_disposition = options_.ParserState();
@@ -121,6 +117,12 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
 
   // Note: |options| should not be modified after here.
   FetchParameters fetch_params(resource_request, options);
+
+  // [SMSR] "... its integrity metadata to options's integrity metadata, ..."
+  // [spec text]
+  fetch_params.SetIntegrityMetadata(options_.GetIntegrityMetadata());
+  fetch_params.MutableResourceRequest().SetFetchIntegrity(
+      options_.GetIntegrityAttributeValue());
 
   // [SMSR] "Set request's cryptographic nonce metadata to options's
   // cryptographic nonce, ..." [spec text]

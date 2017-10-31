@@ -6,7 +6,6 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
 
 namespace blink {
@@ -37,9 +36,20 @@ void SubresourceIntegrityHelper::DoReport(
   for (auto feature : report_info.UseCounts()) {
     UseCounter::Count(&execution_context, GetWebFeature(feature));
   }
+  HeapVector<Member<ConsoleMessage>> messages;
+  GetConsoleMessages(report_info, &messages);
+  for (const auto& message : messages) {
+    execution_context.AddConsoleMessage(message);
+  }
+}
+
+void SubresourceIntegrityHelper::GetConsoleMessages(
+    const SubresourceIntegrity::ReportInfo& report_info,
+    HeapVector<Member<ConsoleMessage>>* messages) {
+  DCHECK(messages);
   for (const auto& message : report_info.ConsoleErrorMessages()) {
-    execution_context.AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel, message));
+    messages->push_back(ConsoleMessage::Create(kSecurityMessageSource,
+                                               kErrorMessageLevel, message));
   }
 }
 
