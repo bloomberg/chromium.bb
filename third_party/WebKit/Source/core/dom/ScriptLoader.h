@@ -145,7 +145,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool FetchClassicScript(const KURL&,
                           Document&,
                           const ScriptFetchOptions&,
-                          const IntegrityMetadataSet&,
                           const WTF::TextEncoding&);
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,

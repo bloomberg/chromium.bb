@@ -23,7 +23,6 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
     const KURL& url,
     Document& element_document,
     const ScriptFetchOptions& options,
-    const IntegrityMetadataSet& integrity_metadata,
     const WTF::TextEncoding& encoding,
     ScriptElementBase* element,
     FetchParameters::DeferOption defer) {
@@ -59,11 +58,9 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   params.SetContentSecurityPolicyNonce(options.Nonce());
 
   // its integrity metadata to options's integrity metadata, [spec text]
-  //
-  // TODO(hiroshige): Move IntegrityMetadata to ScriptFetchOptions.
-  params.SetIntegrityMetadata(integrity_metadata);
+  params.SetIntegrityMetadata(options.GetIntegrityMetadata());
   params.MutableResourceRequest().SetFetchIntegrity(
-      element->IntegrityAttributeValue());
+      options.GetIntegrityAttributeValue());
 
   // and its parser metadata to options's parser metadata. [spec text]
   params.SetParserDisposition(options.ParserState());

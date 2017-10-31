@@ -191,7 +191,8 @@ void DynamicModuleResolver::ResolveDynamically(
   // options are a new script fetch options whose items all have the same
   // values, except for the integrity metadata, which is instead the empty
   // string." [spec text]
-  ScriptFetchOptions options(referrer_info.Nonce(), referrer_info.ParserState(),
+  ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
+                             String(), referrer_info.ParserState(),
                              referrer_info.CredentialsMode());
   ModuleScriptFetchRequest request(url, options);
 
