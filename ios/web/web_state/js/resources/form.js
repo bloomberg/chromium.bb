@@ -25,13 +25,12 @@ goog.require('__crWeb.message');
    */
   var formActivity_ = function(evt) {
     var srcElement = evt.srcElement;
-    var fieldName = srcElement.name || '';
     var value = srcElement.value || '';
 
     var msg = {
       'command': 'form.activity',
       'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement.form),
-      'fieldName': fieldName,
+      'fieldName': __gCrWeb.common.getFieldIdentifier(srcElement),
       'type': evt.type,
       'value': value
     };
