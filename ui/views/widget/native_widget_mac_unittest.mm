@@ -807,6 +807,10 @@ TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentShow) {
 // deminiaturize on the parent window (after attempting to show the child while
 // the parent was miniaturized).
 TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentDeminiaturize) {
+  // Disabled on 10.10 due to flakes. See http://crbug.com/777247.
+  if (base::mac::IsOS10_10())
+    return;
+
   NSWindow* native_parent = MakeNativeParent();
   [native_parent makeKeyAndOrderFront:nil];
   [native_parent miniaturize:nil];
