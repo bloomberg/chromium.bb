@@ -157,15 +157,6 @@ fuzzer_test("gfx_png_image_fuzzer") {
   seed_corpuses = libpng_seed_corpuses
 }
 
-fuzzer_test("zlib_uncompress_fuzzer") {
-  sources = [
-    "zlib_uncompress_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/zlib",
-  ]
-}
-
 fuzzer_test("libxml_xml_read_memory_fuzzer") {
   sources = [
     "libxml_xml_read_memory_fuzzer.cc",
