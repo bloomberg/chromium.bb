@@ -262,11 +262,22 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
     const std::vector<ContentSetting>& responses) {
   // The audio setting will always be the first one in the vector, if it was
   // requested.
-  if (ShouldRequestAudio())
+  bool blocked_by_feature_policy = ShouldRequestAudio() || ShouldRequestVideo();
+  if (ShouldRequestAudio()) {
     audio_setting_ = responses.front();
+    blocked_by_feature_policy &=
+        audio_setting_ == CONTENT_SETTING_BLOCK &&
+        PermissionIsBlockedForReason(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                                     PermissionStatusSource::FEATURE_POLICY);
+  }
 
-  if (ShouldRequestVideo())
+  if (ShouldRequestVideo()) {
     video_setting_ = responses.back();
+    blocked_by_feature_policy &=
+        video_setting_ == CONTENT_SETTING_BLOCK &&
+        PermissionIsBlockedForReason(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                                     PermissionStatusSource::FEATURE_POLICY);
+  }
 
   for (ContentSetting response : responses) {
     if (response == CONTENT_SETTING_BLOCK)
@@ -275,11 +286,7 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
       denial_reason_ = content::MEDIA_DEVICE_PERMISSION_DISMISSED;
   }
 
-  RunCallback();
-}
-
-void MediaStreamDevicesController::RequestFinishedNoPrompt() {
-  RunCallback();
+  RunCallback(blocked_by_feature_policy);
 }
 
 MediaStreamDevicesController::MediaStreamDevicesController(
@@ -412,12 +419,15 @@ content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
   return devices;
 }
 
-void MediaStreamDevicesController::RunCallback() {
+void MediaStreamDevicesController::RunCallback(bool blocked_by_feature_policy) {
   CHECK(!callback_.is_null());
 
-  // If the kill switch is on we don't update the tab context.
-  if (denial_reason_ != content::MEDIA_DEVICE_KILL_SWITCH_ON)
+  // If the kill switch is, or the request was blocked because of feature
+  // policy we don't update the tab context.
+  if (denial_reason_ != content::MEDIA_DEVICE_KILL_SWITCH_ON &&
+      !blocked_by_feature_policy) {
     UpdateTabSpecificContentSettings(audio_setting_, video_setting_);
+  }
 
   content::MediaStreamDevices devices =
       GetDevices(audio_setting_, video_setting_);
@@ -522,17 +532,10 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   }
 
   // Don't request if the kill switch is on.
-  // TODO(raymes): This wouldn't be needed if
-  // PermissionManager::RequestPermissions returned a denial reason.
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      request.render_process_id, request.render_frame_id);
-  PermissionResult result =
-      PermissionManager::Get(profile_)->GetPermissionStatusForFrame(
-          content_type, rfh, request.security_origin);
-  if (result.source == PermissionStatusSource::KILL_SWITCH) {
+  if (PermissionIsBlockedForReason(content_type,
+                                   PermissionStatusSource::KILL_SWITCH)) {
     *denial_reason = content::MEDIA_DEVICE_KILL_SWITCH_ON;
-    DCHECK_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-    return result.content_setting;
+    return CONTENT_SETTING_BLOCK;
   }
 
   return CONTENT_SETTING_ASK;
@@ -562,4 +565,21 @@ bool MediaStreamDevicesController::IsUserAcceptAllowed(
   return web_contents_->GetRenderWidgetHostView()->IsShowing();
 #endif
   return true;
+}
+
+bool MediaStreamDevicesController::PermissionIsBlockedForReason(
+    ContentSettingsType content_type,
+    PermissionStatusSource reason) const {
+  // TODO(raymes): This function wouldn't be needed if
+  // PermissionManager::RequestPermissions returned a denial reason.
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      request_.render_process_id, request_.render_frame_id);
+  PermissionResult result =
+      PermissionManager::Get(profile_)->GetPermissionStatusForFrame(
+          content_type, rfh, request_.security_origin);
+  if (result.source == reason) {
+    DCHECK_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+    return true;
+  }
+  return false;
 }
