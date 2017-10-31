@@ -17,6 +17,7 @@ using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::ProcessMemoryDump;
 using Edge = GlobalDumpGraph::Edge;
 using Node = GlobalDumpGraph::Node;
+using Process = GlobalDumpGraph::Process;
 
 class GraphProcessorTest : public testing::Test {
  public:
@@ -33,6 +34,12 @@ class GraphProcessorTest : public testing::Test {
 
   void RemoveWeakNodesRecursively(Node* node) {
     GraphProcessor::RemoveWeakNodesRecursively(node);
+  }
+
+  void AssignTracingOverhead(base::StringPiece allocator,
+                             GlobalDumpGraph* global_graph,
+                             GlobalDumpGraph::Process* process) {
+    GraphProcessor::AssignTracingOverhead(allocator, global_graph, process);
   }
 };
 
@@ -310,6 +317,28 @@ TEST_F(GraphProcessorTest, RemoveWeakNodesRecursivelyBetweenGraphs) {
 
   // We should now have cleaned up the owned node's edges.
   ASSERT_TRUE(owned.owned_by_edges()->empty());
+}
+
+TEST_F(GraphProcessorTest, AssignTracingOverhead) {
+  GlobalDumpGraph graph;
+  Process process(&graph);
+
+  // Now add an allocator node.
+  Node allocator(&process, process.root());
+  process.root()->InsertChild("malloc", &allocator);
+
+  // If the tracing node does not exist, this should do nothing.
+  AssignTracingOverhead("malloc", &graph, &process);
+  ASSERT_TRUE(process.root()->GetChild("malloc")->children()->empty());
+
+  // Now add a tracing node.
+  Node tracing(&process, process.root());
+  process.root()->InsertChild("tracing", &tracing);
+
+  // This should now add a node with the allocator.
+  AssignTracingOverhead("malloc", &graph, &process);
+  ASSERT_NE(process.FindNode("malloc/allocated_objects/tracing_overhead"),
+            nullptr);
 }
 
 }  // namespace memory_instrumentation
