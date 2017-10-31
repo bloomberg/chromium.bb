@@ -23,7 +23,6 @@
 #ifdef DRV_AMDGPU
 extern struct backend backend_amdgpu;
 #endif
-extern struct backend backend_cirrus;
 extern struct backend backend_evdi;
 #ifdef DRV_EXYNOS
 extern struct backend backend_exynos;
@@ -69,7 +68,7 @@ static struct backend *drv_get_backend(int fd)
 #ifdef DRV_AMDGPU
 		&backend_amdgpu,
 #endif
-		&backend_cirrus,   &backend_evdi,
+		&backend_evdi,
 #ifdef DRV_EXYNOS
 		&backend_exynos,
 #endif
