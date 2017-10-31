@@ -1,3 +1,4 @@
+
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -7,10 +8,14 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/css/FontFace.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
+#include "platform/AsyncMethodRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/fonts/FontSelector.h"
 
 // Mac OS X 10.6 SDK defines check() macro that interferes with our check()
 // method
@@ -20,55 +25,94 @@
 
 namespace blink {
 
+class FontFaceCache;
+
 using FontFaceSetIterable = SetlikeIterable<Member<FontFace>>;
 
 class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
-                                public FontFaceSetIterable {
+                                public SuspendableObject,
+                                public FontFaceSetIterable,
+                                public FontFace::LoadFontCallback {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(FontFaceSet);
 
  public:
-  FontFaceSet() {}
+  FontFaceSet(ExecutionContext& context)
+      : SuspendableObject(&context),
+        is_loading_(false),
+        should_fire_loading_event_(false),
+        ready_(new ReadyProperty(GetExecutionContext(),
+                                 this,
+                                 ReadyProperty::kReady)),
+        async_runner_(AsyncMethodRunner<FontFaceSet>::Create(
+            this,
+            &FontFaceSet::HandlePendingEventsAndPromises)) {}
   ~FontFaceSet() {}
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
 
-  virtual bool check(const String& font,
-                     const String& text,
-                     ExceptionState&) = 0;
-  virtual ScriptPromise load(ScriptState*,
-                             const String& font,
-                             const String& text) = 0;
+  bool check(const String& font, const String& text, ExceptionState&);
+  ScriptPromise load(ScriptState*, const String& font, const String& text);
   virtual ScriptPromise ready(ScriptState*) = 0;
 
-  virtual ExecutionContext* GetExecutionContext() const = 0;
+  ExecutionContext* GetExecutionContext() const {
+    return SuspendableObject::GetExecutionContext();
+  }
+
   const AtomicString& InterfaceName() const {
     return EventTargetNames::FontFaceSet;
   }
 
-  virtual FontFaceSet* addForBinding(ScriptState*,
-                                     FontFace*,
-                                     ExceptionState&) = 0;
-  virtual void clearForBinding(ScriptState*, ExceptionState&) = 0;
-  virtual bool deleteForBinding(ScriptState*, FontFace*, ExceptionState&) = 0;
-  virtual bool hasForBinding(ScriptState*,
-                             FontFace*,
-                             ExceptionState&) const = 0;
+  FontFaceSet* addForBinding(ScriptState*, FontFace*, ExceptionState&);
+  void clearForBinding(ScriptState*, ExceptionState&);
+  bool deleteForBinding(ScriptState*, FontFace*, ExceptionState&);
+  bool hasForBinding(ScriptState*, FontFace*, ExceptionState&) const;
 
-  virtual size_t size() const = 0;
+  void AddFontFacesToFontFaceCache(FontFaceCache*);
+
+  // SuspendableObject
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
+
+  size_t size() const;
   virtual AtomicString status() const = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {
-    EventTargetWithInlineData::Trace(visitor);
-  }
+  virtual void Trace(blink::Visitor*);
 
  protected:
-  // Iterable overrides.
-  virtual FontFaceSetIterable::IterationSource* StartIteration(
-      ScriptState*,
-      ExceptionState&) = 0;
+  virtual bool ResolveFontStyle(const String&, Font&) = 0;
+  virtual bool InActiveContext() const = 0;
+  virtual FontSelector* GetFontSelector() const = 0;
+  virtual const HeapListHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
+      const = 0;
+  bool IsCSSConnectedFontFace(FontFace* font_face) const {
+    return CSSConnectedFontFaceList().Contains(font_face);
+  }
+
+  virtual void FireDoneEventIfPossible() = 0;
+
+  void AddToLoadingFonts(FontFace*);
+  void RemoveFromLoadingFonts(FontFace*);
+  void HandlePendingEventsAndPromisesSoon();
+  bool ShouldSignalReady() const;
+  void FireDoneEvent();
+
+  using ReadyProperty = ScriptPromiseProperty<Member<FontFaceSet>,
+                                              Member<FontFaceSet>,
+                                              Member<DOMException>>;
+
+  bool is_loading_;
+  bool should_fire_loading_event_;
+  HeapListHashSet<Member<FontFace>> non_css_connected_faces_;
+  HeapHashSet<Member<FontFace>> loading_fonts_;
+  FontFaceArray loaded_fonts_;
+  FontFaceArray failed_fonts_;
+  Member<ReadyProperty> ready_;
+
+  Member<AsyncMethodRunner<FontFaceSet>> async_runner_;
 
   class IterationSource final : public FontFaceSetIterable::IterationSource {
    public:
@@ -88,6 +132,47 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     size_t index_;
     HeapVector<Member<FontFace>> font_faces_;
   };
+
+  class LoadFontPromiseResolver final
+      : public GarbageCollectedFinalized<LoadFontPromiseResolver>,
+        public FontFace::LoadFontCallback {
+    USING_GARBAGE_COLLECTED_MIXIN(LoadFontPromiseResolver);
+
+   public:
+    static LoadFontPromiseResolver* Create(FontFaceArray faces,
+                                           ScriptState* script_state) {
+      return new LoadFontPromiseResolver(faces, script_state);
+    }
+
+    void LoadFonts();
+    ScriptPromise Promise() { return resolver_->Promise(); }
+
+    void NotifyLoaded(FontFace*) override;
+    void NotifyError(FontFace*) override;
+
+    void Trace(blink::Visitor*);
+
+   private:
+    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
+        : num_loading_(faces.size()),
+          error_occured_(false),
+          resolver_(ScriptPromiseResolver::Create(script_state)) {
+      font_faces_.swap(faces);
+    }
+
+    HeapVector<Member<FontFace>> font_faces_;
+    int num_loading_;
+    bool error_occured_;
+    Member<ScriptPromiseResolver> resolver_;
+  };
+
+ private:
+  FontFaceSetIterable::IterationSource* StartIteration(
+      ScriptState*,
+      ExceptionState&) override;
+
+  void HandlePendingEventsAndPromises();
+  void FireLoadingEvent();
 };
 
 }  // namespace blink

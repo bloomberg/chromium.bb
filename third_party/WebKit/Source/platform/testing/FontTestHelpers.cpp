@@ -53,10 +53,17 @@ class TestFontSelector : public FontSelector {
   unsigned Version() const override { return 0; }
   void FontCacheInvalidated() override {}
   void ReportNotDefGlyph() const override {}
-  ExecutionContext* GetExecutionContext() const { return nullptr; }
+  ExecutionContext* GetExecutionContext() const override { return nullptr; }
+  FontFaceCache* GetFontFaceCache() override { return nullptr; }
 
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override {}
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}
+
+  bool IsPlatformFamilyMatchAvailable(
+      const FontDescription&,
+      const AtomicString& passed_family) override {
+    return false;
+  }
 
  private:
   TestFontSelector(scoped_refptr<FontCustomPlatformData> custom_platform_data)

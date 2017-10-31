@@ -60,7 +60,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
                     const AtomicString& family_name,
                     const FontDataForRangeSet&) override;
   bool IsPlatformFamilyMatchAvailable(const FontDescription&,
-                                      const AtomicString& family);
+                                      const AtomicString& family) override;
 
   void FontFaceInvalidated() override;
 
@@ -71,7 +71,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override;
 
   ExecutionContext* GetExecutionContext() const override { return document_; }
-  FontFaceCache* GetFontFaceCache() { return &font_face_cache_; }
+  FontFaceCache* GetFontFaceCache() override { return &font_face_cache_; }
 
   const GenericFontFamilySettings& GetGenericFontFamilySettings() const {
     return generic_font_family_settings_;
