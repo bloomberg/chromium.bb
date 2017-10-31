@@ -22,9 +22,7 @@
 #include "av1/common/reconintra.h"
 #endif  // CONFIG_EXT_INTRA
 #include "av1/common/seg_common.h"
-#if CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_WARPED_MOTION
 
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/decodemv.h"
@@ -283,22 +281,16 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
-#if !CONFIG_WARPED_MOTION || CONFIG_NEW_MULTISYMBOL || \
-    CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
   (void)cm;
 #endif
 
   const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(0, xd->global_motion,
-#if CONFIG_WARPED_MOTION
-                          xd,
-#endif
-                          mi);
+      motion_mode_allowed(0, xd->global_motion, xd, mi);
   int motion_mode;
   FRAME_COUNTS *counts = xd->counts;
 
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;
-#if CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   if (last_motion_mode_allowed == NCOBMC_ADAPT_WEIGHT) {
     motion_mode = aom_read_symbol(r, xd->tile_ctx->ncobmc_cdf[mbmi->sb_type],
@@ -323,15 +315,12 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
   } else {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-#endif  // CONFIG_WARPED_MOTION
     motion_mode =
         aom_read_symbol(r, xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
                         MOTION_MODES, ACCT_STR);
     if (counts) ++counts->motion_mode[mbmi->sb_type][motion_mode];
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
-#if CONFIG_WARPED_MOTION
   }
-#endif  // CONFIG_WARPED_MOTION
 }
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -2203,12 +2192,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int mode_ctx = 0;
-#if CONFIG_WARPED_MOTION
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #if CONFIG_EXT_WARPED_MOTION
   int pts_mv[SAMPLES_ARRAY_SIZE];
 #endif  // CONFIG_EXT_WARPED_MOTION
-#endif  // CONFIG_WARPED_MOTION
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
@@ -2560,17 +2547,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_INTERINTRA
 
-#if CONFIG_WARPED_MOTION
   for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
     const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
     RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
 
     xd->block_refs[ref] = ref_buf;
   }
-#endif
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
-#if CONFIG_WARPED_MOTION
   if (mbmi->sb_type >= BLOCK_8X8 && !has_second_ref(mbmi))
 #if CONFIG_EXT_WARPED_MOTION
     mbmi->num_proj_ref[0] =
@@ -2578,7 +2562,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #else
     mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
 #endif  // CONFIG_EXT_WARPED_MOTION
-#endif  // CONFIG_WARPED_MOTION
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
   if (mbmi->ref_frame[1] != INTRA_FRAME)
@@ -2633,7 +2616,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   read_mb_interp_filter(cm, xd, mbmi, r);
 
-#if CONFIG_WARPED_MOTION
   if (mbmi->motion_mode == WARPED_CAUSAL) {
     mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
 
@@ -2652,7 +2634,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->wm_params[0].invalid = 1;
     }
   }
-#endif  // CONFIG_WARPED_MOTION
 
 #if DEC_MISMATCH_DEBUG
   dec_dump_logs(cm, mi, mi_row, mi_col, inter_mode_ctx, mode_ctx);

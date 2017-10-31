@@ -225,7 +225,6 @@ typedef struct frame_contexts {
   aom_cdf_prob ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS]
                               [CDF_SIZE(MAX_NCOBMC_MODES)];
 #endif
-#if CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   aom_prob ncobmc_prob[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES - 1];
   aom_cdf_prob ncobmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(OBMC_FAMILY_MODES)];
@@ -234,7 +233,6 @@ typedef struct frame_contexts {
 #if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
 #endif  // CONFIG_NEW_MULTISYMBOL
-#endif  // CONFIG_WARPED_MOTION
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
   aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
@@ -457,12 +455,10 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   unsigned int ncobmc_mode[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
 #endif
-#if CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   unsigned int ncobmc[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES];
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   unsigned int obmc[BLOCK_SIZES_ALL][2];
-#endif  // CONFIG_WARPED_MOTION
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
 #if CONFIG_EXT_COMP_REFS
@@ -641,9 +637,7 @@ extern const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)];
 extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 extern const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)];
-#if CONFIG_WARPED_MOTION
 extern const aom_tree_index av1_ncobmc_tree[TREE_SIZE(OBMC_FAMILY_MODES)];
-#endif  // CONFIG_WARPED_MOTION
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #if CONFIG_LOOP_RESTORATION
 #define RESTORE_NONE_SGRPROJ_PROB 64

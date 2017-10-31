@@ -874,7 +874,6 @@ int av1_find_best_sub_pixel_tree(
 #undef PRE
 #undef CHECK_BETTER
 
-#if CONFIG_WARPED_MOTION
 unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
                                      BLOCK_SIZE bsize, int mi_row, int mi_col,
                                      const MV *this_mv) {
@@ -993,7 +992,6 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
 #endif  // CONFIG_EXT_WARPED_MOTION
   return bestmse;
 }
-#endif  // CONFIG_WARPED_MOTION
 
 static INLINE int check_bounds(const MvLimits *mv_limits, int row, int col,
                                int range) {

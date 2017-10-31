@@ -555,11 +555,9 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
           }
         }
       }
-      if (cm->interp_filter == SWITCHABLE
-#if CONFIG_WARPED_MOTION
-          && mbmi->motion_mode != WARPED_CAUSAL
-#endif  // CONFIG_WARPED_MOTION
-          && !is_nontrans_global_motion(xd)) {
+      if (cm->interp_filter == SWITCHABLE &&
+          mbmi->motion_mode != WARPED_CAUSAL &&
+          !is_nontrans_global_motion(xd)) {
 #if CONFIG_DUAL_FILTER
         update_filter_type_count(td->counts, xd, mbmi);
 #else
@@ -1189,18 +1187,10 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         }
 #endif  // CONFIG_INTERINTRA
 
-#if CONFIG_WARPED_MOTION
         set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-#endif
         const MOTION_MODE motion_allowed =
-            motion_mode_allowed(0, xd->global_motion,
-#if CONFIG_WARPED_MOTION
-                                xd,
-#endif
-                                mi);
-        if (mbmi->ref_frame[1] != INTRA_FRAME)
-#if CONFIG_WARPED_MOTION
-        {
+            motion_mode_allowed(0, xd->global_motion, xd, mi);
+        if (mbmi->ref_frame[1] != INTRA_FRAME) {
           if (motion_allowed == WARPED_CAUSAL) {
             counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
             update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
@@ -1224,13 +1214,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           }
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
         }
-#else
-          if (motion_allowed > SIMPLE_TRANSLATION) {
-            counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
-            update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
-                       MOTION_MODES);
-          }
-#endif  // CONFIG_WARPED_MOTION
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
         if (mbmi->motion_mode == NCOBMC_ADAPT_WEIGHT) {
@@ -1442,17 +1425,12 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, dry_run);
 #if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
   mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_WARPED_MOTION
   set_ref_ptrs(&cpi->common, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-#endif
 #endif
 
 #if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
-  const MOTION_MODE motion_allowed = motion_mode_allowed(0, xd->global_motion,
-#if CONFIG_WARPED_MOTION
-                                                         xd,
-#endif
-                                                         xd->mi[0]);
+  const MOTION_MODE motion_allowed =
+      motion_mode_allowed(0, xd->global_motion, xd, xd->mi[0]);
 #endif  // (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
 
 #if CONFIG_NCOBMC

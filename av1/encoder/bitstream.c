@@ -405,13 +405,8 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 
   MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(0, cm->global_motion,
-#if CONFIG_WARPED_MOTION
-                          xd,
-#endif
-                          mi);
+      motion_mode_allowed(0, cm->global_motion, xd, mi);
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
-#if CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   if (last_motion_mode_allowed == NCOBMC_ADAPT_WEIGHT) {
     aom_write_symbol(w, mbmi->motion_mode,
@@ -432,13 +427,10 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
   } else {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-#endif  // CONFIG_WARPED_MOTION
     aom_write_symbol(w, mbmi->motion_mode,
                      xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
                      MOTION_MODES);
-#if CONFIG_WARPED_MOTION
   }
-#endif  // CONFIG_WARPED_MOTION
 }
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -2068,7 +2060,6 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
         cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
     xd->left_txfm_context = xd->left_txfm_context_buffer +
                             ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-#if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
     // has_subpel_mv_component needs the ref frame buffers set up to look
     // up if they are scaled. has_subpel_mv_component is in turn needed by
     // write_switchable_interp_filter, which is called by pack_inter_mode_mvs.
@@ -2077,7 +2068,6 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
     if (!has_second_ref(&m->mbmi) && is_inter_singleref_comp_mode(m->mbmi.mode))
       xd->block_refs[1] = xd->block_refs[0];
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#endif  // CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
 
 #if ENC_MISMATCH_DEBUG
     enc_dump_logs(cpi, mi_row, mi_col);
@@ -3067,11 +3057,7 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
       // Only one filter is used. So set the filter at frame level
       for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
         if (count[i]) {
-#if CONFIG_WARPED_MOTION
           if (i == EIGHTTAP_REGULAR || WARP_WM_NEIGHBORS_WITH_OBMC)
-#else
-          if (i == EIGHTTAP_REGULAR || WARP_GM_NEIGHBORS_WITH_OBMC)
-#endif  // CONFIG_WARPED_MOTION
             cm->interp_filter = i;
           break;
         }

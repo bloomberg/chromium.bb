@@ -25,7 +25,6 @@
 #include "av1/common/convolve.h"
 
 #define MAX_PARAMDIM 9
-#if CONFIG_WARPED_MOTION
 #define LEAST_SQUARES_SAMPLES_MAX_BITS 3
 #define LEAST_SQUARES_SAMPLES_MAX (1 << LEAST_SQUARES_SAMPLES_MAX_BITS)
 
@@ -42,7 +41,6 @@
 #endif  // CONFIG_EXT_WARPED_MOTION
 
 #define DEFAULT_WMTYPE AFFINE
-#endif  // CONFIG_WARPED_MOTION
 
 extern const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8];
 

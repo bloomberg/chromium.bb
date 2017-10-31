@@ -273,7 +273,6 @@ EXPERIMENT_LIST="
     unpoison_partition_ctx
     ext_tile
     ncobmc
-    warped_motion
     q_adapt_probs
     inter_stats_only
     palette_delta_encoding
@@ -505,7 +504,6 @@ post_process_cmdline() {
       soft_enable intra_edge
       soft_enable mv_compress
       soft_enable dual_filter
-      soft_enable warped_motion
       soft_enable interintra
       soft_enable one_sided_compound
       soft_enable convolve_round
@@ -562,7 +560,6 @@ post_process_cmdline() {
     enabled txmg && enable_feature highbitdepth
     enabled ext_skip && enable_feature frame_marker
     enabled horzonly_frame_superres && enable_feature frame_superres
-    enabled ext_warped_motion && enable_feature warped_motion
     enabled loopfilter_level && enable_feature parallel_deblocking
     enabled loopfilter_level && enable_feature ext_delta_q
 

@@ -322,7 +322,6 @@ static const uint16_t div_lut[DIV_LUT_NUM + 1] = {
   8240,  8224,  8208,  8192,
 };
 
-#if CONFIG_WARPED_MOTION
 // Decomposes a divisor D such that 1/D = y/2^shift, where y is returned
 // at precision of DIV_LUT_PREC_BITS along with the shift.
 static int16_t resolve_divisor_64(uint64_t D, int16_t *shift) {
@@ -341,7 +340,6 @@ static int16_t resolve_divisor_64(uint64_t D, int16_t *shift) {
   // Use f as lookup into the precomputed table of multipliers
   return div_lut[f];
 }
-#endif  // CONFIG_WARPED_MOTION
 
 static int16_t resolve_divisor_32(uint32_t D, int16_t *shift) {
   int32_t e, f;
@@ -1002,7 +1000,6 @@ void av1_warp_plane(WarpedMotionParams *wm,
                y_scale, conv_params);
 }
 
-#if CONFIG_WARPED_MOTION
 #define LEAST_SQUARES_ORDER 2
 
 #define LS_MV_MAX 256  // max mv in 1/8-pel
@@ -1250,4 +1247,3 @@ int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
 
   return 0;
 }
-#endif  // CONFIG_WARPED_MOTION

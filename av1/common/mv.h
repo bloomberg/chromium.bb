@@ -91,9 +91,7 @@ typedef enum {
 
 typedef struct {
   int global_warp_allowed;
-#if CONFIG_WARPED_MOTION
   int local_warp_allowed;
-#endif  // CONFIG_WARPED_MOTION
 } WarpTypesAllowed;
 
 // number of parameters used by each transformation in TransformationTypes

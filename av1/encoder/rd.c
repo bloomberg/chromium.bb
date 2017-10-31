@@ -403,7 +403,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cost_tokens_from_cdf(x->motion_mode_cost[i], fc->motion_mode_cdf[i],
                                NULL);
     }
-#if CONFIG_WARPED_MOTION
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
       av1_cost_tokens_from_cdf(x->motion_mode_cost2[i], fc->ncobmc_cdf[i],
@@ -416,7 +415,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       x->motion_mode_cost1[i][1] = av1_cost_bit(fc->obmc_prob[i], 1);
 #endif
     }
-#endif  // CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
     for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
       av1_cost_tokens_from_cdf(x->ncobmc_mode_cost[i], fc->ncobmc_mode_cdf[i],

@@ -18,9 +18,7 @@
 #include "av1/common/warped_motion.h"
 #include "aom/aom_integer.h"
 
-#if CONFIG_WARPED_MOTION
 #define WARP_WM_NEIGHBORS_WITH_OBMC 0
-#endif  // CONFIG_WARPED_MOTION
 
 #define WARP_GM_NEIGHBORS_WITH_OBMC 0
 
@@ -449,10 +447,8 @@ static INLINE void set_default_interp_filters(
 
 static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
   (void)xd;
-#if CONFIG_WARPED_MOTION
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   if (mbmi->motion_mode == WARPED_CAUSAL) return 0;
-#endif  // CONFIG_WARPED_MOTION
   if (is_nontrans_global_motion(xd)) return 0;
   return 1;
 }

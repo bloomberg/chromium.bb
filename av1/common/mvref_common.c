@@ -10,9 +10,7 @@
  */
 
 #include "av1/common/mvref_common.h"
-#if CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_WARPED_MOTION
 
 #define USE_CUR_GM_REFMV 1
 
@@ -1799,7 +1797,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 }
 #endif  // CONFIG_MFMV
 
-#if CONFIG_WARPED_MOTION
 #if CONFIG_EXT_WARPED_MOTION
 static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,
                                   int *pts_mv, int global_offset_r,
@@ -2129,4 +2126,3 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   return np;
 }
 #endif  // CONFIG_EXT_WARPED_MOTION
-#endif  // CONFIG_WARPED_MOTION

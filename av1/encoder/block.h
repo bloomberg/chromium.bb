@@ -223,12 +223,10 @@ struct macroblock {
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
 #endif  // CONFIG_INTERINTRA
   int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
-#if CONFIG_WARPED_MOTION
   int motion_mode_cost1[BLOCK_SIZES_ALL][2];
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   int motion_mode_cost2[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES];
 #endif
-#endif  // CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   int ncobmc_mode_cost[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT

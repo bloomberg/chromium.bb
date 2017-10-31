@@ -516,7 +516,6 @@ int main(int argc, const char **argv) {
       &fc.motion_mode[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
       "default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)]");
-#if CONFIG_WARPED_MOTION
   cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
@@ -525,7 +524,6 @@ int main(int argc, const char **argv) {
   optimize_cdf_table(&fc.obmc[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)]");
-#endif  // CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   cts_each_dim[0] = ADAPT_OVERLAP_BLOCKS;
   cts_each_dim[1] = MAX_NCOBMC_MODES;
@@ -538,7 +536,6 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob\n"
                      "default_ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS]"
                      "[CDF_SIZE(MAX_NCOBMC_MODES)]");
-#if CONFIG_WARPED_MOTION
   cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = OBMC_FAMILY_MODES;
   optimize_entropy_table(
@@ -549,7 +546,6 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob\n"
                      "default_ncobmc_cdf[BLOCK_SIZES_ALL]"
                      "[CDF_SIZE(OBMC_FAMILY_MODES)]");
-#endif
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
   /* Intra/inter flag */
