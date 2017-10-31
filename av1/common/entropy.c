@@ -2382,11 +2382,9 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   }
 #if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(intra_inter_cdf)
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   AVERAGE_TILE_CDFS(motion_mode_cdf)
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION
   AVERAGE_TILE_CDFS(obmc_cdf)
-#endif
 #endif
 #endif
 #if CONFIG_MRC_TX

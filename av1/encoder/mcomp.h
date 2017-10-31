@@ -137,7 +137,6 @@ int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           int var_max, int rd);
 #endif
 
-#if CONFIG_MOTION_VAR
 int av1_obmc_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                 MV *mvp_full, int step_param, int sadpb,
                                 int further_steps, int do_refine,
@@ -148,7 +147,6 @@ int av1_find_best_obmc_sub_pixel_tree_up(
     int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *mvjcost, int *mvcost[2], int *distortion,
     unsigned int *sse1, int is_second, int use_upsampled_ref);
-#endif  // CONFIG_MOTION_VAR
 #ifdef __cplusplus
 }  // extern "C"
 #endif

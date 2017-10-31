@@ -515,7 +515,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->active_map.map);
   cpi->active_map.map = NULL;
 
-#if CONFIG_MOTION_VAR
   aom_free(cpi->td.mb.above_pred_buf);
   cpi->td.mb.above_pred_buf = NULL;
 
@@ -527,7 +526,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 
   aom_free(cpi->td.mb.mask_buf);
   cpi->td.mb.mask_buf = NULL;
-#endif
 
 #if CONFIG_MFMV
   aom_free(cm->tpl_mvs);
@@ -1390,7 +1388,6 @@ MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_sad128x32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_MOTION_VAR
 #define HIGHBD_OBFP(BT, OSDF, OVF, OSVF) \
   cpi->fn_ptr[BT].osdf = OSDF;           \
   cpi->fn_ptr[BT].ovf = OVF;             \
@@ -1444,7 +1441,6 @@ MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad32x128)
 MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad128x32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_MOTION_VAR
 
 static void highbd_set_var_fns(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -1674,7 +1670,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
         HIGHBD_MBFP(BLOCK_4X16, aom_highbd_masked_sad4x16_bits8,
                     aom_highbd_8_masked_sub_pixel_variance4x16)
 #endif
-#if CONFIG_MOTION_VAR
 #if CONFIG_EXT_PARTITION
         HIGHBD_OBFP(BLOCK_128X128, aom_highbd_obmc_sad128x128_bits8,
                     aom_highbd_obmc_variance128x128,
@@ -1760,7 +1755,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                     aom_highbd_obmc_variance4x16,
                     aom_highbd_obmc_sub_pixel_variance4x16)
 #endif
-#endif  // CONFIG_MOTION_VAR
         break;
 
       case AOM_BITS_10:
@@ -1993,7 +1987,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
         HIGHBD_MBFP(BLOCK_4X16, aom_highbd_masked_sad4x16_bits10,
                     aom_highbd_10_masked_sub_pixel_variance4x16)
 #endif
-#if CONFIG_MOTION_VAR
 #if CONFIG_EXT_PARTITION
         HIGHBD_OBFP(BLOCK_128X128, aom_highbd_obmc_sad128x128_bits10,
                     aom_highbd_10_obmc_variance128x128,
@@ -2079,7 +2072,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                     aom_highbd_10_obmc_variance4x16,
                     aom_highbd_10_obmc_sub_pixel_variance4x16)
 #endif
-#endif  // CONFIG_MOTION_VAR
         break;
 
       case AOM_BITS_12:
@@ -2313,7 +2305,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                     aom_highbd_12_masked_sub_pixel_variance4x16)
 #endif
 
-#if CONFIG_MOTION_VAR
 #if CONFIG_EXT_PARTITION
         HIGHBD_OBFP(BLOCK_128X128, aom_highbd_obmc_sad128x128_bits12,
                     aom_highbd_12_obmc_variance128x128,
@@ -2399,7 +2390,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                     aom_highbd_12_obmc_variance4x16,
                     aom_highbd_12_obmc_sub_pixel_variance4x16)
 #endif
-#endif  // CONFIG_MOTION_VAR
         break;
 
       default:
@@ -2750,7 +2740,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   }
 #endif
 
-#if CONFIG_MOTION_VAR
 #if CONFIG_HIGHBITDEPTH
   int buf_scaler = 2;
 #else
@@ -2774,8 +2763,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   CHECK_MEM_ERROR(cm, cpi->td.mb.mask_buf,
                   (int32_t *)aom_memalign(
                       16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.mask_buf)));
-
-#endif
 
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_speed_features_framesize_dependent(cpi);
@@ -2950,7 +2937,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL)
   BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL)
 
-#if CONFIG_MOTION_VAR
 #define OBFP(BT, OSDF, OVF, OSVF) \
   cpi->fn_ptr[BT].osdf = OSDF;    \
   cpi->fn_ptr[BT].ovf = OVF;      \
@@ -3018,7 +3004,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
        aom_obmc_sub_pixel_variance128x32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_MOTION_VAR
 
 #define MBFP(BT, MCSDF, MCSVF)  \
   cpi->fn_ptr[BT].msdf = MCSDF; \
@@ -3201,12 +3186,10 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     // Deallocate allocated thread data.
     if (t < cpi->num_workers - 1) {
       aom_free(thread_data->td->palette_buffer);
-#if CONFIG_MOTION_VAR
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);
       aom_free(thread_data->td->wsrc_buf);
       aom_free(thread_data->td->mask_buf);
-#endif  // CONFIG_MOTION_VAR
       aom_free(thread_data->td->counts);
       av1_free_pc_tree(thread_data->td);
       aom_free(thread_data->td);

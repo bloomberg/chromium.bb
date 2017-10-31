@@ -272,7 +272,6 @@ EXPERIMENT_LIST="
     ext_partition_types_ab
     unpoison_partition_ctx
     ext_tile
-    motion_var
     ncobmc
     warped_motion
     q_adapt_probs
@@ -506,7 +505,6 @@ post_process_cmdline() {
       soft_enable intra_edge
       soft_enable mv_compress
       soft_enable dual_filter
-      soft_enable motion_var
       soft_enable warped_motion
       soft_enable interintra
       soft_enable one_sided_compound
@@ -553,7 +551,6 @@ post_process_cmdline() {
     enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
-    enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled ext_comp_refs && enable_feature one_sided_compound
     enabled lgt_from_pred && enable_feature ext_tx
     enabled lgt_from_pred && disable_feature mrc_tx

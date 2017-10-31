@@ -122,9 +122,7 @@ AV1_COMMON_SRCS-yes += common/cfl.h
 AV1_COMMON_SRCS-yes += common/cfl.c
 endif
 
-ifeq ($(CONFIG_MOTION_VAR),yes)
 AV1_COMMON_SRCS-yes += common/obmc.h
-endif
 
 # common (msa)
 AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct4x4_msa.c

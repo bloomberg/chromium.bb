@@ -83,7 +83,6 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
         thread_data->td->pc_tree = NULL;
         av1_setup_pc_tree(cm, thread_data->td);
 
-#if CONFIG_MOTION_VAR
 #if CONFIG_HIGHBITDEPTH
         int buf_scaler = 2;
 #else
@@ -107,7 +106,6 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
             cm, thread_data->td->mask_buf,
             (int32_t *)aom_memalign(
                 16, MAX_SB_SQUARE * sizeof(*thread_data->td->mask_buf)));
-#endif
         // Allocate frame counters in thread data.
         CHECK_MEM_ERROR(cm, thread_data->td->counts,
                         aom_calloc(1, sizeof(*thread_data->td->counts)));
@@ -143,12 +141,10 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
     if (thread_data->td != &cpi->td) {
       thread_data->td->mb = cpi->td.mb;
       thread_data->td->rd_counts = cpi->td.rd_counts;
-#if CONFIG_MOTION_VAR
       thread_data->td->mb.above_pred_buf = thread_data->td->above_pred_buf;
       thread_data->td->mb.left_pred_buf = thread_data->td->left_pred_buf;
       thread_data->td->mb.wsrc_buf = thread_data->td->wsrc_buf;
       thread_data->td->mb.mask_buf = thread_data->td->mask_buf;
-#endif
     }
     if (thread_data->td->counts != &cpi->common.counts) {
       memcpy(thread_data->td->counts, &cpi->common.counts,

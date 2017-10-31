@@ -205,10 +205,8 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_wedge_utils_test.cc
 ## LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += filterintra_predictors_test.cc
 ## endif
 
-ifeq ($(CONFIG_MOTION_VAR),yes)
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_variance_test.cc
-endif
 
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)
 ifeq ($(CONFIG_AV1_ENCODER),yes)

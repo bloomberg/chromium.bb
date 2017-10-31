@@ -279,12 +279,10 @@ if (CONFIG_AV1_ENCODER)
         ${AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1}
         "${AOM_ROOT}/test/corner_match_test.cc")
 
-    if (CONFIG_MOTION_VAR)
-      set(AOM_UNIT_TEST_ENCODER_SOURCES
-          ${AOM_UNIT_TEST_ENCODER_SOURCES}
-          "${AOM_ROOT}/test/obmc_sad_test.cc"
-          "${AOM_ROOT}/test/obmc_variance_test.cc")
-    endif ()
+    set(AOM_UNIT_TEST_ENCODER_SOURCES
+        ${AOM_UNIT_TEST_ENCODER_SOURCES}
+        "${AOM_ROOT}/test/obmc_sad_test.cc"
+        "${AOM_ROOT}/test/obmc_variance_test.cc")
 
     if (CONFIG_TX64X64)
       set(AOM_UNIT_TEST_ENCODER_SOURCES

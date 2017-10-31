@@ -93,7 +93,6 @@ TEST_P(ObmcVarianceTest, ExtremeValues) {
 }
 
 #if HAVE_SSE4_1
-#if CONFIG_MOTION_VAR
 const ObmcVarianceTest::ParamType sse4_functions[] = {
 #if CONFIG_EXT_PARTITION
   TestFuncs(aom_obmc_variance128x128_c, aom_obmc_variance128x128_sse4_1),
@@ -117,7 +116,6 @@ const ObmcVarianceTest::ParamType sse4_functions[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceTest,
                         ::testing::ValuesIn(sse4_functions));
-#endif  // CONFIG_MOTION_VAR
 #endif  // HAVE_SSE4_1
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +181,6 @@ TEST_P(ObmcVarianceHBDTest, ExtremeValues) {
 }
 
 #if HAVE_SSE4_1
-#if CONFIG_MOTION_VAR
 ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
 #if CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_obmc_variance128x128_c,
@@ -291,7 +288,6 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceHBDTest,
                         ::testing::ValuesIn(sse4_functions_hbd));
-#endif  // CONFIG_MOTION_VAR
 #endif  // HAVE_SSE4_1
 #endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

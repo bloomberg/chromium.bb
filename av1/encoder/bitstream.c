@@ -400,7 +400,6 @@ static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               const MODE_INFO *mi, aom_writer *w) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
@@ -412,7 +411,7 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
                           mi);
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   if (last_motion_mode_allowed == NCOBMC_ADAPT_WEIGHT) {
     aom_write_symbol(w, mbmi->motion_mode,
@@ -433,13 +432,13 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
   } else {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#endif  // CONFIG_WARPED_MOTION
     aom_write_symbol(w, mbmi->motion_mode,
                      xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
                      MOTION_MODES);
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION
   }
-#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#endif  // CONFIG_WARPED_MOTION
 }
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -457,7 +456,6 @@ static void write_ncobmc_mode(MACROBLOCKD *xd, const MODE_INFO *mi,
   }
 }
 #endif
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 static void write_delta_qindex(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                int delta_qindex, aom_writer *w) {
@@ -1735,12 +1733,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
 #endif  // CONFIG_INTERINTRA
 
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     if (mbmi->ref_frame[1] != INTRA_FRAME) write_motion_mode(cm, xd, mi, w);
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
     write_ncobmc_mode(xd, mi, w);
 #endif
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
     if (
 #if CONFIG_COMPOUND_SINGLEREF
@@ -1749,9 +1745,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         cpi->common.reference_mode != SINGLE_REFERENCE &&
         is_inter_compound_mode(mbmi->mode) &&
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_MOTION_VAR
         mbmi->motion_mode == SIMPLE_TRANSLATION &&
-#endif  // CONFIG_MOTION_VAR
         is_any_masked_compound_used(bsize)) {
 #if CONFIG_JNT_COMP
       if (cm->allow_masked_compound && mbmi->compound_idx)
@@ -2332,7 +2326,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_COEF_INTERLEAVE
 }
 
-#if CONFIG_MOTION_VAR && NC_MODE_INFO
+#if NC_MODE_INFO
 static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
                             aom_writer *w, const TOKENEXTRA **tok,
                             const TOKENEXTRA *const tok_end, int mi_row,
@@ -2406,7 +2400,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                           int mi_col) {
   write_mbmi_b(cpi, tile, w, mi_row, mi_col);
 
-#if CONFIG_MOTION_VAR && NC_MODE_INFO
+#if NC_MODE_INFO
   (void)tok;
   (void)tok_end;
 #else
@@ -2713,7 +2707,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 
     for (mi_col = mi_col_start; mi_col < mi_col_end; mi_col += cm->mib_size) {
       write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
-#if CONFIG_MOTION_VAR && NC_MODE_INFO
+#if NC_MODE_INFO
       write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
 #endif
     }
@@ -3073,13 +3067,11 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
       // Only one filter is used. So set the filter at frame level
       for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
         if (count[i]) {
-#if CONFIG_MOTION_VAR
 #if CONFIG_WARPED_MOTION
           if (i == EIGHTTAP_REGULAR || WARP_WM_NEIGHBORS_WITH_OBMC)
 #else
           if (i == EIGHTTAP_REGULAR || WARP_GM_NEIGHBORS_WITH_OBMC)
 #endif  // CONFIG_WARPED_MOTION
-#endif  // CONFIG_MOTION_VAR
             cm->interp_filter = i;
           break;
         }

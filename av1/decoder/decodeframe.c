@@ -835,7 +835,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 
-#if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
 #if CONFIG_NCOBMC
       av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
@@ -843,7 +842,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 #endif
     }
-#endif  // CONFIG_MOTION_VAR
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
     if (mbmi->motion_mode == NCOBMC_ADAPT_WEIGHT) {
       int plane;
@@ -920,7 +918,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
-#if NC_MODE_INFO && CONFIG_MOTION_VAR
+#if NC_MODE_INFO
 static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, aom_reader *r,
                                  BLOCK_SIZE bsize) {
@@ -1003,7 +1001,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
                     bsize);
 
-#if !(CONFIG_MOTION_VAR && NC_MODE_INFO)
+#if !(NC_MODE_INFO)
   decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
 #endif
 }
@@ -2554,7 +2552,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif
           decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                            cm->sb_size);
-#if NC_MODE_INFO && CONFIG_MOTION_VAR
+#if NC_MODE_INFO
           detoken_and_recon_sb(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                                cm->sb_size);
 #endif
@@ -3618,11 +3616,9 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   assert(!memcmp(cm->counts.compound_interinter,
                  zero_counts.compound_interinter,
                  sizeof(cm->counts.compound_interinter)));
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
                  sizeof(cm->counts.motion_mode)));
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
   assert(!memcmp(cm->counts.ncobmc_mode, zero_counts.ncobmc_mode,
                  sizeof(cm->counts.ncobmc_mode)));
 #endif

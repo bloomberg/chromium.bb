@@ -109,10 +109,10 @@ int av1_active_h_edge(const struct AV1_COMP *cpi, int mi_row, int mi_step);
 int av1_active_v_edge(const struct AV1_COMP *cpi, int mi_col, int mi_step);
 int av1_active_edge_sb(const struct AV1_COMP *cpi, int mi_row, int mi_col);
 
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#if CONFIG_NCOBMC
 void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
                          int mi_row, int mi_col);
-#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#endif  // CONFIG_NCOBMC
 
 #ifdef __cplusplus
 }  // extern "C"

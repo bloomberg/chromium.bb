@@ -12,7 +12,6 @@
 #ifndef AV1_COMMON_OBMC_H_
 #define AV1_COMMON_OBMC_H_
 
-#if CONFIG_MOTION_VAR
 typedef void (*overlappable_nb_visitor_t)(MACROBLOCKD *xd, int rel_mi_pos,
                                           uint8_t nb_mi_size, MODE_INFO *nb_mi,
                                           void *fun_ctxt);
@@ -88,5 +87,4 @@ static INLINE void foreach_overlappable_nb_left(const AV1_COMMON *cm,
   }
 }
 
-#endif  // CONFIG_MOTION_VAR
 #endif  // AV1_COMMON_OBMC_H_

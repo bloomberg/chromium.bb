@@ -460,12 +460,10 @@ if (CONFIG_LOOP_RESTORATION)
   endif ()
 endif ()
 
-if (CONFIG_MOTION_VAR)
-  set(AOM_DSP_ENCODER_INTRIN_SSE4_1
-      ${AOM_DSP_ENCODER_INTRIN_SSE4_1}
-      "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
-      "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
-endif ()
+set(AOM_DSP_ENCODER_INTRIN_SSE4_1
+    ${AOM_DSP_ENCODER_INTRIN_SSE4_1}
+    "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
+    "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
 
 # Creates aom_dsp build targets. Must not be called until after libaom target
 # has been created.

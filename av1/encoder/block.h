@@ -176,12 +176,10 @@ struct macroblock {
   int **mv_cost_stack[NMV_CONTEXTS];
   int **mvcost;
 
-#if CONFIG_MOTION_VAR
   int32_t *wsrc_buf;
   int32_t *mask_buf;
   uint8_t *above_pred_buf;
   uint8_t *left_pred_buf;
-#endif  // CONFIG_MOTION_VAR
 
   PALETTE_BUFFER *palette_buffer;
 
@@ -224,18 +222,16 @@ struct macroblock {
   int wedge_interintra_cost[BLOCK_SIZES_ALL][2];
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION
   int motion_mode_cost1[BLOCK_SIZES_ALL][2];
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   int motion_mode_cost2[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES];
 #endif
-#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+#endif  // CONFIG_WARPED_MOTION
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
   int ncobmc_mode_cost[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
-#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   int intra_uv_mode_cost[INTRA_MODES][UV_INTRA_MODES];
   int y_mode_costs[INTRA_MODES][INTRA_MODES][INTRA_MODES];
 #if CONFIG_FILTER_INTRA
