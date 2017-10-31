@@ -316,7 +316,7 @@ error::Error DoGetShaderPrecisionFormat(GLenum shadertype,
                                         GLint* precision,
                                         int32_t* success);
 error::Error DoGetShaderSource(GLuint shader, std::string* source);
-error::Error DoGetString(GLenum name, const char** result);
+error::Error DoGetString(GLenum name, uint32_t bucket_id);
 error::Error DoGetSynciv(GLuint sync,
                          GLenum pname,
                          GLsizei bufsize,

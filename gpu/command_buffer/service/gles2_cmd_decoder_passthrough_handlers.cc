@@ -581,18 +581,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetString(
   GLenum name = static_cast<GLenum>(c.name);
   uint32_t bucket_id = c.bucket_id;
 
-  const char* str = nullptr;
-  error::Error error = DoGetString(name, &str);
-  if (error != error::kNoError) {
-    return error;
-  }
-  if (!str) {
-    return error::kOutOfBounds;
-  }
-  Bucket* bucket = CreateBucket(bucket_id);
-  bucket->SetFromString(str);
-
-  return error::kNoError;
+  return DoGetString(name, bucket_id);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleGetTransformFeedbackVarying(

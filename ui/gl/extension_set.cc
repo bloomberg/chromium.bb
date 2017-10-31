@@ -4,6 +4,7 @@
 
 #include "ui/gl/extension_set.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 
 namespace gl {
 
@@ -15,6 +16,12 @@ ExtensionSet MakeExtensionSet(const base::StringPiece& extensions_string) {
 bool HasExtension(const ExtensionSet& extension_set,
                   const base::StringPiece& extension) {
   return extension_set.find(extension) != extension_set.end();
+}
+
+std::string MakeExtensionString(const ExtensionSet& extension_set) {
+  std::vector<base::StringPiece> extension_list(extension_set.begin(),
+                                                extension_set.end());
+  return base::JoinString(extension_list, " ");
 }
 
 }  // namespace gl

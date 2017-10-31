@@ -12856,49 +12856,26 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
     case GL_SHADING_LANGUAGE_VERSION:
       str = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
-    case GL_EXTENSIONS:
-      {
-        // For WebGL contexts, strip out shader extensions if they have not
-        // been enabled on WebGL1 or no longer exist (become core) in WebGL2.
-        if (feature_info_->IsWebGLContext()) {
-          extensions = feature_info_->extensions();
-          if (!derivatives_explicitly_enabled_) {
-            size_t offset = extensions.find(kOESDerivativeExtension);
-            if (std::string::npos != offset) {
-              extensions.replace(offset, arraysize(kOESDerivativeExtension),
-                                 std::string());
-            }
-          }
-          if (!frag_depth_explicitly_enabled_) {
-            size_t offset = extensions.find(kEXTFragDepthExtension);
-            if (std::string::npos != offset) {
-              extensions.replace(offset, arraysize(kEXTFragDepthExtension),
-                                 std::string());
-            }
-          }
-          if (!draw_buffers_explicitly_enabled_) {
-            size_t offset = extensions.find(kEXTDrawBuffersExtension);
-            if (std::string::npos != offset) {
-              extensions.replace(offset, arraysize(kEXTDrawBuffersExtension),
-                                 std::string());
-            }
-          }
-          if (!shader_texture_lod_explicitly_enabled_) {
-            size_t offset = extensions.find(kEXTShaderTextureLodExtension);
-            if (std::string::npos != offset) {
-              extensions.replace(offset,
-                                 arraysize(kEXTShaderTextureLodExtension),
-                                 std::string());
-            }
-          }
-        } else {
-          extensions = feature_info_->extensions().c_str();
-        }
-        if (supports_post_sub_buffer_)
-          extensions += " GL_CHROMIUM_post_sub_buffer";
-        str = extensions.c_str();
+    case GL_EXTENSIONS: {
+      gl::ExtensionSet extension_set = feature_info_->extensions();
+      // For WebGL contexts, strip out shader extensions if they have not
+      // been enabled on WebGL1 or no longer exist (become core) in WebGL2.
+      if (feature_info_->IsWebGLContext()) {
+        if (!derivatives_explicitly_enabled_)
+          extension_set.erase(kOESDerivativeExtension);
+        if (!frag_depth_explicitly_enabled_)
+          extension_set.erase(kEXTFragDepthExtension);
+        if (!draw_buffers_explicitly_enabled_)
+          extension_set.erase(kEXTDrawBuffersExtension);
+        if (!shader_texture_lod_explicitly_enabled_)
+          extension_set.erase(kEXTShaderTextureLodExtension);
       }
+      if (supports_post_sub_buffer_)
+        extension_set.insert("GL_CHROMIUM_post_sub_buffer");
+      extensions = gl::MakeExtensionString(extension_set);
+      str = extensions.c_str();
       break;
+    }
     default:
       str = reinterpret_cast<const char*>(api()->glGetStringFn(name));
       break;
@@ -16094,7 +16071,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
   DisallowedFeatures disallowed_features = feature_info_->disallowed_features();
   disallowed_features.AllowExtensions();
   info->Initialize(feature_info_->context_type(), disallowed_features);
-  bucket->SetFromString(info->extensions().c_str());
+  bucket->SetFromString(gl::MakeExtensionString(info->extensions()).c_str());
   return error::kNoError;
 }
 
