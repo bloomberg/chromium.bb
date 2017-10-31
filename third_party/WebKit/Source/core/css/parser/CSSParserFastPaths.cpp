@@ -641,8 +641,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyPosition:
       return value_id == CSSValueStatic || value_id == CSSValueRelative ||
              value_id == CSSValueAbsolute || value_id == CSSValueFixed ||
-             (RuntimeEnabledFeatures::CSSStickyPositionEnabled() &&
-              value_id == CSSValueSticky);
+             value_id == CSSValueSticky;
     case CSSPropertyResize:
       return value_id == CSSValueNone || value_id == CSSValueBoth ||
              value_id == CSSValueHorizontal || value_id == CSSValueVertical ||
