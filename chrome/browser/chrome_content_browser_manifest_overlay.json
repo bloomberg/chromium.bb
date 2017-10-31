@@ -48,7 +48,7 @@
         "pdf_to_pwg_raster_converter": [ "converter" ],
         "preferences": [ "pref_client", "pref_control" ],
         "ui": [
-          "display_controller",
+          "display_dev",
           "ime_registrar",
           "input_device_controller",
           "window_manager"

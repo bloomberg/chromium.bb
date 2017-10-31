@@ -25,6 +25,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/mojo/dev_display_controller.mojom.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/unified_desktop_utils.h"
 
@@ -127,6 +128,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Returns the display id of the first display in the outupt list.
   int64_t first_display_id() const { return first_display_id_; }
+
+  // Sets controller used to add/remove fake displays. If this is set then
+  // AddRemoveDisplay() will delegate out to |dev_display_controller_| instead
+  // of adding/removing a ManagedDisplayInfo.
+  void SetDevDisplayController(mojom::DevDisplayControllerPtr controller);
 
   // Initializes displays using command line flag. Returns false if no command
   // line flag was provided.
@@ -586,6 +592,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   base::Closure created_mirror_window_;
 
   base::ObserverList<DisplayObserver> observers_;
+
+  display::mojom::DevDisplayControllerPtr dev_display_controller_;
 
   // This is incremented whenever a BeginEndNotifier is created and decremented
   // when destroyed. BeginEndNotifier uses this to track when it should call

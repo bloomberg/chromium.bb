@@ -123,7 +123,6 @@ bool AcceleratorControllerDelegateClassic::HandlesAction(
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
-    case DEV_ADD_REMOVE_DISPLAY:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case MAGNIFY_SCREEN_ZOOM_IN:
@@ -155,8 +154,6 @@ bool AcceleratorControllerDelegateClassic::CanPerformAction(
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       return debug::DebugAcceleratorsEnabled();
-    case DEV_ADD_REMOVE_DISPLAY:
-      return debug::DeveloperAcceleratorsEnabled();
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return CanHandleMagnifyScreen();
@@ -197,9 +194,6 @@ void AcceleratorControllerDelegateClassic::PerformAction(
       break;
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       debug::ToggleShowPaintRects();
-      break;
-    case DEV_ADD_REMOVE_DISPLAY:
-      Shell::Get()->display_manager()->AddRemoveDisplay();
       break;
     case LOCK_PRESSED:
     case LOCK_RELEASED:

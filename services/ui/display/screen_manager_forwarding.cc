@@ -42,7 +42,7 @@ ScreenManagerForwarding::ScreenManagerForwarding(Mode mode)
     : is_in_process_(mode == Mode::IN_WM_PROCESS),
       screen_(base::MakeUnique<display::ScreenBase>()),
       binding_(this),
-      test_controller_binding_(this) {
+      dev_controller_binding_(this) {
   if (!is_in_process_)
     Screen::SetScreenInstance(screen_.get());
 }
@@ -60,8 +60,8 @@ void ScreenManagerForwarding::AddInterfaces(
   registry->AddInterface<mojom::NativeDisplayDelegate>(
       base::Bind(&ScreenManagerForwarding::BindNativeDisplayDelegateRequest,
                  base::Unretained(this)));
-  registry->AddInterface<mojom::TestDisplayController>(
-      base::Bind(&ScreenManagerForwarding::BindTestDisplayControllerRequest,
+  registry->AddInterface<mojom::DevDisplayController>(
+      base::Bind(&ScreenManagerForwarding::BindDevDisplayControllerRequest,
                  base::Unretained(this)));
 }
 
@@ -235,11 +235,11 @@ void ScreenManagerForwarding::BindNativeDisplayDelegateRequest(
   binding_.Bind(std::move(request));
 }
 
-void ScreenManagerForwarding::BindTestDisplayControllerRequest(
-    mojom::TestDisplayControllerRequest request,
+void ScreenManagerForwarding::BindDevDisplayControllerRequest(
+    mojom::DevDisplayControllerRequest request,
     const service_manager::BindSourceInfo& source_info) {
-  DCHECK(!test_controller_binding_.is_bound());
-  test_controller_binding_.Bind(std::move(request));
+  DCHECK(!dev_controller_binding_.is_bound());
+  dev_controller_binding_.Bind(std::move(request));
 }
 
 void ScreenManagerForwarding::ForwardGetDisplays(

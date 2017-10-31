@@ -27,7 +27,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
   // should be moved to accelerator_controller.cc/h. See
   // http://crbug.com/612331.
   switch (action) {
-    case DEV_ADD_REMOVE_DISPLAY:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
@@ -59,7 +58,6 @@ bool AcceleratorControllerDelegateMus::CanPerformAction(
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
   switch (action) {
-    case DEV_ADD_REMOVE_DISPLAY:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
     default:
@@ -72,14 +70,6 @@ void AcceleratorControllerDelegateMus::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   switch (action) {
-    case DEV_ADD_REMOVE_DISPLAY: {
-      if (!test_display_controller_) {
-        window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
-                                                    &test_display_controller_);
-      }
-      test_display_controller_->ToggleAddRemoveDisplay();
-      break;
-    }
     case TOUCH_HUD_PROJECTION_TOGGLE: {
       mash::mojom::LaunchablePtr launchable;
       window_manager_->connector()->BindInterface("touch_hud", &launchable);

@@ -36,8 +36,8 @@
         "display_output_protection": [
           "display::mojom::OutputProtection"
         ],
-        "display_test": [
-          "display::mojom::TestDisplayController"
+        "display_dev": [
+          "display::mojom::DevDisplayController"
         ],
         "gpu_client": [
           "ui::mojom::Gpu"

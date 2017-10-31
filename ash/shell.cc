@@ -167,6 +167,7 @@
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/chromeos/touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/mojo/dev_display_controller.mojom.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/event_target_iterator.h"
@@ -928,24 +929,35 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_->AddObserver(projecting_observer_.get());
   AddShellObserver(projecting_observer_.get());
 
-  if (!display_initialized &&
-      (config != Config::CLASSIC || chromeos::IsRunningAsSystemCompositor())) {
-    display_change_observer_ = std::make_unique<display::DisplayChangeObserver>(
-        display_configurator_.get(), display_manager_.get());
+  if (!display_initialized) {
+    if (config != Config::CLASSIC && !chromeos::IsRunningAsSystemCompositor()) {
+      display::mojom::DevDisplayControllerPtr controller;
+      shell_delegate_->GetShellConnector()->BindInterface(
+          ui::mojom::kServiceName, &controller);
+      display_manager_->SetDevDisplayController(std::move(controller));
+    }
 
-    shutdown_observer_ =
-        std::make_unique<ShutdownObserver>(display_configurator_.get());
+    if (config != Config::CLASSIC || chromeos::IsRunningAsSystemCompositor()) {
+      display_change_observer_ =
+          std::make_unique<display::DisplayChangeObserver>(
+              display_configurator_.get(), display_manager_.get());
 
-    // Register |display_change_observer_| first so that the rest of
-    // observer gets invoked after the root windows are configured.
-    display_configurator_->AddObserver(display_change_observer_.get());
-    display_error_observer_.reset(new DisplayErrorObserver());
-    display_configurator_->AddObserver(display_error_observer_.get());
-    display_configurator_->set_state_controller(display_change_observer_.get());
-    display_configurator_->set_mirroring_controller(display_manager_.get());
-    display_configurator_->ForceInitialConfigure();
-    display_initialized = true;
+      shutdown_observer_ =
+          std::make_unique<ShutdownObserver>(display_configurator_.get());
+
+      // Register |display_change_observer_| first so that the rest of
+      // observer gets invoked after the root windows are configured.
+      display_configurator_->AddObserver(display_change_observer_.get());
+      display_error_observer_.reset(new DisplayErrorObserver());
+      display_configurator_->AddObserver(display_error_observer_.get());
+      display_configurator_->set_state_controller(
+          display_change_observer_.get());
+      display_configurator_->set_mirroring_controller(display_manager_.get());
+      display_configurator_->ForceInitialConfigure();
+      display_initialized = true;
+    }
   }
+
   display_color_manager_ =
       std::make_unique<DisplayColorManager>(display_configurator_.get());
 

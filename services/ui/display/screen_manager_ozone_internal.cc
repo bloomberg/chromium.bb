@@ -112,8 +112,8 @@ void ScreenManagerOzoneInternal::AddInterfaces(
   registry->AddInterface<mojom::OutputProtection>(
       base::Bind(&ScreenManagerOzoneInternal::BindOutputProtectionRequest,
                  base::Unretained(this)));
-  registry->AddInterface<mojom::TestDisplayController>(
-      base::Bind(&ScreenManagerOzoneInternal::BindTestDisplayControllerRequest,
+  registry->AddInterface<mojom::DevDisplayController>(
+      base::Bind(&ScreenManagerOzoneInternal::BindDevDisplayControllerRequest,
                  base::Unretained(this)));
 }
 
@@ -344,8 +344,8 @@ void ScreenManagerOzoneInternal::BindOutputProtectionRequest(
       std::move(request));
 }
 
-void ScreenManagerOzoneInternal::BindTestDisplayControllerRequest(
-    mojom::TestDisplayControllerRequest request,
+void ScreenManagerOzoneInternal::BindDevDisplayControllerRequest(
+    mojom::DevDisplayControllerRequest request,
     const service_manager::BindSourceInfo& source_info) {
   test_bindings_.AddBinding(this, std::move(request));
 }

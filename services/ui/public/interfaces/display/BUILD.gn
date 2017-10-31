@@ -8,7 +8,6 @@ mojom("display") {
   sources = [
     "display_controller.mojom",
     "output_protection.mojom",
-    "test_display_controller.mojom",
   ]
 
   public_deps = [
