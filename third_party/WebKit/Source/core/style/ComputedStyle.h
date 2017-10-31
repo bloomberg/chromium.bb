@@ -982,7 +982,8 @@ class ComputedStyle : public ComputedStyleBase,
 
   // FIXME: Remove letter-spacing/word-spacing and replace them with respective
   // FontBuilder calls.  letter-spacing
-  static float InitialLetterWordSpacing() { return 0.0f; }
+  static float InitialWordSpacing() { return 0.0f; }
+  static float InitialLetterSpacing() { return 0.0f; }
   float LetterSpacing() const;
   void SetLetterSpacing(float);
 
