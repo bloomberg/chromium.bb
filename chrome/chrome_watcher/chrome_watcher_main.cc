@@ -193,9 +193,15 @@ void InitChromeWatcherLogging(const base::CommandLine& command_line,
     return;
   }
 
-  // Default to showing error dialogs.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoErrorDialogs))
+  // We call running in unattended mode "headless", and allow headless mode to
+  // be configured either by the Environment Variable or by the Command Line
+  // Switch. This is for automated test purposes.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  const bool is_headless = env->HasVar(env_vars::kHeadless) ||
+                           command_line.HasSwitch(switches::kNoErrorDialogs);
+
+  // Show fatal log messages in a dialog in debug builds when not headless.
+  if (!is_headless)
     SetShowErrorDialogs(true);
 
   // we want process and thread IDs because we have a lot of things running
@@ -204,13 +210,8 @@ void InitChromeWatcherLogging(const base::CommandLine& command_line,
               true,    // enable_timestamp
               false);  // enable_tickcount
 
-  // We call running in unattended mode "headless", and allow
-  // headless mode to be configured either by the Environment
-  // Variable or by the Command Line Switch.  This is for
-  // automated test purposes.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasVar(env_vars::kHeadless) ||
-      command_line.HasSwitch(switches::kNoErrorDialogs))
+  // Suppress system error dialogs when headless.
+  if (is_headless)
     SuppressDialogs();
 
   // Use a minimum log level if the command line asks for one. Ignore this
