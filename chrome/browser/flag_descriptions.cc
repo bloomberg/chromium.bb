@@ -2737,6 +2737,10 @@ const char kVrShellExperimentalRenderingDescription[] =
     "Turns on experimental rendering features for Chrome VR, like power saving "
     "rendering modes.";
 
+const char kVrLaunchIntentName[] = "Enable VR intents";
+const char kVrLaunchIntentDescription[] =
+    "Allow intents to launch Chrome in VR mode.";
+
 const char kWebVrAutopresentName[] = "Enable WebVr auto presentation";
 const char kWebVrAutopresentDescription[] =
     "Allows auto presentation of WebVr content from trusted first-party apps";

@@ -21,8 +21,9 @@ import org.chromium.chrome.browser.util.IntentUtils;
 public class VrIntentUtils {
     private static final String DAYDREAM_HOME_PACKAGE = "com.google.android.vr.home";
     // The Daydream Home app adds this extra to auto-present intents.
-    private static final String AUTOPRESENT_WEVBVR_EXTRA = "browser.vr.AUTOPRESENT_WEBVR";
+    public static final String AUTOPRESENT_WEVBVR_EXTRA = "browser.vr.AUTOPRESENT_WEBVR";
     public static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
+    public static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
 
     static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr_shell.VR_FRE";
     static final String VR_FRE_CALLER_INTENT_EXTRA =
@@ -91,11 +92,17 @@ public class VrIntentUtils {
      * @return Whether or not the given intent is a VR-specific intent.
      */
     public static boolean isVrIntent(Intent intent) {
+        if (intent == null) return false;
         // For simplicity, we only return true here if VR is enabled on the platform and this intent
         // is not fired from a recent apps page. The latter is there so that we don't enter VR mode
         // when we're being resumed from the recent apps in 2D mode.
+        // Note that Daydream removes the Daydream category for deep-links (for no real reason). In
+        // addition to the category, DAYDREAM_VR_EXTRA tells us that this intent is coming directly
+        // from VR.
         boolean canHandleIntent = VrShellDelegate.isVrEnabled() && !launchedFromRecentApps(intent);
-        return IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false) && canHandleIntent;
+        return (intent.hasCategory(DAYDREAM_CATEGORY)
+                       || IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false))
+                && canHandleIntent;
     }
 
     /**
@@ -104,7 +111,9 @@ public class VrIntentUtils {
     public static boolean isCustomTabVrIntent(Intent intent) {
         // TODO(crbug.com/719661): Currently, only Daydream intents open in a CustomTab. We should
         // probably change this once we figure out core CCT flows in VR.
-        return getHandlerInstance().isTrustedDaydreamIntent(intent);
+        if (intent == null) return false;
+        return IntentHandler.getUrlFromIntent(intent) != null
+                && getHandlerInstance().isTrustedDaydreamIntent(intent);
     }
 
     /**
@@ -156,5 +165,15 @@ public class VrIntentUtils {
      */
     /* package */ static boolean launchedFromRecentApps(Intent intent) {
         return ((intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0);
+    }
+
+    /**
+     * Removes VR specific extras from the given intent to make it a non-VR intent.
+     */
+    /* package */ static void removeVrExtras(Intent intent) {
+        if (intent == null) return;
+        intent.removeExtra(DAYDREAM_VR_EXTRA);
+        intent.removeCategory(DAYDREAM_CATEGORY);
+        assert !isVrIntent(intent);
     }
 }
