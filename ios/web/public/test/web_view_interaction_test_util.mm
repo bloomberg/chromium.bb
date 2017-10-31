@@ -19,6 +19,9 @@
 #endif
 
 using web::NavigationManager;
+using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForUIElementTimeout;
+using testing::kWaitForJSCompletionTimeout;
 
 namespace web {
 namespace test {
@@ -40,10 +43,9 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
                                  did_finish = true;
                                }));
 
-  bool completed = testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
-        return did_finish;
-      });
+  bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return did_finish;
+  });
   if (!completed) {
     return nullptr;
   }
@@ -86,22 +88,21 @@ CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
 
   __block base::DictionaryValue const* rect = nullptr;
 
-  bool found =
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-        std::unique_ptr<base::Value> value =
-            ExecuteJavaScript(web_state, kGetBoundsScript);
-        base::DictionaryValue* dictionary = nullptr;
-        if (value && value->GetAsDictionary(&dictionary)) {
-          std::string error;
-          if (dictionary->GetString("error", &error)) {
-            DLOG(ERROR) << "Error getting rect: " << error << ", retrying..";
-          } else {
-            rect = dictionary->DeepCopy();
-            return true;
-          }
-        }
-        return false;
-      });
+  bool found = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    std::unique_ptr<base::Value> value =
+        ExecuteJavaScript(web_state, kGetBoundsScript);
+    base::DictionaryValue* dictionary = nullptr;
+    if (value && value->GetAsDictionary(&dictionary)) {
+      std::string error;
+      if (dictionary->GetString("error", &error)) {
+        DLOG(ERROR) << "Error getting rect: " << error << ", retrying..";
+      } else {
+        rect = dictionary->DeepCopy();
+        return true;
+      }
+    }
+    return false;
+  });
 
   if (!found)
     return CGRectNull;
@@ -159,11 +160,11 @@ bool RunActionOnWebViewElementWithId(web::WebState* web_state,
                     element_found = [result boolValue];
                   }];
 
-  testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
+  bool js_finished = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return did_complete;
   });
 
-  return element_found;
+  return js_finished && element_found;
 }
 
 bool TapWebViewElementWithId(web::WebState* web_state,

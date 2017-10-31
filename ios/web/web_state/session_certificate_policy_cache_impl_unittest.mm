@@ -21,6 +21,9 @@
 #error "This file requires ARC support."
 #endif
 
+using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForJSCompletionTimeout;
+
 namespace {
 // Synchronously checks |cache| for the specified cert and returns the judgment.
 web::CertPolicy::Judgment GetJudgmenet(
@@ -31,17 +34,15 @@ web::CertPolicy::Judgment GetJudgmenet(
   // Post a task to the IO thread and wait for a reply
   __block web::CertPolicy::Judgment judgement =
       web::CertPolicy::Judgment::UNKNOWN;
-  __block bool io_thread_has_run = false;
-  web::WebThread::PostTaskAndReply(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
-        judgement = cache->QueryPolicy(cert.get(), host, status);
-      }),
-      base::BindBlockArc(^{
-        io_thread_has_run = true;
-      }));
-  testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
-    return io_thread_has_run;
-  });
+  __block bool completed = false;
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+                             completed = true;
+                             judgement =
+                                 cache->QueryPolicy(cert.get(), host, status);
+                           }));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(1.0, ^{
+    return completed;
+  }));
   return judgement;
 }
 
