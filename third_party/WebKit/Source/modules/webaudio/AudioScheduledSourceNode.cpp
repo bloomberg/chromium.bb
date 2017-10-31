@@ -231,16 +231,16 @@ void AudioScheduledSourceHandler::FinishWithoutOnEnded() {
 void AudioScheduledSourceHandler::Finish() {
   FinishWithoutOnEnded();
 
-  if (Context()->GetExecutionContext()) {
-    task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&AudioScheduledSourceHandler::NotifyEnded,
-                        WrapRefCounted(this)));
-  }
+  task_runner_->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&AudioScheduledSourceHandler::NotifyEnded,
+                      WrapRefCounted(this)));
 }
 
 void AudioScheduledSourceHandler::NotifyEnded() {
   DCHECK(IsMainThread());
+  if (!Context() || !Context()->GetExecutionContext())
+    return;
   if (GetNode())
     GetNode()->DispatchEvent(Event::Create(EventTypeNames::ended));
 }

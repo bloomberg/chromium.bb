@@ -213,7 +213,7 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
       // We're late in handling the previous request. The main thread must be
       // very busy.  The best we can do is clear out the buffer ourself here.
       output_buffer->Zero();
-    } else if (Context()->GetExecutionContext()) {
+    } else {
       // With the realtime context, execute the script code asynchronously
       // and do not wait.
       if (Context()->HasRealtimeConstraint()) {
@@ -249,6 +249,9 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
 void ScriptProcessorHandler::FireProcessEvent(unsigned double_buffer_index) {
   DCHECK(IsMainThread());
 
+  if (!Context() || !Context()->GetExecutionContext())
+    return;
+
   DCHECK_LT(double_buffer_index, 2u);
   if (double_buffer_index > 1)
     return;
@@ -260,7 +263,7 @@ void ScriptProcessorHandler::FireProcessEvent(unsigned double_buffer_index) {
     return;
 
   // Avoid firing the event if the document has already gone away.
-  if (GetNode() && Context() && Context()->GetExecutionContext()) {
+  if (GetNode()) {
     // This synchronizes with process().
     MutexLocker process_locker(process_event_lock_);
 
@@ -282,6 +285,9 @@ void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
     WaitableEvent* waitable_event) {
   DCHECK(IsMainThread());
 
+  if (!Context() || !Context()->GetExecutionContext())
+    return;
+
   DCHECK_LT(double_buffer_index, 2u);
   if (double_buffer_index > 1) {
     waitable_event->Signal();
@@ -296,7 +302,7 @@ void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
     return;
   }
 
-  if (GetNode() && Context() && Context()->GetExecutionContext()) {
+  if (GetNode()) {
     // We do not need a process lock here because the offline render thread
     // is locked by the waitable event.
     double playback_time = (Context()->CurrentSampleFrame() + buffer_size_) /
