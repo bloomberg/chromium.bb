@@ -718,11 +718,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
 
   if (ShouldDisableAcceleratedVideoDecode(command_line))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-
-#if defined(USE_AURA)
-  if (!CanUseGpuBrowserCompositor())
-    command_line->AppendSwitch(switches::kDisableGpuCompositing);
-#endif
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(

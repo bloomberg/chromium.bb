@@ -76,6 +76,8 @@ viz_component("service") {
     "display/texture_mailbox_deleter.h",
     "display_embedder/buffer_queue.cc",
     "display_embedder/buffer_queue.h",
+    "display_embedder/compositing_mode_reporter_impl.cc",
+    "display_embedder/compositing_mode_reporter_impl.h",
     "display_embedder/compositor_overlay_candidate_validator.h",
     "display_embedder/display_output_surface.cc",
     "display_embedder/display_output_surface.h",

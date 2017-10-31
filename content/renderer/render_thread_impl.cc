@@ -635,7 +635,8 @@ RenderThreadImpl::RenderThreadImpl(
       renderer_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this),
-      client_id_(1) {
+      client_id_(1),
+      compositing_mode_watcher_binding_(this) {
   Init(resource_task_queue);
 }
 
@@ -652,7 +653,8 @@ RenderThreadImpl::RenderThreadImpl(
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       is_scroll_animator_enabled_(false),
-      renderer_binding_(this) {
+      renderer_binding_(this),
+      compositing_mode_watcher_binding_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRendererClientId));
@@ -876,6 +878,9 @@ void RenderThreadImpl::Init(
 #endif
   }
 
+  if (command_line.HasSwitch(switches::kDisableGpuCompositing))
+    is_gpu_compositing_disabled_ = true;
+
   is_gpu_rasterization_forced_ =
       command_line.HasSwitch(switches::kForceGpuRasterization);
   is_async_worker_context_enabled_ =
@@ -994,10 +999,22 @@ void RenderThreadImpl::Init(
 
   GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                 mojo::MakeRequest(&frame_sink_provider_));
+
+  if (!is_gpu_compositing_disabled_) {
+    GetConnector()->BindInterface(
+        mojom::kBrowserServiceName,
+        mojo::MakeRequest(&compositing_mode_reporter_));
+
+    // Make |this| a CompositingModeWatcher for the
+    // |compositing_mode_reporter_|.
+    viz::mojom::CompositingModeWatcherPtr watcher_ptr;
+    compositing_mode_watcher_binding_.Bind(mojo::MakeRequest(&watcher_ptr));
+    compositing_mode_reporter_->AddCompositingModeWatcher(
+        std::move(watcher_ptr));
+  }
 }
 
-RenderThreadImpl::~RenderThreadImpl() {
-}
+RenderThreadImpl::~RenderThreadImpl() = default;
 
 void RenderThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
@@ -1505,14 +1522,11 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   const bool enable_video_accelerator =
       !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
   const bool enable_gpu_memory_buffer_video_frames =
+      !is_gpu_compositing_disabled_ &&
 #if defined(OS_MACOSX) || defined(OS_LINUX)
-      !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames) &&
-      !cmd_line->HasSwitch(switches::kDisableGpuCompositing) &&
-      !gpu_channel_host->gpu_info().software_rendering;
+      !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 #elif defined(OS_WIN)
       !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames) &&
-      !cmd_line->HasSwitch(switches::kDisableGpuCompositing) &&
-      !gpu_channel_host->gpu_info().software_rendering &&
       (cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames) ||
        gpu_channel_host->gpu_info().supports_overlays);
 #else
@@ -1971,7 +1985,19 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
           1024);
 }
 
-scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
+void RenderThreadImpl::CompositingModeFallbackToSoftware() {
+  if (gpu_channel_) {
+    // TODO(danakj): Tell all clients of the compositor. We should send a more
+    // scoped message than this.
+    gpu_channel_->DestroyChannel();
+    gpu_channel_ = nullptr;
+  }
+
+  is_gpu_compositing_disabled_ = true;
+}
+
+scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync(
+    bool* connection_error) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
   if (gpu_channel_) {
@@ -1985,22 +2011,19 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
     gpu_channel_ = nullptr;
   }
 
-  gpu_channel_ = gpu_->EstablishGpuChannelSync();
+  gpu_channel_ = gpu_->EstablishGpuChannelSync(connection_error);
   if (gpu_channel_)
     GetContentClient()->SetGpuInfo(gpu_channel_->gpu_info());
   return gpu_channel_;
 }
 
 void RenderThreadImpl::RequestNewLayerTreeFrameSink(
-    bool use_software,
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     const LayerTreeFrameSinkCallback& callback) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableGpuCompositing))
-    use_software = true;
 
   viz::ClientLayerTreeFrameSink::InitParams params;
   params.enable_surface_synchronization =
@@ -2019,12 +2042,18 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 
 #if defined(USE_AURA)
-  if (!use_software && IsRunningInMash()) {
+  if (IsRunningInMash()) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
       callback.Run(nullptr);
       return;
     }
-    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
+    bool connection_error = false;
+    scoped_refptr<gpu::GpuChannelHost> channel =
+        EstablishGpuChannelSync(&connection_error);
+    // If the connection to the host is gone, then don't bother running the
+    // |callback| to retry.
+    if (connection_error)
+      return;
     // If the channel could not be established correctly, then return null. This
     // would cause the compositor to wait and try again at a later time.
     if (!channel) {
@@ -2057,29 +2086,27 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     }
   }
 
-  // Create a gpu process channel and verify we want to use GPU compositing
-  // before creating any context providers.
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
-  if (!use_software) {
-    gpu_channel_host = EstablishGpuChannelSync();
-    if (!gpu_channel_host) {
-      // Cause the compositor to wait and try again.
-      callback.Run(nullptr);
-      return;
-    }
-    // We may get a valid channel, but with a software renderer. In that case,
-    // disable GPU compositing.
-    if (gpu_channel_host->gpu_info().software_rendering)
-      use_software = true;
-  }
-
-  if (use_software) {
+  if (is_gpu_compositing_disabled_) {
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                           std::move(client));
     params.shared_bitmap_manager = shared_bitmap_manager();
     callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, &params));
+    return;
+  }
+
+  bool connection_error = false;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+      EstablishGpuChannelSync(&connection_error);
+  // If the connection to the host is gone, then don't bother running the
+  // |callback| to retry.
+  if (connection_error)
+    return;
+  if (!gpu_channel_host) {
+    // Wait and try again. We may hear that the compositing mode has switched
+    // to software in the meantime.
+    callback.Run(nullptr);
     return;
   }
 

@@ -52,7 +52,8 @@ class Gpu : public gpu::GpuChannelHostFactory,
   // gpu::GpuChannelEstablishFactory:
   void EstablishGpuChannel(
       const gpu::GpuChannelEstablishedCallback& callback) override;
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(
+      bool* connection_error) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:

@@ -80,7 +80,7 @@ scoped_refptr<viz::ContextProvider>
 MusContextFactory::SharedMainThreadContextProvider() {
   if (!shared_main_thread_context_provider_) {
     scoped_refptr<gpu::GpuChannelHost> gpu_channel =
-        gpu_->EstablishGpuChannelSync();
+        gpu_->EstablishGpuChannelSync(nullptr);
     shared_main_thread_context_provider_ =
         gpu_->CreateContextProvider(std::move(gpu_channel));
     if (shared_main_thread_context_provider_->BindToCurrentThread() !=

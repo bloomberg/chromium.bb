@@ -58,6 +58,8 @@ class WebGraphicsContext3DProvider {
 
   // Returns true if the context is driven by software emulation of GL. In
   // this scenario, the compositor would not be using GPU.
+  // TODO(danakj): Make this IsSoftwareCompositing() instead, based on the
+  // CompositingModeWatcher.
   virtual bool IsSoftwareRendering() const = 0;
 
   virtual void SetLostContextCallback(const base::Closure&) = 0;
