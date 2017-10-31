@@ -100,19 +100,10 @@ void Mojo::bindInterface(ScriptState* script_state,
     return;
   }
 
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  if (context->IsWorkerGlobalScope()) {
-    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
-    thread->GetInterfaceProvider().GetInterface(name, std::move(handle));
-    return;
+  if (auto* interface_provider =
+          ExecutionContext::From(script_state)->GetInterfaceProvider()) {
+    interface_provider->GetInterface(name, std::move(handle));
   }
-
-  LocalFrame* frame = ToDocument(context)->GetFrame();
-  if (!frame)
-    return;  // |handle| will be destroyed, closing the pipe.
-
-  frame->Client()->GetInterfaceProvider()->GetInterface(name,
-                                                        std::move(handle));
 }
 
 }  // namespace blink

@@ -34,13 +34,8 @@ FaceDetector::FaceDetector(ExecutionContext* context,
 
   shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
   auto request = mojo::MakeRequest(&provider);
-  if (context->IsDocument()) {
-    LocalFrame* frame = ToDocument(context)->GetFrame();
-    if (frame)
-      frame->GetInterfaceProvider().GetInterface(std::move(request));
-  } else {
-    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
-    thread->GetInterfaceProvider().GetInterface(std::move(request));
+  if (auto* interface_provider = context->GetInterfaceProvider()) {
+    interface_provider->GetInterface(std::move(request));
   }
   provider->CreateFaceDetection(mojo::MakeRequest(&face_service_),
                                 std::move(face_detector_options));

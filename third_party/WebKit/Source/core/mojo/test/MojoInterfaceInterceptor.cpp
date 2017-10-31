@@ -153,14 +153,7 @@ MojoInterfaceInterceptor::GetInterfaceProvider() const {
   if (!context)
     return nullptr;
 
-  if (context->IsWorkerGlobalScope())
-    return &ToWorkerGlobalScope(context)->GetThread()->GetInterfaceProvider();
-
-  LocalFrame* frame = ToDocument(context)->GetFrame();
-  if (!frame)
-    return nullptr;
-
-  return frame->Client()->GetInterfaceProvider();
+  return context->GetInterfaceProvider();
 }
 
 void MojoInterfaceInterceptor::OnInterfaceRequest(

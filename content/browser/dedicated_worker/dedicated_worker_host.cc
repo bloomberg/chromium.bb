@@ -7,6 +7,7 @@
 
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
 #include "content/browser/interface_provider_filtering.h"
+#include "content/browser/worker_interface_binders.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -32,7 +33,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     if (!process)
       return;
 
-    // TODO(sammc): Dispatch interface requests.
+    BindWorkerInterface(interface_name, std::move(interface_pipe), process,
+                        origin_);
   }
 
  private:

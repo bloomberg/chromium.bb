@@ -7,7 +7,6 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
-          "blink::mojom::BudgetService",
           "chrome::mojom::CacheStatsRecorder",
           "chrome::mojom::NetBenchmarking",
           "extensions::StashService",
@@ -89,6 +88,27 @@
           "mojom::PluginsPageHandler",
           "mojom::SiteEngagementDetailsProvider",
           "mojom::UsbInternalsPageHandler"
+        ]
+      }
+    },
+    "navigation:dedicated_worker": {
+      "provides": {
+        "renderer": [
+          "blink::mojom::BudgetService"
+        ]
+      }
+    },
+    "navigation:service_worker": {
+      "provides": {
+        "renderer": [
+          "blink::mojom::BudgetService"
+        ]
+      }
+    },
+    "navigation:shared_worker": {
+      "provides": {
+        "renderer": [
+          "blink::mojom::BudgetService"
         ]
       }
     }

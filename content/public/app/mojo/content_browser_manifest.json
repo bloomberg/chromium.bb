@@ -50,10 +50,7 @@
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
           "metrics::mojom::SingleSampleMetricsProvider",
           "payments::mojom::PaymentManager",
-          "shape_detection::mojom::BarcodeDetection",
-          "shape_detection::mojom::FaceDetectionProvider",
           "resource_coordinator::mojom::CoordinationUnit",
-          "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu",
           "viz::mojom::SharedBitmapAllocationNotifier"
         ],
@@ -175,18 +172,27 @@
     "navigation:dedicated_worker": {
       "provides": {
         "renderer": [
+          "shape_detection::mojom::BarcodeDetection",
+          "shape_detection::mojom::FaceDetectionProvider",
+          "shape_detection::mojom::TextDetection"
         ]
       }
     },
     "navigation:service_worker": {
       "provides": {
         "renderer": [
+          "shape_detection::mojom::BarcodeDetection",
+          "shape_detection::mojom::FaceDetectionProvider",
+          "shape_detection::mojom::TextDetection"
         ]
       }
     },
     "navigation:shared_worker": {
       "provides": {
         "renderer": [
+          "shape_detection::mojom::BarcodeDetection",
+          "shape_detection::mojom::FaceDetectionProvider",
+          "shape_detection::mojom::TextDetection"
         ]
       }
     }
