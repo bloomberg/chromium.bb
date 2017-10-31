@@ -33,7 +33,7 @@ class ServiceWorkerContextClient;
 // This class deletes itself when the worker stops (or if start failed). The
 // ownership graph is a cycle like this:
 // EmbeddedWorkerInstanceClientImpl -(owns)-> WorkerWrapper -(owns)->
-// WebEmbeddedWorkerInstance -(owns)-> ServiceWorkerContextClient -(owns)->
+// WebEmbeddedWorkerImpl -(owns)-> ServiceWorkerContextClient -(owns)->
 // EmbeddedWorkerInstanceClientImpl. Therefore, an instance can delete itself by
 // releasing its WorkerWrapper.
 //
@@ -100,7 +100,7 @@ class EmbeddedWorkerInstanceClientImpl
   void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                            const std::string& message) override;
 
-  // Handler of connection error bound to |binding_|
+  // Handler of connection error bound to |binding_|.
   void OnError();
 
   std::unique_ptr<WorkerWrapper> StartWorkerContext(

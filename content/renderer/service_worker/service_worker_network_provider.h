@@ -33,16 +33,22 @@ struct RequestNavigationParams;
 class ServiceWorkerProviderContext;
 class ChildURLLoaderFactoryGetter;
 
-// A unique provider_id is generated for each instance.
-// Instantiated prior to the main resource load being started and remains
-// allocated until after the last subresource load has occurred.
-// This is used to track the lifetime of a Document to create
-// and dispose the ServiceWorkerProviderHost in the browser process
-// to match its lifetime. Each request coming from the Document is
-// tagged with this id in willSendRequest.
+// ServiceWorkerNetworkProvider enables the browser process to recognize
+// resource requests from Blink that should be handled by service worker
+// machinery rather than the usual network stack.
 //
-// Basically, it's a scoped integer that sends an ipc upon construction
-// and destruction.
+// All requests associated with a network provider are tagged with its
+// |provider_id| (from ServiceWorkerProviderContext). The browser
+// process can then route the request to this provider's corresponding
+// ServiceWorkerProviderHost.
+//
+// It is created for both service worker clients and execution contexts. It is
+// instantiated prior to the main resource load being started and remains
+// allocated until after the last subresource load has occurred. It is owned by
+// the appropriate DocumentLoader for the provider (i.e., the loader for a
+// document, or the shadow page's loader for a shared worker or service worker).
+// Each request coming from the DocumentLoader is tagged with the provider_id in
+// WillSendRequest.
 class CONTENT_EXPORT ServiceWorkerNetworkProvider {
  public:
   // Creates a ServiceWorkerNetworkProvider for navigation and wraps it

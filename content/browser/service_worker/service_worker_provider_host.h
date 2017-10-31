@@ -219,8 +219,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // listening to it.
   void DisassociateRegistration();
 
-  // Returns a handler for a request, the handler may return nullptr if
-  // the request doesn't require special handling.
+  // Returns a handler for a request. May return nullptr if the request doesn't
+  // require special handling.
   std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       network::mojom::FetchRequestMode request_mode,
       network::mojom::FetchCredentialsMode credentials_mode,
