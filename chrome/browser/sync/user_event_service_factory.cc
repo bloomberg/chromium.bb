@@ -52,7 +52,7 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
 
   syncer::ModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-          syncer::USER_EVENTS, profile->GetPath());
+          profile->GetPath());
   syncer::ModelTypeSyncBridge::ChangeProcessorFactory processor_factory =
       base::BindRepeating(&syncer::ModelTypeChangeProcessor::Create,
                           base::BindRepeating(&syncer::ReportUnrecoverableError,

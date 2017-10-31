@@ -49,6 +49,7 @@ ModelTypeStoreFactory ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
 // static
 void ModelTypeStoreTestUtil::MoveStoreToCallback(
     std::unique_ptr<ModelTypeStore> store,
+    ModelType type,
     const ModelTypeStore::InitCallback& callback) {
   ASSERT_TRUE(store);
   callback.Run(Result::SUCCESS, std::move(store));

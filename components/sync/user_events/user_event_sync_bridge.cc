@@ -75,6 +75,7 @@ UserEventSyncBridge::UserEventSyncBridge(
       global_id_mapper_(global_id_mapper) {
   DCHECK(global_id_mapper_);
   store_factory.Run(
+      USER_EVENTS,
       base::Bind(&UserEventSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
   global_id_mapper_->AddGlobalIdChangeObserver(base::Bind(
       &UserEventSyncBridge::HandleGlobalIdChange, base::AsWeakPtr(this)));

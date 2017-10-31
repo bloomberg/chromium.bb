@@ -101,6 +101,7 @@ DeviceInfoSyncBridge::DeviceInfoSyncBridge(
   }
 
   store_factory.Run(
+      DEVICE_INFO,
       base::Bind(&DeviceInfoSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
 }
 

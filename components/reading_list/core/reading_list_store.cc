@@ -41,6 +41,7 @@ void ReadingListStore::SetReadingListModel(ReadingListModel* model,
   delegate_ = delegate;
   clock_ = clock;
   create_store_callback_.Run(
+      syncer::READING_LIST,
       base::Bind(&ReadingListStore::OnStoreCreated, base::AsWeakPtr(this)));
 }
 

@@ -122,10 +122,9 @@ class ModelTypeStore {
 
   // CreateStore takes |path|, and will run blocking calls on a task runner
   // scoped to the given path. Tests likely don't want to use this method.
-  static void CreateStore(
-      ModelType type,
-      const std::string& path,
-      const InitCallback& callback);
+  static void CreateStore(const std::string& path,
+                          ModelType type,
+                          const InitCallback& callback);
   // Creates store object backed by in-memory leveldb database, gets its task
   // runner from MessageLoop::task_runner(), and should only be used in tests.
   static void CreateInMemoryStoreForTest(ModelType type,
@@ -183,7 +182,7 @@ class ModelTypeStore {
 
 // Typedef for a store factory that has all params bound except InitCallback.
 using ModelTypeStoreFactory =
-    base::Callback<void(const ModelTypeStore::InitCallback&)>;
+    base::Callback<void(ModelType type, const ModelTypeStore::InitCallback&)>;
 
 }  // namespace syncer
 

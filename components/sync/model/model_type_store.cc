@@ -17,10 +17,9 @@ void ModelTypeStore::CreateInMemoryStoreForTest(ModelType type,
 }
 
 // static
-void ModelTypeStore::CreateStore(
-    ModelType type,
-    const std::string& path,
-    const InitCallback& callback) {
+void ModelTypeStore::CreateStore(const std::string& path,
+                                 ModelType type,
+                                 const InitCallback& callback) {
   ModelTypeStoreImpl::CreateStore(type, path, callback);
 }
 

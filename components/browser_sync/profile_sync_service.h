@@ -237,6 +237,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
+    syncer::ModelTypeStoreFactory model_type_store_factory;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -553,10 +554,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   void SetPlatformSyncAllowedProvider(
       const PlatformSyncAllowedProvider& platform_sync_allowed_provider);
 
-  // Returns a function for |type| that will create a ModelTypeStore that shares
+  // Returns a function  that will create a ModelTypeStore that shares
   // the sync LevelDB backend. |base_path| should be set to profile path.
   static syncer::ModelTypeStoreFactory GetModelTypeStoreFactory(
-      syncer::ModelType type,
       const base::FilePath& base_path);
 
   // Needed to test whether the directory is deleted properly.
@@ -881,6 +881,12 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // An object that lets us check whether sync is currently allowed on this
   // platform.
   PlatformSyncAllowedProvider platform_sync_allowed_provider_;
+
+  // The factory used to initialize the ModelTypeStore passed to
+  // sync bridges created by the ProfileSyncService. The default factory
+  // creates an on disk leveldb-backed ModelTypeStore; one might override this
+  // default to, e.g., use an in-memory db for unit tests.
+  syncer::ModelTypeStoreFactory model_type_store_factory_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;

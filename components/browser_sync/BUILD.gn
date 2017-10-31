@@ -122,6 +122,7 @@ static_library("test_support") {
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_engine",
+    "//components/sync:test_support_model",
     "//components/sync_preferences:test_support",
     "//components/sync_sessions:test_support",
     "//google_apis",

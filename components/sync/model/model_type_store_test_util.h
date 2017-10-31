@@ -25,6 +25,7 @@ class ModelTypeStoreTestUtil {
   // Can be curried with an owned store object to allow passing an already
   // created store to a service constructor in a unit test.
   static void MoveStoreToCallback(std::unique_ptr<ModelTypeStore> store,
+                                  ModelType type,
                                   const ModelTypeStore::InitCallback& callback);
 };
 

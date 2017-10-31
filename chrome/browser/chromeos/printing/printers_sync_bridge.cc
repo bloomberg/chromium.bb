@@ -53,8 +53,8 @@ class PrintersSyncBridge::StoreProxy {
   StoreProxy(PrintersSyncBridge* owner,
              const syncer::ModelTypeStoreFactory& callback)
       : owner_(owner), weak_ptr_factory_(this) {
-    callback.Run(base::Bind(&StoreProxy::OnStoreCreated,
-                            weak_ptr_factory_.GetWeakPtr()));
+    callback.Run(syncer::PRINTERS, base::Bind(&StoreProxy::OnStoreCreated,
+                                              weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Returns true if the store has been initialized.
