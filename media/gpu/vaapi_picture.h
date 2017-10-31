@@ -84,10 +84,10 @@ class VaapiPicture {
   const uint32_t texture_id_;
   const uint32_t client_texture_id_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
  private:
   const int32_t picture_buffer_id_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiPicture);
 };

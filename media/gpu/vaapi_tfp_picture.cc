@@ -31,9 +31,12 @@ VaapiTFPPicture::VaapiTFPPicture(
                    texture_id,
                    client_texture_id),
       x_display_(gfx::GetXDisplay()),
-      x_pixmap_(0) {}
+      x_pixmap_(0) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 VaapiTFPPicture::~VaapiTFPPicture() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (glx_image_.get() && make_context_current_cb_.Run()) {
     glx_image_->ReleaseTexImage(GL_TEXTURE_2D);
     DCHECK_EQ(glGetError(), static_cast<GLenum>(GL_NO_ERROR));
@@ -44,6 +47,7 @@ VaapiTFPPicture::~VaapiTFPPicture() {
 }
 
 bool VaapiTFPPicture::Initialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(x_pixmap_);
 
   if (texture_id_ != 0 && !make_context_current_cb_.is_null()) {
@@ -68,6 +72,7 @@ bool VaapiTFPPicture::Initialize() {
 }
 
 bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (format != gfx::BufferFormat::BGRX_8888 &&
       format != gfx::BufferFormat::BGRA_8888) {
     DLOG(ERROR) << "Unsupported format";
@@ -92,12 +97,14 @@ bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
 bool VaapiTFPPicture::ImportGpuMemoryBufferHandle(
     gfx::BufferFormat format,
     const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED() << "GpuMemoryBufferHandle import not implemented";
   return false;
 }
 
 bool VaapiTFPPicture::DownloadFromSurface(
     const scoped_refptr<VASurface>& va_surface) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return vaapi_wrapper_->PutSurfaceIntoPixmap(va_surface->id(), x_pixmap_,
                                               va_surface->size());
 }
