@@ -96,8 +96,6 @@ PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::Create(
 
 void PaymentRequestUpdateEvent::SetPaymentDetailsUpdater(
     PaymentUpdater* updater) {
-  DCHECK(!abort_timer_.IsActive());
-  abort_timer_.StartOneShot(kAbortTimeout, BLINK_FROM_HERE);
   updater_ = updater;
 }
 
@@ -123,6 +121,9 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
   stopPropagation();
   stopImmediatePropagation();
   wait_for_update_ = true;
+
+  DCHECK(!abort_timer_.IsActive());
+  abort_timer_.StartOneShot(kAbortTimeout, BLINK_FROM_HERE);
 
   promise.Then(
       UpdatePaymentDetailsFunction::CreateFunction(script_state, this),

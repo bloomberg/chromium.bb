@@ -204,6 +204,10 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   spec_->UpdateWith(std::move(details));
 }
 
+void PaymentRequest::NoUpdatedPaymentDetails() {
+  spec_->RecomputeSpecForDetails();
+}
+
 void PaymentRequest::Abort() {
   // The API user has decided to abort. If a successful abort message is
   // returned to the renderer, the Mojo message pipe is closed, which triggers

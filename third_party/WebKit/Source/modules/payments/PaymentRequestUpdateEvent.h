@@ -37,6 +37,8 @@ class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event,
 
   void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
 
+  bool is_waiting_for_update() const { return wait_for_update_; }
+
   // PaymentUpdater:
   void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
   void OnUpdatePaymentDetailsFailure(const String& error) override;
@@ -52,8 +54,10 @@ class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event,
 
   void OnUpdateEventTimeout(TimerBase*);
 
-  Member<PaymentUpdater> updater_;
+  // True after event.updateWith() was called.
   bool wait_for_update_;
+
+  Member<PaymentUpdater> updater_;
   TaskRunnerTimer<PaymentRequestUpdateEvent> abort_timer_;
 };
 

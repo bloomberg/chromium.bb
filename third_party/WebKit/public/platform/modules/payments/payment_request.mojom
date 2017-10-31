@@ -224,13 +224,31 @@ enum PaymentComplete {
 };
 
 interface PaymentRequest {
+  // Instantiates the renderer-browser connection with the information from the
+  // JavaScript constructor of PaymentRequest.
   Init(PaymentRequestClient client,
        array<PaymentMethodData> method_data,
        PaymentDetails details,
        PaymentOptions options);
+
+  // Shows the user interface with the payment details.
   Show();
+
+  // Updates the payment details in response to new shipping address or shipping
+  // option.
   UpdateWith(PaymentDetails details);
+
+  // Called when the merchant received a new shipping address or shipping
+  // option, but did not update the payment details in response.
+  NoUpdatedPaymentDetails();
+
+  // Requests to abort the checkout in process, for example because the item
+  // went out of stock.
   Abort();
+
+  // Closes the payment user interface.
   Complete(PaymentComplete result);
+
+  // Queries whether the user has a form of payment on file.
   CanMakePayment();
 };

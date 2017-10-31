@@ -1127,28 +1127,38 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   }
 
   shipping_address_ = new PaymentAddress(std::move(address));
+
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), EventTypeNames::shippingaddresschange);
   event->SetTarget(this);
   event->SetPaymentDetailsUpdater(this);
-  bool success = GetExecutionContext()->GetEventQueue()->EnqueueEvent(
-      BLINK_FROM_HERE, event);
-  DCHECK(success);
-  ALLOW_UNUSED_LOCAL(success);
+  DispatchEvent(event);
+  if (!event->is_waiting_for_update()) {
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
+        "No updateWith() call in 'shippingaddresschange' event handler. User "
+        "may see outdated line items and total."));
+    payment_provider_->NoUpdatedPaymentDetails();
+  }
 }
 
 void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   DCHECK(show_resolver_);
   DCHECK(!complete_resolver_);
   shipping_option_ = shipping_option_id;
+
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), EventTypeNames::shippingoptionchange);
   event->SetTarget(this);
   event->SetPaymentDetailsUpdater(this);
-  bool success = GetExecutionContext()->GetEventQueue()->EnqueueEvent(
-      BLINK_FROM_HERE, event);
-  DCHECK(success);
-  ALLOW_UNUSED_LOCAL(success);
+  DispatchEvent(event);
+  if (!event->is_waiting_for_update()) {
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
+        "No updateWith() call in 'shippingoptionchange' event handler. User "
+        "may see outdated line items and total."));
+    payment_provider_->NoUpdatedPaymentDetails();
+  }
 }
 
 void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
