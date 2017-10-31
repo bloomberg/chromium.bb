@@ -1807,7 +1807,7 @@
           "cq_test_enabled": false
         },
         {
-          "board_name": "reef-uni",
+          "board_name": "reef",
           "name": "basking",
           "cq_test_enabled": false
         },
@@ -1817,26 +1817,27 @@
           "cq_test_enabled": false
         },
         {
-          "board_name": "reef-uni",
+          "board_name": "reef",
           "name": "electro",
           "cq_test_enabled": false
         },
         {
-          "board_name": "reef-uni",
+          "board_name": "pyro",
           "name": "pyro",
           "cq_test_enabled": false
         },
         {
-          "board_name": "reef-uni",
+          "board_name": "reef",
           "name": "reef",
           "cq_test_enabled": false
         },
         {
-          "board_name": "reef-uni",
+          "board_name": "sand",
           "name": "sand",
           "test_suites": [
             "sanity",
             "bvt-inline",
+            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-cq",
@@ -1845,7 +1846,7 @@
           "cq_test_enabled": false
         },
         {
-          "board_name": "reef-uni",
+          "board_name": "snappy",
           "name": "snappy",
           "cq_test_enabled": true
         }

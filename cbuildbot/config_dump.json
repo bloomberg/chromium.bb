@@ -22499,7 +22499,7 @@
             "{\n    \"name\": \"electro\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"pyro\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"reef\",\n    \"test_suites\": []\n}",
-            "{\n    \"name\": \"sand\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"name\": \"sand\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
             "{\n    \"name\": \"snappy\",\n    \"test_suites\": []\n}"
         ],
         "vm_tests": [],
