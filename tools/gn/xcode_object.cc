@@ -13,8 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/filesystem_utils.h"
-#include "tools/gn/source_file.h"
-#include "tools/gn/source_file_type.h"
 
 // Helper methods -------------------------------------------------------------
 
@@ -155,10 +153,9 @@ bool HasExplicitFileType(const base::StringPiece& ext) {
   return ext == "dart";
 }
 
-bool IsSourceFileForIndexing(const SourceFile& src) {
-  const SourceFileType type = GetSourceFileType(src);
-  return type == SOURCE_C || type == SOURCE_CPP || type == SOURCE_M ||
-         type == SOURCE_MM;
+bool IsSourceFileForIndexing(const base::StringPiece& ext) {
+  return ext == "c" || ext == "cc" || ext == "cpp" || ext == "cxx" ||
+         ext == "m" || ext == "mm";
 }
 
 void PrintValue(std::ostream& out, IndentRules rules, unsigned value) {
@@ -695,7 +692,8 @@ void PBXProject::AddSourceFile(const std::string& navigator_path,
                                PBXNativeTarget* target) {
   PBXFileReference* file_reference =
       sources_->AddSourceFile(navigator_path, source_path);
-  if (!IsSourceFileForIndexing(SourceFile(source_path)))
+  base::StringPiece ext = FindExtension(&source_path);
+  if (!IsSourceFileForIndexing(ext))
     return;
 
   DCHECK(target);
