@@ -44,37 +44,6 @@ class UnwrappedClass {
   int value_;
 };
 
-// This class must be wrapped in bind() and unwrapped in closure execution.
-class ClassToBeWrapped {
-  WTF_MAKE_NONCOPYABLE(ClassToBeWrapped);
-
- public:
-  explicit ClassToBeWrapped(int value) : value_(value) {}
-
-  int Value() const { return value_; }
-
- private:
-  int value_;
-};
-
-class WrappedClass {
- public:
-  WrappedClass(const ClassToBeWrapped& to_be_wrapped)
-      : value_(to_be_wrapped.Value()) {}
-
-  explicit WrappedClass(int value) : value_(value) {}
-
-  UnwrappedClass Unwrap() const { return UnwrappedClass(value_); }
-
- private:
-  int value_;
-};
-
-template <>
-struct ParamStorageTraits<ClassToBeWrapped> {
-  using StorageType = WrappedClass;
-};
-
 class HasWeakPtrSupport {
  public:
   HasWeakPtrSupport() : weak_ptr_factory_(this) {}
@@ -92,17 +61,6 @@ class HasWeakPtrSupport {
 };
 
 }  // namespace WTF
-
-namespace base {
-
-template <>
-struct BindUnwrapTraits<WTF::WrappedClass> {
-  static WTF::UnwrappedClass Unwrap(const WTF::WrappedClass& wrapped) {
-    return wrapped.Unwrap();
-  }
-};
-
-}  // namespace base
 
 namespace WTF {
 namespace {

@@ -172,10 +172,10 @@ UnretainedWrapper<T, kCrossThreadAffinity> CrossThreadUnretained(T* value) {
   return UnretainedWrapper<T, kCrossThreadAffinity>(value);
 }
 
-template <typename T>
-struct ParamStorageTraits {
-  typedef T StorageType;
+namespace internal {
 
+template <size_t, typename T>
+struct CheckGCedTypeRestriction {
   static_assert(!std::is_pointer<T>::value,
                 "Raw pointers are not allowed to bind into WTF::Function. Wrap "
                 "it with either WrapPersistent, WrapWeakPersistent, "
@@ -191,28 +191,16 @@ struct ParamStorageTraits {
                 "GCed type is forbidden as a bound parameters.");
 };
 
-template <typename T>
-struct ParamStorageTraits<scoped_refptr<T>> {
-  typedef scoped_refptr<T> StorageType;
+template <typename Index, typename... Args>
+struct CheckGCedTypeRestrictions;
+
+template <size_t... Ns, typename... Args>
+struct CheckGCedTypeRestrictions<std::index_sequence<Ns...>, Args...>
+    : CheckGCedTypeRestriction<Ns, Args>... {
+  static constexpr bool ok = true;
 };
 
-template <typename>
-class RetainPtr;
-
-template <typename T>
-struct ParamStorageTraits<RetainPtr<T>> {
-  typedef RetainPtr<T> StorageType;
-};
-
-template <typename T>
-struct ParamStorageTraits<PassedWrapper<T>> {
-  typedef PassedWrapper<T> StorageType;
-};
-
-template <typename T, FunctionThreadAffinity threadAffinity>
-struct ParamStorageTraits<UnretainedWrapper<T, threadAffinity>> {
-  typedef UnretainedWrapper<T, threadAffinity> StorageType;
-};
+}  // namespace internal
 
 template <typename Signature,
           FunctionThreadAffinity threadAffinity = kSameThreadAffinity>
@@ -280,12 +268,14 @@ template <FunctionThreadAffinity threadAffinity,
 Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>,
          threadAffinity>
 BindInternal(FunctionType function, BoundParameters&&... bound_parameters) {
+  static_assert(internal::CheckGCedTypeRestrictions<
+                    std::index_sequence_for<BoundParameters...>,
+                    std::decay_t<BoundParameters>...>::ok,
+                "A bound argument uses a bad pattern.");
   using UnboundRunType =
       base::MakeUnboundRunType<FunctionType, BoundParameters...>;
-  return Function<UnboundRunType, threadAffinity>(base::Bind(
-      function,
-      typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::
-          StorageType(std::forward<BoundParameters>(bound_parameters))...));
+  return Function<UnboundRunType, threadAffinity>(
+      base::Bind(function, std::forward<BoundParameters>(bound_parameters)...));
 }
 
 template <typename FunctionType, typename... BoundParameters>
