@@ -318,7 +318,8 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   ScopedAppGLStateRestore state_restore(
       draw_info->mode == AwDrawGLInfo::kModeDraw
           ? ScopedAppGLStateRestore::MODE_DRAW
-          : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
+          : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT,
+      draw_info->mode < 3 /* save_restore */);
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && draw_info->mode == AwDrawGLInfo::kModeDraw &&
       !IsInsideHardwareRelease() && HasFrameForHardwareRendererOnRT()) {

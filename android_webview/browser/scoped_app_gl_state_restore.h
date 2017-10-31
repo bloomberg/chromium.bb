@@ -45,7 +45,7 @@ class ScopedAppGLStateRestore {
 
   static ScopedAppGLStateRestore* Current();
 
-  explicit ScopedAppGLStateRestore(CallMode mode);
+  ScopedAppGLStateRestore(CallMode mode, bool save_restore);
   ~ScopedAppGLStateRestore();
 
   StencilState stencil_state() const;

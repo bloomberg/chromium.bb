@@ -9,7 +9,6 @@
 extern "C" {
 #endif
 
-
 // 1 is L/L MR1
 //
 // 2 starts at M, and added an imperfect workaround for complex clipping by
@@ -20,7 +19,12 @@ extern "C" {
 // This is a temporary workaround for a lack of WebView support for stencil/
 // shader based round rect clipping, and should be removed when webview is
 // capable of supporting these clips internally when drawing.
-static const int kAwDrawGLInfoVersion = 2;
+//
+// 3 starts during development of P, when android defaults from HWUI to skia as
+// the GL renderer. Skia already maintains and restores its GL state, so there
+// is no need for WebView to restore this state. Skia also no longer promises
+// GL state on entering draw, such as no vertex array buffer binding.
+static const int kAwDrawGLInfoVersion = 3;
 
 // Holds the information required to trigger an OpenGL drawing operation.
 struct AwDrawGLInfo {
