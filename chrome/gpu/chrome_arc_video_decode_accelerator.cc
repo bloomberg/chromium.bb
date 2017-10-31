@@ -10,7 +10,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
+#include "chrome/gpu/protected_buffer_manager.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 
 namespace chromeos {
@@ -41,27 +43,33 @@ ChromeArcVideoDecodeAccelerator::InputRecord::InputRecord(
 
 ChromeArcVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo() = default;
 
-ChromeArcVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo(
-    InputBufferInfo&& other) = default;
-
-ChromeArcVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() = default;
+ChromeArcVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() {
+  if (shm_handle.OwnershipPassesToIPC())
+    shm_handle.Close();
+}
 
 ChromeArcVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo() = default;
 
-ChromeArcVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo(
-    OutputBufferInfo&& other) = default;
-
-ChromeArcVideoDecodeAccelerator::OutputBufferInfo::~OutputBufferInfo() =
-    default;
+ChromeArcVideoDecodeAccelerator::OutputBufferInfo::~OutputBufferInfo() {
+  if (!gpu_memory_buffer_handle.is_null()) {
+    for (const auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
+      // Close the fd by wrapping it in a ScopedFD and letting
+      // it fall out of scope.
+      base::ScopedFD scoped_fd(fd.fd);
+    }
+  }
+}
 
 ChromeArcVideoDecodeAccelerator::ChromeArcVideoDecodeAccelerator(
-    const gpu::GpuPreferences& gpu_preferences)
+    const gpu::GpuPreferences& gpu_preferences,
+    ProtectedBufferManager* protected_buffer_manager)
     : arc_client_(nullptr),
       next_bitstream_buffer_id_(0),
       output_pixel_format_(media::PIXEL_FORMAT_UNKNOWN),
       output_buffer_size_(0),
       requested_num_of_output_buffers_(0),
-      gpu_preferences_(gpu_preferences) {}
+      gpu_preferences_(gpu_preferences),
+      protected_buffer_manager_(protected_buffer_manager) {}
 
 ChromeArcVideoDecodeAccelerator::~ChromeArcVideoDecodeAccelerator() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -95,13 +103,20 @@ ChromeArcVideoDecodeAccelerator::InitializeTask(
     return ILLEGAL_STATE;
   }
 
+  arc_client_ = client;
+
   if (client_count_ >= kMaxConcurrentClients) {
     LOG(WARNING) << "Reject to Initialize() due to too many clients: "
                  << client_count_;
     return INSUFFICIENT_RESOURCES;
   }
 
-  arc_client_ = client;
+  if (config.secure_mode && !protected_buffer_manager_) {
+    DLOG(ERROR) << "Secure mode unsupported";
+    return PLATFORM_FAILURE;
+  }
+
+  secure_mode_ = config.secure_mode;
 
   if (config.num_input_buffers > kMaxBufferCount) {
     DLOG(ERROR) << "Request too many buffers: " << config.num_input_buffers;
@@ -168,6 +183,60 @@ void ChromeArcVideoDecodeAccelerator::SetNumberOfOutputBuffers(size_t number) {
   buffers_pending_import_.resize(number);
 }
 
+bool ChromeArcVideoDecodeAccelerator::AllocateProtectedBuffer(
+    PortType port,
+    uint32_t index,
+    base::ScopedFD handle_fd,
+    size_t size) {
+  DVLOG(5) << "port=" << port << " index=" << index
+           << " handle=" << handle_fd.get() << " size=" << size;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (!secure_mode_) {
+    DLOG(ERROR) << "Not in secure mode";
+    arc_client_->OnError(INVALID_ARGUMENT);
+    return false;
+  }
+
+  if (!ValidatePortAndIndex(port, index)) {
+    arc_client_->OnError(INVALID_ARGUMENT);
+    return false;
+  }
+
+  if (port == PORT_INPUT) {
+    auto protected_shmem =
+        protected_buffer_manager_->AllocateProtectedSharedMemory(
+            std::move(handle_fd), size);
+    if (!protected_shmem) {
+      DLOG(ERROR) << "Failed allocating protected shared memory";
+      return false;
+    }
+
+    auto input_info = std::make_unique<InputBufferInfo>();
+    input_info->shm_handle = protected_shmem->shm_handle();
+    input_info->protected_buffer_handle = std::move(protected_shmem);
+    input_buffer_info_[index] = std::move(input_info);
+  } else if (port == PORT_OUTPUT) {
+    auto protected_pixmap =
+        protected_buffer_manager_->AllocateProtectedNativePixmap(
+            std::move(handle_fd),
+            media::VideoPixelFormatToGfxBufferFormat(output_pixel_format_),
+            coded_size_);
+    if (!protected_pixmap) {
+      DLOG(ERROR) << "Failed allocating a protected pixmap";
+      return false;
+    }
+    auto output_info = std::make_unique<OutputBufferInfo>();
+    output_info->gpu_memory_buffer_handle.type = gfx::NATIVE_PIXMAP;
+    output_info->gpu_memory_buffer_handle.native_pixmap_handle =
+        CloneHandleForIPC(protected_pixmap->native_pixmap_handle());
+    output_info->protected_buffer_handle = std::move(protected_pixmap);
+    buffers_pending_import_[index] = std::move(output_info);
+  }
+
+  return true;
+}
+
 void ChromeArcVideoDecodeAccelerator::BindSharedMemory(PortType port,
                                                        uint32_t index,
                                                        base::ScopedFD ashmem_fd,
@@ -176,6 +245,13 @@ void ChromeArcVideoDecodeAccelerator::BindSharedMemory(PortType port,
   DVLOG(5) << "ArcGVDA::BindSharedMemory, offset: " << offset
            << ", length: " << length;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (secure_mode_) {
+    DLOG(ERROR) << "not allowed in secure mode";
+    arc_client_->OnError(INVALID_ARGUMENT);
+    return;
+  }
+
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -190,10 +266,14 @@ void ChromeArcVideoDecodeAccelerator::BindSharedMemory(PortType port,
     arc_client_->OnError(INVALID_ARGUMENT);
     return;
   }
-  InputBufferInfo* input_info = &input_buffer_info_[index];
-  input_info->handle = std::move(ashmem_fd);
+
+  auto input_info = std::make_unique<InputBufferInfo>();
+  input_info->shm_handle =
+      base::SharedMemoryHandle(base::FileDescriptor(ashmem_fd.release(), true),
+                               length, base::UnguessableToken::Create());
+  DCHECK(input_info->shm_handle.OwnershipPassesToIPC());
   input_info->offset = offset;
-  input_info->length = length;
+  input_buffer_info_[index] = std::move(input_info);
 }
 
 bool ChromeArcVideoDecodeAccelerator::VerifyDmabuf(
@@ -241,6 +321,12 @@ void ChromeArcVideoDecodeAccelerator::BindDmabuf(
     const std::vector<::arc::VideoFramePlane>& planes) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (secure_mode_) {
+    DLOG(ERROR) << "not allowed in secure mode";
+    arc_client_->OnError(INVALID_ARGUMENT);
+    return;
+  }
+
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -260,9 +346,19 @@ void ChromeArcVideoDecodeAccelerator::BindDmabuf(
     return;
   }
 
-  OutputBufferInfo& info = buffers_pending_import_[index];
-  info.handle = std::move(dmabuf_fd);
-  info.planes = planes;
+#if defined(USE_OZONE)
+  auto output_info = std::make_unique<OutputBufferInfo>();
+  output_info->gpu_memory_buffer_handle.type = gfx::NATIVE_PIXMAP;
+  output_info->gpu_memory_buffer_handle.native_pixmap_handle.fds.emplace_back(
+      base::FileDescriptor(dmabuf_fd.release(), true));
+  for (const auto& plane : planes) {
+    output_info->gpu_memory_buffer_handle.native_pixmap_handle.planes
+        .emplace_back(plane.stride, plane.offset, 0, 0);
+  }
+  buffers_pending_import_[index] = std::move(output_info);
+#else
+  arc_client_->OnError(PLATFORM_FAILURE);
+#endif
 }
 
 void ChromeArcVideoDecodeAccelerator::UseBuffer(
@@ -283,41 +379,44 @@ void ChromeArcVideoDecodeAccelerator::UseBuffer(
   }
   switch (port) {
     case PORT_INPUT: {
-      InputBufferInfo* input_info = &input_buffer_info_[index];
+      auto& input_info = input_buffer_info_[index];
+      if (!input_info) {
+        DLOG(ERROR) << "Buffer not initialized";
+        arc_client_->OnError(INVALID_ARGUMENT);
+        return;
+      }
+
       int32_t bitstream_buffer_id = next_bitstream_buffer_id_;
       // Mask against 30 bits, to avoid (undefined) wraparound on signed
       // integer.
       next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
-      int dup_fd = HANDLE_EINTR(dup(input_info->handle.get()));
-      if (dup_fd < 0) {
-        DLOG(ERROR) << "dup() failed.";
+
+      auto duplicated_handle = input_info->shm_handle.Duplicate();
+      if (!duplicated_handle.IsValid()) {
         arc_client_->OnError(PLATFORM_FAILURE);
         return;
       }
+
       CreateInputRecord(bitstream_buffer_id, index, metadata.timestamp);
-      base::UnguessableToken guid = base::UnguessableToken::Create();
-      vda_->Decode(media::BitstreamBuffer(
-          bitstream_buffer_id,
-          base::SharedMemoryHandle(base::FileDescriptor(dup_fd, true), 0u,
-                                   guid),
-          metadata.bytes_used, input_info->offset));
+      vda_->Decode(
+          media::BitstreamBuffer(bitstream_buffer_id, duplicated_handle,
+                                 metadata.bytes_used, input_info->offset));
       break;
     }
     case PORT_OUTPUT: {
-      // is_valid() is true for the first time the buffer is passed to the VDA.
+      auto& output_info = buffers_pending_import_[index];
+      if (!output_info) {
+        DLOG(ERROR) << "Buffer not initialized";
+        arc_client_->OnError(INVALID_ARGUMENT);
+        return;
+      }
+      // is_null() is false the first time the buffer is passed to the VDA.
       // In that case, VDA needs to import the buffer first.
-      OutputBufferInfo& info = buffers_pending_import_[index];
-      if (info.handle.is_valid()) {
-        gfx::GpuMemoryBufferHandle handle;
-#if defined(USE_OZONE)
-        handle.native_pixmap_handle.fds.emplace_back(
-            base::FileDescriptor(info.handle.release(), true));
-        for (const auto& plane : info.planes) {
-          handle.native_pixmap_handle.planes.emplace_back(plane.stride,
-                                                          plane.offset, 0, 0);
-        }
-#endif
-        vda_->ImportBufferForPicture(index, handle);
+      if (!output_info->gpu_memory_buffer_handle.is_null()) {
+        vda_->ImportBufferForPicture(index,
+                                     output_info->gpu_memory_buffer_handle);
+        // VDA takes ownership, so just clear out, don't close the handle.
+        output_info->gpu_memory_buffer_handle = gfx::GpuMemoryBufferHandle();
       } else {
         vda_->ReusePictureBuffer(index);
       }

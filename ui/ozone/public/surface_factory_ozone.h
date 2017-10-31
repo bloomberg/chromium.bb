@@ -99,6 +99,38 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       gfx::BufferFormat format,
       const gfx::NativePixmapHandle& handle);
 
+  // A temporary solution that allows protected NativePixmap management to be
+  // handled outside the Ozone platform (crbug.com/771863).
+  // The current implementation uses dummy NativePixmaps as transparent handles
+  // to separate NativePixmaps with actual contents. This method takes
+  // a NativePixmapHandle to such a dummy pixmap, and creates a NativePixmap
+  // instance for it.
+  virtual scoped_refptr<gfx::NativePixmap>
+  CreateNativePixmapForProtectedBufferHandle(
+      gfx::AcceleratedWidget widget,
+      gfx::Size size,
+      gfx::BufferFormat format,
+      const gfx::NativePixmapHandle& handle);
+
+  // This callback can be used by implementations of this interface to query
+  // for a NativePixmap for the given NativePixmapHandle, instead of importing
+  // it via standard means. This happens if an external service is maintaining
+  // a separate mapping of NativePixmapHandles to NativePixmaps.
+  // If this callback returns non-nullptr, the returned NativePixmap should
+  // be used instead of the NativePixmap that would have been produced by the
+  // standard, implementation-specific NativePixmapHandle import mechanism.
+  using GetProtectedNativePixmapCallback =
+      base::Callback<scoped_refptr<gfx::NativePixmap>(
+          const gfx::NativePixmapHandle&)>;
+  // Called by an external service to set the GetProtectedNativePixmapCallback,
+  // to be used by the implementation when importing NativePixmapHandles.
+  // TODO(posciak): crbug.com/778555, move this to platform-specific
+  // implementation(s) and make protected pixmap handling transparent to the
+  // clients of this interface, removing the need for this callback.
+  virtual void SetGetProtectedNativePixmapDelegate(
+      const GetProtectedNativePixmapCallback&
+          get_protected_native_pixmap_callback);
+
  protected:
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();

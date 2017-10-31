@@ -19,6 +19,8 @@
 namespace chromeos {
 namespace arc {
 
+class ProtectedBufferManager;
+
 // GpuArcVideoDecodeAccelerator manages life-cycle and IPC message translation
 // for ArcVideoDecodeAccelerator.
 //
@@ -28,8 +30,9 @@ class GpuArcVideoDecodeAccelerator
     : public ::arc::mojom::VideoDecodeAccelerator,
       public ArcVideoDecodeAccelerator::Client {
  public:
-  explicit GpuArcVideoDecodeAccelerator(
-      const gpu::GpuPreferences& gpu_preferences);
+  GpuArcVideoDecodeAccelerator(
+      const gpu::GpuPreferences& gpu_preferences,
+      ProtectedBufferManager* protected_buffer_manager);
   ~GpuArcVideoDecodeAccelerator() override;
 
  private:
@@ -46,6 +49,14 @@ class GpuArcVideoDecodeAccelerator
   void Initialize(::arc::mojom::VideoDecodeAcceleratorConfigPtr config,
                   ::arc::mojom::VideoDecodeClientPtr client,
                   InitializeCallback callback) override;
+
+  void AllocateProtectedBuffer(
+      ::arc::mojom::PortType port,
+      uint32_t index,
+      mojo::ScopedHandle handle,
+      uint64_t size,
+      AllocateProtectedBufferCallback callback) override;
+
   void BindSharedMemory(::arc::mojom::PortType port,
                         uint32_t index,
                         mojo::ScopedHandle ashmem_handle,

@@ -132,6 +132,8 @@ component("gpu") {
     "fake_jpeg_decode_accelerator.h",
     "fake_video_decode_accelerator.cc",
     "fake_video_decode_accelerator.h",
+    "format_utils.cc",
+    "format_utils.h",
     "gles2_decoder_helper.cc",
     "gles2_decoder_helper.h",
     "gpu_video_accelerator_util.cc",
