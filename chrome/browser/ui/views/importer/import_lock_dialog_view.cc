@@ -71,8 +71,9 @@ gfx::Size ImportLockDialogView::CalculatePreferredSize() const {
 
 base::string16 ImportLockDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
-      IDS_IMPORTER_LOCK_OK : IDS_IMPORTER_LOCK_CANCEL);
+  if (button == ui::DIALOG_BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK);
+  return DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 base::string16 ImportLockDialogView::GetWindowTitle() const {

@@ -5507,9 +5507,6 @@ the Bookmarks menu.">
         <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button (to try importing again) on importer lock dialog">
           Try Again
         </message>
-        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on importer lock dialog">
-          Cancel
-        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
@@ -5517,9 +5514,6 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button (to try importing again) on importer lock dialog">
           Try again
-        </message>
-        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on importer lock dialog">
-          Cancel
         </message>
       </if>
 
