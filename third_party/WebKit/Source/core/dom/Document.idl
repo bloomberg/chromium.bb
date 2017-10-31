@@ -163,7 +163,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#extensions-to-the-document-interface
     attribute DOMString? selectedStylesheetSet;
-    readonly attribute DOMString? preferredStylesheetSet;
+    [MeasureAs=DocumentGetPreferredStylesheetSet] readonly attribute DOMString? preferredStylesheetSet;
 
     readonly attribute Element? scrollingElement;
 

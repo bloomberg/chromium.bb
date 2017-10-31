@@ -16855,6 +16855,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2208" label="MicrophoneDisabledByFeaturePolicyEstimate"/>
   <int value="2209" label="CameraDisabledByFeaturePolicyEstimate"/>
   <int value="2210" label="MidiDisabledByFeaturePolicy"/>
+  <int value="2211" label="DocumentGetPreferredStylesheetSet"/>
+  <int value="2212" label="DocumentGetSelectedStylesheetSet"/>
+  <int value="2213" label="DocumentSetSelectedStylesheetSet"/>
 </enum>
 
 <enum name="FeedbackSource">
