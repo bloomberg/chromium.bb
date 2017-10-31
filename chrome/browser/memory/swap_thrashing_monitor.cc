@@ -130,23 +130,16 @@ void SwapThrashingMonitor::CheckSwapThrashingPressureAndRecordStatistics() {
       default:
         break;
     }
-    base::HistogramBase* level_change_histogram =
-        base::LinearHistogram::FactoryGet(
-            "Memory.SwapThrashingLevelChanges", 1,
-            UMA_SWAP_THRASHING_LEVEL_CHANGE_COUNT,
-            UMA_SWAP_THRASHING_LEVEL_CHANGE_COUNT + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag);
-    level_change_histogram->AddCount(level_change, 1);
+    UMA_HISTOGRAM_ENUMERATION("Memory.Experimental.SwapThrashingLevelChanges",
+                              level_change,
+                              UMA_SWAP_THRASHING_LEVEL_CHANGE_COUNT);
   }
 
   current_swap_thrashing_level_ = swap_thrashing_level;
-
-  base::HistogramBase* level_histogram = base::LinearHistogram::FactoryGet(
-      "Memory.SwapThrashingLevel", 1, UMA_SWAP_THRASHING_LEVEL_COUNT,
-      UMA_SWAP_THRASHING_LEVEL_COUNT + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  level_histogram->AddCount(
-      SwapThrashingLevelToUmaEnumValue(current_swap_thrashing_level_), 1);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Memory.Experimental.SwapThrashingLevel",
+      SwapThrashingLevelToUmaEnumValue(current_swap_thrashing_level_),
+      UMA_SWAP_THRASHING_LEVEL_COUNT);
 }
 
 void SwapThrashingMonitor::StartObserving() {
