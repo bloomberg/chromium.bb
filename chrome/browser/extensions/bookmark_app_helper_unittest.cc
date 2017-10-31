@@ -7,10 +7,15 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/favicon_downloader.h"
+#include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/installable/installable_data.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
@@ -277,7 +283,8 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   TestBookmarkAppHelper(ExtensionService* service,
                         WebApplicationInfo web_app_info,
                         content::WebContents* contents)
-      : BookmarkAppHelper(service->profile(), web_app_info, contents) {}
+      : BookmarkAppHelper(service->profile(), web_app_info, contents),
+        bitmap_(CreateSquareBitmapWithColor(32, SK_ColorRED)) {}
 
   ~TestBookmarkAppHelper() override {}
 
@@ -286,9 +293,21 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
     extension_ = extension;
   }
 
-  void CompleteGetManifest(const char* manifest_url,
-                           const content::Manifest& manifest) {
-    BookmarkAppHelper::OnDidGetManifest(GURL(manifest_url), manifest);
+  void CompleteInstallableCheck(const char* manifest_url,
+                                const content::Manifest& manifest,
+                                bool installable) {
+    InstallableData data = {
+        installable ? NO_ERROR_DETECTED : MANIFEST_DISPLAY_NOT_SUPPORTED,
+        GURL(manifest_url),
+        &manifest,
+        GURL(kAppIconURL1),
+        &bitmap_,
+        GURL(),
+        nullptr,
+        installable,
+        installable,
+    };
+    BookmarkAppHelper::OnDidPerformInstallableCheck(data);
   }
 
   void CompleteIconDownload(
@@ -299,8 +318,13 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
   const Extension* extension() { return extension_; }
 
+  const FaviconDownloader* favicon_downloader() {
+    return favicon_downloader_.get();
+  }
+
  private:
   const Extension* extension_;
+  SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
@@ -358,7 +382,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
   manifest.theme_color = SK_ColorBLUE;
-  helper.CompleteGetManifest(kManifestUrl, manifest);
+  helper.CompleteInstallableCheck(kManifestUrl, manifest, true);
 
   std::map<GURL, std::vector<SkBitmap> > icon_map;
   helper.CompleteIconDownload(true, icon_map);
@@ -382,6 +406,98 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest,
+       CreateBookmarkAppWithManifestIcons) {
+  WebApplicationInfo web_app_info;
+  std::unique_ptr<content::WebContents> contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                           base::Unretained(&helper)));
+
+  content::Manifest manifest;
+  manifest.start_url = GURL(kAppUrl);
+  manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
+  manifest.scope = GURL(kAppScope);
+  content::Manifest::Icon icon;
+  icon.src = GURL(kAppIconURL1);
+  manifest.icons.push_back(icon);
+  icon.src = GURL(kAppIconURL2);
+  manifest.icons.push_back(icon);
+  helper.CompleteInstallableCheck(kManifestUrl, manifest, true);
+
+  // Favicon URLs are ignored because the site has a manifest with icons.
+  EXPECT_FALSE(helper.favicon_downloader()->need_favicon_urls_);
+
+  // Only 1 icon should be downloading since the other was provided by the
+  // InstallableManager.
+  EXPECT_EQ(1u, helper.favicon_downloader()->in_progress_requests_.size());
+
+  std::map<GURL, std::vector<SkBitmap>> icon_map;
+  icon_map[GURL(kAppIconURL2)].push_back(
+      CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));
+  helper.CompleteIconDownload(true, icon_map);
+
+  content::RunAllTasksUntilIdle();
+  EXPECT_TRUE(helper.extension());
+  const Extension* extension =
+      service_->GetInstalledExtension(helper.extension()->id());
+  EXPECT_TRUE(extension);
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+  EXPECT_TRUE(extension->from_bookmark());
+  EXPECT_EQ(kAppTitle, extension->name());
+  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest,
+       CreateBookmarkAppDefaultLauncherContainers) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
+
+  WebApplicationInfo web_app_info;
+  std::map<GURL, std::vector<SkBitmap>> icon_map;
+
+  std::unique_ptr<content::WebContents> contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  content::Manifest manifest;
+  manifest.start_url = GURL(kAppUrl);
+  manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
+  manifest.scope = GURL(kAppScope);
+  {
+    TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+    helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                             base::Unretained(&helper)));
+
+    helper.CompleteInstallableCheck(kManifestUrl, manifest, true);
+    helper.CompleteIconDownload(true, icon_map);
+
+    content::RunAllTasksUntilIdle();
+    EXPECT_TRUE(helper.extension());
+    const Extension* extension =
+        service_->GetInstalledExtension(helper.extension()->id());
+    EXPECT_TRUE(extension);
+    EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
+              GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
+  }
+  {
+    TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+    helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                             base::Unretained(&helper)));
+
+    helper.CompleteInstallableCheck(kManifestUrl, manifest, false);
+    helper.CompleteIconDownload(true, icon_map);
+
+    content::RunAllTasksUntilIdle();
+    EXPECT_TRUE(helper.extension());
+    const Extension* extension =
+        service_->GetInstalledExtension(helper.extension()->id());
+    EXPECT_TRUE(extension);
+    EXPECT_EQ(LAUNCH_CONTAINER_TAB,
+              GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
+  }
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppWithManifestNoScope) {
   WebApplicationInfo web_app_info;
 
@@ -394,7 +510,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   content::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
-  helper.CompleteGetManifest(kManifestUrl, manifest);
+  helper.CompleteInstallableCheck(kManifestUrl, manifest, true);
 
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
@@ -419,7 +535,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  helper.CompleteGetManifest(kManifestUrl, content::Manifest());
+  helper.CompleteInstallableCheck(kManifestUrl, content::Manifest(), false);
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
   content::RunAllTasksUntilIdle();

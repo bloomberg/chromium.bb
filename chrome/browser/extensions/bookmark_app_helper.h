@@ -20,6 +20,8 @@
 
 class ExtensionService;
 class FaviconDownloader;
+struct InstallableData;
+class InstallableManager;
 class Profile;
 class SkBitmap;
 
@@ -105,26 +107,29 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Begins the asynchronous bookmark app creation.
   void Create(const CreateBookmarkAppCallback& callback);
 
-  // Begins the asynchronous bookmark app creation from an app banner.
-  void CreateFromAppBanner(const CreateBookmarkAppCallback& callback,
-                           const GURL& manifest_url,
-                           const content::Manifest& manifest);
-
  protected:
   // Protected methods for testing.
 
-  // Called by the WebContents when the manifest has been downloaded. If there
-  // is no manifest, or the WebContents is destroyed before the manifest could
-  // be downloaded, this is called with an empty manifest.
-  void OnDidGetManifest(const GURL& manifest_url,
-                        const content::Manifest& manifest);
+  // Called by the InstallableManager when the installability check is
+  // completed.
+  void OnDidPerformInstallableCheck(const InstallableData& data);
 
   // Performs post icon download tasks including installing the bookmark app.
   virtual void OnIconsDownloaded(
       bool success,
       const std::map<GURL, std::vector<SkBitmap>>& bitmaps);
 
+  // Downloads icons from the given WebApplicationInfo using the given
+  // WebContents.
+  std::unique_ptr<FaviconDownloader> favicon_downloader_;
+
  private:
+  enum Installable {
+    INSTALLABLE_YES,
+    INSTALLABLE_NO,
+    INSTALLABLE_UNKNOWN,
+  };
+
   // Called after the bubble has been shown, and the user has either accepted or
   // the dialog was dismissed.
   void OnBubbleCompleted(bool user_accepted,
@@ -151,14 +156,14 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Called on app creation or failure.
   CreateBookmarkAppCallback callback_;
 
-  // Downloads icons from the given WebApplicationInfo using the given
-  // WebContents.
-  std::unique_ptr<FaviconDownloader> favicon_downloader_;
-
   // Used to install the created bookmark app.
   scoped_refptr<extensions::CrxInstaller> crx_installer_;
 
   content::NotificationRegistrar registrar_;
+
+  InstallableManager* installable_manager_;
+
+  Installable installable_ = INSTALLABLE_UNKNOWN;
 
   // With fast tab unloading enabled, shutting down can cause BookmarkAppHelper
   // to be destroyed before the bookmark creation bubble. Use weak pointers to

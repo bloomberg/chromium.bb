@@ -99,10 +99,8 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
   has_user_interaction_ = true;
 
-  bookmark_app_helper_->CreateFromAppBanner(
-      base::Bind(&AppBannerManager::DidFinishCreatingBookmarkApp,
-                 weak_manager_),
-      manifest_url_, manifest_);
+  bookmark_app_helper_->Create(base::Bind(
+      &AppBannerManager::DidFinishCreatingBookmarkApp, weak_manager_));
   return true;
 }
 
