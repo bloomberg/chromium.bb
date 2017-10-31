@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -71,16 +71,10 @@ static const char kBlockWithEmptyFirstChild[] =
     "  <div style='position: absolute'>Hello</div> "
     "</div>";
 
-class WebElementTest : public ::testing::Test {
+class WebElementTest : public PageTestBase {
  protected:
-  Document& GetDocument() { return page_holder_->GetDocument(); }
   void InsertHTML(String html);
   WebElement TestElement();
-
- private:
-  void SetUp() override;
-
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 void WebElementTest::InsertHTML(String html) {
@@ -91,10 +85,6 @@ WebElement WebElementTest::TestElement() {
   Element* element = GetDocument().getElementById("testElement");
   DCHECK(element);
   return WebElement(element);
-}
-
-void WebElementTest::SetUp() {
-  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
