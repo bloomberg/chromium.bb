@@ -413,8 +413,8 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (depth == MAX_VARTX_DEPTH) {
     int idx, idy;
     inter_tx_size[0][0] = tx_size;
-    for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
-      for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
+    for (idy = 0; idy < AOMMAX(1, tx_size_high_unit[tx_size] / 2); ++idy)
+      for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
         inter_tx_size[idy][idx] = tx_size;
     mbmi->tx_size = tx_size;
     mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
@@ -439,8 +439,8 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     if (sub_txs == TX_4X4) {
       int idx, idy;
       inter_tx_size[0][0] = sub_txs;
-      for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
-        for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
+      for (idy = 0; idy < AOMMAX(1, tx_size_high_unit[tx_size] / 2); ++idy)
+        for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
           inter_tx_size[idy][idx] = inter_tx_size[0][0];
       mbmi->tx_size = sub_txs;
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
@@ -459,8 +459,8 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
   } else {
     int idx, idy;
     inter_tx_size[0][0] = tx_size;
-    for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
-      for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
+    for (idy = 0; idy < AOMMAX(1, tx_size_high_unit[tx_size] / 2); ++idy)
+      for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
         inter_tx_size[idy][idx] = tx_size;
     mbmi->tx_size = tx_size;
     mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
