@@ -27783,6 +27783,13 @@ from previous Chrome versions.
   <int value="5" label="Active network was unblocked"/>
 </enum>
 
+<enum name="NearOomDetectionEndReason">
+  <int value="0" label="OOM protected renderer is crashed"/>
+  <int value="1"
+      label="Foreground renderer is gone for some reason other than OOM crash"/>
+  <int value="2" label="Foreground renderer navigates to other URL"/>
+</enum>
+
 <enum name="NegativeSampleReason">
   <int value="0"
       label="Persistent sparse histogram had logged value but no active

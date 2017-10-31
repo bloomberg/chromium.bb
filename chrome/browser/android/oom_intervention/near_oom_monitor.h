@@ -18,6 +18,9 @@
 // callbacks when the monitor detects near-OOM situation.
 class NearOomMonitor {
  public:
+  // Returns nullptr when the monitor isn't available.
+  static NearOomMonitor* GetInstance();
+
   NearOomMonitor();
   virtual ~NearOomMonitor();
 

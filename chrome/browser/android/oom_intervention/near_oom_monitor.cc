@@ -4,17 +4,34 @@
 
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/sys_info.h"
+#include "chrome/common/chrome_features.h"
+
 namespace {
+
+const char kSwapFreeThresholdRatioParamName[] = "swap_free_threshold_ratio";
 
 // Default SwapFree/SwapTotal ratio for detecting near-OOM situation.
 // TODO(bashi): Confirm that this is appropriate.
-const float kDefaultSwapFreeThresholdRatio = 0.20;
+const double kDefaultSwapFreeThresholdRatio = 0.20;
 
 // Default interval to check memory stats.
 constexpr base::TimeDelta kDefaultMonitoringDelta =
     base::TimeDelta::FromSeconds(1);
 
 }  // namespace
+
+// static
+NearOomMonitor* NearOomMonitor::GetInstance() {
+  if (!base::FeatureList::IsEnabled(features::kOomIntervention))
+    return nullptr;
+  if (!base::SysInfo::IsLowEndDevice())
+    return nullptr;
+  static NearOomMonitor* instance = new NearOomMonitor();
+  return instance;
+}
 
 NearOomMonitor::NearOomMonitor()
     : monitoring_interval_(kDefaultMonitoringDelta), swapfree_threshold_(0) {}
@@ -37,8 +54,11 @@ bool NearOomMonitor::Start() {
   if (memory_info.swap_total == 0)
     return false;
 
-  swapfree_threshold_ = static_cast<int64_t>(memory_info.swap_total *
-                                             kDefaultSwapFreeThresholdRatio);
+  double threshold_ratio = base::GetFieldTrialParamByFeatureAsDouble(
+      features::kOomIntervention, kSwapFreeThresholdRatioParamName,
+      kDefaultSwapFreeThresholdRatio);
+  swapfree_threshold_ =
+      static_cast<int64_t>(memory_info.swap_total * threshold_ratio);
 
   timer_.Start(FROM_HERE, monitoring_interval_, this, &NearOomMonitor::Check);
   return true;

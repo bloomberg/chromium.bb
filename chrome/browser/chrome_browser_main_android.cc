@@ -12,6 +12,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/mojo/chrome_interface_registrar_android.h"
+#include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
 #include "chrome/browser/android/preferences/clipboard_android.h"
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/browser_process.h"
@@ -135,6 +136,10 @@ void ChromeBrowserMainPartsAndroid::PostBrowserStart() {
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&ReportSeccompSupport), base::TimeDelta::FromMinutes(1));
+
+  NearOomMonitor* monitor = NearOomMonitor::GetInstance();
+  if (monitor)
+    monitor->Start();
 
   RegisterChromeJavaMojoInterfaces();
 }
