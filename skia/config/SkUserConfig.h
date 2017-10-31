@@ -228,10 +228,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_COLOR_SPACE_XFORM_LEGACY_PIPELINE
 #endif
 
-#ifndef SK_LEGACY_LOWP_STAGES
-#define SK_LEGACY_LOWP_STAGES
-#endif
-
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
