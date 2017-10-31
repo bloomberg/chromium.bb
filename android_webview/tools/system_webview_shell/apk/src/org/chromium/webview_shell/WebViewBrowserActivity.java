@@ -343,7 +343,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     @TargetApi(Build.VERSION_CODES.M)
     private boolean canGrant(String webkitPermission) {
         String androidPermission = sPermissions.get(webkitPermission);
-        if (androidPermission == NO_ANDROID_PERMISSION) {
+        if (androidPermission.equals(NO_ANDROID_PERMISSION)) {
             return true;
         }
         return PackageManager.PERMISSION_GRANTED == checkSelfPermission(androidPermission);
