@@ -10,6 +10,9 @@
 
 namespace blink {
 
+const int FontFaceSet::kDefaultFontSize = 10;
+const char FontFaceSet::kDefaultFontFamily[] = "sans-serif";
+
 void FontFaceSet::Suspend() {
   async_runner_->Suspend();
 }

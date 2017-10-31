@@ -83,6 +83,9 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual void Trace(blink::Visitor*);
 
  protected:
+  static const int kDefaultFontSize;
+  static const char kDefaultFontFamily[];
+
   virtual bool ResolveFontStyle(const String&, Font&) = 0;
   virtual bool InActiveContext() const = 0;
   virtual FontSelector* GetFontSelector() const = 0;
