@@ -72,7 +72,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 
 }  // namespace
 
-@interface CreditCardEditViewControllerMediator ()
+@interface CreditCardEditMediator ()
 
 // The PaymentRequest object owning an instance of payments::WebPaymentRequest
 // as provided by the page invoking the Payment Request API. This is a weak
@@ -96,7 +96,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 
 @end
 
-@implementation CreditCardEditViewControllerMediator
+@implementation CreditCardEditMediator
 
 @synthesize state = _state;
 @synthesize consumer = _consumer;
@@ -293,7 +293,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   }
 
   // Notify the view controller asynchronously to allow for the view to update.
-  __weak CreditCardEditViewControllerMediator* weakSelf = self;
+  __weak CreditCardEditMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
     [weakSelf.consumer setOptions:@[ months, years ]
                    forEditorField:weakSelf.creditCardExpDateField];

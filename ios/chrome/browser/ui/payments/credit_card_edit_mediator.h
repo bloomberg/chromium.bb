@@ -20,7 +20,7 @@ class PaymentRequest;
 }  // namespace payments
 
 // Serves as data source for CreditCardEditViewController.
-@interface CreditCardEditViewControllerMediator
+@interface CreditCardEditMediator
     : NSObject<PaymentRequestEditViewControllerDataSource,
                PaymentRequestEditViewControllerValidator>
 

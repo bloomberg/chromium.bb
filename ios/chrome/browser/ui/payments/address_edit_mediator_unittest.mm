@@ -4,13 +4,20 @@
 
 #import "ios/chrome/browser/ui/payments/address_edit_mediator.h"
 
+#include "base/mac/foundation_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/test_region_data_loader.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "testing/platform_test.h"
+#include "third_party/libaddressinput/messages.h"
+#include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -24,11 +31,198 @@ class PaymentRequestAddressEditMediatorTest : public PaymentRequestUnitTestBase,
   void SetUp() override {
     PaymentRequestUnitTestBase::SetUp();
 
+    autofill::CountryNames::SetLocaleString("en-US");
+
     CreateTestPaymentRequest();
+
+    test_region_data_loader_.set_synchronous_callback(true);
+    payment_request()->SetRegionDataLoader(&test_region_data_loader_);
   }
 
   void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
+
+  autofill::TestRegionDataLoader test_region_data_loader_;
 };
+
+// Tests that the expected editor fields are created when creating an address.
+TEST_F(PaymentRequestAddressEditMediatorTest, TestFieldsWhenCreate) {
+  id check_block = ^BOOL(id value) {
+    EXPECT_TRUE([value isKindOfClass:[NSArray class]]);
+    NSArray* fields = base::mac::ObjCCastStrict<NSArray>(value);
+    EXPECT_EQ(8U, fields.count);
+
+    id field = fields[0];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    EditorField* editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileFullName, editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(
+                            IDS_LIBADDRESSINPUT_RECIPIENT_LABEL)]);
+    EXPECT_EQ(nil, editor_field.value);
+    EXPECT_FALSE(editor_field.isRequired);
+
+    field = fields[1];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileHomeAddressCountry,
+              editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeSelector, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(
+                            IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL)]);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"US"]);
+    EXPECT_TRUE(editor_field.isRequired);
+
+    field = fields[2];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileCompanyName, editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(
+                            IDS_LIBADDRESSINPUT_ORGANIZATION_LABEL)]);
+    EXPECT_EQ(nil, editor_field.value);
+    EXPECT_FALSE(editor_field.isRequired);
+
+    field = fields[3];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileHomeAddressStreet,
+              editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(
+                            IDS_LIBADDRESSINPUT_ADDRESS_LINE_1_LABEL)]);
+    EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
+
+    field = fields[4];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileHomeAddressCity,
+              editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(
+                            IDS_LIBADDRESSINPUT_LOCALITY_LABEL)]);
+    EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
+
+    field = fields[5];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileHomeAddressState,
+              editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(IDS_LIBADDRESSINPUT_STATE)]);
+    EXPECT_TRUE([editor_field.value
+        isEqualToString:l10n_util::GetNSString(IDS_AUTOFILL_LOADING_REGIONS)]);
+    EXPECT_TRUE(editor_field.isRequired);
+
+    field = fields[6];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileHomeAddressZip, editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(
+                            IDS_LIBADDRESSINPUT_ZIP_CODE_LABEL)]);
+    EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
+
+    field = fields[7];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_EQ(AutofillUITypeProfileHomePhoneWholeNumber,
+              editor_field.autofillUIType);
+    EXPECT_EQ(EditorFieldTypeTextField, editor_field.fieldType);
+    EXPECT_TRUE([editor_field.label
+        isEqualToString:l10n_util::GetNSString(IDS_IOS_AUTOFILL_PHONE)]);
+    EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
+
+    return YES;
+  };
+
+  // Mock the consumer.
+  id consumer =
+      [OCMockObject mockForProtocol:@protocol(PaymentRequestEditConsumer)];
+  [[consumer expect] setEditorFields:[OCMArg checkWithBlock:check_block]];
+
+  AddressEditMediator* mediator =
+      [[AddressEditMediator alloc] initWithPaymentRequest:payment_request()
+                                                  address:nil];
+  [mediator setConsumer:consumer];
+
+  EXPECT_OCMOCK_VERIFY(consumer);
+}
+
+// Tests that the expected editor fields are created when editing an address.
+TEST_F(PaymentRequestAddressEditMediatorTest, TestFieldsWhenEdit) {
+  id check_block = ^BOOL(id value) {
+    EXPECT_TRUE([value isKindOfClass:[NSArray class]]);
+    NSArray* fields = base::mac::ObjCCastStrict<NSArray>(value);
+    EXPECT_EQ(8U, fields.count);
+
+    id field = fields[0];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    EditorField* editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"John H. Doe"]);
+
+    field = fields[1];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"US"]);
+
+    field = fields[2];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"Underworld"]);
+
+    field = fields[3];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"666 Erebus St.\nApt 8"]);
+
+    field = fields[4];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"Elysium"]);
+
+    field = fields[5];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value
+        isEqualToString:l10n_util::GetNSString(IDS_AUTOFILL_LOADING_REGIONS)]);
+
+    field = fields[6];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"91111"]);
+
+    field = fields[7];
+    EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
+    editor_field = base::mac::ObjCCastStrict<EditorField>(field);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"+1 650-211-1111"]);
+
+    return YES;
+  };
+
+  // Mock the consumer.
+  id consumer =
+      [OCMockObject mockForProtocol:@protocol(PaymentRequestEditConsumer)];
+  [[consumer expect] setEditorFields:[OCMArg checkWithBlock:check_block]];
+
+  autofill::AutofillProfile autofill_profile = autofill::test::GetFullProfile();
+  AddressEditMediator* mediator =
+      [[AddressEditMediator alloc] initWithPaymentRequest:payment_request()
+                                                  address:&autofill_profile];
+  [mediator setConsumer:consumer];
+
+  EXPECT_OCMOCK_VERIFY(consumer);
+}
 
 // Tests that no validation error should be expected if validating an empty
 // field that is not required.
