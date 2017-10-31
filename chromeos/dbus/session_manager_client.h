@@ -58,15 +58,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
     // Called when the property change is complete.
     virtual void PropertyChangeComplete(bool success) {}
 
-    // Called when the session manager announces that the screen has been locked
-    // successfully (i.e. after NotifyLockScreenShown() has been called).
-    virtual void ScreenIsLocked() {}
-
-    // Called when the session manager announces that the screen has been
-    // unlocked successfully (i.e. after NotifyLockScreenDismissed() has
-    // been called).
-    virtual void ScreenIsUnlocked() {}
-
     // Called after EmitLoginPromptVisible is called.
     virtual void EmitLoginPromptVisibleCalled() {}
 
@@ -95,14 +86,14 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // remains with the caller.
   virtual void SetStubDelegate(StubDelegate* delegate) = 0;
 
-  // Adds and removes the observer.
+  // Adds or removes an observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(const Observer* observer) const = 0;
 
   // Returns the most recent screen-lock state received from session_manager.
-  // This mirrors the last Observer::ScreenIsLocked() or ScreenIsUnlocked()
-  // call.
+  // This method should only be called by low-level code that is unable to
+  // depend on UI code and get the lock state from it instead.
   virtual bool IsScreenLocked() const = 0;
 
   // Kicks off an attempt to emit the "login-prompt-visible" upstart signal.
@@ -132,13 +123,14 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Triggers a TPM firmware update.
   virtual void StartTPMFirmwareUpdate(const std::string& update_mode) = 0;
 
-  // Locks the screen.
+  // Sends a request to lock the screen to session_manager. Locking occurs
+  // asynchronously.
   virtual void RequestLockScreen() = 0;
 
-  // Notifies that the lock screen is shown.
+  // Notifies session_manager that Chrome has shown the lock screen.
   virtual void NotifyLockScreenShown() = 0;
 
-  // Notifies that the lock screen is dismissed.
+  // Notifies session_manager that Chrome has hidden the lock screen.
   virtual void NotifyLockScreenDismissed() = 0;
 
   // Notifies that supervised user creation have started.

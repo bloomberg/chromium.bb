@@ -6,18 +6,18 @@
 #define ASH_SYSTEM_POWER_POWER_EVENT_OBSERVER_H_
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
 
 namespace ash {
 
 // A class that observes power-management-related events.
 class ASH_EXPORT PowerEventObserver
     : public chromeos::PowerManagerClient::Observer,
-      public chromeos::SessionManagerClient::Observer {
+      public SessionObserver {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
   PowerEventObserver();
@@ -33,9 +33,10 @@ class ASH_EXPORT PowerEventObserver
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // chromeos::SessionManagerClient::Observer overrides.
-  void ScreenIsLocked() override;
-  void ScreenIsUnlocked() override;
+  // SessionObserver overrides:
+  void OnLockStateChanged(bool locked) override;
+
+  ScopedSessionObserver session_observer_;
 
   // Is the screen currently locked?
   bool screen_locked_;

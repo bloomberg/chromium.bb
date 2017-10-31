@@ -6,17 +6,19 @@
 
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
 
-ExtensionSystemEventObserver::ExtensionSystemEventObserver() {
+ExtensionSystemEventObserver::ExtensionSystemEventObserver()
+    : screen_locked_(session_manager::SessionManager::Get()->IsScreenLocked()) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
+  session_manager::SessionManager::Get()->AddObserver(this);
 }
 
 ExtensionSystemEventObserver::~ExtensionSystemEventObserver() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
+  session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
 void ExtensionSystemEventObserver::BrightnessChanged(int level,
@@ -29,8 +31,11 @@ void ExtensionSystemEventObserver::SuspendDone(
   extensions::DispatchWokeUpEvent();
 }
 
-void ExtensionSystemEventObserver::ScreenIsUnlocked() {
-  extensions::DispatchScreenUnlockedEvent();
+void ExtensionSystemEventObserver::OnSessionStateChanged() {
+  const bool was_locked = screen_locked_;
+  screen_locked_ = session_manager::SessionManager::Get()->IsScreenLocked();
+  if (was_locked && !screen_locked_)
+    extensions::DispatchScreenUnlockedEvent();
 }
 
 }  // namespace chromeos

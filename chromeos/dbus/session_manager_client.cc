@@ -727,14 +727,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void ScreenIsLockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = true;
-    for (auto& observer : observers_)
-      observer.ScreenIsLocked();
   }
 
   void ScreenIsUnlockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = false;
-    for (auto& observer : observers_)
-      observer.ScreenIsUnlocked();
   }
 
   void ArcInstanceStoppedReceived(dbus::Signal* signal) {
@@ -852,7 +848,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   SessionManagerClientStubImpl() = default;
   ~SessionManagerClientStubImpl() override = default;
 
-  // SessionManagerClient overrides
+  // SessionManagerClient overrides:
   void Init(dbus::Bus* bus) override {}
   void SetStubDelegate(StubDelegate* delegate) override {
     delegate_ = delegate;
@@ -881,16 +877,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     if (delegate_)
       delegate_->LockScreenForStub();
   }
-  void NotifyLockScreenShown() override {
-    screen_is_locked_ = true;
-    for (auto& observer : observers_)
-      observer.ScreenIsLocked();
-  }
-  void NotifyLockScreenDismissed() override {
-    screen_is_locked_ = false;
-    for (auto& observer : observers_)
-      observer.ScreenIsUnlocked();
-  }
+  void NotifyLockScreenShown() override { screen_is_locked_ = true; }
+  void NotifyLockScreenDismissed() override { screen_is_locked_ = false; }
   void RetrieveActiveSessions(ActiveSessionsCallback callback) override {}
   void RetrieveDevicePolicy(RetrievePolicyCallback callback) override {
     base::FilePath owner_key_path;
