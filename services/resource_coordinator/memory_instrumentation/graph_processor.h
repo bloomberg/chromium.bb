@@ -39,6 +39,10 @@ class GraphProcessor {
       std::set<const GlobalDumpGraph::Node*>* nodes);
 
   static void RemoveWeakNodesRecursively(GlobalDumpGraph::Node* parent);
+
+  static void AssignTracingOverhead(base::StringPiece allocator,
+                                    GlobalDumpGraph* global_graph,
+                                    GlobalDumpGraph::Process* process);
 };
 
 }  // namespace memory_instrumentation
