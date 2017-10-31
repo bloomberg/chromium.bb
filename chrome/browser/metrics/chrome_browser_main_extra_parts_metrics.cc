@@ -25,6 +25,8 @@
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
@@ -463,9 +465,10 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
 // Records the pinned state of the current executable into a histogram. Should
 // be called on a background thread, with low priority, to avoid slowing down
 // startup.
-void RecordIsPinnedToTaskbarHistogram() {
+void RecordIsPinnedToTaskbarHistogram(
+    std::unique_ptr<service_manager::Connector> connector) {
   shell_integration::win::GetIsPinnedToTaskbarState(
-      base::Bind(&OnShellHandlerConnectionError),
+      std::move(connector), base::Bind(&OnShellHandlerConnectionError),
       base::Bind(&OnIsPinnedToTaskbarResult));
 }
 #endif  // defined(OS_WIN)
@@ -548,10 +551,14 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // TODO(isherman): The delay below is currently needed to avoid (flakily)
   // breaking some tests, including all of the ProcessMemoryMetricsEmitterTest
   // tests. Figure out why there is a dependency and fix the tests.
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+
   base::CreateSequencedTaskRunnerWithTraits(background_task_traits)
-      ->PostDelayedTask(FROM_HERE,
-                        base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
-                        base::TimeDelta::FromSeconds(45));
+      ->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&RecordIsPinnedToTaskbarHistogram, connector->Clone()),
+          base::TimeDelta::FromSeconds(45));
 #endif  // defined(OS_WIN)
 
   display_count_ = display::Screen::GetScreen()->GetNumDisplays();
